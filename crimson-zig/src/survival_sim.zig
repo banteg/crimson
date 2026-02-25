@@ -3312,6 +3312,128 @@ test "alternate weapon slows movement by 20 percent" {
     try std.testing.expectApproxEqAbs(@as(f64, 80.0), perk_player.pos.x, 1e-6);
 }
 
+test "fire cough projectile uses pre-move player position for muzzle origin" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .aim = .{ .x = 200.0, .y = 100.0 },
+        .aim_heading = 0.0,
+        .fire_cough_timer = 1.95,
+    };
+    player.perk_counts[@intCast(survival_perks.PerkId.fire_caugh)] = 1;
+
+    const before_pos = player.pos;
+    survival_weapon_runtime.applyPlayerPerkTicks(
+        &state,
+        &player,
+        &projectiles,
+        0.1,
+    );
+
+    const move_input = replay_codec.ReplayPlayerInput{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 200.0,
+        .aim_y = 100.0,
+        .flags = 0,
+    };
+    const move_flags = replay_codec.unpackInputFlags(0);
+    updatePlayerFromReplayInput(&player, move_input, move_flags, &state, 0.1);
+    finalizePlayerPostUpdate(&player, 1024.0);
+
+    try std.testing.expect(player.pos.x > before_pos.x);
+
+    const proj = projectiles.entries[0];
+    try std.testing.expect(proj.active);
+    try std.testing.expectEqual(survival_state.ProjectileTypeId.fire_bullets, proj.type_id);
+
+    const muzzle_dir = blk: {
+        const dir = directionFromHeadingNative(0.0);
+        const cos_theta = survival_math.cos(-0.150915);
+        const sin_theta = survival_math.sin(-0.150915);
+        break :blk survival_state.Vec2{
+            .x = dir.x * cos_theta - dir.y * sin_theta,
+            .y = dir.x * sin_theta + dir.y * cos_theta,
+        };
+    };
+    const expected_pos = survival_state.Vec2.add(before_pos, muzzle_dir.mul(16.0));
+    try std.testing.expectApproxEqAbs(expected_pos.x, proj.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(expected_pos.y, proj.pos.y, 1e-6);
+}
+
+test "pending fireblast spawns sixteen plasma rifle projectiles" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+    };
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    state.pending_fireblast_origins[0] = players[0].pos;
+    state.pending_fireblast_count = 1;
+
+    applyPendingBonusEffects(
+        &state,
+        players[0..],
+        &projectiles,
+        &creatures,
+        &bonuses,
+        0.016,
+        1024.0,
+        1,
+    );
+
+    var active_count: i32 = 0;
+    for (projectiles.entries) |entry| {
+        if (!entry.active) continue;
+        active_count += 1;
+        try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, entry.type_id);
+    }
+    try std.testing.expectEqual(@as(i32, 16), active_count);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_fireblast_count);
+}
+
+test "pending fireblast does not convert into fire bullets while guard is active" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .fire_bullets_timer = 1.0,
+        },
+    };
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    state.pending_fireblast_origins[0] = players[0].pos;
+    state.pending_fireblast_count = 1;
+
+    applyPendingBonusEffects(
+        &state,
+        players[0..],
+        &projectiles,
+        &creatures,
+        &bonuses,
+        0.016,
+        1024.0,
+        1,
+    );
+
+    var plasma_count: i32 = 0;
+    var fire_bullets_count: i32 = 0;
+    for (projectiles.entries) |entry| {
+        if (!entry.active) continue;
+        if (entry.type_id == survival_state.ProjectileTypeId.plasma_rifle) plasma_count += 1;
+        if (entry.type_id == survival_state.ProjectileTypeId.fire_bullets) fire_bullets_count += 1;
+    }
+    try std.testing.expectEqual(@as(i32, 16), plasma_count);
+    try std.testing.expectEqual(@as(i32, 0), fire_bullets_count);
+}
+
 test "pending nuke damage is limited to radius" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{

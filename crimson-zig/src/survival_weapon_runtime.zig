@@ -857,6 +857,17 @@ fn activeProjectileCount(projectiles: *const survival_projectiles.ProjectilePool
     return count;
 }
 
+fn activeProjectileTypeCount(
+    projectiles: *const survival_projectiles.ProjectilePool,
+    type_id: i32,
+) usize {
+    var count: usize = 0;
+    for (projectiles.entries) |entry| {
+        if (entry.active and entry.type_id == type_id) count += 1;
+    }
+    return count;
+}
+
 fn findSeedForNthRandValue(
     draw_index: usize,
     target: u32,
@@ -1094,6 +1105,50 @@ test "angry reloader does not trigger once reload is below half" {
 
     try expectFloatClose(0.85, player.reload_timer);
     try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
+}
+
+test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .man_bomb_timer = 3.9,
+    };
+    player.perk_counts[@intCast(perk_id_man_bomb)] = 1;
+    state.bonus_spawn_guard = true;
+
+    applyPlayerPerkTicks(&state, &player, &projectiles, 0.2);
+
+    try std.testing.expect(state.bonus_spawn_guard);
+    try std.testing.expectEqual(@as(usize, 8), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, survival_state.ProjectileTypeId.ion_minigun));
+    try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, survival_state.ProjectileTypeId.ion_rifle));
+    for (projectiles.entries[0..8]) |proj| {
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+    }
+}
+
+test "hot tempered spawns alternating plasma projectiles when charged" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .hot_tempered_timer = 1.95,
+    };
+    player.perk_counts[@intCast(perk_id_hot_tempered)] = 1;
+
+    applyPlayerPerkTicks(&state, &player, &projectiles, 0.1);
+
+    try std.testing.expectEqual(@as(usize, 8), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, survival_state.ProjectileTypeId.plasma_minigun));
+    try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, survival_state.ProjectileTypeId.plasma_rifle));
+    for (projectiles.entries[0..8]) |proj| {
+        try std.testing.expect(proj.active);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+    }
 }
 
 test "stationary reloader triples reload speed" {

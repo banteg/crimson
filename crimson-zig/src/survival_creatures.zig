@@ -2174,6 +2174,14 @@ pub const CreaturePool = struct {
         if (anyPlayerHasPerk(players, perk_id_doctor)) {
             damage_amount *= 1.2;
         }
+        if (anyPlayerHasPerk(players, perk_id_living_fortress)) {
+            for (players) |player| {
+                if (!(player.health > 0.0)) continue;
+                if (!(player.living_fortress_timer > 0.0)) continue;
+                const scale = asF32F64(player.living_fortress_timer * 0.05 + 1.0);
+                damage_amount = asF32F64(damage_amount * scale);
+            }
+        }
         return self.applyDamage(
             state,
             players,
@@ -3319,6 +3327,7 @@ const perk_id_plaguebearer: i32 = survival_perks.PerkId.plaguebearer;
 const perk_id_uranium_filled_bullets: i32 = survival_perks.PerkId.uranium_filled_bullets;
 const perk_id_doctor: i32 = survival_perks.PerkId.doctor;
 const perk_id_barrel_greaser: i32 = survival_perks.PerkId.barrel_greaser;
+const perk_id_living_fortress: i32 = survival_perks.PerkId.living_fortress;
 const perk_id_ion_gun_master: i32 = survival_perks.PerkId.ion_gun_master;
 const perk_id_final_revenge: i32 = survival_perks.PerkId.final_revenge;
 const perk_id_unstoppable: i32 = survival_perks.PerkId.unstoppable;
@@ -5089,6 +5098,46 @@ test "doctor increases projectile damage by 20 percent" {
         10_000.0,
     );
     try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "living fortress scales projectile damage by alive player timers" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+    players[0].perk_counts[@intCast(perk_id_living_fortress)] = 1;
+    players[0].living_fortress_timer = 10.0;
+    players[1].living_fortress_timer = 20.0;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    _ = pool.applyProjectileDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        -100,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(70.0, pool.entries[0].hp);
 }
 
 test "barrel greaser increases projectile damage by 40 percent" {

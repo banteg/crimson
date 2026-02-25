@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const quest_spawn_tables = @import("quest_spawn_tables.zig");
+const survival_creatures = @import("survival_creatures.zig");
 const survival_math = @import("survival_math.zig");
 const survival_spawn = @import("survival_spawn.zig");
 
@@ -600,5 +601,68 @@ test "quest spawn build supports all preset and dynamic levels across player cou
                 try std.testing.expectEqual(startWeaponForLevel(level_key), result.start_weapon_id);
             }
         }
+    }
+}
+
+test "quest spawn ids from all quest tables resolve to supported templates" {
+    var storage = [_]survival_spawn.QuestSpawnEntry{undefined} ** 4096;
+    var seen = std.StaticBitSet(256).initEmpty();
+
+    for (quest_spawn_tables.presets) |preset| {
+        const result = try buildQuestSpawnTable(
+            preset.level_key,
+            preset.player_count,
+            0x1234,
+            1024.0,
+            storage[0..],
+        );
+        for (result.entries) |entry| {
+            try std.testing.expect(entry.spawn_id >= 0);
+            try std.testing.expect(entry.spawn_id < 256);
+            seen.set(@intCast(entry.spawn_id));
+        }
+    }
+
+    const dynamic_levels = [_]i32{
+        dynamic_level_target_practice,
+        dynamic_level_random_factor,
+        dynamic_level_sweep_stakes,
+        dynamic_level_the_killing,
+        dynamic_level_deja_vu,
+    };
+    const seeds = [_]u32{ 205, 999 };
+    for (dynamic_levels) |level_key| {
+        var player_count: i32 = 1;
+        while (player_count <= 4) : (player_count += 1) {
+            for (seeds) |seed| {
+                const result = try buildQuestSpawnTable(
+                    level_key,
+                    player_count,
+                    seed,
+                    1024.0,
+                    storage[0..],
+                );
+                for (result.entries) |entry| {
+                    try std.testing.expect(entry.spawn_id >= 0);
+                    try std.testing.expect(entry.spawn_id < 256);
+                    seen.set(@intCast(entry.spawn_id));
+                }
+            }
+        }
+    }
+
+    var template_id: usize = 0;
+    while (template_id < 256) : (template_id += 1) {
+        if (!seen.isSet(template_id)) continue;
+        var pool = survival_creatures.CreaturePool{};
+        var rng = survival_spawn.Crand.init(@intCast(0xBEEF + template_id));
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = @intCast(template_id),
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &rng,
+        );
     }
 }
