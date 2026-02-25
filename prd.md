@@ -23,6 +23,7 @@ I’m going to define a debugger that:
 - [x] Chunk 6: PRD parity remediation (`rng_stream_head` in record output, full profile `micro_traces` + richer `event_heads`, viz tick stepping controls, regression tests)
 - [x] Chunk 7: AGENTS guideline cleanup (remove redundant casts/coercions in typed debugger internals; keep validation at boundaries)
 - [x] Chunk 8: Forward-compat schema decode (allow unknown CDT fields in core dbg structs + regression tests)
+- [x] Chunk 9: Shared debugger channel helpers (dedupe `as_object_dict`/`as_object_list`/RNG key extraction across diff/focus/query/viz)
 
 ## 1) Background
 

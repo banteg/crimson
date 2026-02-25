@@ -7,6 +7,7 @@ import msgspec
 
 from ..original.diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from ..replay.checkpoints import ReplayCheckpoint
+from .channel_helpers import as_object_dict, channel_dict, channel_list, rng_row_key
 from .checkpoint_codec import channel_to_checkpoint
 from .policy import ParityPolicy
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
@@ -60,48 +61,9 @@ def _extract_checkpoint(row: TickRecord | None) -> ReplayCheckpoint | None:
     return channel_to_checkpoint(payload)
 
 
-def _channel_list(row: TickRecord | None, channel_name: str) -> list[object]:
-    if row is None:
-        return []
-    value = row.channels.get(channel_name)
-    if isinstance(value, list):
-        return list(value)
-    return []
-
-
-def _as_object_dict(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
-        return None
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if isinstance(key, str):
-            out[key] = item
-    return out
-
-
-def _channel_dict(row: TickRecord | None, channel_name: str) -> dict[str, object]:
-    if row is None:
-        return {}
-    value = row.channels.get(channel_name)
-    mapped = _as_object_dict(value)
-    if mapped is not None:
-        return mapped
-    return {}
-
-
-def _rng_row_key(row: object) -> tuple[object, object, object]:
-    mapped = _as_object_dict(row)
-    if mapped is None:
-        return (None, None, None)
-    value_15 = mapped.get("value_15")
-    if value_15 is None:
-        value_15 = mapped.get("value")
-    return (value_15, mapped.get("caller_static"), mapped.get("branch_id"))
-
-
 def _compare_rng_stream(expected: list[object], actual: list[object]) -> tuple[bool, dict[str, object] | None]:
-    exp_keys = [_rng_row_key(row) for row in expected]
-    act_keys = [_rng_row_key(row) for row in actual]
+    exp_keys = [rng_row_key(row) for row in expected]
+    act_keys = [rng_row_key(row) for row in actual]
     max_prefix = min(len(exp_keys), len(act_keys))
     prefix = 0
     while prefix < max_prefix and exp_keys[prefix] == act_keys[prefix]:
@@ -139,14 +101,14 @@ def _compare_entity_samples(expected: dict[str, object], actual: dict[str, objec
         exp_uids: list[int] = []
         act_uids: list[int] = []
         for row in exp_list:
-            mapped = _as_object_dict(row)
+            mapped = as_object_dict(row)
             if mapped is None:
                 continue
             uid = mapped.get("uid")
             if isinstance(uid, int) and not isinstance(uid, bool):
                 exp_uids.append(uid)
         for row in act_list:
-            mapped = _as_object_dict(row)
+            mapped = as_object_dict(row)
             if mapped is None:
                 continue
             uid = mapped.get("uid")
@@ -258,8 +220,8 @@ def _first_mismatch(
                 ),
             )
 
-        exp_rng_head = _channel_list(pair.expected_row, "rng_stream_head")
-        act_rng_head = _channel_list(pair.actual_row, "rng_stream_head")
+        exp_rng_head = channel_list(pair.expected_row, "rng_stream_head")
+        act_rng_head = channel_list(pair.actual_row, "rng_stream_head")
         rng_ok, rng_detail = _compare_rng_stream(exp_rng_head, act_rng_head)
         if not rng_ok:
             return (
@@ -271,8 +233,8 @@ def _first_mismatch(
                 ),
             )
 
-        exp_entities = _channel_dict(pair.expected_row, "entity_samples")
-        act_entities = _channel_dict(pair.actual_row, "entity_samples")
+        exp_entities = channel_dict(pair.expected_row, "entity_samples")
+        act_entities = channel_dict(pair.actual_row, "entity_samples")
         entities_ok, entities_detail = _compare_entity_samples(exp_entities, act_entities)
         if not entities_ok:
             return (
@@ -284,8 +246,8 @@ def _first_mismatch(
                 ),
             )
 
-        exp_events = _channel_list(pair.expected_row, "event_heads")
-        act_events = _channel_list(pair.actual_row, "event_heads")
+        exp_events = channel_list(pair.expected_row, "event_heads")
+        act_events = channel_list(pair.actual_row, "event_heads")
         if len(exp_events) != len(act_events):
             return (
                 checked_count,
@@ -299,8 +261,8 @@ def _first_mismatch(
                 ),
             )
 
-        exp_micro = _channel_list(pair.expected_row, "micro_traces")
-        act_micro = _channel_list(pair.actual_row, "micro_traces")
+        exp_micro = channel_list(pair.expected_row, "micro_traces")
+        act_micro = channel_list(pair.actual_row, "micro_traces")
         if len(exp_micro) != len(act_micro):
             return (
                 checked_count,

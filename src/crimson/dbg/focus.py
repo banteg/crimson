@@ -3,41 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 
 from ..original.diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
+from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list, rng_row_key
 from .checkpoint_codec import channel_to_checkpoint
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
 
-_ENTITY_KINDS = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
-
-
-def _as_object_dict(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
-        return None
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if isinstance(key, str):
-            out[key] = item
-    return out
-
-
-def _as_object_list(value: object) -> list[object]:
-    return list(value) if isinstance(value, list) else []
-
-
-def _rng_row_key(row: object) -> tuple[object, object, object]:
-    mapped = _as_object_dict(row)
-    if mapped is None:
-        return (None, None, None)
-    value_15 = mapped.get("value_15")
-    if value_15 is None:
-        value_15 = mapped.get("value")
-    return (value_15, mapped.get("caller_static"), mapped.get("branch_id"))
-
 
 def _rng_stream_alignment(expected_rows: list[object], candidate_rows: list[object]) -> dict[str, object]:
-    exp_keys = [_rng_row_key(row) for row in expected_rows]
-    cand_keys = [_rng_row_key(row) for row in candidate_rows]
+    exp_keys = [rng_row_key(row) for row in expected_rows]
+    cand_keys = [rng_row_key(row) for row in candidate_rows]
     max_prefix = min(len(exp_keys), len(cand_keys))
     prefix = 0
     while prefix < max_prefix and exp_keys[prefix] == cand_keys[prefix]:
@@ -60,13 +35,13 @@ def _rng_stream_alignment(expected_rows: list[object], candidate_rows: list[obje
 def _entity_uid_set(row: TickRecord | None, kind: str) -> set[int]:
     if row is None:
         return set()
-    entity_samples = _as_object_dict(row.channels.get("entity_samples"))
+    entity_samples = as_object_dict(row.channels.get("entity_samples"))
     if entity_samples is None:
         return set()
-    rows = _as_object_list(entity_samples.get(kind))
+    rows = as_object_list(entity_samples.get(kind))
     out: set[int] = set()
     for item in rows:
-        mapped = _as_object_dict(item)
+        mapped = as_object_dict(item)
         if mapped is None:
             continue
         uid_value = mapped.get("uid")
@@ -79,8 +54,8 @@ def _event_type_counts(row: TickRecord | None) -> dict[str, int]:
     if row is None:
         return {}
     out: dict[str, int] = {}
-    for item in _as_object_list(row.channels.get("event_heads")):
-        mapped = _as_object_dict(item)
+    for item in as_object_list(row.channels.get("event_heads")):
+        mapped = as_object_dict(item)
         if mapped is None:
             key = str(type(item).__name__)
         else:
@@ -132,13 +107,13 @@ def focus_tick(
         first_rng_mark = next((mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng), mismatching_rng[0])
 
     rng_stream = _rng_stream_alignment(
-        _as_object_list(expected_row.channels.get("rng_stream_head")),
-        _as_object_list(candidate_row.channels.get("rng_stream_head")),
+        as_object_list(expected_row.channels.get("rng_stream_head")),
+        as_object_list(candidate_row.channels.get("rng_stream_head")),
     )
 
     entity_presence: dict[str, object] = {}
     entity_diverged = False
-    for kind in _ENTITY_KINDS:
+    for kind in ENTITY_SAMPLE_KINDS:
         expected_uids = _entity_uid_set(expected_row, kind)
         candidate_uids = _entity_uid_set(candidate_row, kind)
         missing = sorted(expected_uids - candidate_uids)
@@ -155,8 +130,8 @@ def focus_tick(
 
     expected_event_types = _event_type_counts(expected_row)
     candidate_event_types = _event_type_counts(candidate_row)
-    expected_micro_count = len(_as_object_list(expected_row.channels.get("micro_traces")))
-    candidate_micro_count = len(_as_object_list(candidate_row.channels.get("micro_traces")))
+    expected_micro_count = len(as_object_list(expected_row.channels.get("micro_traces")))
+    candidate_micro_count = len(as_object_list(candidate_row.channels.get("micro_traces")))
 
     diverged = bool(
         checkpoint_fields

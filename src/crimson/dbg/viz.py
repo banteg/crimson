@@ -3,41 +3,26 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
 from .diff import diff_traces
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
 
-_ENTITY_KINDS = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
-
-
-def _as_object_dict(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
-        return None
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if isinstance(key, str):
-            out[key] = item
-    return out
-
-
-def _as_object_list(value: object) -> list[object]:
-    return list(value) if isinstance(value, list) else []
-
 
 def _entity_counts(row: TickRecord | None) -> dict[str, int]:
     if row is None:
-        return {kind: 0 for kind in _ENTITY_KINDS}
-    entity_samples = _as_object_dict(row.channels.get("entity_samples"))
+        return {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
+    entity_samples = as_object_dict(row.channels.get("entity_samples"))
     if entity_samples is None:
-        return {kind: 0 for kind in _ENTITY_KINDS}
-    return {kind: len(_as_object_list(entity_samples.get(kind))) for kind in _ENTITY_KINDS}
+        return {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
+    return {kind: len(as_object_list(entity_samples.get(kind))) for kind in ENTITY_SAMPLE_KINDS}
 
 
 def _checkpoint_value(row: TickRecord | None, key: str) -> object:
     if row is None:
         return None
-    checkpoint = _as_object_dict(row.channels.get("checkpoint"))
+    checkpoint = as_object_dict(row.channels.get("checkpoint"))
     if checkpoint is None:
         return None
     return checkpoint.get(key)
@@ -134,10 +119,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
     body_rows: list[str] = []
     focus_tick = payload.get("focus_tick")
     for item in rows:
-        row = _as_object_dict(item) or {}
+        row = as_object_dict(item) or {}
         tick = row.get("tick_index")
-        expected_entities = _as_object_dict(row.get("expected_entities")) or {}
-        candidate_entities = _as_object_dict(row.get("candidate_entities")) or {}
+        expected_entities = as_object_dict(row.get("expected_entities")) or {}
+        candidate_entities = as_object_dict(row.get("candidate_entities")) or {}
         classes: list[str] = []
         if bool(row.get("diverged")):
             classes.append("diverged")

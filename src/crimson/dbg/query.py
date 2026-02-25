@@ -5,12 +5,12 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
 from .schema import TickRecord
 from .trace import TraceReader
 
 _QUERY_RE = re.compile(r"^\s*(ticks|entities)\s+where\s+(.+?)\s*$")
 _COND_RE = re.compile(r"^\s*(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+?)\s*$")
-_ENTITY_KINDS = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,20 +24,6 @@ class _Predicate:
     left: _Operand
     op: str
     right: _Operand
-
-
-def _as_object_dict(value: object) -> dict[str, object] | None:
-    if not isinstance(value, dict):
-        return None
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if isinstance(key, str):
-            out[key] = item
-    return out
-
-
-def _as_object_list(value: object) -> list[object]:
-    return list(value) if isinstance(value, list) else []
 
 
 def _parse_literal(token: str) -> object:
@@ -86,7 +72,7 @@ def _parse_expression(expression: str) -> tuple[str, _Predicate]:
 def _resolve_path(root: dict[str, object], path: str) -> object:
     current: object = root
     for part in path.split("."):
-        mapped = _as_object_dict(current)
+        mapped = as_object_dict(current)
         if mapped is None:
             return None
         current = mapped.get(part)
@@ -162,14 +148,14 @@ def _compare_values(left: object, op: str, right: object) -> bool:
 
 
 def _entity_rows(row: TickRecord) -> list[dict[str, object]]:
-    entity_samples = _as_object_dict(row.channels.get("entity_samples"))
+    entity_samples = as_object_dict(row.channels.get("entity_samples"))
     if entity_samples is None:
         return []
     out: list[dict[str, object]] = []
-    for kind in _ENTITY_KINDS:
-        rows = _as_object_list(entity_samples.get(kind))
+    for kind in ENTITY_SAMPLE_KINDS:
+        rows = as_object_list(entity_samples.get(kind))
         for item in rows:
-            mapped = _as_object_dict(item)
+            mapped = as_object_dict(item)
             if mapped is None:
                 continue
             payload = dict(mapped)
@@ -180,7 +166,7 @@ def _entity_rows(row: TickRecord) -> list[dict[str, object]]:
 
 
 def _event_type_counts(row: TickRecord) -> dict[str, int]:
-    counts_channel = _as_object_dict(row.channels.get("event_counts"))
+    counts_channel = as_object_dict(row.channels.get("event_counts"))
     if counts_channel is not None:
         out: dict[str, int] = {}
         for key, value in counts_channel.items():
@@ -195,8 +181,8 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
         return out
 
     out: dict[str, int] = {}
-    for head in _as_object_list(row.channels.get("event_heads")):
-        mapped = _as_object_dict(head)
+    for head in as_object_list(row.channels.get("event_heads")):
+        mapped = as_object_dict(head)
         if mapped is None:
             name = str(type(head).__name__)
         else:
@@ -207,13 +193,13 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
 
 
 def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
-    checkpoint = _as_object_dict(row.channels.get("checkpoint")) or {}
-    rng_marks = _as_object_dict(row.channels.get("rng_marks")) or {}
-    entity_samples = _as_object_dict(row.channels.get("entity_samples")) or {}
+    checkpoint = as_object_dict(row.channels.get("checkpoint")) or {}
+    rng_marks = as_object_dict(row.channels.get("rng_marks")) or {}
+    entity_samples = as_object_dict(row.channels.get("entity_samples")) or {}
 
     entity_counts: dict[str, int] = {}
-    for kind in _ENTITY_KINDS:
-        entity_counts[kind] = len(_as_object_list(entity_samples.get(kind)))
+    for kind in ENTITY_SAMPLE_KINDS:
+        entity_counts[kind] = len(as_object_list(entity_samples.get(kind)))
 
     event_counts = _event_type_counts(row)
     event_count_total = sum(event_counts.values())
