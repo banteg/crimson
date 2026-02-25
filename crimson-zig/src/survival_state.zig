@@ -160,6 +160,7 @@ pub const PlayerState = struct {
     alt_reload_timer: f64 = 0.0,
     alt_reload_timer_max: f64 = 0.0,
     alt_shot_cooldown: f64 = 0.0,
+    reload_stationary_latch: bool = true,
 
     experience: i32 = 0,
     level: i32 = 1,
@@ -431,6 +432,34 @@ pub fn weaponAssignPlayerWithState(
 ) void {
     incrementWeaponUsage(state, weapon_id);
     weaponAssignPlayer(player, weapon_id);
+}
+
+pub fn playerSwapAltWeapon(player: *PlayerState) bool {
+    const alt_weapon_id = player.alt_weapon_id orelse return false;
+    const old_weapon_id = player.weapon_id;
+    const old_clip_size = player.clip_size;
+    const old_reload_active = player.reload_active;
+    const old_ammo = player.ammo;
+    const old_reload_timer = player.reload_timer;
+    const old_shot_cooldown = player.shot_cooldown;
+    const old_reload_timer_max = player.reload_timer_max;
+
+    player.weapon_id = alt_weapon_id;
+    player.clip_size = player.alt_clip_size;
+    player.reload_active = player.alt_reload_active;
+    player.ammo = player.alt_ammo;
+    player.reload_timer = player.alt_reload_timer;
+    player.shot_cooldown = player.alt_shot_cooldown;
+    player.reload_timer_max = player.alt_reload_timer_max;
+
+    player.alt_weapon_id = old_weapon_id;
+    player.alt_clip_size = old_clip_size;
+    player.alt_reload_active = old_reload_active;
+    player.alt_ammo = old_ammo;
+    player.alt_reload_timer = old_reload_timer;
+    player.alt_shot_cooldown = old_shot_cooldown;
+    player.alt_reload_timer_max = old_reload_timer_max;
+    return true;
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {

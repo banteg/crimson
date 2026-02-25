@@ -466,6 +466,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         }
 
         const tick_inputs = replay.inputs[tick_index];
+        var reload_active_any = false;
         for (tick_inputs[0..players.len]) |input| {
             const flags = replay_codec.unpackInputFlags(input.flags);
             if (flags.fire_down) {
@@ -473,6 +474,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             }
             if (flags.fire_pressed) fire_pressed_count += 1;
             if (flags.reload_pressed) reload_pressed_count += 1;
+            if (flags.reload_pressed) reload_active_any = true;
         }
 
         const dt_sim = survival_state.timeScaleReflexBoostBonus(
@@ -576,6 +578,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     .fire_down = flags.fire_down,
                     .fire_pressed = flags.fire_pressed,
                     .reload_pressed = flags.reload_pressed,
+                    .reload_active_any = reload_active_any,
                     .move_mode = move_mode_for_tick,
                 },
                 dt_sim,
@@ -1988,6 +1991,7 @@ fn updatePlayerFromReplayInput(
 
     const move_delta = survival_state.Vec2.sub(player.pos, prev_pos);
     const reload_stationary = @abs(move_delta.x) <= 1e-9 and @abs(move_delta.y) <= 1e-9;
+    player.reload_stationary_latch = reload_stationary;
     if (!reload_stationary) {
         // Native clears these post-perk-tick timers after movement when position changed.
         player.man_bomb_timer = 0.0;
@@ -2773,6 +2777,41 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             try std.testing.expect(result.wave_spawn_count > 0);
         }
     }
+}
+
+test "alternate weapon slows movement by 20 percent" {
+    var state = survival_state.GameplayState.init(1);
+    const move_heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading();
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .move_speed = 2.0,
+        .heading = move_heading,
+    };
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .move_speed = 2.0,
+        .heading = move_heading,
+    };
+    perk_player.perk_counts[@intCast(survival_perks.PerkId.alternate_weapon)] = 1;
+
+    const input = replay_codec.ReplayPlayerInput{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 0.0,
+        .aim_y = 0.0,
+        .flags = 0,
+    };
+    const flags = replay_codec.unpackInputFlags(0);
+
+    updatePlayerFromReplayInput(&base_player, input, flags, &state, 1.0);
+    finalizePlayerPostUpdate(&base_player, 1024.0);
+    updatePlayerFromReplayInput(&perk_player, input, flags, &state, 1.0);
+    finalizePlayerPostUpdate(&perk_player, 1024.0);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), base_player.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 80.0), perk_player.pos.x, 1e-6);
 }
 
 test "pending nuke damage is limited to radius" {

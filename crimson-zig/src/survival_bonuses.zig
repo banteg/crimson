@@ -840,6 +840,31 @@ test "bonus economist extends double experience timer" {
     try std.testing.expectApproxEqAbs(@as(f64, 9.0), perk_state.bonuses.double_experience, 1e-6);
 }
 
+test "alternate weapon stashes previous weapon on first pickup" {
+    var state = survival_state.GameplayState.init(1);
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    var players = [_]survival_state.PlayerState{player};
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    player.perk_counts[@intCast(survival_perks.PerkId.alternate_weapon)] = 1;
+
+    try applyBonus(
+        &state,
+        &player,
+        players[0..],
+        survival_state.BonusId.weapon,
+        survival_state.WeaponId.assault_rifle,
+        null,
+    );
+
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, player.weapon_id);
+    try std.testing.expect(player.alt_weapon_id != null);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.alt_weapon_id.?);
+    try std.testing.expectEqual(@as(i32, 10), player.alt_clip_size);
+}
+
 test "bonus magnet allows spawn on secondary roll" {
     var base_state = survival_state.GameplayState.init(7);
     base_state.game_mode = game_mode_survival;

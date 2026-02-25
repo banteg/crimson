@@ -16,10 +16,12 @@ const perk_id_fastshot: i32 = 14;
 const perk_id_regression_bullets: i32 = 23;
 const perk_id_ammunition_within: i32 = 35;
 const perk_id_alternate_weapon: i32 = 9;
+const perk_id_anxious_loader: i32 = 18;
 const perk_id_hot_tempered: i32 = 31;
 const perk_id_man_bomb: i32 = 53;
 const perk_id_fire_caugh: i32 = 54;
 const perk_id_living_fortress: i32 = 55;
+const perk_id_stationary_reloader: i32 = 52;
 const reload_preload_underflow_eps: f64 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
@@ -27,6 +29,7 @@ pub const TickInputFlags = struct {
     fire_down: bool = false,
     fire_pressed: bool = false,
     reload_pressed: bool = false,
+    reload_active_any: bool = false,
     move_mode: i32 = 0,
 };
 
@@ -68,8 +71,23 @@ pub fn stepPlayerForTick(
         player.shot_cooldown = 0.0;
     }
 
+    const reload_scale: f64 = if (player.reload_stationary_latch and perkActive(player.*, perk_id_stationary_reloader))
+        3.0
+    else
+        1.0;
+    if (perkActive(player.*, perk_id_anxious_loader) and input_flags.fire_pressed and player.reload_timer > 0.0) {
+        const anxious_next = asF32F64(player.reload_timer - 0.05);
+        player.reload_timer = anxious_next;
+        if (anxious_next <= 0.0) {
+            player.reload_timer = asF32F64(dt * 0.8);
+        }
+    }
+
     const reload_timer_now = asF32F64(player.reload_timer);
-    const preload_dt = dt_f32;
+    var preload_dt = dt_f32;
+    if (!state.preserve_bugs) {
+        preload_dt = asF32F64(reload_scale * dt_f32);
+    }
     const reload_preload_underflow = asF32F64(reload_timer_now - preload_dt);
     const preload_crossed = reload_preload_underflow < -reload_preload_underflow_eps;
     const preload_fire_boundary = input_flags.fire_down and reload_preload_underflow <= reload_preload_underflow_eps;
@@ -78,16 +96,17 @@ pub fn stepPlayerForTick(
     }
 
     if (player.reload_timer > 0.0) {
-        player.reload_timer = asF32F64(player.reload_timer - dt_f32);
+        player.reload_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
         if (player.reload_timer < 0.0) {
             player.reload_timer = 0.0;
         }
     }
 
+    const has_alt_weapon_perk = perkActive(player.*, perk_id_alternate_weapon);
     const manual_reload_allowed =
         input_flags.reload_pressed and
         !state.demo_mode_active and
-        !perkActive(player.*, perk_id_alternate_weapon) and
+        !has_alt_weapon_perk and
         input_flags.move_mode != movement_control_mouse_point_click and
         player.reload_timer == 0.0;
     if (manual_reload_allowed) {
@@ -104,14 +123,49 @@ pub fn stepPlayerForTick(
         player.reload_active = false;
     }
 
+    const fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0;
+    var swapped_alt_weapon = false;
+    const reload_key_active = input_flags.reload_pressed;
+    const reload_key_released = !input_flags.reload_active_any;
+    if (has_alt_weapon_perk) {
+        var cooldown_ms = state.player_alt_weapon_swap_cooldown_ms;
+        const dt_ms: i32 = if (dt > 0.0) @intFromFloat(@round(dt * 1000.0)) else 0;
+        if (cooldown_ms < 1) {
+            cooldown_ms = 0;
+        } else {
+            cooldown_ms -= dt_ms;
+        }
+
+        if (cooldown_ms < 1 and reload_key_active) {
+            if (survival_state.playerSwapAltWeapon(player)) {
+                swapped_alt_weapon = true;
+                player.shot_cooldown = asF32F64(player.shot_cooldown + 0.1);
+                state.player_alt_weapon_swap_cooldown_ms = 200;
+            } else {
+                state.player_alt_weapon_swap_cooldown_ms = 0;
+            }
+        } else {
+            state.player_alt_weapon_swap_cooldown_ms = @max(0, cooldown_ms);
+            if (reload_key_released) {
+                state.player_alt_weapon_swap_cooldown_ms = 0;
+            }
+        }
+    }
+
+    const force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_flags.fire_down;
+    if (force_pre_swap_fire_gate) {
+        player.shot_cooldown = 0.0;
+    }
+
     if (input_flags.fire_down) {
-        _ = try tryFireWeapon(
+        _ = try tryFireWeaponWithForce(
             state,
             player,
             projectiles,
             secondary_projectiles,
             creatures,
             particles,
+            force_pre_swap_fire_gate,
         );
     }
 }
@@ -124,9 +178,29 @@ pub fn tryFireWeapon(
     creatures: *survival_creatures.CreaturePool,
     particles: *survival_particles.ParticlePool,
 ) WeaponRuntimeError!bool {
-    if (player.shot_cooldown > 0.0) return false;
+    return tryFireWeaponWithForce(
+        state,
+        player,
+        projectiles,
+        secondary_projectiles,
+        creatures,
+        particles,
+        false,
+    );
+}
+
+fn tryFireWeaponWithForce(
+    state: *survival_state.GameplayState,
+    player: *survival_state.PlayerState,
+    projectiles: *survival_projectiles.ProjectilePool,
+    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
+    creatures: *survival_creatures.CreaturePool,
+    particles: *survival_particles.ParticlePool,
+    force_pre_swap_fire_gate: bool,
+) WeaponRuntimeError!bool {
+    if (player.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
     const weapon_id = player.weapon_id;
-    if (player.reload_timer > 0.0) {
+    if (player.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
         if (player.experience <= 0) return false;
 
         if (perkActive(player.*, perk_id_regression_bullets)) {
@@ -442,7 +516,7 @@ pub fn tryFireWeapon(
         );
     }
 
-    if (player.ammo <= 0.0 and player.reload_timer <= 0.0) {
+    if (player.ammo <= 0.0 and (force_pre_swap_fire_gate or player.reload_timer <= 0.0)) {
         survival_state.playerStartReload(player, state);
     }
 
@@ -844,6 +918,387 @@ test "manual reload starts even when clip is full" {
 
     try std.testing.expect(player.reload_active);
     try std.testing.expect(player.reload_timer > 0.0);
+}
+
+test "anxious loader reduces reload timer on fire press" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 1.0,
+        .reload_timer_max = 1.0,
+    };
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 1.0,
+        .reload_timer_max = 1.0,
+    };
+    perk_player.perk_counts[@intCast(perk_id_anxious_loader)] = 1;
+
+    try stepPlayerForTick(
+        &state,
+        &base_player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .fire_pressed = true },
+        0.1,
+    );
+    try stepPlayerForTick(
+        &state,
+        &perk_player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .fire_pressed = true },
+        0.1,
+    );
+
+    try expectFloatClose(0.9, base_player.reload_timer);
+    try expectFloatClose(0.85, perk_player.reload_timer);
+}
+
+test "stationary reloader triples reload speed" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+
+    var base_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 1.0,
+        .reload_timer_max = 1.0,
+    };
+    var perk_player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .weapon_id = survival_state.WeaponId.pistol,
+        .reload_active = true,
+        .reload_timer = 1.0,
+        .reload_timer_max = 1.0,
+    };
+    perk_player.perk_counts[@intCast(perk_id_stationary_reloader)] = 1;
+
+    try stepPlayerForTick(
+        &state,
+        &base_player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.1,
+    );
+    try stepPlayerForTick(
+        &state,
+        &perk_player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.1,
+    );
+
+    try expectFloatClose(0.9, base_player.reload_timer);
+    try expectFloatClose(0.7, perk_player.reload_timer);
+}
+
+test "alternate weapon reload press swaps and adds cooldown" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .aim = .{ .x = 700.0, .y = 512.0 },
+    };
+    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.assault_rifle);
+    player.alt_weapon_id = survival_state.WeaponId.pistol;
+    player.alt_clip_size = 10;
+    player.alt_ammo = 10.0;
+    player.alt_reload_active = false;
+    player.alt_reload_timer = 0.0;
+    player.alt_reload_timer_max = 0.0;
+    player.alt_shot_cooldown = 0.0;
+    player.shot_cooldown = 0.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.1,
+    );
+
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.weapon_id);
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, player.alt_weapon_id.?);
+    try expectFloatClose(0.1, player.shot_cooldown);
+    try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
+}
+
+test "alternate weapon held reload uses cooldown gate" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 100.0, .y = 0.0 },
+    };
+    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.assault_rifle);
+    player.alt_weapon_id = survival_state.WeaponId.pistol;
+    player.alt_clip_size = 10;
+    player.alt_ammo = 10.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.weapon_id);
+    try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
+
+    for (0..3) |_| {
+        try stepPlayerForTick(
+            &state,
+            &player,
+            &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
+            .{ .reload_pressed = true, .reload_active_any = true },
+            0.05,
+        );
+        try std.testing.expectEqual(survival_state.WeaponId.pistol, player.weapon_id);
+    }
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, player.weapon_id);
+    try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
+}
+
+test "alternate weapon release resets cooldown gate" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 100.0, .y = 0.0 },
+    };
+    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.assault_rifle);
+    player.alt_weapon_id = survival_state.WeaponId.pistol;
+    player.alt_clip_size = 10;
+    player.alt_ammo = 10.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.weapon_id);
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = false, .reload_active_any = false },
+        0.05,
+    );
+    try std.testing.expectEqual(@as(i32, 0), state.player_alt_weapon_swap_cooldown_ms);
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, player.weapon_id);
+}
+
+test "alternate weapon multiplayer hold is not cleared by other player" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player0 = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .aim = .{ .x = 100.0, .y = 0.0 },
+    };
+    var player1 = survival_state.PlayerState{
+        .index = 1,
+        .pos = .{},
+        .aim = .{ .x = 100.0, .y = 0.0 },
+    };
+    player0.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player1.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player0, survival_state.WeaponId.assault_rifle);
+    player0.alt_weapon_id = survival_state.WeaponId.pistol;
+    player0.alt_clip_size = 10;
+    player0.alt_ammo = 10.0;
+    survival_state.weaponAssignPlayer(&player1, survival_state.WeaponId.assault_rifle);
+    player1.alt_weapon_id = survival_state.WeaponId.pistol;
+    player1.alt_clip_size = 10;
+    player1.alt_ammo = 10.0;
+
+    try stepPlayerForTick(
+        &state,
+        &player0,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = true, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player0.weapon_id);
+    try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
+
+    try stepPlayerForTick(
+        &state,
+        &player1,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .reload_pressed = false, .reload_active_any = true },
+        0.05,
+    );
+    try std.testing.expect(state.player_alt_weapon_swap_cooldown_ms > 0);
+}
+
+test "alternate weapon swap preserves same-tick fire gate" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .aim = .{ .x = 700.0, .y = 512.0 },
+    };
+    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player, 11);
+    player.alt_weapon_id = survival_state.WeaponId.pistol;
+    player.alt_clip_size = 10;
+    player.alt_ammo = 10.0;
+    const starting_alt_ammo = player.alt_ammo;
+
+    player.shot_cooldown = 0.05;
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .fire_down = true, .reload_pressed = true, .reload_active_any = true },
+        0.06,
+    );
+
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.weapon_id);
+    try std.testing.expect(player.ammo < starting_alt_ammo);
+}
+
+test "alternate weapon swap allows same-tick fire with swapped reload timer" {
+    var state = survival_state.GameplayState.init(1);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    var particles = survival_particles.ParticlePool{};
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .aim = .{ .x = 700.0, .y = 512.0 },
+    };
+    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    survival_state.weaponAssignPlayer(&player, 29);
+    player.ammo = 2.0;
+    player.reload_active = false;
+    player.reload_timer = 0.0;
+    player.alt_weapon_id = 11;
+    player.alt_ammo = 0.0;
+    player.alt_clip_size = 30;
+    player.alt_reload_active = true;
+    player.alt_reload_timer = 0.85;
+    player.alt_reload_timer_max = 1.3;
+    player.alt_shot_cooldown = 0.0;
+
+    player.shot_cooldown = 0.05;
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{ .fire_down = true, .reload_pressed = true, .reload_active_any = true },
+        0.06,
+    );
+
+    try std.testing.expectEqual(@as(i32, 11), player.weapon_id);
+    try std.testing.expect(player.reload_timer > 0.0);
+    try expectFloatClose(player.reload_timer_max, player.reload_timer);
+    try std.testing.expect(player.ammo < 0.0);
+    try std.testing.expect(player.shot_seq >= 1);
 }
 
 test "multi plasma and mini rocket use special shot counts" {
