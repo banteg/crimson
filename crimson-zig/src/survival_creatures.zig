@@ -4562,3 +4562,181 @@ test "freeze stops creature movement" {
     try expectFloatClose(moved_x, pool.entries[0].pos.x);
     try expectFloatClose(moved_y, pool.entries[0].pos.y);
 }
+
+test "plaguebearer infects weak creatures near player" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .plaguebearer_active = true,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 120.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+
+    pool.update(&state, players[0..], 0.016, 1024.0, &bonuses);
+    try std.testing.expect(pool.entries[0].plague_infected);
+}
+
+test "plaguebearer infection timer wrap applies damage" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try expectFloatClose(0.4, pool.entries[0].collision_timer);
+    try expectFloatClose(85.0, pool.entries[0].hp);
+}
+
+test "plaguebearer spreads between nearby creatures" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_plaguebearer)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 130.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+    pool.entries[0].plague_infected = true;
+
+    pool.update(&state, players[0..], 0.016, 1024.0, &bonuses);
+    try std.testing.expect(pool.entries[1].plague_infected);
+}
+
+test "plaguebearer infection kill increments global count" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try std.testing.expectEqual(@as(i32, 1), state.plaguebearer_infection_count);
+    try std.testing.expect(players[0].experience > 0);
+}
+
+test "plaguebearer infection kill does not apply immediate dead decay" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 120.0, .y = 370.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 4.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.01;
+
+    const dt = 0.063;
+    pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+    try expectFloatClose(creature_lifecycle_stage_alive - dt, pool.entries[0].lifecycle_stage);
+}
