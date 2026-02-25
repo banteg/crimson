@@ -194,6 +194,18 @@ pub fn questSpawnTableEmpty(entries: []const QuestSpawnEntry) bool {
     return true;
 }
 
+pub fn applyHardcoreQuestSpawnTableAdjustment(entries: []QuestSpawnEntry) void {
+    for (entries) |*entry| {
+        if (entry.count <= 1) continue;
+        if (entry.spawn_id == 0x3C) continue;
+        if (entry.spawn_id == 0x2B) {
+            entry.count += 2;
+        } else {
+            entry.count += 8;
+        }
+    }
+}
+
 pub fn tickQuestSpawnTimeline(
     entries: []QuestSpawnEntry,
     quest_spawn_timeline_ms: f64,
@@ -1028,6 +1040,37 @@ test "tick quest mode spawns advances timeline when creatures active" {
     try std.testing.expect(!result.creatures_none_active);
     try expectFloatClose(0.0, result.no_creatures_timer_ms);
     try std.testing.expectEqual(@as(usize, 0), result.spawn_count);
+}
+
+test "hardcore quest spawn table adjustment parity" {
+    var entries = [_]QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.alien_const_red_fast_2b,
+            .trigger_ms = 0,
+            .count = 2,
+        },
+        .{
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .heading = 0.0,
+            .spawn_id = SpawnId.spider_sp1_const_ranged_variant_3c,
+            .trigger_ms = 0,
+            .count = 2,
+        },
+        .{
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .heading = 0.0,
+            .spawn_id = 0x26,
+            .trigger_ms = 0,
+            .count = 1,
+        },
+    };
+
+    applyHardcoreQuestSpawnTableAdjustment(entries[0..]);
+    try std.testing.expectEqual(@as(i32, 4), entries[0].count);
+    try std.testing.expectEqual(@as(i32, 2), entries[1].count);
+    try std.testing.expectEqual(@as(i32, 1), entries[2].count);
 }
 
 test "tick quest mode spawns advances timeline when table not empty" {

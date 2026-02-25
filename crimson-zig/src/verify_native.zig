@@ -151,16 +151,11 @@ fn runNativeVerify(
     defer tick_trace.deinit(allocator);
 
     const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
-    var replay_options = survival_sim.ReplayScaffoldOptions{};
-    if (header.game_mode_id == 3) {
-        replay_options.quest_start_weapon_id = resolveQuestStartWeapon(header);
-    }
-
     const scaffold = survival_sim.runSurvivalReplayScaffoldWithTrace(
         replay,
         trace_out,
         allocator,
-        replay_options,
+        .{},
     ) catch |err| {
         if (request.debug_trace_jsonl) |trace_path| {
             writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
@@ -831,10 +826,11 @@ fn buildNotPortedOutputForSurvivalSimError(
         error.UnsupportedPreserveBugs => "survival simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
-        error.UnsupportedEventPlayerIndex => "survival simulation scaffold only supports player_index=0 events",
+        error.UnsupportedEventPlayerIndex => "survival simulation scaffold encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
+        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
         error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
         error.UnsupportedBonusApplyPath => "replay triggered bonus apply path not yet ported in native bonus runtime",
     };
@@ -966,35 +962,6 @@ fn parseScoreMetric(raw: []const u8) ?verify_contract.ScoreMetric {
     return null;
 }
 
-fn resolveQuestStartWeapon(header: replay_codec.ReplayHeader) i32 {
-    const key = resolveQuestLevelKey(header) orelse return 1;
-    return switch (key) {
-        205 => 6,
-        207 => 5,
-        307 => 11,
-        309 => 6,
-        401 => 18,
-        else => 1,
-    };
-}
-
-fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
-    if (parseQuestLevelKey(header.quest_level)) |key| return key;
-    const seed_i32: i32 = @intCast(header.seed);
-    const major = @divTrunc(seed_i32, 100);
-    const minor = @mod(seed_i32, 100);
-    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
-    return major * 100 + minor;
-}
-
-fn parseQuestLevelKey(level: []const u8) ?i32 {
-    const dot = std.mem.indexOfScalar(u8, level, '.') orelse return null;
-    if (dot == 0 or dot + 1 >= level.len) return null;
-    const major = std.fmt.parseInt(i32, level[0..dot], 10) catch return null;
-    const minor = std.fmt.parseInt(i32, level[dot + 1 ..], 10) catch return null;
-    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
-    return major * 100 + minor;
-}
 
 fn resolveReplayPath(
     allocator: std.mem.Allocator,
@@ -1119,41 +1086,6 @@ test "parse native subset reports unsupported options" {
         .unsupported => |detail| try std.testing.expectEqualStrings("--trace-rng", detail),
         else => return error.TestExpectedUnsupportedOption,
     }
-}
-
-test "resolve quest start weapon from quest level and seed fallback" {
-    const allocator = std.testing.allocator;
-
-    var header = replay_codec.ReplayHeader{
-        .game_mode_id = 3,
-        .seed = 0,
-        .replay_format_version = replay_codec.replay_format_version,
-        .quest_level = try allocator.dupe(u8, "2.5"),
-        .bootstrap_kind = try allocator.dupe(u8, "none"),
-        .bootstrap_seed = 0,
-        .game_version = try allocator.dupe(u8, "0.7.0"),
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .fx_toggle = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{},
-        .input_quantization = try allocator.dupe(u8, "raw"),
-    };
-    defer header.deinit(allocator);
-
-    try std.testing.expectEqual(@as(i32, 6), resolveQuestStartWeapon(header));
-
-    allocator.free(header.quest_level);
-    header.quest_level = try allocator.dupe(u8, "");
-    header.seed = 307;
-    try std.testing.expectEqual(@as(i32, 11), resolveQuestStartWeapon(header));
-
-    header.seed = 999;
-    try std.testing.expectEqual(@as(i32, 1), resolveQuestStartWeapon(header));
 }
 
 test "build verify payload score mismatch" {

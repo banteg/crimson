@@ -8,6 +8,7 @@ const survival_particles = @import("survival_particles.zig");
 const survival_projectiles = @import("survival_projectiles.zig");
 const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
 const survival_spawn = @import("survival_spawn.zig");
+const quest_spawn_tables = @import("quest_spawn_tables.zig");
 const survival_state = @import("survival_state.zig");
 const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
 const survival_math = @import("survival_math.zig");
@@ -48,6 +49,7 @@ pub const SurvivalSimError = error{
     InvalidPerkPickEvent,
     UnsupportedPerkApplyHandler,
     UnsupportedSpawnTemplate,
+    UnsupportedQuestSpawnTable,
     UnsupportedWeaponFirePath,
     UnsupportedBonusApplyPath,
 };
@@ -403,16 +405,33 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     if (game_mode == game_mode_rush) {
         enforceRushLoadout(players[0..]);
     } else if (game_mode == game_mode_quests) {
-        const quest_start_weapon_id = options.quest_start_weapon_id orelse survival_state.WeaponId.pistol;
-        const weapon_id = @max(1, quest_start_weapon_id);
-        for (players) |*player| {
-            survival_state.weaponAssignPlayer(player, weapon_id);
-        }
+        var quest_start_weapon_id = options.quest_start_weapon_id orelse survival_state.WeaponId.pistol;
         applyQuestStageFromHeader(&state, header);
         if (options.quest_spawn_entries) |entries| {
             std.debug.assert(entries.len <= quest_spawn_entries_storage.len);
             @memcpy(quest_spawn_entries_storage[0..entries.len], entries);
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
+        } else {
+            const level_key = resolveQuestLevelKey(header) orelse return error.UnsupportedQuestSpawnTable;
+            if (header.seed != @as(u32, @intCast(level_key))) {
+                return error.UnsupportedQuestSpawnTable;
+            }
+            const preset = quest_spawn_tables.lookupPreset(level_key, header.player_count) orelse {
+                return error.UnsupportedQuestSpawnTable;
+            };
+            std.debug.assert(preset.entries.len <= quest_spawn_entries_storage.len);
+            @memcpy(quest_spawn_entries_storage[0..preset.entries.len], preset.entries);
+            quest_spawn_entries = quest_spawn_entries_storage[0..preset.entries.len];
+            if (header.hardcore) {
+                survival_spawn.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
+            }
+            if (options.quest_start_weapon_id == null) {
+                quest_start_weapon_id = preset.start_weapon_id;
+            }
+        }
+        const weapon_id = @max(1, quest_start_weapon_id);
+        for (players) |*player| {
+            survival_state.weaponAssignPlayer(player, weapon_id);
         }
     }
 
@@ -1487,25 +1506,13 @@ fn applyQuestStageFromHeader(
     state: *survival_state.GameplayState,
     header: replay_codec.ReplayHeader,
 ) void {
-    var major: i32 = 0;
-    var minor: i32 = 0;
-    if (header.quest_level.len > 0) {
-        if (parseQuestLevel(header.quest_level)) |parsed| {
-            major = parsed.major;
-            minor = parsed.minor;
-        }
+    if (resolveQuestLevelKey(header)) |level_key| {
+        state.quest_stage_major = @divTrunc(level_key, 100);
+        state.quest_stage_minor = @mod(level_key, 100);
+        return;
     }
-    if (major == 0 or minor == 0) {
-        const seed_i32: i32 = @intCast(header.seed);
-        const seed_major = @divTrunc(seed_i32, 100);
-        const seed_minor = @mod(seed_i32, 100);
-        if (seed_major >= 1 and seed_major <= 5 and seed_minor >= 1 and seed_minor <= 10) {
-            major = seed_major;
-            minor = seed_minor;
-        }
-    }
-    state.quest_stage_major = major;
-    state.quest_stage_minor = minor;
+    state.quest_stage_major = 0;
+    state.quest_stage_minor = 0;
 }
 
 const ParsedQuestLevel = struct {
@@ -1522,6 +1529,19 @@ fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
         .major = major,
         .minor = minor,
     };
+}
+
+fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
+    if (parseQuestLevel(header.quest_level)) |parsed| {
+        if (parsed.major >= 1 and parsed.major <= 5 and parsed.minor >= 1 and parsed.minor <= 10) {
+            return parsed.major * 100 + parsed.minor;
+        }
+    }
+    const seed_i32: i32 = @intCast(header.seed);
+    const major = @divTrunc(seed_i32, 100);
+    const minor = @mod(seed_i32, 100);
+    if (major < 1 or major > 5 or minor < 1 or minor > 10) return null;
+    return major * 100 + minor;
 }
 
 fn enforceRushLoadout(players: []survival_state.PlayerState) void {
@@ -2119,7 +2139,7 @@ fn asF32F64(value: f64) f64 {
 test "survival scaffold tracks event and input counters" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{
             replay_codec.fire_pressed_flag,
@@ -2153,7 +2173,7 @@ test "survival scaffold tracks event and input counters" {
 test "survival scaffold rejects unsupported event player index" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{replay_codec.fire_down_flag},
         .events = &.{
@@ -2214,7 +2234,7 @@ test "survival scaffold rejects multiplayer event player index out of bounds" {
 test "survival scaffold rejects invalid perk pick event in strict mode" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{replay_codec.fire_down_flag},
         .events = &.{
@@ -2232,7 +2252,7 @@ test "survival scaffold rejects invalid perk pick event in strict mode" {
 test "survival scaffold can skip invalid perk pick event in non-strict mode" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{replay_codec.fire_down_flag},
         .events = &.{
@@ -2252,7 +2272,7 @@ test "survival scaffold can skip invalid perk pick event in non-strict mode" {
 test "survival scaffold tracks weapon runtime counters" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{
             replay_codec.fire_down_flag,
@@ -2271,7 +2291,7 @@ test "survival scaffold tracks weapon runtime counters" {
 test "survival scaffold honors dt overrides for elapsed_ms" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
         .inputs = &.{0},
         .events = &.{},
@@ -2504,6 +2524,47 @@ test "quest scaffold supports multiplayer replays with explicit start weapon" {
     try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
 }
 
+test "quest scaffold resolves native quest preset and start weapon from replay header" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 205,
+        .tick_rate = 60,
+        .quest_level = "2.5",
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+        .dt_frame_overrides = &.{
+            .{ .tick_index = 0, .dt_frame = 3.0 },
+        },
+    });
+    try std.testing.expectEqual(@as(i32, 6), result.player_weapon_id);
+    try std.testing.expect(result.wave_spawn_count > 0);
+}
+
+test "quest scaffold rejects unknown quest seed variant when no spawn entries are provided" {
+    const allocator = std.testing.allocator;
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 999,
+        .tick_rate = 60,
+        .quest_level = "2.5",
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    try std.testing.expectError(
+        error.UnsupportedQuestSpawnTable,
+        runSurvivalReplayScaffold(replay),
+    );
+}
+
 test "pending nuke damage is limited to radius" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{
@@ -2607,6 +2668,7 @@ const TestReplayConfig = struct {
     game_mode_id: i32 = game_mode_survival,
     seed: u32 = 1,
     tick_rate: i32,
+    quest_level: []const u8 = "",
     inputs: []const u32,
     events: []const replay_codec.ReplayEvent,
 };
@@ -2616,6 +2678,7 @@ const TestReplayMultiConfig = struct {
     seed: u32 = 1,
     tick_rate: i32,
     player_count: i32,
+    quest_level: []const u8 = "",
     inputs: []const []const u32,
     events: []const replay_codec.ReplayEvent,
 };
@@ -2649,7 +2712,7 @@ fn buildTestReplay(
             .game_mode_id = cfg.game_mode_id,
             .seed = cfg.seed,
             .replay_format_version = replay_codec.replay_format_version,
-            .quest_level = try allocator.dupe(u8, ""),
+            .quest_level = try allocator.dupe(u8, cfg.quest_level),
             .bootstrap_kind = try allocator.dupe(u8, "none"),
             .bootstrap_seed = 1,
             .game_version = try allocator.dupe(u8, "0.7.0"),
@@ -2706,7 +2769,7 @@ fn buildTestReplayMulti(
             .game_mode_id = cfg.game_mode_id,
             .seed = cfg.seed,
             .replay_format_version = replay_codec.replay_format_version,
-            .quest_level = try allocator.dupe(u8, ""),
+            .quest_level = try allocator.dupe(u8, cfg.quest_level),
             .bootstrap_kind = try allocator.dupe(u8, "none"),
             .bootstrap_seed = 1,
             .game_version = try allocator.dupe(u8, "0.7.0"),
