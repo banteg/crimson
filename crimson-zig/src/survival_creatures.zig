@@ -1938,6 +1938,27 @@ pub const CreaturePool = struct {
                 creature.attack_cooldown -= dt;
             }
 
+            if (perkActive(player, perk_id_radioactive)) {
+                const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
+                if (dist < 100.0) {
+                    creature.collision_timer -= dt * 1.5;
+                    if (creature.collision_timer < 0.0) {
+                        creature.collision_timer = plague_collision_period;
+                        const pulse_damage = asF32F64(asF32F64(100.0 - dist) * 0.3);
+                        creature.hp = asF32F64(creature.hp - pulse_damage);
+                        consumeAddRandomRng(state);
+                        if (creature.hp < 0.0) {
+                            if (creature.type_id == @intFromEnum(survival_spawn.CreatureTypeId.lizard)) {
+                                creature.hp = 1.0;
+                            } else {
+                                awardBaseExperienceFromReward(player, creature.reward_value);
+                                creature.lifecycle_stage = asF32F64(creature.lifecycle_stage - dt);
+                            }
+                        }
+                    }
+                }
+            }
+
             const contact_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
             if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
                 creature.size > 16.0 and
@@ -1947,6 +1968,22 @@ pub const CreaturePool = struct {
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
+                if (perkActive(player, perk_id_mr_melee)) {
+                    _ = self.applyDamage(
+                        state,
+                        players,
+                        bonus_pool,
+                        idx,
+                        25.0,
+                        .{},
+                        -1 - player.index,
+                        dt,
+                        world_size,
+                    );
+                    if (!(creature.hp > 0.0) and creature.active) {
+                        tickDead(creature, dt, &self.kill_count, state);
+                    }
+                }
                 if (player.shield_timer <= 0.0) {
                     if (perkActive(player, perk_id_toxic_avenger)) {
                         creature.flags |= survival_spawn.CreatureFlags.self_damage_tick | survival_spawn.CreatureFlags.self_damage_tick_strong;
@@ -3114,6 +3151,17 @@ fn awardExperienceOnceFromReward(
     return after - before;
 }
 
+fn awardBaseExperienceFromReward(
+    player: *survival_state.PlayerState,
+    reward_value: f64,
+) void {
+    const reward_f32 = asF32F64(reward_value);
+    if (!(reward_f32 > 0.0)) return;
+    const before_f32: f64 = @floatFromInt(player.experience);
+    const total_f32 = asF32F64(asF32F64(before_f32) + reward_f32);
+    player.experience = @intFromFloat(total_f32);
+}
+
 fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
     return a.x * b.x + a.y * b.y;
 }
@@ -3138,6 +3186,8 @@ const perk_id_ninja: i32 = survival_perks.PerkId.ninja;
 const perk_id_dodger: i32 = survival_perks.PerkId.dodger;
 const perk_id_highlander: i32 = survival_perks.PerkId.highlander;
 const perk_id_death_clock: i32 = survival_perks.PerkId.death_clock;
+const perk_id_mr_melee: i32 = survival_perks.PerkId.mr_melee;
+const perk_id_radioactive: i32 = survival_perks.PerkId.radioactive;
 const perk_id_veins_of_poison: i32 = survival_perks.PerkId.veins_of_poison;
 const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
 const game_mode_rush: i32 = 2;
@@ -4530,6 +4580,218 @@ test "toxic avenger skips strong self-damage flag when shielded" {
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
     try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) == 0);
+}
+
+test "radioactive tick deals damage and wraps collision timer" {
+    const dt = 0.2;
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 46.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 0.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    const dist_after_move = survival_state.Vec2.sub(pool.entries[0].pos, players[0].pos).length();
+    const expected_damage = asF32F64(asF32F64(100.0 - dist_after_move) * 0.3);
+    try expectFloatClose(0.5, pool.entries[0].collision_timer);
+    try expectFloatClose(asF32F64(50.0 - expected_damage), pool.entries[0].hp);
+}
+
+test "radioactive kill awards base xp without death multipliers" {
+    const dt = 0.2;
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    state.bonuses.double_experience = 5.0;
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .experience = 100,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
+    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 46.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 5.0,
+        .max_health = 5.0,
+        .reward_value = 12.7,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 112), players[0].experience);
+    try std.testing.expect(pool.entries[0].hp < 0.0);
+    try expectFloatClose(creature_lifecycle_stage_alive - dt, pool.entries[0].lifecycle_stage);
+}
+
+test "radioactive sets hp to one for lizard type creatures" {
+    const dt = 0.2;
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .experience = 100,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 46.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .lizard,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 5.0,
+        .max_health = 5.0,
+        .reward_value = 12.7,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 100), players[0].experience);
+    try expectFloatClose(1.0, pool.entries[0].hp);
+    try expectFloatClose(creature_lifecycle_stage_alive, pool.entries[0].lifecycle_stage);
+    try expectFloatClose(0.5, pool.entries[0].collision_timer);
+}
+
+test "mr melee damages attacking creature on contact tick" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_mr_melee)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try expectFloatClose(75.0, pool.entries[0].hp);
+}
+
+test "mr melee does not prevent player damage when attacker dies" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_mr_melee)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try expectFloatClose(90.0, players[0].health);
+}
+
+test "mr melee is inert when perk is not active" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 10.0,
+    });
+    pool.entries[0].collision_timer = 0.1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try expectFloatClose(100.0, pool.entries[0].hp);
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {
