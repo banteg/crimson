@@ -416,6 +416,31 @@ const CaptureVec2Wire = struct {
     y: f64,
 };
 
+fn StringMapWire(comptime Value: type) type {
+    return struct {
+        map: std.StringArrayHashMapUnmanaged(Value) = .{},
+
+        pub fn msgpackRead(unpacker: anytype) !@This() {
+            var value: @This() = .{};
+            const len = try unpacker.readMapHeader(usize);
+            try value.map.ensureTotalCapacity(unpacker.allocator, len);
+            for (0..len) |_| {
+                const key = try unpacker.read([]const u8);
+                const entry_value = try unpacker.read(Value);
+                value.map.putAssumeCapacity(key, entry_value);
+            }
+            return value;
+        }
+
+        pub fn get(self: @This(), key: []const u8) ?Value {
+            return self.map.get(key);
+        }
+    };
+}
+
+const StringI64Map = StringMapWire(i64);
+const StringF64Map = StringMapWire(f64);
+
 const CaptureBootstrapPerkWire = struct {
     pending_count: i64 = 0,
     choices_dirty: bool = false,
@@ -454,8 +479,8 @@ const CaptureBootstrapPlayerWire = struct {
     spread_heat: ?f64 = null,
     aim: ?CaptureBootstrapPlayerAimWire = null,
     alt_weapon: ?CaptureBootstrapPlayerAltWeaponWire = null,
-    bonus_timers_ms: std.StringArrayHashMapUnmanaged(i64) = .{},
-    perk_timers: std.StringArrayHashMapUnmanaged(f64) = .{},
+    bonus_timers_ms: StringI64Map = .{},
+    perk_timers: StringF64Map = .{},
 };
 
 const CaptureBootstrapQuestSessionWire = struct {
@@ -497,10 +522,10 @@ const ReplayEventPayloadWire = struct {
     score_xp: ?i64 = null,
     perk_pending: ?i64 = null,
     perk: ?CaptureBootstrapPerkWire = null,
-    bonus_timers_ms: std.StringArrayHashMapUnmanaged(i64) = .{},
+    bonus_timers_ms: StringI64Map = .{},
     players: []const CaptureBootstrapPlayerWire = &.{},
     digital_move_enabled_by_player: []const bool = &.{},
-    perk_intervals: std.StringArrayHashMapUnmanaged(f64) = .{},
+    perk_intervals: StringF64Map = .{},
     quest_session: ?CaptureBootstrapQuestSessionWire = null,
     perk_id: ?i64 = null,
     outside_before: bool = false,
@@ -1047,7 +1072,7 @@ fn parseCaptureStateTransitionEvent(
 }
 
 fn parseMapI32(
-    map: std.StringArrayHashMapUnmanaged(i64),
+    map: anytype,
     key: []const u8,
 ) ReplayCodecError!?i32 {
     if (map.get(key)) |value| {
