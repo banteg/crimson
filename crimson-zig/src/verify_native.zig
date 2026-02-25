@@ -1094,6 +1094,28 @@ test "parse native subset reports unsupported options" {
     }
 }
 
+test "parse native subset reports unsupported lenient events option" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--lenient-events",
+    });
+    switch (parsed) {
+        .unsupported => |detail| try std.testing.expectEqualStrings("--lenient-events", detail),
+        else => return error.TestExpectedUnsupportedOption,
+    }
+}
+
+test "parse native subset reports unsupported max ticks option" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--max-ticks=1000",
+    });
+    switch (parsed) {
+        .unsupported => |detail| try std.testing.expectEqualStrings("--max-ticks", detail),
+        else => return error.TestExpectedUnsupportedOption,
+    }
+}
+
 test "build verify payload score mismatch" {
     const allocator = std.testing.allocator;
     const payload = try buildVerifyPayload(
@@ -1119,6 +1141,26 @@ test "build verify payload score mismatch" {
 
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+}
+
+test "survival sim not ported output maps unsupported weapon fire path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForSurvivalSimError(allocator, error.UnsupportedWeaponFirePath);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "weapon fire path not yet ported") != null);
+}
+
+test "survival sim not ported output maps unsupported bonus apply path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForSurvivalSimError(allocator, error.UnsupportedBonusApplyPath);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "bonus apply path not yet ported") != null);
 }
 
 fn makeTestReplayHeader(
