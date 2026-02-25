@@ -2224,6 +2224,36 @@ pub const CreaturePool = struct {
         );
     }
 
+    pub fn applyFireDamage(
+        self: *CreaturePool,
+        state: *survival_state.GameplayState,
+        players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
+        creature_index: usize,
+        damage: f64,
+        impulse: survival_state.Vec2,
+        owner_id: i32,
+        dt: f64,
+        world_size: f64,
+    ) i32 {
+        var damage_amount = damage;
+        if (anyPlayerHasPerk(players, perk_id_pyromaniac)) {
+            damage_amount *= 1.5;
+            _ = state.rng.rand();
+        }
+        return self.applyDamage(
+            state,
+            players,
+            bonus_pool,
+            creature_index,
+            damage_amount,
+            impulse,
+            owner_id,
+            dt,
+            world_size,
+        );
+    }
+
     pub fn applyExplosionDamage(
         self: *CreaturePool,
         state: *survival_state.GameplayState,
@@ -3069,12 +3099,31 @@ fn awardExperienceFromReward(
     player: *survival_state.PlayerState,
     reward_value: f64,
 ) i32 {
+    if (perkActive(player, perk_id_bloody_mess_quick_learner)) {
+        const scaled_reward: i32 = @intFromFloat(reward_value * 1.3);
+        return awardExperienceRaw(player, scaled_reward);
+    }
+
     var gained = awardExperienceOnceFromReward(player, reward_value);
     if (gained <= 0) return 0;
     if (state.bonuses.double_experience > 0.0) {
         gained += awardExperienceOnceFromReward(player, reward_value);
     }
     return gained;
+}
+
+fn awardExperienceRaw(
+    player: *survival_state.PlayerState,
+    amount: i32,
+) i32 {
+    if (amount <= 0) return 0;
+    const before = player.experience;
+    const before_f32: f64 = @floatFromInt(before);
+    const amount_f32: f64 = @floatFromInt(amount);
+    const total_f32 = asF32F64(asF32F64(before_f32) + asF32F64(amount_f32));
+    const after: i32 = @intFromFloat(total_f32);
+    player.experience = after;
+    return after - before;
 }
 
 fn wrapAngle(value: f64) f64 {
@@ -3324,6 +3373,7 @@ fn asF32F64(value: f64) f64 {
 const perk_id_bloody_mess_quick_learner: i32 = 1;
 const perk_id_poison_bullets: i32 = 25;
 const perk_id_plaguebearer: i32 = survival_perks.PerkId.plaguebearer;
+const perk_id_pyromaniac: i32 = survival_perks.PerkId.pyromaniac;
 const perk_id_uranium_filled_bullets: i32 = survival_perks.PerkId.uranium_filled_bullets;
 const perk_id_doctor: i32 = survival_perks.PerkId.doctor;
 const perk_id_barrel_greaser: i32 = survival_perks.PerkId.barrel_greaser;
@@ -3488,6 +3538,51 @@ test "spawn init and shot resolution award xp on kill" {
     try std.testing.expect(result.xp_awarded > 0);
     try std.testing.expect(players[0].experience > before_xp);
     try std.testing.expectEqual(@as(i32, 1), state.shots_hit[0]);
+}
+
+test "bloody mess quick learner awards 1.3x reward and bypasses double experience" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    state.bonuses.double_experience = 5.0;
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .experience = 100,
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 140.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 12.7,
+        .contact_damage = 0.0,
+    });
+
+    const xp_gained = pool.applyDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        50.0,
+        .{},
+        owner_id_player_0,
+        1.0 / 60.0,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 16), xp_gained);
+    try std.testing.expectEqual(@as(i32, 116), players[0].experience);
 }
 
 test "template spawn supports survival early-stage templates" {
@@ -5178,6 +5273,91 @@ test "doctor increases projectile damage by 20 percent" {
         10_000.0,
     );
     try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "pyromaniac increases fire damage and consumes rng" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_pyromaniac)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    const before_rng = state.rng.state;
+    _ = pool.applyFireDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        owner_id_player_0,
+        0.016,
+        1024.0,
+    );
+
+    try expectFloatClose(85.0, pool.entries[0].hp);
+    try std.testing.expect(before_rng != state.rng.state);
+}
+
+test "fire damage without pyromaniac keeps base damage and rng state" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    const before_rng = state.rng.state;
+    _ = pool.applyFireDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        owner_id_player_0,
+        0.016,
+        1024.0,
+    );
+
+    try expectFloatClose(90.0, pool.entries[0].hp);
+    try std.testing.expectEqual(before_rng, state.rng.state);
 }
 
 test "living fortress scales projectile damage by alive player timers" {

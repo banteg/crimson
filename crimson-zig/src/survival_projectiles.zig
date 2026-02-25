@@ -351,32 +351,60 @@ pub const ProjectilePool = struct {
                     const remaining = proj.damage_pool - 1.0;
                     proj.damage_pool = remaining;
                     if (remaining <= 0.0) {
-                        _ = creatures.applyProjectileDamage(
-                            state,
-                            players,
-                            bonuses,
-                            hit_idx.?,
-                            damage_amount,
-                            impulse,
-                            proj.owner_id,
-                            dt,
-                            world_size,
-                        );
+                        if (proj.type_id == survival_state.ProjectileTypeId.fire_bullets) {
+                            _ = creatures.applyFireDamage(
+                                state,
+                                players,
+                                bonuses,
+                                hit_idx.?,
+                                damage_amount,
+                                impulse,
+                                proj.owner_id,
+                                dt,
+                                world_size,
+                            );
+                        } else {
+                            _ = creatures.applyProjectileDamage(
+                                state,
+                                players,
+                                bonuses,
+                                hit_idx.?,
+                                damage_amount,
+                                impulse,
+                                proj.owner_id,
+                                dt,
+                                world_size,
+                            );
+                        }
                         if (proj.life_timer != 0.25) {
                             proj.life_timer = 0.25;
                         }
                     } else {
-                        _ = creatures.applyProjectileDamage(
-                            state,
-                            players,
-                            bonuses,
-                            hit_idx.?,
-                            remaining,
-                            impulse,
-                            proj.owner_id,
-                            dt,
-                            world_size,
-                        );
+                        if (proj.type_id == survival_state.ProjectileTypeId.fire_bullets) {
+                            _ = creatures.applyFireDamage(
+                                state,
+                                players,
+                                bonuses,
+                                hit_idx.?,
+                                remaining,
+                                impulse,
+                                proj.owner_id,
+                                dt,
+                                world_size,
+                            );
+                        } else {
+                            _ = creatures.applyProjectileDamage(
+                                state,
+                                players,
+                                bonuses,
+                                hit_idx.?,
+                                remaining,
+                                impulse,
+                                proj.owner_id,
+                                dt,
+                                world_size,
+                            );
+                        }
                         proj.damage_pool -= creatures.entries[hit_idx.?].hp;
                     }
                 }
