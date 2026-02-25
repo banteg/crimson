@@ -1014,3 +1014,114 @@ test "grim deal kills owner and boosts experience" {
     try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
     try std.testing.expectEqual(@as(i32, 7), players[1].experience);
 }
+
+test "instant winner grants xp to owner only" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .experience = 123 },
+        .{ .index = 1, .pos = .{}, .experience = 456 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.instant_winner);
+    try std.testing.expectEqual(@as(i32, 2623), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 456), players[1].experience);
+}
+
+test "infernal contract grants levels and forces low health" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .level = 5, .health = 100.0 },
+        .{ .index = 1, .pos = .{}, .level = 1, .health = 80.0 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.infernal_contract);
+    try std.testing.expectEqual(@as(i32, 8), players[0].level);
+    try std.testing.expectEqual(@as(i32, 3), state.perk_selection.pending_count);
+    try std.testing.expect(state.perk_selection.choices_dirty);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.1), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.1), players[1].health, 1e-6);
+}
+
+test "ammo maniac reassigns weapons and boosts clip size for all players" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.assault_rifle },
+        .{ .index = 1, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+    };
+    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    survival_state.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
+
+    const base_clip0 = players[0].clip_size;
+    const base_clip1 = players[1].clip_size;
+    players[0].ammo = 1.0;
+    players[1].ammo = 2.0;
+
+    try applyPerk(&state, players[0..], PerkId.ammo_maniac);
+
+    try std.testing.expect(players[0].clip_size > base_clip0);
+    try std.testing.expect(players[1].clip_size > base_clip1);
+    try std.testing.expectEqual(@as(f64, @floatFromInt(players[0].clip_size)), players[0].ammo);
+    try std.testing.expectEqual(@as(f64, @floatFromInt(players[1].clip_size)), players[1].ammo);
+    try std.testing.expect(!players[0].reload_active);
+    try std.testing.expect(!players[1].reload_active);
+    try std.testing.expectEqual(@as(f64, 0.0), players[0].reload_timer);
+    try std.testing.expectEqual(@as(f64, 0.0), players[1].reload_timer);
+    try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts[@intCast(PerkId.ammo_maniac)]);
+}
+
+test "my favourite weapon increases clip size and keeps current ammo on apply" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+    };
+    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+
+    const base_clip = players[0].clip_size;
+    players[0].ammo = 5.0;
+    try applyPerk(&state, players[0..], PerkId.my_favourite_weapon);
+
+    try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
+    try std.testing.expectEqual(@as(f64, 5.0), players[0].ammo);
+
+    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
+    try std.testing.expectEqual(@as(f64, @floatFromInt(base_clip + 2)), players[0].ammo);
+}
+
+test "breathing room reduces player health and clears bonus spawn guard" {
+    var state = survival_state.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 90.0 },
+        .{ .index = 1, .pos = .{}, .health = 45.0 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.breathing_room);
+    try std.testing.expectApproxEqAbs(@as(f64, 30.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 15.0), players[1].health, 1e-6);
+    try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "thick skinned clamps health floor at one" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 90.0 },
+        .{ .index = 1, .pos = .{}, .health = 1.2 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.thick_skinned);
+    try std.testing.expectApproxEqAbs(@as(f64, 60.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), players[1].health, 1e-6);
+}
+
+test "plaguebearer apply marks all players active" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.plaguebearer);
+    try std.testing.expect(players[0].plaguebearer_active);
+    try std.testing.expect(players[1].plaguebearer_active);
+}

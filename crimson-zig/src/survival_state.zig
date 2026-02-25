@@ -395,7 +395,13 @@ pub fn weaponAssignPlayer(
     player: *PlayerState,
     weapon_id: i32,
 ) void {
-    const clip_size = @max(0, weaponClipSize(weapon_id));
+    var clip_size = @max(0, weaponClipSize(weapon_id));
+    if (playerPerkActive(player, 12)) {
+        clip_size += @max(1, @divTrunc(clip_size, 4));
+    }
+    if (playerPerkActive(player, 48)) {
+        clip_size += 2;
+    }
 
     player.weapon_id = weapon_id;
     player.clip_size = clip_size;
