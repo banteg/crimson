@@ -122,27 +122,12 @@ fn runNativeVerify(
     defer replay.deinit(allocator);
     const header = replay.header;
 
-    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
-        return buildNotPortedOutput(allocator, "only survival/rush/quest replays are currently ported");
-    }
-    if (header.player_count < 1 or header.player_count > 4) {
-        return buildNotPortedOutput(allocator, "only 1-4 player replays are currently ported");
-    }
-    if (header.preserve_bugs) {
-        return buildNotPortedOutput(allocator, "preserve_bugs=true replays are not ported");
-    }
-    if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
-        return buildNotPortedOutput(allocator, "only raw/f32 input quantization is currently ported");
-    }
-    if (replay.tickCount() > std.math.maxInt(i32)) {
-        return buildNotPortedOutput(allocator, "replay has too many ticks for current native verifier");
+    if (unsupportedReplayHeaderDetail(header, replay.tickCount())) |detail| {
+        return buildNotPortedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
-        return buildNotPortedOutput(allocator, "only latest ruleset replays are currently ported");
-    }
     var tick_trace: std.ArrayList(survival_sim.SurvivalTickTrace) = .empty;
     defer tick_trace.deinit(allocator);
 
@@ -788,6 +773,31 @@ fn buildNotPortedOutput(
     };
 }
 
+fn unsupportedReplayHeaderDetail(
+    header: replay_codec.ReplayHeader,
+    tick_count: usize,
+) ?[]const u8 {
+    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
+        return "only survival/rush/quest replays are currently ported";
+    }
+    if (header.player_count < 1 or header.player_count > 4) {
+        return "only 1-4 player replays are currently ported";
+    }
+    if (header.preserve_bugs) {
+        return "preserve_bugs=true replays are not ported";
+    }
+    if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
+        return "only raw/f32 input quantization is currently ported";
+    }
+    if (tick_count > std.math.maxInt(i32)) {
+        return "replay has too many ticks for current native verifier";
+    }
+    if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
+        return "only latest ruleset replays are currently ported";
+    }
+    return null;
+}
+
 fn buildNotPortedOutputForReplayCodecError(
     allocator: std.mem.Allocator,
     err: replay_codec.ReplayCodecError,
@@ -1109,4 +1119,102 @@ test "build verify payload score mismatch" {
 
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+}
+
+fn makeTestReplayHeader(
+    allocator: std.mem.Allocator,
+) !replay_codec.ReplayHeader {
+    return .{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_codec.replay_format_version,
+        .quest_level = try allocator.dupe(u8, ""),
+        .bootstrap_kind = try allocator.dupe(u8, "none"),
+        .bootstrap_seed = 0,
+        .game_version = try allocator.dupe(u8, "0.7.0"),
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
+        },
+        .input_quantization = try allocator.dupe(u8, "raw"),
+    };
+}
+
+test "unsupported replay header detail rejects unsupported game mode" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.game_mode_id = 9;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only survival/rush/quest replays are currently ported", detail);
+}
+
+test "unsupported replay header detail rejects unsupported player count" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.player_count = 5;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only 1-4 player replays are currently ported", detail);
+}
+
+test "unsupported replay header detail rejects preserve bugs replays" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.preserve_bugs = true;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("preserve_bugs=true replays are not ported", detail);
+}
+
+test "unsupported replay header detail rejects non raw quantization" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    allocator.free(header.input_quantization);
+    header.input_quantization = try allocator.dupe(u8, "u8");
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only raw/f32 input quantization is currently ported", detail);
+}
+
+test "unsupported replay header detail rejects oversized tick count" {
+    const allocator = std.testing.allocator;
+    const header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+
+    const overflow_ticks = @as(usize, std.math.maxInt(i32)) + 1;
+    const detail = unsupportedReplayHeaderDetail(header, overflow_ticks) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("replay has too many ticks for current native verifier", detail);
+}
+
+test "unsupported replay header detail rejects non latest ruleset" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    allocator.free(header.game_version);
+    header.game_version = try allocator.dupe(u8, "0.6.9");
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only latest ruleset replays are currently ported", detail);
+}
+
+test "unsupported replay header detail accepts supported replay envelope" {
+    const allocator = std.testing.allocator;
+    const header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+
+    try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
 }
