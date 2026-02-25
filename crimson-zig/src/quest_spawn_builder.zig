@@ -560,3 +560,45 @@ test "quest spawn build parity for level 3.9 seed 999" {
     try std.testing.expectEqual(@as(i32, 25_120), last.trigger_ms);
     try std.testing.expectEqual(@as(i32, 1), last.count);
 }
+
+test "quest spawn build supports all preset and dynamic levels across player counts" {
+    var storage = [_]survival_spawn.QuestSpawnEntry{undefined} ** 4096;
+
+    for (quest_spawn_tables.presets) |preset| {
+        if (isDynamicSeedLevel(preset.level_key)) continue;
+        const result = try buildQuestSpawnTable(
+            preset.level_key,
+            preset.player_count,
+            0x1234,
+            1024.0,
+            storage[0..],
+        );
+        try std.testing.expectEqual(preset.start_weapon_id, result.start_weapon_id);
+        try std.testing.expectEqual(preset.entries.len, result.entries.len);
+    }
+
+    const dynamic_levels = [_]i32{
+        dynamic_level_target_practice,
+        dynamic_level_random_factor,
+        dynamic_level_sweep_stakes,
+        dynamic_level_the_killing,
+        dynamic_level_deja_vu,
+    };
+    const seeds = [_]u32{ 205, 999 };
+    for (dynamic_levels) |level_key| {
+        var player_count: i32 = 1;
+        while (player_count <= 4) : (player_count += 1) {
+            for (seeds) |seed| {
+                const result = try buildQuestSpawnTable(
+                    level_key,
+                    player_count,
+                    seed,
+                    1024.0,
+                    storage[0..],
+                );
+                try std.testing.expect(result.entries.len > 0);
+                try std.testing.expectEqual(startWeaponForLevel(level_key), result.start_weapon_id);
+            }
+        }
+    }
+}

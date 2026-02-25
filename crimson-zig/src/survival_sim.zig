@@ -2438,6 +2438,75 @@ test "rush scaffold supports multiplayer replays" {
     try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.most_used_weapon_id);
 }
 
+test "survival scaffold supports player counts 1 through 4" {
+    const allocator = std.testing.allocator;
+
+    var player_count: i32 = 1;
+    while (player_count <= 4) : (player_count += 1) {
+        const players_len: usize = @intCast(player_count);
+        const fire_player: usize = players_len - 1;
+
+        const row0_storage = [_]u32{0} ** survival_state.max_players;
+        var row1_storage = [_]u32{0} ** survival_state.max_players;
+        row1_storage[fire_player] = replay_codec.fire_down_flag;
+
+        const rows = [_][]const u32{
+            row0_storage[0..players_len],
+            row1_storage[0..players_len],
+        };
+
+        const replay = try buildTestReplayMulti(allocator, .{
+            .game_mode_id = game_mode_survival,
+            .seed = 0x1234,
+            .tick_rate = 60,
+            .player_count = player_count,
+            .inputs = rows[0..],
+            .events = &.{
+                .{ .perk_menu_open = .{
+                    .tick_index = 1,
+                    .player_index = @intCast(player_count - 1),
+                } },
+            },
+        });
+        defer replay.deinit(allocator);
+
+        const result = try runSurvivalReplayScaffold(replay);
+        try std.testing.expectEqual(@as(usize, 2), result.ticks);
+        try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
+    }
+}
+
+test "rush scaffold supports player counts 1 through 4" {
+    const allocator = std.testing.allocator;
+
+    var player_count: i32 = 1;
+    while (player_count <= 4) : (player_count += 1) {
+        const players_len: usize = @intCast(player_count);
+
+        const row0_storage = [_]u32{0} ** survival_state.max_players;
+        const row1_storage = [_]u32{ replay_codec.fire_down_flag } ** survival_state.max_players;
+        const rows = [_][]const u32{
+            row0_storage[0..players_len],
+            row1_storage[0..players_len],
+        };
+
+        const replay = try buildTestReplayMulti(allocator, .{
+            .game_mode_id = game_mode_rush,
+            .seed = 0x1234,
+            .tick_rate = 60,
+            .player_count = player_count,
+            .inputs = rows[0..],
+            .events = &.{},
+        });
+        defer replay.deinit(allocator);
+
+        const result = try runSurvivalReplayScaffold(replay);
+        try std.testing.expectEqual(@as(usize, 2), result.ticks);
+        try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.player_weapon_id);
+        try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.most_used_weapon_id);
+    }
+}
+
 test "quest scaffold is deterministic with explicit spawn entries" {
     const allocator = std.testing.allocator;
 
@@ -2587,6 +2656,49 @@ test "quest scaffold rejects unknown quest level when no spawn entries are provi
     defer replay.deinit(allocator);
 
     try std.testing.expectError(error.UnsupportedQuestSpawnTable, runSurvivalReplayScaffold(replay));
+}
+
+test "quest scaffold supports player counts 1 through 4 across static and dynamic levels" {
+    const allocator = std.testing.allocator;
+    const level_cases = [_]struct {
+        quest_level: []const u8,
+        seed: u32,
+        expected_start_weapon: i32,
+    }{
+        .{ .quest_level = "1.1", .seed = 101, .expected_start_weapon = survival_state.WeaponId.pistol },
+        .{ .quest_level = "2.5", .seed = 205, .expected_start_weapon = 6 },
+        .{ .quest_level = "3.3", .seed = 205, .expected_start_weapon = survival_state.WeaponId.pistol },
+        .{ .quest_level = "3.9", .seed = 999, .expected_start_weapon = 6 },
+    };
+
+    for (level_cases) |case| {
+        var player_count: i32 = 1;
+        while (player_count <= 4) : (player_count += 1) {
+            const players_len: usize = @intCast(player_count);
+            const row_storage = [_]u32{0} ** survival_state.max_players;
+            const rows = [_][]const u32{row_storage[0..players_len]};
+
+            const replay = try buildTestReplayMulti(allocator, .{
+                .game_mode_id = game_mode_quests,
+                .seed = case.seed,
+                .tick_rate = 60,
+                .player_count = player_count,
+                .quest_level = case.quest_level,
+                .inputs = rows[0..],
+                .events = &.{},
+            });
+            defer replay.deinit(allocator);
+
+            const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+                .dt_frame_overrides = &.{
+                    .{ .tick_index = 0, .dt_frame = 3.0 },
+                },
+            });
+            try std.testing.expectEqual(@as(usize, 1), result.ticks);
+            try std.testing.expectEqual(case.expected_start_weapon, result.player_weapon_id);
+            try std.testing.expect(result.wave_spawn_count > 0);
+        }
+    }
 }
 
 test "pending nuke damage is limited to radius" {
