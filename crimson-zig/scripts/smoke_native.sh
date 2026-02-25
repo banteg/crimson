@@ -10,6 +10,7 @@ replay="$1"
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root_dir"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-$root_dir/.zig-cache-global}"
 
 zig build
 

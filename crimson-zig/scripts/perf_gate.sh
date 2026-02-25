@@ -9,6 +9,10 @@ fi
 replay="$1"
 runs="${2:-5}"
 
+root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root_dir"
+export ZIG_GLOBAL_CACHE_DIR="${ZIG_GLOBAL_CACHE_DIR:-$root_dir/.zig-cache-global}"
+
 zig build
 
 uv run python - <<'PY' "$replay" "$runs"
