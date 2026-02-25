@@ -817,3 +817,44 @@ test "bonus economist extends double experience timer" {
     );
     try std.testing.expectApproxEqAbs(@as(f64, 9.0), perk_state.bonuses.double_experience, 1e-6);
 }
+
+test "bonus magnet allows spawn on secondary roll" {
+    var base_state = survival_state.GameplayState.init(7);
+    base_state.game_mode = game_mode_survival;
+    var base_pool = BonusPool{};
+    var base_players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon_id = survival_state.WeaponId.assault_rifle,
+        },
+    };
+
+    const base_spawned = base_pool.trySpawnOnKill(
+        .{ .x = 100.0, .y = 100.0 },
+        &base_state,
+        base_players[0..],
+        1024.0,
+    );
+    try std.testing.expect(base_spawned == null);
+
+    var perk_state = survival_state.GameplayState.init(7);
+    perk_state.game_mode = game_mode_survival;
+    var perk_pool = BonusPool{};
+    var perk_players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon_id = survival_state.WeaponId.assault_rifle,
+        },
+    };
+    perk_players[0].perk_counts[@intCast(survival_perks.PerkId.bonus_magnet)] = 1;
+
+    const perk_spawned = perk_pool.trySpawnOnKill(
+        .{ .x = 100.0, .y = 100.0 },
+        &perk_state,
+        perk_players[0..],
+        1024.0,
+    );
+    try std.testing.expect(perk_spawned != null);
+}

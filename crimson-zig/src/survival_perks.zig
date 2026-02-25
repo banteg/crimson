@@ -769,3 +769,117 @@ test "bandage preserve bugs multiplies instead of adds" {
     try applyPerk(&state, players[0..], PerkId.bandage);
     try std.testing.expectApproxEqAbs(@as(f64, 100.0), players[0].health, 1e-6);
 }
+
+test "random weapon assigns non-pistol weapon from pistol baseline" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon_id = survival_state.WeaponId.pistol,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.random_weapon);
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, players[0].weapon_id);
+}
+
+test "random weapon rerolls pistol when current weapon is not pistol" {
+    var state = survival_state.GameplayState.init(25);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon_id = survival_state.WeaponId.shotgun,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.random_weapon);
+    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, players[0].weapon_id);
+}
+
+test "random weapon retry cap applies last roll after 100 attempts" {
+    var state = survival_state.GameplayState.init(1234);
+    state.game_mode = 3;
+
+    var expected = state;
+    for (0..100) |_| {
+        _ = survival_bonuses.weaponPickRandomAvailable(&expected);
+    }
+
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon_id = survival_state.WeaponId.pistol,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.random_weapon);
+    try std.testing.expectEqual(survival_state.WeaponId.pistol, players[0].weapon_id);
+    try std.testing.expectEqual(expected.rng.state, state.rng.state);
+}
+
+test "fatal lottery grants xp when rng is even" {
+    var state = survival_state.GameplayState.init(0);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .experience = 123,
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .experience = 456,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.fatal_lottery);
+    try std.testing.expectEqual(@as(i32, 10_123), players[0].experience);
+    try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
+    try std.testing.expectEqual(@as(i32, 456), players[1].experience);
+    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+}
+
+test "fatal lottery kills owner only when rng is odd" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.fatal_lottery);
+    try std.testing.expect(players[0].health < 0.0);
+    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+}
+
+test "grim deal kills owner and boosts experience" {
+    var state = survival_state.GameplayState.init(1);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .experience = 12_345,
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .health = 100.0,
+            .experience = 7,
+        },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.grim_deal);
+    try std.testing.expect(players[0].health < 0.0);
+    try std.testing.expectEqual(@as(i32, 14_567), players[0].experience);
+    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+    try std.testing.expectEqual(@as(i32, 7), players[1].experience);
+}
