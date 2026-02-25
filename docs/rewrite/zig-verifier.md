@@ -7,7 +7,7 @@ tags:
 
 # Zig replay verifier status (`crimson-zig/`)
 
-Last reviewed: **2026-02-24**
+Last reviewed: **2026-02-25**
 
 Scope target: fast, headless, deterministic verification for **1-player Survival**
 replays on the latest ruleset (`preserve_bugs=false`), with native and
@@ -45,21 +45,33 @@ replays on the latest ruleset (`preserve_bugs=false`), with native and
   - latest ruleset only (`preserve_bugs=false`),
   - hard-fail behavior for unsupported paths remains intentional.
 
-## Current replay parity snapshot (2026-02-24)
+## Current replay parity snapshot (2026-02-25)
 
-- `survival_20260224_062947_score12741.crd`
-  - Python: `replay verification failed: perk_pick failed at tick=2833 choice_index=0`
-  - Zig: `replay verification failed: perk_pick failed at tick=2833 choice_index=0`
+- Older-version captures are no longer used as acceptance inputs for the latest
+  ruleset verifier status.
 - `survival_20260224_113737_score4032.crd`
   - Python and Zig both `ok` with exact summary match:
     - `ticks=34808 elapsed_ms=532112 score_xp=4032 kills=1498 most_used_weapon_id=20 shots_fired=10241 shots_hit=3035 rng_state=2592828730`
 - `survival_20260224_223838_score134360.crd`
   - Python and Zig both `ok` with exact summary match:
     - `ticks=32213 elapsed_ms=448469 score_xp=134360 kills=1231 most_used_weapon_id=20 shots_fired=1718 shots_hit=1030 rng_state=4205621066`
+  - Differential harness (`--skip-build`) reports exact tick parity:
+    - `match: ticks=32213`
 
-## Performance snapshot
+## Performance snapshot (2026-02-25)
 
-- On `survival_20260224_113737_score4032.crd` (local benchmark, 2026-02-24):
-  - Python verifier: `37.85s` wall
-  - Zig verifier: `6.78s` wall
-  - Speedup: `~5.6x`
+`hyperfine './crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd' 'uv run crimson replay verify survival_20260224_223838_score134360.crd'`
+
+```text
+Benchmark 1: ./crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd
+  Time (mean ± σ):     564.1 ms ±  10.0 ms    [User: 555.5 ms, System: 2.5 ms]
+  Range (min … max):   555.0 ms … 588.7 ms    10 runs
+
+Benchmark 2: uv run crimson replay verify survival_20260224_223838_score134360.crd
+  Time (mean ± σ):     31.599 s ±  0.550 s    [User: 31.268 s, System: 0.115 s]
+  Range (min … max):   30.912 s … 32.871 s    10 runs
+
+Summary
+  ./crimson-zig/zig-out/bin/crimson-zig replay verify survival_20260224_223838_score134360.crd ran
+   56.02 ± 1.39 times faster than uv run crimson replay verify survival_20260224_223838_score134360.crd
+```
