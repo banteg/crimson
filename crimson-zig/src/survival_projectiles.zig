@@ -598,6 +598,10 @@ fn asF32F64(value: f64) f64 {
     return @floatCast(rounded);
 }
 
+fn expectFloatClose(expected: f64, actual: f64) !void {
+    try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
 test "projectile hit consumes hit-presentation rng" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{
@@ -634,4 +638,140 @@ test "projectile hit consumes hit-presentation rng" {
     const rng_before = state.rng.state;
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     try std.testing.expect(rng_before != state.rng.state);
+}
+
+test "barrel greaser doubles pistol projectile movement steps" {
+    var base_state = survival_state.GameplayState.init(1);
+    var base_players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    var base_pool = ProjectilePool{};
+    _ = base_pool.spawn(
+        .{},
+        std.math.pi / 2.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        survival_state.weaponProjectileMeta(survival_state.ProjectileTypeId.pistol),
+        false,
+    );
+    _ = base_pool.update(
+        &base_state,
+        base_players[0..],
+        &creatures,
+        &bonuses,
+        0.016,
+        10_000.0,
+    );
+    const base_x = base_pool.entries[0].pos.x;
+
+    var greased_state = survival_state.GameplayState.init(1);
+    var greased_players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    greased_players[0].perk_counts[@intCast(perk_id_barrel_greaser)] = 1;
+    var greased_pool = ProjectilePool{};
+    _ = greased_pool.spawn(
+        .{},
+        std.math.pi / 2.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        survival_state.weaponProjectileMeta(survival_state.ProjectileTypeId.pistol),
+        false,
+    );
+    _ = greased_pool.update(
+        &greased_state,
+        greased_players[0..],
+        &creatures,
+        &bonuses,
+        0.016,
+        10_000.0,
+    );
+    const greased_x = greased_pool.entries[0].pos.x;
+
+    try expectFloatClose(18.239999771118164, base_x);
+    try expectFloatClose(35.519996643066406, greased_x);
+    try std.testing.expect(greased_x > base_x);
+}
+
+test "ion gun master increases ion rifle linger radius" {
+    var state_without = survival_state.GameplayState.init(1);
+    var players_without = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var creatures_without = survival_creatures.CreaturePool{};
+    var bonuses_without = survival_bonuses.BonusPool{};
+    _ = creatures_without.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 105.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+    var pool_without = ProjectilePool{};
+    const idx_without = pool_without.spawn(
+        .{},
+        0.0,
+        survival_state.ProjectileTypeId.ion_rifle,
+        -100,
+        45.0,
+        false,
+    );
+    pool_without.entries[idx_without].life_timer = 0.39;
+    _ = pool_without.update(
+        &state_without,
+        players_without[0..],
+        &creatures_without,
+        &bonuses_without,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(10.0, creatures_without.entries[0].hp);
+
+    var state_with = survival_state.GameplayState.init(1);
+    var players_with = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    players_with[0].perk_counts[@intCast(perk_id_ion_gun_master)] = 1;
+    var creatures_with = survival_creatures.CreaturePool{};
+    var bonuses_with = survival_bonuses.BonusPool{};
+    _ = creatures_with.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 105.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+    var pool_with = ProjectilePool{};
+    const idx_with = pool_with.spawn(
+        .{},
+        0.0,
+        survival_state.ProjectileTypeId.ion_rifle,
+        -100,
+        45.0,
+        false,
+    );
+    pool_with.entries[idx_with].life_timer = 0.39;
+    _ = pool_with.update(
+        &state_with,
+        players_with[0..],
+        &creatures_with,
+        &bonuses_with,
+        0.016,
+        10_000.0,
+    );
+    try std.testing.expect(creatures_with.entries[0].hp < 10.0);
 }

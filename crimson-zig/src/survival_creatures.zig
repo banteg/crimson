@@ -1735,3 +1735,193 @@ test "ai7 link timer consumes rng when timer crosses zero" {
     try std.testing.expect(pool.entries[0].link_index >= 500);
     try std.testing.expect(pool.entries[0].link_index <= 1011);
 }
+
+test "tough reloader halves damage while reloading" {
+    var state = survival_state.GameplayState.init(1);
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .reload_active = true,
+    };
+    player.perk_counts[@intCast(perk_id_tough_reloader)] = 1;
+
+    applyPlayerContactDamage(
+        &state,
+        &player,
+        10.0,
+        0.1,
+    );
+
+    try expectFloatClose(95.0, player.health);
+}
+
+test "tough reloader spread heat uses post-reload damage before thick skinned" {
+    var state = survival_state.GameplayState.init(1);
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .reload_active = true,
+        .spread_heat = 0.1,
+    };
+    player.perk_counts[@intCast(perk_id_tough_reloader)] = 1;
+    player.perk_counts[@intCast(perk_id_thick_skinned)] = 1;
+
+    applyPlayerContactDamage(
+        &state,
+        &player,
+        10.0,
+        0.1,
+    );
+
+    try expectFloatClose(0.15, player.spread_heat);
+}
+
+test "doctor increases projectile damage by 20 percent" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    players[0].perk_counts[@intCast(perk_id_doctor)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    _ = pool.applyProjectileDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        -100,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "barrel greaser increases projectile damage by 40 percent" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    players[0].perk_counts[@intCast(perk_id_barrel_greaser)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    _ = pool.applyProjectileDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        -100,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(86.0, pool.entries[0].hp);
+}
+
+test "ion gun master increases ion damage by 20 percent" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    players[0].perk_counts[@intCast(perk_id_ion_gun_master)] = 1;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 10.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    _ = pool.applyIonDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        -100,
+        0.016,
+        10_000.0,
+    );
+    try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "freeze stops creature movement" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    const moved_x = pool.entries[0].pos.x;
+    const moved_y = pool.entries[0].pos.y;
+    try std.testing.expect(!(moved_x == 100.0 and moved_y == 200.0));
+
+    state.bonuses.freeze = 5.0;
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+    try expectFloatClose(moved_x, pool.entries[0].pos.x);
+    try expectFloatClose(moved_y, pool.entries[0].pos.y);
+}
