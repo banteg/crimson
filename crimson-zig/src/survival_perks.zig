@@ -158,6 +158,7 @@ pub fn perkSelectionCurrentChoices(
     if (state.perk_selection.choices_dirty or state.perk_selection.choice_count == 0) {
         state.perk_selection.choices = perkGenerateChoices(
             state,
+            players,
             player,
             game_mode,
             player_count,
@@ -408,6 +409,7 @@ pub fn updatePerkEffects(
 
 fn perkGenerateChoices(
     state: *survival_state.GameplayState,
+    players: []const survival_state.PlayerState,
     player: *const survival_state.PlayerState,
     game_mode: i32,
     player_count: i32,
@@ -426,7 +428,7 @@ fn perkGenerateChoices(
     }
 
     const death_clock_active = perkActive(player, PerkId.death_clock);
-    const pyromaniac_allowed = player.weapon_id == survival_state.WeaponId.flamethrower;
+    const pyromaniac_allowed = pyromaniacAllowed(state, players, player, player_count);
 
     var choices = [_]i32{PerkId.antiperk} ** 7;
     var choice_index: usize = 0;
@@ -475,6 +477,22 @@ fn perkGenerateChoices(
     }
 
     return choices;
+}
+
+fn pyromaniacAllowed(
+    state: *const survival_state.GameplayState,
+    players: []const survival_state.PlayerState,
+    player: *const survival_state.PlayerState,
+    player_count: i32,
+) bool {
+    if (player.weapon_id == survival_state.WeaponId.flamethrower) return true;
+    if (state.preserve_bugs or player_count <= 1) return false;
+
+    for (players) |source_player| {
+        if (source_player.health <= 0.0) continue;
+        if (source_player.weapon_id == survival_state.WeaponId.flamethrower) return true;
+    }
+    return false;
 }
 
 fn selectRandomOffer(state: *survival_state.GameplayState, offerable: []const bool) i32 {
@@ -568,6 +586,19 @@ fn isDeathClockBlocked(perk_id: i32) bool {
         perk_id == PerkId.bandage;
 }
 
+fn setOnlyPerksAvailable(
+    state: *survival_state.GameplayState,
+    unlock_index: i32,
+    perk_ids: []const i32,
+) void {
+    state.perk_available = [_]bool{false} ** survival_state.perk_count_size;
+    for (perk_ids) |perk_id| {
+        if (perk_id < 0 or perk_id >= state.perk_available.len) continue;
+        state.perk_available[@intCast(perk_id)] = true;
+    }
+    state.perk_available_unlock_index = unlock_index;
+}
+
 test "perk menu open consumes rng and caches choices" {
     var state = survival_state.GameplayState.init(0x1234);
     var players = [_]survival_state.PlayerState{
@@ -612,6 +643,106 @@ test "perk pick decrements pending and refreshes choices" {
     try std.testing.expect(picked != null);
     try std.testing.expectEqual(@as(i32, 0), state.perk_selection.pending_count);
     try std.testing.expect(!state.perk_selection.choices_dirty);
+}
+
+test "perk generate choices forces monster vision first on quest 3-4" {
+    var state = survival_state.GameplayState.init(0x1234);
+    state.quest_stage_major = 3;
+    state.quest_stage_minor = 4;
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+
+    const choices = perkSelectionCurrentChoices(
+        &state,
+        players[0..],
+        game_mode_quests,
+        1,
+        49,
+    );
+    try std.testing.expect(choices.len >= 1);
+    try std.testing.expectEqual(PerkId.monster_vision, choices[0]);
+}
+
+test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
+    var state = survival_state.GameplayState.init(0x1234);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+        .{ .index = 1, .pos = .{}, .weapon_id = survival_state.WeaponId.flamethrower },
+    };
+
+    try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
+
+    players[1].health = 0.0;
+    try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
+
+    players[0].weapon_id = survival_state.WeaponId.flamethrower;
+    try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
+
+    state.preserve_bugs = true;
+    players[0].weapon_id = survival_state.WeaponId.pistol;
+    players[1].health = 100.0;
+    try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
+}
+
+test "perk generate choices rejects pyromaniac when no player has flamethrower" {
+    var state = survival_state.GameplayState.init(0x1234);
+    var players = [_]survival_state.PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+    };
+    setOnlyPerksAvailable(&state, 0, &.{
+        PerkId.pyromaniac,
+        PerkId.sharpshooter,
+        PerkId.fastloader,
+        PerkId.lean_mean_exp_machine,
+        PerkId.long_distance_runner,
+        PerkId.pyrokinetic,
+        PerkId.instant_winner,
+        PerkId.grim_deal,
+    });
+
+    const choices = perkSelectionCurrentChoices(
+        &state,
+        players[0..],
+        1,
+        1,
+        0,
+    );
+    for (choices) |perk_id| {
+        try std.testing.expect(perk_id != PerkId.pyromaniac);
+    }
+}
+
+test "perk generate choices blocks jinxed when death clock is active" {
+    var state = survival_state.GameplayState.init(0x1234);
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+    };
+    players[0].perk_counts[@intCast(PerkId.death_clock)] = 1;
+    setOnlyPerksAvailable(&state, 0, &.{
+        PerkId.jinxed,
+        PerkId.sharpshooter,
+        PerkId.fastloader,
+        PerkId.lean_mean_exp_machine,
+        PerkId.long_distance_runner,
+        PerkId.pyrokinetic,
+        PerkId.instant_winner,
+        PerkId.pyromaniac,
+    });
+
+    const choices = perkSelectionCurrentChoices(
+        &state,
+        players[0..],
+        1,
+        1,
+        0,
+    );
+    for (choices) |perk_id| {
+        try std.testing.expect(perk_id != PerkId.jinxed);
+    }
 }
 
 test "death clock apply and update mirror runtime hooks" {
