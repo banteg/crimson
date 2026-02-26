@@ -1972,51 +1972,6 @@ pub const CreaturePool = struct {
                 );
             }
 
-            const eat_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
-            if (eat_sq < 20.0 * 20.0) {
-                var reverted_x = creature.pos.x - creature.vel.x;
-                var reverted_y = creature.pos.y - creature.vel.y;
-                if (reverted_x < 0.0) {
-                    reverted_x = 0.0;
-                } else if (reverted_x > world_size) {
-                    reverted_x = world_size;
-                }
-                if (reverted_y < 0.0) {
-                    reverted_y = 0.0;
-                } else if (reverted_y > world_size) {
-                    reverted_y = world_size;
-                }
-                creature.pos = .{
-                    .x = reverted_x,
-                    .y = reverted_y,
-                };
-
-                if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
-                    for (0..6) |_| {
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                        _ = state.rng.rand();
-                    }
-                    creature.last_hit_owner_id = -1 - player.index;
-                    const prev_spawn_guard = state.bonus_spawn_guard;
-                    state.bonus_spawn_guard = true;
-                    consumeDeathSideEffectsRng(
-                        state,
-                        players,
-                        bonus_pool,
-                        creature.pos,
-                        world_size,
-                        true,
-                        false,
-                        0,
-                    );
-                    state.bonus_spawn_guard = prev_spawn_guard;
-                    _ = awardExperienceFromReward(state, player, creature.reward_value);
-                    creature.active = false;
-                    continue;
-                }
-            }
             if (perkActive(player, perk_id_plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
                 spreadPlagueInfection(self.entries[0..], creature);
             }
@@ -2029,12 +1984,42 @@ pub const CreaturePool = struct {
 
             if (perkActive(player, perk_id_radioactive)) {
                 const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
+                if (debug_tick_index >= 2940 and debug_tick_index <= 3006 and idx == 113) {
+                    std.debug.print(
+                        "zig radioactive pre tick={d} idx={d} perk13={d} cpos=({d:.6},{d:.6}) ppos=({d:.6},{d:.6}) dist={d:.6} col_before={d:.9} hp_before={d:.9} life_before={d:.9}\n",
+                        .{
+                            debug_tick_index,
+                            idx,
+                            player.perk_counts[@intCast(perk_id_radioactive)],
+                            creature.pos.x,
+                            creature.pos.y,
+                            player.pos.x,
+                            player.pos.y,
+                            dist,
+                            creature.collision_timer,
+                            creature.hp,
+                            creature.lifecycle_stage,
+                        },
+                    );
+                }
                 if (dist < 100.0) {
                     creature.collision_timer -= dt * 1.5;
+                    if (debug_tick_index >= 2940 and debug_tick_index <= 3006 and idx == 113) {
+                        std.debug.print(
+                            "zig radioactive step tick={d} idx={d} col_after_sub={d:.9}\n",
+                            .{ debug_tick_index, idx, creature.collision_timer },
+                        );
+                    }
                     if (creature.collision_timer < 0.0) {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = asF32F64(asF32F64(100.0 - dist) * 0.3);
                         creature.hp = asF32F64(creature.hp - pulse_damage);
+                        if (debug_tick_index >= 2940 and debug_tick_index <= 3006 and idx == 113) {
+                            std.debug.print(
+                                "zig radioactive pulse tick={d} idx={d} pulse={d:.9} hp_after={d:.9} col_reset={d:.9}\n",
+                                .{ debug_tick_index, idx, pulse_damage, creature.hp, creature.collision_timer },
+                            );
+                        }
                         consumeAddRandomRng(state);
                         if (creature.hp < 0.0) {
                             if (creature.type_id == @intFromEnum(survival_spawn.CreatureTypeId.lizard)) {
@@ -2079,6 +2064,52 @@ pub const CreaturePool = struct {
                                 creature.attack_cooldown,
                         );
                     }
+                }
+            }
+
+            const eat_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
+            if (eat_sq < 20.0 * 20.0) {
+                var reverted_x = creature.pos.x - creature.vel.x;
+                var reverted_y = creature.pos.y - creature.vel.y;
+                if (reverted_x < 0.0) {
+                    reverted_x = 0.0;
+                } else if (reverted_x > world_size) {
+                    reverted_x = world_size;
+                }
+                if (reverted_y < 0.0) {
+                    reverted_y = 0.0;
+                } else if (reverted_y > world_size) {
+                    reverted_y = world_size;
+                }
+                creature.pos = .{
+                    .x = reverted_x,
+                    .y = reverted_y,
+                };
+
+                if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
+                    for (0..6) |_| {
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                        _ = state.rng.rand();
+                    }
+                    creature.last_hit_owner_id = -1 - player.index;
+                    const prev_spawn_guard = state.bonus_spawn_guard;
+                    state.bonus_spawn_guard = true;
+                    consumeDeathSideEffectsRng(
+                        state,
+                        players,
+                        bonus_pool,
+                        creature.pos,
+                        world_size,
+                        true,
+                        false,
+                        0,
+                    );
+                    state.bonus_spawn_guard = prev_spawn_guard;
+                    _ = awardExperienceFromReward(state, player, creature.reward_value);
+                    creature.active = false;
+                    continue;
                 }
             }
 
