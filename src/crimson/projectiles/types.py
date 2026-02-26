@@ -9,6 +9,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
+from ..owner_ref import OwnerLike, OwnerRef, owner_ref
 
 
 class _RngLike(Protocol):
@@ -163,8 +164,16 @@ class Projectile:
     damage_pool: float = 1.0
     hit_radius: float = 1.0
     base_damage: float = 0.0
-    owner_id: int = 0
+    owner: OwnerRef = field(default_factory=OwnerRef.none)
     hits_players: bool = False
+
+    @property
+    def owner_id(self) -> int:
+        return self.owner.to_legacy()
+
+    @owner_id.setter
+    def owner_id(self, value: OwnerLike) -> None:
+        self.owner = owner_ref(value)
 
 
 @dataclass(slots=True)
@@ -177,12 +186,20 @@ class SecondaryProjectile:
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: int = 0
-    owner_id: int = -100
+    owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
     trail_timer: float = 0.0
     target_id: int = -1
     # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
     target_hint_active: bool = False
     target_hint: Vec2 = field(default_factory=Vec2)
+
+    @property
+    def owner_id(self) -> int:
+        return self.owner.to_legacy()
+
+    @owner_id.setter
+    def owner_id(self, value: OwnerLike) -> None:
+        self.owner = owner_ref(value)
 
 
 __all__ = [
@@ -193,6 +210,7 @@ __all__ = [
     "ProjectileHit",
     "ProjectileRuntimeState",
     "ProjectileTypeId",
+    "OwnerRef",
     "SecondaryDetonationKillHandler",
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",

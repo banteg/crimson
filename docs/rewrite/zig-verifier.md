@@ -7,43 +7,56 @@ tags:
 
 # Zig replay verifier status (`crimson-zig/`)
 
-Last reviewed: **2026-02-25**
+Last reviewed: **2026-02-26**
 
-Scope target: fast, headless, deterministic verification for **1-player Survival**
-replays on the latest ruleset (`preserve_bugs=false`), with native and
-`wasm32-freestanding` targets.
+Scope target: fast, headless, deterministic verification with a native fast-path
+for latest-ruleset **1-4 player Survival/Rush/Quest** replays (`preserve_bugs=false`),
+with explicit hard-fail behavior for unsupported native paths.
 
 ## Ported in Zig (current)
 
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
-- Deterministic Survival sim scaffold + runtime loops for:
+- Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
-  - survival spawn system,
+  - survival/quest spawn systems,
   - creature updates,
   - primary/secondary projectile runtime,
   - bonus/perk runtime integration,
   - run-result assembly (`ticks`, `elapsed_ms`, `score_xp`, kills, weapon usage, RNG state).
 - Verification is fully self-contained from replay bytes (no checkpoint/high-score
   sidecars).
+- Deterministic Rush spawn runtime path (`tick_rush_mode_spawns`) ported in Zig.
+- Deterministic Quest spawn tables and runtime progression hooks ported in Zig.
+  - Quest spawn builder logic is full-version-only in Zig (no shareware-gated branch path).
+- Multiplayer gameplay logic and perk gating parity achieved.
 - CLI surface: `crimson-zig replay verify <replay>` with human/json outputs and
   score-claim checking (`--submitted-score`), plus replay SHA-256 reporting.
 - Wasm target build + export ABI for worker-side integration.
 - Differential harness for tick-level Python-vs-Zig comparisons:
   - `uv run crimson-zig/scripts/diff_survival_verifiers.py ...`
-- Unsupported/not-yet-ported replay paths hard-fail instead of silently accepting.
+- Unsupported/not-yet-ported native paths hard-fail instead of silently accepting.
+
+## Runtime ownership model (Zig rewrite)
+
+- Internal gameplay runtime uses a typed owner union (`OwnerRef`) instead of raw
+  magic owner IDs.
+  - `OwnerRef.player{index, local_host}`
+  - `OwnerRef.creature{index}`
+  - `OwnerRef.none`
+- Legacy owner-id encoding (`-100`, `-1-n`, `>=0`) is treated as an interop
+  format only, not the internal simulation representation.
+- Any required legacy serialization/trace surface is emitted by explicit
+  conversion (`OwnerRef.toLegacy()`) at boundaries.
 
 ## Not fully ported / known parity gaps
 
-- Zig verifier is still scoped to **1-player Survival** only:
-  - no Rush/Quest replay verification,
-  - no multiplayer replay verification,
-  - no `preserve_bugs=true` compatibility layer.
+- Native fast path is still scoped to **1-4 player Survival/Rush/Quest**:
+  - no native `preserve_bugs=true` compatibility layer.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
   Survival captures.
-- Mode/scope limits still apply:
-  - latest ruleset only (`preserve_bugs=false`),
-  - hard-fail behavior for unsupported paths remains intentional.
+- Mode/scope limits still apply to the **native** path:
+  - latest ruleset only (`preserve_bugs=false`).
 
 ## Current replay parity snapshot (2026-02-25)
 

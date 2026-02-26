@@ -43,6 +43,7 @@ export fn crimson_verify_replay_json(
     _ = out_ptr;
     _ = out_len;
     last_error_len = 0;
+    heap_top = 0;
 
     if (replay_ptr == 0 or replay_len == 0) {
         setErrorSimple("{\"status\":\"error\",\"message\":\"missing replay bytes\"}");

@@ -10,8 +10,11 @@ class ParityPolicy:
     max_field_diffs: int
     include_hash_fields: bool
     include_rng_fields: bool
+    include_entity_channels: bool
+    include_event_channels: bool
     normalize_unknown: bool
     unknown_events_wildcard: bool
+    ignore_field_prefixes: tuple[str, ...] = ()
 
 
 _POLICIES: dict[str, ParityPolicy] = {
@@ -21,6 +24,8 @@ _POLICIES: dict[str, ParityPolicy] = {
         max_field_diffs=16,
         include_hash_fields=False,
         include_rng_fields=False,
+        include_entity_channels=True,
+        include_event_channels=True,
         normalize_unknown=True,
         unknown_events_wildcard=True,
     ),
@@ -30,6 +35,8 @@ _POLICIES: dict[str, ParityPolicy] = {
         max_field_diffs=16,
         include_hash_fields=True,
         include_rng_fields=True,
+        include_entity_channels=True,
+        include_event_channels=True,
         normalize_unknown=False,
         unknown_events_wildcard=False,
     ),
@@ -39,8 +46,29 @@ _POLICIES: dict[str, ParityPolicy] = {
         max_field_diffs=16,
         include_hash_fields=True,
         include_rng_fields=True,
+        include_entity_channels=True,
+        include_event_channels=True,
         normalize_unknown=False,
         unknown_events_wildcard=False,
+    ),
+    "python_vs_zig_core": ParityPolicy(
+        name="python_vs_zig_core",
+        float_abs_tol=0.001,
+        max_field_diffs=16,
+        include_hash_fields=False,
+        include_rng_fields=False,
+        include_entity_channels=False,
+        include_event_channels=False,
+        normalize_unknown=True,
+        unknown_events_wildcard=True,
+        ignore_field_prefixes=(
+            "players",
+            "perk.choices",
+            "perk.choices_dirty",
+            "perk.player_nonzero_counts",
+            "deaths",
+            "events",
+        ),
     ),
 }
 
@@ -65,4 +93,3 @@ def resolve_parity_policy(
     if max_field_diffs is not None:
         policy = replace(policy, max_field_diffs=max(1, int(max_field_diffs)))
     return policy
-

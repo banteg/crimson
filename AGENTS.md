@@ -17,7 +17,9 @@ For capture-driven parity investigations (when you are handed only a fresh captu
 
 # Pre-commit
 
-Run `just check` before commits.
+- Zig-only changes (files under `crimson-zig/`): run `just check-zig`.
+- Python/docs/tooling changes (anything under `src/`, `tests/`, `docs/`, `tools/`, etc.): run `just check`.
+- Mixed Zig + Python/docs/tooling changes: run both `just check-zig` and `just check`.
 
 # Ast-grep
 
@@ -58,4 +60,3 @@ Principles > rules. Don’t make code longer/uglier just to satisfy a guideline.
 ## Schema changes
 Update callers directly. Keep schemas versioned, only support the latest version.
 If a compat layer is needed, keep it small, local, and temporary (with removal note).
-

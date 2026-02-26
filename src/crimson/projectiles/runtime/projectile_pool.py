@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...math_parity import NATIVE_HALF_PI, f32
+from ...owner_ref import OwnerLike, OwnerRef, owner_ref
 from ...perks import PerkId
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
@@ -72,7 +73,7 @@ class ProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: int,
-        owner_id: int,
+        owner_id: OwnerLike,
         base_damage: float = 0.0,
         hits_players: bool = False,
     ) -> int:
@@ -98,7 +99,7 @@ class ProjectilePool:
         weapon_entry = weapon_entry_for_projectile_type_id(entry.type_id)
         if weapon_entry is not None and weapon_entry.projectile_meta is not None:
             entry.base_damage = float(weapon_entry.projectile_meta)
-        entry.owner_id = int(owner_id)
+        entry.owner = owner_ref(owner_id)
         entry.hits_players = bool(hits_players)
 
         if type_id == ProjectileTypeId.ION_MINIGUN:
@@ -175,16 +176,11 @@ class ProjectilePool:
         if ion_scale == 1.0 and ion_gun_master_active:
             ion_scale = 1.2
 
-        def _owner_perk_active(owner_id: int, perk_idx: int) -> bool:
+        def _owner_perk_active(owner: OwnerRef, perk_idx: int) -> bool:
             if players is None:
                 return False
-            if owner_id == -100:
-                player_index = 0
-            elif owner_id < 0:
-                player_index = -1 - int(owner_id)
-            else:
-                return False
-            if not (0 <= player_index < len(players)):
+            player_index = owner.player_index_in_bounds(len(players))
+            if player_index is None:
                 return False
             perk_counts = players[player_index].perk_counts
             return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
@@ -272,7 +268,7 @@ class ProjectilePool:
             steps = int(proj.base_damage)
             if steps <= 0:
                 steps = 1
-            if barrel_greaser_active and int(proj.owner_id) < 0:
+            if barrel_greaser_active and proj.owner.is_player():
                 steps *= 2
 
             direction = Vec2.from_heading(float(proj.angle))
@@ -294,7 +290,7 @@ class ProjectilePool:
                     acc = Vec2()
 
                     hit_idx = None
-                    owner_creature_idx = int(proj.owner_id)
+                    owner_creature_idx = proj.owner.creature_index_in_bounds(len(creatures))
                     for idx in creature_spatial.candidate_indices(pos=proj.pos, radius=float(proj.hit_radius)):
                         creature = creatures[idx]
                         if not _creature_is_collidable(creature):
@@ -308,7 +304,7 @@ class ProjectilePool:
                             hit_idx = idx
                             break
 
-                    owner_collision = hit_idx is not None and int(hit_idx) == owner_creature_idx
+                    owner_collision = hit_idx is not None and owner_creature_idx is not None and int(hit_idx) == owner_creature_idx
                     if owner_collision:
                         # Native `creature_find_in_radius` does not skip owner id during
                         # search; owner hits are discarded after the first match instead of
@@ -326,9 +322,8 @@ class ProjectilePool:
 
                         if proj.hits_players and can_hit_players:
                             hit_player_idx = None
-                            owner_id = int(proj.owner_id)
-                            owner_player_index = -1 - owner_id if owner_id < 0 and owner_id != -100 else None
                             if players is not None:
+                                owner_player_index = proj.owner.player_index_in_bounds(len(players))
                                 for idx, player in enumerate(players):
                                     if owner_player_index is not None and idx == owner_player_index:
                                         continue
@@ -379,12 +374,10 @@ class ProjectilePool:
                         behavior.pre_hit_creature(ctx, proj, int(hit_idx))
 
                     if runtime_state is not None:
-                        owner_id = int(proj.owner_id)
-                        if owner_id < 0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
+                        owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
+                        if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
                             shots_hit = runtime_state.shots_hit
-                            player_index = 0 if owner_id == -100 else (-1 - owner_id)
-                            if 0 <= player_index < len(shots_hit):
-                                shots_hit[player_index] += 1
+                            shots_hit[owner_player_index] += 1
 
                     target = creature.pos
                     hit = ProjectileHit(
@@ -444,7 +437,7 @@ class ProjectilePool:
                                 float(damage_amount),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=int(proj.owner_id),
+                                owner_id=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))
@@ -457,7 +450,7 @@ class ProjectilePool:
                                 float(remaining),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=int(proj.owner_id),
+                                owner_id=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))

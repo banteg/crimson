@@ -2,11 +2,10 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 const backend_python = @import("backend_python.zig");
+const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
-const survival_sim = @import("survival_sim.zig");
+const replay_runner = @import("runtime/replay_runner.zig");
 const verify_contract = @import("verify_contract.zig");
-
-const hex = "0123456789abcdef";
 
 const OutputFormat = enum {
     human,
@@ -55,13 +54,29 @@ const RunResult = struct {
     rng_state: u64,
 };
 
+const ScoreClaimPayload = struct {
+    metric: []const u8,
+    submitted_score: i64,
+    simulated_value: i64,
+    match: bool,
+};
+
+const VerifyPayload = struct {
+    schema_version: i32,
+    status: []const u8,
+    replay: []const u8,
+    replay_sha256: []const u8,
+    run_result: RunResult,
+    score_claim: ?ScoreClaimPayload,
+};
+
 pub fn runReplayVerify(
     allocator: std.mem.Allocator,
     verify_args: []const []const u8,
 ) !backend_python.CommandOutput {
     switch (parseNativeSubset(verify_args)) {
         .ok => |request| return runNativeVerify(allocator, request),
-        .unsupported => |detail| return buildNotPortedOutput(allocator, detail),
+        .unsupported => |detail| return buildUnsupportedVerifyOptionOutput(allocator, detail),
         .invalid => |detail| return buildInvalidVerifyArgsOutput(allocator, detail),
     }
 }
@@ -81,7 +96,9 @@ fn runNativeVerify(
         break :blk resolved;
     };
 
-    const resolution = try resolveReplayPath(allocator, request.replay_file, base_dir);
+    const resolution = resolveReplayPath(allocator, request.replay_file, base_dir) catch |err| {
+        return buildVerifyFailedOutput(allocator, err);
+    };
     defer resolution.deinit(allocator);
 
     if (!resolution.exists) {
@@ -121,49 +138,39 @@ fn runNativeVerify(
     };
     defer replay.deinit(allocator);
     const header = replay.header;
-    const replay_events = replay.summarizeEvents();
 
-    if (header.game_mode_id != 1) {
-        return buildNotPortedOutput(allocator, "only survival replays are currently ported");
-    }
-    if (header.player_count != 1) {
-        return buildNotPortedOutput(allocator, "only single-player survival replays are currently ported");
-    }
-    if (header.preserve_bugs) {
-        return buildNotPortedOutput(allocator, "preserve_bugs=true replays are not ported");
-    }
-    if (!std.mem.eql(u8, header.input_quantization, "raw")) {
-        return buildNotPortedOutput(allocator, "only raw input quantization is currently ported");
-    }
-    if (replay_events.total_count != replay_events.perk_menu_open_count + replay_events.perk_pick_count) {
-        return buildNotPortedOutput(allocator, "replay events include unsupported kinds");
-    }
-    if (replay.tickCount() > std.math.maxInt(i32)) {
-        return buildNotPortedOutput(allocator, "replay has too many ticks for current native verifier");
+    if (unsupportedReplayHeaderDetail(header, replay.tickCount())) |detail| {
+        return buildNotPortedOutput(allocator, detail);
     }
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
-        return buildNotPortedOutput(allocator, "only latest ruleset replays are currently ported");
-    }
-    var tick_trace: std.ArrayList(survival_sim.SurvivalTickTrace) = .empty;
-    defer tick_trace.deinit(allocator);
-
-    const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
-    const scaffold = survival_sim.runSurvivalReplayScaffoldWithTrace(
-        replay,
-        trace_out,
-        allocator,
-    ) catch |err| {
+    const scaffold = blk: {
         if (request.debug_trace_jsonl) |trace_path| {
-            writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
+            var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
+            defer tick_trace.deinit(allocator);
+
+            const traced = replay_runner.runReplayScaffoldWithTrace(
+                replay,
+                &tick_trace,
+                allocator,
+                .{},
+            ) catch |err| {
+                writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+                    return buildVerifyFailedOutput(allocator, trace_err);
+                };
+                return buildNotPortedOutputForReplayRunnerError(allocator, err);
+            };
+            writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+                return buildVerifyFailedOutput(allocator, trace_err);
+            };
+            break :blk traced;
         }
-        return buildNotPortedOutputForSurvivalSimError(allocator, err);
+
+        break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{}) catch |err| {
+            return buildNotPortedOutputForReplayRunnerError(allocator, err);
+        };
     };
-    if (request.debug_trace_jsonl) |trace_path| {
-        writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
-    }
 
     const replay_sha256 = try sha256HexAlloc(allocator, replay_bytes);
     defer allocator.free(replay_sha256);
@@ -180,7 +187,7 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    const resolved_metric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
+    const resolved_metric: verify_contract.ScoreMetric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
@@ -197,7 +204,7 @@ fn runNativeVerify(
         };
     }
 
-    const simulated_value: i64 = if (std.mem.eql(u8, resolved_metric, "elapsed_ms"))
+    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
         run_result.elapsed_ms
     else
         run_result.score_xp;
@@ -211,8 +218,10 @@ fn runNativeVerify(
     defer stdout_buf.deinit(allocator);
     var writer = stdout_buf.writer(allocator);
 
-    if (request.json_out != null and request.output_format == .human) {
-        try writer.print("json_report={s}\n", .{request.json_out.?});
+    if (request.json_out) |json_out_path| {
+        if (request.output_format == .human) {
+            try writer.print("json_report={s}\n", .{json_out_path});
+        }
     }
 
     if (request.output_format == .json) {
@@ -237,7 +246,7 @@ fn runNativeVerify(
             try writer.print(
                 "; score_claim metric={s} submitted={d} simulated={d} match={s}",
                 .{
-                    resolved_metric,
+                    verify_contract.scoreMetricLabel(resolved_metric),
                     submitted,
                     simulated_value,
                     if (claim_matches) "true" else "false",
@@ -254,10 +263,13 @@ fn runNativeVerify(
     };
 }
 
-fn writeSurvivalTickTraceJsonl(
+fn writeReplayTickTraceJsonl(
     trace_path: []const u8,
-    trace: []const survival_sim.SurvivalTickTrace,
+    trace: []const replay_runner.ReplayTickTrace,
 ) !void {
+    if (std.fs.path.dirname(trace_path)) |dir| {
+        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+    }
     const file = try std.fs.cwd().createFile(trace_path, .{
         .truncate = true,
     });
@@ -271,330 +283,330 @@ fn writeSurvivalTickTraceJsonl(
             "{{\"tick\":{d},\"rng_state\":{d},\"elapsed_ms\":{d},\"score_xp\":{d},\"kills\":{d},\"creature_count\":{d},\"creature_active_index_sum\":{d},\"creature_active_index_xor\":{d},\"perk_pending\":{d},\"player_weapon_id\":{d},\"player_ammo_q4\":{d},\"player_health_q4\":{d},\"player_pos_x_q4\":{d},\"player_pos_y_q4\":{d},\"player_aim_x_q4\":{d},\"player_aim_y_q4\":{d},\"player_level\":{d},\"player_experience\":{d},\"bonus_weapon_power_up_ms\":{d},\"bonus_reflex_boost_ms\":{d},\"bonus_energizer_ms\":{d},\"bonus_double_experience_ms\":{d},\"bonus_freeze_ms\":{d},\"projectile_count\":{d},\"projectile0_pos_x_q4\":{d},\"projectile0_pos_y_q4\":{d},\"projectile0_origin_x_q4\":{d},\"projectile0_origin_y_q4\":{d},\"projectile0_life_timer_q4\":{d},\"projectile0_type_id\":{d},\"projectile0_angle_q6\":{d},\"projectile0_speed_scale_q4\":{d}",
             .{
                 entry.tick,
-                entry.rng_state,
-                entry.elapsed_ms,
-                entry.score_xp,
-                entry.kills,
-                entry.creature_count,
-                entry.creature_active_index_sum,
-                entry.creature_active_index_xor,
-                entry.perk_pending,
-                entry.player_weapon_id,
-                entry.player_ammo_q4,
-                entry.player_health_q4,
-                entry.player_pos_x_q4,
-                entry.player_pos_y_q4,
-                entry.player_aim_x_q4,
-                entry.player_aim_y_q4,
-                entry.player_level,
-                entry.player_experience,
-                entry.bonus_weapon_power_up_ms,
-                entry.bonus_reflex_boost_ms,
-                entry.bonus_energizer_ms,
-                entry.bonus_double_experience_ms,
-                entry.bonus_freeze_ms,
-                entry.projectile_count,
-                entry.projectile0_pos_x_q4,
-                entry.projectile0_pos_y_q4,
-                entry.projectile0_origin_x_q4,
-                entry.projectile0_origin_y_q4,
-                entry.projectile0_life_timer_q4,
-                entry.projectile0_type_id,
-                entry.projectile0_angle_q6,
-                entry.projectile0_speed_scale_q4,
+                entry.rng.rng_state,
+                entry.summary.elapsed_ms,
+                entry.summary.score_xp,
+                entry.summary.kills,
+                entry.summary.creature_count,
+                entry.summary.creature_active_index_sum,
+                entry.summary.creature_active_index_xor,
+                entry.summary.perk_pending,
+                entry.player.player_weapon_id,
+                entry.player.player_ammo_q4,
+                entry.player.player_health_q4,
+                entry.player.player_pos_x_q4,
+                entry.player.player_pos_y_q4,
+                entry.player.player_aim_x_q4,
+                entry.player.player_aim_y_q4,
+                entry.player.player_level,
+                entry.player.player_experience,
+                entry.bonuses.bonus_weapon_power_up_ms,
+                entry.bonuses.bonus_reflex_boost_ms,
+                entry.bonuses.bonus_energizer_ms,
+                entry.bonuses.bonus_double_experience_ms,
+                entry.bonuses.bonus_freeze_ms,
+                entry.projectiles.projectile_count,
+                entry.projectiles.projectile0_pos_x_q4,
+                entry.projectiles.projectile0_pos_y_q4,
+                entry.projectiles.projectile0_origin_x_q4,
+                entry.projectiles.projectile0_origin_y_q4,
+                entry.projectiles.projectile0_life_timer_q4,
+                entry.projectiles.projectile0_type_id,
+                entry.projectiles.projectile0_angle_q6,
+                entry.projectiles.projectile0_speed_scale_q4,
             },
         );
         try out.print(
             ",\"shots_fired_p0\":{d}",
-            .{entry.shots_fired_p0},
+            .{entry.summary.shots_fired_p0},
         );
         try out.print(
             ",\"bonus_active_count\":{d},\"bonus0_id\":{d},\"bonus0_amount\":{d},\"bonus1_id\":{d},\"bonus1_amount\":{d}",
             .{
-                entry.bonus_active_count,
-                entry.bonus0_id,
-                entry.bonus0_amount,
-                entry.bonus1_id,
-                entry.bonus1_amount,
+                entry.bonuses.bonus_active_count,
+                entry.bonuses.bonus0_id,
+                entry.bonuses.bonus0_amount,
+                entry.bonuses.bonus1_id,
+                entry.bonuses.bonus1_amount,
             },
         );
         try out.print(
             ",\"projectile_state_hash\":{d}",
-            .{entry.projectile_state_hash},
+            .{entry.projectiles.projectile_state_hash},
         );
         try out.print(
             ",\"creature_state_hash\":{d}",
-            .{entry.creature_state_hash},
+            .{entry.summary.creature_state_hash},
         );
         try out.print(
             ",\"projectile_active_index_sum\":{d},\"projectile_active_index_xor\":{d},\"projectile_type45_count\":{d}",
             .{
-                entry.projectile_active_index_sum,
-                entry.projectile_active_index_xor,
-                entry.projectile_type45_count,
+                entry.projectiles.projectile_active_index_sum,
+                entry.projectiles.projectile_active_index_xor,
+                entry.projectiles.projectile_type45_count,
             },
         );
         try out.print(
             ",\"rng_after_perk_effects\":{d},\"rng_after_creatures\":{d},\"rng_after_projectiles\":{d}",
             .{
-                entry.rng_after_perk_effects,
-                entry.rng_after_creatures,
-                entry.rng_after_projectiles,
+                entry.rng.rng_after_perk_effects,
+                entry.rng.rng_after_creatures,
+                entry.rng.rng_after_projectiles,
             },
         );
         try out.print(
             ",\"rng_after_secondary_projectiles\":{d},\"rng_after_particles\":{d},\"rng_after_player_update\":{d},\"rng_after_stage_spawns\":{d},\"rng_after_wave_spawns\":{d},\"rng_after_spawns\":{d},\"rng_after_bonus_update\":{d}",
             .{
-                entry.rng_after_secondary_projectiles,
-                entry.rng_after_particles,
-                entry.rng_after_player_update,
-                entry.rng_after_stage_spawns,
-                entry.rng_after_wave_spawns,
-                entry.rng_after_spawns,
-                entry.rng_after_bonus_update,
+                entry.rng.rng_after_secondary_projectiles,
+                entry.rng.rng_after_particles,
+                entry.rng.rng_after_player_update,
+                entry.rng.rng_after_stage_spawns,
+                entry.rng.rng_after_wave_spawns,
+                entry.rng.rng_after_spawns,
+                entry.rng.rng_after_bonus_update,
             },
         );
         try out.print(
             ",\"projectile1_active\":{s},\"projectile1_pos_x_q4\":{d},\"projectile1_pos_y_q4\":{d},\"projectile1_origin_x_q4\":{d},\"projectile1_origin_y_q4\":{d},\"projectile1_life_timer_q4\":{d},\"projectile1_type_id\":{d},\"projectile1_angle_q6\":{d},\"projectile1_damage_pool_q4\":{d}",
             .{
-                if (entry.projectile1_active) "true" else "false",
-                entry.projectile1_pos_x_q4,
-                entry.projectile1_pos_y_q4,
-                entry.projectile1_origin_x_q4,
-                entry.projectile1_origin_y_q4,
-                entry.projectile1_life_timer_q4,
-                entry.projectile1_type_id,
-                entry.projectile1_angle_q6,
-                entry.projectile1_damage_pool_q4,
+                if (entry.projectiles.projectile1_active) "true" else "false",
+                entry.projectiles.projectile1_pos_x_q4,
+                entry.projectiles.projectile1_pos_y_q4,
+                entry.projectiles.projectile1_origin_x_q4,
+                entry.projectiles.projectile1_origin_y_q4,
+                entry.projectiles.projectile1_life_timer_q4,
+                entry.projectiles.projectile1_type_id,
+                entry.projectiles.projectile1_angle_q6,
+                entry.projectiles.projectile1_damage_pool_q4,
             },
         );
         try out.print(
             ",\"projectile6_active\":{s},\"projectile6_type_id\":{d},\"projectile6_pos_x_q4\":{d},\"projectile6_pos_y_q4\":{d},\"projectile6_origin_x_q4\":{d},\"projectile6_origin_y_q4\":{d},\"projectile6_life_timer_q4\":{d},\"projectile6_damage_pool_q4\":{d},\"projectile6_angle_q6\":{d}",
             .{
-                if (entry.projectile6_active) "true" else "false",
-                entry.projectile6_type_id,
-                entry.projectile6_pos_x_q4,
-                entry.projectile6_pos_y_q4,
-                entry.projectile6_origin_x_q4,
-                entry.projectile6_origin_y_q4,
-                entry.projectile6_life_timer_q4,
-                entry.projectile6_damage_pool_q4,
-                entry.projectile6_angle_q6,
+                if (entry.projectiles.projectile6_active) "true" else "false",
+                entry.projectiles.projectile6_type_id,
+                entry.projectiles.projectile6_pos_x_q4,
+                entry.projectiles.projectile6_pos_y_q4,
+                entry.projectiles.projectile6_origin_x_q4,
+                entry.projectiles.projectile6_origin_y_q4,
+                entry.projectiles.projectile6_life_timer_q4,
+                entry.projectiles.projectile6_damage_pool_q4,
+                entry.projectiles.projectile6_angle_q6,
             },
         );
         try out.print(
             ",\"player_heading_q6\":{d},\"player_aim_heading_q6\":{d},\"player_move_speed_q4\":{d},\"player_turn_speed_q4\":{d}",
             .{
-                entry.player_heading_q6,
-                entry.player_aim_heading_q6,
-                entry.player_move_speed_q4,
-                entry.player_turn_speed_q4,
+                entry.player.player_heading_q6,
+                entry.player.player_aim_heading_q6,
+                entry.player.player_move_speed_q4,
+                entry.player.player_turn_speed_q4,
             },
         );
         try out.print(
             ",\"player_reload_active\":{s},\"player_reload_timer_q4\":{d},\"player_shot_cooldown_q4\":{d},\"player_shot_seq\":{d}",
             .{
-                if (entry.player_reload_active) "true" else "false",
-                entry.player_reload_timer_q4,
-                entry.player_shot_cooldown_q4,
-                entry.player_shot_seq,
+                if (entry.player.player_reload_active) "true" else "false",
+                entry.player.player_reload_timer_q4,
+                entry.player.player_shot_cooldown_q4,
+                entry.player.player_shot_seq,
             },
         );
         try out.print(
             ",\"player_perk31_count\":{d},\"player_perk53_count\":{d},\"player_perk54_count\":{d},\"player_perk55_count\":{d},\"player_hot_tempered_timer_q6\":{d},\"player_shield_timer_q4\":{d},\"player_man_bomb_timer_q6\":{d},\"player_fire_cough_timer_q6\":{d},\"player_living_fortress_timer_q6\":{d},\"perk_interval_hot_tempered_q6\":{d},\"perk_interval_man_bomb_q6\":{d},\"perk_interval_fire_cough_q6\":{d}",
             .{
-                entry.player_perk31_count,
-                entry.player_perk53_count,
-                entry.player_perk54_count,
-                entry.player_perk55_count,
-                entry.player_hot_tempered_timer_q6,
-                entry.player_shield_timer_q4,
-                entry.player_man_bomb_timer_q6,
-                entry.player_fire_cough_timer_q6,
-                entry.player_living_fortress_timer_q6,
-                entry.perk_interval_hot_tempered_q6,
-                entry.perk_interval_man_bomb_q6,
-                entry.perk_interval_fire_cough_q6,
+                entry.player.player_perk31_count,
+                entry.player.player_perk53_count,
+                entry.player.player_perk54_count,
+                entry.player.player_perk55_count,
+                entry.player.player_hot_tempered_timer_q6,
+                entry.player.player_shield_timer_q4,
+                entry.player.player_man_bomb_timer_q6,
+                entry.player.player_fire_cough_timer_q6,
+                entry.player.player_living_fortress_timer_q6,
+                entry.player.perk_interval_hot_tempered_q6,
+                entry.player.perk_interval_man_bomb_q6,
+                entry.player.perk_interval_fire_cough_q6,
             },
         );
         try out.print(
             ",\"projectile_hit_count\":{d},\"projectile_type1_count\":{d},\"projectile_type6_count\":{d},\"projectile_type6_pos_x_q4\":{d},\"projectile_type6_pos_y_q4\":{d},\"projectile_type6_origin_x_q4\":{d},\"projectile_type6_origin_y_q4\":{d},\"projectile_type6_life_timer_q4\":{d},\"projectile_type6_damage_pool_q4\":{d},\"projectile_type6_b_pos_x_q4\":{d},\"projectile_type6_b_pos_y_q4\":{d},\"projectile_type6_b_life_timer_q4\":{d},\"projectile_type6_b_damage_pool_q4\":{d},\"projectile_type11_count\":{d},\"projectile_type11_pos_x_q4\":{d},\"projectile_type11_pos_y_q4\":{d},\"projectile_type11_origin_x_q4\":{d},\"projectile_type11_origin_y_q4\":{d},\"projectile_type11_life_timer_q4\":{d},\"projectile_type11_closest_to_c2_dist_q4\":{d},\"projectile_type11_closest_to_c2_pos_x_q4\":{d},\"projectile_type11_closest_to_c2_pos_y_q4\":{d},\"projectile_type11_closest_to_c2_origin_x_q4\":{d},\"projectile_type11_closest_to_c2_origin_y_q4\":{d},\"projectile_first_hit_creature_index\":{d},\"projectile_first_hit_type_id\":{d},\"projectile_first_hit_pos_x_q4\":{d},\"projectile_first_hit_pos_y_q4\":{d}",
             .{
-                entry.projectile_hit_count,
-                entry.projectile_type1_count,
-                entry.projectile_type6_count,
-                entry.projectile_type6_pos_x_q4,
-                entry.projectile_type6_pos_y_q4,
-                entry.projectile_type6_origin_x_q4,
-                entry.projectile_type6_origin_y_q4,
-                entry.projectile_type6_life_timer_q4,
-                entry.projectile_type6_damage_pool_q4,
-                entry.projectile_type6_b_pos_x_q4,
-                entry.projectile_type6_b_pos_y_q4,
-                entry.projectile_type6_b_life_timer_q4,
-                entry.projectile_type6_b_damage_pool_q4,
-                entry.projectile_type11_count,
-                entry.projectile_type11_pos_x_q4,
-                entry.projectile_type11_pos_y_q4,
-                entry.projectile_type11_origin_x_q4,
-                entry.projectile_type11_origin_y_q4,
-                entry.projectile_type11_life_timer_q4,
-                entry.projectile_type11_closest_to_c2_dist_q4,
-                entry.projectile_type11_closest_to_c2_pos_x_q4,
-                entry.projectile_type11_closest_to_c2_pos_y_q4,
-                entry.projectile_type11_closest_to_c2_origin_x_q4,
-                entry.projectile_type11_closest_to_c2_origin_y_q4,
-                entry.projectile_first_hit_creature_index,
-                entry.projectile_first_hit_type_id,
-                entry.projectile_first_hit_pos_x_q4,
-                entry.projectile_first_hit_pos_y_q4,
+                entry.projectiles.projectile_hit_count,
+                entry.projectiles.projectile_type1_count,
+                entry.projectiles.projectile_type6_count,
+                entry.projectiles.projectile_type6_pos_x_q4,
+                entry.projectiles.projectile_type6_pos_y_q4,
+                entry.projectiles.projectile_type6_origin_x_q4,
+                entry.projectiles.projectile_type6_origin_y_q4,
+                entry.projectiles.projectile_type6_life_timer_q4,
+                entry.projectiles.projectile_type6_damage_pool_q4,
+                entry.projectiles.projectile_type6_b_pos_x_q4,
+                entry.projectiles.projectile_type6_b_pos_y_q4,
+                entry.projectiles.projectile_type6_b_life_timer_q4,
+                entry.projectiles.projectile_type6_b_damage_pool_q4,
+                entry.projectiles.projectile_type11_count,
+                entry.projectiles.projectile_type11_pos_x_q4,
+                entry.projectiles.projectile_type11_pos_y_q4,
+                entry.projectiles.projectile_type11_origin_x_q4,
+                entry.projectiles.projectile_type11_origin_y_q4,
+                entry.projectiles.projectile_type11_life_timer_q4,
+                entry.projectiles.projectile_type11_closest_to_c2_dist_q4,
+                entry.projectiles.projectile_type11_closest_to_c2_pos_x_q4,
+                entry.projectiles.projectile_type11_closest_to_c2_pos_y_q4,
+                entry.projectiles.projectile_type11_closest_to_c2_origin_x_q4,
+                entry.projectiles.projectile_type11_closest_to_c2_origin_y_q4,
+                entry.projectiles.projectile_first_hit_creature_index,
+                entry.projectiles.projectile_first_hit_type_id,
+                entry.projectiles.projectile_first_hit_pos_x_q4,
+                entry.projectiles.projectile_first_hit_pos_y_q4,
             },
         );
         try out.print(
             ",\"projectile_type21_count\":{d},\"projectile_type21_pos_x_q4\":{d},\"projectile_type21_pos_y_q4\":{d},\"projectile_type21_origin_x_q4\":{d},\"projectile_type21_origin_y_q4\":{d},\"projectile_type21_life_timer_q4\":{d},\"projectile_type21_angle_q6\":{d}",
             .{
-                entry.projectile_type21_count,
-                entry.projectile_type21_pos_x_q4,
-                entry.projectile_type21_pos_y_q4,
-                entry.projectile_type21_origin_x_q4,
-                entry.projectile_type21_origin_y_q4,
-                entry.projectile_type21_life_timer_q4,
-                entry.projectile_type21_angle_q6,
+                entry.projectiles.projectile_type21_count,
+                entry.projectiles.projectile_type21_pos_x_q4,
+                entry.projectiles.projectile_type21_pos_y_q4,
+                entry.projectiles.projectile_type21_origin_x_q4,
+                entry.projectiles.projectile_type21_origin_y_q4,
+                entry.projectiles.projectile_type21_life_timer_q4,
+                entry.projectiles.projectile_type21_angle_q6,
             },
         );
         try out.print(
             ",\"creature0_active\":{s},\"creature0_pos_x_q4\":{d},\"creature0_pos_y_q4\":{d},\"creature0_hp_q4\":{d},\"creature0_lifecycle_stage_q4\":{d},\"creature1_active\":{s},\"creature1_pos_x_q4\":{d},\"creature1_pos_y_q4\":{d},\"creature1_hp_q4\":{d},\"creature1_lifecycle_stage_q4\":{d}",
             .{
-                if (entry.creature0_active) "true" else "false",
-                entry.creature0_pos_x_q4,
-                entry.creature0_pos_y_q4,
-                entry.creature0_hp_q4,
-                entry.creature0_lifecycle_stage_q4,
-                if (entry.creature1_active) "true" else "false",
-                entry.creature1_pos_x_q4,
-                entry.creature1_pos_y_q4,
-                entry.creature1_hp_q4,
-                entry.creature1_lifecycle_stage_q4,
+                if (entry.creatures.creature0_active) "true" else "false",
+                entry.creatures.creature0_pos_x_q4,
+                entry.creatures.creature0_pos_y_q4,
+                entry.creatures.creature0_hp_q4,
+                entry.creatures.creature0_lifecycle_stage_q4,
+                if (entry.creatures.creature1_active) "true" else "false",
+                entry.creatures.creature1_pos_x_q4,
+                entry.creatures.creature1_pos_y_q4,
+                entry.creatures.creature1_hp_q4,
+                entry.creatures.creature1_lifecycle_stage_q4,
             },
         );
         try out.print(
             ",\"projectile_first_hit_projectile_index\":{d},\"projectile_first_hit_origin_x_q4\":{d},\"projectile_first_hit_origin_y_q4\":{d},\"projectile_first_hit_target_size_q4\":{d},\"projectile_first_hit_target_x_q4\":{d},\"projectile_first_hit_target_y_q4\":{d}",
             .{
-                entry.projectile_first_hit_projectile_index,
-                entry.projectile_first_hit_origin_x_q4,
-                entry.projectile_first_hit_origin_y_q4,
-                entry.projectile_first_hit_target_size_q4,
-                entry.projectile_first_hit_target_x_q4,
-                entry.projectile_first_hit_target_y_q4,
+                entry.projectiles.projectile_first_hit_projectile_index,
+                entry.projectiles.projectile_first_hit_origin_x_q4,
+                entry.projectiles.projectile_first_hit_origin_y_q4,
+                entry.projectiles.projectile_first_hit_target_size_q4,
+                entry.projectiles.projectile_first_hit_target_x_q4,
+                entry.projectiles.projectile_first_hit_target_y_q4,
             },
         );
         try out.print(
             ",\"creature2_active\":{s},\"creature2_pos_x_q4\":{d},\"creature2_pos_y_q4\":{d},\"creature2_hp_q4\":{d},\"creature2_lifecycle_stage_q4\":{d},\"creature10_active\":{s},\"creature10_pos_x_q4\":{d},\"creature10_pos_y_q4\":{d},\"creature10_hp_q4\":{d},\"creature10_lifecycle_stage_q4\":{d},\"creature12_active\":{s},\"creature12_pos_x_q4\":{d},\"creature12_pos_y_q4\":{d},\"creature12_hp_q4\":{d},\"creature12_lifecycle_stage_q4\":{d},\"creature14_active\":{s},\"creature14_pos_x_q4\":{d},\"creature14_pos_y_q4\":{d},\"creature14_hp_q4\":{d},\"creature14_lifecycle_stage_q4\":{d},\"creature14_size_q4\":{d},\"creature14_target_x_q4\":{d},\"creature14_target_y_q4\":{d},\"creature14_heading_q6\":{d},\"creature14_target_heading_q6\":{d},\"creature18_active\":{s},\"creature18_pos_x_q4\":{d},\"creature18_pos_y_q4\":{d},\"creature18_hp_q4\":{d},\"creature18_lifecycle_stage_q4\":{d}",
             .{
-                if (entry.creature2_active) "true" else "false",
-                entry.creature2_pos_x_q4,
-                entry.creature2_pos_y_q4,
-                entry.creature2_hp_q4,
-                entry.creature2_lifecycle_stage_q4,
-                if (entry.creature10_active) "true" else "false",
-                entry.creature10_pos_x_q4,
-                entry.creature10_pos_y_q4,
-                entry.creature10_hp_q4,
-                entry.creature10_lifecycle_stage_q4,
-                if (entry.creature12_active) "true" else "false",
-                entry.creature12_pos_x_q4,
-                entry.creature12_pos_y_q4,
-                entry.creature12_hp_q4,
-                entry.creature12_lifecycle_stage_q4,
-                if (entry.creature14_active) "true" else "false",
-                entry.creature14_pos_x_q4,
-                entry.creature14_pos_y_q4,
-                entry.creature14_hp_q4,
-                entry.creature14_lifecycle_stage_q4,
-                entry.creature14_size_q4,
-                entry.creature14_target_x_q4,
-                entry.creature14_target_y_q4,
-                entry.creature14_heading_q6,
-                entry.creature14_target_heading_q6,
-                if (entry.creature18_active) "true" else "false",
-                entry.creature18_pos_x_q4,
-                entry.creature18_pos_y_q4,
-                entry.creature18_hp_q4,
-                entry.creature18_lifecycle_stage_q4,
+                if (entry.creatures.creature2_active) "true" else "false",
+                entry.creatures.creature2_pos_x_q4,
+                entry.creatures.creature2_pos_y_q4,
+                entry.creatures.creature2_hp_q4,
+                entry.creatures.creature2_lifecycle_stage_q4,
+                if (entry.creatures.creature10_active) "true" else "false",
+                entry.creatures.creature10_pos_x_q4,
+                entry.creatures.creature10_pos_y_q4,
+                entry.creatures.creature10_hp_q4,
+                entry.creatures.creature10_lifecycle_stage_q4,
+                if (entry.creatures.creature12_active) "true" else "false",
+                entry.creatures.creature12_pos_x_q4,
+                entry.creatures.creature12_pos_y_q4,
+                entry.creatures.creature12_hp_q4,
+                entry.creatures.creature12_lifecycle_stage_q4,
+                if (entry.creatures.creature14_active) "true" else "false",
+                entry.creatures.creature14_pos_x_q4,
+                entry.creatures.creature14_pos_y_q4,
+                entry.creatures.creature14_hp_q4,
+                entry.creatures.creature14_lifecycle_stage_q4,
+                entry.creatures.creature14_size_q4,
+                entry.creatures.creature14_target_x_q4,
+                entry.creatures.creature14_target_y_q4,
+                entry.creatures.creature14_heading_q6,
+                entry.creatures.creature14_target_heading_q6,
+                if (entry.creatures.creature18_active) "true" else "false",
+                entry.creatures.creature18_pos_x_q4,
+                entry.creatures.creature18_pos_y_q4,
+                entry.creatures.creature18_hp_q4,
+                entry.creatures.creature18_lifecycle_stage_q4,
             },
         );
         try out.print(
             ",\"creature18_target_x_q4\":{d},\"creature18_target_y_q4\":{d},\"creature18_heading_q6\":{d},\"creature18_target_heading_q6\":{d},\"creature18_type_id\":{d},\"creature18_flags\":{d},\"creature18_link_index\":{d},\"creature18_ai_mode\":{d}",
             .{
-                entry.creature18_target_x_q4,
-                entry.creature18_target_y_q4,
-                entry.creature18_heading_q6,
-                entry.creature18_target_heading_q6,
-                entry.creature18_type_id,
-                entry.creature18_flags,
-                entry.creature18_link_index,
-                entry.creature18_ai_mode,
+                entry.creatures.creature18_target_x_q4,
+                entry.creatures.creature18_target_y_q4,
+                entry.creatures.creature18_heading_q6,
+                entry.creatures.creature18_target_heading_q6,
+                entry.creatures.creature18_type_id,
+                entry.creatures.creature18_flags,
+                entry.creatures.creature18_link_index,
+                entry.creatures.creature18_ai_mode,
             },
         );
         try out.print(
             ",\"creature15_active\":{s},\"creature15_pos_x_q4\":{d},\"creature15_pos_y_q4\":{d},\"creature15_hp_q4\":{d},\"creature15_lifecycle_stage_q4\":{d}",
             .{
-                if (entry.creature15_active) "true" else "false",
-                entry.creature15_pos_x_q4,
-                entry.creature15_pos_y_q4,
-                entry.creature15_hp_q4,
-                entry.creature15_lifecycle_stage_q4,
+                if (entry.creatures.creature15_active) "true" else "false",
+                entry.creatures.creature15_pos_x_q4,
+                entry.creatures.creature15_pos_y_q4,
+                entry.creatures.creature15_hp_q4,
+                entry.creatures.creature15_lifecycle_stage_q4,
             },
         );
         try out.print(
             ",\"creature26_active\":{s},\"creature26_hp_q4\":{d},\"creature26_lifecycle_stage_q4\":{d},\"creature26_type_id\":{d},\"creature26_flags\":{d},\"creature26_link_index\":{d},\"creature26_ai_mode\":{d},\"creature31_active\":{s},\"creature31_hp_q4\":{d},\"creature31_lifecycle_stage_q4\":{d},\"creature32_active\":{s},\"creature32_pos_x_q4\":{d},\"creature32_pos_y_q4\":{d},\"creature32_hp_q4\":{d},\"creature32_lifecycle_stage_q4\":{d},\"creature32_type_id\":{d},\"creature32_flags\":{d},\"creature32_heading_q6\":{d},\"creature32_target_heading_q6\":{d},\"creature32_target_x_q4\":{d},\"creature32_target_y_q4\":{d},\"creature32_link_index\":{d},\"creature32_ai_mode\":{d}",
             .{
-                if (entry.creature26_active) "true" else "false",
-                entry.creature26_hp_q4,
-                entry.creature26_lifecycle_stage_q4,
-                entry.creature26_type_id,
-                entry.creature26_flags,
-                entry.creature26_link_index,
-                entry.creature26_ai_mode,
-                if (entry.creature31_active) "true" else "false",
-                entry.creature31_hp_q4,
-                entry.creature31_lifecycle_stage_q4,
-                if (entry.creature32_active) "true" else "false",
-                entry.creature32_pos_x_q4,
-                entry.creature32_pos_y_q4,
-                entry.creature32_hp_q4,
-                entry.creature32_lifecycle_stage_q4,
-                entry.creature32_type_id,
-                entry.creature32_flags,
-                entry.creature32_heading_q6,
-                entry.creature32_target_heading_q6,
-                entry.creature32_target_x_q4,
-                entry.creature32_target_y_q4,
-                entry.creature32_link_index,
-                entry.creature32_ai_mode,
+                if (entry.creatures.creature26_active) "true" else "false",
+                entry.creatures.creature26_hp_q4,
+                entry.creatures.creature26_lifecycle_stage_q4,
+                entry.creatures.creature26_type_id,
+                entry.creatures.creature26_flags,
+                entry.creatures.creature26_link_index,
+                entry.creatures.creature26_ai_mode,
+                if (entry.creatures.creature31_active) "true" else "false",
+                entry.creatures.creature31_hp_q4,
+                entry.creatures.creature31_lifecycle_stage_q4,
+                if (entry.creatures.creature32_active) "true" else "false",
+                entry.creatures.creature32_pos_x_q4,
+                entry.creatures.creature32_pos_y_q4,
+                entry.creatures.creature32_hp_q4,
+                entry.creatures.creature32_lifecycle_stage_q4,
+                entry.creatures.creature32_type_id,
+                entry.creatures.creature32_flags,
+                entry.creatures.creature32_heading_q6,
+                entry.creatures.creature32_target_heading_q6,
+                entry.creatures.creature32_target_x_q4,
+                entry.creatures.creature32_target_y_q4,
+                entry.creatures.creature32_link_index,
+                entry.creatures.creature32_ai_mode,
             },
         );
         try out.print(
             ",\"creature39_active\":{s},\"creature39_hp_q4\":{d},\"creature39_lifecycle_stage_q4\":{d},\"creature39_type_id\":{d},\"creature39_flags\":{d},\"creature39_link_index\":{d},\"creature39_ai_mode\":{d},\"creature45_active\":{s},\"creature45_pos_x_q4\":{d},\"creature45_pos_y_q4\":{d},\"creature45_hp_q4\":{d},\"creature45_lifecycle_stage_q4\":{d},\"debug_pending_nuke\":{d},\"debug_nuke_kills_last\":{d},\"debug_nuke_tick_last\":{d},\"debug_nuke_kill_index_sum\":{d},\"debug_last_picked_bonus_id\":{d},\"debug_last_picked_bonus_amount\":{d}}}\n",
             .{
-                if (entry.creature39_active) "true" else "false",
-                entry.creature39_hp_q4,
-                entry.creature39_lifecycle_stage_q4,
-                entry.creature39_type_id,
-                entry.creature39_flags,
-                entry.creature39_link_index,
-                entry.creature39_ai_mode,
-                if (entry.creature45_active) "true" else "false",
-                entry.creature45_pos_x_q4,
-                entry.creature45_pos_y_q4,
-                entry.creature45_hp_q4,
-                entry.creature45_lifecycle_stage_q4,
-                entry.debug_pending_nuke,
-                entry.debug_nuke_kills_last,
-                entry.debug_nuke_tick_last,
-                entry.debug_nuke_kill_index_sum,
-                entry.debug_last_picked_bonus_id,
-                entry.debug_last_picked_bonus_amount,
+                if (entry.creatures.creature39_active) "true" else "false",
+                entry.creatures.creature39_hp_q4,
+                entry.creatures.creature39_lifecycle_stage_q4,
+                entry.creatures.creature39_type_id,
+                entry.creatures.creature39_flags,
+                entry.creatures.creature39_link_index,
+                entry.creatures.creature39_ai_mode,
+                if (entry.creatures.creature45_active) "true" else "false",
+                entry.creatures.creature45_pos_x_q4,
+                entry.creatures.creature45_pos_y_q4,
+                entry.creatures.creature45_hp_q4,
+                entry.creatures.creature45_lifecycle_stage_q4,
+                entry.debug.debug_pending_nuke,
+                entry.debug.debug_nuke_kills_last,
+                entry.debug.debug_nuke_tick_last,
+                entry.debug.debug_nuke_kill_index_sum,
+                entry.debug.debug_last_picked_bonus_id,
+                entry.debug.debug_last_picked_bonus_amount,
             },
         );
     }
@@ -606,13 +618,10 @@ fn buildVerifyPayload(
     replay_path: []const u8,
     replay_sha256: []const u8,
     run_result: RunResult,
-    resolved_metric: []const u8,
+    resolved_metric: verify_contract.ScoreMetric,
     submitted_score: ?i64,
 ) ![]u8 {
-    var payload: std.ArrayList(u8) = .empty;
-    errdefer payload.deinit(allocator);
-
-    const simulated_value: i64 = if (std.mem.eql(u8, resolved_metric, "elapsed_ms"))
+    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
         run_result.elapsed_ms
     else
         run_result.score_xp;
@@ -620,93 +629,31 @@ fn buildVerifyPayload(
         submitted == simulated_value
     else
         true;
+    const score_claim: ?ScoreClaimPayload = if (submitted_score) |submitted| .{
+        .metric = verify_contract.scoreMetricLabel(resolved_metric),
+        .submitted_score = submitted,
+        .simulated_value = simulated_value,
+        .match = claim_matches,
+    } else null;
+    const report: VerifyPayload = .{
+        .schema_version = verify_contract.replay_schema_version,
+        .status = if (claim_matches) "ok" else "score_mismatch",
+        .replay = replay_path,
+        .replay_sha256 = replay_sha256,
+        .run_result = run_result,
+        .score_claim = score_claim,
+    };
 
-    var writer = payload.writer(allocator);
-
-    try writer.writeAll("{\"schema_version\":");
-    try writer.print("{d}", .{verify_contract.replay_schema_version});
-    try writer.writeAll(",\"status\":");
-    try writeJsonString(&writer, if (claim_matches) "ok" else "score_mismatch");
-    try writer.writeAll(",\"replay\":");
-    try writeJsonString(&writer, replay_path);
-    try writer.writeAll(",\"replay_sha256\":");
-    try writeJsonString(&writer, replay_sha256);
-    try writer.writeAll(",\"run_result\":{");
-    try writer.writeAll("\"game_mode_id\":");
-    try writer.print("{d}", .{run_result.game_mode_id});
-    try writer.writeAll(",\"tick_rate\":");
-    try writer.print("{d}", .{run_result.tick_rate});
-    try writer.writeAll(",\"ticks\":");
-    try writer.print("{d}", .{run_result.ticks});
-    try writer.writeAll(",\"elapsed_ms\":");
-    try writer.print("{d}", .{run_result.elapsed_ms});
-    try writer.writeAll(",\"score_xp\":");
-    try writer.print("{d}", .{run_result.score_xp});
-    try writer.writeAll(",\"creature_kill_count\":");
-    try writer.print("{d}", .{run_result.creature_kill_count});
-    try writer.writeAll(",\"most_used_weapon_id\":");
-    try writer.print("{d}", .{run_result.most_used_weapon_id});
-    try writer.writeAll(",\"shots_fired\":");
-    try writer.print("{d}", .{run_result.shots_fired});
-    try writer.writeAll(",\"shots_hit\":");
-    try writer.print("{d}", .{run_result.shots_hit});
-    try writer.writeAll(",\"rng_state\":");
-    try writer.print("{d}", .{run_result.rng_state});
-    try writer.writeAll("},\"score_claim\":");
-
-    if (submitted_score) |submitted| {
-        try writer.writeAll("{");
-        try writer.writeAll("\"metric\":");
-        try writeJsonString(&writer, resolved_metric);
-        try writer.writeAll(",\"submitted_score\":");
-        try writer.print("{d}", .{submitted});
-        try writer.writeAll(",\"simulated_value\":");
-        try writer.print("{d}", .{simulated_value});
-        try writer.writeAll(",\"match\":");
-        try writer.writeAll(if (claim_matches) "true" else "false");
-        try writer.writeAll("}");
-    } else {
-        try writer.writeAll("null");
-    }
-
-    try writer.writeAll("}");
-
-    return payload.toOwnedSlice(allocator);
-}
-
-fn writeJsonString(writer: anytype, value: []const u8) !void {
-    try writer.writeByte('"');
-    for (value) |byte| {
-        switch (byte) {
-            '"' => try writer.writeAll("\\\""),
-            '\\' => try writer.writeAll("\\\\"),
-            '\n' => try writer.writeAll("\\n"),
-            '\r' => try writer.writeAll("\\r"),
-            '\t' => try writer.writeAll("\\t"),
-            else => {
-                if (byte < 0x20) {
-                    try writer.writeAll("\\u00");
-                    try writer.writeByte(hex[(byte >> 4) & 0x0f]);
-                    try writer.writeByte(hex[byte & 0x0f]);
-                } else {
-                    try writer.writeByte(byte);
-                }
-            },
-        }
-    }
-    try writer.writeByte('"');
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(report, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
 }
 
 fn sha256HexAlloc(allocator: std.mem.Allocator, bytes: []const u8) ![]u8 {
-    var digest: [32]u8 = undefined;
-    std.crypto.hash.sha2.Sha256.hash(bytes, &digest, .{});
-
-    const out = try allocator.alloc(u8, 64);
-    for (digest, 0..) |byte, idx| {
-        out[idx * 2] = hex[(byte >> 4) & 0x0f];
-        out[idx * 2 + 1] = hex[byte & 0x0f];
-    }
-    return out;
+    var out: [64]u8 = undefined;
+    hash.sha256HexLower(bytes, &out);
+    return try allocator.dupe(u8, out[0..]);
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
@@ -774,6 +721,23 @@ fn buildInvalidVerifyArgsOutput(
     };
 }
 
+fn buildUnsupportedVerifyOptionOutput(
+    allocator: std.mem.Allocator,
+    detail: []const u8,
+) !backend_python.CommandOutput {
+    var stderr_buf: std.ArrayList(u8) = .empty;
+    defer stderr_buf.deinit(allocator);
+
+    var writer = stderr_buf.writer(allocator);
+    try writer.print("unsupported replay verify option in native verifier: {s}\n", .{detail});
+
+    return .{
+        .stdout = try allocator.dupe(u8, ""),
+        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .exit_code = 1,
+    };
+}
+
 fn buildNotPortedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
@@ -789,6 +753,31 @@ fn buildNotPortedOutput(
         .stderr = try stderr_buf.toOwnedSlice(allocator),
         .exit_code = 1,
     };
+}
+
+fn unsupportedReplayHeaderDetail(
+    header: replay_codec.ReplayHeader,
+    tick_count: usize,
+) ?[]const u8 {
+    if (header.game_mode_id != 1 and header.game_mode_id != 2 and header.game_mode_id != 3) {
+        return "only survival/rush/quest replays are currently ported";
+    }
+    if (header.player_count < 1 or header.player_count > 4) {
+        return "only 1-4 player replays are currently ported";
+    }
+    if (header.preserve_bugs) {
+        return "preserve_bugs=true replays are not ported";
+    }
+    if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
+        return "only raw/f32 input quantization is currently ported";
+    }
+    if (tick_count > std.math.maxInt(i32)) {
+        return "replay has too many ticks for current native verifier";
+    }
+    if (!std.mem.startsWith(u8, header.game_version, "0.7.")) {
+        return "only latest ruleset replays are currently ported";
+    }
+    return null;
 }
 
 fn buildNotPortedOutputForReplayCodecError(
@@ -813,21 +802,26 @@ fn buildNotPortedOutputForReplayCodecError(
     return buildNotPortedOutput(allocator, detail);
 }
 
-fn buildNotPortedOutputForSurvivalSimError(
+fn buildNotPortedOutputForReplayRunnerError(
     allocator: std.mem.Allocator,
-    err: survival_sim.SurvivalSimError,
+    err: replay_runner.ReplayRunnerError,
 ) !backend_python.CommandOutput {
     const detail = switch (err) {
-        error.OutOfMemory => "survival simulation scaffold ran out of memory",
-        error.UnsupportedGameMode => "survival simulation scaffold only supports survival mode",
-        error.UnsupportedPlayerCount => "survival simulation scaffold only supports single-player replays",
-        error.UnsupportedInputQuantization => "survival simulation scaffold only supports raw/f32 quantization",
-        error.UnsupportedPreserveBugs => "survival simulation scaffold does not support preserve_bugs=true",
+        error.OutOfMemory => "replay simulation scaffold ran out of memory",
+        error.InvalidHeaderValue => "replay simulation scaffold received invalid header values",
+        error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
+        error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
+        error.UnsupportedInputQuantization => "replay simulation scaffold only supports raw/f32 quantization",
+        error.UnsupportedDemoMode => "replay simulation scaffold does not support demo_mode_active=true",
+        error.UnsupportedPreserveBugs => "replay simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventPlayerIndex => "survival simulation scaffold only supports player_index=0 events",
+        error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
+        error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
+        error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
+        error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
         error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
         error.UnsupportedBonusApplyPath => "replay triggered bonus apply path not yet ported in native bonus runtime",
     };
@@ -905,12 +899,12 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--score-metric")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --score-metric" };
             idx += 1;
-            request.score_metric = parseScoreMetric(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = verify_contract.scoreMetricFromString(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "--score-metric=")) {
             const value = arg["--score-metric=".len..];
-            request.score_metric = parseScoreMetric(value) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = verify_contract.scoreMetricFromString(value) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
 
@@ -930,7 +924,7 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         }
 
         if (std.mem.startsWith(u8, arg, "-")) {
-            return .{ .unsupported = arg };
+            return .{ .invalid = arg };
         }
 
         if (replay_file == null) {
@@ -952,19 +946,12 @@ fn parseOutputFormat(raw: []const u8) ?OutputFormat {
     return null;
 }
 
-fn parseScoreMetric(raw: []const u8) ?verify_contract.ScoreMetric {
-    if (std.mem.eql(u8, raw, "auto")) return .auto;
-    if (std.mem.eql(u8, raw, "score_xp")) return .score_xp;
-    if (std.mem.eql(u8, raw, "elapsed_ms")) return .elapsed_ms;
-    return null;
-}
-
 fn resolveReplayPath(
     allocator: std.mem.Allocator,
     replay_file: []const u8,
     base_dir: []const u8,
 ) !ReplayResolution {
-    const primary_exists = isFile(replay_file);
+    const primary_exists = try isFile(replay_file);
     if (primary_exists) {
         return .{
             .resolved_path = try allocator.dupe(u8, replay_file),
@@ -976,7 +963,7 @@ fn resolveReplayPath(
 
     if (!std.fs.path.isAbsolute(replay_file) and isSingleSegmentPath(replay_file)) {
         const secondary = try std.fs.path.join(allocator, &.{ base_dir, "replays", replay_file });
-        const secondary_exists = isFile(secondary);
+        const secondary_exists = try isFile(secondary);
         return .{
             .resolved_path = if (secondary_exists)
                 try allocator.dupe(u8, secondary)
@@ -1000,8 +987,11 @@ fn isSingleSegmentPath(path: []const u8) bool {
     return std.mem.indexOfAny(u8, path, "/\\") == null;
 }
 
-fn isFile(path: []const u8) bool {
-    const file = std.fs.cwd().openFile(path, .{}) catch return false;
+fn isFile(path: []const u8) !bool {
+    const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
+        error.FileNotFound, error.NotDir, error.IsDir => return false,
+        else => return err,
+    };
     defer file.close();
     return true;
 }
@@ -1084,6 +1074,39 @@ test "parse native subset reports unsupported options" {
     }
 }
 
+test "parse native subset reports unknown option as invalid" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--unknown-option",
+    });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("--unknown-option", detail),
+        else => return error.TestExpectedInvalidOption,
+    }
+}
+
+test "parse native subset reports unsupported lenient events option" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--lenient-events",
+    });
+    switch (parsed) {
+        .unsupported => |detail| try std.testing.expectEqualStrings("--lenient-events", detail),
+        else => return error.TestExpectedUnsupportedOption,
+    }
+}
+
+test "parse native subset reports unsupported max ticks option" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--max-ticks=1000",
+    });
+    switch (parsed) {
+        .unsupported => |detail| try std.testing.expectEqualStrings("--max-ticks", detail),
+        else => return error.TestExpectedUnsupportedOption,
+    }
+}
+
 test "build verify payload score mismatch" {
     const allocator = std.testing.allocator;
     const payload = try buildVerifyPayload(
@@ -1102,11 +1125,177 @@ test "build verify payload score mismatch" {
             .shots_hit = 45,
             .rng_state = 1234,
         },
-        "score_xp",
+        .score_xp,
         1,
     );
     defer allocator.free(payload);
 
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+}
+
+test "build verify payload escapes replay path via json stringify" {
+    const allocator = std.testing.allocator;
+    const payload = try buildVerifyPayload(
+        allocator,
+        "test\"\nreplay.crd",
+        "1234567890123456789012345678901234567890123456789012345678901234",
+        .{
+            .game_mode_id = 1,
+            .tick_rate = 60,
+            .ticks = 100,
+            .elapsed_ms = 2000,
+            .score_xp = 999,
+            .creature_kill_count = 15,
+            .most_used_weapon_id = 14,
+            .shots_fired = 123,
+            .shots_hit = 45,
+            .rng_state = 1234,
+        },
+        .score_xp,
+        null,
+    );
+    defer allocator.free(payload);
+
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"replay\":\"test\\\"\\nreplay.crd\"") != null);
+}
+
+test "unsupported verify option output has dedicated wording" {
+    const allocator = std.testing.allocator;
+    const output = try buildUnsupportedVerifyOptionOutput(allocator, "--trace-rng");
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(
+        std.mem.indexOf(u8, output.stderr, "unsupported replay verify option in native verifier") != null,
+    );
+}
+
+test "survival sim not ported output maps unsupported weapon fire path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedWeaponFirePath);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "weapon fire path not yet ported") != null);
+}
+
+test "survival sim not ported output maps unsupported demo mode path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedDemoMode);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "does not support demo_mode_active=true") != null);
+}
+
+test "survival sim not ported output maps unsupported bonus apply path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedBonusApplyPath);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "bonus apply path not yet ported") != null);
+}
+
+fn makeTestReplayHeader(
+    allocator: std.mem.Allocator,
+) !replay_codec.ReplayHeader {
+    return .{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_codec.replay_format_version,
+        .quest_level = try allocator.dupe(u8, ""),
+        .bootstrap_kind = try allocator.dupe(u8, "none"),
+        .bootstrap_seed = 0,
+        .game_version = try allocator.dupe(u8, "0.7.0"),
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
+        },
+        .input_quantization = try allocator.dupe(u8, "raw"),
+    };
+}
+
+test "unsupported replay header detail rejects unsupported game mode" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.game_mode_id = 9;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only survival/rush/quest replays are currently ported", detail);
+}
+
+test "unsupported replay header detail rejects unsupported player count" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.player_count = 5;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only 1-4 player replays are currently ported", detail);
+}
+
+test "unsupported replay header detail rejects preserve bugs replays" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    header.preserve_bugs = true;
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("preserve_bugs=true replays are not ported", detail);
+}
+
+test "unsupported replay header detail rejects non raw quantization" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    allocator.free(header.input_quantization);
+    header.input_quantization = try allocator.dupe(u8, "u8");
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only raw/f32 input quantization is currently ported", detail);
+}
+
+test "unsupported replay header detail rejects oversized tick count" {
+    const allocator = std.testing.allocator;
+    const header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+
+    const overflow_ticks = @as(usize, std.math.maxInt(i32)) + 1;
+    const detail = unsupportedReplayHeaderDetail(header, overflow_ticks) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("replay has too many ticks for current native verifier", detail);
+}
+
+test "unsupported replay header detail rejects non latest ruleset" {
+    const allocator = std.testing.allocator;
+    var header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+    allocator.free(header.game_version);
+    header.game_version = try allocator.dupe(u8, "0.6.9");
+
+    const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
+    try std.testing.expectEqualStrings("only latest ruleset replays are currently ported", detail);
+}
+
+test "unsupported replay header detail accepts supported replay envelope" {
+    const allocator = std.testing.allocator;
+    const header = try makeTestReplayHeader(allocator);
+    defer header.deinit(allocator);
+
+    try std.testing.expect(unsupportedReplayHeaderDetail(header, 1) == null);
 }

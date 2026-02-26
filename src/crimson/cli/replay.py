@@ -606,7 +606,7 @@ def _build_replay_list_row(
             str(exc).replace("\n", " ").strip(),
         )
 
-    header = cast("Any", replay.header)
+    header = replay.header
     tick_rate = int(header.tick_rate)
     ticks = int(len(replay.inputs))
     game_version = str(header.game_version).strip() or "-"

@@ -150,7 +150,7 @@ def _first_mismatch(
                 ),
             )
 
-        if expected.command_hash and expected.command_hash != actual.command_hash:
+        if bool(policy.include_hash_fields) and expected.command_hash and expected.command_hash != actual.command_hash:
             return (
                 checked_count,
                 TraceMismatch(
@@ -162,7 +162,7 @@ def _first_mismatch(
                     },
                 ),
             )
-        if expected.state_hash != actual.state_hash:
+        if bool(policy.include_hash_fields) and expected.state_hash != actual.state_hash:
             return (
                 checked_count,
                 TraceMismatch(
@@ -189,6 +189,12 @@ def _first_mismatch(
             max_diffs=policy.max_field_diffs,
             float_abs_tol=float(policy.float_abs_tol),
         )
+        if policy.ignore_field_prefixes:
+            field_diffs = [
+                diff
+                for diff in field_diffs
+                if not _field_matches_ignored_prefix(str(diff.field), policy.ignore_field_prefixes)
+            ]
         if field_diffs:
             return (
                 checked_count,
@@ -199,84 +205,98 @@ def _first_mismatch(
                 ),
             )
 
-        exp_rng = dict(expected.rng_marks)
-        act_rng = dict(actual.rng_marks)
-        mismatching_rng_keys = [key for key in sorted(set(exp_rng) | set(act_rng)) if exp_rng.get(key, -1) != act_rng.get(key, -1)]
-        if mismatching_rng_keys:
-            first_rng_mark = next(
-                (mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng_keys),
-                mismatching_rng_keys[0],
-            )
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="rng_mark_mismatch",
-                    tick_index=tick,
-                    first_rng_mark=first_rng_mark,
-                    detail={
-                        "expected": exp_rng.get(first_rng_mark),
-                        "actual": act_rng.get(first_rng_mark),
-                    },
-                ),
-            )
+        if bool(policy.include_rng_fields):
+            exp_rng = dict(expected.rng_marks)
+            act_rng = dict(actual.rng_marks)
+            mismatching_rng_keys = [key for key in sorted(set(exp_rng) | set(act_rng)) if exp_rng.get(key, -1) != act_rng.get(key, -1)]
+            if mismatching_rng_keys:
+                first_rng_mark = next(
+                    (mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng_keys),
+                    mismatching_rng_keys[0],
+                )
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="rng_mark_mismatch",
+                        tick_index=tick,
+                        first_rng_mark=first_rng_mark,
+                        detail={
+                            "expected": exp_rng.get(first_rng_mark),
+                            "actual": act_rng.get(first_rng_mark),
+                        },
+                    ),
+                )
 
-        exp_rng_head = channel_list(pair.expected_row, "rng_stream_head")
-        act_rng_head = channel_list(pair.actual_row, "rng_stream_head")
-        rng_ok, rng_detail = _compare_rng_stream(exp_rng_head, act_rng_head)
-        if not rng_ok:
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="rng_stream_mismatch",
-                    tick_index=tick,
-                    detail=rng_detail,
-                ),
-            )
+            exp_rng_head = channel_list(pair.expected_row, "rng_stream_head")
+            act_rng_head = channel_list(pair.actual_row, "rng_stream_head")
+            rng_ok, rng_detail = _compare_rng_stream(exp_rng_head, act_rng_head)
+            if not rng_ok:
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="rng_stream_mismatch",
+                        tick_index=tick,
+                        detail=rng_detail,
+                    ),
+                )
 
-        exp_entities = channel_dict(pair.expected_row, "entity_samples")
-        act_entities = channel_dict(pair.actual_row, "entity_samples")
-        entities_ok, entities_detail = _compare_entity_samples(exp_entities, act_entities)
-        if not entities_ok:
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="entity_sample_mismatch",
-                    tick_index=tick,
-                    detail=entities_detail,
-                ),
-            )
+        if bool(policy.include_entity_channels):
+            exp_entities = channel_dict(pair.expected_row, "entity_samples")
+            act_entities = channel_dict(pair.actual_row, "entity_samples")
+            entities_ok, entities_detail = _compare_entity_samples(exp_entities, act_entities)
+            if not entities_ok:
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="entity_sample_mismatch",
+                        tick_index=tick,
+                        detail=entities_detail,
+                    ),
+                )
 
-        exp_events = channel_list(pair.expected_row, "event_heads")
-        act_events = channel_list(pair.actual_row, "event_heads")
-        if len(exp_events) != len(act_events):
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="event_head_mismatch",
-                    tick_index=tick,
-                    detail={
-                        "expected_count": len(exp_events),
-                        "actual_count": len(act_events),
-                    },
-                ),
-            )
+        if bool(policy.include_event_channels):
+            exp_events = channel_list(pair.expected_row, "event_heads")
+            act_events = channel_list(pair.actual_row, "event_heads")
+            if len(exp_events) != len(act_events):
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="event_head_mismatch",
+                        tick_index=tick,
+                        detail={
+                            "expected_count": len(exp_events),
+                            "actual_count": len(act_events),
+                        },
+                    ),
+                )
 
-        exp_micro = channel_list(pair.expected_row, "micro_traces")
-        act_micro = channel_list(pair.actual_row, "micro_traces")
-        if len(exp_micro) != len(act_micro):
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="micro_trace_mismatch",
-                    tick_index=tick,
-                    detail={
-                        "expected_count": len(exp_micro),
-                        "actual_count": len(act_micro),
-                    },
-                ),
-            )
+            exp_micro = channel_list(pair.expected_row, "micro_traces")
+            act_micro = channel_list(pair.actual_row, "micro_traces")
+            if len(exp_micro) != len(act_micro):
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="micro_trace_mismatch",
+                        tick_index=tick,
+                        detail={
+                            "expected_count": len(exp_micro),
+                            "actual_count": len(act_micro),
+                        },
+                    ),
+                )
 
     return checked_count, None
+
+
+def _field_matches_ignored_prefix(field: str, prefixes: tuple[str, ...]) -> bool:
+    for prefix in prefixes:
+        if field == prefix:
+            return True
+        if field.startswith(f"{prefix}."):
+            return True
+        if field.startswith(f"{prefix}["):
+            return True
+    return False
 
 
 def _load_pairs(

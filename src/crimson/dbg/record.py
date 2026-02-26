@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import platform
+import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -8,8 +12,12 @@ from typing import Literal
 
 import msgspec
 
+from grim.geom import Vec2
+
+from ..bonuses import BonusId
 from ..replay import load_replay_file
-from ..replay.checkpoints import ReplayCheckpoint
+from ..replay.checkpoints import ReplayCheckpoint, ReplayEventSummary, ReplayPerkSnapshot, ReplayPlayerCheckpoint
+from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
 from ..sim.driver.setup import ReplayRunnerError
 from ..sim.world_state import WorldState
@@ -30,6 +38,8 @@ _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
 _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 4096
+_DEFAULT_ZIG_BIN = Path("crimson-zig/zig-out/bin/crimson-zig")
+_Q4_SCALE = 10000.0
 
 
 @dataclass(slots=True)
@@ -368,17 +378,66 @@ def _entity_samples_for_world(
     }
 
 
-def record_replay_to_trace(
+def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> dict[str, object]:
+    replay_fingerprint = _fingerprint(replay_path)
+    replay_fingerprint["tick_rate"] = replay.header.tick_rate
+    replay_fingerprint["seed"] = replay.header.seed
+    replay_fingerprint["mode_id"] = replay.header.game_mode_id
+    replay_fingerprint["quest_level"] = str(replay.header.quest_level)
+    return replay_fingerprint
+
+
+def _build_trace_meta(
+    *,
+    replay_path: Path,
+    replay: Replay,
+    tick_rows: list[TickRecord],
+    channels_seen: set[str],
+    profile: RecordProfile,
+    strict_events: bool,
+    max_ticks: int | None,
+    impl: str,
+    impl_version: str = "",
+) -> TraceMeta:
+    tick_start = min((row.tick_index for row in tick_rows), default=-1)
+    tick_end = max((row.tick_index for row in tick_rows), default=-1)
+    replay_fingerprint = _build_replay_fingerprint(replay_path=replay_path, replay=replay)
+    channels_sorted = sorted(channels_seen)
+    return TraceMeta(
+        trace_format_version=TRACE_FORMAT_VERSION,
+        trace_schema_version=TRACE_SCHEMA_VERSION,
+        created_utc=datetime.now(tz=UTC).isoformat(),
+        producer={
+            "impl": str(impl),
+            "impl_version": str(impl_version),
+            "platform": str(platform.system()),
+            "arch": str(platform.machine()),
+        },
+        source=replay_fingerprint,
+        channels=channels_sorted,
+        channel_versions={channel: 1 for channel in channels_sorted},
+        tick_range={
+            "start_tick": tick_start,
+            "end_tick": tick_end,
+            "tick_count": len(tick_rows),
+        },
+        config={
+            "profile": profile,
+            "strict_events": bool(strict_events),
+            "max_ticks": max_ticks,
+        },
+    )
+
+
+def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    profile: RecordProfile = "standard",
-    max_ticks: int | None = None,
-    strict_events: bool = True,
-    chunk_ticks: int = 256,
+    profile: RecordProfile,
+    max_ticks: int | None,
+    strict_events: bool,
+    chunk_ticks: int,
 ) -> TraceSummary:
-    replay_path = Path(replay_path)
-    out_path = Path(out_path)
     replay = load_replay_file(replay_path)
 
     replay_tick_count = len(replay.inputs)
@@ -466,37 +525,15 @@ def record_replay_to_trace(
         if entity_samples is not None:
             previous_entity_samples = entity_samples
 
-    tick_start = min((row.tick_index for row in tick_rows), default=-1)
-    tick_end = max((row.tick_index for row in tick_rows), default=-1)
-    replay_fingerprint = _fingerprint(replay_path)
-    replay_fingerprint["tick_rate"] = replay.header.tick_rate
-    replay_fingerprint["seed"] = replay.header.seed
-    replay_fingerprint["mode_id"] = replay.header.game_mode_id
-    replay_fingerprint["quest_level"] = str(replay.header.quest_level)
-
-    meta = TraceMeta(
-        trace_format_version=TRACE_FORMAT_VERSION,
-        trace_schema_version=TRACE_SCHEMA_VERSION,
-        created_utc=datetime.now(tz=UTC).isoformat(),
-        producer={
-            "impl": "python",
-            "impl_version": "",
-            "platform": "",
-            "arch": "",
-        },
-        source=replay_fingerprint,
-        channels=sorted(channels_seen),
-        channel_versions={channel: 1 for channel in sorted(channels_seen)},
-        tick_range={
-            "start_tick": tick_start,
-            "end_tick": tick_end,
-            "tick_count": len(tick_rows),
-        },
-        config={
-            "profile": profile,
-            "strict_events": bool(strict_events),
-            "max_ticks": max_ticks,
-        },
+    meta = _build_trace_meta(
+        replay_path=replay_path,
+        replay=replay,
+        tick_rows=tick_rows,
+        channels_seen=channels_seen,
+        profile=profile,
+        strict_events=strict_events,
+        max_ticks=max_ticks,
+        impl="python",
     )
     return write_trace(
         out_path,
@@ -504,3 +541,294 @@ def record_replay_to_trace(
         ticks=tick_rows,
         chunk_ticks=max(1, chunk_ticks),
     )
+
+
+def _resolve_zig_binary() -> Path:
+    env_override = os.environ.get("CRIMSON_DBG_ZIG_BIN")
+    if env_override:
+        return Path(env_override)
+    return _DEFAULT_ZIG_BIN
+
+
+def _decode_json_object(payload: bytes, *, field: str) -> dict[str, object]:
+    try:
+        decoded = msgspec.json.decode(payload)
+    except msgspec.DecodeError as exc:
+        raise ValueError(f"{field} must be valid json") from exc
+    return _require_object_dict(decoded, field=field)
+
+
+def _run_zig_verify_trace(
+    *,
+    replay_path: Path,
+    strict_events: bool,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    if not strict_events:
+        raise ValueError("dbg record --impl zig requires --strict-events")
+
+    zig_bin = _resolve_zig_binary()
+    if not zig_bin.is_file():
+        raise ValueError(f"zig verifier binary not found: {zig_bin}")
+
+    with tempfile.TemporaryDirectory(prefix="crimson-dbg-zig-") as temp_dir:
+        temp_root = Path(temp_dir)
+        trace_jsonl = temp_root / "zig_trace.jsonl"
+        cmd = [
+            str(zig_bin),
+            "replay",
+            "verify",
+            str(replay_path),
+            "--format",
+            "json",
+            "--strict-events",
+            "--debug-trace-jsonl",
+            str(trace_jsonl),
+        ]
+        run = subprocess.run(
+            cmd,
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if run.returncode != 0:
+            stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
+            stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
+            detail = stderr_text if stderr_text else stdout_text
+            raise ValueError(f"zig replay verify failed: {detail or f'exit={run.returncode}'}")
+        if not trace_jsonl.is_file():
+            raise ValueError("zig replay verify did not emit --debug-trace-jsonl output")
+
+        rows: list[dict[str, object]] = []
+        for line_number, raw_line in enumerate(trace_jsonl.read_bytes().splitlines(), start=1):
+            line = raw_line.strip()
+            if not line:
+                continue
+            row = _decode_json_object(line, field=f"zig trace row {line_number}")
+            rows.append(row)
+
+        stdout_lines = [line.strip() for line in run.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
+            raise ValueError("zig replay verify did not emit json payload on stdout")
+        verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
+        return rows, verify_payload
+
+
+def _zig_rng_marks(row: dict[str, object]) -> dict[str, int]:
+    marks: dict[str, int] = {}
+    for key in (
+        "rng_after_perk_effects",
+        "rng_after_creatures",
+        "rng_after_projectiles",
+        "rng_after_secondary_projectiles",
+        "rng_after_particles",
+        "rng_after_player_update",
+        "rng_after_stage_spawns",
+        "rng_after_wave_spawns",
+        "rng_after_spawns",
+        "rng_after_bonus_update",
+    ):
+        value = row.get(key)
+        if isinstance(value, bool):
+            continue
+        if isinstance(value, int):
+            marks[key] = int(value)
+    return marks
+
+
+def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> ReplayCheckpoint:
+    tick_index = _require_int(row.get("tick"), field="zig trace row.tick")
+    player_pos_x_q4 = _require_int(row.get("player_pos_x_q4"), field="zig trace row.player_pos_x_q4")
+    player_pos_y_q4 = _require_int(row.get("player_pos_y_q4"), field="zig trace row.player_pos_y_q4")
+    player_health_q4 = _require_int(row.get("player_health_q4"), field="zig trace row.player_health_q4")
+    player_ammo_q4 = _require_int(row.get("player_ammo_q4"), field="zig trace row.player_ammo_q4")
+    player_weapon_id = _require_int(row.get("player_weapon_id"), field="zig trace row.player_weapon_id")
+    player_experience = _require_int(row.get("player_experience"), field="zig trace row.player_experience")
+    player_level = _require_int(row.get("player_level"), field="zig trace row.player_level")
+
+    bonus_weapon_power_up_ms = _require_int(
+        row.get("bonus_weapon_power_up_ms", 0),
+        field="zig trace row.bonus_weapon_power_up_ms",
+    )
+    bonus_reflex_boost_ms = _require_int(
+        row.get("bonus_reflex_boost_ms", 0),
+        field="zig trace row.bonus_reflex_boost_ms",
+    )
+    bonus_energizer_ms = _require_int(
+        row.get("bonus_energizer_ms", 0),
+        field="zig trace row.bonus_energizer_ms",
+    )
+    bonus_double_experience_ms = _require_int(
+        row.get("bonus_double_experience_ms", 0),
+        field="zig trace row.bonus_double_experience_ms",
+    )
+    bonus_freeze_ms = _require_int(
+        row.get("bonus_freeze_ms", 0),
+        field="zig trace row.bonus_freeze_ms",
+    )
+    creature_state_hash = _require_int(
+        row.get("creature_state_hash", 0),
+        field="zig trace row.creature_state_hash",
+    )
+    projectile_state_hash = _require_int(
+        row.get("projectile_state_hash", 0),
+        field="zig trace row.projectile_state_hash",
+    )
+
+    perk_pending = _require_int(row.get("perk_pending"), field="zig trace row.perk_pending")
+    player_slots = max(1, int(player_count))
+
+    return ReplayCheckpoint(
+        tick_index=tick_index,
+        rng_state=_require_int(row.get("rng_state"), field="zig trace row.rng_state"),
+        elapsed_ms=_require_int(row.get("elapsed_ms"), field="zig trace row.elapsed_ms"),
+        score_xp=_require_int(row.get("score_xp"), field="zig trace row.score_xp"),
+        kills=_require_int(row.get("kills"), field="zig trace row.kills"),
+        creature_count=_require_int(row.get("creature_count"), field="zig trace row.creature_count"),
+        perk_pending=perk_pending,
+        players=[
+            ReplayPlayerCheckpoint(
+                pos=Vec2(float(player_pos_x_q4) / _Q4_SCALE, float(player_pos_y_q4) / _Q4_SCALE),
+                health=float(player_health_q4) / _Q4_SCALE,
+                weapon_id=int(player_weapon_id),
+                ammo=float(player_ammo_q4) / _Q4_SCALE,
+                experience=int(player_experience),
+                level=int(player_level),
+            ),
+        ],
+        bonus_timers={
+            str(BonusId.WEAPON_POWER_UP): int(max(0, bonus_weapon_power_up_ms)),
+            str(BonusId.REFLEX_BOOST): int(max(0, bonus_reflex_boost_ms)),
+            str(BonusId.ENERGIZER): int(max(0, bonus_energizer_ms)),
+            str(BonusId.DOUBLE_EXPERIENCE): int(max(0, bonus_double_experience_ms)),
+            str(BonusId.FREEZE): int(max(0, bonus_freeze_ms)),
+        },
+        state_hash=f"zig:{int(creature_state_hash):016x}:{int(projectile_state_hash):016x}",
+        command_hash="",
+        rng_marks=_zig_rng_marks(row),
+        deaths=[],
+        perk=ReplayPerkSnapshot(
+            pending_count=perk_pending,
+            choices_dirty=bool(perk_pending <= 0),
+            choices=[],
+            player_nonzero_counts=[[] for _ in range(player_slots)],
+        ),
+        events=ReplayEventSummary(),
+    )
+
+
+def _record_replay_to_trace_zig(
+    *,
+    replay_path: Path,
+    out_path: Path,
+    profile: RecordProfile,
+    max_ticks: int | None,
+    strict_events: bool,
+    chunk_ticks: int,
+) -> TraceSummary:
+    replay = load_replay_file(replay_path)
+    zig_rows, verify_payload = _run_zig_verify_trace(
+        replay_path=replay_path,
+        strict_events=bool(strict_events),
+    )
+
+    if max_ticks is not None:
+        tick_limit = max(0, int(max_ticks))
+    else:
+        tick_limit = None
+
+    sorted_rows = sorted(zig_rows, key=lambda row: _require_int(row.get("tick"), field="zig trace row.tick"))
+    tick_rows: list[TickRecord] = []
+    channels_seen: set[str] = set()
+    include_rng = profile in {"standard", "full"}
+    include_full_event_channels = profile == "full"
+    for row in sorted_rows:
+        checkpoint = _zig_checkpoint_from_row(row, player_count=int(replay.header.player_count))
+        if tick_limit is not None and int(checkpoint.tick_index) >= int(tick_limit):
+            continue
+        channels: dict[str, object] = {
+            "checkpoint": checkpoint_to_channel(checkpoint),
+            "zig_tick_trace": dict(row),
+        }
+        if include_rng:
+            channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
+            channels["rng_stream_head"] = []
+        if include_full_event_channels:
+            channels["event_heads"] = []
+            channels["event_summary"] = msgspec.to_builtins(checkpoint.events)
+            channels["perk_snapshot"] = msgspec.to_builtins(checkpoint.perk)
+            channels["micro_traces"] = []
+
+        channels_seen.update(channels.keys())
+        tick_rows.append(
+            TickRecord(
+                tick_index=checkpoint.tick_index,
+                elapsed_ms=checkpoint.elapsed_ms,
+                dt_ms_i32=None,
+                mode_id=replay.header.game_mode_id,
+                phase_markers=[],
+                channels=channels,
+            ),
+        )
+
+    producer_version = ""
+    verify_payload_producer_obj = verify_payload.get("producer")
+    if isinstance(verify_payload_producer_obj, dict):
+        verify_payload_producer = _require_object_dict(
+            verify_payload_producer_obj,
+            field="zig verify payload.producer",
+        )
+        impl_version = verify_payload_producer.get("impl_version")
+        if isinstance(impl_version, str):
+            producer_version = impl_version
+
+    meta = _build_trace_meta(
+        replay_path=replay_path,
+        replay=replay,
+        tick_rows=tick_rows,
+        channels_seen=channels_seen,
+        profile=profile,
+        strict_events=strict_events,
+        max_ticks=max_ticks,
+        impl="zig",
+        impl_version=producer_version,
+    )
+    return write_trace(
+        out_path,
+        meta=meta,
+        ticks=tick_rows,
+        chunk_ticks=max(1, chunk_ticks),
+    )
+
+
+def record_replay_to_trace(
+    *,
+    replay_path: Path,
+    out_path: Path,
+    profile: RecordProfile = "standard",
+    max_ticks: int | None = None,
+    strict_events: bool = True,
+    chunk_ticks: int = 256,
+    impl: str = "python",
+) -> TraceSummary:
+    replay_path = Path(replay_path)
+    out_path = Path(out_path)
+    impl_name = str(impl).strip().lower()
+    if impl_name == "python":
+        return _record_replay_to_trace_python(
+            replay_path=replay_path,
+            out_path=out_path,
+            profile=profile,
+            max_ticks=max_ticks,
+            strict_events=strict_events,
+            chunk_ticks=chunk_ticks,
+        )
+    if impl_name == "zig":
+        return _record_replay_to_trace_zig(
+            replay_path=replay_path,
+            out_path=out_path,
+            profile=profile,
+            max_ticks=max_ticks,
+            strict_events=strict_events,
+            chunk_ticks=chunk_ticks,
+        )
+    raise ValueError(f"unsupported trace producer implementation: {impl!r}; supported: python, zig")

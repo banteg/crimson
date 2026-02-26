@@ -15,15 +15,15 @@ pub fn runReplayVerifyPassthrough(
     allocator: std.mem.Allocator,
     verify_args: []const []const u8,
 ) !CommandOutput {
-    var argv: std.ArrayList([]const u8) = .empty;
+    var argv = try std.ArrayList([]const u8).initCapacity(allocator, 5 + verify_args.len);
     defer argv.deinit(allocator);
 
-    try argv.append(allocator, "uv");
-    try argv.append(allocator, "run");
-    try argv.append(allocator, "crimson");
-    try argv.append(allocator, "replay");
-    try argv.append(allocator, "verify");
-    try argv.appendSlice(allocator, verify_args);
+    argv.appendAssumeCapacity("uv");
+    argv.appendAssumeCapacity("run");
+    argv.appendAssumeCapacity("crimson");
+    argv.appendAssumeCapacity("replay");
+    argv.appendAssumeCapacity("verify");
+    argv.appendSliceAssumeCapacity(verify_args);
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
@@ -41,8 +41,6 @@ pub fn runReplayVerifyPassthrough(
 fn termToExitCode(term: std.process.Child.Term) u8 {
     return switch (term) {
         .Exited => |code| @intCast(@min(code, 255)),
-        .Signal => 1,
-        .Stopped => 1,
-        .Unknown => 1,
+        else => 1,
     };
 }

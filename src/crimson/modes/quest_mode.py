@@ -138,10 +138,6 @@ class QuestRunOutcome:
     player_health_values: tuple[float, ...] = ()
 
 
-def _quest_seed(major: int, minor: int) -> int:
-    return int(major) * 100 + int(minor)
-
-
 def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
     tier = int(major)
     quest = int(minor)
@@ -382,7 +378,9 @@ class QuestMode(BaseGameplayMode):
         hardcore_flag = self.config.hardcore
 
         self.world.hardcore = hardcore_flag
-        seed = _quest_seed(quest.major, quest.minor)
+        # Native quest start does not reseed RNG per level; carry the current
+        # session RNG state into the next run.
+        seed = int(self.state.rng.state) & 0xFFFFFFFF
 
         player_count = self.config.player_count
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
