@@ -29,12 +29,33 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(exe);
 
+    const quest_dump_exe = b.addExecutable(.{
+        .name = "crimson-zig-quest-spawn-dump",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/quest_spawn_dump_main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "crimson_zig", .module = mod },
+            },
+        }),
+    });
+    b.installArtifact(quest_dump_exe);
+
     const run_step = b.step("run", "Run crimson-zig CLI");
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
     run_step.dependOn(&run_cmd.step);
     if (b.args) |args| {
         run_cmd.addArgs(args);
+    }
+
+    const run_quest_dump_step = b.step("quest-spawn-dump", "Run quest spawn dump tool");
+    const run_quest_dump_cmd = b.addRunArtifact(quest_dump_exe);
+    run_quest_dump_cmd.step.dependOn(b.getInstallStep());
+    run_quest_dump_step.dependOn(&run_quest_dump_cmd.step);
+    if (b.args) |args| {
+        run_quest_dump_cmd.addArgs(args);
     }
 
     const test_root_module = b.createModule(.{
