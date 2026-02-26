@@ -51,9 +51,11 @@ const TickEventPhase = enum {
 const max_test_quest_spawn_entries: usize = 1024;
 // Native capture state-transition rows that target state 12 trigger a full run-state reset.
 const capture_state_reset_target: i32 = 12;
-// Legacy AI7 link-timer rows consume one RNG draw when link_index lands in this capture-authored sentinel range.
-const ai7_link_index_min: i32 = -1723;
-const ai7_link_index_max: i32 = -700;
+// Native creature_update_all writes `link_index = -700 - (rand & 0x3ff)` when AI7
+// timer mode rolls from active to cooldown. Capture rows can carry that result
+// directly, so replay backfills the skipped RNG draw for this range.
+const ai7_link_timer_rollover_min: i32 = -1723;
+const ai7_link_timer_rollover_max: i32 = -700;
 
 pub const ReplayRunnerError = error{
     OutOfMemory,
@@ -90,6 +92,11 @@ fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAi
         => mode,
         else => error.InvalidCaptureEnumValue,
     };
+}
+
+fn isAi7LinkTimerRolloverValue(link_index: i32) bool {
+    return link_index >= ai7_link_timer_rollover_min and
+        link_index <= ai7_link_timer_rollover_max;
 }
 
 pub const ReplayScaffoldResult = struct {
@@ -2405,12 +2412,11 @@ fn applyCaptureCreatureSpawnEvent(
         const ai_mode = if (row.has_ai_mode) try parseCaptureCreatureAiMode(row.ai_mode) else null;
 
         const flags_i32 = if (row.has_flags) row.flags else @as(i32, @intCast(entry.flags));
-        if (spawned_indices[idx] and
+        const needs_ai7_rollover_rng_backfill = spawned_indices[idx] and
             row.has_link_index and
-            row.link_index >= ai7_link_index_min and
-            row.link_index <= ai7_link_index_max and
-            (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0)
-        {
+            isAi7LinkTimerRolloverValue(row.link_index) and
+            (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0;
+        if (needs_ai7_rollover_rng_backfill) {
             _ = state.rng.rand();
         }
 
