@@ -829,6 +829,7 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
         error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "replay simulation scaffold only supports raw/f32 quantization",
+        error.UnsupportedDemoMode => "replay simulation scaffold does not support demo_mode_active=true",
         error.UnsupportedPreserveBugs => "replay simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
@@ -967,7 +968,6 @@ fn parseScoreMetric(raw: []const u8) ?verify_contract.ScoreMetric {
     if (std.mem.eql(u8, raw, "elapsed_ms")) return .elapsed_ms;
     return null;
 }
-
 
 fn resolveReplayPath(
     allocator: std.mem.Allocator,
@@ -1151,6 +1151,16 @@ test "survival sim not ported output maps unsupported weapon fire path" {
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "weapon fire path not yet ported") != null);
+}
+
+test "survival sim not ported output maps unsupported demo mode path" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedDemoMode);
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "does not support demo_mode_active=true") != null);
 }
 
 test "survival sim not ported output maps unsupported bonus apply path" {

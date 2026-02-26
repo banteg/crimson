@@ -53,6 +53,7 @@ pub const ReplayRunnerError = error{
     UnsupportedGameMode,
     UnsupportedPlayerCount,
     UnsupportedInputQuantization,
+    UnsupportedDemoMode,
     UnsupportedPreserveBugs,
     UnsupportedEventOrdering,
     UnsupportedEventKind,
@@ -338,6 +339,14 @@ pub const ReplayScaffoldOptions = struct {
     quest_start_weapon_id: ?i32 = null,
 };
 
+fn ensureSupportedReplayFeatureFlags(
+    demo_mode_active: bool,
+    preserve_bugs: bool,
+) ReplayRunnerError!void {
+    if (demo_mode_active) return error.UnsupportedDemoMode;
+    if (preserve_bugs) return error.UnsupportedPreserveBugs;
+}
+
 pub fn runReplayScaffold(
     replay: replay_codec.Replay,
 ) ReplayRunnerError!ReplayScaffoldResult {
@@ -372,7 +381,7 @@ pub fn runReplayScaffoldWithTrace(
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
-    if (header.preserve_bugs) return error.UnsupportedPreserveBugs;
+    try ensureSupportedReplayFeatureFlags(false, header.preserve_bugs);
     if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
@@ -414,6 +423,7 @@ pub fn runReplayScaffoldWithTrace(
     var state = state_mod.GameplayState.init(header.seed);
     state.fx_toggle = header.fx_toggle;
     state.game_mode = header.game_mode_id;
+    try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players_len: usize = @intCast(header.player_count);
     var players = players_storage[0..players_len];
@@ -536,6 +546,7 @@ pub fn runReplayScaffoldWithTrace(
                 &menu_open_seen_this_tick,
             );
         }
+        try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
 
         const tick_inputs = replay.inputs[tick_index];
         var reload_active_any = false;
@@ -892,6 +903,7 @@ pub fn runReplayScaffoldWithTrace(
                         &menu_open_seen_this_tick,
                     );
                 }
+                try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
             }
         }
 
@@ -951,6 +963,7 @@ pub fn runReplayScaffoldWithTrace(
             &perk_pick_count,
             &terminal_menu_open_seen,
         );
+        try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
     }
     if (event_index != events.len) return error.UnsupportedEventOrdering;
 
@@ -3032,6 +3045,18 @@ fn playerFrameDtAfterRoundtrip(
 
 fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+}
+
+test "replay scaffold rejects unsupported demo/preserve feature flags" {
+    try std.testing.expectError(
+        error.UnsupportedDemoMode,
+        ensureSupportedReplayFeatureFlags(true, false),
+    );
+    try std.testing.expectError(
+        error.UnsupportedPreserveBugs,
+        ensureSupportedReplayFeatureFlags(false, true),
+    );
+    try ensureSupportedReplayFeatureFlags(false, false);
 }
 
 test "survival scaffold tracks event and input counters" {
