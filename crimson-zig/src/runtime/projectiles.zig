@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
@@ -8,8 +9,10 @@ const survival_spawn = @import("spawn.zig");
 const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
 
+const asF32F64 = native_math.roundF32;
+
 pub const main_projectile_pool_size: usize = 0x60;
-const native_half_pi: f64 = 1.5707963705062866;
+const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const perk_id_poison_bullets: i32 = 25;
 const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
@@ -686,10 +689,6 @@ fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
 fn perkActive(player: *const survival_state.PlayerState, perk_id: i32) bool {
     if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
     return player.perk_counts[@intCast(perk_id)] > 0;
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {

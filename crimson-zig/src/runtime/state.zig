@@ -1,8 +1,11 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 const survival_math = @import("math.zig");
 
 const survival_spawn = @import("spawn.zig");
+
+const asF32F64 = native_math.roundF32;
 
 pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;
@@ -744,10 +747,6 @@ pub fn survivalEnforceRewardWeaponGuard(
             weaponAssignPlayer(player, WeaponId.pistol);
         }
     }
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 fn expectFloatClose(expected: f32, actual: f32) !void {

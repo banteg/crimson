@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const survival_creatures = @import("creatures.zig");
 const survival_particles = @import("particles.zig");
@@ -8,6 +9,8 @@ const survival_secondary_projectiles = @import("secondary_projectiles.zig");
 const survival_state = @import("state.zig");
 const survival_spawn = @import("spawn.zig");
 const survival_math = @import("math.zig");
+
+const asF32F64 = native_math.roundF32;
 
 const WeaponId = game_ids.WeaponId;
 
@@ -863,10 +866,6 @@ fn computeAmmoCost(
 fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
     // Mirrors `weapon.ammo_class == 1` in the Python weapon table.
     return weapon_id == .flamethrower or weapon_id == .blow_torch or weapon_id == .hr_flamer;
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 fn directionFromHeading(heading: f64) survival_state.Vec2 {

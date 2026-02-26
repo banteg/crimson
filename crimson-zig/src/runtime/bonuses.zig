@@ -1,8 +1,11 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const survival_perks = @import("perks.zig");
 const survival_state = @import("state.zig");
+
+const asF32F64 = native_math.roundF32;
 
 pub const BonusRuntimeError = error{
     UnsupportedBonusApplyPath,
@@ -643,10 +646,6 @@ fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 fn appendPickupBonusId(

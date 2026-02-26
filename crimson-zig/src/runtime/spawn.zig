@@ -1,7 +1,10 @@
 const std = @import("std");
+const native_math = @import("native_math.zig");
 
 const crt_rand_mult: u32 = 214_013;
 const crt_rand_inc: u32 = 2_531_011;
+
+const asF32F64 = native_math.roundF32;
 
 pub const CreatureTypeId = enum(i32) {
     zombie = 0,
@@ -1020,10 +1023,6 @@ fn appendSpawnCall(
 
 fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 test "spawn slot tick behavior parity" {

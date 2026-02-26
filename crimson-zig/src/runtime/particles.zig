@@ -1,9 +1,12 @@
 const std = @import("std");
+const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
 const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
+
+const asF32F64 = native_math.roundF32;
 
 pub const particle_pool_size: usize = 0x80;
 
@@ -307,8 +310,4 @@ fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }

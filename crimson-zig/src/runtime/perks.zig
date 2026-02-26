@@ -1,8 +1,11 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_state = @import("state.zig");
+
+const asF32F64 = native_math.roundF32;
 
 pub const PerkApplyError = error{
     UnsupportedPerkApplyHandler,
@@ -333,10 +336,6 @@ fn consumeSpawnBurstRng(
         _ = state.rng.rand();
         _ = state.rng.rand();
     }
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 pub fn updatePerkEffects(

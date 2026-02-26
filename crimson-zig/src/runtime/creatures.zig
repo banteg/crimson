@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_perks = @import("perks.zig");
@@ -7,20 +8,22 @@ const survival_spawn = @import("spawn.zig");
 const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
 
+const asF32F64 = native_math.roundF32;
+
 pub const max_creatures: usize = 0x180;
 
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const creature_speed_scale: f64 = 30.0;
-const creature_turn_rate_scale: f64 = 1.3333333730697632;
+const creature_turn_rate_scale: f64 = native_math.f64f32(native_math.native_turn_rate_scale);
 const contact_damage_cooldown: f64 = 1.0;
 const plague_collision_period: f64 = 0.5;
 const owner_id_player_0: i32 = -100;
-const native_half_pi: f64 = 1.5707963705062866;
-const native_pi: f64 = 3.1415927410125732;
-const native_tau: f64 = 6.2831854820251465;
-const native_left_axis_heading_pos: f64 = 4.71238899230957;
-const native_left_axis_heading_eps: f64 = 1e-6;
-const native_left_axis_dy_eps: f64 = 5e-4;
+const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
+const native_pi: f64 = native_math.f64f32(native_math.native_pi);
+const native_tau: f64 = native_math.f64f32(native_math.native_tau);
+const native_left_axis_heading_pos: f64 = native_math.f64f32(native_math.native_left_axis_heading_pos);
+const native_left_axis_heading_eps: f64 = native_math.f64f32(native_math.native_left_axis_heading_eps);
+const native_left_axis_dy_eps: f64 = native_math.f64f32(native_math.native_left_axis_dy_eps);
 
 pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
@@ -3537,10 +3540,6 @@ fn awardBaseExperienceFromReward(
 
 fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 const perk_id_bloody_mess_quick_learner: i32 = 1;

@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
 const survival_bonuses = @import("bonuses.zig");
@@ -13,18 +14,20 @@ const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const survival_state = @import("state.zig");
 const survival_weapon_runtime = @import("weapons.zig");
 const survival_math = @import("math.zig");
+
+const asF32F64 = native_math.roundF32;
 const creature_lifecycle_stage_alive: f64 = 16.0;
-const native_half_pi: f64 = 1.5707963705062866;
-const native_pi: f64 = 3.1415927410125732;
-const native_tau: f64 = 6.2831854820251465;
+const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
+const native_pi: f64 = native_math.f64f32(native_math.native_pi);
+const native_tau: f64 = native_math.f64f32(native_math.native_tau);
 const relative_move_heading_none: f64 = -1.0;
 const relative_move_heading_forward: f64 = 0.0;
 const relative_move_heading_forward_right: f64 = 0.7853981852531433;
-const relative_move_heading_right: f64 = 1.5707963705062866;
+const relative_move_heading_right: f64 = native_half_pi;
 const relative_move_heading_backward_right: f64 = 2.356194496154785;
-const relative_move_heading_backward: f64 = std.math.pi;
+const relative_move_heading_backward: f64 = native_pi;
 const relative_move_heading_backward_left: f64 = 3.9269909858703613;
-const relative_move_heading_left: f64 = 4.71238899230957;
+const relative_move_heading_left: f64 = native_math.f64f32(native_tau - native_half_pi);
 const relative_move_heading_forward_left: f64 = 5.4977874755859375;
 const relative_move_turn_align_scale: f64 = 7.957746982574463;
 const movement_control_relative: i32 = 1;
@@ -3028,10 +3031,6 @@ fn playerFrameDtAfterRoundtrip(
 fn perkActive(player: survival_state.PlayerState, perk_id: i32) bool {
     if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
     return player.perk_counts[@intCast(perk_id)] > 0;
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
 
 test "survival scaffold tracks event and input counters" {

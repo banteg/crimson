@@ -1,9 +1,12 @@
 const std = @import("std");
+const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
 const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
+
+const asF32F64 = native_math.roundF32;
 
 pub const secondary_projectile_pool_size: usize = 0x40;
 const creature_lifecycle_stage_alive: f64 = 16.0;
@@ -492,8 +495,4 @@ fn consumeExplosionBurstRng(
         _ = state.rng.rand();
         _ = state.rng.rand();
     }
-}
-
-fn asF32F64(value: anytype) f32 {
-    return @floatCast(value);
 }
