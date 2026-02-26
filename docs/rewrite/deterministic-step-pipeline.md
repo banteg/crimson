@@ -246,6 +246,17 @@ This replay is reconstructed from captured input telemetry and is intended for
 inspection/debugging. It also bootstraps initial state from the first captured
 tick, but checkpoint sidecars remain the authoritative verification artifact.
 
+Converted replay outputs are now canonicalized at the conversion boundary:
+
+- replay headers are emitted with `input_quantization="f32"`,
+- replay input vectors are quantized to float32,
+- original-capture bootstrap/event float payload fields emitted by conversion
+  are quantized to float32.
+
+Regenerating converted artifacts after this cutover intentionally changes replay
+and checkpoint SHA values. Regenerate and keep `.crd` + `.crd.chk` pairs
+together when refreshing fixtures.
+
 Some domains are still intentionally sparse in raw traces (for example detailed
 death-ledger ownership/reward attribution), and remain explicit "unknown"
 sentinels so differential comparison can focus on captured fields without false
