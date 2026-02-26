@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from grim.geom import Vec2
 
@@ -38,9 +39,7 @@ def build_damage_scale_by_type() -> dict[int, float]:
     for entry in WEAPON_TABLE:
         if int(entry.weapon_id) <= 0:
             continue
-        if entry.damage_scale is None:
-            raise ValueError(f"weapon table missing damage_scale for weapon_id={int(entry.weapon_id)}")
-        damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale)
+        damage_scale_by_type[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
     return damage_scale_by_type
 
 

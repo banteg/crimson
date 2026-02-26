@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, MutableSequence, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from grim.geom import Vec2
 
@@ -12,7 +12,7 @@ from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecyc
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerLike, OwnerRef, owner_ref
 from ...perks import PerkId
-from ...weapons import weapon_entry_for_projectile_type_id
+from ...weapons import WEAPON_BY_ID, weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -211,10 +211,7 @@ class ProjectilePool:
             value = damage_scale_by_type.get(type_id)
             if value is not None:
                 return float(value)
-            entry = weapon_entry_for_projectile_type_id(type_id)
-            if entry is None or entry.damage_scale is None:
-                raise ValueError(f"invalid projectile type_id for damage_scale lookup: {type_id}")
-            return float(entry.damage_scale)
+            return float(cast(float, WEAPON_BY_ID[type_id].damage_scale))
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)

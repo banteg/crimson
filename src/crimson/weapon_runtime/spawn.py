@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import math
-from typing import Protocol
+from typing import Protocol, cast
 
 from grim.geom import Vec2
 
 from ..owner_ref import OwnerLike, OwnerRef, owner_ref
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_BY_ID
 
 
 class _HasPos(Protocol):
@@ -34,11 +34,7 @@ def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> 
 
 
 def projectile_meta_for_type_id(type_id: int) -> float:
-    type_id = int(type_id)
-    entry = weapon_entry_for_projectile_type_id(type_id)
-    if entry is None or entry.projectile_meta is None:
-        raise ValueError(f"invalid projectile type_id for projectile_meta lookup: {type_id}")
-    return float(entry.projectile_meta)
+    return float(cast(int, WEAPON_BY_ID[int(type_id)].projectile_meta))
 
 
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
