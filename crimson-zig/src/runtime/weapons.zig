@@ -16,6 +16,8 @@ const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
+const native_pi: f32 = native_math.native_pi;
+const native_tau: f32 = native_math.native_tau;
 
 const WeaponId = game_ids.WeaponId;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
@@ -165,12 +167,12 @@ pub fn stepPlayerForTick(
                 else
                     owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
                 if (count > 0) {
-                    const step = std.math.tau / @as(f64, @floatFromInt(count));
+                    const step = native_tau / @as(f32, @floatFromInt(count));
                     for (0..@as(usize, @intCast(count))) |idx| {
-                        const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
+                        const angle = @as(f32, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
                         const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
-                        _ = projectiles.spawn(player.pos, narrowF32(angle), type_id, owner, meta, false);
+                        _ = projectiles.spawn(player.pos, angle, type_id, owner, meta, false);
                     }
                 }
             }
@@ -286,9 +288,9 @@ fn tryFireWeaponWithForce(
 
         if (perks.perkActive(player, PerkId.regression_bullets)) {
             const reload_time = weapon_data.weapon_stats.get(weapon_id).reload_time;
-            const factor: f64 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
-            const drained = @as(f64, reload_time) * factor;
-            const before: f64 = @floatFromInt(player.experience);
+            const factor: f32 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
+            const drained = narrowF32(reload_time * factor);
+            const before: f32 = @floatFromInt(player.experience);
             var after: i32 = @intFromFloat(before - drained);
             if (after < 0) after = 0;
             player.experience = after;
@@ -356,11 +358,11 @@ fn tryFireWeaponWithForce(
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
     const dir_roll = state.rng.rand();
-    const dir_angle = @as(f64, @floatFromInt(dir_roll & 0x1ff)) * (std.math.tau / 512.0);
+    const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const mag_roll = state.rng.rand();
-    const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
+    const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
-    const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(narrowF32(dir_angle)).mul(narrowF32(offset)));
+    const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(dir_angle).mul(offset));
     const shot_angle = state_mod.Vec2.sub(aim_jitter, player.pos).toHeading();
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon_id == .flamethrower or player.weapon_id == .blow_torch or player.weapon_id == .hr_flamer) {
@@ -383,10 +385,10 @@ fn tryFireWeaponWithForce(
         const meta = weapon_data.weapon_stats.get(.fire_bullets).travel_budget;
         for (0..@as(usize, @intCast(shot_count))) |_| {
             const jitter_roll = state.rng.rand();
-            const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
+            const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
             _ = projectiles.spawn(
                 muzzle,
-                narrowF32(shot_angle + jitter),
+                shot_angle + jitter,
                 @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
                 projectile_owner,
                 meta,
@@ -406,46 +408,46 @@ fn tryFireWeaponWithForce(
         .plasma_shotgun => {
             const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
             for (0..14) |_| {
-                const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
+                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
                 const id = projectiles.spawn(
                     muzzle,
-                    narrowF32(shot_angle + jitter),
+                    shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun),
                     projectile_owner,
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01);
             }
         },
         .gauss_shotgun => {
             const meta = weapon_data.weapon_stats.get(.gauss_gun).travel_budget;
             for (0..6) |_| {
-                const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
+                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
                 const id = projectiles.spawn(
                     muzzle,
-                    narrowF32(shot_angle + jitter),
+                    shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.gauss_gun),
                     projectile_owner,
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f32, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .ion_shotgun => {
             const meta = weapon_data.weapon_stats.get(.ion_minigun).travel_budget;
             for (0..8) |_| {
-                const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
+                const jitter = @as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
                 const id = projectiles.spawn(
                     muzzle,
-                    narrowF32(shot_angle + jitter),
+                    shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.ion_minigun),
                     projectile_owner,
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f32, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .flamethrower => {
@@ -509,16 +511,16 @@ fn tryFireWeaponWithForce(
         },
         .mini_rocket_swarmers => {
             const rocket_count = shot_count;
-            const spread = std.math.pi * (2.0 / 3.0);
+            const spread = native_pi * (2.0 / 3.0);
             const step = if (rocket_count <= 1)
                 0.0
             else
-                spread / @as(f64, @floatFromInt(rocket_count - 1));
+                spread / @as(f32, @floatFromInt(rocket_count - 1));
             var angle = shot_angle - spread * 0.5;
             for (0..@as(usize, @intCast(rocket_count))) |_| {
                 _ = secondary_projectiles.spawn(
                     muzzle,
-                    narrowF32(angle),
+                    angle,
                     secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
                     secondary_owner,
                     2.0,
@@ -548,11 +550,11 @@ fn tryFireWeaponWithForce(
                 var angle = shot_angle;
                 if (pellets > 1) {
                     const jitter_step = pelletJitterStep(player.weapon_id);
-                    angle += narrowF32(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
+                    angle += narrowF32(@as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
                 }
                 const id = projectiles.spawn(
                     muzzle,
-                    narrowF32(angle),
+                    angle,
                     type_id_i32,
                     projectile_owner,
                     meta,
@@ -561,7 +563,7 @@ fn tryFireWeaponWithForce(
                 if (pellets > 1 and
                     (player.weapon_id == .shotgun or player.weapon_id == .sawed_off_shotgun or player.weapon_id == .jackhammer))
                 {
-                    projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
+                    projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01);
                 }
             }
         },
@@ -642,8 +644,8 @@ fn tickManBomb(
         else
             .ion_rifle;
         const angle =
-            @as(f64, @floatFromInt(state.rng.rand() % 50)) * 0.01 +
-            @as(f64, @floatFromInt(idx)) * (std.math.pi / 4.0) - 0.25;
+            @as(f32, @floatFromInt(state.rng.rand() % 50)) * 0.01 +
+            @as(f32, @floatFromInt(idx)) * (native_pi / 4.0) - 0.25;
         spawnPerkProjectile(
             state,
             player,
@@ -697,13 +699,13 @@ fn tickFireCaugh(
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
     const dir_roll = state.rng.rand();
-    const dir_angle = @as(f64, @floatFromInt(dir_roll & 0x1ff)) * (std.math.tau / 512.0);
+    const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const mag_roll = state.rng.rand();
-    const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
+    const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
     const jitter = state_mod.Vec2.add(
         player.aim,
-        state_mod.Vec2.fromAngle(narrowF32(dir_angle)).mul(narrowF32(offset)),
+        state_mod.Vec2.fromAngle(dir_angle).mul(offset),
     );
     const angle = state_mod.Vec2.sub(jitter, origin_pos).toHeading();
     spawnPerkProjectile(
@@ -746,7 +748,7 @@ fn tickHotTempered(
             .plasma_minigun
         else
             .plasma_rifle;
-        const angle = @as(f64, @floatFromInt(idx)) * (std.math.pi / 4.0);
+        const angle = @as(f32, @floatFromInt(idx)) * (native_pi / 4.0);
         spawnPerkProjectile(
             state,
             player,
@@ -767,7 +769,7 @@ fn spawnPerkProjectile(
     player: *const state_mod.PlayerState,
     projectiles: *projectiles_mod.ProjectilePool,
     pos: state_mod.Vec2,
-    angle: f64,
+    angle: f32,
     type_id: ProjectileTypeId,
     owner: owner_ref.OwnerRef,
 ) void {
@@ -787,7 +789,7 @@ fn spawnPerkProjectile(
     const meta = projectileTravelBudgetFromTypeId(spawn_type_id);
     _ = projectiles.spawn(
         pos,
-        narrowF32(angle),
+        angle,
         spawn_type_id_i32,
         owner,
         meta,
@@ -805,7 +807,7 @@ fn spawnPerkProjectile(
     }
 }
 
-fn pelletJitterStep(weapon_id: WeaponId) f64 {
+fn pelletJitterStep(weapon_id: WeaponId) f32 {
     return switch (weapon_id) {
         .shotgun, .jackhammer => 0.0013,
         .sawed_off_shotgun => 0.004,
@@ -892,18 +894,17 @@ fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
     return weapon_id == .flamethrower or weapon_id == .blow_torch or weapon_id == .hr_flamer;
 }
 
-fn directionFromHeading(heading: f64) state_mod.Vec2 {
-    const radians = narrowF32(heading - std.math.pi / 2.0);
+fn directionFromHeading(heading: f32) state_mod.Vec2 {
+    const radians = narrowF32(heading - native_pi / 2.0);
     return .{
         .x = narrowF32(math.cos(radians)),
         .y = narrowF32(math.sin(radians)),
     };
 }
 
-fn rotateVec(vec: state_mod.Vec2, theta: f64) state_mod.Vec2 {
-    const theta_f = narrowF32(theta);
-    const cos_theta = narrowF32(math.cos(theta_f));
-    const sin_theta = narrowF32(math.sin(theta_f));
+fn rotateVec(vec: state_mod.Vec2, theta: f32) state_mod.Vec2 {
+    const cos_theta = narrowF32(math.cos(theta));
+    const sin_theta = narrowF32(math.sin(theta));
     return .{
         .x = narrowF32(vec.x * cos_theta - vec.y * sin_theta),
         .y = narrowF32(vec.x * sin_theta + vec.y * cos_theta),
@@ -2046,7 +2047,7 @@ test "regression bullets fires during reload and costs experience" {
         &particles,
     ));
 
-    try std.testing.expectEqual(@as(i32, 759), player.experience);
+    try std.testing.expectEqual(@as(i32, 760), player.experience);
     try std.testing.expect(projectiles.entries[0].active);
     try expectFloatClose(-1.0, player.ammo);
 }
