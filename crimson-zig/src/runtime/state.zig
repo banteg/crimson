@@ -300,7 +300,7 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
 
 comptime {
     std.debug.assert(weapon_count_size == @typeInfo(WeaponId).@"enum".fields.len);
-    inline for (@typeInfo(PerkId).@"enum".fields, 0..) |field, idx| {
+    for (@typeInfo(PerkId).@"enum".fields, 0..) |field, idx| {
         std.debug.assert(field.value == idx);
     }
     std.debug.assert(perk_count_size == @typeInfo(PerkId).@"enum".fields.len);
