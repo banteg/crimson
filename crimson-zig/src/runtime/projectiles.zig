@@ -128,14 +128,14 @@ pub const ProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) ProjectileTickStats {
         if (!(dt > 0.0)) return .{};
-        const margin = 64.0;
+        const margin: f32 = 64.0;
         var barrel_greaser_active = false;
         var ion_gun_master_active = false;
-        var ion_scale: f64 = 1.0;
+        var ion_scale: f32 = 1.0;
         for (players) |player| {
             if (player.perk_counts.get(PerkId.barrel_greaser) > 0) {
                 barrel_greaser_active = true;
@@ -159,8 +159,8 @@ pub const ProjectilePool = struct {
         var candidate_cell_x = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_cell_y = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_has_cell = [_]bool{false} ** creatures_mod.max_creatures;
-        var max_find_margin: f64 = 0.0;
-        const bucket_size: f64 = 64.0;
+        var max_find_margin: f32 = 0.0;
+        const bucket_size: f32 = 64.0;
         for (creatures.entries, 0..) |creature, idx| {
             collidable_snapshot[idx] = creature.active and
                 creature_lifecycle.isCollidable(creature.lifecycle_stage);
@@ -187,7 +187,7 @@ pub const ProjectilePool = struct {
                 {
                     resetShockChainIfOwner(state, proj_idx);
                 }
-                const linger_decay: f64 = switch (proj.type_id) {
+                const linger_decay: f32 = switch (proj.type_id) {
                     @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => dt * 0.1,
                     @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
                     else => dt,
@@ -214,7 +214,6 @@ pub const ProjectilePool = struct {
             }
 
             var steps: i32 = @intFromFloat(proj.travel_budget);
-            if (steps <= 0) steps = 1;
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
@@ -508,12 +507,12 @@ fn applyIonLingerDamage(
     creatures: *creatures_mod.CreaturePool,
     bonus_pool: *bonus_runtime.BonusPool,
     proj: *Projectile,
-    dt: f64,
-    ion_scale: f64,
-    world_size: f64,
+    dt: f32,
+    ion_scale: f32,
+    world_size: f32,
 ) void {
-    var damage: f64 = 0.0;
-    var radius: f64 = 0.0;
+    var damage: f32 = 0.0;
+    var radius: f32 = 0.0;
     switch (proj.type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => {
             damage = dt * 40.0;
@@ -544,8 +543,8 @@ fn applyIonLingerDamage(
                 narrowF32(damage),
                 .{},
                 proj.owner,
-                narrowF32(dt),
-                narrowF32(world_size),
+                dt,
+                world_size,
             );
         }
     }
@@ -988,7 +987,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
     );
     const greased_x = greased_pool.entries[0].pos.x;
 
-    try expectFloatClose(18.239999771118164, base_x);
+    try expectFloatClose(18.240001678466797, base_x);
     try expectFloatClose(35.519996643066406, greased_x);
     try std.testing.expect(greased_x > base_x);
 }
