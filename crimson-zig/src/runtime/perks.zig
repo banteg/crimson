@@ -25,17 +25,17 @@ pub const perk_id_max: i32 = @intCast(state_mod.perk_count_size - 1);
 const perk_id_max_usize: usize = state_mod.perk_count_size - 1;
 const perk_base_available_max_id: i32 = 27;
 
-inline fn perkIdInt(perk_id: PerkId) i32 {
-    return @intFromEnum(perk_id);
-}
-
 inline fn perkIdIndex(perk_id: PerkId) usize {
     return @intCast(@intFromEnum(perk_id));
 }
 
-fn perkIdFromInt(value: i32) ?PerkId {
-    return std.meta.intToEnum(PerkId, value) catch null;
-}
+const all_perk_ids = blk: {
+    var ids: [state_mod.perk_count_size]PerkId = undefined;
+    for (@typeInfo(PerkId).@"enum".fields, 0..) |field, idx| {
+        ids[idx] = @enumFromInt(field.value);
+    }
+    break :blk ids;
+};
 
 inline fn perkFlagSet(comptime flags: []const PerkFlag) PerkFlagSet {
     var set = PerkFlagSet.initEmpty();
@@ -170,7 +170,7 @@ pub fn perkSelectionCurrentChoices(
     game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
-) []const i32 {
+) []const PerkId {
     if (players.len == 0) return &.{};
     const player = &players[0];
 
@@ -216,8 +216,7 @@ pub fn perkSelectionPick(
     if (choices.len == 0) return null;
     if (choice_index < 0 or choice_index >= choices.len) return null;
 
-    const perk_id_raw = choices[@intCast(choice_index)];
-    const perk_id = perkIdFromInt(perk_id_raw) orelse return null;
+    const perk_id = choices[@intCast(choice_index)];
     try applyPerk(state, players, perk_id);
 
     state.perk_selection.pending_count = @max(0, state.perk_selection.pending_count - 1);
@@ -436,28 +435,27 @@ fn perkGenerateChoices(
     game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
-) [7]i32 {
+) [7]PerkId {
     perksRebuildAvailable(state, quest_unlock_index);
 
     var offerable = [_]bool{false} ** (perk_id_max_usize + 1);
-    var perk_id_raw: i32 = 1;
-    while (perk_id_raw <= perk_id_max) : (perk_id_raw += 1) {
-        const perk_id = perkIdFromInt(perk_id_raw) orelse continue;
-        if (perk_id_raw >= state.perk_available.len) continue;
-        if (!state.perk_available[@intCast(perk_id_raw)]) continue;
+    for (all_perk_ids[1..]) |perk_id| {
+        const perk_idx = perkIdIndex(perk_id);
+        if (perk_idx >= state.perk_available.len) continue;
+        if (!state.perk_available[perk_idx]) continue;
         if (perkCanOffer(state, player, perk_id, game_mode, player_count)) {
-            offerable[@intCast(perk_id_raw)] = true;
+            offerable[perk_idx] = true;
         }
     }
 
     const death_clock_active = perkActive(player, PerkId.death_clock);
     const pyromaniac_allowed = pyromaniacAllowed(state, players, player, player_count);
 
-    var choices = [_]i32{perkIdInt(PerkId.antiperk)} ** 7;
+    var choices = [_]PerkId{.antiperk} ** 7;
     var choice_index: usize = 0;
 
     if (state.quest_stage_major == 3 and state.quest_stage_minor == 4 and !perkActive(player, PerkId.monster_vision)) {
-        choices[0] = perkIdInt(PerkId.monster_vision);
+        choices[0] = .monster_vision;
         choice_index = 1;
     }
 
@@ -484,18 +482,18 @@ fn perkGenerateChoices(
                 break;
             }
         }
-        choices[choice_index] = perkIdInt(selected);
+        choices[choice_index] = selected;
     }
 
     if (game_mode == .tutorial) {
         choices = .{
-            perkIdInt(PerkId.sharpshooter),
-            perkIdInt(PerkId.long_distance_runner),
-            perkIdInt(PerkId.evil_eyes),
-            perkIdInt(PerkId.radioactive),
-            perkIdInt(PerkId.fastshot),
-            perkIdInt(PerkId.fastshot),
-            perkIdInt(PerkId.fastshot),
+            .sharpshooter,
+            .long_distance_runner,
+            .evil_eyes,
+            .radioactive,
+            .fastshot,
+            .fastshot,
+            .fastshot,
         };
     }
 
@@ -523,8 +521,7 @@ fn selectRandomOffer(state: *state_mod.GameplayState, offerable: []const bool) P
     while (draws < 1000) : (draws += 1) {
         const candidate_raw: i32 = @intCast(state.rng.rand() % @as(u32, @intCast(perk_id_max)) + 1);
         if (candidate_raw >= 0 and candidate_raw < offerable.len and offerable[@intCast(candidate_raw)]) {
-            const candidate = perkIdFromInt(candidate_raw) orelse continue;
-            return candidate;
+            return @enumFromInt(candidate_raw);
         }
     }
     return .instant_winner;
@@ -578,10 +575,9 @@ fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return perkCountGet(player, perk_id) > 0;
 }
 
-fn containsPerkId(values: []const i32, needle: PerkId) bool {
-    const needle_raw = perkIdInt(needle);
+fn containsPerkId(values: []const PerkId, needle: PerkId) bool {
     for (values) |value| {
-        if (value == needle_raw) return true;
+        if (value == needle) return true;
     }
     return false;
 }
@@ -696,7 +692,7 @@ test "perk generate choices forces monster vision first on quest 3-4" {
         49,
     );
     try std.testing.expect(choices.len >= 1);
-    try std.testing.expectEqual(perkIdInt(PerkId.monster_vision), choices[0]);
+    try std.testing.expectEqual(PerkId.monster_vision, choices[0]);
 }
 
 test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
@@ -744,7 +740,7 @@ test "perk generate choices rejects pyromaniac when no player has flamethrower" 
         0,
     );
     for (choices) |perk_id| {
-        try std.testing.expect(perk_id != perkIdInt(PerkId.pyromaniac));
+        try std.testing.expect(perk_id != PerkId.pyromaniac);
     }
 }
 
@@ -776,7 +772,7 @@ test "perk generate choices blocks jinxed when death clock is active" {
         0,
     );
     for (choices) |perk_id| {
-        try std.testing.expect(perk_id != perkIdInt(PerkId.jinxed));
+        try std.testing.expect(perk_id != PerkId.jinxed);
     }
 }
 

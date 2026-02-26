@@ -2298,10 +2298,11 @@ fn applyCaptureBootstrapEvent(
     }
 
     state.perk_selection.pending_count = @max(0, bootstrap.perk_pending_count);
-    state.perk_selection.choice_count = bootstrap.perk_choice_count;
+    state.perk_selection.choice_count = @min(bootstrap.perk_choice_count, state.perk_selection.choices.len);
     state.perk_selection.choices_dirty = bootstrap.perk_choices_dirty;
     for (0..state.perk_selection.choices.len) |idx| {
-        state.perk_selection.choices[idx] = bootstrap.perk_choices[idx];
+        state.perk_selection.choices[idx] =
+            std.meta.intToEnum(PerkId, bootstrap.perk_choices[idx]) catch return error.InvalidCaptureEnumValue;
     }
     for (players, 0..) |*player, player_idx| {
         player.perk_counts = std.EnumArray(PerkId, i32).initFill(0);
@@ -3601,6 +3602,32 @@ test "survival scaffold bootstrap rejects invalid perk id in perk counts" {
         .perk_id = 999,
         .count = 1,
     };
+
+    const replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .capture_bootstrap = bootstrap },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    try std.testing.expectError(
+        error.InvalidCaptureEnumValue,
+        runReplayScaffold(replay),
+    );
+}
+
+test "survival scaffold bootstrap rejects invalid perk id in choices" {
+    const allocator = std.testing.allocator;
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.perk_choice_count = 1;
+    bootstrap.perk_choices[0] = 999;
 
     const replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,

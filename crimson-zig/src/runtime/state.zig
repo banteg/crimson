@@ -138,7 +138,7 @@ pub const PlayerState = struct {
 
 pub const PerkSelectionState = struct {
     pending_count: i32 = 0,
-    choices: [7]i32 = [_]i32{0} ** 7,
+    choices: [7]PerkId = [_]PerkId{.antiperk} ** 7,
     choice_count: usize = 0,
     choices_dirty: bool = true,
 };
