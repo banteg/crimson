@@ -1,12 +1,4 @@
 const std = @import("std");
-const builtin = @import("builtin");
-
-const c = if (builtin.target.os.tag == .freestanding)
-    struct {}
-else
-    @cImport({
-        @cInclude("math.h");
-    });
 
 pub const native_pi: f32 = @bitCast(@as(u32, 0x40490FDB));
 pub const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
@@ -26,42 +18,15 @@ pub inline fn f64f32(value: anytype) f64 {
     return @floatCast(rounded);
 }
 
-fn hasExtendedLongDouble() bool {
-    if (builtin.target.os.tag == .freestanding) return false;
-    return @bitSizeOf(c_longdouble) > @bitSizeOf(f64);
-}
-
 pub inline fn sinNative(value: f32) f32 {
-    if (hasExtendedLongDouble()) {
-        const wide: c_longdouble = @floatCast(value);
-        return @floatCast(c.sinl(wide));
-    }
-    if (builtin.target.os.tag != .freestanding) {
-        return @floatCast(c.sin(@as(f64, @floatCast(value))));
-    }
     return @floatCast(std.math.sin(@as(f64, @floatCast(value))));
 }
 
 pub inline fn cosNative(value: f32) f32 {
-    if (hasExtendedLongDouble()) {
-        const wide: c_longdouble = @floatCast(value);
-        return @floatCast(c.cosl(wide));
-    }
-    if (builtin.target.os.tag != .freestanding) {
-        return @floatCast(c.cos(@as(f64, @floatCast(value))));
-    }
     return @floatCast(std.math.cos(@as(f64, @floatCast(value))));
 }
 
 pub inline fn atan2Native(y: f32, x: f32) f32 {
-    if (hasExtendedLongDouble()) {
-        const wide_y: c_longdouble = @floatCast(y);
-        const wide_x: c_longdouble = @floatCast(x);
-        return @floatCast(c.atan2l(wide_y, wide_x));
-    }
-    if (builtin.target.os.tag != .freestanding) {
-        return @floatCast(c.atan2(@as(f64, @floatCast(y)), @as(f64, @floatCast(x))));
-    }
     return @floatCast(std.math.atan2(@as(f64, @floatCast(y)), @as(f64, @floatCast(x))));
 }
 
