@@ -51,6 +51,7 @@ const max_test_quest_spawn_entries: usize = 1024;
 pub const ReplayRunnerError = error{
     OutOfMemory,
     InvalidHeaderValue,
+    InvalidCaptureEnumValue,
     UnsupportedGameMode,
     UnsupportedPlayerCount,
     UnsupportedInputQuantization,
@@ -66,6 +67,21 @@ pub const ReplayRunnerError = error{
     UnsupportedWeaponFirePath,
     UnsupportedBonusApplyPath,
 };
+
+fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!survival_spawn.CreatureAiMode {
+    return switch (value) {
+        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player) => .orbit_player,
+        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player_tight) => .orbit_player_tight,
+        @intFromEnum(survival_spawn.CreatureAiMode.chase_player) => .chase_player,
+        @intFromEnum(survival_spawn.CreatureAiMode.follow_link) => .follow_link,
+        @intFromEnum(survival_spawn.CreatureAiMode.link_guard) => .link_guard,
+        @intFromEnum(survival_spawn.CreatureAiMode.follow_link_tethered) => .follow_link_tethered,
+        @intFromEnum(survival_spawn.CreatureAiMode.orbit_link) => .orbit_link,
+        @intFromEnum(survival_spawn.CreatureAiMode.hold_timer) => .hold_timer,
+        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player_wide) => .orbit_player_wide,
+        else => error.InvalidCaptureEnumValue,
+    };
+}
 
 pub const ReplayScaffoldResult = struct {
     ticks: usize,
@@ -2381,6 +2397,8 @@ fn applyCaptureCreatureSpawnEvent(
         const entry = &creatures.entries[idx];
         if (!entry.active) continue;
 
+        const ai_mode = if (row.has_ai_mode) try parseCaptureCreatureAiMode(row.ai_mode) else null;
+
         const flags_i32 = if (row.has_flags) row.flags else @as(i32, @intCast(entry.flags));
         if (spawned_indices[idx] and
             row.has_link_index and
@@ -2399,7 +2417,7 @@ fn applyCaptureCreatureSpawnEvent(
         }
         if (row.has_heading) entry.heading = narrowF32(row.heading);
         if (row.has_target_heading) entry.target_heading = narrowF32(row.target_heading);
-        if (row.has_ai_mode) entry.ai_mode = @enumFromInt(row.ai_mode);
+        if (ai_mode) |mode| entry.ai_mode = mode;
         if (row.has_link_index) entry.link_index = row.link_index;
         if (row.has_hp) entry.hp = narrowF32(row.hp);
         if (row.has_lifecycle_stage) entry.lifecycle_stage = narrowF32(row.lifecycle_stage);
@@ -4531,6 +4549,43 @@ test "capture creature spawn event applies added head rows without spawn rows" {
     try std.testing.expectEqual(@as(i32, 1), creature.link_index);
     try std.testing.expectApproxEqAbs(@as(f64, 1.25), creature.orbit_radius, 1e-6);
     try std.testing.expectEqual(@as(u32, 5), creature.flags);
+}
+
+test "capture creature spawn event hard fails on invalid ai mode enum" {
+    var state = state_mod.GameplayState.init(1);
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.reset();
+
+    var seed_event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 0,
+    };
+    seed_event.spawn_count = 1;
+    seed_event.spawns[0] = .{
+        .template_id = 0x24,
+        .pos_x = 256.0,
+        .pos_y = 256.0,
+        .heading = 0.0,
+    };
+    try applyCaptureCreatureSpawnEvent(&state, &creatures, seed_event);
+
+    var invalid_event = replay_codec.CaptureCreatureSpawnEvent{
+        .tick_index = 1,
+    };
+    invalid_event.added_head_count = 1;
+    invalid_event.added_head[0] = .{
+        .index = 0,
+        .has_ai_mode = true,
+        .ai_mode = 999,
+        .has_heading = true,
+        .heading = 1.5,
+    };
+
+    const heading_before = creatures.entries[0].heading;
+    try std.testing.expectError(
+        error.InvalidCaptureEnumValue,
+        applyCaptureCreatureSpawnEvent(&state, &creatures, invalid_event),
+    );
+    try std.testing.expectApproxEqAbs(heading_before, creatures.entries[0].heading, 1e-6);
 }
 
 test "quest scaffold resets run state on capture transition to terminal state" {

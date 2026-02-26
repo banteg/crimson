@@ -825,6 +825,7 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
         error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
+        error.InvalidCaptureEnumValue => "replay capture payload contains an invalid enum value",
         error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
         error.UnsupportedQuestSpawnTable => "quest replay requires a quest spawn table variant not yet ported in native runtime",
