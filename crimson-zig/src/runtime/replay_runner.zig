@@ -672,7 +672,7 @@ pub fn runReplayScaffoldWithTrace(
             }
             const health_before_player_step = player.health;
             const flags = replay_codec.unpackInputFlags(input.flags);
-            const move_mode_for_tick = resolveMoveModeForUpdate(flags, &state);
+            const move_mode_for_tick = resolveMoveModeForUpdate(flags);
             updatePlayerFromReplayInput(
                 player,
                 input,
@@ -797,7 +797,7 @@ pub fn runReplayScaffoldWithTrace(
             }
 
             const spawn_table_empty_now = survival_spawn.questSpawnTableEmpty(quest_spawn_entries);
-            if (!state.demo_mode_active and quest_creatures_none_active and spawn_table_empty_now) {
+            if (quest_creatures_none_active and spawn_table_empty_now) {
                 state.bonuses.reflex_boost = 0.0;
                 state.time_scale_active = false;
             }
@@ -1641,30 +1641,6 @@ fn applyPyrokineticEffects(
 
     const burn_intensities = [_]f64{ 0.8, 0.6, 0.4, 0.3, 0.2 };
 
-    if (state.preserve_bugs) {
-        const player0 = &players[0];
-        if (!perkActive(player0.*, PerkId.pyrokinetic)) return;
-
-        const target_idx = creatureFindInRadius(creatures.entries[0..], player0.aim, 12.0, 0);
-        if (target_idx == -1) return;
-
-        var creature = &creatures.entries[@intCast(target_idx)];
-        creature.collision_timer = asF32F64(creature.collision_timer - dt);
-        if (creature.collision_timer < 0.0) {
-            creature.collision_timer = 0.5;
-            for (burn_intensities) |intensity| {
-                const angle = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
-                _ = particles.spawnParticle(state, creature.pos, angle, intensity, -100);
-            }
-            // Consume native fx_queue_add_random RNG even though verifier does not render decals.
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
-        return;
-    }
-
     for (players) |*player| {
         if (player.health <= 0.0) continue;
         if (!perkActive(player.*, PerkId.pyrokinetic)) continue;
@@ -1690,21 +1666,11 @@ fn applyPyrokineticEffects(
 }
 
 fn updateEvilEyesTargets(
-    state: *const state_mod.GameplayState,
+    _: *const state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: []const survival_creatures.CreatureState,
 ) void {
     if (players.len == 0) return;
-    if (state.preserve_bugs) {
-        var player0 = &players[0];
-        if (!perkActive(player0.*, PerkId.evil_eyes)) {
-            player0.evil_eyes_target_creature = -1;
-            return;
-        }
-        player0.evil_eyes_target_creature = creatureFindInRadius(creatures, player0.aim, 12.0, 0);
-        return;
-    }
-
     for (players) |*player| {
         if (player.health <= 0.0 or !perkActive(player.*, PerkId.evil_eyes)) {
             player.evil_eyes_target_creature = -1;
@@ -2414,9 +2380,7 @@ fn applyCaptureStateReset(
     const status_quest_unlock_index_full = state.status_quest_unlock_index_full;
     const status_weapon_usage_counts = state.status_weapon_usage_counts;
     const game_mode = state.game_mode;
-    const demo_mode_active = state.demo_mode_active;
     const hardcore = state.hardcore;
-    const preserve_bugs = state.preserve_bugs;
     const quest_stage_major = state.quest_stage_major;
     const quest_stage_minor = state.quest_stage_minor;
     const perk_pending_count = state.perk_selection.pending_count;
@@ -2432,9 +2396,7 @@ fn applyCaptureStateReset(
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;
     state.game_mode = game_mode;
-    state.demo_mode_active = demo_mode_active;
     state.hardcore = hardcore;
-    state.preserve_bugs = preserve_bugs;
     state.quest_stage_major = quest_stage_major;
     state.quest_stage_minor = quest_stage_minor;
     state.perk_selection.pending_count = perk_pending_count;
@@ -2488,7 +2450,7 @@ fn applyJinxedEffects(
 
     if (state.bonuses.freeze > 0.0) return;
 
-    const pool_limit: usize = if (state.preserve_bugs) 0x17F else 0x180;
+    const pool_limit: usize = 0x180;
     const pool_mod = @min(pool_limit, creatures.entries.len);
     if (pool_mod == 0) return;
 
@@ -2511,7 +2473,6 @@ fn selectJinxedAccidentTarget(
     players: []const state_mod.PlayerState,
 ) usize {
     if (players.len == 0) return 0;
-    if (state.preserve_bugs) return 0;
 
     var alive_indices = [_]usize{0} ** state_mod.max_players;
     var alive_count: usize = 0;
@@ -2626,8 +2587,8 @@ fn updatePlayerFromReplayInput(
         }
     }
 
-    const move_mode = resolveMoveModeForUpdate(flags, state);
-    const aim_scheme = resolveAimSchemeForUpdate(flags, state);
+    const move_mode = resolveMoveModeForUpdate(flags);
+    const aim_scheme = resolveAimSchemeForUpdate(flags);
 
     var raw_move = state_mod.Vec2{
         .x = asF32F64(input.move_x),
@@ -2645,7 +2606,6 @@ fn updatePlayerFromReplayInput(
     var phase_sign: f64 = 1.0;
     var move_delta_override: ?state_mod.Vec2 = null;
     const player_controlled_movement =
-        !state.demo_mode_active and
         move_mode != movement_control_computer and
         aim_scheme != aim_scheme_computer;
 
@@ -2772,7 +2732,7 @@ fn updatePlayerFromReplayInput(
             }
         }
     } else {
-        const move_input_threshold: f64 = if (state.demo_mode_active) 0.0 else 0.2;
+        const move_input_threshold: f64 = 0.2;
         const moving_input = raw_mag > move_input_threshold;
         var turn_alignment_scale: f64 = 1.0;
         if (moving_input) {
@@ -2870,10 +2830,8 @@ fn finalizePlayerPostUpdate(
 
 fn resolveMoveModeForUpdate(
     flags: replay_codec.InputFlags,
-    state: *const state_mod.GameplayState,
 ) i32 {
     if (flags.move_mode) |mode| return mode;
-    if (state.demo_mode_active) return movement_control_computer;
     if (flags.move_forward_pressed != null and
         flags.move_backward_pressed != null and
         flags.turn_left_pressed != null and
@@ -2886,10 +2844,8 @@ fn resolveMoveModeForUpdate(
 
 fn resolveAimSchemeForUpdate(
     flags: replay_codec.InputFlags,
-    state: *const state_mod.GameplayState,
 ) i32 {
     if (flags.aim_scheme) |scheme| return scheme;
-    if (state.demo_mode_active) return aim_scheme_computer;
     return aim_scheme_mouse;
 }
 
@@ -4702,9 +4658,8 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
     try std.testing.expectEqual(override_without_perk.y_q4, override_with_perk.y_q4);
 }
 
-test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
+test "evil eyes targeting defaults to alive player slot" {
     var state = state_mod.GameplayState.init(1);
-    state.preserve_bugs = false;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
@@ -4731,37 +4686,8 @@ test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
     try std.testing.expectEqual(@as(i32, 0), players[1].evil_eyes_target_creature);
 }
 
-test "evil eyes targeting preserve bugs keeps player zero ownership" {
+test "evil eyes targeting assigns each alive owner" {
     var state = state_mod.GameplayState.init(1);
-    state.preserve_bugs = true;
-    var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .health = 0.0 },
-        .{
-            .index = 1,
-            .pos = .{},
-            .health = 100.0,
-            .aim = .{ .x = 100.0, .y = 200.0 },
-        },
-    };
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.evil_eyes))] = 1;
-
-    var creatures = [_]survival_creatures.CreatureState{
-        .{
-            .active = true,
-            .pos = .{ .x = 100.0, .y = 200.0 },
-            .lifecycle_stage = 16.0,
-            .size = 50.0,
-            .hp = 100.0,
-        },
-    };
-
-    updateEvilEyesTargets(&state, players[0..], creatures[0..]);
-    try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
-}
-
-test "evil eyes targeting assigns each alive owner in non-preserve mode" {
-    var state = state_mod.GameplayState.init(1);
-    state.preserve_bugs = false;
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -4889,9 +4815,8 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 }
 
-test "pyrokinetic defaults to first alive player slot in non-preserve mode" {
+test "pyrokinetic defaults to first alive player slot" {
     var state = state_mod.GameplayState.init(0);
-    state.preserve_bugs = false;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
@@ -4919,39 +4844,8 @@ test "pyrokinetic defaults to first alive player slot in non-preserve mode" {
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 }
 
-test "pyrokinetic preserve bugs keeps player zero only targeting" {
-    var state = state_mod.GameplayState.init(0);
-    state.preserve_bugs = true;
-    var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .health = 0.0 },
-        .{
-            .index = 1,
-            .pos = .{},
-            .health = 100.0,
-            .aim = .{ .x = 100.0, .y = 200.0 },
-        },
-    };
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
-
-    var creatures = survival_creatures.CreaturePool{};
-    creatures.entries[0] = .{
-        .active = true,
-        .pos = .{ .x = 100.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
-        .collision_timer = 0.1,
-        .size = 50.0,
-        .hp = 100.0,
-    };
-    var particles = survival_particles.ParticlePool{};
-
-    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.1), creatures.entries[0].collision_timer, 1e-6);
-    try std.testing.expectEqual(@as(usize, 0), activeParticleCount(&particles));
-}
-
 test "pyrokinetic targets all alive owners in default mode" {
     var state = state_mod.GameplayState.init(0);
-    state.preserve_bugs = false;
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5495,7 +5389,7 @@ test "jinxed reward uses float32 sum before truncation" {
     try std.testing.expectEqual(@as(i32, 139_549), players[0].experience);
 }
 
-test "jinxed accident can target another alive player outside preserve bugs mode" {
+test "jinxed accident can target another alive player" {
     const seed = findSeedForRandModSequence(
         &.{ 10, 2, 0x14 },
         &.{ 3, 1, 0 },
@@ -5505,7 +5399,6 @@ test "jinxed accident can target another alive player outside preserve bugs mode
 
     var state = state_mod.GameplayState.init(seed);
     state.jinxed_timer = 0.0;
-    state.preserve_bugs = false;
     state.bonuses.freeze = 1.0;
     var players = [_]state_mod.PlayerState{
         .{
@@ -5527,40 +5420,6 @@ test "jinxed accident can target another alive player outside preserve bugs mode
     try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 65.0), players[1].health, 1e-6);
-}
-
-test "jinxed preserve bugs keeps accident damage on player zero" {
-    const seed = findSeedForRandModSequence(
-        &.{ 10, 0x14 },
-        &.{ 3, 0 },
-        500_000,
-    ) orelse unreachable;
-    const dt = 0.2;
-
-    var state = state_mod.GameplayState.init(seed);
-    state.jinxed_timer = 0.0;
-    state.preserve_bugs = true;
-    state.bonuses.freeze = 1.0;
-    var players = [_]state_mod.PlayerState{
-        .{
-            .index = 0,
-            .pos = .{ .x = 10.0, .y = 20.0 },
-            .health = 50.0,
-        },
-        .{
-            .index = 1,
-            .pos = .{ .x = 20.0, .y = 20.0 },
-            .health = 70.0,
-        },
-    };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
-    var creatures = survival_creatures.CreaturePool{};
-
-    applyJinxedEffects(&state, players[0..], &creatures, dt);
-
-    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 45.0), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 70.0), players[1].health, 1e-6);
 }
 
 test "jinxed timer uses f32 underflow threshold before proc" {
@@ -5585,7 +5444,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
     try std.testing.expectEqual(rng_before, state.rng.state);
 }
 
-test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot pool" {
+test "jinxed pool uses full 384-slot upper bound" {
     const seed = findSeedForRandModSequence(
         &.{ 10, 0x14, 0x180 },
         &.{ 0, 0, 0x17F },
@@ -5595,7 +5454,6 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
 
     var default_state = state_mod.GameplayState.init(seed);
     default_state.jinxed_timer = 0.0;
-    default_state.preserve_bugs = false;
     var default_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5615,29 +5473,6 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
 
     try std.testing.expectApproxEqAbs(@as(f64, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
     try std.testing.expectEqual(@as(i32, 112), default_players[0].experience);
-
-    var bug_state = state_mod.GameplayState.init(seed);
-    bug_state.jinxed_timer = 0.0;
-    bug_state.preserve_bugs = true;
-    var bug_players = [_]state_mod.PlayerState{
-        .{
-            .index = 0,
-            .pos = .{},
-            .health = 50.0,
-            .experience = 100,
-        },
-    };
-    bug_players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
-    var bug_creatures = survival_creatures.CreaturePool{};
-    bug_creatures.entries[0x17F].active = true;
-    bug_creatures.entries[0x17F].hp = 100.0;
-    bug_creatures.entries[0x17F].lifecycle_stage = 16.0;
-    bug_creatures.entries[0x17F].reward_value = 12.7;
-
-    applyJinxedEffects(&bug_state, bug_players[0..], &bug_creatures, dt);
-
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), bug_creatures.entries[0x17F].hp, 1e-6);
-    try std.testing.expectEqual(@as(i32, 100), bug_players[0].experience);
 }
 
 test "reflex boosted perk scales world dt by 0.9" {
