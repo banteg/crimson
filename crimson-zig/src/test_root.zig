@@ -2,6 +2,7 @@ test {
     _ = @import("hash.zig");
     _ = @import("quest_spawn_builder.zig");
     _ = @import("quest_spawn_builder_option4.zig");
+    _ = @import("quest_spawn_builder_option6.zig");
     _ = @import("replay_codec.zig");
     _ = @import("survival_bonuses.zig");
     _ = @import("survival_creatures.zig");
