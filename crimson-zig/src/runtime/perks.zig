@@ -14,17 +14,12 @@ pub const PerkApplyError = error{
 pub const PerkId = game_ids.PerkId;
 pub const GameModeId = game_ids.GameModeId;
 
-const PerkFlags = struct {
-    pub const quest_mode_allowed: u32 = 0x1;
-    pub const two_player_allowed: u32 = 0x2;
-    pub const stackable: u32 = 0x4;
-};
-
 const PerkFlag = enum {
     quest_mode_allowed,
     two_player_allowed,
     stackable,
 };
+const PerkFlagSet = std.EnumSet(PerkFlag);
 
 pub const perk_id_max: i32 = @intFromEnum(PerkId.lifeline_50_50);
 const perk_id_max_usize: usize = @intCast(@intFromEnum(PerkId.lifeline_50_50));
@@ -42,29 +37,25 @@ fn perkIdFromInt(value: i32) ?PerkId {
     return std.meta.intToEnum(PerkId, value) catch null;
 }
 
-inline fn perkFlagMask(comptime flags: []const PerkFlag) u32 {
-    var mask: u32 = 0;
+inline fn perkFlagSet(comptime flags: []const PerkFlag) PerkFlagSet {
+    var set = PerkFlagSet.initEmpty();
     inline for (flags) |flag| {
-        mask |= switch (flag) {
-            .quest_mode_allowed => PerkFlags.quest_mode_allowed,
-            .two_player_allowed => PerkFlags.two_player_allowed,
-            .stackable => PerkFlags.stackable,
-        };
+        set.insert(flag);
     }
-    return mask;
+    return set;
 }
 
-const default_perk_flags: u32 = perkFlagMask(&.{ .quest_mode_allowed, .two_player_allowed });
+const default_perk_flags = perkFlagSet(&.{ .quest_mode_allowed, .two_player_allowed });
 
-const perk_flags_by_id = std.EnumArray(PerkId, u32).initDefault(default_perk_flags, .{
-    .instant_winner = perkFlagMask(&.{ .quest_mode_allowed, .two_player_allowed, .stackable }),
-    .grim_deal = 0,
-    .alternate_weapon = perkFlagMask(&.{ .quest_mode_allowed }),
-    .fatal_lottery = perkFlagMask(&.{ .stackable }),
-    .random_weapon = perkFlagMask(&.{ .quest_mode_allowed, .stackable }),
-    .final_revenge = 0,
-    .highlander = 0,
-    .breathing_room = perkFlagMask(&.{ .two_player_allowed }),
+const perk_flags_by_id = std.EnumArray(PerkId, PerkFlagSet).initDefault(default_perk_flags, .{
+    .instant_winner = perkFlagSet(&.{ .quest_mode_allowed, .two_player_allowed, .stackable }),
+    .grim_deal = PerkFlagSet.initEmpty(),
+    .alternate_weapon = perkFlagSet(&.{ .quest_mode_allowed }),
+    .fatal_lottery = perkFlagSet(&.{ .stackable }),
+    .random_weapon = perkFlagSet(&.{ .quest_mode_allowed, .stackable }),
+    .final_revenge = PerkFlagSet.initEmpty(),
+    .highlander = PerkFlagSet.initEmpty(),
+    .breathing_room = perkFlagSet(&.{ .two_player_allowed }),
 });
 
 const QuestUnlockPair = struct {
@@ -482,7 +473,7 @@ fn perkGenerateChoices(
             if (isRarityGate(candidate) and ((state.rng.rand() & 3) == 1)) continue;
 
             const flags = perkFlags(candidate);
-            const stackable = (flags & PerkFlags.stackable) != 0;
+            const stackable = flags.contains(.stackable);
             if (attempts > 10_000 and stackable) {
                 selected = candidate;
                 break;
@@ -550,10 +541,10 @@ fn perkCanOffer(
     if (perk_id == .antiperk) return false;
 
     const flags = perkFlags(perk_id);
-    if (game_mode == .quests and (flags & PerkFlags.quest_mode_allowed) == 0) {
+    if (game_mode == .quests and !flags.contains(.quest_mode_allowed)) {
         return false;
     }
-    if (player_count == 2 and (flags & PerkFlags.two_player_allowed) == 0) {
+    if (player_count == 2 and !flags.contains(.two_player_allowed)) {
         return false;
     }
     if (!prereqSatisfied(player, perk_id)) return false;
@@ -570,7 +561,7 @@ fn prereqSatisfied(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     };
 }
 
-fn perkFlags(perk_id: PerkId) u32 {
+fn perkFlags(perk_id: PerkId) PerkFlagSet {
     return perk_flags_by_id.get(perk_id);
 }
 
