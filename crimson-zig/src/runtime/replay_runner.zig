@@ -111,8 +111,8 @@ pub const ReplayScaffoldResult = struct {
     survival_reward_fire_seen: bool,
     survival_reward_damage_seen: bool,
     spawn_stage: i32,
-    spawn_cooldown_ms: f64,
-    quest_completion_transition_ms: f64,
+    spawn_cooldown_ms: f32,
+    quest_completion_transition_ms: f32,
     quest_completed: bool,
     quest_play_hit_sfx: bool,
     quest_play_completion_music: bool,
@@ -1052,8 +1052,8 @@ pub fn runReplayScaffoldWithTrace(
         .survival_reward_fire_seen = state.survival_reward_fire_seen,
         .survival_reward_damage_seen = state.survival_reward_damage_seen,
         .spawn_stage = spawn_stage,
-        .spawn_cooldown_ms = spawn_cooldown,
-        .quest_completion_transition_ms = quest_completion_transition_ms,
+        .spawn_cooldown_ms = @floatCast(spawn_cooldown),
+        .quest_completion_transition_ms = @floatCast(quest_completion_transition_ms),
         .quest_completed = quest_completed,
         .quest_play_hit_sfx = quest_play_hit_sfx,
         .quest_play_completion_music = quest_play_completion_music,
@@ -2647,11 +2647,10 @@ fn updatePlayerFromReplayInput(
     input: replay_codec.ReplayPlayerInput,
     flags: replay_codec.InputFlags,
     state: *const state_mod.GameplayState,
-    dt: f64,
+    dt: f32,
 ) void {
     const prev_pos = player.pos;
-    const dt_f32 = narrowF32(dt);
-    var movement_dt = dt_f32;
+    var movement_dt = dt;
     if (state.time_scale_active and movement_dt > 0.0) {
         const reflex_f32 = narrowF32(state.bonuses.reflex_boost);
         var time_scale_factor = narrowF32(0.3);
@@ -2927,8 +2926,8 @@ fn resolveAimSchemeForUpdate(
 
 fn playerMoveDeltaFromHeading(
     player: *const state_mod.PlayerState,
-    movement_dt: f64,
-    speed_scale: f64,
+    movement_dt: f32,
+    speed_scale: f32,
 ) state_mod.Vec2 {
     const move = directionFromHeadingNative(player.heading);
     const move_dx = narrowF32(move.x * player.move_speed * speed_scale);
@@ -2949,27 +2948,25 @@ fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
 
 fn playerAccelerateMoveSpeed(
     player: *state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) void {
-    const dt_f32 = narrowF32(dt);
     if (perkActive(player.*, PerkId.long_distance_runner)) {
         if (player.move_speed < 2.0) {
-            player.move_speed = narrowF32(player.move_speed + dt_f32 * 4.0);
+            player.move_speed = narrowF32(player.move_speed + dt * 4.0);
         }
-        player.move_speed = narrowF32(player.move_speed + dt_f32);
+        player.move_speed = narrowF32(player.move_speed + dt);
         if (player.move_speed > 2.8) player.move_speed = 2.8;
     } else {
-        player.move_speed = narrowF32(player.move_speed + dt_f32 * 5.0);
+        player.move_speed = narrowF32(player.move_speed + dt * 5.0);
         if (player.move_speed > 2.0) player.move_speed = 2.0;
     }
 }
 
 fn playerDecelerateMoveSpeed(
     player: *state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) void {
-    const dt_f32 = narrowF32(dt);
-    player.move_speed = narrowF32(player.move_speed - dt_f32 * 15.0);
+    player.move_speed = narrowF32(player.move_speed - dt * 15.0);
     if (player.move_speed < 0.0) player.move_speed = 0.0;
 }
 
