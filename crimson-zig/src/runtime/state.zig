@@ -533,11 +533,8 @@ pub fn resetPlayers(
 }
 
 pub fn player0Shots(state: GameplayState) PlayerShots {
-    var fired: i32 = 0;
-    var hit: i32 = 0;
-
-    if (state.shots_fired.len > 0) fired = @max(0, state.shots_fired[0]);
-    if (state.shots_hit.len > 0) hit = @max(0, state.shots_hit[0]);
+    const fired: i32 = @max(0, state.shots_fired[0]);
+    var hit: i32 = @max(0, state.shots_hit[0]);
     if (hit > fired) hit = fired;
 
     return .{
