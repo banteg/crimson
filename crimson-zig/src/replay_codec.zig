@@ -612,8 +612,11 @@ pub fn parseReplaySummary(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!ReplaySummary {
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch {
-        return error.InvalidMsgpack;
+    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => error.InvalidMsgpack,
+        };
     };
     defer decoded.deinit();
 
@@ -639,8 +642,11 @@ pub fn parseReplay(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!Replay {
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch {
-        return error.InvalidMsgpack;
+    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => error.InvalidMsgpack,
+        };
     };
     defer decoded.deinit();
 
@@ -727,6 +733,7 @@ fn buildInputs(
 
     for (wire_inputs, 0..) |wire_tick, tick_idx| {
         const tick_inputs = allocator.alloc(ReplayPlayerInput, wire_tick.len) catch return error.OutOfMemory;
+        errdefer allocator.free(tick_inputs);
         for (wire_tick, 0..) |wire_input, player_idx| {
             tick_inputs[player_idx] = .{
                 .move_x = try normalizeInputValue(wire_input.move_x, input_quantization),
@@ -749,6 +756,7 @@ fn buildEvents(
     input_len: usize,
 ) ReplayCodecError![]ReplayEvent {
     const events = allocator.alloc(ReplayEvent, wire_events.len) catch return error.OutOfMemory;
+    errdefer allocator.free(events);
     for (wire_events, 0..) |wire_event, idx| {
         events[idx] = try parseReplayEvent(wire_event, input_len);
     }
@@ -881,7 +889,10 @@ fn parseCaptureBootstrapEvent(
             event.perk_choices[idx] = try parseEventI32(choice_id);
         }
 
-        const player_count = @min(perk.player_nonzero_counts.len, max_players);
+        const player_count = perk.player_nonzero_counts.len;
+        if (player_count > max_players) {
+            return error.UnsupportedEventShape;
+        }
         for (0..player_count) |player_idx| {
             const raw_pairs = perk.player_nonzero_counts[player_idx];
             if (raw_pairs.len > max_capture_bootstrap_perk_pairs_per_player) {
@@ -898,9 +909,12 @@ fn parseCaptureBootstrapEvent(
         }
     }
 
-    const player_count = @min(payload.players.len, max_players);
+    const player_count = payload.players.len;
+    if (player_count > max_players) {
+        return error.UnsupportedEventShape;
+    }
     event.player_count = player_count;
-    for (payload.players[0..player_count], 0..) |player_wire, idx| {
+    for (payload.players, 0..) |player_wire, idx| {
         event.players[idx] = .{
             .weapon_id = try parseEventI32(player_wire.weapon_id),
             .pos_x = player_wire.pos.x,
@@ -939,7 +953,10 @@ fn parseCaptureBootstrapEvent(
         }
     }
 
-    for (payload.digital_move_enabled_by_player[0..@min(payload.digital_move_enabled_by_player.len, max_players)], 0..) |enabled, idx| {
+    if (payload.digital_move_enabled_by_player.len > max_players) {
+        return error.UnsupportedEventShape;
+    }
+    for (payload.digital_move_enabled_by_player, 0..) |enabled, idx| {
         event.digital_move_enabled_by_player[idx] = enabled;
     }
 
@@ -1451,4 +1468,101 @@ test "build header rejects world_size above i32 range" {
         .input_quantization = "raw",
     };
     try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
+}
+
+test "build inputs frees tick allocations on parse error" {
+    const wire_tick = [_]ReplayInputWire{
+        .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = -1,
+        },
+    };
+    const wire_inputs = [_][]const ReplayInputWire{wire_tick[0..]};
+    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..], "raw"));
+}
+
+test "build events frees allocation on parse error" {
+    const wire_events = [_]ReplayEventWire{
+        .{
+            .tick_index = 0,
+            .kind = "unknown_event_kind",
+        },
+    };
+    try std.testing.expectError(error.UnsupportedEventKind, buildEvents(std.testing.allocator, wire_events[0..], 1));
+}
+
+test "parse replay decode errors preserve oom and map invalid msgpack" {
+    const empty_payload = [_]u8{};
+
+    var no_mem_summary: [0]u8 = .{};
+    var summary_allocator = std.heap.FixedBufferAllocator.init(no_mem_summary[0..]);
+    try std.testing.expectError(error.OutOfMemory, parseReplaySummary(summary_allocator.allocator(), empty_payload[0..]));
+
+    var no_mem_replay: [0]u8 = .{};
+    var replay_allocator = std.heap.FixedBufferAllocator.init(no_mem_replay[0..]);
+    try std.testing.expectError(error.OutOfMemory, parseReplay(replay_allocator.allocator(), empty_payload[0..]));
+
+    const invalid_payload = [_]u8{0xc1};
+    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, invalid_payload[0..]));
+    try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, invalid_payload[0..]));
+}
+
+test "capture bootstrap rejects perk nonzero counts above max players" {
+    const empty_pairs = [_][]const i64{};
+    const player_nonzero_counts = [_][]const []const i64{empty_pairs[0..]} ** (max_players + 1);
+    const payload = [_]ReplayEventPayloadWire{
+        .{
+            .perk = .{
+                .player_nonzero_counts = player_nonzero_counts[0..],
+            },
+        },
+    };
+    const wire = ReplayEventWire{
+        .tick_index = 0,
+        .kind = "orig_capture_bootstrap",
+        .payload = payload[0..],
+    };
+    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+}
+
+test "capture bootstrap rejects players above max players" {
+    const players = [_]CaptureBootstrapPlayerWire{
+        .{
+            .weapon_id = 1,
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .health = 100.0,
+            .ammo = 0.0,
+            .experience = 0,
+            .level = 1,
+        },
+    } ** (max_players + 1);
+    const payload = [_]ReplayEventPayloadWire{
+        .{
+            .players = players[0..],
+        },
+    };
+    const wire = ReplayEventWire{
+        .tick_index = 0,
+        .kind = "orig_capture_bootstrap",
+        .payload = payload[0..],
+    };
+    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+}
+
+test "capture bootstrap rejects digital move flags above max players" {
+    const digital_move_enabled_by_player = [_]bool{false} ** (max_players + 1);
+    const payload = [_]ReplayEventPayloadWire{
+        .{
+            .digital_move_enabled_by_player = digital_move_enabled_by_player[0..],
+        },
+    };
+    const wire = ReplayEventWire{
+        .tick_index = 0,
+        .kind = "orig_capture_bootstrap",
+        .payload = payload[0..],
+    };
+    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }
