@@ -180,7 +180,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 200.0,
                         .move_speed = 2.2,
                         .reward_value = 600.0,
@@ -206,7 +206,7 @@ pub const CreaturePool = struct {
                         },
                         call.heading,
                         .{
-                            .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                            .type_id = .alien,
                             .health = 40.0,
                             .move_speed = 2.4,
                             .reward_value = 60.0,
@@ -259,7 +259,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
+                        .type_id = .zombie,
                         .health = 8500.0,
                         .move_speed = 1.3,
                         .reward_value = 6600.0,
@@ -278,7 +278,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 1000.0,
                         .move_speed = 2.0,
                         .reward_value = 3000.0,
@@ -297,7 +297,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 1000.0,
                         .move_speed = 2.0,
                         .reward_value = 3000.0,
@@ -316,7 +316,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 450.0,
                         .move_speed = 2.0,
                         .reward_value = 1000.0,
@@ -335,7 +335,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 1000.0,
                         .move_speed = 1.5,
                         .reward_value = 3000.0,
@@ -354,7 +354,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 3500.0,
                         .move_speed = 1.5,
                         .reward_value = 5000.0,
@@ -373,7 +373,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 2.8,
                         .reward_value = 1000.0,
@@ -392,7 +392,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 1.3,
                         .reward_value = 1000.0,
@@ -411,7 +411,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 2.8,
                         .reward_value = 5000.0,
@@ -438,7 +438,7 @@ pub const CreaturePool = struct {
                         },
                         call.heading,
                         .{
-                            .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                            .type_id = .alien,
                             .health = 40.0,
                             .move_speed = 4.0,
                             .reward_value = 350.0,
@@ -463,7 +463,7 @@ pub const CreaturePool = struct {
                     rng,
                     call,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 2.8,
                         .reward_value = 800.0,
@@ -483,7 +483,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 20.0,
                         .move_speed = 2.9,
                         .reward_value = 60.0,
@@ -499,7 +499,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .type_id = .lizard,
                         .health = 1500.0,
                         .move_speed = 2.1,
                         .reward_value = 1000.0,
@@ -519,7 +519,7 @@ pub const CreaturePool = struct {
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
                         .{
-                            .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                            .type_id = .lizard,
                             .health = 60.0,
                             .move_speed = 2.4,
                             .reward_value = 60.0,
@@ -613,7 +613,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 200.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -635,7 +635,7 @@ pub const CreaturePool = struct {
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
                         .{
-                            .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                            .type_id = .alien,
                             .health = 60.0,
                             .move_speed = 2.0,
                             .reward_value = 60.0,
@@ -773,7 +773,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 53.0,
                         .move_speed = 1.7,
                         .reward_value = 120.0,
@@ -789,7 +789,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 25.0,
                         .move_speed = 1.7,
                         .reward_value = 150.0,
@@ -805,7 +805,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 5.0,
                         .move_speed = 1.7,
                         .reward_value = 180.0,
@@ -821,7 +821,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 20.0,
                         .move_speed = 2.0,
                         .reward_value = 110.0,
@@ -837,7 +837,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 25.0,
                         .move_speed = 2.5,
                         .reward_value = 125.0,
@@ -853,7 +853,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 2.2,
                         .reward_value = 125.0,
@@ -869,7 +869,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 2.1,
                         .reward_value = 125.0,
@@ -887,7 +887,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 1.7,
                         .reward_value = 150.0,
@@ -903,7 +903,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 800.0,
                         .move_speed = 2.5,
                         .reward_value = 450.0,
@@ -919,7 +919,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 3.1,
                         .reward_value = 300.0,
@@ -935,7 +935,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 1500.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -956,7 +956,7 @@ pub const CreaturePool = struct {
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                             call.heading,
                             .{
-                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                                .type_id = .alien,
                                 .health = 40.0,
                                 .move_speed = 2.0,
                                 .reward_value = 60.0,
@@ -986,7 +986,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 1500.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -1007,7 +1007,7 @@ pub const CreaturePool = struct {
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                             call.heading,
                             .{
-                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                                .type_id = .alien,
                                 .health = 40.0,
                                 .move_speed = 2.0,
                                 .reward_value = 60.0,
@@ -1037,7 +1037,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .type_id = .lizard,
                         .health = 1500.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -1058,7 +1058,7 @@ pub const CreaturePool = struct {
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                             call.heading,
                             .{
-                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                                .type_id = .lizard,
                                 .health = 40.0,
                                 .move_speed = 2.0,
                                 .reward_value = 60.0,
@@ -1088,7 +1088,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 1500.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -1109,7 +1109,7 @@ pub const CreaturePool = struct {
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                             call.heading,
                             .{
-                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                                .type_id = .spider_sp1,
                                 .health = 40.0,
                                 .move_speed = 2.0,
                                 .reward_value = 60.0,
@@ -1139,7 +1139,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 500.0,
                         .move_speed = 2.0,
                         .reward_value = 600.0,
@@ -1159,7 +1159,7 @@ pub const CreaturePool = struct {
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                             call.heading,
                             .{
-                                .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                                .type_id = .alien,
                                 .health = 260.0,
                                 .move_speed = 3.8,
                                 .reward_value = 60.0,
@@ -1187,7 +1187,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 50.0,
                         .move_speed = 3.8,
                         .reward_value = 300.0,
@@ -1206,7 +1206,7 @@ pub const CreaturePool = struct {
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
                         .{
-                            .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                            .type_id = .alien,
                             .health = 220.0,
                             .move_speed = 3.8,
                             .reward_value = 60.0,
@@ -1233,7 +1233,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 30.0,
                         .move_speed = 3.6,
                         .reward_value = 450.0,
@@ -1249,7 +1249,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 3800.0,
                         .move_speed = 2.0,
                         .reward_value = 1500.0,
@@ -1265,7 +1265,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 45.0,
                         .move_speed = 3.1,
                         .reward_value = 200.0,
@@ -1313,7 +1313,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
+                        .type_id = .alien,
                         .health = 10.0,
                         .move_speed = 1.8,
                         .reward_value = 150.0,
@@ -1400,7 +1400,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2),
+                        .type_id = .spider_sp2,
                         .health = 400.0,
                         .move_speed = 2.0,
                         .reward_value = 1000.0,
@@ -1418,7 +1418,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 4500.0,
                         .move_speed = 2.0,
                         .reward_value = 4500.0,
@@ -1438,7 +1438,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 1200.0,
                         .move_speed = 2.0,
                         .reward_value = 4000.0,
@@ -1455,7 +1455,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 200.0,
                         .move_speed = 2.4,
                         .reward_value = 200.0,
@@ -1505,7 +1505,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .type_id = .lizard,
                         .health = 20.0,
                         .move_speed = 2.5,
                         .reward_value = 150.0,
@@ -1521,7 +1521,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
+                        .type_id = .lizard,
                         .health = 1000.0,
                         .move_speed = 2.0,
                         .reward_value = 400.0,
@@ -1669,7 +1669,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 1000.0,
                         .move_speed = 2.8,
                         .reward_value = 500.0,
@@ -1686,7 +1686,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 200.0,
                         .move_speed = 2.3,
                         .reward_value = 210.0,
@@ -1703,7 +1703,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
+                        .type_id = .spider_sp1,
                         .health = 70.0,
                         .move_speed = 2.2,
                         .reward_value = 160.0,
@@ -1747,7 +1747,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
+                        .type_id = .zombie,
                         .health = 200.0,
                         .move_speed = 1.7,
                         .reward_value = 160.0,
@@ -1764,7 +1764,7 @@ pub const CreaturePool = struct {
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                     call.heading,
                     .{
-                        .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
+                        .type_id = .zombie,
                         .health = 2000.0,
                         .move_speed = 2.1,
                         .reward_value = 460.0,
@@ -2555,7 +2555,7 @@ pub const CreaturePool = struct {
             .heading = heading,
             .set_heading = set_heading,
             .phase_seed = phase_seed,
-            .type_id = @enumFromInt(stats.type_id),
+            .type_id = stats.type_id,
             .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
             .flags = flags,
             .size = stats.size,
@@ -2976,7 +2976,7 @@ fn advancePosByDeltaF32(
 }
 
 const SpawnStats = struct {
-    type_id: i32,
+    type_id: survival_spawn.CreatureTypeId,
     health: f64,
     move_speed: f64,
     reward_value: f64,

@@ -459,40 +459,40 @@ pub fn buildSurvivalSpawnCreature(
 
     const r10 = @as(i32, @intCast(rng.rand() % 10));
 
-    var type_id: i32 = 0;
+    var type_id: CreatureTypeId = .zombie;
     if (xp < 12_000) {
-        type_id = if (r10 < 9) 2 else 3;
+        type_id = if (r10 < 9) .alien else .spider_sp1;
     } else if (xp < 25_000) {
-        type_id = if (r10 < 4) 0 else 3;
-        if (8 < r10) type_id = 2;
+        type_id = if (r10 < 4) .zombie else .spider_sp1;
+        if (8 < r10) type_id = .alien;
     } else if (xp < 42_000) {
         if (r10 < 5) {
-            type_id = 2;
+            type_id = .alien;
         } else {
-            type_id = @as(i32, @intCast((rng.rand() & 1) + 3));
+            type_id = if ((rng.rand() & 1) == 0) .spider_sp1 else .spider_sp2;
         }
     } else if (xp < 50_000) {
-        type_id = 2;
+        type_id = .alien;
     } else if (xp < 90_000) {
-        type_id = 4;
+        type_id = .spider_sp2;
     } else {
         if (109_999 < xp) {
             if (r10 < 6) {
-                type_id = 2;
+                type_id = .alien;
             } else if (r10 < 9) {
-                type_id = 4;
+                type_id = .spider_sp2;
             } else {
-                type_id = 0;
+                type_id = .zombie;
             }
         } else {
-            type_id = 0;
+            type_id = .zombie;
         }
     }
 
     if ((rng.rand() & 0x1f) == 2) {
-        type_id = 3;
+        type_id = .spider_sp1;
     }
-    creature.type_id = @enumFromInt(type_id);
+    creature.type_id = type_id;
 
     creature.size = @floatFromInt(rng.rand() % 20 + 44);
     {
@@ -635,13 +635,13 @@ pub fn buildRushModeSpawnCreature(
     pos: Vec2,
     tint_rgba: [4]f64,
     rng: *Crand,
-    type_id: i32,
+    type_id: CreatureTypeId,
     survival_elapsed_ms: i32,
 ) CreatureInit {
     const elapsed_ms = survival_elapsed_ms;
 
     var creature = allocCreature(-1, pos, rng);
-    creature.type_id = @enumFromInt(type_id);
+    creature.type_id = type_id;
     creature.ai_mode = CreatureAiMode.orbit_player;
 
     creature.health = @as(f64, @floatFromInt(elapsed_ms)) * 1e-4 + 10.0;
@@ -732,7 +732,7 @@ pub fn tickRushModeSpawnsBatch(
             spawn_right,
             tint,
             rng,
-            @intFromEnum(CreatureTypeId.alien),
+            .alien,
             elapsed_ms,
         );
         alien.ai_mode = CreatureAiMode.orbit_player_wide;
@@ -745,7 +745,7 @@ pub fn tickRushModeSpawnsBatch(
             spawn_left,
             tint,
             rng,
-            @intFromEnum(CreatureTypeId.spider_sp1),
+            .spider_sp1,
             elapsed_ms,
         );
         spider.ai_mode = CreatureAiMode.orbit_player_wide;
