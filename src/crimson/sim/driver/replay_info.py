@@ -13,6 +13,7 @@ from ...original.capture import (
     CAPTURE_STATE_TRANSITION_EVENT_KIND,
     capture_bootstrap_payload_from_event_payload,
     capture_state_transitions_from_event_payload,
+    is_capture_state_reset_target,
 )
 from ...perks.ids import perk_display_name
 from ...quests import quest_by_level
@@ -874,7 +875,7 @@ def _run_quest_replay_info(
 
     def _on_capture_state_transition(target_state: int, _before_state: int | None, _after_state: int | None) -> None:
         nonlocal pending_capture_state_reset
-        if int(target_state) != 12:
+        if not is_capture_state_reset_target(int(target_state)):
             return
         pending_capture_state_reset = True
 

@@ -10,6 +10,7 @@ from ...original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     capture_bootstrap_payload_from_event_payload,
+    is_capture_state_reset_target,
 )
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
@@ -683,7 +684,7 @@ def run_quest_replay(
         _after_state: int | None,
     ) -> None:
         nonlocal pending_capture_state_reset
-        if int(target_state) != 12:
+        if not is_capture_state_reset_target(int(target_state)):
             return
         pending_capture_state_reset = True
 

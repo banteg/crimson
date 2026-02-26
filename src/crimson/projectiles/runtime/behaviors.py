@@ -11,7 +11,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
 from ...math_parity import f32
-from ...owner_ref import OwnerRef
+from ...owner_ref import LOCAL_PLAYER_OWNER_ID, OwnerRef
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -176,10 +176,11 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
-    # Native player-hit checks in `projectile_update` key off `owner_id != -100`.
+    # Native player-hit checks in `projectile_update` key off
+    # `owner_id != LOCAL_PLAYER_OWNER_ID`.
     # Splitter children are spawned with `owner_id = hit creature index`, so they
-    # can hit players even when the parent projectile owner was `-100`.
-    split_hits_players = OwnerRef.from_creature(int(hit_idx)).to_legacy() != -100
+    # can hit players even when the parent projectile owner was local-player-owned.
+    split_hits_players = OwnerRef.from_creature(int(hit_idx)).to_legacy() != int(LOCAL_PLAYER_OWNER_ID)
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
