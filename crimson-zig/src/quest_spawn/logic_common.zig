@@ -145,6 +145,7 @@ pub inline fn cornerPointBottomRight(width: f64, height: f64, offset: f64) spawn
 }
 
 pub inline fn randomAngle(rng: *PythonRandom) f64 {
+    // Native quest scripts draw a 0..611 integer and scale by 0.01 radians.
     return @as(f64, @floatFromInt(rng.randBelow(0x264))) * 0.01;
 }
 
@@ -256,6 +257,7 @@ pub fn appendRadialSpawns(
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
+    if (radius_step <= 0.0 or radius_end < radius_start) return error.UnsupportedQuestSpawnTable;
     const direction = vecFromAngle(angle);
     var radius = radius_start;
     while (radius < radius_end) : (radius += radius_step) {
