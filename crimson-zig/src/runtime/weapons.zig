@@ -490,7 +490,7 @@ fn tryFireWeaponWithForce(
         .rocket_launcher => {
             _ = secondary_projectiles.spawn(
                 muzzle,
-                shot_angle,
+                narrowF32(shot_angle),
                 secondary_projectiles_mod.SecondaryProjectileTypeId.rocket,
                 secondary_owner,
                 2.0,
@@ -501,7 +501,7 @@ fn tryFireWeaponWithForce(
         .seeker_rockets => {
             _ = secondary_projectiles.spawn(
                 muzzle,
-                shot_angle,
+                narrowF32(shot_angle),
                 secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
                 secondary_owner,
                 2.0,
@@ -520,7 +520,7 @@ fn tryFireWeaponWithForce(
             for (0..@as(usize, @intCast(rocket_count))) |_| {
                 _ = secondary_projectiles.spawn(
                     muzzle,
-                    angle,
+                    narrowF32(angle),
                     secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
                     secondary_owner,
                     2.0,
@@ -533,7 +533,7 @@ fn tryFireWeaponWithForce(
         .rocket_minigun => {
             _ = secondary_projectiles.spawn(
                 muzzle,
-                shot_angle,
+                narrowF32(shot_angle),
                 secondary_projectiles_mod.SecondaryProjectileTypeId.rocket_minigun,
                 secondary_owner,
                 2.0,

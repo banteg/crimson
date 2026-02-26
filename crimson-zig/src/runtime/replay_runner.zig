@@ -677,8 +677,8 @@ pub fn runReplayScaffoldWithTrace(
             players[0..],
             &creatures,
             &bonuses,
-            dt_sim,
-            @floatCast(header.world_size),
+            narrowF32(dt_sim),
+            narrowF32(header.world_size),
             header.detail_preset,
         );
         const rng_after_secondary_projectiles = state.rng.state;

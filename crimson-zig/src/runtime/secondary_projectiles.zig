@@ -45,10 +45,10 @@ pub const SecondaryProjectilePool = struct {
     pub fn spawn(
         self: *SecondaryProjectilePool,
         pos: state_mod.Vec2,
-        angle: f64,
+        angle: f32,
         type_id: SecondaryProjectileTypeId,
         owner: owner_ref.OwnerRef,
-        time_to_live: f64,
+        time_to_live: f32,
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
     ) usize {
@@ -63,8 +63,8 @@ pub const SecondaryProjectilePool = struct {
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = narrowF32(angle),
-            .speed = narrowF32(time_to_live),
+            .angle = angle,
+            .speed = time_to_live,
             .pos = .{
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
@@ -82,8 +82,8 @@ pub const SecondaryProjectilePool = struct {
 
         if (type_id == SecondaryProjectileTypeId.detonation) {
             entry.detonation_t = 0.0;
-            entry.detonation_scale = narrowF32(time_to_live);
-            entry.speed = narrowF32(time_to_live);
+            entry.detonation_scale = time_to_live;
+            entry.speed = time_to_live;
             return index;
         }
 
@@ -92,7 +92,7 @@ pub const SecondaryProjectilePool = struct {
             base_speed = 190.0;
         }
         entry.vel = runtime_helpers.directionFromHeading(entry.angle).mul(base_speed);
-        entry.speed = narrowF32(time_to_live);
+        entry.speed = time_to_live;
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             if (creatures) |pool| {
@@ -101,8 +101,8 @@ pub const SecondaryProjectilePool = struct {
             } else if (target_hint) |hint| {
                 entry.target_hint_active = true;
                 entry.target_hint = .{
-                    .x = narrowF32(hint.x),
-                    .y = narrowF32(hint.y),
+                    .x = hint.x,
+                    .y = hint.y,
                 };
             }
         }
@@ -116,12 +116,12 @@ pub const SecondaryProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
         detail_preset: i32,
     ) void {
         if (!(dt > 0.0)) return;
-        const dt_f32 = narrowF32(dt);
+        const dt_f32 = dt;
         const freeze_active = state.bonuses.freeze > 0.0;
 
         for (&self.entries) |*entry| {
@@ -200,7 +200,7 @@ pub const SecondaryProjectilePool = struct {
                             idx,
                             entry.owner,
                             dt_f32,
-                            narrowF32(world_size),
+                            world_size,
                         );
                     }
                 }
@@ -335,7 +335,7 @@ pub const SecondaryProjectilePool = struct {
                     },
                     entry.owner,
                     dt_f32,
-                    narrowF32(world_size),
+                    @as(f64, world_size),
                     null,
                 );
 
