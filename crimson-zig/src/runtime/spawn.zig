@@ -615,10 +615,10 @@ pub fn buildSurvivalSpawnCreature(
     creature.max_health = creature.health;
     creature.reward_value = @floatCast(narrowF32(@as(f32, @floatCast(creature.reward_value)) * 0.8));
     creature.tint = .{
-        clamp01(creature.tint[0]),
-        clamp01(creature.tint[1]),
-        clamp01(creature.tint[2]),
-        clamp01(creature.tint[3]),
+        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[0])))),
+        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[1])))),
+        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[2])))),
+        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[3])))),
     };
 
     return creature;
@@ -642,7 +642,7 @@ pub fn randSurvivalSpawnPos(
 
 pub fn buildRushModeSpawnCreature(
     pos: Vec2,
-    tint_rgba: [4]f64,
+    tint_rgba: [4]f32,
     rng: *Crand,
     type_id: CreatureTypeId,
     survival_elapsed_ms: i32,
@@ -663,7 +663,12 @@ pub fn buildRushModeSpawnCreature(
     creature.move_speed = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 2.5));
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
-    creature.tint = tint_rgba;
+    creature.tint = .{
+        @as(f64, tint_rgba[0]),
+        @as(f64, tint_rgba[1]),
+        @as(f64, tint_rgba[2]),
+        @as(f64, tint_rgba[3]),
+    };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
     creature.size = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 47.0));
@@ -718,10 +723,10 @@ pub fn tickRushModeSpawnsBatch(
 
         const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
         const t: f32 = @floatFromInt(t_i32);
-        const tint = [4]f64{
-            clamp01(@floatCast(narrowF32(t * (1.0 / 120000.0) + 0.3))),
-            clamp01(@floatCast(narrowF32(t * 10000.0 + 0.3))),
-            clamp01(@floatCast(narrowF32(std.math.sin(narrowF32(t * 1e-4)) + 0.3))),
+        const tint = [4]f32{
+            clamp01(narrowF32(t * (1.0 / 120000.0) + 0.3)),
+            clamp01(narrowF32(t * 10000.0 + 0.3)),
+            clamp01(narrowF32(std.math.sin(narrowF32(t * 1e-4)) + 0.3)),
             1.0,
         };
 
@@ -1062,14 +1067,19 @@ fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
     };
 }
 
-fn clamp01(value: f64) f64 {
+fn clamp01(value: f32) f32 {
     if (value < 0.0) return 0.0;
     if (value > 1.0) return 1.0;
     return value;
 }
 
-fn applyTint(creature: *CreatureInit, tint: [4]f64) void {
-    creature.tint = tint;
+fn applyTint(creature: *CreatureInit, tint: [4]f32) void {
+    creature.tint = .{
+        @as(f64, tint[0]),
+        @as(f64, tint[1]),
+        @as(f64, tint[2]),
+        @as(f64, tint[3]),
+    };
 }
 
 fn appendSpawnCall(
