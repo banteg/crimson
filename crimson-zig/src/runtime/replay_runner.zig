@@ -50,6 +50,7 @@ const max_test_quest_spawn_entries: usize = 1024;
 
 pub const ReplayRunnerError = error{
     OutOfMemory,
+    InvalidHeaderValue,
     UnsupportedGameMode,
     UnsupportedPlayerCount,
     UnsupportedInputQuantization,
@@ -385,6 +386,10 @@ pub fn runReplayScaffoldWithTrace(
     if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
+    const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
+    if (!std.math.isFinite(header.world_size) or header.world_size <= 0.0 or header.world_size > max_world_size_i32_f32) {
+        return error.InvalidHeaderValue;
+    }
 
     const events = replay.events;
     var original_capture_replay = false;
@@ -442,7 +447,11 @@ pub fn runReplayScaffoldWithTrace(
     }
 
     var elapsed_ms_sim: f64 = 0.0;
-    const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(header.world_size)));
+    const terrain_size_floor = @floor(@as(f64, header.world_size));
+    if (terrain_size_floor > @as(f64, @floatFromInt(std.math.maxInt(i32)))) {
+        return error.InvalidHeaderValue;
+    }
+    const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor)));
     const dt_nominal: f64 = 1.0 / @as(f64, @floatFromInt(header.tick_rate));
     const quest_unlock_index = header.status.quest_unlock_index;
     const player_count = header.player_count;
@@ -453,7 +462,9 @@ pub fn runReplayScaffoldWithTrace(
         var quest_start_weapon_id = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
         applyQuestStageFromHeader(&state, header);
         if (options.quest_spawn_entries) |entries| {
-            std.debug.assert(entries.len <= quest_spawn_entries_storage.len);
+            if (entries.len > quest_spawn_entries_storage.len) {
+                return error.UnsupportedQuestSpawnTable;
+            }
             @memcpy(quest_spawn_entries_storage[0..entries.len], entries);
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
         } else {
@@ -499,8 +510,13 @@ pub fn runReplayScaffoldWithTrace(
                 &state,
                 players[0..],
                 &creatures,
+                &particles,
+                &projectiles,
+                &secondary_projectiles,
+                &bonuses,
                 @floatCast(header.world_size),
                 quest_start_weapon_id_for_reset,
+                header.fx_toggle,
                 capture_spawn_events_authoritative,
                 quest_spawn_entries_storage[0..],
                 reset_quest_spawn_entries_len,
@@ -1596,7 +1612,7 @@ fn applyShockChainBonus(
 ) void {
     if (creatures.entries.len == 0) return;
 
-    var best_idx: usize = 0;
+    var best_idx: ?usize = null;
     var best_dist_sq: f64 = 1e12;
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
@@ -1607,8 +1623,9 @@ fn applyShockChainBonus(
             best_idx = idx;
         }
     }
+    const target_idx = best_idx orelse return;
 
-    const target = creatures.entries[best_idx];
+    const target = creatures.entries[target_idx];
     const angle = state_mod.Vec2.sub(target.pos, origin).toHeading();
     const projectile_owner_id: i32 = -100;
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
@@ -1925,6 +1942,7 @@ fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
             return parsed.major * 100 + parsed.minor;
         }
     }
+    if (header.seed > @as(u32, @intCast(std.math.maxInt(i32)))) return null;
     const seed_i32: i32 = @intCast(header.seed);
     const major = @divTrunc(seed_i32, 100);
     const minor = @mod(seed_i32, 100);
@@ -2365,8 +2383,13 @@ fn applyCaptureStateReset(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
+    particles: *survival_particles.ParticlePool,
+    projectiles: *survival_projectiles.ProjectilePool,
+    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
+    bonuses: *bonus_runtime.BonusPool,
     world_size: f64,
     quest_start_weapon_id: i32,
+    fx_toggle: i32,
     capture_spawn_events_authoritative: bool,
     quest_spawn_entries_storage: []survival_spawn.QuestSpawnEntry,
     reset_quest_spawn_entries_len: usize,
@@ -2395,6 +2418,7 @@ fn applyCaptureStateReset(
     state.status_quest_unlock_index = status_quest_unlock_index;
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;
+    state.fx_toggle = fx_toggle;
     state.game_mode = game_mode;
     state.hardcore = hardcore;
     state.quest_stage_major = quest_stage_major;
@@ -2420,6 +2444,10 @@ fn applyCaptureStateReset(
     }
 
     creatures.reset();
+    particles.reset();
+    projectiles.reset();
+    secondary_projectiles.reset();
+    bonuses.reset();
     creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
     quest_spawn_entries.* = quest_spawn_entries_storage[0..reset_quest_spawn_entries_len];
     quest_spawn_timeline_ms.* = 0.0;
@@ -4548,6 +4576,150 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     try std.testing.expectEqual(@as(usize, 2), trace.items.len);
     try std.testing.expectEqual(@as(i32, 0), trace.items[1].bonus_reflex_boost_ms);
     try std.testing.expectEqual(@as(i32, 0), trace.items[1].player_perk54_count);
+}
+
+test "capture state reset clears transient pools and restores header fx toggle" {
+    var state = state_mod.GameplayState.init(0x1234);
+    state.game_mode = game_mode_quests;
+    state.fx_toggle = 1;
+    state.hardcore = true;
+    state.perk_selection.pending_count = 2;
+
+    var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
+    const players = players_storage[0..1];
+    state_mod.resetPlayers(players, 1024.0, null);
+
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0].active = true;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
+
+    var particles = survival_particles.ParticlePool{};
+    particles.entries[0].active = true;
+
+    var projectiles = survival_projectiles.ProjectilePool{};
+    projectiles.entries[0].active = true;
+
+    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    secondary_projectiles.entries[0].active = true;
+
+    var bonuses = bonus_runtime.BonusPool{};
+    bonuses.entries[0].bonus_id = .weapon;
+    bonuses.entries[0].amount = 12;
+
+    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
+    var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
+    var quest_spawn_timeline_ms: f64 = 100.0;
+    var quest_no_creatures_timer_ms: f64 = 50.0;
+    var quest_completion_transition_ms: f64 = 42.0;
+
+    applyCaptureStateReset(
+        &state,
+        players,
+        &creatures,
+        &particles,
+        &projectiles,
+        &secondary_projectiles,
+        &bonuses,
+        1024.0,
+        @intFromEnum(game_ids.WeaponId.pistol),
+        0,
+        true,
+        quest_spawn_entries_storage[0..],
+        0,
+        &quest_spawn_entries,
+        &quest_spawn_timeline_ms,
+        &quest_no_creatures_timer_ms,
+        &quest_completion_transition_ms,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), state.fx_toggle);
+    try std.testing.expectEqual(@as(i32, 2), state.perk_selection.pending_count);
+    try std.testing.expect(!creatures.entries[0].active);
+    try std.testing.expect(!particles.entries[0].active);
+    try std.testing.expect(!projectiles.entries[0].active);
+    try std.testing.expect(!secondary_projectiles.entries[0].active);
+    try std.testing.expectEqual(game_ids.BonusId.unused, bonuses.entries[0].bonus_id);
+    try std.testing.expect(creatures.capture_spawn_events_authoritative);
+}
+
+test "shock chain bonus no-ops when no alive target exists" {
+    var state = state_mod.GameplayState.init(0x1234);
+    var projectiles = survival_projectiles.ProjectilePool{};
+    var creatures = survival_creatures.CreaturePool{};
+    creatures.entries[0].active = true;
+    creatures.entries[0].lifecycle_stage = 0.0;
+
+    applyShockChainBonus(
+        &state,
+        &projectiles,
+        &creatures,
+        .{ .x = 512.0, .y = 512.0 },
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), state.shock_chain_links_left);
+    try std.testing.expectEqual(@as(i32, -1), state.shock_chain_projectile_id);
+    try std.testing.expect(!projectiles.entries[0].active);
+}
+
+test "resolve quest level key ignores seed fallback outside i32 range" {
+    const allocator = std.testing.allocator;
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = std.math.maxInt(u32),
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    try std.testing.expect(resolveQuestLevelKey(replay.header) == null);
+}
+
+test "quest scaffold rejects oversized quest spawn override table" {
+    const allocator = std.testing.allocator;
+    var replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const oversized = try allocator.alloc(
+        survival_spawn.QuestSpawnEntry,
+        max_test_quest_spawn_entries + 1,
+    );
+    defer allocator.free(oversized);
+    for (oversized) |*entry| {
+        entry.* = .{
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .heading = 0.0,
+            .spawn_id = .zombie_boss_spawner_00,
+            .trigger_ms = 0,
+            .count = 0,
+        };
+    }
+
+    try std.testing.expectError(
+        error.UnsupportedQuestSpawnTable,
+        runReplayScaffoldWithOptions(replay, .{
+            .quest_spawn_entries = oversized,
+        }),
+    );
+}
+
+test "survival scaffold rejects world_size outside i32 range" {
+    const allocator = std.testing.allocator;
+    var replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    replay.header.world_size = 3_000_000_000.0;
+    try std.testing.expectError(error.InvalidHeaderValue, runReplayScaffold(replay));
 }
 
 test "quest scaffold disables world dt perk steps for original capture dt overrides" {

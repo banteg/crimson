@@ -801,7 +801,7 @@ fn parseReplayEvent(
     }
 
     if (std.mem.eql(u8, wire_event.kind, "orig_capture_bootstrap")) {
-        if (wire_event.payload.len == 0) return error.UnsupportedEventShape;
+        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
         return .{
             .capture_bootstrap = try parseCaptureBootstrapEvent(
                 tick_index,
@@ -811,7 +811,7 @@ fn parseReplayEvent(
     }
 
     if (std.mem.eql(u8, wire_event.kind, "orig_capture_perk_apply")) {
-        if (wire_event.payload.len == 0) return error.UnsupportedEventShape;
+        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
         return .{
             .capture_perk_apply = try parseCapturePerkApplyEvent(
                 tick_index,
@@ -821,7 +821,7 @@ fn parseReplayEvent(
     }
 
     if (std.mem.eql(u8, wire_event.kind, "orig_capture_perk_pending")) {
-        if (wire_event.payload.len == 0) return error.UnsupportedEventShape;
+        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
         return .{
             .capture_perk_pending = try parseCapturePerkPendingEvent(
                 tick_index,
@@ -831,7 +831,7 @@ fn parseReplayEvent(
     }
 
     if (std.mem.eql(u8, wire_event.kind, "orig_capture_creature_spawn")) {
-        if (wire_event.payload.len == 0) return error.UnsupportedEventShape;
+        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
         return .{
             .capture_creature_spawn = try parseCaptureCreatureSpawnEvent(
                 tick_index,
@@ -841,7 +841,7 @@ fn parseReplayEvent(
     }
 
     if (std.mem.eql(u8, wire_event.kind, "orig_capture_state_transition")) {
-        if (wire_event.payload.len == 0) return error.UnsupportedEventShape;
+        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
         return .{
             .capture_state_transition = try parseCaptureStateTransitionEvent(
                 tick_index,
@@ -1096,7 +1096,8 @@ fn buildHeader(
     allocator: std.mem.Allocator,
     wire: ReplayHeaderWire,
 ) ReplayCodecError!ReplayHeader {
-    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0) {
+    const max_world_size_i32_f64: f64 = @floatFromInt(std.math.maxInt(i32));
+    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f64) {
         return error.InvalidHeaderValue;
     }
     if (!std.mem.eql(u8, wire.bootstrap_kind, "none") and !std.mem.eql(u8, wire.bootstrap_kind, "terrain_v1")) {
@@ -1399,4 +1400,55 @@ test "parse replay event supports capture payload kinds" {
     try std.testing.expect(parsed2 == .capture_perk_pending);
     try std.testing.expect(parsed3 == .capture_creature_spawn);
     try std.testing.expect(parsed4 == .capture_state_transition);
+}
+
+test "parse replay event rejects capture payload arrays that are not singleton" {
+    const payload = [_]ReplayEventPayloadWire{
+        .{},
+        .{},
+    };
+    const capture_kinds = [_][]const u8{
+        "orig_capture_bootstrap",
+        "orig_capture_perk_apply",
+        "orig_capture_perk_pending",
+        "orig_capture_creature_spawn",
+        "orig_capture_state_transition",
+    };
+    for (capture_kinds) |kind| {
+        const wire = ReplayEventWire{
+            .tick_index = 0,
+            .kind = kind,
+            .payload = payload[0..],
+        };
+        try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
+    }
+}
+
+test "build header rejects world_size above i32 range" {
+    const usage_counts = [_]i64{0} ** weapon_usage_count;
+    const too_large_world_size: f64 = @as(f64, @floatFromInt(std.math.maxInt(i32))) + 1.0;
+    const wire = ReplayHeaderWire{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = "",
+        .bootstrap_kind = "none",
+        .bootstrap_seed = 0,
+        .game_version = "0.7.0",
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = too_large_world_size,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = usage_counts[0..],
+        },
+        .input_quantization = "raw",
+    };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
 }

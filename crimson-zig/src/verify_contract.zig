@@ -30,43 +30,39 @@ pub fn scoreMetricFromString(raw: []const u8) ?ScoreMetric {
     return null;
 }
 
-pub fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) []const u8 {
+pub fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) ScoreMetric {
     return switch (metric) {
-        .score_xp => "score_xp",
-        .elapsed_ms => "elapsed_ms",
-        .auto => switch (std.meta.intToEnum(game_ids.GameModeId, game_mode_id) catch return "score_xp") {
-            .rush, .quests => "elapsed_ms",
-            else => "score_xp",
+        .score_xp => .score_xp,
+        .elapsed_ms => .elapsed_ms,
+        .auto => switch (std.meta.intToEnum(game_ids.GameModeId, game_mode_id) catch return .score_xp) {
+            .rush, .quests => .elapsed_ms,
+            else => .score_xp,
         },
     };
 }
 
+pub fn scoreMetricLabel(metric: ScoreMetric) []const u8 {
+    return switch (metric) {
+        .auto => "auto",
+        .score_xp => "score_xp",
+        .elapsed_ms => "elapsed_ms",
+    };
+}
+
 test "resolve metric for survival stays score_xp" {
-    try std.testing.expectEqualStrings(
-        "score_xp",
-        resolveScoreMetric(.auto, ReferenceRunResult.game_mode_id),
-    );
+    try std.testing.expectEqual(ScoreMetric.score_xp, resolveScoreMetric(.auto, ReferenceRunResult.game_mode_id));
 }
 
 test "resolve metric for rush auto selects elapsed_ms" {
-    try std.testing.expectEqualStrings(
-        "elapsed_ms",
-        resolveScoreMetric(.auto, @intFromEnum(game_ids.GameModeId.rush)),
-    );
+    try std.testing.expectEqual(ScoreMetric.elapsed_ms, resolveScoreMetric(.auto, @intFromEnum(game_ids.GameModeId.rush)));
 }
 
 test "resolve metric for quests auto selects elapsed_ms" {
-    try std.testing.expectEqualStrings(
-        "elapsed_ms",
-        resolveScoreMetric(.auto, @intFromEnum(game_ids.GameModeId.quests)),
-    );
+    try std.testing.expectEqual(ScoreMetric.elapsed_ms, resolveScoreMetric(.auto, @intFromEnum(game_ids.GameModeId.quests)));
 }
 
 test "resolve metric for unknown mode defaults auto to score_xp" {
-    try std.testing.expectEqualStrings(
-        "score_xp",
-        resolveScoreMetric(.auto, 999),
-    );
+    try std.testing.expectEqual(ScoreMetric.score_xp, resolveScoreMetric(.auto, 999));
 }
 
 test "score metric parser accepts explicit values and rejects unknowns" {

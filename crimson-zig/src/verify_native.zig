@@ -81,7 +81,9 @@ fn runNativeVerify(
         break :blk resolved;
     };
 
-    const resolution = try resolveReplayPath(allocator, request.replay_file, base_dir);
+    const resolution = resolveReplayPath(allocator, request.replay_file, base_dir) catch |err| {
+        return buildVerifyFailedOutput(allocator, err);
+    };
     defer resolution.deinit(allocator);
 
     if (!resolution.exists) {
@@ -170,7 +172,7 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    const resolved_metric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
+    const resolved_metric: verify_contract.ScoreMetric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
@@ -187,7 +189,7 @@ fn runNativeVerify(
         };
     }
 
-    const simulated_value: i64 = if (std.mem.eql(u8, resolved_metric, "elapsed_ms"))
+    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
         run_result.elapsed_ms
     else
         run_result.score_xp;
@@ -229,7 +231,7 @@ fn runNativeVerify(
             try writer.print(
                 "; score_claim metric={s} submitted={d} simulated={d} match={s}",
                 .{
-                    resolved_metric,
+                    verify_contract.scoreMetricLabel(resolved_metric),
                     submitted,
                     simulated_value,
                     if (claim_matches) "true" else "false",
@@ -250,6 +252,9 @@ fn writeReplayTickTraceJsonl(
     trace_path: []const u8,
     trace: []const replay_runner.ReplayTickTrace,
 ) !void {
+    if (std.fs.path.dirname(trace_path)) |dir| {
+        if (dir.len > 0) try std.fs.cwd().makePath(dir);
+    }
     const file = try std.fs.cwd().createFile(trace_path, .{
         .truncate = true,
     });
@@ -598,13 +603,13 @@ fn buildVerifyPayload(
     replay_path: []const u8,
     replay_sha256: []const u8,
     run_result: RunResult,
-    resolved_metric: []const u8,
+    resolved_metric: verify_contract.ScoreMetric,
     submitted_score: ?i64,
 ) ![]u8 {
     var payload: std.ArrayList(u8) = .empty;
     errdefer payload.deinit(allocator);
 
-    const simulated_value: i64 = if (std.mem.eql(u8, resolved_metric, "elapsed_ms"))
+    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
         run_result.elapsed_ms
     else
         run_result.score_xp;
@@ -649,7 +654,7 @@ fn buildVerifyPayload(
     if (submitted_score) |submitted| {
         try writer.writeAll("{");
         try writer.writeAll("\"metric\":");
-        try writeJsonString(&writer, resolved_metric);
+        try writeJsonString(&writer, verify_contract.scoreMetricLabel(resolved_metric));
         try writer.writeAll(",\"submitted_score\":");
         try writer.print("{d}", .{submitted});
         try writer.writeAll(",\"simulated_value\":");
@@ -853,6 +858,7 @@ fn buildNotPortedOutputForReplayRunnerError(
 ) !backend_python.CommandOutput {
     const detail = switch (err) {
         error.OutOfMemory => "replay simulation scaffold ran out of memory",
+        error.InvalidHeaderValue => "replay simulation scaffold received invalid header values",
         error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
         error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "replay simulation scaffold only supports raw/f32 quantization",
@@ -994,7 +1000,7 @@ fn resolveReplayPath(
     replay_file: []const u8,
     base_dir: []const u8,
 ) !ReplayResolution {
-    const primary_exists = isFile(replay_file);
+    const primary_exists = try isFile(replay_file);
     if (primary_exists) {
         return .{
             .resolved_path = try allocator.dupe(u8, replay_file),
@@ -1006,7 +1012,7 @@ fn resolveReplayPath(
 
     if (!std.fs.path.isAbsolute(replay_file) and isSingleSegmentPath(replay_file)) {
         const secondary = try std.fs.path.join(allocator, &.{ base_dir, "replays", replay_file });
-        const secondary_exists = isFile(secondary);
+        const secondary_exists = try isFile(secondary);
         return .{
             .resolved_path = if (secondary_exists)
                 try allocator.dupe(u8, secondary)
@@ -1030,8 +1036,11 @@ fn isSingleSegmentPath(path: []const u8) bool {
     return std.mem.indexOfAny(u8, path, "/\\") == null;
 }
 
-fn isFile(path: []const u8) bool {
-    const file = std.fs.cwd().openFile(path, .{}) catch return false;
+fn isFile(path: []const u8) !bool {
+    const file = std.fs.cwd().openFile(path, .{}) catch |err| switch (err) {
+        error.FileNotFound, error.NotDir, error.IsDir => return false,
+        else => return err,
+    };
     defer file.close();
     return true;
 }
@@ -1165,7 +1174,7 @@ test "build verify payload score mismatch" {
             .shots_hit = 45,
             .rng_state = 1234,
         },
-        "score_xp",
+        .score_xp,
         1,
     );
     defer allocator.free(payload);
