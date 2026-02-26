@@ -252,7 +252,7 @@ pub fn applyPerk(
         },
         PerkId.grim_deal => {
             players[0].health = -1.0;
-            players[0].experience += @intFromFloat(@as(f64, @floatFromInt(players[0].experience)) * 0.18);
+            players[0].experience += @intFromFloat(@as(f32, @floatFromInt(players[0].experience)) * 0.18);
         },
         PerkId.plaguebearer => {
             for (players) |*player| {
@@ -324,7 +324,7 @@ pub fn applyPerk(
         PerkId.bandage => {
             for (players) |*player| {
                 if (player.health > 0.0) {
-                    const amount: f64 = @floatFromInt(state.rng.rand() % 50 + 1);
+                    const amount: f32 = @floatFromInt(state.rng.rand() % 50 + 1);
                     if (state.preserve_bugs) {
                         player.health = @min(100.0, narrowF32(player.health * amount));
                     } else {
