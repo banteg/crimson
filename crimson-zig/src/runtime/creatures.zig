@@ -2187,11 +2187,11 @@ pub const CreaturePool = struct {
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
-        damage: f64,
+        damage: f32,
         impulse: state_mod.Vec2,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         const jitter_rand = state.rng.rand();
         if (creature_index < self.entries.len) {
@@ -2229,11 +2229,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            narrowF32(damage_amount),
+            damage_amount,
             impulse,
             owner,
-            narrowF32(dt),
-            narrowF32(world_size),
+            dt,
+            world_size,
         );
     }
 
@@ -2243,11 +2243,11 @@ pub const CreaturePool = struct {
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
-        damage: f64,
+        damage: f32,
         impulse: state_mod.Vec2,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         var damage_amount = damage;
         if (anyPlayerHasPerk(players, PerkId.ion_gun_master)) {
@@ -2258,11 +2258,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            narrowF32(damage_amount),
+            damage_amount,
             impulse,
             owner,
-            narrowF32(dt),
-            narrowF32(world_size),
+            dt,
+            world_size,
         );
     }
 
@@ -2272,11 +2272,11 @@ pub const CreaturePool = struct {
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
-        damage: f64,
+        damage: f32,
         impulse: state_mod.Vec2,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         var damage_amount = damage;
         if (anyPlayerHasPerk(players, PerkId.pyromaniac)) {
@@ -2288,11 +2288,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            narrowF32(damage_amount),
+            damage_amount,
             impulse,
             owner,
-            narrowF32(dt),
-            narrowF32(world_size),
+            dt,
+            world_size,
         );
     }
 

@@ -400,11 +400,11 @@ pub const ProjectilePool = struct {
                             players,
                             bonuses,
                             hit_idx.?,
-                            damage_amount,
+                            narrowF32(damage_amount),
                             impulse,
                             proj.owner,
-                            dt,
-                            world_size,
+                            narrowF32(dt),
+                            narrowF32(world_size),
                         );
                         if (proj.life_timer != 0.25) {
                             proj.life_timer = 0.25;
@@ -418,8 +418,8 @@ pub const ProjectilePool = struct {
                             remaining,
                             impulse,
                             proj.owner,
-                            dt,
-                            world_size,
+                            narrowF32(dt),
+                            narrowF32(world_size),
                         );
                         proj.damage_pool -= narrowF32(creatures.entries[hit_idx.?].hp);
                     }
@@ -541,11 +541,11 @@ fn applyIonLingerDamage(
                 players,
                 bonus_pool,
                 idx,
-                damage,
+                narrowF32(damage),
                 .{},
                 proj.owner,
-                dt,
-                world_size,
+                narrowF32(dt),
+                narrowF32(world_size),
             );
         }
     }

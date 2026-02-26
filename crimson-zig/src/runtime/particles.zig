@@ -251,7 +251,7 @@ pub const ParticlePool = struct {
                                 .{},
                                 entry.owner,
                                 dt_f32,
-                                world_size,
+                                narrowF32(world_size),
                             );
                         }
 
