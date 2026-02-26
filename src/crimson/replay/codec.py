@@ -3,11 +3,11 @@ from __future__ import annotations
 import gzip
 import io
 import os
-import struct
 from pathlib import Path
 
 import msgspec
 
+from ..math_parity import f32
 from .types import (
     REPLAY_FORMAT_VERSION,
     WEAPON_USAGE_COUNT,
@@ -115,9 +115,8 @@ def _decompress_gzip_replay(data: bytes, *, max_output_bytes: int) -> bytes:
 
 
 def _quantize_f32(value: float) -> float:
-    # Convert via IEEE754 float32. This is useful for matching the original input
-    # precision, but may produce "f32 artifact" decimals in serialized captures.
-    return struct.unpack("<f", struct.pack("<f", float(value)))[0]
+    # Canonicalize via shared math-parity float32 helper.
+    return float(f32(float(value)))
 
 
 def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
