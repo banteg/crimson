@@ -1,0 +1,13 @@
+id,expression_family,precision_class,native_pattern,required_model,example_file,example_line
+E01,heading_from_delta_atan2,X87_INTERMEDIATE_THEN_F32,"(float10)fpatan((float10)dy,(float10)dx) then (float) store","widen atan2; spill to f32 at heading store",analysis/ghidra/raw/crimsonland.exe_decompiled.c,12248
+E02,direction_from_heading_cos,X87_INTERMEDIATE_THEN_F32,"(float10)fcos((float10)heading - (float10)1.5707964)","widen trig; spill to f32 move/vel component",analysis/ghidra/raw/crimsonland.exe_decompiled.c,12205
+E03,direction_from_heading_sin,X87_INTERMEDIATE_THEN_F32,"(float10)fsin((float10)heading - (float10)1.5707964)","widen trig; spill to f32 move/vel component",analysis/ghidra/raw/crimsonland.exe_decompiled.c,12210
+E04,creature_steering_trig_spill,X87_INTERMEDIATE_THEN_F32,"fpatan target heading + fcos/fsin heading-to-vel","widen transcendental path; store heading/vel as f32",analysis/ghidra/raw/crimsonland.exe_decompiled.c,21754
+E05,projectile_angle_step_trig,X87_INTERMEDIATE_THEN_F32,"(float10)angle-half_pi then fcos/fsin in motion step","widen trig and multiply chain; spill locals/state to f32",analysis/ghidra/raw/crimsonland.exe_decompiled.c,19334
+E06,distance_threshold_sqrt_branch,X87_INTERMEDIATE_THEN_F32,"SQRT(dx*dx + dy*dy) < threshold","preserve op order and branch boundary behavior",analysis/ghidra/raw/crimsonland.exe_decompiled.c,21740
+E07,vec2_length_api_return,F32_STORE,"return SQRT(v[1]*v[1] + *v* *v)","return boundary is f32",analysis/ghidra/raw/crimsonland.exe_decompiled.c,13718
+E08,normalize_reciprocal_sqrt,X87_INTERMEDIATE_THEN_F32,"(1.0 / SQRT(a)) * component","widen rsqrt/sqrt intermediate; spill normalized component to f32",analysis/ghidra/raw/crimsonland.exe_decompiled.c,52423
+E09,angle_wrap_approach_arithmetic,F32_STORE,"add/sub/abs/clamp around tau without transcendentals","keep f32 store cadence and operation order",analysis/ghidra/raw/crimsonland.exe_decompiled.c,18127
+E10,timers_cooldowns_speeds,F32_STORE,"state = state +/- frame_dt * k with clamps","keep state accumulators in f32",analysis/ghidra/raw/crimsonland.exe_decompiled.c,12195
+E11,float_int_conversion___ftol,X87_INTERMEDIATE_THEN_F32,"explicit __ftol() conversion","treat conversion semantics as parity-sensitive boundary",analysis/ghidra/raw/crimsonland.exe_decompiled.c,19332
+E12,formatting_vararg_double_boundary,F64_BOUNDARY_ONLY,"crt_sprintf/printf with (double) cast","f64 here is ABI boundary only",analysis/ghidra/raw/crimsonland.exe_decompiled.c,9322
