@@ -18,6 +18,7 @@ const math = @import("math.zig");
 const narrowF32 = native_math.roundF32;
 
 const WeaponId = game_ids.WeaponId;
+const ProjectileTypeId = game_ids.ProjectileTypeId;
 const PerkId = perks.PerkId;
 
 pub const WeaponRuntimeError = error{
@@ -31,9 +32,31 @@ inline fn weaponId(value: i32) WeaponId {
     return weapon_data.weaponIdFromInt(value).?;
 }
 
-inline fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 45.0;
-    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
+inline fn weaponIdFromProjectileTypeId(type_id: ProjectileTypeId) WeaponId {
+    return switch (type_id) {
+        .pistol => .pistol,
+        .assault_rifle => .assault_rifle,
+        .shotgun => .shotgun,
+        .submachine_gun => .submachine_gun,
+        .gauss_gun => .gauss_gun,
+        .plasma_rifle => .plasma_rifle,
+        .plasma_minigun => .plasma_minigun,
+        .pulse_gun => .pulse_gun,
+        .ion_rifle => .ion_rifle,
+        .ion_minigun => .ion_minigun,
+        .ion_cannon => .ion_cannon,
+        .shrinkifier => .shrinkifier_5k,
+        .blade_gun => .blade_gun,
+        .plasma_cannon => .plasma_cannon,
+        .splitter_gun => .splitter_gun,
+        .plague_spreader => .plague_spreader_gun,
+        .rainbow_gun => .rainbow_gun,
+        .fire_bullets => .fire_bullets,
+    };
+}
+
+inline fn projectileMetaFromTypeId(type_id: ProjectileTypeId) f32 {
+    return weapon_data.weapon_stats.get(weaponIdFromProjectileTypeId(type_id)).projectile_meta;
 }
 
 pub const TickInputFlags = struct {
@@ -521,7 +544,7 @@ fn tryFireWeaponWithForce(
         else => {
             const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const type_id_i32 = @intFromEnum(type_id);
-            const meta = projectileMetaFromRawId(type_id_i32);
+            const meta = projectileMetaFromTypeId(type_id);
             const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon_id).pellet_count);
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
@@ -616,10 +639,10 @@ fn tickManBomb(
     else
         owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     for (0..8) |idx| {
-        const type_id = if ((idx & 1) == 0)
-            @intFromEnum(game_ids.ProjectileTypeId.ion_minigun)
+        const type_id: ProjectileTypeId = if ((idx & 1) == 0)
+            .ion_minigun
         else
-            @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
+            .ion_rifle;
         const angle =
             @as(f64, @floatFromInt(state.rng.rand() % 50)) * 0.01 +
             @as(f64, @floatFromInt(idx)) * (std.math.pi / 4.0) - 0.25;
@@ -691,7 +714,7 @@ fn tickFireCaugh(
         projectiles,
         muzzle,
         angle,
-        @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
+        .fire_bullets,
         owner,
     );
 
@@ -721,10 +744,10 @@ fn tickHotTempered(
     else
         owner_ref.OwnerRef.fromLocalPlayer(0);
     for (0..8) |idx| {
-        const type_id = if ((idx & 1) == 0)
-            @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun)
+        const type_id: ProjectileTypeId = if ((idx & 1) == 0)
+            .plasma_minigun
         else
-            @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
+            .plasma_rifle;
         const angle = @as(f64, @floatFromInt(idx)) * (std.math.pi / 4.0);
         spawnPerkProjectile(
             state,
@@ -747,7 +770,7 @@ fn spawnPerkProjectile(
     projectiles: *projectiles_mod.ProjectilePool,
     pos: state_mod.Vec2,
     angle: f64,
-    type_id: i32,
+    type_id: ProjectileTypeId,
     owner: owner_ref.OwnerRef,
 ) void {
     var spawn_type_id = type_id;
@@ -755,18 +778,19 @@ fn spawnPerkProjectile(
     const player_owned_spawn = owner.playerIndexInBounds(state.shots_fired.len) != null;
     if (!state.bonus_spawn_guard and player_owned_spawn) {
         shot_credit = 1;
-        if (spawn_type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and player.fire_bullets_timer > 0.0) {
+        if (spawn_type_id != .fire_bullets and player.fire_bullets_timer > 0.0) {
             // `projectile_spawn` Fire Bullets override loops once, crediting shots twice.
-            spawn_type_id = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
+            spawn_type_id = .fire_bullets;
             shot_credit = 2;
         }
     }
 
-    const meta = projectileMetaFromRawId(spawn_type_id);
+    const spawn_type_id_i32 = @intFromEnum(spawn_type_id);
+    const meta = projectileMetaFromTypeId(spawn_type_id);
     _ = projectiles.spawn(
         pos,
         angle,
-        spawn_type_id,
+        spawn_type_id_i32,
         owner,
         meta,
         false,
@@ -776,9 +800,9 @@ fn spawnPerkProjectile(
         state.shots_fired[shooter_idx] += shot_credit;
         state.shots_fired_total += shot_credit;
         if (shooter_idx < state.weapon_shots_fired.len and
-            spawn_type_id >= 0 and spawn_type_id < state.weapon_shots_fired[shooter_idx].len)
+            spawn_type_id_i32 >= 0 and spawn_type_id_i32 < state.weapon_shots_fired[shooter_idx].len)
         {
-            state.weapon_shots_fired[shooter_idx][@intCast(spawn_type_id)] += shot_credit;
+            state.weapon_shots_fired[shooter_idx][@intCast(spawn_type_id_i32)] += shot_credit;
         }
     }
 }
