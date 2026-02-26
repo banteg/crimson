@@ -454,31 +454,66 @@ pub fn weaponAssignPlayerWithState(
     weaponAssignPlayer(player, weapon_id);
 }
 
+const WeaponSlotState = struct {
+    weapon_id: WeaponId,
+    clip_size: i32,
+    ammo: f32,
+    reload_active: bool,
+    reload_timer: f32,
+    reload_timer_max: f32,
+    shot_cooldown: f32,
+};
+
+fn readPrimaryWeaponSlot(player: *const PlayerState) WeaponSlotState {
+    return .{
+        .weapon_id = player.weapon_id,
+        .clip_size = player.clip_size,
+        .ammo = player.ammo,
+        .reload_active = player.reload_active,
+        .reload_timer = player.reload_timer,
+        .reload_timer_max = player.reload_timer_max,
+        .shot_cooldown = player.shot_cooldown,
+    };
+}
+
+fn writePrimaryWeaponSlot(player: *PlayerState, slot: WeaponSlotState) void {
+    player.weapon_id = slot.weapon_id;
+    player.clip_size = slot.clip_size;
+    player.ammo = slot.ammo;
+    player.reload_active = slot.reload_active;
+    player.reload_timer = slot.reload_timer;
+    player.reload_timer_max = slot.reload_timer_max;
+    player.shot_cooldown = slot.shot_cooldown;
+}
+
+fn readAltWeaponSlot(player: *const PlayerState) ?WeaponSlotState {
+    const alt_weapon_id = player.alt_weapon_id orelse return null;
+    return .{
+        .weapon_id = alt_weapon_id,
+        .clip_size = player.alt_clip_size,
+        .ammo = player.alt_ammo,
+        .reload_active = player.alt_reload_active,
+        .reload_timer = player.alt_reload_timer,
+        .reload_timer_max = player.alt_reload_timer_max,
+        .shot_cooldown = player.alt_shot_cooldown,
+    };
+}
+
+fn writeAltWeaponSlot(player: *PlayerState, slot: WeaponSlotState) void {
+    player.alt_weapon_id = slot.weapon_id;
+    player.alt_clip_size = slot.clip_size;
+    player.alt_ammo = slot.ammo;
+    player.alt_reload_active = slot.reload_active;
+    player.alt_reload_timer = slot.reload_timer;
+    player.alt_reload_timer_max = slot.reload_timer_max;
+    player.alt_shot_cooldown = slot.shot_cooldown;
+}
+
 pub fn playerSwapAltWeapon(player: *PlayerState) bool {
-    const alt_weapon_id = player.alt_weapon_id orelse return false;
-    const old_weapon_id = player.weapon_id;
-    const old_clip_size = player.clip_size;
-    const old_reload_active = player.reload_active;
-    const old_ammo = player.ammo;
-    const old_reload_timer = player.reload_timer;
-    const old_shot_cooldown = player.shot_cooldown;
-    const old_reload_timer_max = player.reload_timer_max;
-
-    player.weapon_id = alt_weapon_id;
-    player.clip_size = player.alt_clip_size;
-    player.reload_active = player.alt_reload_active;
-    player.ammo = player.alt_ammo;
-    player.reload_timer = player.alt_reload_timer;
-    player.shot_cooldown = player.alt_shot_cooldown;
-    player.reload_timer_max = player.alt_reload_timer_max;
-
-    player.alt_weapon_id = old_weapon_id;
-    player.alt_clip_size = old_clip_size;
-    player.alt_reload_active = old_reload_active;
-    player.alt_ammo = old_ammo;
-    player.alt_reload_timer = old_reload_timer;
-    player.alt_shot_cooldown = old_shot_cooldown;
-    player.alt_reload_timer_max = old_reload_timer_max;
+    const alt_slot = readAltWeaponSlot(player) orelse return false;
+    const primary_slot = readPrimaryWeaponSlot(player);
+    writePrimaryWeaponSlot(player, alt_slot);
+    writeAltWeaponSlot(player, primary_slot);
     return true;
 }
 
