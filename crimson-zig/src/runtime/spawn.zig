@@ -1098,8 +1098,8 @@ fn appendSpawnCall(
     result.count += 1;
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
-    try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+fn expectFloatClose(expected: f32, actual: anytype) !void {
+    try std.testing.expectApproxEqAbs(expected, @as(f32, @floatCast(actual)), 1e-6);
 }
 
 test "spawn slot tick behavior parity" {
@@ -1392,7 +1392,7 @@ test "tick quest spawn timeline triggers horizontal spread when on screen" {
     try std.testing.expect(!result.creatures_none_active);
     try expectFloatClose(16.0, result.no_creatures_timer_ms);
     try std.testing.expectEqual(@as(usize, 3), result.spawn_count);
-    const expected = [_][2]f64{
+    const expected = [_][2]f32{
         .{ 512.0, 512.0 },
         .{ 472.0, 512.0 },
         .{ 592.0, 512.0 },
@@ -1423,7 +1423,7 @@ test "tick quest spawn timeline triggers vertical spread when offscreen x" {
         0.0,
     );
 
-    const expected = [_][2]f64{
+    const expected = [_][2]f32{
         .{ -50.0, 512.0 },
         .{ -50.0, 472.0 },
         .{ -50.0, 592.0 },
@@ -1566,7 +1566,7 @@ test "survival wave extra spawns on negative interval" {
 
     try expectFloatClose(0.0, out.cooldown);
     try std.testing.expectEqual(@as(usize, 3), out.spawns.len);
-    const expected_pos = [_][2]f64{
+    const expected_pos = [_][2]f32{
         .{ 35.0, 1064.0 },
         .{ 1064.0, 947.0 },
         .{ -40.0, 435.0 },
@@ -1738,13 +1738,13 @@ test "survival spawn zombie speed floor and health scale" {
 test "survival spawn rare variants" {
     const cases = [_]struct {
         seed: u32,
-        expected_size: f64,
-        expected_contact_damage: f64,
-        expected_health: f64,
-        expected_reward_value: f64,
-        expected_tint_r: f64,
-        expected_tint_g: f64,
-        expected_tint_b: f64,
+        expected_size: f32,
+        expected_contact_damage: f32,
+        expected_health: f32,
+        expected_reward_value: f32,
+        expected_tint_r: f32,
+        expected_tint_g: f32,
+        expected_tint_b: f32,
         expected_rng_state: u32,
     }{
         .{
