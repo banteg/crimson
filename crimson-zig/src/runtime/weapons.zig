@@ -302,7 +302,7 @@ fn tryFireWeaponWithForce(
             creatures_mod.applyPlayerContactDamage(
                 state,
                 player,
-                health_cost,
+                narrowF32(health_cost),
                 0.0,
             );
         } else {

@@ -2067,7 +2067,7 @@ pub const CreaturePool = struct {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                applyPlayerContactDamage(state, player, creature.contact_damage, dt);
+                applyPlayerContactDamage(state, player, creature.contact_damage, narrowF32(dt));
                 runtime_helpers.consumeAddRandomRng(state);
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
             }
@@ -2737,13 +2737,14 @@ fn creatureAiUpdateTarget(
     creatures: []const CreatureState,
     dt: f64,
 ) void {
+    const dt_f32 = narrowF32(dt);
     const dist_to_player = distanceF32(creature.pos, player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale = narrowF32(3.7);
-    const orbit_phase = narrowF32(narrowF32(@as(f64, @floatFromInt(phase_int)) * phase_scale) * native_pi);
+    const orbit_phase = narrowF32(narrowF32(@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi);
 
     creature.force_target = 0;
-    var move_scale: f64 = 1.0;
+    var move_scale: f32 = 1.0;
     const ai_mode = creature.ai_mode;
 
     if (ai_mode == spawn_mod.CreatureAiMode.orbit_player) {
@@ -2807,7 +2808,7 @@ fn creatureAiUpdateTarget(
                 .x = narrowF32(creature.pos.x),
                 .y = narrowF32(creature.pos.y),
             };
-            creature.orbit_radius = narrowF32(creature.orbit_radius - dt);
+            creature.orbit_radius = narrowF32(creature.orbit_radius - dt_f32);
         } else {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
         }
@@ -3213,10 +3214,10 @@ fn ownerToPlayerIndex(owner: owner_ref.OwnerRef, player_count: usize) usize {
 fn awardExperienceFromReward(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    reward_value: f64,
+    reward_value: f32,
 ) i32 {
     if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
-        const scaled_reward: i32 = @intFromFloat(reward_value * 1.3);
+        const scaled_reward: i32 = @intFromFloat(narrowF32(reward_value * 1.3));
         return awardExperience(state, player, scaled_reward);
     }
 
@@ -3249,8 +3250,8 @@ fn awardExperienceRaw(
 ) i32 {
     if (amount <= 0) return 0;
     const before = player.experience;
-    const before_f32: f64 = @floatFromInt(before);
-    const amount_f32: f64 = @floatFromInt(amount);
+    const before_f32: f32 = @floatFromInt(before);
+    const amount_f32: f32 = @floatFromInt(amount);
     const total_f32 = narrowF32(narrowF32(before_f32) + narrowF32(amount_f32));
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
@@ -3494,13 +3495,13 @@ fn headingDirectionF32(heading: f32) state_mod.Vec2 {
 
 fn awardExperienceOnceFromReward(
     player: *state_mod.PlayerState,
-    reward_value: f64,
+    reward_value: f32,
 ) i32 {
-    const reward_f32 = narrowF32(reward_value);
+    const reward_f32 = reward_value;
     if (!(reward_f32 > 0.0)) return 0;
 
     const before = player.experience;
-    const before_f32: f64 = @floatFromInt(before);
+    const before_f32: f32 = @floatFromInt(before);
     const total_f32 = narrowF32(narrowF32(before_f32) + reward_f32);
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
@@ -3509,11 +3510,11 @@ fn awardExperienceOnceFromReward(
 
 fn awardBaseExperienceFromReward(
     player: *state_mod.PlayerState,
-    reward_value: f64,
+    reward_value: f32,
 ) void {
-    const reward_f32 = narrowF32(reward_value);
+    const reward_f32 = reward_value;
     if (!(reward_f32 > 0.0)) return;
-    const before_f32: f64 = @floatFromInt(player.experience);
+    const before_f32: f32 = @floatFromInt(player.experience);
     const total_f32 = narrowF32(narrowF32(before_f32) + reward_f32);
     player.experience = @intFromFloat(total_f32);
 }
@@ -3540,13 +3541,13 @@ fn consumeContactSfxRng(state: *state_mod.GameplayState, creature_type_id: i32) 
 pub fn applyPlayerContactDamage(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    damage: f64,
-    dt: f64,
+    damage: f32,
+    dt: f32,
 ) void {
     if (!(damage > 0.0)) return;
     if (perkActive(player, PerkId.death_clock)) return;
 
-    var damage_scaled = damage;
+    var damage_scaled: f32 = damage;
     if (perkActive(player, PerkId.tough_reloader) and player.reload_active) {
         damage_scaled = narrowF32(damage_scaled * 0.5);
     }
@@ -3588,7 +3589,7 @@ pub fn applyPlayerContactDamage(
     if (!dodged) {
         if (!perkActive(player, PerkId.unstoppable)) {
             const jitter_i32: i32 = @as(i32, @intCast(state.rng.rand() % 100)) - 50;
-            player.heading = narrowF32(player.heading + @as(f64, @floatFromInt(jitter_i32)) * 0.04);
+            player.heading = narrowF32(player.heading + @as(f32, @floatFromInt(jitter_i32)) * 0.04);
             player.spread_heat = narrowF32(@min(
                 0.48,
                 narrowF32(player.spread_heat + spread_heat_damage * 0.01),
