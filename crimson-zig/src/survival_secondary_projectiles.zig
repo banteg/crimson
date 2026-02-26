@@ -118,43 +118,14 @@ pub const SecondaryProjectilePool = struct {
         detail_preset: i32,
     ) void {
         if (!(dt > 0.0)) return;
-        const rng_pre_update = state.rng.state;
-        const hp171_pre = if (171 < creatures.entries.len) creatures.entries[171].hp else 0.0;
-        const hp229_pre = if (229 < creatures.entries.len) creatures.entries[229].hp else 0.0;
         const dt_f32 = asF32F64(dt);
         const freeze_active = state.bonuses.freeze > 0.0;
-        const debug_probe_tick = state.game_mode == 3 and
-            state.rng.state == 922503367;
-        if (debug_probe_tick and 229 < creatures.entries.len) {
-            const c229 = creatures.entries[229];
-            std.debug.print(
-                "zig secondary tick probe start rng={d} idx229 hp={d:.6} life={d:.6} active={}\n",
-                .{ state.rng.state, c229.hp, c229.lifecycle_stage, c229.active },
-            );
-            const e0 = self.entries[0];
-            const c110 = creatures.entries[110];
-            const within110 = withinNativeFindRadius(e0.pos, c110.pos, 8.0, c110.size);
-            std.debug.print(
-                "zig probe e0 active={} type={d} pos=({d:.6},{d:.6}) vel=({d:.6},{d:.6}) speed={d:.6} trail={d:.6}\n",
-                .{ e0.active, e0.type_id, e0.pos.x, e0.pos.y, e0.vel.x, e0.vel.y, e0.speed, e0.trail_timer },
-            );
-            std.debug.print(
-                "zig probe c110 active={} hp={d:.6} life={d:.6} size={d:.6} pos=({d:.6},{d:.6}) within8={}\n",
-                .{ c110.active, c110.hp, c110.lifecycle_stage, c110.size, c110.pos.x, c110.pos.y, within110 },
-            );
-        }
 
         for (&self.entries, 0..) |*entry, secondary_idx| {
+            _ = secondary_idx;
             if (!entry.active) continue;
 
             if (entry.type_id == SecondaryProjectileTypeId.detonation) {
-                const debug_probe = debug_probe_tick;
-                if (debug_probe) {
-                    std.debug.print(
-                        "zig secondary det idx={d} pre rng={d} det_t={d:.9} det_scale={d:.9} pos=({d:.3},{d:.3})\n",
-                        .{ secondary_idx, state.rng.state, entry.detonation_t, entry.detonation_scale, entry.pos.x, entry.pos.y },
-                    );
-                }
                 state.camera_shake_pulses = 4;
                 entry.detonation_t = asF32F64(entry.detonation_t + dt_f32 * 3.0);
                 const t = entry.detonation_t;
@@ -191,46 +162,6 @@ pub const SecondaryProjectilePool = struct {
                         @abs(cell_x - proj_cell_x) <= cell_span and
                         @abs(cell_y - proj_cell_y) <= cell_span;
                 }
-                if (debug_probe and 229 < creatures.entries.len) {
-                    const c229 = creatures.entries[229];
-                    const d229 = distanceSq(entry.pos, c229.pos);
-                    std.debug.print(
-                        "zig secondary det idx={d} idx229 pre active={} hp={d:.6} life={d:.6} size={d:.3} pos=({d:.3},{d:.3}) d2={d:.6} r2={d:.6} collidable={} candidate={}\n",
-                        .{
-                            secondary_idx,
-                            c229.active,
-                            c229.hp,
-                            c229.lifecycle_stage,
-                            c229.size,
-                            c229.pos.x,
-                            c229.pos.y,
-                            d229,
-                            radius_sq,
-                            collidable_snapshot[229],
-                            candidate_snapshot[229],
-                        },
-                    );
-                }
-                if (debug_probe and 296 < creatures.entries.len) {
-                    const c296 = creatures.entries[296];
-                    const d296 = distanceSq(entry.pos, c296.pos);
-                    std.debug.print(
-                        "zig secondary det idx={d} idx296 pre active={} hp={d:.6} life={d:.6} size={d:.3} pos=({d:.3},{d:.3}) d2={d:.6} r2={d:.6} collidable={} candidate={}\n",
-                        .{
-                            secondary_idx,
-                            c296.active,
-                            c296.hp,
-                            c296.lifecycle_stage,
-                            c296.size,
-                            c296.pos.x,
-                            c296.pos.y,
-                            d296,
-                            radius_sq,
-                            collidable_snapshot[296],
-                            candidate_snapshot[296],
-                        },
-                    );
-                }
 
                 for (creatures.entries, 0..) |_, idx| {
                     if (!candidate_snapshot[idx]) continue;
@@ -239,18 +170,6 @@ pub const SecondaryProjectilePool = struct {
                     if (!(target.lifecycle_stage > 5.0)) continue;
                     if (!(target.hp > 0.0)) continue;
                     const d_sq = distanceSq(entry.pos, target.pos);
-                    if (debug_probe and idx == 229) {
-                        std.debug.print(
-                            "zig secondary idx229 loop hp={d:.6} life={d:.6} d2={d:.6} r2={d:.6}\n",
-                            .{ target.hp, target.lifecycle_stage, d_sq, radius_sq },
-                        );
-                    }
-                    if (debug_probe and idx == 296) {
-                        std.debug.print(
-                            "zig secondary idx296 loop hp={d:.6} life={d:.6} d2={d:.6} r2={d:.6}\n",
-                            .{ target.hp, target.lifecycle_stage, d_sq, radius_sq },
-                        );
-                    }
                     if (!(d_sq < radius_sq)) continue;
                     const hp_before = target.hp;
                     const impulse = directionTo(entry.pos, target.pos).mul(0.1);
@@ -268,13 +187,6 @@ pub const SecondaryProjectilePool = struct {
                         &killed_now,
                     );
                     if (hp_before > 0.0 and killed_now) {
-                        if (debug_probe) {
-                            const dead = creatures.entries[idx];
-                            std.debug.print(
-                                "zig secondary kill idx={d} size={d:.3} flags={d} hp_before={d:.6} hp_after={d:.6} lifecycle={d:.9}\\n",
-                                .{ idx, dead.size, dead.flags, hp_before, dead.hp, dead.lifecycle_stage },
-                            );
-                        }
                         if (!freeze_active) {
                             consumeAddRandomRng(state);
                             consumeAddRandomRng(state);
@@ -288,20 +200,6 @@ pub const SecondaryProjectilePool = struct {
                             dt_f32,
                             world_size,
                         );
-                        if (debug_probe) {
-                            std.debug.print("zig secondary followup idx={d} rng_now={d}\\n", .{ idx, state.rng.state });
-                        }
-                    }
-                }
-                if (debug_probe) {
-                    if (229 < creatures.entries.len) {
-                        const c229_post = creatures.entries[229];
-                        std.debug.print(
-                            "zig secondary det idx={d} post rng={d} idx229 hp={d:.6} life={d:.6} active={}\n",
-                            .{ secondary_idx, state.rng.state, c229_post.hp, c229_post.lifecycle_stage, c229_post.active },
-                        );
-                    } else {
-                        std.debug.print("zig secondary det idx={d} post rng={d}\n", .{ secondary_idx, state.rng.state });
                     }
                 }
                 continue;
@@ -386,24 +284,6 @@ pub const SecondaryProjectilePool = struct {
                 }
             }
             if (hit_idx) |idx| {
-                if (debug_probe_tick) {
-                    const target_pre = creatures.entries[idx];
-                    std.debug.print(
-                        "zig secondary hit idx={d} type={d} target={d} hp_pre={d:.6} life_pre={d:.6} rng_pre={d} entry_pos=({d:.6},{d:.6}) target_pos=({d:.6},{d:.6})\n",
-                        .{
-                            secondary_idx,
-                            entry.type_id,
-                            idx,
-                            target_pre.hp,
-                            target_pre.lifecycle_stage,
-                            state.rng.state,
-                            entry.pos.x,
-                            entry.pos.y,
-                            target_pre.pos.x,
-                            target_pre.pos.y,
-                        },
-                    );
-                }
                 if (entry.owner_id < 0 and creatures.entries[idx].lifecycle_stage == creature_lifecycle_stage_alive) {
                     const player_idx = if (entry.owner_id == -100) @as(i32, 0) else -1 - entry.owner_id;
                     if (player_idx >= 0 and player_idx < state.shots_hit.len) {
@@ -442,8 +322,7 @@ pub const SecondaryProjectilePool = struct {
                     SecondaryProjectileTypeId.rocket_minigun => asF32F64(entry.speed * 20.0 + 40.0),
                     else => 150.0,
                 };
-                const xp_before = players[0].experience;
-                const xp_gain = creatures.applyExplosionDamage(
+                _ = creatures.applyExplosionDamage(
                     state,
                     players,
                     bonuses,
@@ -458,23 +337,6 @@ pub const SecondaryProjectilePool = struct {
                     world_size,
                     null,
                 );
-                if (debug_probe_tick) {
-                    const target_post = creatures.entries[idx];
-                    std.debug.print(
-                        "zig secondary hit idx={d} target={d} dmg={d:.6} xp_gain={d} xp={d}->{d} hp_post={d:.6} life_post={d:.6} rng_post={d}\n",
-                        .{
-                            secondary_idx,
-                            idx,
-                            damage,
-                            xp_gain,
-                            xp_before,
-                            players[0].experience,
-                            target_post.hp,
-                            target_post.lifecycle_stage,
-                            state.rng.state,
-                        },
-                    );
-                }
 
                 entry.type_id = SecondaryProjectileTypeId.detonation;
                 entry.vel = .{};
@@ -536,24 +398,6 @@ pub const SecondaryProjectilePool = struct {
             }
         }
 
-        if (state.game_mode == 3 and 229 < creatures.entries.len) {
-            const hp229_post = creatures.entries[229].hp;
-            if (hp229_post != hp229_pre) {
-                std.debug.print(
-                    "zig hp229 change rng_pre={d} rng_post={d} hp={d:.6}->{d:.6}\n",
-                    .{ rng_pre_update, state.rng.state, hp229_pre, hp229_post },
-                );
-            }
-        }
-        if (state.game_mode == 3 and 171 < creatures.entries.len) {
-            const hp171_post = creatures.entries[171].hp;
-            if (hp171_post != hp171_pre) {
-                std.debug.print(
-                    "zig hp171 change rng_pre={d} rng_post={d} hp={d:.6}->{d:.6}\n",
-                    .{ rng_pre_update, state.rng.state, hp171_pre, hp171_post },
-                );
-            }
-        }
     }
 };
 
