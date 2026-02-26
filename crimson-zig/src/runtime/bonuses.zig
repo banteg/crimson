@@ -3,7 +3,9 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const perks = @import("perks.zig");
+const player_runtime = @import("player.zig");
 const state_mod = @import("state.zig");
+const weapon_data = @import("weapon_data.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -89,10 +91,10 @@ pub const BonusPool = struct {
             entry.bonus_id = .weapon;
 
             var weapon_id = weaponPickRandomAvailable(state);
-            entry.amount = state_mod.weaponIdToInt(weapon_id);
+            entry.amount = weapon_data.weaponIdToInt(weapon_id);
             if (weapon_id == game_ids.WeaponId.pistol) {
                 weapon_id = weaponPickRandomAvailable(state);
-                entry.amount = state_mod.weaponIdToInt(weapon_id);
+                entry.amount = weapon_data.weaponIdToInt(weapon_id);
             }
 
             if (countMatches(self, entry.bonus_id) > 1) {
@@ -100,7 +102,7 @@ pub const BonusPool = struct {
                 return null;
             }
 
-            if (entry.amount == state_mod.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
+            if (entry.amount == weapon_data.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
                 clearEntry(self, entry);
                 return null;
             }
@@ -147,7 +149,7 @@ pub const BonusPool = struct {
         }
 
         if (entry.bonus_id == .weapon) {
-            const weapon_id = state_mod.weaponIdFromInt(entry.amount) orelse {
+            const weapon_id = weapon_data.weaponIdFromInt(entry.amount) orelse {
                 clearEntry(self, entry);
                 return null;
             };
@@ -405,8 +407,8 @@ fn applyBonus(
                 player.alt_shot_cooldown = player.shot_cooldown;
                 player.alt_reload_timer_max = player.reload_timer_max;
             }
-            const weapon_id = state_mod.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
-            state_mod.weaponAssignPlayerWithState(player, weapon_id, state);
+            const weapon_id = weapon_data.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
+            player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
         },
         .nuke => {
             if (state.pending_nuke_count < state.pending_nuke_origins.len) {
@@ -753,7 +755,7 @@ fn spawnAtPos(
     entry.time_max = bonus_time_max;
 
     if (bonus_id == .weapon) {
-        entry.amount = state_mod.weaponIdToInt(weaponPickRandomAvailable(state));
+        entry.amount = weapon_data.weaponIdToInt(weaponPickRandomAvailable(state));
     } else if (bonus_id == .points) {
         entry.amount = if ((state.rng.rand() & 7) < 3) 1000 else 500;
     } else {
@@ -773,7 +775,7 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    state_mod.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     var spawned = false;
     for (0..512) |_| {
@@ -840,7 +842,7 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    state_mod.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     const spawned = pool.trySpawnOnKill(.{ .x = 420.0, .y = 420.0 }, &state, players[0..], 1024.0);
     try std.testing.expect(spawned != null);
@@ -891,7 +893,7 @@ test "alternate weapon stashes previous weapon on first pickup" {
         .pos = .{},
     };
     var players = [_]state_mod.PlayerState{player};
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.alternate_weapon, 1);
 
     try applyBonus(

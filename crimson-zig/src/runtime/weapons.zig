@@ -5,10 +5,13 @@ const native_math = @import("native_math.zig");
 const creatures_mod = @import("creatures.zig");
 const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
+const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
 const secondary_projectiles_mod = @import("secondary_projectiles.zig");
 const state_mod = @import("state.zig");
+const survival_progression = @import("survival_progression.zig");
 const spawn_mod = @import("spawn.zig");
+const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -24,12 +27,12 @@ const reload_preload_underflow_eps: f64 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
 inline fn weaponId(value: i32) WeaponId {
-    return state_mod.weaponIdFromInt(value).?;
+    return weapon_data.weaponIdFromInt(value).?;
 }
 
 inline fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
-    return state_mod.weapon_stats.get(weapon_id).projectile_meta;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 45.0;
+    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
 }
 
 pub const TickInputFlags = struct {
@@ -141,7 +144,7 @@ pub fn stepPlayerForTick(
                     for (0..@as(usize, @intCast(count))) |idx| {
                         const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
-                        const meta = state_mod.weapon_stats.get(.plasma_minigun).projectile_meta;
+                        const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
                         _ = projectiles.spawn(player.pos, angle, type_id, owner_id, meta, false);
                     }
                 }
@@ -163,7 +166,7 @@ pub fn stepPlayerForTick(
         input_flags.single_player_mode and
         player.reload_timer == 0.0;
     if (manual_reload_allowed) {
-        state_mod.playerStartReload(player, state);
+        player_runtime.playerStartReload(player, state);
     }
 
     if (perkActive(player.*, PerkId.sharpshooter)) {
@@ -190,7 +193,7 @@ pub fn stepPlayerForTick(
         }
 
         if (cooldown_ms < 1 and reload_key_active) {
-            if (state_mod.playerSwapAltWeapon(player)) {
+            if (player_runtime.playerSwapAltWeapon(player)) {
                 swapped_alt_weapon = true;
                 player.shot_cooldown = narrowF32(player.shot_cooldown + 0.1);
                 state.player_alt_weapon_swap_cooldown_ms = 200;
@@ -257,7 +260,7 @@ fn tryFireWeaponWithForce(
         if (player.experience <= 0) return false;
 
         if (perkActive(player.*, PerkId.regression_bullets)) {
-            const reload_time = state_mod.weapon_stats.get(weapon_id).reload_time;
+            const reload_time = weapon_data.weapon_stats.get(weapon_id).reload_time;
             const factor: f64 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
             const drained = reload_time * factor;
             const before: f64 = @floatFromInt(player.experience);
@@ -280,11 +283,11 @@ fn tryFireWeaponWithForce(
         }
     }
 
-    const shot_cooldown_base = state_mod.weapon_stats.get(weapon_id).shot_cooldown;
-    const pellet_count = @max(0, state_mod.weapon_stats.get(weapon_id).pellet_count);
-    const weapon_spread_heat = state_mod.weapon_stats.get(weapon_id).spread_heat_inc;
+    const shot_cooldown_base = weapon_data.weapon_stats.get(weapon_id).shot_cooldown;
+    const pellet_count = @max(0, weapon_data.weapon_stats.get(weapon_id).pellet_count);
+    const weapon_spread_heat = weapon_data.weapon_stats.get(weapon_id).spread_heat_inc;
     const fire_bullets_weapon_id = WeaponId.fire_bullets;
-    const fire_bullets_spread_heat = state_mod.weapon_stats.get(fire_bullets_weapon_id).spread_heat_inc;
+    const fire_bullets_spread_heat = weapon_data.weapon_stats.get(fire_bullets_weapon_id).spread_heat_inc;
 
     var shot_cooldown = shot_cooldown_base;
 
@@ -305,7 +308,7 @@ fn tryFireWeaponWithForce(
     const projectile_owner_id: i32 = -100;
     const secondary_owner_id: i32 = -1 - player.index;
     if (is_fire_bullets and pellet_count == 1) {
-        shot_cooldown = state_mod.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
+        shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
     if (perkActive(player.*, PerkId.fastshot)) {
         shot_cooldown = narrowF32(shot_cooldown * 0.88);
@@ -315,7 +318,7 @@ fn tryFireWeaponWithForce(
     }
     player.shot_cooldown = @max(0.0, shot_cooldown);
 
-    const weapon_flags = state_mod.weapon_stats.get(player.weapon_id).flags;
+    const weapon_flags = weapon_data.weapon_stats.get(player.weapon_id).flags;
 
     if ((weapon_flags & 0x1) != 0) {
         // spawn_shell_casing randoms: angle speed rotation rotation_step.
@@ -352,7 +355,7 @@ fn tryFireWeaponWithForce(
     }
 
     if (is_fire_bullets) {
-        const meta = state_mod.weapon_stats.get(.fire_bullets).projectile_meta;
+        const meta = weapon_data.weapon_stats.get(.fire_bullets).projectile_meta;
         for (0..@as(usize, @intCast(shot_count))) |_| {
             const jitter_roll = state.rng.rand();
             const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
@@ -369,14 +372,14 @@ fn tryFireWeaponWithForce(
         .multi_plasma => {
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
         },
         .plasma_shotgun => {
-            const meta = state_mod.weapon_stats.get(.plasma_minigun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
             for (0..14) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
                 const id = projectiles.spawn(
@@ -391,7 +394,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .gauss_shotgun => {
-            const meta = state_mod.weapon_stats.get(.gauss_gun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.gauss_gun).projectile_meta;
             for (0..6) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
                 const id = projectiles.spawn(
@@ -406,7 +409,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .ion_shotgun => {
-            const meta = state_mod.weapon_stats.get(.ion_minigun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.ion_minigun).projectile_meta;
             for (0..8) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
                 const id = projectiles.spawn(
@@ -512,10 +515,10 @@ fn tryFireWeaponWithForce(
             );
         },
         else => {
-            const type_id = state_mod.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
+            const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const type_id_i32 = @intFromEnum(type_id);
             const meta = projectileMetaFromRawId(type_id_i32);
-            const pellets = @max(1, state_mod.weapon_stats.get(player.weapon_id).pellet_count);
+            const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon_id).pellet_count);
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
                 if (pellets > 1) {
@@ -572,7 +575,7 @@ fn tryFireWeaponWithForce(
     }
 
     if (player.ammo <= 0.0 and (force_pre_swap_fire_gate or player.reload_timer <= 0.0)) {
-        state_mod.playerStartReload(player, state);
+        player_runtime.playerStartReload(player, state);
     }
 
     return true;
@@ -834,7 +837,7 @@ fn computeShotCount(
         .mini_rocket_swarmers => @max(1, @as(i32, @intFromFloat(@floor(@max(0.0, ammo))))),
         .gauss_shotgun => 6,
         .ion_shotgun => 8,
-        else => @max(1, state_mod.weapon_stats.get(weapon_id).pellet_count),
+        else => @max(1, weapon_data.weapon_stats.get(weapon_id).pellet_count),
     };
 }
 
@@ -940,18 +943,18 @@ test "weapon usage tracks most used weapon" {
         .pos = .{},
     };
 
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expectEqual(@as(i32, 1), state.weapon_shots_fired[0][1]);
 
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     for (0..3) |_| {
         player.shot_cooldown = 0.0;
         try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     }
     try std.testing.expectEqual(@as(i32, 3), state.weapon_shots_fired[0][2]);
 
-    const most_used = state_mod.mostUsedWeaponIdForPlayer(state, 0, @intFromEnum(game_ids.WeaponId.pistol));
+    const most_used = survival_progression.mostUsedWeaponIdForPlayer(state, 0, @intFromEnum(game_ids.WeaponId.pistol));
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), most_used);
 }
 
@@ -965,7 +968,7 @@ test "weapon runtime starts reload when ammo is depleted" {
         .index = 0,
         .pos = .{},
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.ammo = 1.0;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
@@ -1011,7 +1014,7 @@ test "manual reload starts even when clip is full" {
         .index = 0,
         .pos = .{},
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.ammo = @floatFromInt(player.clip_size);
 
     try stepPlayerForTick(
@@ -1039,7 +1042,7 @@ test "manual reload requires single player mode" {
         .index = 0,
         .pos = .{},
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.ammo = 0.0;
 
     try stepPlayerForTick(
@@ -1284,7 +1287,7 @@ test "alternate weapon reload press swaps and adds cooldown" {
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
     player.alt_ammo = 10.0;
@@ -1323,7 +1326,7 @@ test "alternate weapon held reload uses cooldown gate" {
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
     player.alt_ammo = 10.0;
@@ -1381,7 +1384,7 @@ test "alternate weapon release resets cooldown gate" {
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
     player.alt_ammo = 10.0;
@@ -1441,11 +1444,11 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
     };
     player0.perk_counts.set(PerkId.alternate_weapon, 1);
     player1.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player0, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player0, game_ids.WeaponId.assault_rifle);
     player0.alt_weapon_id = game_ids.WeaponId.pistol;
     player0.alt_clip_size = 10;
     player0.alt_ammo = 10.0;
-    state_mod.weaponAssignPlayer(&player1, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player1, game_ids.WeaponId.assault_rifle);
     player1.alt_weapon_id = game_ids.WeaponId.pistol;
     player1.alt_clip_size = 10;
     player1.alt_ammo = 10.0;
@@ -1488,7 +1491,7 @@ test "alternate weapon swap preserves same-tick fire gate" {
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player, weaponId(11));
+    player_runtime.weaponAssignPlayer(&player, weaponId(11));
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
     player.alt_ammo = 10.0;
@@ -1522,7 +1525,7 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
-    state_mod.weaponAssignPlayer(&player, weaponId(29));
+    player_runtime.weaponAssignPlayer(&player, weaponId(29));
     player.ammo = 2.0;
     player.reload_active = false;
     player.reload_timer = 0.0;
@@ -1564,11 +1567,11 @@ test "multi plasma and mini rocket use special shot counts" {
         .pos = .{},
     };
 
-    state_mod.weaponAssignPlayer(&player, weaponId(10));
+    player_runtime.weaponAssignPlayer(&player, weaponId(10));
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expectEqual(@as(i32, 5), state.shots_fired[0]);
 
-    state_mod.weaponAssignPlayer(&player, weaponId(17));
+    player_runtime.weaponAssignPlayer(&player, weaponId(17));
     player.ammo = 4.0;
     player.shot_cooldown = 0.0;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
@@ -1589,7 +1592,7 @@ test "multi plasma fires five projectiles with fixed spread profile" {
         .spread_heat = 0.0,
     };
 
-    state_mod.weaponAssignPlayer(&player, weaponId(10));
+    player_runtime.weaponAssignPlayer(&player, weaponId(10));
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
     try std.testing.expectEqual(@as(usize, 5), activeProjectileCount(&projectiles));
@@ -1633,7 +1636,7 @@ test "plasma shotgun uses masked jitter and random speed scale" {
         .spread_heat = 0.0,
     };
 
-    state_mod.weaponAssignPlayer(&player, weaponId(14));
+    player_runtime.weaponAssignPlayer(&player, weaponId(14));
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
     try std.testing.expectEqual(@as(usize, 14), activeProjectileCount(&projectiles));
@@ -1673,7 +1676,7 @@ test "plasma shotgun consumes one ammo per shot" {
         .spread_heat = 0.0,
     };
 
-    state_mod.weaponAssignPlayer(&player, weaponId(14));
+    player_runtime.weaponAssignPlayer(&player, weaponId(14));
     const start_ammo = player.ammo;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try expectFloatClose(start_ammo - 1.0, player.ammo);
@@ -1728,13 +1731,13 @@ test "shotgun family fires expected pellet counts and formulas" {
             .spread_heat = 0.0,
         };
 
-        state_mod.weaponAssignPlayer(&player, weaponId(case.weapon_id));
+        player_runtime.weaponAssignPlayer(&player, weaponId(case.weapon_id));
         try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
         try std.testing.expectEqual(case.expected_count, activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@as(i32, @intCast(case.expected_count)), state.weapon_shots_fired[0][@intCast(case.weapon_id)]);
 
         var rng = spawn_mod.Crand.init(0);
-        if ((state_mod.weapon_stats.get(weaponId(case.weapon_id)).flags & 0x1) != 0) {
+        if ((weapon_data.weapon_stats.get(weaponId(case.weapon_id)).flags & 0x1) != 0) {
             _ = rng.rand();
             _ = rng.rand();
             _ = rng.rand();
@@ -1782,7 +1785,7 @@ test "fire bullets on shotgun spawns pellet count projectiles and keeps ammo" {
         .aim_dir = .{ .x = 1.0, .y = 0.0 },
         .spread_heat = 0.01,
     };
-    state_mod.weaponAssignPlayer(&player, weaponId(3));
+    player_runtime.weaponAssignPlayer(&player, weaponId(3));
     player.fire_bullets_timer = 1.0;
     const start_ammo = player.ammo;
 
@@ -1813,12 +1816,12 @@ test "fire bullets overrides rocket family into primary projectile pool" {
             .aim_dir = .{ .x = 1.0, .y = 0.0 },
             .spread_heat = 0.0,
         };
-        state_mod.weaponAssignPlayer(&player, weaponId(weapon_id));
+        player_runtime.weaponAssignPlayer(&player, weaponId(weapon_id));
         player.fire_bullets_timer = 1.0;
 
         try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
-        const expected_count: usize = @intCast(@max(0, state_mod.weapon_stats.get(weaponId(weapon_id)).pellet_count));
+        const expected_count: usize = @intCast(@max(0, weapon_data.weapon_stats.get(weaponId(weapon_id)).pellet_count));
         try std.testing.expectEqual(expected_count, activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
         for (0..expected_count) |idx| {
@@ -1841,7 +1844,7 @@ test "fire bullets can fire at zero ammo and then trigger reload" {
         .aim = .{ .x = 101.0, .y = 100.0 },
         .aim_dir = .{ .x = 1.0, .y = 0.0 },
     };
-    state_mod.weaponAssignPlayer(&player, weaponId(3));
+    player_runtime.weaponAssignPlayer(&player, weaponId(3));
     player.ammo = 0.0;
     player.fire_bullets_timer = 1.0;
 
@@ -1870,7 +1873,7 @@ test "negative ammo still fires then enters reload for non fire bullets" {
         .reload_active = false,
         .reload_timer = 0.0,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.ion_cannon);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.ion_cannon);
     player.ammo = -1.0;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
@@ -1892,7 +1895,7 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
     var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
     var creatures = creatures_mod.CreaturePool{};
     var particles = particles_mod.ParticlePool{};
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(projectiles.entries[0].active);
 }
@@ -1908,7 +1911,7 @@ test "fastshot scales shot cooldown" {
         .pos = .{},
         .aim = .{ .x = 10.0, .y = 0.0 },
     };
-    state_mod.weaponAssignPlayer(&base_player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&base_player, game_ids.WeaponId.pistol);
     base_player.ammo = 2.0;
     try std.testing.expect(try tryFireWeapon(
         &base_state,
@@ -1930,7 +1933,7 @@ test "fastshot scales shot cooldown" {
         .pos = .{},
         .aim = .{ .x = 10.0, .y = 0.0 },
     };
-    state_mod.weaponAssignPlayer(&perk_player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&perk_player, game_ids.WeaponId.pistol);
     perk_player.ammo = 2.0;
     perk_player.perk_counts.set(PerkId.fastshot, 1);
     try std.testing.expect(try tryFireWeapon(
@@ -1957,7 +1960,7 @@ test "sharpshooter forces spread heat and slows firing" {
         .aim = .{ .x = 200.0, .y = 100.0 },
         .spread_heat = 0.48,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.perk_counts.set(PerkId.sharpshooter, 1);
 
     try stepPlayerForTick(
@@ -1982,7 +1985,7 @@ test "sharpshooter forces spread heat and slows firing" {
         &particles,
     ));
     try expectFloatClose(
-        narrowF32(state_mod.weapon_stats.get(game_ids.WeaponId.assault_rifle).shot_cooldown * 1.05),
+        narrowF32(weapon_data.weapon_stats.get(game_ids.WeaponId.assault_rifle).shot_cooldown * 1.05),
         player.shot_cooldown,
     );
     try expectFloatClose(0.02, player.spread_heat);
@@ -2000,7 +2003,7 @@ test "regression bullets fires during reload and costs experience" {
         .aim = .{ .x = 10.0, .y = 0.0 },
         .experience = 1000,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 0.0;
     player.reload_active = true;
@@ -2032,7 +2035,7 @@ test "regression bullets blocks fire when experience is zero" {
         .aim = .{ .x = 10.0, .y = 0.0 },
         .experience = 0,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 0.0;
     player.reload_active = true;
@@ -2061,7 +2064,7 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
         .aim = .{ .x = 10.0, .y = 0.0 },
         .experience = 1000,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
     player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 5.0;
     player.reload_active = true;
@@ -2094,7 +2097,7 @@ test "ammunition within fires during reload and costs health" {
         .health = 10.0,
         .experience = 1,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 0.0;
     player.reload_active = true;
@@ -2128,7 +2131,7 @@ test "ammunition within blocks fire when experience is zero" {
         .health = 10.0,
         .experience = 0,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 0.0;
     player.reload_active = true;
@@ -2159,7 +2162,7 @@ test "ammunition within fire ammo class costs less health and spends fractional 
         .health = 10.0,
         .experience = 1,
     };
-    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
+    player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
     player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 5.0;
     player.reload_active = true;

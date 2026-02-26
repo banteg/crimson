@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const player_runtime = @import("player.zig");
 const state_mod = @import("state.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -261,7 +262,7 @@ pub fn applyPerk(
         },
         PerkId.ammo_maniac => {
             for (players) |*player| {
-                state_mod.weaponAssignPlayerWithState(player, player.weapon_id, state);
+                player_runtime.weaponAssignPlayerWithState(player, player.weapon_id, state);
             }
         },
         PerkId.fatal_lottery => {
@@ -312,7 +313,7 @@ pub fn applyPerk(
                 selected = candidate;
                 if (candidate != game_ids.WeaponId.pistol and candidate != current) break;
             }
-            state_mod.weaponAssignPlayerWithState(&players[0], selected, state);
+            player_runtime.weaponAssignPlayerWithState(&players[0], selected, state);
         },
         PerkId.breathing_room => {
             for (players) |*player| {
@@ -1079,8 +1080,8 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.assault_rifle },
         .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
-    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
-    state_mod.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
 
     const base_clip0 = players[0].clip_size;
     const base_clip1 = players[1].clip_size;
@@ -1105,7 +1106,7 @@ test "my favourite weapon increases clip size and keeps current ammo on apply" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
-    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
 
     const base_clip = players[0].clip_size;
     players[0].ammo = 5.0;
@@ -1114,7 +1115,7 @@ test "my favourite weapon increases clip size and keeps current ammo on apply" {
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
     try std.testing.expectEqual(@as(f64, 5.0), players[0].ammo);
 
-    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
     try std.testing.expectEqual(@as(f64, @floatFromInt(base_clip + 2)), players[0].ammo);
 }

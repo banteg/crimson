@@ -7,6 +7,7 @@ const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
+const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
@@ -2127,12 +2128,12 @@ pub const CreaturePool = struct {
         }
 
         var result = ShotResolutionResult{};
-        const weapon_enum = state_mod.weaponIdFromInt(weapon_id) orelse .none;
-        const projectile_type_id: i32 = if (state_mod.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
+        const weapon_enum = weapon_data.weaponIdFromInt(weapon_id) orelse .none;
+        const projectile_type_id: i32 = if (weapon_data.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
             @intFromEnum(type_id)
         else
             weapon_id;
-        const damage_scale = state_mod.weapon_stats.get(weapon_enum).damage_scale;
+        const damage_scale = weapon_data.weapon_stats.get(weapon_enum).damage_scale;
         const owner_id: i32 = -1 - player.index;
         var hit_audio_game_tune_started = state.game_tune_started;
 

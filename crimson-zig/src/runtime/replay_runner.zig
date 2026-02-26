@@ -7,11 +7,14 @@ const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
 const perks = @import("perks.zig");
 const particles_mod = @import("particles.zig");
+const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
 const secondary_projectiles_mod = @import("secondary_projectiles.zig");
 const spawn_mod = @import("spawn.zig");
 const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const state_mod = @import("state.zig");
+const survival_progression = @import("survival_progression.zig");
+const weapon_data = @import("weapon_data.zig");
 const weapons_runtime = @import("weapons.zig");
 const math = @import("math.zig");
 
@@ -465,7 +468,7 @@ pub fn runReplayScaffoldWithTrace(
     var projectiles = projectiles_mod.ProjectilePool{};
     var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
     var bonuses = bonus_runtime.BonusPool{};
-    state_mod.resetPlayers(players[0..], @floatCast(header.world_size), null);
+    player_runtime.resetPlayers(players[0..], @floatCast(header.world_size), null);
     state.status_quest_unlock_index = header.status.quest_unlock_index;
     state.status_quest_unlock_index_full = header.status.quest_unlock_index_full;
     for (header.status.weapon_usage_counts, 0..) |count, idx| {
@@ -524,8 +527,8 @@ pub fn runReplayScaffoldWithTrace(
         const weapon_id = @max(1, quest_start_weapon_id);
         quest_start_weapon_id_for_reset = weapon_id;
         for (players) |*player| {
-            const start_weapon = state_mod.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
-            state_mod.weaponAssignPlayer(player, start_weapon);
+            const start_weapon = weapon_data.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
+            player_runtime.weaponAssignPlayer(player, start_weapon);
         }
     }
 
@@ -606,7 +609,7 @@ pub fn runReplayScaffoldWithTrace(
             applyPerkWorldDtSteps(players[0..], dt_tick)
         else
             dt_tick;
-        const dt_sim = state_mod.timeScaleReflexBoostBonus(
+        const dt_sim = survival_progression.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
             narrowF32(dt_world),
@@ -760,7 +763,7 @@ pub fn runReplayScaffoldWithTrace(
         var rng_after_stage_spawns = state.rng.state;
         var rng_after_wave_spawns = state.rng.state;
         if (game_mode == .survival) {
-            state_mod.survivalUpdateWeaponHandouts(
+            survival_progression.survivalUpdateWeaponHandouts(
                 &state,
                 players[0..],
                 narrowF32(elapsed_before_ms),
@@ -881,7 +884,7 @@ pub fn runReplayScaffoldWithTrace(
         );
         cameraShakeUpdate(&state, dt_after_player);
         if (game_mode != .rush) {
-            _ = state_mod.survivalProgressionUpdate(&state, players[0..]);
+            _ = survival_progression.survivalProgressionUpdate(&state, players[0..]);
         }
         state.time_scale_active = state.bonuses.reflex_boost > 0.0;
         bonus_runtime.updatePrePickupTimers(&state, dt_after_player);
@@ -912,7 +915,7 @@ pub fn runReplayScaffoldWithTrace(
         );
         const rng_after_bonus_update = state.rng.state;
         if (game_mode == .survival) {
-            state_mod.survivalEnforceRewardWeaponGuard(state, players[0..]);
+            survival_progression.survivalEnforceRewardWeaponGuard(state, players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
         elapsed_ms_sim = elapsed_after_ms;
@@ -1016,8 +1019,8 @@ pub fn runReplayScaffoldWithTrace(
         @intFromFloat(quest_spawn_timeline_ms)
     else
         @intFromFloat(elapsed_ms_sim);
-    const shots = state_mod.player0Shots(state);
-    const most_used_weapon_id = state_mod.mostUsedWeaponIdForPlayer(
+    const shots = survival_progression.player0Shots(state);
+    const most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(
         state,
         0,
         @intFromEnum(players[0].weapon_id),
@@ -1688,8 +1691,8 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
 }
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
-    return state_mod.weapon_stats.get(weapon_id).projectile_meta;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 45.0;
+    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
 }
 
 fn applyPyrokineticEffects(
@@ -1999,7 +2002,7 @@ fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
 fn enforceRushLoadout(players: []state_mod.PlayerState) void {
     for (players) |*player| {
         if (player.weapon_id != game_ids.WeaponId.assault_rifle) {
-            state_mod.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
+            player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
         player.ammo = @floatFromInt(@max(0, player.clip_size));
     }
@@ -2211,9 +2214,9 @@ fn applyCaptureBootstrapEvent(
     for (0..player_count) |idx| {
         const payload = bootstrap.players[idx];
         if (payload.weapon_id > 0) {
-            if (state_mod.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
+            if (weapon_data.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
                 if (players[idx].weapon_id != weapon_id) {
-                    state_mod.weaponAssignPlayer(&players[idx], weapon_id);
+                    player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
                 }
             }
         }
@@ -2254,7 +2257,7 @@ fn applyCaptureBootstrapEvent(
             players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
-            players[idx].alt_weapon_id = if (alt_weapon_id > 0) state_mod.weaponIdFromInt(alt_weapon_id) else null;
+            players[idx].alt_weapon_id = if (alt_weapon_id > 0) weapon_data.weaponIdFromInt(alt_weapon_id) else null;
         }
         if (payload.alt_clip_size) |alt_clip_size| {
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
@@ -2474,10 +2477,10 @@ fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    state_mod.resetPlayers(players, narrowF32(world_size), null);
+    player_runtime.resetPlayers(players, narrowF32(world_size), null);
     for (players) |*player| {
-        const quest_weapon = state_mod.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
-        state_mod.weaponAssignPlayer(player, quest_weapon);
+        const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
+        player_runtime.weaponAssignPlayer(player, quest_weapon);
         if (quest_start_weapon_id == @intFromEnum(game_ids.WeaponId.pistol)) {
             player.clip_size = @max(12, player.clip_size);
             if (player.ammo < 12.0) {
@@ -4722,7 +4725,7 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players = players_storage[0..1];
-    state_mod.resetPlayers(players, 1024.0, null);
+    player_runtime.resetPlayers(players, 1024.0, null);
 
     var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0].active = true;
