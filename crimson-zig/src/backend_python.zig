@@ -41,8 +41,6 @@ pub fn runReplayVerifyPassthrough(
 fn termToExitCode(term: std.process.Child.Term) u8 {
     return switch (term) {
         .Exited => |code| @intCast(@min(code, 255)),
-        .Signal => 1,
-        .Stopped => 1,
-        .Unknown => 1,
+        else => 1,
     };
 }
