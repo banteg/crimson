@@ -635,7 +635,7 @@ pub fn runReplayScaffoldWithTrace(
         );
         const rng_after_perk_effects = state.rng.state;
 
-        creatures.update(
+        try creatures.update(
             &state,
             players[0..],
             dt_sim,
@@ -2078,7 +2078,7 @@ fn applyReplayEvent(
             perk_pick_count.* += 1;
         },
         .capture_bootstrap => |bootstrap| {
-            applyCaptureBootstrapEvent(
+            try applyCaptureBootstrapEvent(
                 bootstrap,
                 state,
                 players,
@@ -2206,7 +2206,7 @@ fn applyCaptureBootstrapEvent(
     quest_spawn_timeline_ms: *f64,
     quest_no_creatures_timer_ms: *f64,
     quest_completion_transition_ms: *f64,
-) void {
+) ReplayRunnerError!void {
     const player_count = @min(players.len, bootstrap.player_count);
     for (0..player_count) |idx| {
         const payload = bootstrap.players[idx];
@@ -2308,7 +2308,7 @@ fn applyCaptureBootstrapEvent(
         const perk_counts = bootstrap.player_perk_counts[player_idx];
         for (0..perk_counts.pair_count) |pair_idx| {
             const pair = perk_counts.pairs[pair_idx];
-            const perk_id = std.meta.intToEnum(PerkId, pair.perk_id) catch continue;
+            const perk_id = std.meta.intToEnum(PerkId, pair.perk_id) catch return error.InvalidCaptureEnumValue;
             player.perk_counts.set(perk_id, pair.count);
         }
     }
@@ -3587,6 +3587,35 @@ test "survival scaffold bootstrap perk counts enable alternate weapon swap" {
     const with_counts = try run(allocator, true);
     try std.testing.expectEqual(@as(i32, 11), without_counts);
     try std.testing.expectEqual(@as(i32, 1), with_counts);
+}
+
+test "survival scaffold bootstrap rejects invalid perk id in perk counts" {
+    const allocator = std.testing.allocator;
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.player_perk_counts[0].pair_count = 1;
+    bootstrap.player_perk_counts[0].pairs[0] = .{
+        .perk_id = 999,
+        .count = 1,
+    };
+
+    const replay = try buildTestReplay(allocator, .{
+        .tick_rate = 60,
+        .seed = 0x1234,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .capture_bootstrap = bootstrap },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    try std.testing.expectError(
+        error.InvalidCaptureEnumValue,
+        runReplayScaffold(replay),
+    );
 }
 
 test "capture perk pending event sets pending without shifting rng in survival and quest modes" {
