@@ -2194,7 +2194,7 @@ fn applyReplayPerkCreatureEffects(
                 if (kill_toggle and
                     creature.active and
                     creature.hp <= 500.0 and
-                    (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong)) == 0)
+                    (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0)
                 {
                     creature.active = false;
                     consumeSpawnBurstRng(state, 4);
@@ -2404,7 +2404,7 @@ fn applyCaptureCreatureSpawnEvent(
             row.has_link_index and
             row.link_index >= -1723 and
             row.link_index <= -700 and
-            (flags_i32 & @as(i32, @intCast(@intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)))) != 0)
+            (flags_i32 & @as(i32, @intCast(survival_spawn.CreatureFlags.ai7_link_timer))) != 0)
         {
             _ = state.rng.rand();
         }
@@ -4490,7 +4490,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     rollover_event.added_head[0] = .{
         .index = 0,
         .has_flags = true,
-        .flags = @intCast(@intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)),
+        .flags = @intCast(survival_spawn.CreatureFlags.ai7_link_timer),
         .has_link_index = true,
         .link_index = -975,
     };
@@ -5439,7 +5439,7 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
         .size = 44.0,
         .move_speed = 0.0,
         .health = 2000.0,
@@ -5462,7 +5462,7 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         1,
     );
 
-    try std.testing.expect((creatures.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) == 0);
+    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
 }
 
 test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
@@ -5544,7 +5544,7 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         };
         creatures.entries[idx].flags = 0;
     }
-    creatures.entries[3].flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong);
+    creatures.entries[3].flags = survival_spawn.CreatureFlags.anim_ping_pong;
     creatures.entries[5].hp = 600.0;
 
     applyReplayPerkCreatureEffects(
