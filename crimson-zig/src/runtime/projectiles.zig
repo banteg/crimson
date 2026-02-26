@@ -583,10 +583,10 @@ fn creatureHitRadius(size: f64) f64 {
 }
 
 fn directionFromHeading(heading: f64) survival_state.Vec2 {
-    const radians = heading - std.math.pi / 2.0;
+    const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
-        .x = survival_math.cos(radians),
-        .y = survival_math.sin(radians),
+        .x = asF32F64(survival_math.cos(radians)),
+        .y = asF32F64(survival_math.sin(radians)),
     };
 }
 
@@ -688,9 +688,8 @@ fn perkActive(player: *const survival_state.PlayerState, perk_id: i32) bool {
     return player.perk_counts[@intCast(perk_id)] > 0;
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {

@@ -172,7 +172,7 @@ pub fn stepPlayerForTick(
     if (perkActive(player.*, perk_id_sharpshooter)) {
         player.spread_heat = 0.02;
     } else {
-        player.spread_heat = @max(0.01, player.spread_heat - dt * 0.4);
+        player.spread_heat = @max(0.01, player.spread_heat - asF32F64(dt) * 0.4);
     }
 
     if (player.shot_cooldown <= 0.0 and player.reload_timer == 0.0) {
@@ -335,7 +335,7 @@ fn tryFireWeaponWithForce(
     const mag_roll = state.rng.rand();
     const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
-    const aim_jitter = survival_state.Vec2.add(player.aim, survival_state.Vec2.fromAngle(dir_angle).mul(offset));
+    const aim_jitter = survival_state.Vec2.add(player.aim, survival_state.Vec2.fromAngle(asF32F64(dir_angle)).mul(asF32F64(offset)));
     const shot_angle = survival_state.Vec2.sub(aim_jitter, player.pos).toHeading();
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon_id == .flamethrower or player.weapon_id == .blow_torch or player.weapon_id == .hr_flamer) {
@@ -528,7 +528,7 @@ fn tryFireWeaponWithForce(
                 var angle = shot_angle;
                 if (pellets > 1) {
                     const jitter_step = pelletJitterStep(player.weapon_id);
-                    angle += @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step;
+                    angle += asF32F64(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
                 }
                 const id = projectiles.spawn(
                     muzzle,
@@ -564,7 +564,7 @@ fn tryFireWeaponWithForce(
 
     const ammo_cost = computeAmmoCost(player.weapon_id, shot_count);
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
-        player.ammo -= ammo_cost;
+        player.ammo -= asF32F64(ammo_cost);
     }
 
     player.shot_seq += 1;
@@ -609,7 +609,7 @@ fn tickManBomb(
         return;
     }
 
-    player.man_bomb_timer += dt;
+    player.man_bomb_timer += asF32F64(dt);
     if (player.man_bomb_timer <= state.perk_interval_man_bomb) return;
 
     const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
@@ -640,7 +640,7 @@ fn tickLivingFortress(
     dt: f64,
 ) void {
     if (perkActive(player.*, perk_id_living_fortress)) {
-        player.living_fortress_timer = @min(30.0, player.living_fortress_timer + dt);
+        player.living_fortress_timer = @min(30.0, player.living_fortress_timer + asF32F64(dt));
     } else {
         player.living_fortress_timer = 0.0;
     }
@@ -657,7 +657,7 @@ fn tickFireCaugh(
         return;
     }
 
-    player.fire_cough_timer += dt;
+    player.fire_cough_timer += asF32F64(dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
     const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
@@ -677,7 +677,7 @@ fn tickFireCaugh(
     const offset = max_offset * mag;
     const jitter = survival_state.Vec2.add(
         player.aim,
-        survival_state.Vec2.fromAngle(dir_angle).mul(offset),
+        survival_state.Vec2.fromAngle(asF32F64(dir_angle)).mul(asF32F64(offset)),
     );
     const angle = survival_state.Vec2.sub(jitter, origin_pos).toHeading();
     spawnPerkProjectile(
@@ -694,7 +694,7 @@ fn tickFireCaugh(
     _ = state.rng.rand() % 0x274;
 
     player.fire_cough_timer -= state.perk_interval_fire_cough;
-    state.perk_interval_fire_cough = @as(f64, @floatFromInt(state.rng.rand() % 4)) + 2.0;
+    state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.rand() % 4)) + 2.0;
 }
 
 fn tickHotTempered(
@@ -708,7 +708,7 @@ fn tickHotTempered(
         return;
     }
 
-    player.hot_tempered_timer += dt;
+    player.hot_tempered_timer += asF32F64(dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
     const owner_id: i32 = if (state.friendly_fire_enabled) -1 - player.index else -100;
@@ -730,7 +730,7 @@ fn tickHotTempered(
     }
 
     player.hot_tempered_timer -= state.perk_interval_hot_tempered;
-    state.perk_interval_hot_tempered = @as(f64, @floatFromInt(state.rng.rand() % 8)) + 2.0;
+    state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.rand() % 8)) + 2.0;
 }
 
 fn spawnPerkProjectile(
@@ -865,25 +865,25 @@ fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
     return weapon_id == .flamethrower or weapon_id == .blow_torch or weapon_id == .hr_flamer;
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 fn directionFromHeading(heading: f64) survival_state.Vec2 {
-    const radians = heading - std.math.pi / 2.0;
+    const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
-        .x = survival_math.cos(radians),
-        .y = survival_math.sin(radians),
+        .x = asF32F64(survival_math.cos(radians)),
+        .y = asF32F64(survival_math.sin(radians)),
     };
 }
 
 fn rotateVec(vec: survival_state.Vec2, theta: f64) survival_state.Vec2 {
-    const cos_theta = survival_math.cos(theta);
-    const sin_theta = survival_math.sin(theta);
+    const theta_f = asF32F64(theta);
+    const cos_theta = asF32F64(survival_math.cos(theta_f));
+    const sin_theta = asF32F64(survival_math.sin(theta_f));
     return .{
-        .x = vec.x * cos_theta - vec.y * sin_theta,
-        .y = vec.x * sin_theta + vec.y * cos_theta,
+        .x = asF32F64(vec.x * cos_theta - vec.y * sin_theta),
+        .y = asF32F64(vec.x * sin_theta + vec.y * cos_theta),
     };
 }
 
@@ -2032,7 +2032,7 @@ test "regression bullets fires during reload and costs experience" {
         &particles,
     ));
 
-    try std.testing.expectEqual(@as(i32, 760), player.experience);
+    try std.testing.expectEqual(@as(i32, 759), player.experience);
     try std.testing.expect(projectiles.entries[0].active);
     try expectFloatClose(-1.0, player.ammo);
 }

@@ -645,9 +645,8 @@ fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
     return dx * dx + dy * dy;
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 fn appendPickupBonusId(

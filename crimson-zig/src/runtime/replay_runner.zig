@@ -553,7 +553,7 @@ pub fn runReplayScaffoldWithTrace(
         const dt_sim = survival_state.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
-            dt_world,
+            asF32F64(dt_world),
         );
         const dt_frame_ms = dt_tick * 1000.0;
         const dt_sim_ms = dt_sim * 1000.0;
@@ -707,7 +707,7 @@ pub fn runReplayScaffoldWithTrace(
             survival_state.survivalUpdateWeaponHandouts(
                 &state,
                 players[0..],
-                elapsed_before_ms,
+                asF32F64(elapsed_before_ms),
             );
 
             const stage_result = survival_spawn.advanceSurvivalSpawnStage(
@@ -1461,8 +1461,8 @@ fn cameraShakeUpdate(
     }
 
     state.camera_shake_offset = .{
-        .x = asF32F64(@floatFromInt(mag_x)),
-        .y = asF32F64(@floatFromInt(mag_y)),
+        .x = asF32F64(@as(f32, @floatFromInt(mag_x))),
+        .y = asF32F64(@as(f32, @floatFromInt(mag_y))),
     };
 }
 
@@ -2225,13 +2225,13 @@ fn applyCaptureBootstrapEvent(
             players[idx].alt_shot_cooldown = @max(0.0, asF32F64(alt_shot_cooldown));
         }
         if (payload.shield_ms) |shield_ms| {
-            players[idx].shield_timer = @max(0.0, @as(f64, @floatFromInt(shield_ms)) / 1000.0);
+            players[idx].shield_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(shield_ms)) / 1000.0));
         }
         if (payload.fire_bullets_ms) |fire_bullets_ms| {
-            players[idx].fire_bullets_timer = @max(0.0, @as(f64, @floatFromInt(fire_bullets_ms)) / 1000.0);
+            players[idx].fire_bullets_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0));
         }
         if (payload.speed_bonus_ms) |speed_bonus_ms| {
-            players[idx].speed_bonus_timer = @max(0.0, @as(f64, @floatFromInt(speed_bonus_ms)) / 1000.0);
+            players[idx].speed_bonus_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0));
         }
         if (payload.hot_tempered_timer) |hot_tempered_timer| {
             players[idx].hot_tempered_timer = @max(0.0, asF32F64(hot_tempered_timer));
@@ -2266,19 +2266,19 @@ fn applyCaptureBootstrapEvent(
     }
 
     if (bootstrap.weapon_power_up_ms) |timer_ms| {
-        state.bonuses.weapon_power_up = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+        state.bonuses.weapon_power_up = @max(0.0, @as(f32, @floatFromInt(timer_ms)) / 1000.0);
     }
     if (bootstrap.reflex_boost_ms) |timer_ms| {
-        state.bonuses.reflex_boost = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+        state.bonuses.reflex_boost = @max(0.0, @as(f32, @floatFromInt(timer_ms)) / 1000.0);
     }
     if (bootstrap.energizer_ms) |timer_ms| {
-        state.bonuses.energizer = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+        state.bonuses.energizer = @max(0.0, @as(f32, @floatFromInt(timer_ms)) / 1000.0);
     }
     if (bootstrap.double_experience_ms) |timer_ms| {
-        state.bonuses.double_experience = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+        state.bonuses.double_experience = @max(0.0, @as(f32, @floatFromInt(timer_ms)) / 1000.0);
     }
     if (bootstrap.freeze_ms) |timer_ms| {
-        state.bonuses.freeze = @max(0.0, @as(f64, @floatFromInt(timer_ms)) / 1000.0);
+        state.bonuses.freeze = @max(0.0, @as(f32, @floatFromInt(timer_ms)) / 1000.0);
     }
     state.time_scale_active = state.bonuses.reflex_boost > 0.0;
 
@@ -2421,7 +2421,7 @@ fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    survival_state.resetPlayers(players, world_size, null);
+    survival_state.resetPlayers(players, asF32F64(world_size), null);
     for (players) |*player| {
         const quest_weapon = survival_state.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
         survival_state.weaponAssignPlayer(player, quest_weapon);
@@ -2523,7 +2523,7 @@ fn awardExperienceOnceFromReward(
     if (reward_f32 <= 0.0) return 0;
 
     const before = player.experience;
-    const before_f32 = asF32F64(@floatFromInt(before));
+    const before_f32 = asF32F64(@as(f32, @floatFromInt(before)));
     const total_f32 = asF32F64(before_f32 + reward_f32);
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
@@ -2606,8 +2606,8 @@ fn updatePlayerFromReplayInput(
     const aim_scheme = resolveAimSchemeForUpdate(flags, state);
 
     var raw_move = survival_state.Vec2{
-        .x = input.move_x,
-        .y = input.move_y,
+        .x = asF32F64(input.move_x),
+        .y = asF32F64(input.move_y),
     };
     const raw_mag = raw_move.length();
     var move = directionFromHeadingNative(player.heading);
@@ -2805,8 +2805,8 @@ fn updatePlayerFromReplayInput(
     player.move_phase = asF32F64(player.move_phase + asF32F64(phase_sign * movement_dt * player.move_speed * 19.0));
 
     player.aim = .{
-        .x = input.aim_x,
-        .y = input.aim_y,
+        .x = asF32F64(input.aim_x),
+        .y = asF32F64(input.aim_y),
     };
     var aim_dir = survival_state.Vec2.sub(player.aim, player.pos);
     const aim_len_sq = aim_dir.lengthSq();
@@ -2832,8 +2832,8 @@ fn finalizePlayerPostUpdate(
     const clamped_pos = player.pos.clampRect(
         half_size,
         half_size,
-        world_size - half_size,
-        world_size - half_size,
+        asF32F64(world_size - half_size),
+        asF32F64(world_size - half_size),
     );
     player.pos = .{
         .x = asF32F64(clamped_pos.x),
@@ -2884,10 +2884,10 @@ fn playerMoveDeltaFromHeading(
 }
 
 fn directionFromHeadingNative(heading: f64) survival_state.Vec2 {
-    const radians = heading - native_half_pi;
+    const radians = asF32F64(heading - native_half_pi);
     return .{
-        .x = survival_math.cos(radians),
-        .y = survival_math.sin(radians),
+        .x = asF32F64(survival_math.cos(radians)),
+        .y = asF32F64(survival_math.sin(radians)),
     };
 }
 
@@ -3030,9 +3030,8 @@ fn perkActive(player: survival_state.PlayerState, perk_id: i32) bool {
     return player.perk_counts[@intCast(perk_id)] > 0;
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 test "survival scaffold tracks event and input counters" {
@@ -5364,7 +5363,7 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         creatures.entries[idx].hp = 100.0;
         creatures.entries[idx].pos = .{
             .x = @floatFromInt(idx),
-            .y = @as(f64, @floatFromInt(idx)) * 10.0,
+            .y = @as(f32, @floatFromInt(idx)) * 10.0,
         };
         creatures.entries[idx].flags = 0;
     }

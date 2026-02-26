@@ -176,7 +176,7 @@ pub const ParticlePool = struct {
                     speed = 82.0;
                 }
                 entry.angle = asF32F64(entry.angle - jitter);
-                entry.vel = directionFromAngle(entry.angle).mul(speed);
+                entry.vel = directionFromAngle(entry.angle).mul(asF32F64(speed));
             }
 
             const alpha = std.math.clamp(entry.intensity, 0.0, 1.0);
@@ -309,7 +309,6 @@ fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
     _ = state.rng.rand();
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }

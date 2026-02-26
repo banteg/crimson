@@ -335,9 +335,8 @@ fn consumeSpawnBurstRng(
     }
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 pub fn updatePerkEffects(
@@ -350,19 +349,19 @@ pub fn updatePerkEffects(
             if (player.shield_timer <= 0.0) {
                 player.shield_timer = 0.0;
             } else {
-                player.shield_timer -= dt;
+                player.shield_timer -= asF32F64(dt);
             }
 
             if (player.fire_bullets_timer <= 0.0) {
                 player.fire_bullets_timer = 0.0;
             } else {
-                player.fire_bullets_timer -= dt;
+                player.fire_bullets_timer -= asF32F64(dt);
             }
 
             if (player.speed_bonus_timer <= 0.0) {
                 player.speed_bonus_timer = 0.0;
             } else {
-                player.speed_bonus_timer -= dt;
+                player.speed_bonus_timer -= asF32F64(dt);
             }
         }
     }
@@ -377,15 +376,15 @@ pub fn updatePerkEffects(
             var repeat: usize = 0;
             while (repeat < players.len) : (repeat += 1) {
                 if (players[0].health <= 0.0 or players[0].health >= 100.0) continue;
-                players[0].health += dt;
+                players[0].health += asF32F64(dt);
                 if (players[0].health > 100.0) {
                     players[0].health = 100.0;
                 }
             }
         } else {
-            var heal_amount = dt;
+            var heal_amount = asF32F64(dt);
             if (perkActive(&players[0], PerkId.greater_regeneration)) {
-                heal_amount = dt * 2.0;
+                heal_amount = asF32F64(dt) * 2.0;
             }
             for (players) |*player| {
                 if (player.health <= 0.0 or player.health >= 100.0) continue;
@@ -412,7 +411,7 @@ pub fn updatePerkEffects(
         if (player.health <= 0.0) {
             player.health = 0.0;
         } else {
-            player.health -= dt * 3.3333333;
+            player.health -= asF32F64(dt) * 3.3333333;
         }
     }
 }
@@ -788,7 +787,7 @@ test "death clock apply and update mirror runtime hooks" {
     try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 99.944444445), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 99.944444445), players[0].health, 1e-5);
 }
 
 test "regeneration heals when rng allows" {
@@ -803,7 +802,7 @@ test "regeneration heals when rng allows" {
     players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
 }
 
 test "regeneration skips when rng blocks" {
@@ -834,7 +833,7 @@ test "greater regeneration doubles heal by default" {
     players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
 }
 
 test "greater regeneration remains no-op in preserve bugs mode" {
@@ -851,7 +850,7 @@ test "greater regeneration remains no-op in preserve bugs mode" {
     players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
 }
 
 test "regeneration multiplayer targets all alive players by default" {
@@ -871,8 +870,8 @@ test "regeneration multiplayer targets all alive players by default" {
     players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 80.2), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f64, 80.2), players[1].health, 1e-5);
 }
 
 test "regeneration preserve bugs repeats write to player zero only" {
@@ -893,7 +892,7 @@ test "regeneration preserve bugs repeats write to player zero only" {
     players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
     try std.testing.expectApproxEqAbs(@as(f64, 80.0), players[1].health, 1e-6);
 }
 

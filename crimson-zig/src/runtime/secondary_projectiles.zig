@@ -88,7 +88,7 @@ pub const SecondaryProjectilePool = struct {
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             base_speed = 190.0;
         }
-        entry.vel = directionFromHeading(entry.angle).mul(base_speed);
+        entry.vel = directionFromHeading(entry.angle).mul(asF32F64(base_speed));
         entry.speed = asF32F64(time_to_live);
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
@@ -494,7 +494,6 @@ fn consumeExplosionBurstRng(
     }
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }

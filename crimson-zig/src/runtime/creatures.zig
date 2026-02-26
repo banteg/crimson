@@ -175,7 +175,7 @@ pub const CreaturePool = struct {
                 // Parent.
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -195,12 +195,12 @@ pub const CreaturePool = struct {
                 var primary_child_idx: usize = parent_idx;
                 for (0..8) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(angle).mul(100.0);
+                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
-                            .x = call.pos.x,
-                            .y = call.pos.y,
+                            .x = asF32F64(call.pos.x),
+                            .y = asF32F64(call.pos.y),
                         },
                         call.heading,
                         .{
@@ -255,7 +255,7 @@ pub const CreaturePool = struct {
             0x00 => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
@@ -275,7 +275,7 @@ pub const CreaturePool = struct {
             0x07 => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -295,7 +295,7 @@ pub const CreaturePool = struct {
             0x08 => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -315,7 +315,7 @@ pub const CreaturePool = struct {
             0x09 => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -335,7 +335,7 @@ pub const CreaturePool = struct {
             0x0A => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -355,7 +355,7 @@ pub const CreaturePool = struct {
             0x0B => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -375,7 +375,7 @@ pub const CreaturePool = struct {
             0x0C => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -395,7 +395,7 @@ pub const CreaturePool = struct {
             0x0D => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -415,7 +415,7 @@ pub const CreaturePool = struct {
             0x0E => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -436,12 +436,12 @@ pub const CreaturePool = struct {
                 var primary_child_idx: usize = parent_idx;
                 for (0..24) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(angle).mul(100.0);
+                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
-                            .x = call.pos.x,
-                            .y = call.pos.y,
+                            .x = asF32F64(call.pos.x),
+                            .y = asF32F64(call.pos.y),
                         },
                         call.heading,
                         .{
@@ -468,7 +468,7 @@ pub const CreaturePool = struct {
             0x10 => {
                 const parent_idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -488,7 +488,7 @@ pub const CreaturePool = struct {
             0x0F => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -504,7 +504,7 @@ pub const CreaturePool = struct {
             0x11 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -521,10 +521,10 @@ pub const CreaturePool = struct {
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
                     const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
-                    const offset = survival_state.Vec2.fromAngle(angle).mul(256.0);
+                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
-                        .{ .x = call.pos.x, .y = call.pos.y },
+                        .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                         call.heading,
                         .{
                             .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -557,7 +557,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -578,7 +578,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -600,7 +600,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -618,7 +618,7 @@ pub const CreaturePool = struct {
             0x13 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -637,10 +637,10 @@ pub const CreaturePool = struct {
                 var chain_prev = parent_idx;
                 for (0..10) |idx| {
                     const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
-                    const offset = survival_state.Vec2.fromAngle(angle).mul(256.0);
+                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
-                        .{ .x = call.pos.x, .y = call.pos.y },
+                        .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                         call.heading,
                         .{
                             .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -678,7 +678,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -706,7 +706,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -734,7 +734,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -760,7 +760,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -778,7 +778,7 @@ pub const CreaturePool = struct {
             0x21 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -794,7 +794,7 @@ pub const CreaturePool = struct {
             0x22 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -810,7 +810,7 @@ pub const CreaturePool = struct {
             0x23 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -826,7 +826,7 @@ pub const CreaturePool = struct {
             0x24 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -842,7 +842,7 @@ pub const CreaturePool = struct {
             0x25 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -858,7 +858,7 @@ pub const CreaturePool = struct {
             0x26 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -874,7 +874,7 @@ pub const CreaturePool = struct {
             0x27 => {
                 _ = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -892,7 +892,7 @@ pub const CreaturePool = struct {
             0x28 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -908,7 +908,7 @@ pub const CreaturePool = struct {
             0x29 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -924,7 +924,7 @@ pub const CreaturePool = struct {
             0x2A => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -940,7 +940,7 @@ pub const CreaturePool = struct {
             0x14 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -961,7 +961,7 @@ pub const CreaturePool = struct {
                         const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
-                            .{ .x = call.pos.x, .y = call.pos.y },
+                            .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                             call.heading,
                             .{
                                 .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -991,7 +991,7 @@ pub const CreaturePool = struct {
             0x15 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1012,7 +1012,7 @@ pub const CreaturePool = struct {
                         const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
-                            .{ .x = call.pos.x, .y = call.pos.y },
+                            .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                             call.heading,
                             .{
                                 .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1042,7 +1042,7 @@ pub const CreaturePool = struct {
             0x16 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -1063,7 +1063,7 @@ pub const CreaturePool = struct {
                         const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
-                            .{ .x = call.pos.x, .y = call.pos.y },
+                            .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                             call.heading,
                             .{
                                 .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -1093,7 +1093,7 @@ pub const CreaturePool = struct {
             0x17 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1114,7 +1114,7 @@ pub const CreaturePool = struct {
                         const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
-                            .{ .x = call.pos.x, .y = call.pos.y },
+                            .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                             call.heading,
                             .{
                                 .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1144,7 +1144,7 @@ pub const CreaturePool = struct {
             0x18 => {
                 const parent_idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1164,7 +1164,7 @@ pub const CreaturePool = struct {
                         const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
-                            .{ .x = call.pos.x, .y = call.pos.y },
+                            .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                             call.heading,
                             .{
                                 .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1192,7 +1192,7 @@ pub const CreaturePool = struct {
             0x19 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1208,10 +1208,10 @@ pub const CreaturePool = struct {
                 const angle_step = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(angle).mul(110.0);
+                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(110.0);
                     const child_idx = self.spawnFromStats(
                         rng,
-                        .{ .x = call.pos.x, .y = call.pos.y },
+                        .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                         call.heading,
                         .{
                             .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1238,7 +1238,7 @@ pub const CreaturePool = struct {
             survival_spawn.SpawnId.alien_const_red_fast_2b => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1254,7 +1254,7 @@ pub const CreaturePool = struct {
             survival_spawn.SpawnId.alien_const_red_boss_2c => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1270,7 +1270,7 @@ pub const CreaturePool = struct {
             0x2D => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1300,7 +1300,7 @@ pub const CreaturePool = struct {
                 _ = tint_g;
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1318,7 +1318,7 @@ pub const CreaturePool = struct {
             0x36 => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
@@ -1341,7 +1341,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1363,7 +1363,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1386,7 +1386,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1405,7 +1405,7 @@ pub const CreaturePool = struct {
             survival_spawn.SpawnId.spider_sp2_splitter_01 => {
                 _ = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2),
@@ -1423,7 +1423,7 @@ pub const CreaturePool = struct {
             survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1443,7 +1443,7 @@ pub const CreaturePool = struct {
             0x3B => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1460,7 +1460,7 @@ pub const CreaturePool = struct {
             survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1492,7 +1492,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1510,7 +1510,7 @@ pub const CreaturePool = struct {
             0x2F => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -1526,7 +1526,7 @@ pub const CreaturePool = struct {
             0x30 => {
                 _ = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.lizard),
@@ -1550,7 +1550,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1576,7 +1576,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1603,7 +1603,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1630,7 +1630,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1655,7 +1655,7 @@ pub const CreaturePool = struct {
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1674,7 +1674,7 @@ pub const CreaturePool = struct {
             0x3E => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1691,7 +1691,7 @@ pub const CreaturePool = struct {
             0x3F => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1708,7 +1708,7 @@ pub const CreaturePool = struct {
             0x40 => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1),
@@ -1734,7 +1734,7 @@ pub const CreaturePool = struct {
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
-                    .pos = .{ .x = call.pos.x, .y = call.pos.y },
+                    .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     .heading = call.heading,
                     .set_heading = true,
                     .phase_seed = phase_seed,
@@ -1752,7 +1752,7 @@ pub const CreaturePool = struct {
             0x42 => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
@@ -1769,7 +1769,7 @@ pub const CreaturePool = struct {
             0x43 => {
                 const idx = self.spawnFromStats(
                     rng,
-                    .{ .x = call.pos.x, .y = call.pos.y },
+                    .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
                     call.heading,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
@@ -1866,11 +1866,11 @@ pub const CreaturePool = struct {
                     players,
                     bonus_pool,
                     idx,
-                    self_tick_damage,
+                    asF32F64(self_tick_damage),
                     .{},
                     creature.last_hit_owner_id,
-                    dt,
-                    world_size,
+                    asF32F64(dt),
+                    asF32F64(world_size),
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
@@ -2005,12 +2005,12 @@ pub const CreaturePool = struct {
                 if (reverted_x < 0.0) {
                     reverted_x = 0.0;
                 } else if (reverted_x > world_size) {
-                    reverted_x = world_size;
+                    reverted_x = asF32F64(world_size);
                 }
                 if (reverted_y < 0.0) {
                     reverted_y = 0.0;
                 } else if (reverted_y > world_size) {
-                    reverted_y = world_size;
+                    reverted_y = asF32F64(world_size);
                 }
                 creature.pos = .{
                     .x = reverted_x,
@@ -2060,8 +2060,8 @@ pub const CreaturePool = struct {
                         25.0,
                         .{},
                         -1 - player.index,
-                        dt,
-                        world_size,
+                        asF32F64(dt),
+                        asF32F64(world_size),
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
                         tickDead(creature, dt, &self.kill_count, state);
@@ -2167,11 +2167,11 @@ pub const CreaturePool = struct {
                 players,
                 bonus_pool,
                 hit_idx,
-                damage,
+                asF32F64(damage),
                 .{},
                 owner_id,
-                1.0 / 60.0,
-                world_size,
+                asF32F64(1.0 / 60.0),
+                asF32F64(world_size),
             );
             consumeProjectileHitPresentationPostRng(state, projectile_type_id);
             consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
@@ -2233,11 +2233,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            damage_amount,
+            asF32F64(damage_amount),
             impulse,
             owner_id,
-            dt,
-            world_size,
+            asF32F64(dt),
+            asF32F64(world_size),
         );
     }
 
@@ -2262,11 +2262,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            damage_amount,
+            asF32F64(damage_amount),
             impulse,
             owner_id,
-            dt,
-            world_size,
+            asF32F64(dt),
+            asF32F64(world_size),
         );
     }
 
@@ -2292,11 +2292,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature_index,
-            damage_amount,
+            asF32F64(damage_amount),
             impulse,
             owner_id,
-            dt,
-            world_size,
+            asF32F64(dt),
+            asF32F64(world_size),
         );
     }
 
@@ -2598,7 +2598,7 @@ pub const CreaturePool = struct {
 
         const idx = self.spawnInit(.{
             .origin_template_id = -1,
-            .pos = .{ .x = call.pos.x, .y = call.pos.y },
+            .pos = .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
             .heading = call.heading,
             .set_heading = true,
             .phase_seed = phase_seed,
@@ -2623,7 +2623,7 @@ pub const CreaturePool = struct {
         dir: survival_state.Vec2,
     ) ?usize {
         var best_idx: ?usize = null;
-        var best_along = std.math.inf(f64);
+        var best_along = std.math.inf(f32);
 
         for (self.entries, 0..) |creature, idx| {
             if (!creature.active) continue;
@@ -2653,11 +2653,11 @@ pub const CreaturePool = struct {
         players: []survival_state.PlayerState,
         bonus_pool: *survival_bonuses.BonusPool,
         creature_index: usize,
-        damage: f64,
+        damage: f32,
         impulse: survival_state.Vec2,
         owner_id: i32,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         if (creature_index >= self.entries.len) return 0;
         if (players.len == 0) return 0;
@@ -3535,13 +3535,12 @@ fn awardBaseExperienceFromReward(
     player.experience = @intFromFloat(total_f32);
 }
 
-fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
 const perk_id_bloody_mess_quick_learner: i32 = 1;

@@ -50,8 +50,8 @@ const BonusId = struct {
 };
 
 pub const Vec2 = struct {
-    x: f64 = 0.0,
-    y: f64 = 0.0,
+    x: f32 = 0.0,
+    y: f32 = 0.0,
 
     pub fn add(a: Vec2, b: Vec2) Vec2 {
         return .{
@@ -67,27 +67,27 @@ pub const Vec2 = struct {
         };
     }
 
-    pub fn mul(self: Vec2, scalar: f64) Vec2 {
+    pub fn mul(self: Vec2, scalar: f32) Vec2 {
         return .{
             .x = self.x * scalar,
             .y = self.y * scalar,
         };
     }
 
-    pub fn lengthSq(self: Vec2) f64 {
+    pub fn lengthSq(self: Vec2) f32 {
         return self.x * self.x + self.y * self.y;
     }
 
-    pub fn length(self: Vec2) f64 {
+    pub fn length(self: Vec2) f32 {
         return std.math.sqrt(self.lengthSq());
     }
 
     pub fn clampRect(
         self: Vec2,
-        min_x: f64,
-        min_y: f64,
-        max_x: f64,
-        max_y: f64,
+        min_x: f32,
+        min_y: f32,
+        max_x: f32,
+        max_y: f32,
     ) Vec2 {
         return .{
             .x = std.math.clamp(self.x, min_x, max_x),
@@ -95,18 +95,18 @@ pub const Vec2 = struct {
         };
     }
 
-    pub fn fromAngle(angle: f64) Vec2 {
+    pub fn fromAngle(angle: f32) Vec2 {
         return .{
             .x = survival_math.cos(angle),
             .y = survival_math.sin(angle),
         };
     }
 
-    pub fn toAngle(self: Vec2) f64 {
+    pub fn toAngle(self: Vec2) f32 {
         return survival_math.atan2(self.y, self.x);
     }
 
-    pub fn toHeading(self: Vec2) f64 {
+    pub fn toHeading(self: Vec2) f32 {
         return self.toAngle() + std.math.pi / 2.0;
     }
 };
@@ -114,41 +114,41 @@ pub const Vec2 = struct {
 pub const PlayerState = struct {
     index: i32,
     pos: Vec2,
-    health: f64 = 100.0,
-    size: f64 = 48.0,
+    health: f32 = 100.0,
+    size: f32 = 48.0,
 
-    speed_multiplier: f64 = 2.0,
-    move_speed: f64 = 0.0,
-    move_phase: f64 = 0.0,
-    heading: f64 = 0.0,
-    turn_speed: f64 = 1.0,
-    death_timer: f64 = 16.0,
-    low_health_timer: f64 = 100.0,
+    speed_multiplier: f32 = 2.0,
+    move_speed: f32 = 0.0,
+    move_phase: f32 = 0.0,
+    heading: f32 = 0.0,
+    turn_speed: f32 = 1.0,
+    death_timer: f32 = 16.0,
+    low_health_timer: f32 = 100.0,
 
     aim: Vec2 = .{},
-    aim_heading: f64 = 0.0,
+    aim_heading: f32 = 0.0,
     aim_dir: Vec2 = .{ .x = 1.0, .y = 0.0 },
 
     weapon_id: WeaponId = .pistol,
     clip_size: i32 = 0,
-    ammo: f64 = 0.0,
+    ammo: f32 = 0.0,
     reload_active: bool = false,
-    reload_timer: f64 = 0.0,
-    reload_timer_max: f64 = 0.0,
-    shot_cooldown: f64 = 0.0,
+    reload_timer: f32 = 0.0,
+    reload_timer_max: f32 = 0.0,
+    shot_cooldown: f32 = 0.0,
     shot_seq: i32 = 0,
     weapon_reset_latch: i32 = 0,
-    aux_timer: f64 = 0.0,
-    spread_heat: f64 = 0.01,
-    muzzle_flash_alpha: f64 = 0.0,
+    aux_timer: f32 = 0.0,
+    spread_heat: f32 = 0.01,
+    muzzle_flash_alpha: f32 = 0.0,
 
     alt_weapon_id: ?WeaponId = null,
     alt_clip_size: i32 = 0,
-    alt_ammo: f64 = 0.0,
+    alt_ammo: f32 = 0.0,
     alt_reload_active: bool = false,
-    alt_reload_timer: f64 = 0.0,
-    alt_reload_timer_max: f64 = 0.0,
-    alt_shot_cooldown: f64 = 0.0,
+    alt_reload_timer: f32 = 0.0,
+    alt_reload_timer_max: f32 = 0.0,
+    alt_shot_cooldown: f32 = 0.0,
     reload_stationary_latch: bool = true,
 
     experience: i32 = 0,
@@ -157,15 +157,15 @@ pub const PlayerState = struct {
     perk_counts: [perk_count_size]i32 = [_]i32{0} ** perk_count_size,
     evil_eyes_target_creature: i32 = -1,
     plaguebearer_active: bool = false,
-    hot_tempered_timer: f64 = 0.0,
-    man_bomb_timer: f64 = 0.0,
-    living_fortress_timer: f64 = 0.0,
-    fire_cough_timer: f64 = 0.0,
-    speed_bonus_timer: f64 = 0.0,
-    shield_timer: f64 = 0.0,
-    fire_bullets_timer: f64 = 0.0,
+    hot_tempered_timer: f32 = 0.0,
+    man_bomb_timer: f32 = 0.0,
+    living_fortress_timer: f32 = 0.0,
+    fire_cough_timer: f32 = 0.0,
+    speed_bonus_timer: f32 = 0.0,
+    shield_timer: f32 = 0.0,
+    fire_bullets_timer: f32 = 0.0,
     bonus_aim_hover_index: i32 = -1,
-    bonus_aim_hover_timer_ms: f64 = 0.0,
+    bonus_aim_hover_timer_ms: f32 = 0.0,
 };
 
 pub const PerkSelectionState = struct {
@@ -176,11 +176,11 @@ pub const PerkSelectionState = struct {
 };
 
 pub const BonusTimers = struct {
-    weapon_power_up: f64 = 0.0,
-    reflex_boost: f64 = 0.0,
-    energizer: f64 = 0.0,
-    double_experience: f64 = 0.0,
-    freeze: f64 = 0.0,
+    weapon_power_up: f32 = 0.0,
+    reflex_boost: f32 = 0.0,
+    energizer: f32 = 0.0,
+    double_experience: f32 = 0.0,
+    freeze: f32 = 0.0,
 };
 
 pub const GameplayState = struct {
@@ -196,11 +196,11 @@ pub const GameplayState = struct {
     preserve_bugs: bool = false,
     game_mode: i32 = 1,
     friendly_fire_enabled: bool = false,
-    lean_mean_exp_timer: f64 = 0.25,
-    jinxed_timer: f64 = 0.0,
-    perk_interval_man_bomb: f64 = 4.0,
-    perk_interval_fire_cough: f64 = 2.0,
-    perk_interval_hot_tempered: f64 = 2.0,
+    lean_mean_exp_timer: f32 = 0.25,
+    jinxed_timer: f32 = 0.0,
+    perk_interval_man_bomb: f32 = 4.0,
+    perk_interval_fire_cough: f32 = 2.0,
+    perk_interval_hot_tempered: f32 = 2.0,
     quest_stage_major: i32 = 0,
     quest_stage_minor: i32 = 0,
     status_quest_unlock_index: i32 = 0,
@@ -226,14 +226,14 @@ pub const GameplayState = struct {
     weapon_shots_fired: [max_players][weapon_count_size]i32 = [_][weapon_count_size]i32{[_]i32{0} ** weapon_count_size} ** max_players,
     bonus_spawn_guard: bool = false,
     camera_shake_pulses: i32 = 0,
-    camera_shake_timer: f64 = 0.0,
+    camera_shake_timer: f32 = 0.0,
     camera_shake_offset: Vec2 = .{},
     shock_chain_links_left: i32 = 0,
     shock_chain_projectile_id: i32 = -1,
     pending_creature_projectile_count: i32 = 0,
     pending_creature_projectile_type_ids: [64]i32 = [_]i32{0} ** 64,
     pending_creature_projectile_owner_ids: [64]i32 = [_]i32{0} ** 64,
-    pending_creature_projectile_angles: [64]f64 = [_]f64{0.0} ** 64,
+    pending_creature_projectile_angles: [64]f32 = [_]f32{0.0} ** 64,
     pending_creature_projectile_positions: [64]Vec2 = [_]Vec2{.{}} ** 64,
     pending_nuke_count: i32 = 0,
     pending_nuke_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
@@ -247,8 +247,8 @@ pub const GameplayState = struct {
     debug_last_picked_bonus_id: i32 = 0,
     debug_last_picked_bonus_amount: i32 = 0,
     player_alt_weapon_swap_cooldown_ms: i32 = 0,
-    player_spread_damping_scalar: f64 = 1.0,
-    player_spread_damping_gate: f64 = 0.0,
+    player_spread_damping_scalar: f32 = 1.0,
+    player_spread_damping_gate: f32 = 0.0,
 
     pub fn init(seed: u32) GameplayState {
         return .{
@@ -264,13 +264,13 @@ pub const PlayerShots = struct {
 
 pub const WeaponStats = struct {
     clip_size: i32,
-    reload_time: f64,
-    shot_cooldown: f64,
+    reload_time: f32,
+    shot_cooldown: f32,
     pellet_count: i32,
-    projectile_meta: f64,
-    damage_scale: f64,
+    projectile_meta: f32,
+    damage_scale: f32,
     flags: u32,
-    spread_heat_inc: f64,
+    spread_heat_inc: f32,
 };
 
 pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
@@ -347,11 +347,11 @@ pub fn weaponClipSize(weapon_id: WeaponId) i32 {
     return weapon_stats.get(weapon_id).clip_size;
 }
 
-pub fn weaponReloadTime(weapon_id: WeaponId) f64 {
+pub fn weaponReloadTime(weapon_id: WeaponId) f32 {
     return weapon_stats.get(weapon_id).reload_time;
 }
 
-pub fn weaponShotCooldown(weapon_id: WeaponId) f64 {
+pub fn weaponShotCooldown(weapon_id: WeaponId) f32 {
     return weapon_stats.get(weapon_id).shot_cooldown;
 }
 
@@ -359,12 +359,12 @@ pub fn weaponPelletCount(weapon_id: WeaponId) i32 {
     return weapon_stats.get(weapon_id).pellet_count;
 }
 
-pub fn weaponProjectileMeta(weapon_id: i32) f64 {
+pub fn weaponProjectileMeta(weapon_id: i32) f32 {
     const weapon_enum = weaponIdFromInt(weapon_id) orelse return 45.0;
     return weapon_stats.get(weapon_enum).projectile_meta;
 }
 
-pub fn weaponDamageScale(weapon_id: i32) f64 {
+pub fn weaponDamageScale(weapon_id: i32) f32 {
     const weapon_enum = weaponIdFromInt(weapon_id) orelse return 1.0;
     return weapon_stats.get(weapon_enum).damage_scale;
 }
@@ -374,7 +374,7 @@ pub fn weaponFlags(weapon_id: i32) u32 {
     return weapon_stats.get(weapon_enum).flags;
 }
 
-pub fn weaponSpreadHeatInc(weapon_id: i32) f64 {
+pub fn weaponSpreadHeatInc(weapon_id: i32) f32 {
     const weapon_enum = weaponIdFromInt(weapon_id) orelse return 0.0;
     return weapon_stats.get(weapon_enum).spread_heat_inc;
 }
@@ -383,7 +383,7 @@ pub fn weaponFlagsById(weapon_id: WeaponId) u32 {
     return weapon_stats.get(weapon_id).flags;
 }
 
-pub fn weaponSpreadHeatIncById(weapon_id: WeaponId) f64 {
+pub fn weaponSpreadHeatIncById(weapon_id: WeaponId) f32 {
     return weapon_stats.get(weapon_id).spread_heat_inc;
 }
 
@@ -547,7 +547,7 @@ fn playerPerkActive(player: *const PlayerState, perk_id: i32) bool {
 
 pub fn resetPlayers(
     players: []PlayerState,
-    world_size: f64,
+    world_size: f32,
     spawn_pos: ?Vec2,
 ) void {
     if (players.len == 0) return;
@@ -566,10 +566,10 @@ pub fn resetPlayers(
         return;
     }
 
-    const radius: f64 = 32.0;
-    const step = std.math.tau / @as(f64, @floatFromInt(players.len));
+    const radius: f32 = 32.0;
+    const step = std.math.tau / @as(f32, @floatFromInt(players.len));
     for (players, 0..) |*player, idx| {
-        const offset = Vec2.fromAngle(@as(f64, @floatFromInt(idx)) * step).mul(radius);
+        const offset = Vec2.fromAngle(@as(f32, @floatFromInt(idx)) * step).mul(radius);
         player.* = .{
             .index = @intCast(idx),
             .pos = Vec2.add(base, offset).clampRect(0.0, 0.0, world_size, world_size),
@@ -621,10 +621,10 @@ pub fn mostUsedWeaponIdForPlayer(
 }
 
 pub fn timeScaleReflexBoostBonus(
-    reflex_boost_timer: f64,
+    reflex_boost_timer: f32,
     time_scale_active: bool,
-    dt: f64,
-) f64 {
+    dt: f32,
+) f32 {
     const dt_f32 = asF32F64(dt);
     if (!(dt_f32 > 0.0)) return dt_f32;
     if (!time_scale_active) return dt_f32;
@@ -639,8 +639,8 @@ pub fn timeScaleReflexBoostBonus(
 
 pub fn survivalLevelThreshold(level_in: i32) i32 {
     const level = @max(1, level_in);
-    const level_f64: f64 = @floatFromInt(level);
-    const value = 1000.0 + std.math.pow(f64, level_f64, 1.8) * 1000.0;
+    const level_f64: f32 = @floatFromInt(level);
+    const value = 1000.0 + std.math.pow(f32, level_f64, 1.8) * 1000.0;
     return @intFromFloat(value);
 }
 
@@ -691,7 +691,7 @@ pub fn survivalRecordRecentDeath(
 pub fn survivalUpdateWeaponHandouts(
     state: *GameplayState,
     players: []PlayerState,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
 ) void {
     if (players.len != 1) return;
     const player = &players[0];
@@ -746,12 +746,11 @@ pub fn survivalEnforceRewardWeaponGuard(
     }
 }
 
-fn asF32F64(value: f64) f64 {
-    const rounded: f32 = @floatCast(value);
-    return @floatCast(rounded);
+fn asF32F64(value: anytype) f32 {
+    return @floatCast(value);
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
+fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
