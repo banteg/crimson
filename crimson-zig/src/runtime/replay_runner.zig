@@ -2984,14 +2984,8 @@ fn playerHeadingApproachTarget(
 }
 
 fn normalizeHeading(value: f64) f64 {
-    var angle = asF32F64(value);
-    while (angle < 0.0) {
-        angle = asF32F64(angle + native_tau);
-    }
-    while (angle > native_tau) {
-        angle = asF32F64(angle - native_tau);
-    }
-    return angle;
+    const wrapped = native_math.wrapAngle0Tau(asF32F64(value));
+    return native_math.f64f32(wrapped);
 }
 
 fn applyPerkWorldDtSteps(

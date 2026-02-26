@@ -21,9 +21,6 @@ const owner_id_player_0: i32 = -100;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
 const native_pi: f64 = native_math.f64f32(native_math.native_pi);
 const native_tau: f64 = native_math.f64f32(native_math.native_tau);
-const native_left_axis_heading_pos: f64 = native_math.f64f32(native_math.native_left_axis_heading_pos);
-const native_left_axis_heading_eps: f64 = native_math.f64f32(native_math.native_left_axis_heading_eps);
-const native_left_axis_dy_eps: f64 = native_math.f64f32(native_math.native_left_axis_dy_eps);
 
 pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
@@ -2885,14 +2882,8 @@ fn orbitTargetF32(
 }
 
 fn headingFromDeltaF32(dx: f64, dy: f64) f64 {
-    var heading = asF32F64(survival_math.atan2(dy, dx) + native_half_pi);
-    if (dx < 0.0 and
-        @abs(heading - native_left_axis_heading_pos) <= native_left_axis_heading_eps and
-        @abs(dy) <= native_left_axis_dy_eps)
-    {
-        heading = asF32F64(heading - native_tau);
-    }
-    return heading;
+    const heading = native_math.headingFromDeltaNative(asF32F64(dx), asF32F64(dy));
+    return native_math.f64f32(heading);
 }
 
 fn angleApproach(
@@ -2901,18 +2892,11 @@ fn angleApproach(
     rate: f64,
     dt: f64,
 ) f64 {
-    var angle = asF32F64(current);
+    const angle = native_math.f64f32(native_math.wrapAngle0Tau(asF32F64(current)));
     const target_f = asF32F64(target);
     const rate_f = asF32F64(rate);
     const dt_f = asF32F64(dt);
     const tau = native_tau;
-
-    while (angle < 0.0) {
-        angle = asF32F64(angle + tau);
-    }
-    while (tau < angle) {
-        angle = asF32F64(angle - tau);
-    }
 
     const direct = asF32F64(@abs(asF32F64(target_f - angle)));
     const hi = if (angle < target_f) target_f else angle;
