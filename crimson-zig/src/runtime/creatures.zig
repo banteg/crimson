@@ -3605,7 +3605,7 @@ pub fn applyPlayerContactDamage(
     }
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
+fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
@@ -4621,11 +4621,11 @@ test "template spawn supports quest mid-tier random templates" {
 
 test "template spawn supports quest constant alien templates" {
     const template_ids = [_]i32{ 0x0F, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2D };
-    const expected_health = [_]f64{ 20.0, 53.0, 25.0, 5.0, 20.0, 25.0, 50.0, 50.0, 50.0, 800.0, 50.0, 45.0 };
-    const expected_speed = [_]f64{ 2.9, 1.7, 1.7, 1.7, 2.0, 2.5, 2.2, 2.1, 1.7, 2.5, 3.1, 3.1 };
-    const expected_reward = [_]f64{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
-    const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
-    const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
+    const expected_health = [_]f32{ 20.0, 53.0, 25.0, 5.0, 20.0, 25.0, 50.0, 50.0, 50.0, 800.0, 50.0, 45.0 };
+    const expected_speed = [_]f32{ 2.9, 1.7, 1.7, 1.7, 2.0, 2.5, 2.2, 2.1, 1.7, 2.5, 3.1, 3.1 };
+    const expected_reward = [_]f32{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
+    const expected_size = [_]f32{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
+    const expected_contact = [_]f32{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
     const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, spawn_mod.CreatureFlags.bonus_on_death, 0, 0, 0, 0 };
     const expected_ai_mode = [_]spawn_mod.CreatureAiMode{
         spawn_mod.CreatureAiMode.orbit_player,
@@ -4667,11 +4667,11 @@ test "template spawn supports quest constant alien templates" {
 
 test "template spawn supports quest constant lizard templates" {
     const template_ids = [_]i32{ 0x2F, 0x30 };
-    const expected_health = [_]f64{ 20.0, 1000.0 };
-    const expected_speed = [_]f64{ 2.5, 2.0 };
-    const expected_reward = [_]f64{ 150.0, 400.0 };
-    const expected_size = [_]f64{ 45.0, 65.0 };
-    const expected_contact = [_]f64{ 4.0, 10.0 };
+    const expected_health = [_]f32{ 20.0, 1000.0 };
+    const expected_speed = [_]f32{ 2.5, 2.0 };
+    const expected_reward = [_]f32{ 150.0, 400.0 };
+    const expected_size = [_]f32{ 45.0, 65.0 };
+    const expected_contact = [_]f32{ 4.0, 10.0 };
 
     for (template_ids, 0..) |template_id, idx| {
         var pool = CreaturePool{};
@@ -4856,14 +4856,14 @@ test "template spawn supports quest spawner templates and slot ticks" {
         template_id: i32,
         expected_type_id: i32,
         expected_flags: u32,
-        expected_health: f64,
-        expected_move_speed: f64,
-        expected_reward: f64,
-        expected_size: f64,
-        expected_contact: f64,
-        expected_timer: f64,
+        expected_health: f32,
+        expected_move_speed: f32,
+        expected_reward: f32,
+        expected_size: f32,
+        expected_contact: f32,
+        expected_timer: f32,
         expected_limit: i32,
-        expected_interval: f64,
+        expected_interval: f32,
         expected_child_template: i32,
     }{
         .{ .template_id = 0x00, .expected_type_id = @intFromEnum(spawn_mod.CreatureTypeId.zombie), .expected_flags = spawn_mod.CreatureFlags.anim_ping_pong | spawn_mod.CreatureFlags.anim_long_strip, .expected_health = 8500.0, .expected_move_speed = 1.3, .expected_reward = 6600.0, .expected_size = 64.0, .expected_contact = 50.0, .expected_timer = 1.0, .expected_limit = 812, .expected_interval = 0.7, .expected_child_template = 0x41 },
@@ -5079,7 +5079,7 @@ test "creature update applies contact damage and movement" {
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
-    try expectFloatClose(@as(f64, 1.0), pool.entries[0].attack_cooldown);
+    try expectFloatClose(@as(f32, 1.0), pool.entries[0].attack_cooldown);
 }
 
 test "veins of poison sets self-damage flag on contact hit" {
