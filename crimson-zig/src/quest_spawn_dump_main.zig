@@ -101,15 +101,19 @@ fn buildByImpl(
     seed: u32,
     world_size: f64,
     out_entries: []survival_spawn.QuestSpawnEntry,
-) !quest_spawn_builder.QuestSpawnBuildResult {
+) !quest_spawn_builder_option6.QuestSpawnBuildResult {
     if (std.mem.eql(u8, impl, "legacy")) {
-        return quest_spawn_builder.buildQuestSpawnTable(
+        const legacy_result = try quest_spawn_builder.buildQuestSpawnTable(
             level_key,
             player_count,
             seed,
             world_size,
             out_entries,
         );
+        return .{
+            .entries = legacy_result.entries,
+            .start_weapon_id = legacy_result.start_weapon_id,
+        };
     }
     if (std.mem.eql(u8, impl, "option4")) {
         return quest_spawn_builder_option4.buildQuestSpawnTable(
