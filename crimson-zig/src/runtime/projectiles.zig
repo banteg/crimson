@@ -4,13 +4,13 @@ const native_math = @import("native_math.zig");
 
 const survival_bonuses = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
-const survival_perks = @import("perks.zig");
+const perks = @import("perks.zig");
 const survival_spawn = @import("spawn.zig");
 const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
-const PerkId = survival_perks.PerkId;
+const PerkId = perks.PerkId;
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
@@ -131,14 +131,10 @@ pub const ProjectilePool = struct {
         var ion_gun_master_active = false;
         var ion_scale: f64 = 1.0;
         for (players) |player| {
-            if (PerkId.barrel_greaser >= 0 and PerkId.barrel_greaser < player.perk_counts.len and
-                player.perk_counts[@intCast(PerkId.barrel_greaser)] > 0)
-            {
+            if (player.perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] > 0) {
                 barrel_greaser_active = true;
             }
-            if (PerkId.ion_gun_master >= 0 and PerkId.ion_gun_master < player.perk_counts.len and
-                player.perk_counts[@intCast(PerkId.ion_gun_master)] > 0)
-            {
+            if (player.perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] > 0) {
                 ion_gun_master_active = true;
             }
             if (barrel_greaser_active and ion_gun_master_active) {
@@ -683,9 +679,8 @@ fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
     return null;
 }
 
-fn perkActive(player: *const survival_state.PlayerState, perk_id: i32) bool {
-    if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
-    return player.perk_counts[@intCast(perk_id)] > 0;
+fn perkActive(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
+    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {
@@ -850,7 +845,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -893,7 +888,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -936,8 +931,8 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
-    players[0].perk_counts[@intCast(PerkId.toxic_avenger)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.toxic_avenger))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -1001,7 +996,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
     var greased_players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    greased_players[0].perk_counts[@intCast(PerkId.barrel_greaser)] = 1;
+    greased_players[0].perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] = 1;
     var greased_pool = ProjectilePool{};
     _ = greased_pool.spawn(
         .{},
@@ -1070,7 +1065,7 @@ test "ion gun master increases ion rifle linger radius" {
     var players_with = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players_with[0].perk_counts[@intCast(PerkId.ion_gun_master)] = 1;
+    players_with[0].perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] = 1;
     var creatures_with = survival_creatures.CreaturePool{};
     var bonuses_with = survival_bonuses.BonusPool{};
     _ = creatures_with.spawnInit(.{

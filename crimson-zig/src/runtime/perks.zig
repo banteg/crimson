@@ -11,66 +11,7 @@ pub const PerkApplyError = error{
     UnsupportedPerkApplyHandler,
 };
 
-pub const PerkId = struct {
-    pub const antiperk: i32 = 0;
-    pub const bloody_mess_quick_learner: i32 = 1;
-    pub const sharpshooter: i32 = 2;
-    pub const fastloader: i32 = 3;
-    pub const lean_mean_exp_machine: i32 = 4;
-    pub const long_distance_runner: i32 = 5;
-    pub const pyrokinetic: i32 = 6;
-    pub const instant_winner: i32 = 7;
-    pub const grim_deal: i32 = 8;
-    pub const alternate_weapon: i32 = 9;
-    pub const plaguebearer: i32 = 10;
-    pub const evil_eyes: i32 = 11;
-    pub const ammo_maniac: i32 = 12;
-    pub const radioactive: i32 = 13;
-    pub const fastshot: i32 = 14;
-    pub const fatal_lottery: i32 = 15;
-    pub const random_weapon: i32 = 16;
-    pub const mr_melee: i32 = 17;
-    pub const anxious_loader: i32 = 18;
-    pub const final_revenge: i32 = 19;
-    pub const telekinetic: i32 = 20;
-    pub const perk_expert: i32 = 21;
-    pub const unstoppable: i32 = 22;
-    pub const regression_bullets: i32 = 23;
-    pub const infernal_contract: i32 = 24;
-    pub const poison_bullets: i32 = 25;
-    pub const dodger: i32 = 26;
-    pub const bonus_magnet: i32 = 27;
-    pub const uranium_filled_bullets: i32 = 28;
-    pub const doctor: i32 = 29;
-    pub const monster_vision: i32 = 30;
-    pub const hot_tempered: i32 = 31;
-    pub const bonus_economist: i32 = 32;
-    pub const thick_skinned: i32 = 33;
-    pub const barrel_greaser: i32 = 34;
-    pub const ammunition_within: i32 = 35;
-    pub const veins_of_poison: i32 = 36;
-    pub const toxic_avenger: i32 = 37;
-    pub const regeneration: i32 = 38;
-    pub const pyromaniac: i32 = 39;
-    pub const ninja: i32 = 40;
-    pub const highlander: i32 = 41;
-    pub const jinxed: i32 = 42;
-    pub const perk_master: i32 = 43;
-    pub const reflex_boosted: i32 = 44;
-    pub const greater_regeneration: i32 = 45;
-    pub const breathing_room: i32 = 46;
-    pub const death_clock: i32 = 47;
-    pub const my_favourite_weapon: i32 = 48;
-    pub const bandage: i32 = 49;
-    pub const angry_reloader: i32 = 50;
-    pub const ion_gun_master: i32 = 51;
-    pub const stationary_reloader: i32 = 52;
-    pub const man_bomb: i32 = 53;
-    pub const fire_caugh: i32 = 54;
-    pub const living_fortress: i32 = 55;
-    pub const tough_reloader: i32 = 56;
-    pub const lifeline_50_50: i32 = 57;
-};
+pub const PerkId = game_ids.PerkId;
 
 const PerkFlags = struct {
     pub const quest_mode_allowed: u32 = 0x1;
@@ -78,18 +19,30 @@ const PerkFlags = struct {
     pub const stackable: u32 = 0x4;
 };
 
-pub const perk_id_max: i32 = 57;
-const perk_id_max_usize: usize = 57;
+pub const perk_id_max: i32 = @intFromEnum(PerkId.lifeline_50_50);
+const perk_id_max_usize: usize = @intCast(@intFromEnum(PerkId.lifeline_50_50));
 const perk_base_available_max_id: i32 = 27;
 const game_mode_quests: i32 = 3;
 const game_mode_tutorial: i32 = 8;
+
+inline fn perkIdInt(perk_id: PerkId) i32 {
+    return @intFromEnum(perk_id);
+}
+
+inline fn perkIdIndex(perk_id: PerkId) usize {
+    return @intCast(@intFromEnum(perk_id));
+}
+
+fn perkIdFromInt(value: i32) ?PerkId {
+    return std.meta.intToEnum(PerkId, value) catch null;
+}
 
 const perk_flags_by_id = [_]u32{
     3, 3, 3, 3, 3, 3, 3, 7, 0, 1, 3, 3, 3, 3, 3, 4, 5, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 };
 
-const quest_unlock_perk_by_index = [_]?i32{
+const quest_unlock_perk_by_index = [_]?PerkId{
     null,                   null,               PerkId.uranium_filled_bullets, null, PerkId.doctor,         null,                  PerkId.monster_vision,       null,                  PerkId.hot_tempered,        null,
     PerkId.bonus_economist, null,               PerkId.thick_skinned,          null, PerkId.barrel_greaser, null,                  PerkId.ammunition_within,    null,                  PerkId.veins_of_poison,     null,
     PerkId.toxic_avenger,   null,               PerkId.regeneration,           null, PerkId.pyromaniac,     null,                  PerkId.ninja,                null,                  PerkId.highlander,          null,
@@ -97,7 +50,7 @@ const quest_unlock_perk_by_index = [_]?i32{
     null,                   PerkId.death_clock, PerkId.my_favourite_weapon,    null, PerkId.bandage,        PerkId.angry_reloader, null,                        PerkId.ion_gun_master, PerkId.stationary_reloader, null,
 };
 
-const perk_always_available = [_]i32{
+const perk_always_available = [_]PerkId{
     PerkId.man_bomb,
     PerkId.living_fortress,
     PerkId.fire_caugh,
@@ -120,9 +73,7 @@ pub fn perksRebuildAvailable(
     }
 
     for (perk_always_available) |always_id| {
-        if (always_id >= 0 and always_id < state.perk_available.len) {
-            state.perk_available[@intCast(always_id)] = true;
-        }
+        state.perk_available[perkIdIndex(always_id)] = true;
     }
 
     if (quest_unlock_index > 0) {
@@ -132,14 +83,12 @@ pub fn perksRebuildAvailable(
         );
         for (quest_unlock_perk_by_index[0..limit]) |maybe_perk_id| {
             if (maybe_perk_id) |perk_unlock_id| {
-                if (perk_unlock_id > 0 and perk_unlock_id < state.perk_available.len) {
-                    state.perk_available[@intCast(perk_unlock_id)] = true;
-                }
+                state.perk_available[perkIdIndex(perk_unlock_id)] = true;
             }
         }
     }
 
-    state.perk_available[@intCast(PerkId.antiperk)] = false;
+    state.perk_available[perkIdIndex(PerkId.antiperk)] = false;
     state.perk_available_unlock_index = quest_unlock_index;
 }
 
@@ -187,7 +136,7 @@ pub fn perkSelectionPick(
     game_mode: i32,
     player_count: i32,
     quest_unlock_index: i32,
-) PerkApplyError!?i32 {
+) PerkApplyError!?PerkId {
     if (players.len == 0) return null;
     if (state.perk_selection.pending_count <= 0) return null;
 
@@ -201,7 +150,8 @@ pub fn perkSelectionPick(
     if (choices.len == 0) return null;
     if (choice_index < 0 or choice_index >= choices.len) return null;
 
-    const perk_id = choices[@intCast(choice_index)];
+    const perk_id_raw = choices[@intCast(choice_index)];
+    const perk_id = perkIdFromInt(perk_id_raw) orelse return null;
     try applyPerk(state, players, perk_id);
 
     state.perk_selection.pending_count = @max(0, state.perk_selection.pending_count - 1);
@@ -220,12 +170,10 @@ pub fn perkSelectionPick(
 pub fn applyPerk(
     state: *survival_state.GameplayState,
     players: []survival_state.PlayerState,
-    perk_id: i32,
+    perk_id: PerkId,
 ) PerkApplyError!void {
     if (players.len == 0) return;
-    if (perk_id < 0 or perk_id >= survival_state.perk_count_size) return;
-
-    players[0].perk_counts[@intCast(perk_id)] += 1;
+    players[0].perk_counts[perkIdIndex(perk_id)] += 1;
     if (players.len > 1) {
         const shared = players[0].perk_counts;
         for (players[1..]) |*player| {
@@ -426,29 +374,30 @@ fn perkGenerateChoices(
     perksRebuildAvailable(state, quest_unlock_index);
 
     var offerable = [_]bool{false} ** (perk_id_max_usize + 1);
-    var perk_id: i32 = 1;
-    while (perk_id <= perk_id_max) : (perk_id += 1) {
-        if (perk_id >= state.perk_available.len) continue;
-        if (!state.perk_available[@intCast(perk_id)]) continue;
+    var perk_id_raw: i32 = 1;
+    while (perk_id_raw <= perk_id_max) : (perk_id_raw += 1) {
+        const perk_id = perkIdFromInt(perk_id_raw) orelse continue;
+        if (perk_id_raw >= state.perk_available.len) continue;
+        if (!state.perk_available[@intCast(perk_id_raw)]) continue;
         if (perkCanOffer(state, player, perk_id, game_mode, player_count)) {
-            offerable[@intCast(perk_id)] = true;
+            offerable[@intCast(perk_id_raw)] = true;
         }
     }
 
     const death_clock_active = perkActive(player, PerkId.death_clock);
     const pyromaniac_allowed = pyromaniacAllowed(state, players, player, player_count);
 
-    var choices = [_]i32{PerkId.antiperk} ** 7;
+    var choices = [_]i32{perkIdInt(PerkId.antiperk)} ** 7;
     var choice_index: usize = 0;
 
     if (state.quest_stage_major == 3 and state.quest_stage_minor == 4 and !perkActive(player, PerkId.monster_vision)) {
-        choices[0] = PerkId.monster_vision;
+        choices[0] = perkIdInt(PerkId.monster_vision);
         choice_index = 1;
     }
 
     while (choice_index < choices.len) : (choice_index += 1) {
         var attempts: i32 = 0;
-        var selected: i32 = PerkId.instant_winner;
+        var selected: PerkId = .instant_winner;
         while (true) {
             attempts += 1;
             const candidate = selectRandomOffer(state, &offerable);
@@ -469,18 +418,18 @@ fn perkGenerateChoices(
                 break;
             }
         }
-        choices[choice_index] = selected;
+        choices[choice_index] = perkIdInt(selected);
     }
 
     if (game_mode == game_mode_tutorial) {
         choices = .{
-            PerkId.sharpshooter,
-            PerkId.long_distance_runner,
-            PerkId.evil_eyes,
-            PerkId.radioactive,
-            PerkId.fastshot,
-            PerkId.fastshot,
-            PerkId.fastshot,
+            perkIdInt(PerkId.sharpshooter),
+            perkIdInt(PerkId.long_distance_runner),
+            perkIdInt(PerkId.evil_eyes),
+            perkIdInt(PerkId.radioactive),
+            perkIdInt(PerkId.fastshot),
+            perkIdInt(PerkId.fastshot),
+            perkIdInt(PerkId.fastshot),
         };
     }
 
@@ -503,27 +452,27 @@ fn pyromaniacAllowed(
     return false;
 }
 
-fn selectRandomOffer(state: *survival_state.GameplayState, offerable: []const bool) i32 {
+fn selectRandomOffer(state: *survival_state.GameplayState, offerable: []const bool) PerkId {
     var draws: i32 = 0;
     while (draws < 1000) : (draws += 1) {
-        const candidate: i32 = @intCast(state.rng.rand() % @as(u32, @intCast(perk_id_max)) + 1);
-        if (candidate >= 0 and candidate < offerable.len and offerable[@intCast(candidate)]) {
+        const candidate_raw: i32 = @intCast(state.rng.rand() % @as(u32, @intCast(perk_id_max)) + 1);
+        if (candidate_raw >= 0 and candidate_raw < offerable.len and offerable[@intCast(candidate_raw)]) {
+            const candidate = perkIdFromInt(candidate_raw) orelse continue;
             return candidate;
         }
     }
-    return PerkId.instant_winner;
+    return .instant_winner;
 }
 
 fn perkCanOffer(
     state: *const survival_state.GameplayState,
     player: *const survival_state.PlayerState,
-    perk_id: i32,
+    perk_id: PerkId,
     game_mode: i32,
     player_count: i32,
 ) bool {
     _ = state;
-    if (perk_id == PerkId.antiperk) return false;
-    if (perk_id < 0 or perk_id > perk_id_max) return false;
+    if (perk_id == .antiperk) return false;
 
     const flags = perkFlags(perk_id);
     if (game_mode == game_mode_quests and (flags & PerkFlags.quest_mode_allowed) == 0) {
@@ -536,7 +485,7 @@ fn perkCanOffer(
     return true;
 }
 
-fn prereqSatisfied(player: *const survival_state.PlayerState, perk_id: i32) bool {
+fn prereqSatisfied(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
     return switch (perk_id) {
         PerkId.toxic_avenger => perkCountGet(player, PerkId.veins_of_poison) > 0,
         PerkId.ninja => perkCountGet(player, PerkId.dodger) > 0,
@@ -546,41 +495,40 @@ fn prereqSatisfied(player: *const survival_state.PlayerState, perk_id: i32) bool
     };
 }
 
-fn perkFlags(perk_id: i32) u32 {
-    if (perk_id < 0 or perk_id >= perk_flags_by_id.len) return 0;
-    return perk_flags_by_id[@intCast(perk_id)];
+fn perkFlags(perk_id: PerkId) u32 {
+    return perk_flags_by_id[perkIdIndex(perk_id)];
 }
 
-fn perkCountGet(player: *const survival_state.PlayerState, perk_id: i32) i32 {
-    if (perk_id < 0 or perk_id >= player.perk_counts.len) return 0;
-    return player.perk_counts[@intCast(perk_id)];
+fn perkCountGet(player: *const survival_state.PlayerState, perk_id: PerkId) i32 {
+    return player.perk_counts[perkIdIndex(perk_id)];
 }
 
-fn adjustPerkCount(player: *survival_state.PlayerState, perk_id: i32, amount: i32) void {
-    if (perk_id < 0 or perk_id >= player.perk_counts.len) return;
-    const current = player.perk_counts[@intCast(perk_id)];
-    player.perk_counts[@intCast(perk_id)] = @max(0, current + amount);
+fn adjustPerkCount(player: *survival_state.PlayerState, perk_id: PerkId, amount: i32) void {
+    const perk_index = perkIdIndex(perk_id);
+    const current = player.perk_counts[perk_index];
+    player.perk_counts[perk_index] = @max(0, current + amount);
 }
 
-fn perkActive(player: *const survival_state.PlayerState, perk_id: i32) bool {
+fn perkActive(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
     return perkCountGet(player, perk_id) > 0;
 }
 
-fn containsPerkId(values: []const i32, needle: i32) bool {
+fn containsPerkId(values: []const i32, needle: PerkId) bool {
+    const needle_raw = perkIdInt(needle);
     for (values) |value| {
-        if (value == needle) return true;
+        if (value == needle_raw) return true;
     }
     return false;
 }
 
-fn isRarityGate(perk_id: i32) bool {
+fn isRarityGate(perk_id: PerkId) bool {
     return perk_id == PerkId.jinxed or
         perk_id == PerkId.ammunition_within or
         perk_id == PerkId.anxious_loader or
         perk_id == PerkId.monster_vision;
 }
 
-fn isDeathClockBlocked(perk_id: i32) bool {
+fn isDeathClockBlocked(perk_id: PerkId) bool {
     return perk_id == PerkId.jinxed or
         perk_id == PerkId.breathing_room or
         perk_id == PerkId.grim_deal or
@@ -597,12 +545,11 @@ fn isDeathClockBlocked(perk_id: i32) bool {
 fn setOnlyPerksAvailable(
     state: *survival_state.GameplayState,
     unlock_index: i32,
-    perk_ids: []const i32,
+    perk_ids: []const PerkId,
 ) void {
     state.perk_available = [_]bool{false} ** survival_state.perk_count_size;
     for (perk_ids) |perk_id| {
-        if (perk_id < 0 or perk_id >= state.perk_available.len) continue;
-        state.perk_available[@intCast(perk_id)] = true;
+        state.perk_available[perkIdIndex(perk_id)] = true;
     }
     state.perk_available_unlock_index = unlock_index;
 }
@@ -684,7 +631,7 @@ test "perk generate choices forces monster vision first on quest 3-4" {
         49,
     );
     try std.testing.expect(choices.len >= 1);
-    try std.testing.expectEqual(PerkId.monster_vision, choices[0]);
+    try std.testing.expectEqual(perkIdInt(PerkId.monster_vision), choices[0]);
 }
 
 test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
@@ -732,7 +679,7 @@ test "perk generate choices rejects pyromaniac when no player has flamethrower" 
         0,
     );
     for (choices) |perk_id| {
-        try std.testing.expect(perk_id != PerkId.pyromaniac);
+        try std.testing.expect(perk_id != perkIdInt(PerkId.pyromaniac));
     }
 }
 
@@ -744,7 +691,7 @@ test "perk generate choices blocks jinxed when death clock is active" {
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(PerkId.death_clock)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.death_clock))] = 1;
     setOnlyPerksAvailable(&state, 0, &.{
         PerkId.jinxed,
         PerkId.sharpshooter,
@@ -764,7 +711,7 @@ test "perk generate choices blocks jinxed when death clock is active" {
         0,
     );
     for (choices) |perk_id| {
-        try std.testing.expect(perk_id != PerkId.jinxed);
+        try std.testing.expect(perk_id != perkIdInt(PerkId.jinxed));
     }
 }
 
@@ -777,12 +724,12 @@ test "death clock apply and update mirror runtime hooks" {
             .health = 25.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 2;
-    players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 2;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
 
     try applyPerk(&state, players[0..], PerkId.death_clock);
-    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(PerkId.regeneration)]);
-    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(PerkId.greater_regeneration)]);
+    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))]);
+    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))]);
     try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
@@ -798,7 +745,7 @@ test "regeneration heals when rng allows" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -813,7 +760,7 @@ test "regeneration skips when rng blocks" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.0), players[0].health, 1e-6);
@@ -828,8 +775,8 @@ test "greater regeneration doubles heal by default" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
-    players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
@@ -845,8 +792,8 @@ test "greater regeneration remains no-op in preserve bugs mode" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
-    players[0].perk_counts[@intCast(PerkId.greater_regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -866,7 +813,7 @@ test "regeneration multiplayer targets all alive players by default" {
             .health = 80.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -888,7 +835,7 @@ test "regeneration preserve bugs repeats write to player zero only" {
             .health = 80.0,
         },
     };
-    players[0].perk_counts[@intCast(PerkId.regeneration)] = 1;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
@@ -1089,7 +1036,7 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
     try std.testing.expect(!players[1].reload_active);
     try std.testing.expectEqual(@as(f64, 0.0), players[0].reload_timer);
     try std.testing.expectEqual(@as(f64, 0.0), players[1].reload_timer);
-    try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts[@intCast(PerkId.ammo_maniac)]);
+    try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts[@intCast(@intFromEnum(PerkId.ammo_maniac))]);
 }
 
 test "my favourite weapon increases clip size and keeps current ammo on apply" {
@@ -1158,7 +1105,7 @@ test "lean mean exp machine ticks xp and ignores double experience multiplier" {
             .pos = .{ .x = 10.0, .y = 20.0 },
         },
     };
-    players[0].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectEqual(@as(i32, 0), players[0].experience);
@@ -1181,8 +1128,8 @@ test "lean mean exp machine tick awards player zero only in multiplayer" {
             .pos = .{ .x = 30.0, .y = 40.0 },
         },
     };
-    players[0].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
-    players[1].perk_counts[@intCast(PerkId.lean_mean_exp_machine)] = 2;
+    players[0].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
+    players[1].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
 
     updatePerkEffects(&state, players[0..], 0.1);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);

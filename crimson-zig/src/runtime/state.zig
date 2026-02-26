@@ -12,6 +12,7 @@ pub const weapon_count_size: usize = 54;
 pub const perk_count_size: usize = 0x80;
 
 pub const WeaponId = game_ids.WeaponId;
+pub const PerkId = game_ids.PerkId;
 
 const ProjectileTypeId = struct {
     pub const pistol: i32 = @intFromEnum(game_ids.ProjectileTypeId.pistol);
@@ -461,10 +462,10 @@ pub fn weaponAssignPlayer(
     weapon_id: WeaponId,
 ) void {
     var clip_size = @max(0, weaponClipSize(weapon_id));
-    if (playerPerkActive(player, 12)) {
+    if (playerPerkActive(player, .ammo_maniac)) {
         clip_size += @max(1, @divTrunc(clip_size, 4));
     }
-    if (playerPerkActive(player, 48)) {
+    if (playerPerkActive(player, .my_favourite_weapon)) {
         clip_size += 2;
     }
 
@@ -527,13 +528,13 @@ pub fn playerSwapAltWeapon(player: *PlayerState) bool {
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
     var reload_time = weaponReloadTime(player.weapon_id);
-    if (player.reload_active and (playerPerkActive(player, 35) or playerPerkActive(player, 23))) {
+    if (player.reload_active and (playerPerkActive(player, .ammunition_within) or playerPerkActive(player, .regression_bullets))) {
         return;
     }
     if (!player.reload_active) {
         player.reload_active = true;
     }
-    if (playerPerkActive(player, 3)) {
+    if (playerPerkActive(player, .fastloader)) {
         reload_time = asF32F64(reload_time * 0.7);
     }
     if (state.bonuses.weapon_power_up > 0.0) {
@@ -543,9 +544,8 @@ pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
     player.reload_timer_max = player.reload_timer;
 }
 
-fn playerPerkActive(player: *const PlayerState, perk_id: i32) bool {
-    if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
-    return player.perk_counts[@intCast(perk_id)] > 0;
+fn playerPerkActive(player: *const PlayerState, perk_id: PerkId) bool {
+    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
 pub fn resetPlayers(

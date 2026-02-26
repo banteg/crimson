@@ -2,10 +2,11 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const survival_perks = @import("perks.zig");
+const perks = @import("perks.zig");
 const survival_state = @import("state.zig");
 
 const asF32F64 = native_math.roundF32;
+const PerkId = perks.PerkId;
 
 pub const BonusRuntimeError = error{
     UnsupportedBonusApplyPath,
@@ -103,7 +104,7 @@ pub const BonusPool = struct {
                 return null;
             }
 
-            if (entry.amount == survival_state.weaponIdToInt(.pistol) or anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) {
+            if (entry.amount == survival_state.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
                 clearEntry(self, entry);
                 return null;
             }
@@ -119,7 +120,7 @@ pub const BonusPool = struct {
                 allow_without_magnet = (state.rng.rand() % 5) == 1;
             }
             if (!allow_without_magnet) {
-                if (!anyPerkActive(players, survival_perks.PerkId.bonus_magnet)) {
+                if (!anyPerkActive(players, PerkId.bonus_magnet)) {
                     return null;
                 }
                 if ((state.rng.rand() % 10) != 2) return null;
@@ -297,7 +298,7 @@ fn bonusTelekineticUpdate(
         player.bonus_aim_hover_timer_ms = asF32F64(player.bonus_aim_hover_timer_ms + dt_ms);
 
         if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
-        if (!perkActive(player.*, survival_perks.PerkId.telekinetic)) continue;
+        if (!perkActive(player.*, PerkId.telekinetic)) continue;
 
         var entry = &pool.entries[hovered.index];
         if (entry.picked or entry.bonus_id == 0) continue;
@@ -342,7 +343,7 @@ fn applyBonus(
         effective_amount = defaultBonusAmount(bonus_id);
     }
 
-    const economist_multiplier: f64 = if (perkActive(player.*, survival_perks.PerkId.bonus_economist)) 1.5 else 1.0;
+    const economist_multiplier: f64 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
 
     switch (bonus_id) {
         @intFromEnum(game_ids.BonusId.points) => {
@@ -399,7 +400,7 @@ fn applyBonus(
             player.ammo = @floatFromInt(player.clip_size);
         },
         @intFromEnum(game_ids.BonusId.weapon) => {
-            if (perkActive(player.*, survival_perks.PerkId.alternate_weapon) and player.alt_weapon_id == null) {
+            if (perkActive(player.*, PerkId.alternate_weapon) and player.alt_weapon_id == null) {
                 player.alt_weapon_id = player.weapon_id;
                 player.alt_clip_size = player.clip_size;
                 player.alt_ammo = player.ammo;
@@ -466,12 +467,11 @@ fn defaultBonusAmount(bonus_id: i32) i32 {
     };
 }
 
-fn perkActive(player: survival_state.PlayerState, perk_id: i32) bool {
-    if (perk_id < 0 or perk_id >= player.perk_counts.len) return false;
-    return player.perk_counts[@intCast(perk_id)] > 0;
+fn perkActive(player: survival_state.PlayerState, perk_id: PerkId) bool {
+    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
-fn anyPerkActive(players: []const survival_state.PlayerState, perk_id: i32) bool {
+fn anyPerkActive(players: []const survival_state.PlayerState, perk_id: PerkId) bool {
     for (players) |player| {
         if (perkActive(player, perk_id)) return true;
     }
@@ -604,8 +604,8 @@ fn bonusPickSuppressed(
     if (bonus_id == @intFromEnum(game_ids.BonusId.freeze) and state.bonuses.freeze > 0.0) return true;
     if (bonus_id == @intFromEnum(game_ids.BonusId.shield) and anyShieldActive(players)) return true;
     if (bonus_id == @intFromEnum(game_ids.BonusId.weapon) and has_fire_bullets_drop) return true;
-    if (bonus_id == @intFromEnum(game_ids.BonusId.weapon) and anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) return true;
-    if (bonus_id == @intFromEnum(game_ids.BonusId.medikit) and anyPerkActive(players, survival_perks.PerkId.death_clock)) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.weapon) and anyPerkActive(players, PerkId.my_favourite_weapon)) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.medikit) and anyPerkActive(players, PerkId.death_clock)) return true;
     if (bonus_id == @intFromEnum(game_ids.BonusId.unused)) return true;
     return false;
 }
@@ -868,7 +868,7 @@ test "bonus economist extends double experience timer" {
         .index = 0,
         .pos = .{},
     };
-    perk_player.perk_counts[@intCast(survival_perks.PerkId.bonus_economist)] = 1;
+    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.bonus_economist))] = 1;
     var perk_players = [_]survival_state.PlayerState{perk_player};
     try applyBonus(
         &perk_state,
@@ -889,7 +889,7 @@ test "alternate weapon stashes previous weapon on first pickup" {
     };
     var players = [_]survival_state.PlayerState{player};
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(survival_perks.PerkId.alternate_weapon)] = 1;
+    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
 
     try applyBonus(
         &state,
@@ -936,7 +936,7 @@ test "bonus magnet allows spawn on secondary roll" {
             .weapon_id = game_ids.WeaponId.assault_rifle,
         },
     };
-    perk_players[0].perk_counts[@intCast(survival_perks.PerkId.bonus_magnet)] = 1;
+    perk_players[0].perk_counts[@intCast(@intFromEnum(PerkId.bonus_magnet))] = 1;
 
     const perk_spawned = perk_pool.trySpawnOnKill(
         .{ .x = 100.0, .y = 100.0 },
@@ -1109,7 +1109,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    perk_player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     var perk_players = [_]survival_state.PlayerState{perk_player};
     try runTelekineticUpdate(&pool, &state, perk_players[0..], 0.7);
 
@@ -1134,7 +1134,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     var players = [_]survival_state.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1160,7 +1160,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     var players = [_]survival_state.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1199,8 +1199,8 @@ test "telekinetic picks only one bonus per frame across players" {
         .health = 100.0,
         .aim = .{ .x = 200.0, .y = 200.0 },
     };
-    player0.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
-    player1.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    player0.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    player1.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     var players = [_]survival_state.PlayerState{ player0, player1 };
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1234,7 +1234,7 @@ test "telekinetic hover timer carries across bonus switch" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(survival_perks.PerkId.telekinetic)] = 1;
+    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     var players = [_]survival_state.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.4);
