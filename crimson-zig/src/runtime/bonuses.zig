@@ -863,7 +863,7 @@ test "bonus economist extends double experience timer" {
         10,
         null,
     );
-    try std.testing.expectApproxEqAbs(@as(f64, 6.0), base_state.bonuses.double_experience, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 6.0), base_state.bonuses.double_experience, 1e-6);
 
     var perk_state = state_mod.GameplayState.init(1);
     var perk_player = state_mod.PlayerState{
@@ -880,7 +880,7 @@ test "bonus economist extends double experience timer" {
         10,
         null,
     );
-    try std.testing.expectApproxEqAbs(@as(f64, 9.0), perk_state.bonuses.double_experience, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 9.0), perk_state.bonuses.double_experience, 1e-6);
 }
 
 test "alternate weapon stashes previous weapon on first pickup" {
@@ -1141,8 +1141,8 @@ test "telekinetic nuke stores pending origin from bonus position" {
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expectEqual(@as(i32, 1), state.pending_nuke_count);
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_nuke_origins[0].x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_nuke_origins[0].y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_nuke_origins[0].x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_nuke_origins[0].y, 1e-6);
 }
 
 test "telekinetic shock chain stores pending origin from bonus position" {
@@ -1167,8 +1167,8 @@ test "telekinetic shock chain stores pending origin from bonus position" {
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expectEqual(@as(i32, 1), state.pending_shock_chain_count);
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_shock_chain_origins[0].x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), state.pending_shock_chain_origins[0].y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_shock_chain_origins[0].x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_shock_chain_origins[0].y, 1e-6);
 }
 
 test "telekinetic picks only one bonus per frame across players" {
@@ -1249,7 +1249,7 @@ test "telekinetic hover timer carries across bonus switch" {
     try std.testing.expect(!pool.entries[0].picked);
     try std.testing.expect(pool.entries[1].picked);
     try std.testing.expectEqual(@as(i32, -1), players[0].bonus_aim_hover_index);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.0), players[0].bonus_aim_hover_timer_ms, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), players[0].bonus_aim_hover_timer_ms, 1e-6);
 }
 
 fn runQuestSuppressionCase(
