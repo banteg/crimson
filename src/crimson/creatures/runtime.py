@@ -232,8 +232,8 @@ def _owner_to_player_index(owner: OwnerLike) -> int | None:
     return owner_ref(owner).player_index()
 
 
-def _projectile_meta_for_type_id(type_id: int) -> float:
-    return float(cast(int, WEAPON_BY_ID[int(type_id)].projectile_meta))
+def _travel_budget_for_type_id(type_id: int) -> float:
+    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
 
 
 @dataclass(slots=True)
@@ -1216,7 +1216,7 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner_id=idx,
-                            base_damage=_projectile_meta_for_type_id(type_id),
+                            travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
                         sfx.append("sfx_shock_fire")
@@ -1229,7 +1229,7 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=idx,
-                            base_damage=_projectile_meta_for_type_id(projectile_type),
+                            travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
                         sfx.append("sfx_plasmaminigun_fire")

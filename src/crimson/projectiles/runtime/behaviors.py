@@ -185,7 +185,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=OwnerRef.from_creature(int(hit_idx)),
-        base_damage=proj.base_damage,
+        travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
     ctx.pool.spawn(
@@ -193,7 +193,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         angle=proj.angle + 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
         owner_id=OwnerRef.from_creature(int(hit_idx)),
-        base_damage=proj.base_damage,
+        travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
 
@@ -251,7 +251,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     angle=angle,
                     type_id=int(hit.proj.type_id),
                     owner_id=OwnerRef.from_creature(hit_creature),
-                    base_damage=hit.proj.base_damage,
+                    travel_budget=hit.proj.travel_budget,
                 )
             finally:
                 runtime_state.bonus_spawn_guard = prev_guard
@@ -266,9 +266,9 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
 
     plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
     plasma_meta = (
-        float(plasma_entry.projectile_meta)
-        if plasma_entry and plasma_entry.projectile_meta is not None
-        else hit.proj.base_damage
+        float(plasma_entry.travel_budget)
+        if plasma_entry and plasma_entry.travel_budget is not None
+        else hit.proj.travel_budget
     )
 
     runtime_state = ctx.runtime_state
@@ -285,7 +285,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 angle=ring_angle,
                 type_id=ProjectileTypeId.PLASMA_RIFLE,
                 owner_id=OwnerRef.from_local_player(0),
-                base_damage=plasma_meta,
+                travel_budget=plasma_meta,
             )
     finally:
         if runtime_state is not None:

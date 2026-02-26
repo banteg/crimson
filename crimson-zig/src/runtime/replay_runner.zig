@@ -1623,7 +1623,7 @@ fn applyPendingCreatureProjectiles(
         const angle = pending.angle;
         const pos = pending.pos;
         const owner = pending.owner;
-        const meta = projectileMetaFromRawId(type_id);
+        const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(pos, angle, type_id, owner, meta, true);
     }
     state.pending_creature_projectile_count = 0;
@@ -1644,7 +1644,7 @@ fn applyFireblastBonus(
     for (0..count) |idx| {
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-        const meta = projectileMetaFromRawId(type_id);
+        const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
     }
 }
@@ -1674,7 +1674,7 @@ fn applyShockChainBonus(
     const angle = state_mod.Vec2.sub(target.pos, origin).toHeading();
     const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
-    const meta = projectileMetaFromRawId(type_id);
+    const meta = projectileTravelBudgetFromRawId(type_id);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
@@ -1691,9 +1691,9 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     return dx * dx + dy * dy;
 }
 
-fn projectileMetaFromRawId(raw_id: i32) f32 {
+fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
     const weapon_id = weapon_data.weaponIdFromInt(raw_id);
-    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
+    return weapon_data.weapon_stats.get(weapon_id).travel_budget;
 }
 
 fn applyPyrokineticEffects(
@@ -1793,7 +1793,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
-        const meta = projectileMetaFromRawId(type_id);
+        const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
@@ -1803,7 +1803,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
-        const meta = projectileMetaFromRawId(type_id);
+        const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
     }
 
@@ -5542,12 +5542,12 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
         if (!entry.active) continue;
         if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.pistol)) {
             pistol_count += 1;
-            try std.testing.expectApproxEqAbs(@as(f64, 55.0), entry.base_damage, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f64, 55.0), entry.travel_budget, 1e-6);
             try std.testing.expect(entry.speed_scale >= 0.5);
             try std.testing.expect(entry.speed_scale < 1.0);
         } else if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
             gauss_count += 1;
-            try std.testing.expectApproxEqAbs(@as(f64, 215.0), entry.base_damage, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f64, 215.0), entry.travel_budget, 1e-6);
             try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.speed_scale, 1e-6);
         }
     }

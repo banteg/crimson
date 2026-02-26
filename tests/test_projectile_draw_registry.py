@@ -47,7 +47,7 @@ def _projectile(
     life_timer: float = 1.0,
     angle: float = 0.0,
     speed_scale: float = 1.0,
-    base_damage: float = 0.0,
+    travel_budget: float = 0.0,
 ) -> Projectile:
     return Projectile(
         type_id=int(type_id),
@@ -56,7 +56,7 @@ def _projectile(
         life_timer=float(life_timer),
         angle=float(angle),
         speed_scale=float(speed_scale),
-        base_damage=float(base_damage),
+        travel_budget=float(travel_budget),
     )
 
 

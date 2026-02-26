@@ -317,7 +317,7 @@ def _entity_samples_for_world(
                 "speed_scale": float(projectile.speed_scale),
                 "damage_pool": float(projectile.damage_pool),
                 "hit_radius": float(projectile.hit_radius),
-                "base_damage": float(projectile.base_damage),
+                "travel_budget": float(projectile.travel_budget),
                 "owner_id": int(projectile.owner_id),
             },
         )

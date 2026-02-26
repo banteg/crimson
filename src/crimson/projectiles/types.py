@@ -163,7 +163,7 @@ class Projectile:
     speed_scale: float = 1.0
     damage_pool: float = 1.0
     hit_radius: float = 1.0
-    base_damage: float = 0.0
+    travel_budget: float = 0.0
     owner: OwnerRef = field(default_factory=OwnerRef.none)
     hits_players: bool = False
 

@@ -32,7 +32,7 @@ pub const Projectile = struct {
     speed_scale: f32 = 1.0,
     damage_pool: f32 = 1.0,
     hit_radius: f32 = 1.0,
-    base_damage: f32 = 0.0,
+    travel_budget: f32 = 0.0,
     owner: owner_ref.OwnerRef = .{ .none = {} },
     hits_players: bool = false,
 };
@@ -62,7 +62,7 @@ pub const ProjectilePool = struct {
         angle: f64,
         type_id: i32,
         owner: owner_ref.OwnerRef,
-        base_damage: f64,
+        travel_budget: f32,
         hits_players: bool,
     ) usize {
         var index: usize = self.entries.len - 1;
@@ -73,7 +73,7 @@ pub const ProjectilePool = struct {
             }
         }
 
-        const meta = if (base_damage > 0.0) base_damage else projectileMetaFromRawId(type_id);
+        const budget = if (travel_budget > 0.0) travel_budget else projectileTravelBudgetFromRawId(type_id);
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
@@ -87,7 +87,7 @@ pub const ProjectilePool = struct {
             .speed_scale = 1.0,
             .damage_pool = 1.0,
             .hit_radius = 1.0,
-            .base_damage = narrowF32(meta),
+            .travel_budget = budget,
             .owner = owner,
             .hits_players = hits_players,
         };
@@ -213,7 +213,7 @@ pub const ProjectilePool = struct {
                 continue;
             }
 
-            var steps: i32 = @intFromFloat(proj.base_damage);
+            var steps: i32 = @intFromFloat(proj.travel_budget);
             if (steps <= 0) steps = 1;
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
@@ -611,7 +611,7 @@ fn postHitIonRifleShockChain(
         angle,
         proj.type_id,
         owner_ref.OwnerRef.fromCreature(hit_idx),
-        proj.base_damage,
+        proj.travel_budget,
         false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
@@ -641,9 +641,9 @@ fn consumeIonHitEffectsRng(
     }
 }
 
-fn projectileMetaFromRawId(raw_id: i32) f32 {
+fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
     const weapon_id = weapon_data.weaponIdFromInt(raw_id);
-    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
+    return weapon_data.weapon_stats.get(weapon_id).travel_budget;
 }
 
 fn damageScaleFromRawId(raw_id: i32) f32 {
@@ -951,7 +951,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         owner_ref.OwnerRef.fromLocalPlayer(0),
-        weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
+        weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
         false,
     );
     _ = base_pool.update(
@@ -975,7 +975,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         owner_ref.OwnerRef.fromLocalPlayer(0),
-        weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
+        weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
         false,
     );
     _ = greased_pool.update(

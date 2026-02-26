@@ -55,8 +55,8 @@ inline fn weaponIdFromProjectileTypeId(type_id: ProjectileTypeId) WeaponId {
     };
 }
 
-inline fn projectileMetaFromTypeId(type_id: ProjectileTypeId) f32 {
-    return weapon_data.weapon_stats.get(weaponIdFromProjectileTypeId(type_id)).projectile_meta;
+inline fn projectileTravelBudgetFromTypeId(type_id: ProjectileTypeId) f32 {
+    return weapon_data.weapon_stats.get(weaponIdFromProjectileTypeId(type_id)).travel_budget;
 }
 
 pub const TickInputFlags = struct {
@@ -171,7 +171,7 @@ pub fn stepPlayerForTick(
                     for (0..@as(usize, @intCast(count))) |idx| {
                         const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
-                        const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
+                        const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
                         _ = projectiles.spawn(player.pos, angle, type_id, owner, meta, false);
                     }
                 }
@@ -382,7 +382,7 @@ fn tryFireWeaponWithForce(
     }
 
     if (is_fire_bullets) {
-        const meta = weapon_data.weapon_stats.get(.fire_bullets).projectile_meta;
+        const meta = weapon_data.weapon_stats.get(.fire_bullets).travel_budget;
         for (0..@as(usize, @intCast(shot_count))) |_| {
             const jitter_roll = state.rng.rand();
             const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
@@ -399,14 +399,14 @@ fn tryFireWeaponWithForce(
         .multi_plasma => {
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, false);
+            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, false);
         },
         .plasma_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
             for (0..14) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
                 const id = projectiles.spawn(
@@ -421,7 +421,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .gauss_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.gauss_gun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.gauss_gun).travel_budget;
             for (0..6) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
                 const id = projectiles.spawn(
@@ -436,7 +436,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .ion_shotgun => {
-            const meta = weapon_data.weapon_stats.get(.ion_minigun).projectile_meta;
+            const meta = weapon_data.weapon_stats.get(.ion_minigun).travel_budget;
             for (0..8) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
                 const id = projectiles.spawn(
@@ -544,7 +544,7 @@ fn tryFireWeaponWithForce(
         else => {
             const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const type_id_i32 = @intFromEnum(type_id);
-            const meta = projectileMetaFromTypeId(type_id);
+            const meta = projectileTravelBudgetFromTypeId(type_id);
             const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon_id).pellet_count);
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
@@ -786,7 +786,7 @@ fn spawnPerkProjectile(
     }
 
     const spawn_type_id_i32 = @intFromEnum(spawn_type_id);
-    const meta = projectileMetaFromTypeId(spawn_type_id);
+    const meta = projectileTravelBudgetFromTypeId(spawn_type_id);
     _ = projectiles.spawn(
         pos,
         angle,

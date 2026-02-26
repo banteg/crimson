@@ -276,7 +276,7 @@ def _projectile_snapshot(world: WorldState) -> list[dict[str, Any]]:
                 "life_timer": float(proj.life_timer),
                 "damage_pool": float(proj.damage_pool),
                 "hit_radius": float(proj.hit_radius),
-                "base_damage": float(proj.base_damage),
+                "travel_budget": float(proj.travel_budget),
                 "owner_id": int(proj.owner_id),
                 "pos": {"x": float(proj.pos.x), "y": float(proj.pos.y)},
             },

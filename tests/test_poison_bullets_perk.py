@@ -39,7 +39,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-100,
-        base_damage=45.0,
+        travel_budget=45.0,
     )
 
     events = world.step(
@@ -84,7 +84,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-100,
-        base_damage=45.0,
+        travel_budget=45.0,
     )
 
     events = world.step(
@@ -168,7 +168,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         angle=0.0,
         type_id=int(ProjectileTypeId.PISTOL),
         owner_id=-100,
-        base_damage=45.0,
+        travel_budget=45.0,
     )
 
     world.step(

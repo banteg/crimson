@@ -73,7 +73,7 @@ class ProjectilePool:
         angle: float,
         type_id: int,
         owner_id: OwnerLike,
-        base_damage: float = 0.0,
+        travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
         index = None
@@ -94,10 +94,10 @@ class ProjectilePool:
         entry.life_timer = 0.4
         entry.reserved = 0.0
         entry.speed_scale = 1.0
-        entry.base_damage = float(base_damage)
+        entry.travel_budget = float(travel_budget)
         weapon_entry = weapon_entry_for_projectile_type_id(entry.type_id)
-        if weapon_entry is not None and weapon_entry.projectile_meta is not None:
-            entry.base_damage = float(weapon_entry.projectile_meta)
+        if weapon_entry is not None and weapon_entry.travel_budget is not None:
+            entry.travel_budget = float(weapon_entry.travel_budget)
         entry.owner = owner_ref(owner_id)
         entry.hits_players = bool(hits_players)
 
@@ -263,7 +263,7 @@ class ProjectilePool:
                 proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
-            steps = int(proj.base_damage)
+            steps = int(proj.travel_budget)
             if steps <= 0:
                 steps = 1
             if barrel_greaser_active and proj.owner.is_player():
