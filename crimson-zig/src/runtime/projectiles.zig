@@ -44,9 +44,9 @@ pub const ProjectileTickStats = struct {
     first_hit_type_id: i32 = 0,
     first_hit_origin: state_mod.Vec2 = .{},
     first_hit_pos: state_mod.Vec2 = .{},
-    first_hit_target_size: f64 = 0.0,
-    first_hit_target_x: f64 = 0.0,
-    first_hit_target_y: f64 = 0.0,
+    first_hit_target_size: f32 = 0.0,
+    first_hit_target_x: f32 = 0.0,
+    first_hit_target_y: f32 = 0.0,
 };
 
 pub const ProjectilePool = struct {
@@ -353,7 +353,7 @@ pub const ProjectilePool = struct {
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     proj.life_timer = 0.25;
-                    const jitter = @as(f64, @floatFromInt(state.rng.rand() & 3));
+                    const jitter = @as(f32, @floatFromInt(state.rng.rand() & 3));
                     proj.pos = .{
                         .x = narrowF32(proj.pos.x + direction.x * jitter),
                         .y = narrowF32(proj.pos.y + direction.y * jitter),
@@ -561,7 +561,7 @@ fn consumeFreezeHitShardRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand() % 3;
 }
 
-fn creatureHitRadius(size: f64) f64 {
+fn creatureHitRadius(size: f32) f32 {
     const radius = narrowF32(size * 0.14285715 + 3.0);
     if (radius < 0.0) return 0.0;
     return radius;
@@ -585,7 +585,7 @@ fn postHitIonRifleShockChain(
     const origin_pos = proj.pos;
     const min_dist_sq = 100.0 * 100.0;
     var best_idx: usize = 0;
-    var best_dist_sq: f64 = 1e12;
+    var best_dist_sq: f32 = 1e12;
     for (creatures.entries, 0..) |creature, idx| {
         if (idx == hit_idx) continue;
         if (!creature.active) continue;
@@ -620,7 +620,7 @@ fn consumeIonHitEffectsRng(
     state: *state_mod.GameplayState,
     projectile_type_id: i32,
 ) void {
-    var burst_scale: f64 = 0.0;
+    var burst_scale: f32 = 0.0;
     switch (projectile_type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => burst_scale = 0.8,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => burst_scale = 1.2,
