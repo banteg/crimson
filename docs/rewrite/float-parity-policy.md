@@ -15,6 +15,9 @@ readability:
 Do not auto-normalize literals like `0.6000000238418579` to `0.6` in parity
 critical code unless parity evidence shows the change is behavior-neutral.
 
+For an expression-level lookup table (with decompile anchors), see
+[float expression precision map](float-expression-precision-map.md).
+
 ## Why
 
 Small float deltas can reorder branch decisions and collision outcomes, then
