@@ -579,7 +579,7 @@ pub fn runReplayScaffoldWithTrace(
                 &state,
                 players[0..],
                 &creatures,
-                dt_tick,
+                narrowF32(dt_tick),
                 &quest_spawn_timeline_ms,
                 &quest_no_creatures_timer_ms,
                 &quest_completion_transition_ms,
@@ -936,7 +936,7 @@ pub fn runReplayScaffoldWithTrace(
                         &state,
                         players[0..],
                         &creatures,
-                        dt_tick,
+                        narrowF32(dt_tick),
                         &quest_spawn_timeline_ms,
                         &quest_no_creatures_timer_ms,
                         &quest_completion_transition_ms,
@@ -963,7 +963,7 @@ pub fn runReplayScaffoldWithTrace(
                 trace_allocator,
                 buildTickTrace(
                     tick_index,
-                    trace_elapsed_ms,
+                    narrowF32(trace_elapsed_ms),
                     &state,
                     players[0],
                     &creatures,
@@ -997,7 +997,7 @@ pub fn runReplayScaffoldWithTrace(
             &state,
             players[0..],
             &creatures,
-            dt_tick,
+            narrowF32(dt_tick),
             &quest_spawn_timeline_ms,
             &quest_no_creatures_timer_ms,
             &quest_completion_transition_ms,
@@ -1062,7 +1062,7 @@ pub fn runReplayScaffoldWithTrace(
 
 fn buildTickTrace(
     tick_index: usize,
-    elapsed_ms_sim: f64,
+    elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
@@ -2017,7 +2017,7 @@ fn applyReplayEvent(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
-    dt_frame: f64,
+    dt_frame: f32,
     quest_spawn_timeline_ms: *f64,
     quest_no_creatures_timer_ms: *f64,
     quest_completion_transition_ms: *f64,
@@ -4502,18 +4502,18 @@ test "capture creature spawn event applies added head overrides" {
     try applyCaptureCreatureSpawnEvent(&state, &creatures, event);
     const creature = creatures.entries[1];
     try std.testing.expect(creature.active);
-    try std.testing.expectApproxEqAbs(@as(f64, 1.1278764009475708), creature.heading, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.621416449546814), creature.target_heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.1278764009475708), creature.heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.621416449546814), creature.target_heading, 1e-6);
     try std.testing.expectEqual(spawn_mod.CreatureAiMode.follow_link, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 0), creature.link_index);
-    try std.testing.expectApproxEqAbs(@as(f64, 123.5), creature.hp, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 9.5), creature.lifecycle_stage, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.25), creature.orbit_angle, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.75), creature.orbit_radius, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 123.5), creature.hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 9.5), creature.lifecycle_stage, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), creature.orbit_angle, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), creature.orbit_radius, 1e-6);
     try std.testing.expectEqual(@as(u32, 17), creature.flags);
     try std.testing.expectEqual(@as(i32, 7), creature.type_id);
-    try std.testing.expectApproxEqAbs(@as(f64, 12.25), creature.pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 34.5), creature.pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 12.25), creature.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 34.5), creature.pos.y, 1e-6);
 }
 
 test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {
@@ -4594,11 +4594,11 @@ test "capture creature spawn event applies added head rows without spawn rows" {
 
     const creature = creatures.entries[0];
     try std.testing.expect(creature.active);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.28999999165534973), creature.heading, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.521416425704956), creature.target_heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.28999999165534973), creature.heading, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.521416425704956), creature.target_heading, 1e-6);
     try std.testing.expectEqual(spawn_mod.CreatureAiMode.orbit_player, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 1), creature.link_index);
-    try std.testing.expectApproxEqAbs(@as(f64, 1.25), creature.orbit_radius, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.25), creature.orbit_radius, 1e-6);
     try std.testing.expectEqual(@as(u32, 5), creature.flags);
 }
 
@@ -5069,10 +5069,10 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
     var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 
-    const expected_intensities = [_]f64{ 0.8, 0.6, 0.4, 0.3, 0.2 };
+    const expected_intensities = [_]f32{ 0.8, 0.6, 0.4, 0.3, 0.2 };
     for (expected_intensities, 0..) |expected, idx| {
         try std.testing.expectApproxEqAbs(expected, particles.entries[idx].intensity, 1e-6);
     }
@@ -5120,7 +5120,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
         &particles,
         0.03200000151991844,
     );
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 }
 
@@ -5149,7 +5149,7 @@ test "pyrokinetic defaults to first alive player slot" {
     var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 }
 
@@ -5192,8 +5192,8 @@ test "pyrokinetic targets all alive owners in default mode" {
     var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[1].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[1].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 10), activeParticleCount(&particles));
 }
 
@@ -5229,7 +5229,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
         finalizePlayerPostUpdate(&perk_player, 1024.0);
     }
 
-    var expected_perk_speed: f64 = 0.0;
+    var expected_perk_speed: f32 = 0.0;
     const dt_f32 = narrowF32(dt);
     for (0..steps) |_| {
         if (expected_perk_speed < 2.0) {
@@ -5241,7 +5241,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
         }
     }
 
-    try std.testing.expectApproxEqAbs(@as(f64, 2.0), base_player.move_speed, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 2.0), base_player.move_speed, 1e-6);
     try std.testing.expectApproxEqAbs(expected_perk_speed, perk_player.move_speed, 1e-6);
     try std.testing.expect(perk_player.pos.x > base_player.pos.x);
 
@@ -5292,8 +5292,8 @@ test "alternate weapon slows movement by 20 percent" {
     updatePlayerFromReplayInput(&perk_player, input, flags, &state, 1.0);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), base_player.pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 80.0), perk_player.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), base_player.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), perk_player.pos.x, 1e-6);
 }
 
 test "fire cough projectile uses pre-move player position for muzzle origin" {
@@ -5469,7 +5469,7 @@ test "pending nuke damage is limited to radius" {
     );
 
     try std.testing.expect(creatures.entries[0].hp <= 0.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 10.0), creatures.entries[1].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), creatures.entries[1].hp, 1e-6);
     try std.testing.expectEqual(@as(i32, 0), state.pending_nuke_count);
 }
 
@@ -5545,13 +5545,13 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
         if (!entry.active) continue;
         if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.pistol)) {
             pistol_count += 1;
-            try std.testing.expectApproxEqAbs(@as(f64, 55.0), entry.travel_budget, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 55.0), entry.travel_budget, 1e-6);
             try std.testing.expect(entry.speed_scale >= 0.5);
             try std.testing.expect(entry.speed_scale < 1.0);
         } else if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
             gauss_count += 1;
-            try std.testing.expectApproxEqAbs(@as(f64, 215.0), entry.travel_budget, 1e-6);
-            try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.speed_scale, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 215.0), entry.travel_budget, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 1.0), entry.speed_scale, 1e-6);
         }
     }
 
@@ -5579,8 +5579,8 @@ test "pending creature projectile queue materializes hostile shots before projec
     try std.testing.expect(projectiles.entries[0].hits_players);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectiles.entries[0].type_id);
     try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner.toLegacy());
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), projectiles.entries[0].pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 200.0), projectiles.entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), projectiles.entries[0].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 200.0), projectiles.entries[0].pos.y, 1e-6);
 }
 
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
@@ -5664,9 +5664,9 @@ test "jinxed kills creature and awards base reward" {
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
 
-    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, -1.0), creatures.entries[2].hp, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 12.0), creatures.entries[2].lifecycle_stage, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.8), state.jinxed_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, -1.0), creatures.entries[2].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 12.0), creatures.entries[2].lifecycle_stage, 1e-6);
     try std.testing.expectEqual(@as(i32, 112), players[0].experience);
 }
 
@@ -5728,9 +5728,9 @@ test "jinxed accident can target another alive player" {
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
 
-    try std.testing.expectApproxEqAbs(@as(f64, 1.8), state.jinxed_timer, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 65.0), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.8), state.jinxed_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 65.0), players[1].health, 1e-6);
 }
 
 test "jinxed timer uses f32 underflow threshold before proc" {
@@ -5750,8 +5750,8 @@ test "jinxed timer uses f32 underflow threshold before proc" {
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
 
-    try std.testing.expectApproxEqAbs(@as(f64, 8.344650268554688e-07), state.jinxed_timer, 1e-12);
-    try std.testing.expectApproxEqAbs(@as(f64, 50.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 8.344650268554688e-07), state.jinxed_timer, 1e-12);
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), players[0].health, 1e-6);
     try std.testing.expectEqual(rng_before, state.rng.state);
 }
 
@@ -5782,7 +5782,7 @@ test "jinxed pool uses full 384-slot upper bound" {
 
     applyJinxedEffects(&default_state, default_players[0..], &default_creatures, dt);
 
-    try std.testing.expectApproxEqAbs(@as(f64, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
     try std.testing.expectEqual(@as(i32, 112), default_players[0].experience);
 }
 
@@ -5795,9 +5795,9 @@ test "reflex boosted perk scales world dt by 0.9" {
     };
     perk_players[0].perk_counts.set(PerkId.reflex_boosted, 1);
 
-    try std.testing.expectApproxEqAbs(@as(f64, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.0), applyPerkWorldDtSteps(perk_players[0..], 0.0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), applyPerkWorldDtSteps(perk_players[0..], 0.0), 1e-6);
 }
 
 test "final revenge explosion applies radial damage on death transition" {
@@ -5840,7 +5840,7 @@ test "final revenge explosion applies radial damage on death transition" {
         5,
     );
 
-    try std.testing.expectApproxEqAbs(@as(f64, 7440.0), creatures.entries[0].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 7440.0), creatures.entries[0].hp, 1e-6);
 }
 
 test "final revenge aoe includes active non-positive hp entries" {
@@ -5914,9 +5914,9 @@ test "final revenge aoe includes active non-positive hp entries" {
         5,
     );
 
-    try std.testing.expectApproxEqAbs(@as(f64, 14.5), creatures.entries[0].lifecycle_stage, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 14.5), creatures.entries[0].lifecycle_stage, 1e-6);
     try std.testing.expect(creatures.entries[1].hp < 10.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 10.0), creatures.entries[2].hp, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), creatures.entries[2].hp, 1e-6);
 }
 
 const TestReplayConfig = struct {

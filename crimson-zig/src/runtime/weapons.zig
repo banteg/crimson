@@ -914,7 +914,7 @@ fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts.get(perk_id) > 0;
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
+fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
@@ -1033,7 +1033,7 @@ test "weapon runtime starts reload when ammo is depleted" {
         reload_time * 0.5 + 0.001,
     );
     try std.testing.expect(!player.reload_active);
-    try std.testing.expectEqual(@as(f64, @floatFromInt(player.clip_size)), player.ammo);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(player.clip_size)), player.ammo);
 }
 
 test "manual reload starts even when clip is full" {
@@ -1634,7 +1634,7 @@ test "multi plasma fires five projectiles with fixed spread profile" {
     const spread_small = std.math.pi / 10.0;
     const spread_large = std.math.pi / 6.0;
     const expected = [_]struct {
-        angle: f64,
+        angle: f32,
         type_id: i32,
     }{
         .{ .angle = shot_angle - spread_small, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
@@ -1676,7 +1676,7 @@ test "plasma shotgun uses masked jitter and random speed scale" {
 
     const shot_angle = std.math.pi / 2.0;
     const expected_angle_masked = shot_angle + 127.0 * 0.002;
-    const expected_angle_modulo = shot_angle + (@as(f64, @floatFromInt(@as(i32, @intCast(255 % 200)) - 100)) * 0.002);
+    const expected_angle_modulo = shot_angle + (@as(f32, @floatFromInt(@as(i32, @intCast(255 % 200)) - 100)) * 0.002);
     try expectFloatClose(expected_angle_masked, projectiles.entries[0].angle);
     try std.testing.expect(@abs(projectiles.entries[0].angle - expected_angle_modulo) > 1e-4);
 
@@ -1686,7 +1686,7 @@ test "plasma shotgun uses masked jitter and random speed scale" {
     _ = rng.rand();
     _ = rng.rand();
     const speed_draw = rng.rand();
-    const expected_speed = 1.0 + @as(f64, @floatFromInt(speed_draw % 100)) * 0.01;
+    const expected_speed = 1.0 + @as(f32, @floatFromInt(speed_draw % 100)) * 0.01;
     try expectFloatClose(expected_speed, projectiles.entries[0].speed_scale);
 
     for (projectiles.entries[0..14]) |proj| {
@@ -1719,8 +1719,8 @@ test "shotgun family fires expected pellet counts and formulas" {
         weapon_id: i32,
         projectile_type_id: i32,
         expected_count: usize,
-        jitter_scale: f64,
-        speed_base: f64,
+        jitter_scale: f32,
+        speed_base: f32,
         speed_mod: u32,
     }{
         .{
@@ -1787,13 +1787,13 @@ test "shotgun family fires expected pellet counts and formulas" {
             _ = rng.rand();
         }
 
-        const shot_angle = std.math.pi / 2.0;
-        for (0..case.expected_count) |idx| {
-            const jitter_draw = rng.rand();
-            const expected_angle = shot_angle +
-                @as(f64, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
-            const speed_draw = rng.rand();
-            const expected_speed = case.speed_base + @as(f64, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
+            const shot_angle = std.math.pi / 2.0;
+            for (0..case.expected_count) |idx| {
+                const jitter_draw = rng.rand();
+                const expected_angle = shot_angle +
+                    @as(f32, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
+                const speed_draw = rng.rand();
+                const expected_speed = case.speed_base + @as(f32, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
 
             const proj = projectiles.entries[idx];
             try std.testing.expect(proj.active);
