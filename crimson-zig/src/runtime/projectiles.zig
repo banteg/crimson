@@ -642,12 +642,12 @@ fn consumeIonHitEffectsRng(
 }
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id).?;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
 }
 
 fn damageScaleFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id).?;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 

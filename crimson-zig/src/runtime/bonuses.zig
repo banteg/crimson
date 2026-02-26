@@ -149,10 +149,7 @@ pub const BonusPool = struct {
         }
 
         if (entry.bonus_id == .weapon) {
-            const weapon_id = weapon_data.weaponIdFromInt(entry.amount) orelse {
-                clearEntry(self, entry);
-                return null;
-            };
+            const weapon_id = weapon_data.weaponIdFromInt(entry.amount);
             if (carriedWeaponId(players, weapon_id)) {
                 clearEntry(self, entry);
                 return null;
@@ -407,7 +404,7 @@ fn applyBonus(
                 player.alt_shot_cooldown = player.shot_cooldown;
                 player.alt_reload_timer_max = player.reload_timer_max;
             }
-            const weapon_id = weapon_data.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
+            const weapon_id = weapon_data.weaponIdFromInt(effective_amount);
             player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
         },
         .nuke => {

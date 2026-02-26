@@ -78,8 +78,8 @@ pub inline fn weaponIdToInt(weapon_id: WeaponId) i32 {
     return @intFromEnum(weapon_id);
 }
 
-pub fn weaponIdFromInt(value: i32) ?WeaponId {
-    if (value < 0 or value >= weapon_count_size) return null;
+pub fn weaponIdFromInt(value: i32) WeaponId {
+    if (value < 0 or value >= weapon_count_size) @panic("invalid weapon id");
     return @enumFromInt(value);
 }
 
@@ -182,7 +182,7 @@ test "projectile type id mapping mirrors native fire paths" {
     };
 
     for (cases) |case| {
-        const weapon_id = weaponIdFromInt(case.weapon_id).?;
+        const weapon_id = weaponIdFromInt(case.weapon_id);
         try std.testing.expectEqual(case.type_id, projectileTypeIdFromWeaponId(weapon_id).?);
     }
 
@@ -195,7 +195,7 @@ test "projectile type id mapping mirrors native fire paths" {
 test "non projectile weapons map to empty projectile type ids" {
     const non_projectile_weapons = [_]i32{ 8, 12, 13, 15, 16, 17, 18, 42 };
     for (non_projectile_weapons) |weapon_id| {
-        const id = weaponIdFromInt(weapon_id).?;
+        const id = weaponIdFromInt(weapon_id);
         try std.testing.expectEqual(@as(?ProjectileTypeId, null), projectileTypeIdFromWeaponId(id));
         try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(id).slice().len);
     }

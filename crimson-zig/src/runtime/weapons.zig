@@ -29,7 +29,7 @@ const reload_preload_underflow_eps: f64 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
 inline fn weaponId(value: i32) WeaponId {
-    return weapon_data.weaponIdFromInt(value).?;
+    return weapon_data.weaponIdFromInt(value);
 }
 
 inline fn weaponIdFromProjectileTypeId(type_id: ProjectileTypeId) WeaponId {

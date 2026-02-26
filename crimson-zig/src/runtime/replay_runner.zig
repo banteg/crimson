@@ -528,7 +528,7 @@ pub fn runReplayScaffoldWithTrace(
         const weapon_id = @max(1, quest_start_weapon_id);
         quest_start_weapon_id_for_reset = weapon_id;
         for (players) |*player| {
-            const start_weapon = weapon_data.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
+            const start_weapon = weapon_data.weaponIdFromInt(weapon_id);
             player_runtime.weaponAssignPlayer(player, start_weapon);
         }
     }
@@ -1692,7 +1692,7 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
 }
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id).?;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
 }
 
@@ -2211,10 +2211,9 @@ fn applyCaptureBootstrapEvent(
     for (0..player_count) |idx| {
         const payload = bootstrap.players[idx];
         if (payload.weapon_id > 0) {
-            if (weapon_data.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
-                if (players[idx].weapon_id != weapon_id) {
-                    player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
-                }
+            const weapon_id = weapon_data.weaponIdFromInt(payload.weapon_id);
+            if (players[idx].weapon_id != weapon_id) {
+                player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
             }
         }
         players[idx].pos.x = narrowF32(payload.pos_x);
@@ -2476,7 +2475,7 @@ fn applyCaptureStateReset(
 
     player_runtime.resetPlayers(players, narrowF32(world_size), null);
     for (players) |*player| {
-        const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
+        const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id);
         player_runtime.weaponAssignPlayer(player, quest_weapon);
         if (quest_start_weapon_id == @intFromEnum(game_ids.WeaponId.pistol)) {
             player.clip_size = @max(12, player.clip_size);

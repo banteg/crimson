@@ -2130,7 +2130,7 @@ pub const CreaturePool = struct {
         }
 
         var result = ShotResolutionResult{};
-        const weapon_enum = weapon_data.weaponIdFromInt(weapon_id) orelse .none;
+        const weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
         const projectile_type_id: i32 = if (weapon_data.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
             @intFromEnum(type_id)
         else
