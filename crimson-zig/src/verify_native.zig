@@ -55,6 +55,22 @@ const RunResult = struct {
     rng_state: u64,
 };
 
+const ScoreClaimPayload = struct {
+    metric: []const u8,
+    submitted_score: i64,
+    simulated_value: i64,
+    match: bool,
+};
+
+const VerifyPayload = struct {
+    schema_version: i32,
+    status: []const u8,
+    replay: []const u8,
+    replay_sha256: []const u8,
+    run_result: RunResult,
+    score_claim: ?ScoreClaimPayload,
+};
+
 pub fn runReplayVerify(
     allocator: std.mem.Allocator,
     verify_args: []const []const u8,
@@ -606,9 +622,6 @@ fn buildVerifyPayload(
     resolved_metric: verify_contract.ScoreMetric,
     submitted_score: ?i64,
 ) ![]u8 {
-    var payload: std.ArrayList(u8) = .empty;
-    errdefer payload.deinit(allocator);
-
     const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
         run_result.elapsed_ms
     else
@@ -617,81 +630,25 @@ fn buildVerifyPayload(
         submitted == simulated_value
     else
         true;
+    const score_claim: ?ScoreClaimPayload = if (submitted_score) |submitted| .{
+        .metric = verify_contract.scoreMetricLabel(resolved_metric),
+        .submitted_score = submitted,
+        .simulated_value = simulated_value,
+        .match = claim_matches,
+    } else null;
+    const report: VerifyPayload = .{
+        .schema_version = verify_contract.replay_schema_version,
+        .status = if (claim_matches) "ok" else "score_mismatch",
+        .replay = replay_path,
+        .replay_sha256 = replay_sha256,
+        .run_result = run_result,
+        .score_claim = score_claim,
+    };
 
-    var writer = payload.writer(allocator);
-
-    try writer.writeAll("{\"schema_version\":");
-    try writer.print("{d}", .{verify_contract.replay_schema_version});
-    try writer.writeAll(",\"status\":");
-    try writeJsonString(&writer, if (claim_matches) "ok" else "score_mismatch");
-    try writer.writeAll(",\"replay\":");
-    try writeJsonString(&writer, replay_path);
-    try writer.writeAll(",\"replay_sha256\":");
-    try writeJsonString(&writer, replay_sha256);
-    try writer.writeAll(",\"run_result\":{");
-    try writer.writeAll("\"game_mode_id\":");
-    try writer.print("{d}", .{run_result.game_mode_id});
-    try writer.writeAll(",\"tick_rate\":");
-    try writer.print("{d}", .{run_result.tick_rate});
-    try writer.writeAll(",\"ticks\":");
-    try writer.print("{d}", .{run_result.ticks});
-    try writer.writeAll(",\"elapsed_ms\":");
-    try writer.print("{d}", .{run_result.elapsed_ms});
-    try writer.writeAll(",\"score_xp\":");
-    try writer.print("{d}", .{run_result.score_xp});
-    try writer.writeAll(",\"creature_kill_count\":");
-    try writer.print("{d}", .{run_result.creature_kill_count});
-    try writer.writeAll(",\"most_used_weapon_id\":");
-    try writer.print("{d}", .{run_result.most_used_weapon_id});
-    try writer.writeAll(",\"shots_fired\":");
-    try writer.print("{d}", .{run_result.shots_fired});
-    try writer.writeAll(",\"shots_hit\":");
-    try writer.print("{d}", .{run_result.shots_hit});
-    try writer.writeAll(",\"rng_state\":");
-    try writer.print("{d}", .{run_result.rng_state});
-    try writer.writeAll("},\"score_claim\":");
-
-    if (submitted_score) |submitted| {
-        try writer.writeAll("{");
-        try writer.writeAll("\"metric\":");
-        try writeJsonString(&writer, verify_contract.scoreMetricLabel(resolved_metric));
-        try writer.writeAll(",\"submitted_score\":");
-        try writer.print("{d}", .{submitted});
-        try writer.writeAll(",\"simulated_value\":");
-        try writer.print("{d}", .{simulated_value});
-        try writer.writeAll(",\"match\":");
-        try writer.writeAll(if (claim_matches) "true" else "false");
-        try writer.writeAll("}");
-    } else {
-        try writer.writeAll("null");
-    }
-
-    try writer.writeAll("}");
-
-    return payload.toOwnedSlice(allocator);
-}
-
-fn writeJsonString(writer: anytype, value: []const u8) !void {
-    try writer.writeByte('"');
-    for (value) |byte| {
-        switch (byte) {
-            '"' => try writer.writeAll("\\\""),
-            '\\' => try writer.writeAll("\\\\"),
-            '\n' => try writer.writeAll("\\n"),
-            '\r' => try writer.writeAll("\\r"),
-            '\t' => try writer.writeAll("\\t"),
-            else => {
-                if (byte < 0x20) {
-                    try writer.writeAll("\\u00");
-                    try writer.writeByte(hex[(byte >> 4) & 0x0f]);
-                    try writer.writeByte(hex[byte & 0x0f]);
-                } else {
-                    try writer.writeByte(byte);
-                }
-            },
-        }
-    }
-    try writer.writeByte('"');
+    var payload_writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer payload_writer.deinit();
+    try std.json.Stringify.value(report, .{}, &payload_writer.writer);
+    return payload_writer.toOwnedSlice();
 }
 
 fn sha256HexAlloc(allocator: std.mem.Allocator, bytes: []const u8) ![]u8 {
@@ -1181,6 +1138,32 @@ test "build verify payload score mismatch" {
 
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+}
+
+test "build verify payload escapes replay path via json stringify" {
+    const allocator = std.testing.allocator;
+    const payload = try buildVerifyPayload(
+        allocator,
+        "test\"\nreplay.crd",
+        "1234567890123456789012345678901234567890123456789012345678901234",
+        .{
+            .game_mode_id = 1,
+            .tick_rate = 60,
+            .ticks = 100,
+            .elapsed_ms = 2000,
+            .score_xp = 999,
+            .creature_kill_count = 15,
+            .most_used_weapon_id = 14,
+            .shots_fired = 123,
+            .shots_hit = 45,
+            .rng_state = 1234,
+        },
+        .score_xp,
+        null,
+    );
+    defer allocator.free(payload);
+
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"replay\":\"test\\\"\\nreplay.crd\"") != null);
 }
 
 test "unsupported verify option output has dedicated wording" {
