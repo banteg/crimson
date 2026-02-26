@@ -24,8 +24,8 @@ pub fn directionFromAngle(angle: f32) state_mod.Vec2 {
 pub fn withinNativeFindRadius(
     origin: state_mod.Vec2,
     target: state_mod.Vec2,
-    radius: f64,
-    target_size: f64,
+    radius: f32,
+    target_size: f32,
 ) bool {
     const dx = target.x - origin.x;
     const dy = target.y - origin.y;
