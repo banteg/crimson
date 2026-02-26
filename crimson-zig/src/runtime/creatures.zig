@@ -172,7 +172,7 @@ pub const CreaturePool = struct {
         call: spawn_mod.SpawnTemplateCall,
         rng: *spawn_mod.Crand,
         state: ?*const state_mod.GameplayState,
-        terrain_size: f64,
+        terrain_size: f32,
     ) CreatureRuntimeError!void {
         switch (call.template_id) {
             @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12) => {
@@ -1781,10 +1781,12 @@ pub const CreaturePool = struct {
         }
 
         if (state) |game_state| {
+            const call_pos_x = narrowF32(call.pos.x);
+            const call_pos_y = narrowF32(call.pos.y);
             if (!game_state.demo_mode_active and
                 terrain_size > 0.0 and
-                call.pos.x > 0.0 and call.pos.x < terrain_size and
-                call.pos.y > 0.0 and call.pos.y < terrain_size)
+                call_pos_x > 0.0 and call_pos_x < terrain_size and
+                call_pos_y > 0.0 and call_pos_y < terrain_size)
             {
                 consumeSpawnTemplateBurstRng(rng, 8);
             }
@@ -2109,7 +2111,7 @@ pub const CreaturePool = struct {
         aim_target: state_mod.Vec2,
         shot_count: i32,
         weapon_id: i32,
-        world_size: f64,
+        world_size: f32,
     ) ShotResolutionResult {
         if (players.len == 0) return .{};
         if (player_index >= players.len) return .{};
@@ -2167,7 +2169,7 @@ pub const CreaturePool = struct {
                 .{},
                 owner,
                 narrowF32(1.0 / 60.0),
-                narrowF32(world_size),
+                world_size,
             );
             consumeProjectileHitPresentationPostRng(state, projectile_type_id);
             consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
