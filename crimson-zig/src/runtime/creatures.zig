@@ -2966,14 +2966,14 @@ const SpawnStats = struct {
     contact_damage: f32,
 };
 
-fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f64, base: f64) f64 {
-    return narrowF32(@as(f64, @floatFromInt(rng.rand() % mod)) * scale + base);
+fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f32, base: f32) f32 {
+    return narrowF32(@as(f32, @floatFromInt(rng.rand() % mod)) * scale + base);
 }
 
-fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f64 {
-    const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f32 {
+    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
     _ = rng.rand() % 314;
-    return phase_seed;
+    return narrowF32(phase_seed);
 }
 
 fn applyUnhandledCreatureTypeFallback(creature: *CreatureState) void {
@@ -4316,7 +4316,7 @@ test "template spawn supports quest spider and zombie late templates" {
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.zombie)), entry.type_id);
         try std.testing.expectEqual(@as(u32, 0), entry.flags);
-        try expectFloatClose(60.2857141494751, entry.hp);
+        try expectFloatClose(60.28571701049805, entry.hp);
         try expectFloatClose(1.01, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4505,7 +4505,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), entry.type_id);
-        try expectFloatClose(70.28571319580078, entry.hp);
+        try expectFloatClose(70.28572082519531, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4525,7 +4525,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(70.28571319580078, entry.hp);
+        try expectFloatClose(70.28572082519531, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4545,7 +4545,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(60.2857141494751, entry.hp);
+        try expectFloatClose(60.28571701049805, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
