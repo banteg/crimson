@@ -1,10 +1,10 @@
-const common = @import("quest_spawn_logic_common.zig");
-const tier1 = @import("quest_spawn_logic_tier1.zig");
-const tier2 = @import("quest_spawn_logic_tier2.zig");
-const tier3 = @import("quest_spawn_logic_tier3.zig");
-const tier4 = @import("quest_spawn_logic_tier4.zig");
-const tier5 = @import("quest_spawn_logic_tier5.zig");
-const survival_spawn = @import("survival_spawn.zig");
+const common = @import("logic_common.zig");
+const tier1 = @import("logic_tier1.zig");
+const tier2 = @import("logic_tier2.zig");
+const tier3 = @import("logic_tier3.zig");
+const tier4 = @import("logic_tier4.zig");
+const tier5 = @import("logic_tier5.zig");
+const survival_spawn = @import("../survival_spawn.zig");
 
 pub const QuestSpawnBuildError = common.QuestSpawnBuildError;
 pub const QuestSpawnBuildResult = common.QuestSpawnBuildResult;

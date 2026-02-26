@@ -53,9 +53,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Diff Zig quest spawn builder modules vs Python builders.")
     parser.add_argument(
         "--impl",
+        choices=("main",),
         action="append",
         default=[],
-        help="Zig implementation id (main|legacy). Repeat for multiple impls.",
+        help="Zig implementation id (main). Repeat for multiple impls.",
     )
     parser.add_argument(
         "--dynamic-seed",

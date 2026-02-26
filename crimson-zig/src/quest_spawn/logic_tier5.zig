@@ -1,8 +1,8 @@
 const std = @import("std");
 
-const common = @import("quest_spawn_logic_common.zig");
-const survival_spawn = @import("survival_spawn.zig");
-const survival_state = @import("survival_state.zig");
+const common = @import("logic_common.zig");
+const survival_spawn = @import("../survival_spawn.zig");
+const survival_state = @import("../survival_state.zig");
 
 pub const tier5_builders = [_]common.LevelBuilder{
     .{ .level_key = 501, .start_weapon_id = survival_state.WeaponId.pistol, .build = build501TheBeating },

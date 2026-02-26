@@ -1,5 +1,5 @@
-const common = @import("quest_spawn_logic_common.zig");
-const survival_spawn = @import("survival_spawn.zig");
+const common = @import("logic_common.zig");
+const survival_spawn = @import("../survival_spawn.zig");
 
 const weapon_id_pistol: i32 = 1;
 const weapon_id_gauss_gun: i32 = 6;

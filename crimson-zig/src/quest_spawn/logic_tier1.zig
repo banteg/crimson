@@ -1,5 +1,5 @@
-const common = @import("quest_spawn_logic_common.zig");
-const survival_spawn = @import("survival_spawn.zig");
+const common = @import("logic_common.zig");
+const survival_spawn = @import("../survival_spawn.zig");
 
 const default_edge_offset: f64 = 64.0;
 const start_weapon_pistol: i32 = 0x01;

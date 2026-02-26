@@ -1,7 +1,7 @@
 const std = @import("std");
 
-const survival_math = @import("survival_math.zig");
-const survival_spawn = @import("survival_spawn.zig");
+const survival_math = @import("../survival_math.zig");
+const survival_spawn = @import("../survival_spawn.zig");
 
 pub const QuestSpawnBuildError = error{
     UnsupportedQuestSpawnTable,

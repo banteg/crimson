@@ -1,7 +1,6 @@
 const std = @import("std");
 const crimson_zig = @import("crimson_zig");
 
-const quest_spawn_builder = crimson_zig.quest_spawn_builder;
 const quest_spawn_logic_full = crimson_zig.quest_spawn_logic_full;
 const survival_spawn = crimson_zig.survival_spawn;
 
@@ -10,7 +9,7 @@ const usage =
     \\  crimson-zig-quest-spawn-dump <impl> <level_key> <player_count> <seed> [world_size]
     \\
     \\Args:
-    \\  impl: legacy | main
+    \\  impl: main
     \\  level_key: quest level key (for example 101 for quest 1.1)
     \\  player_count: 1..4
     \\  seed: quest spawn RNG seed (u32)
@@ -101,19 +100,6 @@ fn buildByImpl(
     world_size: f64,
     out_entries: []survival_spawn.QuestSpawnEntry,
 ) !quest_spawn_logic_full.QuestSpawnBuildResult {
-    if (std.mem.eql(u8, impl, "legacy")) {
-        const legacy_result = try quest_spawn_builder.buildQuestSpawnTable(
-            level_key,
-            player_count,
-            seed,
-            world_size,
-            out_entries,
-        );
-        return .{
-            .entries = legacy_result.entries,
-            .start_weapon_id = legacy_result.start_weapon_id,
-        };
-    }
     if (std.mem.eql(u8, impl, "main")) {
         return quest_spawn_logic_full.buildQuestSpawnTable(
             level_key,

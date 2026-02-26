@@ -8,7 +8,7 @@ const survival_particles = @import("survival_particles.zig");
 const survival_projectiles = @import("survival_projectiles.zig");
 const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
 const survival_spawn = @import("survival_spawn.zig");
-const quest_spawn_builder = @import("quest_spawn_logic_full.zig");
+const quest_spawn_logic = @import("quest_spawn/logic_full.zig");
 const survival_state = @import("survival_state.zig");
 const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
 const survival_math = @import("survival_math.zig");
@@ -444,7 +444,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
         } else {
             const level_key = resolveQuestLevelKey(header) orelse return error.UnsupportedQuestSpawnTable;
-            const built = quest_spawn_builder.buildQuestSpawnTable(
+            const built = quest_spawn_logic.buildQuestSpawnTable(
                 level_key,
                 header.player_count,
                 header.seed,
@@ -2767,10 +2767,11 @@ fn updatePlayerFromReplayInput(
 
     var delta = if (move_delta_override) |override|
         override
-    else survival_state.Vec2{
-        .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
-        .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
-    };
+    else
+        survival_state.Vec2{
+            .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
+            .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
+        };
     if (perkActive(player.*, survival_perks.PerkId.alternate_weapon)) {
         delta = .{
             .x = asF32F64(delta.x * 0.8),
@@ -3108,7 +3109,7 @@ test "survival scaffold rejects multiplayer event player index out of bounds" {
         .tick_rate = 60,
         .player_count = 2,
         .inputs = &.{
-            &.{0, 0},
+            &.{ 0, 0 },
         },
         .events = &.{
             .{ .perk_menu_open = .{ .tick_index = 0, .player_index = 2 } },
@@ -3918,7 +3919,7 @@ test "rush scaffold supports player counts 1 through 4" {
         const players_len: usize = @intCast(player_count);
 
         const row0_storage = [_]u32{0} ** survival_state.max_players;
-        const row1_storage = [_]u32{ replay_codec.fire_down_flag } ** survival_state.max_players;
+        const row1_storage = [_]u32{replay_codec.fire_down_flag} ** survival_state.max_players;
         const rows = [_][]const u32{
             row0_storage[0..players_len],
             row1_storage[0..players_len],
