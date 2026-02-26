@@ -293,7 +293,7 @@ pub const SecondaryProjectilePool = struct {
                 }
 
                 const hit_type = @intFromEnum(entry.type_id);
-                const det_scale: f64 = switch (entry.type_id) {
+                const det_scale: f32 = switch (entry.type_id) {
                     SecondaryProjectileTypeId.rocket => 1.0,
                     SecondaryProjectileTypeId.homing_rocket => 0.35,
                     SecondaryProjectileTypeId.rocket_minigun => 0.25,
@@ -416,7 +416,7 @@ fn creatureFindNearestAlive(
     origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;
-    var best_dist_sq: f64 = 1_000_000.0;
+    var best_dist_sq: f32 = 1_000_000.0;
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;
