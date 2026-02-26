@@ -10,15 +10,15 @@ tags:
 Last reviewed: **2026-02-25**
 
 Scope target: fast, headless, deterministic verification with a native fast-path
-for latest-ruleset **1-player Survival/Rush** replays (`preserve_bugs=false`),
+for latest-ruleset **1-4 player Survival/Rush/Quest** replays (`preserve_bugs=false`),
 with explicit hard-fail behavior for unsupported native paths.
 
 ## Ported in Zig (current)
 
 - Replay ingestion from `.crd` bytes (msgpack decode path in-tree).
-- Deterministic Survival sim scaffold + runtime loops for:
+- Deterministic Survival/Rush/Quest sim scaffold + runtime loops for:
   - player/weapon runtime (reload/fire/ammo counters, level/XP progression),
-  - survival spawn system,
+  - survival/quest spawn systems,
   - creature updates,
   - primary/secondary projectile runtime,
   - bonus/perk runtime integration,
@@ -26,6 +26,8 @@ with explicit hard-fail behavior for unsupported native paths.
 - Verification is fully self-contained from replay bytes (no checkpoint/high-score
   sidecars).
 - Deterministic Rush spawn runtime path (`tick_rush_mode_spawns`) ported in Zig.
+- Deterministic Quest spawn tables and runtime progression hooks ported in Zig.
+- Multiplayer gameplay logic and perk gating parity achieved.
 - CLI surface: `crimson-zig replay verify <replay>` with human/json outputs and
   score-claim checking (`--submitted-score`), plus replay SHA-256 reporting.
 - Wasm target build + export ABI for worker-side integration.
@@ -35,9 +37,7 @@ with explicit hard-fail behavior for unsupported native paths.
 
 ## Not fully ported / known parity gaps
 
-- Native fast path is still scoped to **1-player Survival/Rush**:
-  - Quest native replay simulation is not ported yet,
-  - multiplayer native replay simulation is not ported yet,
+- Native fast path is still scoped to **1-4 player Survival/Rush/Quest**:
   - no native `preserve_bugs=true` compatibility layer.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
