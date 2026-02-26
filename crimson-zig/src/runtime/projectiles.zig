@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
 const perks = @import("perks.zig");
+const runtime_helpers = @import("helpers.zig");
 const survival_spawn = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
@@ -76,7 +77,7 @@ pub const ProjectilePool = struct {
             .angle = narrowF32(angle),
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = directionFromHeading(narrowF32(angle)).mul(1.5),
+            .vel = runtime_helpers.directionFromHeading(narrowF32(angle)).mul(1.5),
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
@@ -212,7 +213,7 @@ pub const ProjectilePool = struct {
             if (barrel_greaser_active and proj.owner_id < 0) {
                 steps *= 2;
             }
-            const direction = directionFromHeading(proj.angle);
+            const direction = runtime_helpers.directionFromHeading(proj.angle);
             var acc = state_mod.Vec2{};
 
             var step: i32 = 0;
@@ -245,7 +246,7 @@ pub const ProjectilePool = struct {
                         @abs(candidate_cell_x[idx] - proj_cell_x) <= cell_span and
                         @abs(candidate_cell_y[idx] - proj_cell_y) <= cell_span;
                     if (!in_span) continue;
-                    if (withinNativeFindRadius(
+                    if (runtime_helpers.withinNativeFindRadius(
                         proj.pos,
                         creature.pos,
                         proj.hit_radius,
@@ -279,7 +280,7 @@ pub const ProjectilePool = struct {
                                 if (owner_idx == idx) continue;
                             }
                             if (!(player.health > 0.0)) continue;
-                            if (withinNativeFindRadius(
+                            if (runtime_helpers.withinNativeFindRadius(
                                 proj.pos,
                                 player.pos,
                                 proj.hit_radius,
@@ -488,21 +489,6 @@ pub const ProjectilePool = struct {
     }
 };
 
-fn withinNativeFindRadius(
-    origin: state_mod.Vec2,
-    target: state_mod.Vec2,
-    radius: f64,
-    target_size: f64,
-) bool {
-    const dx = target.x - origin.x;
-    const dy = target.y - origin.y;
-    const size_margin = target_size * 0.14285715 + 3.0;
-    const max_axis_delta = radius + size_margin;
-    if (@abs(dx) > max_axis_delta or @abs(dy) > max_axis_delta) return false;
-    const margin = std.math.sqrt(dx * dx + dy * dy) - radius - size_margin;
-    return margin < 0.0;
-}
-
 fn resetShockChainIfOwner(
     state: *state_mod.GameplayState,
     proj_index: usize,
@@ -545,7 +531,7 @@ fn applyIonLingerDamage(
         if (!(creature.lifecycle_stage > 5.0)) continue;
         const creature_radius = creatureHitRadius(creature.size);
         const hit_radius = radius + creature_radius;
-        if (distanceSq(proj.pos, creature.pos) <= hit_radius * hit_radius) {
+        if (runtime_helpers.distanceSq(proj.pos, creature.pos) <= hit_radius * hit_radius) {
             _ = creatures.applyIonDamage(
                 state,
                 players,
@@ -578,14 +564,6 @@ fn creatureHitRadius(size: f64) f64 {
     return radius;
 }
 
-fn directionFromHeading(heading: f32) state_mod.Vec2 {
-    const radians = narrowF32(heading - std.math.pi / 2.0);
-    return .{
-        .x = narrowF32(survival_math.cos(radians)),
-        .y = narrowF32(survival_math.sin(radians)),
-    };
-}
-
 fn postHitIonRifleShockChain(
     state: *state_mod.GameplayState,
     pool: *ProjectilePool,
@@ -608,7 +586,7 @@ fn postHitIonRifleShockChain(
     for (creatures.entries, 0..) |creature, idx| {
         if (idx == hit_idx) continue;
         if (!creature.active) continue;
-        const d_sq = distanceSq(origin_pos, creature.pos);
+        const d_sq = runtime_helpers.distanceSq(origin_pos, creature.pos);
         if (d_sq <= min_dist_sq) continue;
         if (d_sq < best_dist_sq) {
             best_dist_sq = d_sq;
@@ -633,12 +611,6 @@ fn postHitIonRifleShockChain(
         false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
-}
-
-fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    return dx * dx + dy * dy;
 }
 
 fn consumeIonHitEffectsRng(

@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const perks = @import("perks.zig");
+const runtime_helpers = @import("helpers.zig");
 const survival_spawn = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
@@ -1911,7 +1912,7 @@ pub const CreaturePool = struct {
                         // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
                     }
-                    consumeAddRandomRng(state);
+                    runtime_helpers.consumeAddRandomRng(state);
                 }
             }
             if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
@@ -1952,7 +1953,7 @@ pub const CreaturePool = struct {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = narrowF32(narrowF32(100.0 - dist) * 0.3);
                         creature.hp = narrowF32(creature.hp - pulse_damage);
-                        consumeAddRandomRng(state);
+                        runtime_helpers.consumeAddRandomRng(state);
                         if (creature.hp < 0.0) {
                             if (creature.type_id == @intFromEnum(survival_spawn.CreatureTypeId.lizard)) {
                                 creature.hp = 1.0;
@@ -2076,7 +2077,7 @@ pub const CreaturePool = struct {
                     }
                 }
                 applyPlayerContactDamage(state, player, creature.contact_damage, dt);
-                consumeAddRandomRng(state);
+                runtime_helpers.consumeAddRandomRng(state);
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
             }
 
@@ -3068,7 +3069,7 @@ pub fn consumeProjectileHitPresentationPreRng(
             for (0..2) |_| {
                 _ = state.rng.rand() % span;
                 _ = state.rng.rand() % span;
-                consumeAddRandomRng(state);
+                runtime_helpers.consumeAddRandomRng(state);
             }
             lo -= 10;
             hi += 10;
@@ -3102,10 +3103,10 @@ pub fn consumeProjectileHitPresentationPostRng(
 
     for (0..3) |_| {
         _ = state.rng.rand();
-        consumeAddRandomRng(state);
-        consumeAddRandomRng(state);
-        consumeAddRandomRng(state);
-        consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
     }
 }
 
@@ -3132,7 +3133,7 @@ fn consumeLargeHitStreakRng(
             _ = state.rng.rand();
             _ = state.rng.rand();
         }
-        consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
     }
 }
 
@@ -3164,13 +3165,6 @@ fn consumeSpawnBloodSplatterRng(state: *state_mod.GameplayState) void {
         _ = state.rng.rand();
         _ = state.rng.rand();
     }
-}
-
-fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
 }
 
 fn spreadPlagueInfection(
@@ -3413,7 +3407,7 @@ fn consumeDeathSideEffectsRng(
                 _ = state.rng.rand();
             }
         }
-        consumeAddRandomRng(state);
+        runtime_helpers.consumeAddRandomRng(state);
     }
     if (plan_death_sfx) {
         // plan_death_sfx_keys chooses one death sample per death.

@@ -1,10 +1,9 @@
-const std = @import("std");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
+const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
-const survival_math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -91,7 +90,7 @@ pub const SecondaryProjectilePool = struct {
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             base_speed = 190.0;
         }
-        entry.vel = directionFromHeading(entry.angle).mul(base_speed);
+        entry.vel = runtime_helpers.directionFromHeading(entry.angle).mul(base_speed);
         entry.speed = narrowF32(time_to_live);
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
@@ -172,7 +171,7 @@ pub const SecondaryProjectilePool = struct {
                     if (!target.active) continue;
                     if (!(target.lifecycle_stage > 5.0)) continue;
                     if (!(target.hp > 0.0)) continue;
-                    const d_sq = distanceSq(entry.pos, target.pos);
+                    const d_sq = runtime_helpers.distanceSqRoundedF32(entry.pos, target.pos);
                     if (!(d_sq < radius_sq)) continue;
                     const hp_before = target.hp;
                     const impulse = directionTo(entry.pos, target.pos).mul(0.1);
@@ -191,8 +190,8 @@ pub const SecondaryProjectilePool = struct {
                     );
                     if (hp_before > 0.0 and killed_now) {
                         if (!freeze_active) {
-                            consumeAddRandomRng(state);
-                            consumeAddRandomRng(state);
+                            runtime_helpers.consumeAddRandomRng(state);
+                            runtime_helpers.consumeAddRandomRng(state);
                         }
                         _ = creatures.handleSecondaryDetonationDeathFollowup(
                             state,
@@ -281,7 +280,7 @@ pub const SecondaryProjectilePool = struct {
             for (creatures.entries, 0..) |creature, idx| {
                 if (!creature.active) continue;
                 if (!(creature.lifecycle_stage > 5.0)) continue;
-                if (withinNativeFindRadius(entry.pos, creature.pos, 8.0, creature.size)) {
+                if (runtime_helpers.withinNativeFindRadius(entry.pos, creature.pos, 8.0, creature.size)) {
                     hit_idx = idx;
                     break;
                 }
@@ -305,13 +304,13 @@ pub const SecondaryProjectilePool = struct {
                 if (freeze_active) {
                     for (0..4) |_| {
                         _ = state.rng.rand() % 0x264;
-                        consumeFreezeShardRng(state);
+                        runtime_helpers.consumeFreezeShardRng(state);
                     }
                 } else {
                     for (0..3) |_| {
                         _ = state.rng.rand() % 0x14;
                         _ = state.rng.rand() % 0x14;
-                        consumeAddRandomRng(state);
+                        runtime_helpers.consumeAddRandomRng(state);
                     }
                 }
 
@@ -350,7 +349,7 @@ pub const SecondaryProjectilePool = struct {
                 if (freeze_active) {
                     for (0..8) |_| {
                         _ = state.rng.rand() % 0x264;
-                        consumeFreezeShardRng(state);
+                        runtime_helpers.consumeFreezeShardRng(state);
                     }
                 } else {
                     const extra_decals: i32 = if (det_scale == 1.0)
@@ -378,7 +377,7 @@ pub const SecondaryProjectilePool = struct {
                             const radius_mod = @max(extra_radius, 1);
                             _ = state.rng.rand() % @as(u32, @intCast(radius_mod));
                         }
-                        consumeAddRandomRng(state);
+                        runtime_helpers.consumeAddRandomRng(state);
                     }
                 }
 
@@ -400,17 +399,8 @@ pub const SecondaryProjectilePool = struct {
                 entry.trail_timer = 0.0;
             }
         }
-
     }
 };
-
-fn directionFromHeading(heading: f32) state_mod.Vec2 {
-    const radians = narrowF32(heading - std.math.pi / 2.0);
-    return .{
-        .x = narrowF32(survival_math.cos(radians)),
-        .y = narrowF32(survival_math.sin(radians)),
-    };
-}
 
 fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
     const delta = state_mod.Vec2.sub(target, origin);
@@ -432,50 +422,13 @@ fn creatureFindNearestAlive(
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;
         if (!(creature.lifecycle_stage == creature_lifecycle_stage_alive)) continue;
-        const dist_sq = distanceSq(origin, creature.pos);
+        const dist_sq = runtime_helpers.distanceSqRoundedF32(origin, creature.pos);
         if (dist_sq < best_dist_sq) {
             best_dist_sq = dist_sq;
             best_idx = idx;
         }
     }
     return best_idx;
-}
-
-fn withinNativeFindRadius(
-    origin: state_mod.Vec2,
-    target: state_mod.Vec2,
-    radius: f64,
-    target_size: f64,
-) bool {
-    const dx = target.x - origin.x;
-    const dy = target.y - origin.y;
-    const size_margin = target_size * 0.14285715 + 3.0;
-    const max_axis_delta = radius + size_margin;
-    if (@abs(dx) > max_axis_delta or @abs(dy) > max_axis_delta) return false;
-    const margin = std.math.sqrt(dx * dx + dy * dy) - radius - size_margin;
-    return margin < 0.0;
-}
-
-fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    return narrowF32(dx * dx + dy * dy);
-}
-
-fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-}
-
-fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
 }
 
 fn consumeExplosionBurstRng(

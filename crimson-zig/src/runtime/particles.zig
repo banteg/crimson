@@ -3,8 +3,8 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
+const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
-const survival_math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -58,7 +58,7 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = directionFromAngle(narrowF32(angle)).mul(90.0),
+            .vel = runtime_helpers.directionFromAngle(narrowF32(angle)).mul(90.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
@@ -89,7 +89,7 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = directionFromAngle(narrowF32(angle)).mul(30.0),
+            .vel = runtime_helpers.directionFromAngle(narrowF32(angle)).mul(30.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
@@ -179,7 +179,7 @@ pub const ParticlePool = struct {
                     speed = 82.0;
                 }
                 entry.angle = narrowF32(entry.angle - jitter);
-                entry.vel = directionFromAngle(entry.angle).mul(speed);
+                entry.vel = runtime_helpers.directionFromAngle(entry.angle).mul(speed);
             }
 
             const alpha = std.math.clamp(entry.intensity, 0.0, 1.0);
@@ -231,7 +231,7 @@ pub const ParticlePool = struct {
                             entry.angle = narrowF32(entry.angle - deflect_step);
                         }
 
-                        const bounce = directionFromAngle(entry.angle).mul(82.0);
+                        const bounce = runtime_helpers.directionFromAngle(entry.angle).mul(82.0);
                         const speed_scale = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 10)) * 0.1);
                         entry.vel = .{
                             .x = narrowF32(bounce.x * speed_scale),
@@ -257,7 +257,7 @@ pub const ParticlePool = struct {
                             _ = state.rng.rand() % 0x3c;
                             _ = state.rng.rand() % 0x3c;
                         }
-                        consumeAddRandomRng(state);
+                        runtime_helpers.consumeAddRandomRng(state);
                     }
                 }
             }
@@ -294,20 +294,6 @@ fn creatureFindInRadius(
     return null;
 }
 
-fn directionFromAngle(angle: f32) state_mod.Vec2 {
-    return .{
-        .x = narrowF32(survival_math.cos(angle)),
-        .y = narrowF32(survival_math.sin(angle)),
-    };
-}
-
 fn wrapAngle(angle: f32) f32 {
     return native_math.wrapAngle0Tau(angle);
-}
-
-fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
 }
