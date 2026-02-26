@@ -25,6 +25,8 @@ pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
 };
 
+pub var debug_tick_index: i32 = -1;
+
 pub const CreatureState = struct {
     active: bool = false,
     type_id: i32 = 0,
@@ -153,6 +155,21 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         call: survival_spawn.SpawnTemplateCall,
         rng: *survival_spawn.Crand,
+    ) CreatureRuntimeError!void {
+        try self.spawnTemplateCallWithRuntimeContext(
+            call,
+            rng,
+            null,
+            0.0,
+        );
+    }
+
+    pub fn spawnTemplateCallWithRuntimeContext(
+        self: *CreaturePool,
+        call: survival_spawn.SpawnTemplateCall,
+        rng: *survival_spawn.Crand,
+        state: ?*const survival_state.GameplayState,
+        terrain_size: f64,
     ) CreatureRuntimeError!void {
         switch (call.template_id) {
             survival_spawn.SpawnId.formation_ring_alien_8_12 => {
@@ -1769,6 +1786,16 @@ pub const CreaturePool = struct {
             },
             else => return error.UnsupportedSpawnTemplate,
         }
+
+        if (state) |game_state| {
+            if (!game_state.demo_mode_active and
+                terrain_size > 0.0 and
+                call.pos.x > 0.0 and call.pos.x < terrain_size and
+                call.pos.y > 0.0 and call.pos.y < terrain_size)
+            {
+                consumeSpawnTemplateBurstRng(rng, 8);
+            }
+        }
     }
 
     pub fn update(
@@ -1795,13 +1822,15 @@ pub const CreaturePool = struct {
                 if (!owner.active) continue;
 
                 if (survival_spawn.tickSpawnSlot(slot, dt)) |child_template_id| {
-                    self.spawnTemplateCall(
+                    self.spawnTemplateCallWithRuntimeContext(
                         .{
                             .template_id = child_template_id,
                             .pos = .{ .x = owner.pos.x, .y = owner.pos.y },
                             .heading = owner.heading,
                         },
                         &state.rng,
+                        state,
+                        world_size,
                     ) catch {};
                 }
             }
@@ -1809,6 +1838,14 @@ pub const CreaturePool = struct {
 
         const dt_ms = @max(@as(i32, 0), @as(i32, @intFromFloat(@round(dt * 1000.0))));
         const player = &players[0];
+        const single_player_dead_target_pos: ?survival_state.Vec2 =
+            if (players.len == 1 and players[0].health <= 0.0)
+                .{
+                    .x = asF32F64(world_size * (27.0 / 64.0)),
+                    .y = asF32F64(world_size * (27.0 / 64.0)),
+                }
+            else
+                null;
 
         for (&self.entries, 0..) |*creature, idx| {
             if (!creature.active) continue;
@@ -1845,11 +1882,37 @@ pub const CreaturePool = struct {
             }
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
+            const probe_c12 = state.game_mode == 1 and idx == 12 and
+                creature.link_index == -1 and
+                @as(i32, @intFromFloat(creature.phase_seed)) == 111 and
+                creature.pos.x > -49.0 and creature.pos.x < -47.0;
+            if (probe_c12) {
+                std.debug.print(
+                    "zig c12 pre pos=({d:.6},{d:.6}) target=({d:.6},{d:.6}) head={d:.9} thead={d:.9} ms={d:.9} mscale={d:.9} vel=({d:.9},{d:.9})\n",
+                    .{
+                        creature.pos.x,
+                        creature.pos.y,
+                        creature.target.x,
+                        creature.target.y,
+                        creature.heading,
+                        creature.target_heading,
+                        creature.move_speed,
+                        creature.move_scale,
+                        creature.vel.x,
+                        creature.vel.y,
+                    },
+                );
+            }
             if (creatureFrozenByEvilEyes(state, players, idx)) {
                 creature.force_target = 0;
                 continue;
             }
-            creatureAiUpdateTarget(creature, player.pos, self.entries[0..], dt);
+            creatureAiUpdateTarget(
+                creature,
+                if (single_player_dead_target_pos) |dead_target| dead_target else player.pos,
+                self.entries[0..],
+                dt,
+            );
             if (creature.plague_infected) {
                 creature.collision_timer -= dt;
                 if (creature.collision_timer < 0.0) {
@@ -1857,16 +1920,16 @@ pub const CreaturePool = struct {
                     creature.hp = asF32F64(creature.hp - 15.0);
                     if (creature.hp < 0.0) {
                         state.plaguebearer_infection_count += 1;
-                        consumeDeathSideEffectsRng(
+                        _ = self.handleSecondaryDetonationDeathFollowup(
                             state,
                             players,
                             bonus_pool,
-                            creature.pos,
+                            idx,
+                            creature.last_hit_owner_id,
+                            dt,
                             world_size,
-                            false,
                         );
-                        _ = awardExperienceFromReward(state, player, creature.reward_value);
-                        creature.lifecycle_stage = asF32F64(creature.lifecycle_stage - dt);
+                        // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
                     }
                     consumeAddRandomRng(state);
@@ -1891,6 +1954,22 @@ pub const CreaturePool = struct {
                 );
                 creature.vel = move_delta;
                 creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
+            }
+            if (probe_c12) {
+                std.debug.print(
+                    "zig c12 post pos=({d:.6},{d:.6}) target=({d:.6},{d:.6}) head={d:.9} thead={d:.9} mscale={d:.9} vel=({d:.9},{d:.9})\n",
+                    .{
+                        creature.pos.x,
+                        creature.pos.y,
+                        creature.target.x,
+                        creature.target.y,
+                        creature.heading,
+                        creature.target_heading,
+                        creature.move_scale,
+                        creature.vel.x,
+                        creature.vel.y,
+                    },
+                );
             }
 
             const eat_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
@@ -1929,6 +2008,8 @@ pub const CreaturePool = struct {
                         creature.pos,
                         world_size,
                         true,
+                        false,
+                        0,
                     );
                     state.bonus_spawn_guard = prev_spawn_guard;
                     _ = awardExperienceFromReward(state, player, creature.reward_value);
@@ -2269,13 +2350,25 @@ pub const CreaturePool = struct {
         owner_id: i32,
         dt: f64,
         world_size: f64,
+        killed_out: ?*bool,
     ) i32 {
+        if (killed_out) |k| {
+            k.* = false;
+        }
         if (creature_index >= self.entries.len) return 0;
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
+        const det_probe = debugDetonationProbe(state, creature_index);
+        if (det_probe) {
+            std.debug.print(
+                "zig applyExplosion idx={d} before rng={d} hp={d:.6} active={} size={d:.3} flags={d}\n",
+                .{ creature_index, state.rng.state, creature.hp, creature.active, creature.size, creature.flags },
+            );
+        }
         if (!creature.active) return 0;
         creature.last_hit_owner_id = owner_id;
+        const death_start_needed = creature.lifecycle_stage == creature_lifecycle_stage_alive;
 
         // Native nuke path applies damage to active corpse entries as well.
         if (!(creature.hp > 0.0)) {
@@ -2291,17 +2384,28 @@ pub const CreaturePool = struct {
             .y = creature.vel.y - impulse.y,
         };
         if (creature.hp > 0.0) return 0;
+        if (killed_out) |k| {
+            k.* = true;
+        }
 
         if (dt > 0.0) {
             creature.lifecycle_stage -= dt;
         } else {
             creature.lifecycle_stage -= 0.001;
         }
+        if (!death_start_needed) return 0;
+        const split_can_reuse_slot =
+            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            creature.size > 35.0;
+        const death_size = creature.size;
+        const death_reward_value = creature.reward_value;
         creature.vel = .{
             .x = creature.vel.x - impulse.x * 2.0,
             .y = creature.vel.y - impulse.y * 2.0,
         };
 
+        spawnSplitChildrenOnDeath(self, state, creature);
+        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
         consumeDeathSideEffectsRng(
             state,
             players,
@@ -2309,8 +2413,10 @@ pub const CreaturePool = struct {
             creature.pos,
             world_size,
             true,
+            det_probe,
+            creature_index,
         );
-        if (dt > 0.0) {
+        if (dt > 0.0 and !slot_reused_by_child) {
             creature.lifecycle_stage -= dt;
         }
 
@@ -2319,10 +2425,91 @@ pub const CreaturePool = struct {
             @intCast(owner_player_idx)
         else
             0;
-        const xp_gained = awardExperienceFromReward(state, &players[slot], creature.reward_value);
+        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
-            creature.active = false;
+            if (!slot_reused_by_child) {
+                creature.active = false;
+            }
+        }
+        if (det_probe) {
+            std.debug.print(
+                "zig applyExplosion idx={d} after rng={d} hp={d:.6} active={} xp={d}\n",
+                .{ creature_index, state.rng.state, creature.hp, creature.active, xp_gained },
+            );
+        }
+        return xp_gained;
+    }
+
+    pub fn handleSecondaryDetonationDeathFollowup(
+        self: *CreaturePool,
+        state: *survival_state.GameplayState,
+        players: []survival_state.PlayerState,
+        bonus_pool: *survival_bonuses.BonusPool,
+        creature_index: usize,
+        owner_id: i32,
+        dt: f64,
+        world_size: f64,
+    ) i32 {
+        if (creature_index >= self.entries.len) return 0;
+        if (players.len == 0) return 0;
+
+        var creature = &self.entries[creature_index];
+        if (state.game_mode == 3 and state.rng.state == 4263481573) {
+            std.debug.print(
+                "zig probe3005 detFollow idx={d} hp={d:.6} size={d:.3} flags={d} life={d:.6}\n",
+                .{ creature_index, creature.hp, creature.size, creature.flags, creature.lifecycle_stage },
+            );
+        }
+        const det_probe = debugDetonationProbe(state, creature_index);
+        if (det_probe) {
+            std.debug.print(
+                "zig detFollow idx={d} before rng={d} hp={d:.6} active={} size={d:.3} flags={d}\n",
+                .{ creature_index, state.rng.state, creature.hp, creature.active, creature.size, creature.flags },
+            );
+        }
+        if (!creature.active) return 0;
+        if (creature.hp > 0.0) return 0;
+        const split_can_reuse_slot =
+            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            creature.size > 35.0;
+        const death_size = creature.size;
+        const death_reward_value = creature.reward_value;
+
+        creature.last_hit_owner_id = owner_id;
+        spawnSplitChildrenOnDeath(self, state, creature);
+        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
+        consumeDeathSideEffectsRng(
+            state,
+            players,
+            bonus_pool,
+            creature.pos,
+            world_size,
+            false,
+            det_probe,
+            creature_index,
+        );
+        if (dt > 0.0 and !slot_reused_by_child) {
+            creature.lifecycle_stage -= dt;
+        }
+
+        const owner_player_idx = ownerIdToPlayerIndex(owner_id) orelse 0;
+        const slot: usize = if (owner_player_idx >= 0 and owner_player_idx < players.len)
+            @intCast(owner_player_idx)
+        else
+            0;
+        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
+        if (state.bonuses.freeze > 0.0) {
+            self.kill_count += 1;
+            if (!slot_reused_by_child) {
+                creature.active = false;
+            }
+        }
+        if (det_probe) {
+            std.debug.print(
+                "zig detFollow idx={d} after rng={d} hp={d:.6} active={} xp={d}\n",
+                .{ creature_index, state.rng.state, creature.hp, creature.active, xp_gained },
+            );
         }
         return xp_gained;
     }
@@ -2343,10 +2530,16 @@ pub const CreaturePool = struct {
         var creature = &self.entries[creature_index];
         if (!creature.active) return 0;
         if (!(creature.hp > 0.0)) return 0;
+        const split_can_reuse_slot =
+            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            creature.size > 35.0;
+        const death_size = creature.size;
+        const death_reward_value = creature.reward_value;
 
         creature.last_hit_owner_id = owner_id;
 
         spawnSplitChildrenOnDeath(self, state, creature);
+        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
         consumeDeathSideEffectsRng(
             state,
             players,
@@ -2354,6 +2547,8 @@ pub const CreaturePool = struct {
             creature.pos,
             world_size,
             true,
+            false,
+            0,
         );
 
         const owner_player_idx = ownerIdToPlayerIndex(owner_id) orelse 0;
@@ -2361,7 +2556,7 @@ pub const CreaturePool = struct {
             @intCast(owner_player_idx)
         else
             0;
-        const xp_gained = awardExperienceFromReward(state, &players[slot], creature.reward_value);
+        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
 
         if (dt > 0.0 and state.bonuses.freeze > 0.0) {
             for (0..8) |_| {
@@ -2384,7 +2579,9 @@ pub const CreaturePool = struct {
             self.kill_count += 1;
         }
 
-        creature.active = false;
+        if (!slot_reused_by_child) {
+            creature.active = false;
+        }
         return xp_gained;
     }
 
@@ -2543,6 +2740,12 @@ pub const CreaturePool = struct {
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
+        if (state.game_mode == 3 and state.rng.state == 4263481573) {
+            std.debug.print(
+                "zig probe3005 applyDamage tick={d} idx={d} hp={d:.6} life={d:.6} size={d:.3} flags={d} damage={d:.6} owner={d}\n",
+                .{ debug_tick_index, creature_index, creature.hp, creature.lifecycle_stage, creature.size, creature.flags, damage, owner_id },
+            );
+        }
         if (!creature.active) return 0;
         // Native damage path records the incoming owner even on corpse hits.
         creature.last_hit_owner_id = owner_id;
@@ -2552,6 +2755,7 @@ pub const CreaturePool = struct {
             }
             return 0;
         }
+        const death_start_needed = creature.lifecycle_stage == creature_lifecycle_stage_alive;
 
         creature.hp -= damage;
         creature.vel = .{
@@ -2565,11 +2769,24 @@ pub const CreaturePool = struct {
         } else {
             creature.lifecycle_stage -= 0.001;
         }
+        if (state.game_mode == 3 and state.rng.state == 4263481573) {
+            std.debug.print(
+                "zig probe3005 applyDamage kill tick={d} idx={d} life_after={d:.6} death_start_needed={}\n",
+                .{ debug_tick_index, creature_index, creature.lifecycle_stage, death_start_needed },
+            );
+        }
+        if (!death_start_needed) return 0;
+        const split_can_reuse_slot =
+            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            creature.size > 35.0;
+        const death_size = creature.size;
+        const death_reward_value = creature.reward_value;
         creature.vel = .{
             .x = creature.vel.x - impulse.x * 2.0,
             .y = creature.vel.y - impulse.y * 2.0,
         };
         spawnSplitChildrenOnDeath(self, state, creature);
+        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
         consumeDeathSideEffectsRng(
             state,
             players,
@@ -2577,8 +2794,10 @@ pub const CreaturePool = struct {
             creature.pos,
             world_size,
             true,
+            false,
+            0,
         );
-        if (dt > 0.0) {
+        if (dt > 0.0 and !slot_reused_by_child) {
             creature.lifecycle_stage -= dt;
         }
 
@@ -2587,10 +2806,12 @@ pub const CreaturePool = struct {
             @intCast(owner_player_idx)
         else
             0;
-        const xp_gained = awardExperienceFromReward(state, &players[slot], creature.reward_value);
+        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
-            creature.active = false;
+            if (!slot_reused_by_child) {
+                creature.active = false;
+            }
         }
         return xp_gained;
     }
@@ -2929,12 +3150,14 @@ pub fn consumeProjectileHitPresentationPreRng(
 
     if (projectile_type_id == survival_state.ProjectileTypeId.blade_gun) {
         for (0..8) |_| {
+            _ = state.rng.rand() & 0xff;
             consumeSpawnBloodSplatterRng(state);
         }
     }
 
     if (perkActive(player, perk_id_bloody_mess_quick_learner)) {
         for (0..8) |_| {
+            _ = state.rng.rand() & 0x1f;
             consumeSpawnBloodSplatterRng(state);
         }
         consumeSpawnBloodSplatterRng(state);
@@ -3170,22 +3393,45 @@ fn spawnSplitChildrenOnDeath(
     state: *survival_state.GameplayState,
     creature: *const CreatureState,
 ) void {
-    if ((creature.flags & survival_spawn.CreatureFlags.split_on_death) == 0) return;
-    if (!(creature.size > 35.0)) return;
+    const source = creature.*;
+    if ((source.flags & survival_spawn.CreatureFlags.split_on_death) == 0) return;
+    if (!(source.size > 35.0)) return;
 
     const heading_offsets = [_]f64{ -native_half_pi, native_half_pi };
     for (heading_offsets) |heading_offset| {
-        const child_idx = allocCreatureSlot(self);
-        var child = creature.*;
+        const child_idx = allocCreatureSlot(self, &state.rng);
+        if (state.game_mode == 3 and (child_idx == 110 or child_idx == 171)) {
+            var source_idx: i32 = -1;
+            const base_ptr = @intFromPtr(&self.entries[0]);
+            const end_ptr = base_ptr + self.entries.len * @sizeOf(CreatureState);
+            const src_ptr = @intFromPtr(creature);
+            if (src_ptr >= base_ptr and src_ptr < end_ptr) {
+                source_idx = @intCast((src_ptr - base_ptr) / @sizeOf(CreatureState));
+            }
+            std.debug.print(
+                "zig split writes slot{d} src_idx={d} src_size={d:.3} src_hp={d:.6} src_reward={d:.6} src_pos=({d:.3},{d:.3}) rng={d}\n",
+                .{
+                    child_idx,
+                    source_idx,
+                    source.size,
+                    source.hp,
+                    source.reward_value,
+                    source.pos.x,
+                    source.pos.y,
+                    state.rng.state,
+                },
+            );
+        }
+        var child = source;
         child.active = true;
         child.phase_seed = @floatFromInt(state.rng.rand() & 0xff);
-        child.heading = wrapAngle(asF32F64(creature.heading + heading_offset));
+        child.heading = wrapAngle(asF32F64(source.heading + heading_offset));
         child.target_heading = child.heading;
-        child.hp = asF32F64(creature.max_hp * 0.25);
-        child.reward_value = asF32F64(creature.reward_value * (2.0 / 3.0));
-        child.size = asF32F64(creature.size - 8.0);
-        child.move_speed = asF32F64(creature.move_speed + 0.1);
-        child.contact_damage = asF32F64(creature.contact_damage * 0.7);
+        child.hp = asF32F64(source.max_hp * 0.25);
+        child.reward_value = asF32F64(source.reward_value * (2.0 / 3.0));
+        child.size = asF32F64(source.size - 8.0);
+        child.move_speed = asF32F64(source.move_speed + 0.1);
+        child.contact_damage = asF32F64(source.contact_damage * 0.7);
         child.lifecycle_stage = creature_lifecycle_stage_alive;
         self.entries[child_idx] = child;
     }
@@ -3199,7 +3445,10 @@ fn spawnSplitChildrenOnDeath(
     }
 }
 
-fn allocCreatureSlot(self: *CreaturePool) usize {
+fn allocCreatureSlot(
+    self: *CreaturePool,
+    rng: ?*survival_spawn.Crand,
+) usize {
     var slot: usize = self.entries.len - 1;
     for (self.entries, 0..) |entry, idx| {
         if (!entry.active) {
@@ -3207,7 +3456,47 @@ fn allocCreatureSlot(self: *CreaturePool) usize {
             break;
         }
     }
+    if (slot == self.entries.len - 1 and self.entries[slot].active) {
+        if (rng) |r| {
+            if (self.entries.len == 0) return 0;
+            const roll: u32 = @intCast(r.rand());
+            slot = @intCast(roll % @as(u32, @intCast(self.entries.len)));
+        }
+    }
     return slot;
+}
+
+fn consumeSpawnTemplateBurstRng(
+    rng: *survival_spawn.Crand,
+    count: usize,
+) void {
+    for (0..count) |_| {
+        _ = rng.rand();
+        _ = rng.rand();
+        _ = rng.rand();
+        _ = rng.rand();
+    }
+}
+
+fn debugDetonationProbe(
+    state: *const survival_state.GameplayState,
+    creature_index: usize,
+) bool {
+    if (state.game_mode != 3) return false;
+    return creature_index == 27 or
+        creature_index == 68 or
+        creature_index == 118 or
+        creature_index == 121 or
+        creature_index == 151 or
+        creature_index == 160 or
+        creature_index == 87 or
+        creature_index == 267 or
+        creature_index == 268 or
+        creature_index == 171 or
+        creature_index == 110 or
+        creature_index == 293 or
+        creature_index == 297 or
+        creature_index == 332;
 }
 
 fn consumeDeathSideEffectsRng(
@@ -3217,7 +3506,18 @@ fn consumeDeathSideEffectsRng(
     death_pos: survival_state.Vec2,
     world_size: f64,
     plan_death_sfx: bool,
+    debug_probe: bool,
+    debug_idx: usize,
 ) void {
+    const before_try_spawn = state.rng.state;
+    var has_pistol = false;
+    for (players) |player| {
+        if (player.weapon_id == survival_state.WeaponId.pistol) {
+            has_pistol = true;
+            break;
+        }
+    }
+    const has_bonus_magnet = anyPlayerHasPerk(players, survival_perks.PerkId.bonus_magnet);
     const spawned_bonus = bonus_pool.trySpawnOnKill(
         .{
             .x = asF32F64(death_pos.x),
@@ -3227,6 +3527,21 @@ fn consumeDeathSideEffectsRng(
         players,
         world_size,
     );
+    if (debug_probe) {
+        std.debug.print(
+            "  zig trySpawn idx={d} plan={} pistol={} magnet={} p0_weapon={d} before={d} after={d} spawned={}\n",
+            .{
+                debug_idx,
+                plan_death_sfx,
+                has_pistol,
+                has_bonus_magnet,
+                if (players.len > 0) players[0].weapon_id else -1,
+                before_try_spawn,
+                state.rng.state,
+                spawned_bonus != null,
+            },
+        );
+    }
     if (spawned_bonus) |_| {
         // effects.spawn_burst(count=16) -> 4 random draws per burst element.
         for (0..16) |_| {
@@ -3501,6 +3816,27 @@ fn findSeedForNthRandMod(
     return null;
 }
 
+fn findSeedForFirstTwoRandMods(
+    modulus: u32,
+    first: u32,
+    second: u32,
+    max_seed: u32,
+) ?u32 {
+    if (modulus == 0) return null;
+
+    var seed: u32 = 0;
+    while (seed < max_seed) : (seed += 1) {
+        var rng = survival_spawn.Crand.init(seed);
+        const first_roll = rng.rand() % modulus;
+        _ = rng.rand();
+        const second_roll = rng.rand() % modulus;
+        if (first_roll == first and second_roll == second) {
+            return seed;
+        }
+    }
+    return null;
+}
+
 test "spawn init and shot resolution award xp on kill" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(1234);
@@ -3587,6 +3923,221 @@ test "bloody mess quick learner awards 1.3x reward and bypasses double experienc
 
     try std.testing.expectEqual(@as(i32, 16), xp_gained);
     try std.testing.expectEqual(@as(i32, 116), players[0].experience);
+}
+
+test "split-on-death children use original source when first child reuses source slot" {
+    const seed = findSeedForFirstTwoRandMods(
+        @intCast(max_creatures),
+        0,
+        1,
+        2_000_000,
+    ) orelse return error.TestExpectedEqual;
+
+    var pool = CreaturePool{};
+    for (&pool.entries) |*entry| {
+        entry.* = .{
+            .active = true,
+            .hp = 100.0,
+            .max_hp = 100.0,
+            .size = 32.0,
+            .reward_value = 50.0,
+        };
+    }
+    pool.entries[0] = .{
+        .active = true,
+        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .hp = -5.0,
+        .max_hp = 400.0,
+        .size = 40.0,
+        .reward_value = 131.687241,
+        .move_speed = 2.0,
+        .contact_damage = 10.0,
+    };
+
+    var state = survival_state.GameplayState.init(seed);
+    spawnSplitChildrenOnDeath(&pool, &state, &pool.entries[0]);
+
+    try expectFloatClose(32.0, pool.entries[0].size);
+    try expectFloatClose(32.0, pool.entries[1].size);
+    try expectFloatClose(100.0, pool.entries[0].hp);
+    try expectFloatClose(100.0, pool.entries[1].hp);
+    try expectFloatClose(87.791496, pool.entries[0].reward_value);
+    try expectFloatClose(87.791496, pool.entries[1].reward_value);
+}
+
+test "explosion xp uses pre-split reward when source slot is reused by split child" {
+    const seed = findSeedForFirstTwoRandMods(
+        @intCast(max_creatures),
+        0,
+        1,
+        2_000_000,
+    ) orelse return error.TestExpectedEqual;
+
+    var pool = CreaturePool{};
+    for (&pool.entries) |*entry| {
+        entry.* = .{
+            .active = true,
+            .hp = 100.0,
+            .max_hp = 100.0,
+            .size = 32.0,
+            .reward_value = 50.0,
+        };
+    }
+    pool.entries[0] = .{
+        .active = true,
+        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .hp = 5.0,
+        .max_hp = 400.0,
+        .size = 40.0,
+        .reward_value = 131.687241,
+        .move_speed = 2.0,
+        .contact_damage = 10.0,
+    };
+
+    var state = survival_state.GameplayState.init(seed);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+    };
+    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+
+    const gained = pool.applyExplosionDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        owner_id_player_0,
+        1.0 / 60.0,
+        1024.0,
+        null,
+    );
+    try std.testing.expectEqual(@as(i32, 171), gained);
+}
+
+test "applyDamage skips death side effects when lifecycle is already below alive sentinel" {
+    var pool = CreaturePool{};
+    pool.entries[0] = .{
+        .active = true,
+        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .hp = 5.0,
+        .max_hp = 400.0,
+        .size = 40.0,
+        .reward_value = 131.687241,
+        .lifecycle_stage = 15.0,
+    };
+
+    var state = survival_state.GameplayState.init(1234);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .experience = 100,
+        },
+    };
+
+    const gained = pool.applyDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        owner_id_player_0,
+        1.0 / 60.0,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), gained);
+    try std.testing.expectEqual(@as(i32, 100), players[0].experience);
+    try expectFloatClose(40.0, pool.entries[0].size);
+    try expectFloatClose(131.687241, pool.entries[0].reward_value);
+    try std.testing.expect(pool.entries[0].active);
+    try std.testing.expect(!pool.entries[1].active);
+}
+
+test "applyExplosionDamage skips first death side effects when lifecycle is below alive sentinel" {
+    var pool = CreaturePool{};
+    pool.entries[0] = .{
+        .active = true,
+        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .hp = 5.0,
+        .max_hp = 400.0,
+        .size = 40.0,
+        .reward_value = 131.687241,
+        .lifecycle_stage = 15.0,
+    };
+
+    var state = survival_state.GameplayState.init(1234);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .experience = 100,
+        },
+    };
+
+    var killed_now = false;
+    const gained = pool.applyExplosionDamage(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        10.0,
+        .{},
+        owner_id_player_0,
+        1.0 / 60.0,
+        1024.0,
+        &killed_now,
+    );
+
+    try std.testing.expect(killed_now);
+    try std.testing.expectEqual(@as(i32, 0), gained);
+    try std.testing.expectEqual(@as(i32, 100), players[0].experience);
+    try expectFloatClose(40.0, pool.entries[0].size);
+    try expectFloatClose(131.687241, pool.entries[0].reward_value);
+    try std.testing.expect(pool.entries[0].active);
+    try std.testing.expect(!pool.entries[1].active);
+}
+
+test "projectile pre-hit rng counts include bloody spread draw per splatter" {
+    var state = survival_state.GameplayState.init(1234);
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    player.perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+
+    consumeProjectileHitPresentationPreRng(&state, &player, survival_state.ProjectileTypeId.pistol);
+
+    var expected_rng = survival_spawn.Crand.init(1234);
+    for (0..134) |_| {
+        _ = expected_rng.rand();
+    }
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
+}
+
+test "projectile pre-hit rng counts include blade-gun angle draws under freeze" {
+    var state = survival_state.GameplayState.init(1234);
+    state.bonuses.freeze = 1.0;
+    var player = survival_state.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+
+    consumeProjectileHitPresentationPreRng(&state, &player, survival_state.ProjectileTypeId.blade_gun);
+
+    var expected_rng = survival_spawn.Crand.init(1234);
+    for (0..88) |_| {
+        _ = expected_rng.rand();
+    }
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
 
 test "template spawn supports survival early-stage templates" {
@@ -5860,6 +6411,57 @@ test "plaguebearer infection kill increments global count" {
     try std.testing.expect(players[0].experience > 0);
 }
 
+test "plague timer kill preserves split-on-death child spawn behavior" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.split_on_death,
+        .size = 48.0,
+        .move_speed = 1.0,
+        .health = 10.0,
+        .max_health = 400.0,
+        .reward_value = 90.0,
+        .contact_damage = 4.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.01;
+    pool.entries[0].last_hit_owner_id = -1;
+
+    pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), state.plaguebearer_infection_count);
+    var active_count: usize = 0;
+    for (pool.entries) |entry| {
+        if (entry.active) active_count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 3), active_count);
+    try std.testing.expect(pool.entries[0].active);
+    try std.testing.expect(pool.entries[0].hp < 0.0);
+    try expectFloatClose(creature_lifecycle_stage_alive - 0.2, pool.entries[0].lifecycle_stage);
+    try std.testing.expect(pool.entries[1].active);
+    try std.testing.expect(pool.entries[2].active);
+    try expectFloatClose(40.0, pool.entries[1].size);
+    try expectFloatClose(40.0, pool.entries[2].size);
+    try expectFloatClose(60.0, pool.entries[1].reward_value);
+    try expectFloatClose(60.0, pool.entries[2].reward_value);
+    try expectFloatClose(100.0, pool.entries[1].hp);
+    try expectFloatClose(100.0, pool.entries[2].hp);
+}
+
 test "plaguebearer infection kill does not apply immediate dead decay" {
     var pool = CreaturePool{};
     var state = survival_state.GameplayState.init(1);
@@ -5892,4 +6494,46 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
     const dt = 0.063;
     pool.update(&state, players[0..], dt, 1024.0, &bonuses);
     try expectFloatClose(creature_lifecycle_stage_alive - dt, pool.entries[0].lifecycle_stage);
+}
+
+test "single-player dead player uses dead-target AI position" {
+    var pool = CreaturePool{};
+    var state = survival_state.GameplayState.init(1);
+    var bonuses = survival_bonuses.BonusPool{};
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 900.0, .y = 900.0 },
+            .health = 0.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 500.0, .y = 500.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 45.0,
+        .move_speed = 2.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+
+    const start_pos = pool.entries[0].pos;
+    pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+
+    const expected_dead_target = survival_state.Vec2{
+        .x = 1024.0 * (27.0 / 64.0),
+        .y = 1024.0 * (27.0 / 64.0),
+    };
+    const creature = pool.entries[0];
+    const dead_target_dist_sq = survival_state.Vec2.sub(creature.target, expected_dead_target).lengthSq();
+    const dead_player_dist_sq = survival_state.Vec2.sub(creature.target, players[0].pos).lengthSq();
+    try std.testing.expect(dead_target_dist_sq < dead_player_dist_sq);
+    try std.testing.expect(creature.pos.y < start_pos.y);
+    try expectFloatClose(0.0, players[0].health);
 }

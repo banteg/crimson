@@ -9,9 +9,9 @@ tags:
 
 Last reviewed: **2026-02-25**
 
-Scope target: fast, headless, deterministic verification for **1-player Survival**
-replays on the latest ruleset (`preserve_bugs=false`), with native and
-`wasm32-freestanding` targets.
+Scope target: fast, headless, deterministic verification with a native fast-path
+for latest-ruleset **1-player Survival/Rush** replays (`preserve_bugs=false`),
+with explicit hard-fail behavior for unsupported native paths.
 
 ## Ported in Zig (current)
 
@@ -25,25 +25,25 @@ replays on the latest ruleset (`preserve_bugs=false`), with native and
   - run-result assembly (`ticks`, `elapsed_ms`, `score_xp`, kills, weapon usage, RNG state).
 - Verification is fully self-contained from replay bytes (no checkpoint/high-score
   sidecars).
+- Deterministic Rush spawn runtime path (`tick_rush_mode_spawns`) ported in Zig.
 - CLI surface: `crimson-zig replay verify <replay>` with human/json outputs and
   score-claim checking (`--submitted-score`), plus replay SHA-256 reporting.
 - Wasm target build + export ABI for worker-side integration.
 - Differential harness for tick-level Python-vs-Zig comparisons:
   - `uv run crimson-zig/scripts/diff_survival_verifiers.py ...`
-- Unsupported/not-yet-ported replay paths hard-fail instead of silently accepting.
+- Unsupported/not-yet-ported native paths hard-fail instead of silently accepting.
 
 ## Not fully ported / known parity gaps
 
-- Zig verifier is still scoped to **1-player Survival** only:
-  - no Rush/Quest replay verification,
-  - no multiplayer replay verification,
-  - no `preserve_bugs=true` compatibility layer.
+- Native fast path is still scoped to **1-player Survival/Rush**:
+  - Quest native replay simulation is not ported yet,
+  - multiplayer native replay simulation is not ported yet,
+  - no native `preserve_bugs=true` compatibility layer.
 - Replay compatibility is still under active expansion using differential captures;
   parity is strong on the current working set but not yet claimed for all unseen
   Survival captures.
-- Mode/scope limits still apply:
-  - latest ruleset only (`preserve_bugs=false`),
-  - hard-fail behavior for unsupported paths remains intentional.
+- Mode/scope limits still apply to the **native** path:
+  - latest ruleset only (`preserve_bugs=false`).
 
 ## Current replay parity snapshot (2026-02-25)
 

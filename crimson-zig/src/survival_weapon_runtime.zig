@@ -34,7 +34,33 @@ pub const TickInputFlags = struct {
     reload_active_any: bool = false,
     move_mode: i32 = 0,
     single_player_mode: bool = true,
+    preprocessed_player_tick: bool = false,
 };
+
+pub fn preprocessPlayerForPerkTicks(
+    state: *survival_state.GameplayState,
+    player: *survival_state.PlayerState,
+    dt: f64,
+) bool {
+    const dt_f32 = asF32F64(dt);
+    if (!(dt_f32 > 0.0)) return false;
+
+    if (player.health <= 0.0) {
+        player.death_timer = asF32F64(player.death_timer - dt_f32 * 20.0);
+        return false;
+    }
+
+    if (player.low_health_timer != 100.0 and player.health < 20.0) {
+        const next_low_health_timer = asF32F64(player.low_health_timer - dt_f32);
+        player.low_health_timer = next_low_health_timer;
+        if (next_low_health_timer < 0.0) {
+            consumeLowHealthPulseRng(state);
+            player.low_health_timer = 1.0;
+        }
+    }
+
+    return true;
+}
 
 pub fn stepPlayerForTick(
     state: *survival_state.GameplayState,
@@ -49,18 +75,10 @@ pub fn stepPlayerForTick(
     const dt_f32 = asF32F64(dt);
     if (!(dt_f32 > 0.0)) return;
 
-    if (player.health <= 0.0) {
-        player.death_timer = asF32F64(player.death_timer - dt_f32 * 20.0);
+    if (!input_flags.preprocessed_player_tick) {
+        if (!preprocessPlayerForPerkTicks(state, player, dt)) return;
+    } else if (player.health <= 0.0) {
         return;
-    }
-
-    if (player.low_health_timer != 100.0 and player.health < 20.0) {
-        const next_low_health_timer = asF32F64(player.low_health_timer - dt_f32);
-        player.low_health_timer = next_low_health_timer;
-        if (next_low_health_timer < 0.0) {
-            consumeLowHealthPulseRng(state);
-            player.low_health_timer = 1.0;
-        }
     }
 
     if (input_flags.fire_down) {
@@ -305,8 +323,10 @@ fn tryFireWeaponWithForce(
 
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
-    const dir_angle = @as(f64, @floatFromInt(state.rng.rand() & 0x1ff)) * (std.math.tau / 512.0);
-    const mag = @as(f64, @floatFromInt(state.rng.rand() & 0x1ff)) * (1.0 / 512.0);
+    const dir_roll = state.rng.rand();
+    const dir_angle = @as(f64, @floatFromInt(dir_roll & 0x1ff)) * (std.math.tau / 512.0);
+    const mag_roll = state.rng.rand();
+    const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
     const aim_jitter = survival_state.Vec2.add(player.aim, survival_state.Vec2.fromAngle(dir_angle).mul(offset));
     const shot_angle = survival_state.Vec2.sub(aim_jitter, player.pos).toHeading();
@@ -331,7 +351,8 @@ fn tryFireWeaponWithForce(
         const meta = survival_state.weaponProjectileMeta(survival_state.ProjectileTypeId.fire_bullets);
         var i: i32 = 0;
         while (i < shot_count) : (i += 1) {
-            const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0015;
+            const jitter_roll = state.rng.rand();
+            const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
             _ = projectiles.spawn(
                 muzzle,
                 shot_angle + jitter,
@@ -641,8 +662,10 @@ fn tickFireCaugh(
     const aim_delta = survival_state.Vec2.sub(player.aim, origin_pos);
     const dist = aim_delta.length();
     const max_offset = dist * player.spread_heat * 0.5;
-    const dir_angle = @as(f64, @floatFromInt(state.rng.rand() & 0x1ff)) * (std.math.tau / 512.0);
-    const mag = @as(f64, @floatFromInt(state.rng.rand() & 0x1ff)) * (1.0 / 512.0);
+    const dir_roll = state.rng.rand();
+    const dir_angle = @as(f64, @floatFromInt(dir_roll & 0x1ff)) * (std.math.tau / 512.0);
+    const mag_roll = state.rng.rand();
+    const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
     const jitter = survival_state.Vec2.add(
         player.aim,

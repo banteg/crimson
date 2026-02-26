@@ -553,12 +553,19 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             state.time_scale_active,
             dt_world,
         );
+        const dt_frame_ms = dt_tick * 1000.0;
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
+        const elapsed_after_ms = elapsed_before_ms + (if (game_mode == game_mode_survival) dt_sim_ms else dt_frame_ms);
+        var freeze_corpse_at_tick_start = [_]bool{false} ** survival_creatures.max_creatures;
+        for (creatures.entries, 0..) |creature, idx| {
+            freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
+        }
         var health_before_creatures: [survival_state.max_players]f64 = undefined;
         for (players, 0..) |player, player_idx| {
             health_before_creatures[player_idx] = player.health;
         }
+        survival_creatures.debug_tick_index = @intCast(tick_index);
 
         updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
@@ -629,7 +636,15 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         if (game_mode == game_mode_rush) {
             enforceRushLoadout(players[0..]);
         }
-        for (players) |*player| {
+        var player_preprocessed_alive = [_]bool{false} ** survival_state.max_players;
+        for (players, 0..) |*player, player_idx| {
+            const should_tick_perks = survival_weapon_runtime.preprocessPlayerForPerkTicks(
+                &state,
+                player,
+                dt_sim,
+            );
+            player_preprocessed_alive[player_idx] = should_tick_perks;
+            if (!should_tick_perks) continue;
             survival_weapon_runtime.applyPlayerPerkTicks(
                 &state,
                 player,
@@ -638,6 +653,9 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             );
         }
         for (tick_inputs[0..players.len], players, 0..) |input, *player, player_idx| {
+            if (!player_preprocessed_alive[player_idx]) {
+                continue;
+            }
             const health_before_player_step = player.health;
             const flags = replay_codec.unpackInputFlags(input.flags);
             const move_mode_for_tick = resolveMoveModeForUpdate(flags, &state);
@@ -662,6 +680,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                     .reload_active_any = reload_active_any,
                     .move_mode = move_mode_for_tick,
                     .single_player_mode = players.len == 1,
+                    .preprocessed_player_tick = true,
                 },
                 dt_sim,
             ) catch |err| switch (err) {
@@ -679,9 +698,6 @@ pub fn runSurvivalReplayScaffoldWithTrace(
                 header.detail_preset,
             );
             finalizePlayerPostUpdate(player, @floatCast(header.world_size));
-        }
-        if (game_mode == game_mode_rush) {
-            enforceRushLoadout(players[0..]);
         }
         const rng_after_player_update = state.rng.state;
 
@@ -701,7 +717,12 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             spawn_stage = stage_result.stage;
             stage_spawn_count += stage_result.count;
             for (stage_result.slice()) |spawn_call| {
-                creatures.spawnTemplateCall(spawn_call, &state.rng) catch |err| switch (err) {
+                creatures.spawnTemplateCallWithRuntimeContext(
+                    spawn_call,
+                    &state.rng,
+                    &state,
+                    @floatCast(header.world_size),
+                ) catch |err| switch (err) {
                     error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
                 };
             }
@@ -724,10 +745,10 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         } else if (game_mode == game_mode_rush) {
             const wave_result = survival_spawn.tickRushModeSpawnsBatch(
                 spawn_cooldown,
-                dt_sim_ms,
+                dt_frame_ms,
                 &state.rng,
                 player_count,
-                elapsed_before_ms,
+                elapsed_after_ms,
                 terrain_size,
                 terrain_size,
             );
@@ -741,7 +762,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             const quest_spawns = survival_spawn.tickQuestModeSpawns(
                 quest_spawn_entries,
                 quest_spawn_timeline_ms,
-                dt_sim_ms,
+                dt_frame_ms,
                 @as(f64, @floatFromInt(terrain_size)),
                 quest_creatures_none_active,
                 quest_no_creatures_timer_ms,
@@ -751,7 +772,12 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             quest_no_creatures_timer_ms = quest_spawns.no_creatures_timer_ms;
             wave_spawn_count += quest_spawns.spawn_count;
             for (quest_spawns.slice()) |spawn_call| {
-                creatures.spawnTemplateCall(spawn_call, &state.rng) catch |err| switch (err) {
+                creatures.spawnTemplateCallWithRuntimeContext(
+                    spawn_call,
+                    &state.rng,
+                    &state,
+                    @floatCast(header.world_size),
+                ) catch |err| switch (err) {
                     error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
                 };
             }
@@ -772,7 +798,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             if (any_alive_after) {
                 const quest_completion = survival_spawn.tickQuestCompletionTransition(
                     quest_completion_transition_ms,
-                    dt_sim_ms,
+                    dt_frame_ms,
                     quest_creatures_none_active,
                     spawn_table_empty_now,
                 );
@@ -798,7 +824,9 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             state.bonuses.reflex_boost,
         );
         cameraShakeUpdate(&state, dt_after_player);
-        _ = survival_state.survivalProgressionUpdate(&state, players[0..]);
+        if (game_mode != game_mode_rush) {
+            _ = survival_state.survivalProgressionUpdate(&state, players[0..]);
+        }
         state.time_scale_active = state.bonuses.reflex_boost > 0.0;
         survival_bonuses.updatePrePickupTimers(&state, dt_after_player);
         survival_bonuses.bonusUpdate(
@@ -810,7 +838,11 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             error.UnsupportedBonusApplyPath => return error.UnsupportedBonusApplyPath,
         };
         if (state.debug_last_picked_bonus_id == survival_state.BonusId.freeze) {
-            applyFreezePickupCorpseCleanupRng(&state, &creatures);
+            applyFreezePickupCorpseCleanupRng(
+                &state,
+                &creatures,
+                freeze_corpse_at_tick_start[0..],
+            );
         }
         applyPendingBonusEffects(
             &state,
@@ -825,11 +857,24 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         const rng_after_bonus_update = state.rng.state;
         if (game_mode == game_mode_survival) {
             survival_state.survivalEnforceRewardWeaponGuard(state, players[0..]);
-        } else if (game_mode == game_mode_rush) {
-            enforceRushLoadout(players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
-        elapsed_ms_sim += dt_sim_ms;
+        if (game_mode == game_mode_quests and 113 < creatures.entries.len) {
+            const c113 = creatures.entries[113];
+            std.debug.print(
+                "zig c113 tick={d} active={} hp={d:.9} life={d:.9} pos=({d:.6},{d:.6})\n",
+                .{ tick_index, c113.active, c113.hp, c113.lifecycle_stage, c113.pos.x, c113.pos.y },
+            );
+        }
+        if (game_mode == game_mode_quests and tick_index == 3005) {
+            std.debug.print("zig q3005 active:", .{});
+            for (creatures.entries, 0..) |creature, idx| {
+                if (!creature.active) continue;
+                std.debug.print(" {d}({d:.3},{d:.3},{d:.3})", .{ idx, creature.hp, creature.lifecycle_stage, creature.reward_value });
+            }
+            std.debug.print("\n", .{});
+        }
+        elapsed_ms_sim = elapsed_after_ms;
 
         if (defer_menu_open_events and tick_event_start < tick_event_end) {
             for ([_]TickEventPhase{
@@ -863,11 +908,15 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         }
 
         if (trace_out) |trace| {
+            const trace_elapsed_ms = if (game_mode == game_mode_quests)
+                quest_spawn_timeline_ms
+            else
+                elapsed_ms_sim;
             try trace.append(
                 trace_allocator,
                 buildTickTrace(
                     tick_index,
-                    elapsed_ms_sim,
+                    trace_elapsed_ms,
                     &state,
                     players[0],
                     &creatures,
@@ -1748,6 +1797,7 @@ fn applyNukeBonus(
             damage_owner_id,
             dt,
             world_size,
+            null,
         );
         if (xp > 0) {
             state.debug_nuke_kill_index_sum += @intCast(idx);
@@ -1799,6 +1849,7 @@ fn applyFinalRevengeOnDeathTransition(
             owner_id,
             dt,
             world_size,
+            null,
         );
     }
 }
@@ -2504,8 +2555,9 @@ fn consumeSpawnBurstRng(
 fn applyFreezePickupCorpseCleanupRng(
     state: *survival_state.GameplayState,
     creatures: *survival_creatures.CreaturePool,
+    freeze_corpse_at_tick_start: []const bool,
 ) void {
-    for (&creatures.entries) |*creature| {
+    for (&creatures.entries, 0..) |*creature, idx| {
         if (!creature.active) continue;
         if (creature.hp > 0.0) continue;
 
@@ -2514,22 +2566,24 @@ fn applyFreezePickupCorpseCleanupRng(
             continue;
         }
 
-        // bonus freeze corpse pass: 8 freeze shards + 1 freeze shatter.
-        for (0..8) |_| {
+        if (idx < freeze_corpse_at_tick_start.len and freeze_corpse_at_tick_start[idx]) {
+            // `bonus_apply` freeze pickup corpse pass: 8 freeze shards + 1 freeze shatter.
+            for (0..8) |_| {
+                _ = state.rng.rand() % 0x264;
+                for (0..6) |_| {
+                    _ = state.rng.rand();
+                }
+            }
             _ = state.rng.rand() % 0x264;
-            for (0..6) |_| {
+            for (0..4) |_| {
+                _ = state.rng.rand();
                 _ = state.rng.rand();
             }
-        }
-        _ = state.rng.rand() % 0x264;
-        for (0..4) |_| {
-            _ = state.rng.rand();
-            _ = state.rng.rand();
-        }
-        for (0..4) |_| {
-            _ = state.rng.rand() % 0x264;
-            for (0..6) |_| {
-                _ = state.rng.rand();
+            for (0..4) |_| {
+                _ = state.rng.rand() % 0x264;
+                for (0..6) |_| {
+                    _ = state.rng.rand();
+                }
             }
         }
 
@@ -3643,6 +3697,25 @@ test "rush scaffold honors dt overrides for elapsed_ms" {
     try std.testing.expectEqual(@as(i64, 500), result.elapsed_ms_sim);
 }
 
+test "rush scaffold spawn cadence uses raw frame dt, not sim dt" {
+    const allocator = std.testing.allocator;
+
+    const inputs = [_]u32{0} ** 15;
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_rush,
+        .seed = 0x1234,
+        .tick_rate = 60,
+        .inputs = inputs[0..],
+        .events = &.{},
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffold(replay);
+    // Rush starts with one immediate spawn batch (2 creatures). A second batch should
+    // not land until tick 15 at 60Hz.
+    try std.testing.expectEqual(@as(usize, 2), result.wave_spawn_count);
+}
+
 test "rush scaffold inter-tick rand draws shift rng deterministically" {
     const allocator = std.testing.allocator;
 
@@ -3784,6 +3857,38 @@ test "rush scaffold supports multiplayer replays" {
     try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.most_used_weapon_id);
 }
 
+test "rush scaffold disables progression updates even above level threshold" {
+    const allocator = std.testing.allocator;
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = survival_state.WeaponId.assault_rifle,
+        .experience = 2060,
+        .level = 1,
+        .ammo = 50.0,
+        .health = 100.0,
+    };
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_rush,
+        .seed = 0x1234,
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .capture_bootstrap = bootstrap },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffold(replay);
+    try std.testing.expectEqual(@as(i32, 2060), result.player_experience);
+    try std.testing.expectEqual(@as(i32, 1), result.player_level);
+    try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
+}
+
 test "survival scaffold supports player counts 1 through 4" {
     const allocator = std.testing.allocator;
 
@@ -3884,6 +3989,50 @@ test "quest scaffold is deterministic with explicit spawn entries" {
     });
     try std.testing.expectEqual(result0.wave_spawn_rng_state, result1.wave_spawn_rng_state);
     try std.testing.expectEqual(@as(usize, 10), result0.ticks);
+}
+
+test "quest scaffold timeline uses frame dt even when reflex boost is active" {
+    const allocator = std.testing.allocator;
+
+    var bootstrap = replay_codec.CaptureBootstrapEvent{
+        .tick_index = 0,
+    };
+    bootstrap.player_count = 1;
+    bootstrap.players[0] = .{
+        .weapon_id = survival_state.WeaponId.pistol,
+        .pos_x = 512.0,
+        .pos_y = 512.0,
+        .health = 100.0,
+        .ammo = 11.0,
+    };
+    bootstrap.reflex_boost_ms = 500;
+
+    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+        .{
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .trigger_ms = 100_000,
+            .count = 1,
+        },
+    };
+
+    const replay = try buildTestReplay(allocator, .{
+        .game_mode_id = game_mode_quests,
+        .seed = 101,
+        .tick_rate = 60,
+        .inputs = &.{0},
+        .events = &.{
+            .{ .capture_bootstrap = bootstrap },
+        },
+    });
+    defer replay.deinit(allocator);
+
+    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+        .quest_spawn_entries = quest_entries[0..],
+        .quest_start_weapon_id = survival_state.WeaponId.pistol,
+    });
+    try std.testing.expectEqual(@as(i64, 16), result.elapsed_ms_sim);
 }
 
 test "quest scaffold advances spawn timeline and fires entries" {

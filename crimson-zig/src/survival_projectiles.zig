@@ -149,6 +149,27 @@ pub const ProjectilePool = struct {
         }
         var hit_audio_game_tune_started = state.game_tune_started;
         var tick_stats = ProjectileTickStats{};
+        // Mirror Python/native spatial-hash behavior for one projectile update pass:
+        // candidate slots are seeded from collidable-at-pass-start state and only
+        // synced for indices touched by damage resolution.
+        var collidable_snapshot = [_]bool{false} ** survival_creatures.max_creatures;
+        var candidate_cell_x = [_]i32{0} ** survival_creatures.max_creatures;
+        var candidate_cell_y = [_]i32{0} ** survival_creatures.max_creatures;
+        var candidate_has_cell = [_]bool{false} ** survival_creatures.max_creatures;
+        var max_find_margin: f64 = 0.0;
+        const bucket_size: f64 = 64.0;
+        for (creatures.entries, 0..) |creature, idx| {
+            collidable_snapshot[idx] = creature.active and
+                creature.lifecycle_stage > 5.0;
+            if (!collidable_snapshot[idx]) continue;
+            candidate_has_cell[idx] = true;
+            candidate_cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
+            candidate_cell_y[idx] = @intFromFloat(@floor(creature.pos.y / bucket_size));
+            const find_margin = asF32F64(creature.size * 0.14285715 + 3.0);
+            if (find_margin > max_find_margin) {
+                max_find_margin = find_margin;
+            }
+        }
 
         for (&self.entries, 0..) |*proj, proj_idx| {
             if (!proj.active) continue;
@@ -215,9 +236,18 @@ pub const ProjectilePool = struct {
                 acc = .{};
 
                 var hit_idx: ?usize = null;
+                const proj_cell_x: i32 = @intFromFloat(@floor(proj.pos.x / bucket_size));
+                const proj_cell_y: i32 = @intFromFloat(@floor(proj.pos.y / bucket_size));
+                const max_axis_delta = asF32F64(proj.hit_radius + max_find_margin + 0.001);
+                const cell_span: i32 = @intFromFloat(@ceil(max_axis_delta / bucket_size));
                 for (creatures.entries, 0..) |creature, idx| {
-                    if (!creature.active) continue;
-                    if (!(creature.lifecycle_stage > 5.0)) continue;
+                    if (!collidable_snapshot[idx]) continue;
+                    if (!candidate_has_cell[idx]) continue;
+                    if (!(creature.active and creature.lifecycle_stage > 5.0)) continue;
+                    const in_span =
+                        @abs(candidate_cell_x[idx] - proj_cell_x) <= cell_span and
+                        @abs(candidate_cell_y[idx] - proj_cell_y) <= cell_span;
+                    if (!in_span) continue;
                     if (withinNativeFindRadius(
                         proj.pos,
                         creature.pos,
@@ -229,6 +259,11 @@ pub const ProjectilePool = struct {
                     }
                 }
 
+                if (hit_idx) |idx| {
+                    if (proj.owner_id >= 0 and idx == @as(usize, @intCast(proj.owner_id))) {
+                        hit_idx = null;
+                    }
+                }
                 if (hit_idx == null) {
                     var can_hit_players = true;
                     if (state.shock_chain_projectile_id == @as(i32, @intCast(proj_idx))) {
@@ -267,7 +302,6 @@ pub const ProjectilePool = struct {
                     }
                     continue;
                 }
-                if (proj.owner_id >= 0 and hit_idx.? == @as(usize, @intCast(proj.owner_id))) continue;
                 tick_stats.hit_count += 1;
                 if (tick_stats.first_hit_creature_index < 0) {
                     tick_stats.first_hit_creature_index = @intCast(hit_idx.?);
@@ -335,6 +369,14 @@ pub const ProjectilePool = struct {
                         hit_idx.?,
                     );
                 }
+                if (proj.type_id == survival_state.ProjectileTypeId.pulse_gun) {
+                    // Native pulse-gun post-hit behavior pushes the target using the
+                    // current projectile move delta before damage resolution.
+                    creatures.entries[hit_idx.?].pos = .{
+                        .x = asF32F64(creatures.entries[hit_idx.?].pos.x + move.x * 3.0),
+                        .y = asF32F64(creatures.entries[hit_idx.?].pos.y + move.y * 3.0),
+                    };
+                }
                 consumeIonHitEffectsRng(state, proj.type_id);
 
                 var dist = survival_state.Vec2.sub(proj.origin, proj.pos).length();
@@ -351,61 +393,47 @@ pub const ProjectilePool = struct {
                     const remaining = proj.damage_pool - 1.0;
                     proj.damage_pool = remaining;
                     if (remaining <= 0.0) {
-                        if (proj.type_id == survival_state.ProjectileTypeId.fire_bullets) {
-                            _ = creatures.applyFireDamage(
-                                state,
-                                players,
-                                bonuses,
-                                hit_idx.?,
-                                damage_amount,
-                                impulse,
-                                proj.owner_id,
-                                dt,
-                                world_size,
-                            );
-                        } else {
-                            _ = creatures.applyProjectileDamage(
-                                state,
-                                players,
-                                bonuses,
-                                hit_idx.?,
-                                damage_amount,
-                                impulse,
-                                proj.owner_id,
-                                dt,
-                                world_size,
-                            );
-                        }
+                        _ = creatures.applyProjectileDamage(
+                            state,
+                            players,
+                            bonuses,
+                            hit_idx.?,
+                            damage_amount,
+                            impulse,
+                            proj.owner_id,
+                            dt,
+                            world_size,
+                        );
                         if (proj.life_timer != 0.25) {
                             proj.life_timer = 0.25;
                         }
                     } else {
-                        if (proj.type_id == survival_state.ProjectileTypeId.fire_bullets) {
-                            _ = creatures.applyFireDamage(
-                                state,
-                                players,
-                                bonuses,
-                                hit_idx.?,
-                                remaining,
-                                impulse,
-                                proj.owner_id,
-                                dt,
-                                world_size,
-                            );
-                        } else {
-                            _ = creatures.applyProjectileDamage(
-                                state,
-                                players,
-                                bonuses,
-                                hit_idx.?,
-                                remaining,
-                                impulse,
-                                proj.owner_id,
-                                dt,
-                                world_size,
-                            );
-                        }
+                        _ = creatures.applyProjectileDamage(
+                            state,
+                            players,
+                            bonuses,
+                            hit_idx.?,
+                            remaining,
+                            impulse,
+                            proj.owner_id,
+                            dt,
+                            world_size,
+                        );
                         proj.damage_pool -= creatures.entries[hit_idx.?].hp;
+                    }
+                    const idx = hit_idx.?;
+                    collidable_snapshot[idx] = creatures.entries[idx].active and
+                        creatures.entries[idx].lifecycle_stage > 5.0;
+                    if (!collidable_snapshot[idx]) {
+                        candidate_has_cell[idx] = false;
+                    } else {
+                        candidate_has_cell[idx] = true;
+                        candidate_cell_x[idx] = @intFromFloat(@floor(creatures.entries[idx].pos.x / bucket_size));
+                        candidate_cell_y[idx] = @intFromFloat(@floor(creatures.entries[idx].pos.y / bucket_size));
+                        const find_margin = asF32F64(creatures.entries[idx].size * 0.14285715 + 3.0);
+                        if (find_margin > max_find_margin) {
+                            max_find_margin = find_margin;
+                        }
                     }
                 }
 
@@ -704,6 +732,117 @@ test "projectile hit consumes hit-presentation rng" {
     const rng_before = state.rng.state;
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     try std.testing.expect(rng_before != state.rng.state);
+}
+
+test "pulse gun hit applies post-hit target push" {
+    var state = survival_state.GameplayState.init(1);
+    const initial_creature_x = 102.0;
+    const initial_creature_y = 100.0;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+        },
+    };
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = initial_creature_x, .y = initial_creature_y },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 44.0,
+        .move_speed = 1.0,
+        .health = 1000.0,
+        .max_health = 1000.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+
+    var base_pool = ProjectilePool{};
+    _ = base_pool.spawn(
+        players[0].pos,
+        0.0,
+        survival_state.ProjectileTypeId.pistol,
+        -100,
+        45.0,
+        false,
+    );
+    _ = base_pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
+    const base_dx = creatures.entries[0].pos.x - initial_creature_x;
+    const base_dy = creatures.entries[0].pos.y - initial_creature_y;
+    const base_displacement = std.math.sqrt(base_dx * base_dx + base_dy * base_dy);
+
+    creatures.entries[0].pos = .{ .x = initial_creature_x, .y = initial_creature_y };
+    creatures.entries[0].hp = 1000.0;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
+    creatures.entries[0].active = true;
+
+    var pulse_pool = ProjectilePool{};
+    _ = pulse_pool.spawn(
+        players[0].pos,
+        0.0,
+        survival_state.ProjectileTypeId.pulse_gun,
+        -100,
+        45.0,
+        false,
+    );
+    const pulse_tick = pulse_pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
+    const pulse_dx = creatures.entries[0].pos.x - initial_creature_x;
+    const pulse_dy = creatures.entries[0].pos.y - initial_creature_y;
+    const pulse_displacement = std.math.sqrt(pulse_dx * pulse_dx + pulse_dy * pulse_dy);
+    try std.testing.expect(pulse_tick.hit_count > 0);
+    try std.testing.expect(pulse_displacement > base_displacement + 1.5);
+}
+
+test "projectile hit pass does not retarget newly spawned split children in new slots" {
+    var state = survival_state.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]survival_state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+        },
+    };
+    var creatures = survival_creatures.CreaturePool{};
+    var bonuses = survival_bonuses.BonusPool{};
+
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.split_on_death,
+        .size = 40.0,
+        .move_speed = 1.0,
+        .health = 18.0,
+        .max_health = 400.0,
+        .reward_value = 131.68724279835388,
+        .contact_damage = 4.0,
+    });
+    creatures.entries[39] = creatures.entries[0];
+    creatures.entries[0] = .{};
+
+    var pool = ProjectilePool{};
+    const proj_idx = pool.spawn(
+        .{ .x = 100.0, .y = 100.0 },
+        0.0,
+        survival_state.ProjectileTypeId.fire_bullets,
+        -100,
+        300.0,
+        false,
+    );
+    pool.entries[proj_idx].hit_radius = 8.0;
+
+    const tick = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
+    try std.testing.expect(tick.hit_count > 2);
+    try std.testing.expect(creatures.entries[39].active);
+    try std.testing.expect(creatures.entries[39].hp < 0.0);
+    // Child spawned into previously inactive index 0 should not be retargeted until next update pass.
+    try std.testing.expect(creatures.entries[0].active);
+    try expectFloatClose(100.0, creatures.entries[0].hp);
 }
 
 test "poison bullets sets weak self-damage flag when rng roll hits" {
