@@ -565,8 +565,6 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         for (players, 0..) |player, player_idx| {
             health_before_creatures[player_idx] = player.health;
         }
-        survival_creatures.debug_tick_index = @intCast(tick_index);
-
         updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
         survival_perks.updatePerkEffects(&state, players[0..], dt_sim);
         applyJinxedEffects(&state, players[0..], &creatures, dt_sim);
@@ -859,34 +857,6 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             survival_state.survivalEnforceRewardWeaponGuard(state, players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
-        if (game_mode == game_mode_quests and 113 < creatures.entries.len) {
-            const c113 = creatures.entries[113];
-            const p0 = players[0];
-            const c113_dist = survival_state.Vec2.sub(c113.pos, p0.pos).length();
-            std.debug.print(
-                "zig c113 tick={d} active={} hp={d:.9} life={d:.9} col={d:.9} pos=({d:.6},{d:.6}) p=({d:.6},{d:.6}) dist={d:.6}\n",
-                .{
-                    tick_index,
-                    c113.active,
-                    c113.hp,
-                    c113.lifecycle_stage,
-                    c113.collision_timer,
-                    c113.pos.x,
-                    c113.pos.y,
-                    p0.pos.x,
-                    p0.pos.y,
-                    c113_dist,
-                },
-            );
-        }
-        if (game_mode == game_mode_quests and tick_index == 3005) {
-            std.debug.print("zig q3005 active:", .{});
-            for (creatures.entries, 0..) |creature, idx| {
-                if (!creature.active) continue;
-                std.debug.print(" {d}({d:.3},{d:.3},{d:.3})", .{ idx, creature.hp, creature.lifecycle_stage, creature.reward_value });
-            }
-            std.debug.print("\n", .{});
-        }
         elapsed_ms_sim = elapsed_after_ms;
 
         if (defer_menu_open_events and tick_event_start < tick_event_end) {
