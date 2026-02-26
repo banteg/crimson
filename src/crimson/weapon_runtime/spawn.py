@@ -34,9 +34,11 @@ def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> 
 
 
 def projectile_meta_for_type_id(type_id: int) -> float:
-    entry = weapon_entry_for_projectile_type_id(int(type_id))
-    meta = entry.projectile_meta if entry is not None else None
-    return float(meta if meta is not None else 45.0)
+    type_id = int(type_id)
+    entry = weapon_entry_for_projectile_type_id(type_id)
+    if entry is None or entry.projectile_meta is None:
+        raise ValueError(f"invalid projectile type_id for projectile_meta lookup: {type_id}")
+    return float(entry.projectile_meta)
 
 
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:

@@ -43,7 +43,6 @@ if TYPE_CHECKING:
 class ProjectileUpdateOptions:
     world_size: float
     damage_scale_by_type: dict[int, float] | None = None
-    damage_scale_default: float = 1.0
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
     rng: Callable[[], int] | None = None
@@ -142,7 +141,6 @@ class ProjectilePool:
         """
         world_size = float(options.world_size)
         damage_scale_by_type = options.damage_scale_by_type
-        damage_scale_default = float(options.damage_scale_default)
         ion_aoe_scale = float(options.ion_aoe_scale)
         detail_preset = int(options.detail_preset)
         rng = options.rng
@@ -211,9 +209,12 @@ class ProjectilePool:
 
         def _damage_scale(type_id: int) -> float:
             value = damage_scale_by_type.get(type_id)
-            if value is None:
-                return float(damage_scale_default)
-            return float(value)
+            if value is not None:
+                return float(value)
+            entry = weapon_entry_for_projectile_type_id(type_id)
+            if entry is None or entry.damage_scale is None:
+                raise ValueError(f"invalid projectile type_id for damage_scale lookup: {type_id}")
+            return float(entry.damage_scale)
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)

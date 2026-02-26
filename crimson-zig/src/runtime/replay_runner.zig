@@ -1692,7 +1692,10 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
 }
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 45.0;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse std.debug.panic(
+        "invalid projectile type id for projectile meta lookup: {d}",
+        .{raw_id},
+    );
     return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
 }
 

@@ -120,7 +120,9 @@ class GameWorld:
         for entry in WEAPON_TABLE:
             if entry.weapon_id <= 0:
                 continue
-            self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
+            if entry.damage_scale is None:
+                raise ValueError(f"weapon table missing damage_scale for weapon_id={entry.weapon_id}")
+            self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale)
         player_count = 1
         if self.config is not None:
             player_count = self.config.player_count
