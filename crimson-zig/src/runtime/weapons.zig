@@ -11,7 +11,7 @@ const state_mod = @import("state.zig");
 const survival_spawn = @import("spawn.zig");
 const survival_math = @import("math.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 
 const WeaponId = game_ids.WeaponId;
 const PerkId = perks.PerkId;
@@ -42,16 +42,16 @@ pub fn preprocessPlayerForPerkTicks(
     player: *state_mod.PlayerState,
     dt: f64,
 ) bool {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (!(dt_f32 > 0.0)) return false;
 
     if (player.health <= 0.0) {
-        player.death_timer = asF32F64(player.death_timer - dt_f32 * 20.0);
+        player.death_timer = narrowF32(player.death_timer - dt_f32 * 20.0);
         return false;
     }
 
     if (player.low_health_timer != 100.0 and player.health < 20.0) {
-        const next_low_health_timer = asF32F64(player.low_health_timer - dt_f32);
+        const next_low_health_timer = narrowF32(player.low_health_timer - dt_f32);
         player.low_health_timer = next_low_health_timer;
         if (next_low_health_timer < 0.0) {
             consumeLowHealthPulseRng(state);
@@ -72,7 +72,7 @@ pub fn stepPlayerForTick(
     input_flags: TickInputFlags,
     dt: f64,
 ) WeaponRuntimeError!void {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (!(dt_f32 > 0.0)) return;
 
     if (!input_flags.preprocessed_player_tick) {
@@ -86,8 +86,8 @@ pub fn stepPlayerForTick(
     }
 
     const cooldown_scale: f64 = if (state.bonuses.weapon_power_up > 0.0) 1.5 else 1.0;
-    const cooldown_decay = asF32F64(dt_f32 * cooldown_scale);
-    player.shot_cooldown = @max(0.0, asF32F64(player.shot_cooldown - cooldown_decay));
+    const cooldown_decay = narrowF32(dt_f32 * cooldown_scale);
+    player.shot_cooldown = @max(0.0, narrowF32(player.shot_cooldown - cooldown_decay));
     if (player.shot_cooldown > 0.0 and player.shot_cooldown < 1e-6) {
         player.shot_cooldown = 0.0;
     }
@@ -97,19 +97,19 @@ pub fn stepPlayerForTick(
     else
         1.0;
     if (perkActive(player.*, PerkId.anxious_loader) and input_flags.fire_pressed and player.reload_timer > 0.0) {
-        const anxious_next = asF32F64(player.reload_timer - 0.05);
+        const anxious_next = narrowF32(player.reload_timer - 0.05);
         player.reload_timer = anxious_next;
         if (anxious_next <= 0.0) {
-            player.reload_timer = asF32F64(dt * 0.8);
+            player.reload_timer = narrowF32(dt * 0.8);
         }
     }
 
-    const reload_timer_now = asF32F64(player.reload_timer);
+    const reload_timer_now = narrowF32(player.reload_timer);
     var preload_dt = dt_f32;
     if (!state.preserve_bugs) {
-        preload_dt = asF32F64(reload_scale * dt_f32);
+        preload_dt = narrowF32(reload_scale * dt_f32);
     }
-    const reload_preload_underflow = asF32F64(reload_timer_now - preload_dt);
+    const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
     const preload_crossed = reload_preload_underflow < -reload_preload_underflow_eps;
     const preload_fire_boundary = input_flags.fire_down and reload_preload_underflow <= reload_preload_underflow_eps;
     if (player.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary)) {
@@ -121,8 +121,8 @@ pub fn stepPlayerForTick(
             player.reload_timer_max > 0.5 and
             player.reload_timer > player.reload_timer_max * 0.5)
         {
-            const half_reload = asF32F64(player.reload_timer_max * 0.5);
-            const next_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
+            const half_reload = narrowF32(player.reload_timer_max * 0.5);
+            const next_timer = narrowF32(player.reload_timer - narrowF32(reload_scale * dt_f32));
             player.reload_timer = next_timer;
             if (next_timer <= half_reload) {
                 const count = 7 + @as(i32, @intFromFloat(player.reload_timer_max * 4.0));
@@ -143,7 +143,7 @@ pub fn stepPlayerForTick(
                 }
             }
         } else {
-            player.reload_timer = asF32F64(player.reload_timer - asF32F64(reload_scale * dt_f32));
+            player.reload_timer = narrowF32(player.reload_timer - narrowF32(reload_scale * dt_f32));
         }
         if (player.reload_timer < 0.0) {
             player.reload_timer = 0.0;
@@ -165,7 +165,7 @@ pub fn stepPlayerForTick(
     if (perkActive(player.*, PerkId.sharpshooter)) {
         player.spread_heat = 0.02;
     } else {
-        player.spread_heat = @max(0.01, player.spread_heat - asF32F64(dt) * 0.4);
+        player.spread_heat = @max(0.01, player.spread_heat - narrowF32(dt) * 0.4);
     }
 
     if (player.shot_cooldown <= 0.0 and player.reload_timer == 0.0) {
@@ -188,7 +188,7 @@ pub fn stepPlayerForTick(
         if (cooldown_ms < 1 and reload_key_active) {
             if (state_mod.playerSwapAltWeapon(player)) {
                 swapped_alt_weapon = true;
-                player.shot_cooldown = asF32F64(player.shot_cooldown + 0.1);
+                player.shot_cooldown = narrowF32(player.shot_cooldown + 0.1);
                 state.player_alt_weapon_swap_cooldown_ms = 200;
             } else {
                 state.player_alt_weapon_swap_cooldown_ms = 0;
@@ -304,10 +304,10 @@ fn tryFireWeaponWithForce(
         shot_cooldown = state_mod.weaponShotCooldown(fire_bullets_weapon_id);
     }
     if (perkActive(player.*, PerkId.fastshot)) {
-        shot_cooldown = asF32F64(shot_cooldown * 0.88);
+        shot_cooldown = narrowF32(shot_cooldown * 0.88);
     }
     if (perkActive(player.*, PerkId.sharpshooter)) {
-        shot_cooldown = asF32F64(shot_cooldown * 1.05);
+        shot_cooldown = narrowF32(shot_cooldown * 1.05);
     }
     player.shot_cooldown = @max(0.0, shot_cooldown);
 
@@ -328,7 +328,7 @@ fn tryFireWeaponWithForce(
     const mag_roll = state.rng.rand();
     const mag = @as(f64, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
     const offset = max_offset * mag;
-    const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(asF32F64(dir_angle)).mul(asF32F64(offset)));
+    const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(narrowF32(dir_angle)).mul(narrowF32(offset)));
     const shot_angle = state_mod.Vec2.sub(aim_jitter, player.pos).toHeading();
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon_id == .flamethrower or player.weapon_id == .blow_torch or player.weapon_id == .hr_flamer) {
@@ -383,7 +383,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = asF32F64(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
             }
         },
         .gauss_shotgun => {
@@ -398,7 +398,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = asF32F64(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .ion_shotgun => {
@@ -413,7 +413,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = asF32F64(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
+                projectiles.entries[id].speed_scale = narrowF32(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .flamethrower => {
@@ -493,7 +493,7 @@ fn tryFireWeaponWithForce(
                     player.aim,
                     creatures,
                 );
-                angle = asF32F64(angle + step);
+                angle = narrowF32(angle + step);
             }
         },
         .rocket_minigun => {
@@ -516,7 +516,7 @@ fn tryFireWeaponWithForce(
                 var angle = shot_angle;
                 if (pellets > 1) {
                     const jitter_step = pelletJitterStep(player.weapon_id);
-                    angle += asF32F64(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
+                    angle += narrowF32(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
                 }
                 const id = projectiles.spawn(
                     muzzle,
@@ -529,7 +529,7 @@ fn tryFireWeaponWithForce(
                 if (pellets > 1 and
                     (player.weapon_id == .shotgun or player.weapon_id == .sawed_off_shotgun or player.weapon_id == .jackhammer))
                 {
-                    projectiles.entries[id].speed_scale = asF32F64(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
+                    projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
                 }
             }
         },
@@ -552,7 +552,7 @@ fn tryFireWeaponWithForce(
 
     const ammo_cost = computeAmmoCost(player.weapon_id, shot_count);
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
-        player.ammo -= asF32F64(ammo_cost);
+        player.ammo -= narrowF32(ammo_cost);
     }
 
     player.shot_seq += 1;
@@ -597,7 +597,7 @@ fn tickManBomb(
         return;
     }
 
-    player.man_bomb_timer += asF32F64(dt);
+    player.man_bomb_timer += narrowF32(dt);
     if (player.man_bomb_timer <= state.perk_interval_man_bomb) return;
 
     const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
@@ -628,7 +628,7 @@ fn tickLivingFortress(
     dt: f64,
 ) void {
     if (perkActive(player.*, PerkId.living_fortress)) {
-        player.living_fortress_timer = @min(30.0, player.living_fortress_timer + asF32F64(dt));
+        player.living_fortress_timer = @min(30.0, player.living_fortress_timer + narrowF32(dt));
     } else {
         player.living_fortress_timer = 0.0;
     }
@@ -645,7 +645,7 @@ fn tickFireCaugh(
         return;
     }
 
-    player.fire_cough_timer += asF32F64(dt);
+    player.fire_cough_timer += narrowF32(dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
     const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
@@ -665,7 +665,7 @@ fn tickFireCaugh(
     const offset = max_offset * mag;
     const jitter = state_mod.Vec2.add(
         player.aim,
-        state_mod.Vec2.fromAngle(asF32F64(dir_angle)).mul(asF32F64(offset)),
+        state_mod.Vec2.fromAngle(narrowF32(dir_angle)).mul(narrowF32(offset)),
     );
     const angle = state_mod.Vec2.sub(jitter, origin_pos).toHeading();
     spawnPerkProjectile(
@@ -696,7 +696,7 @@ fn tickHotTempered(
         return;
     }
 
-    player.hot_tempered_timer += asF32F64(dt);
+    player.hot_tempered_timer += narrowF32(dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
     const owner_id: i32 = if (state.friendly_fire_enabled) -1 - player.index else -100;
@@ -854,20 +854,20 @@ fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
 }
 
 fn directionFromHeading(heading: f64) state_mod.Vec2 {
-    const radians = asF32F64(heading - std.math.pi / 2.0);
+    const radians = narrowF32(heading - std.math.pi / 2.0);
     return .{
-        .x = asF32F64(survival_math.cos(radians)),
-        .y = asF32F64(survival_math.sin(radians)),
+        .x = narrowF32(survival_math.cos(radians)),
+        .y = narrowF32(survival_math.sin(radians)),
     };
 }
 
 fn rotateVec(vec: state_mod.Vec2, theta: f64) state_mod.Vec2 {
-    const theta_f = asF32F64(theta);
-    const cos_theta = asF32F64(survival_math.cos(theta_f));
-    const sin_theta = asF32F64(survival_math.sin(theta_f));
+    const theta_f = narrowF32(theta);
+    const cos_theta = narrowF32(survival_math.cos(theta_f));
+    const sin_theta = narrowF32(survival_math.sin(theta_f));
     return .{
-        .x = asF32F64(vec.x * cos_theta - vec.y * sin_theta),
-        .y = asF32F64(vec.x * sin_theta + vec.y * cos_theta),
+        .x = narrowF32(vec.x * cos_theta - vec.y * sin_theta),
+        .y = narrowF32(vec.x * sin_theta + vec.y * cos_theta),
     };
 }
 
@@ -1938,7 +1938,7 @@ test "fastshot scales shot cooldown" {
         &perk_particles,
     ));
 
-    try expectFloatClose(asF32F64(base_cooldown * 0.88), perk_player.shot_cooldown);
+    try expectFloatClose(narrowF32(base_cooldown * 0.88), perk_player.shot_cooldown);
 }
 
 test "sharpshooter forces spread heat and slows firing" {
@@ -1978,7 +1978,7 @@ test "sharpshooter forces spread heat and slows firing" {
         &particles,
     ));
     try expectFloatClose(
-        asF32F64(state_mod.weaponShotCooldown(game_ids.WeaponId.assault_rifle) * 1.05),
+        narrowF32(state_mod.weaponShotCooldown(game_ids.WeaponId.assault_rifle) * 1.05),
         player.shot_cooldown,
     );
     try expectFloatClose(0.02, player.spread_heat);
@@ -2170,7 +2170,7 @@ test "ammunition within fire ammo class costs less health and spends fractional 
         &particles,
     ));
 
-    try expectFloatClose(asF32F64(9.85), player.health);
+    try expectFloatClose(narrowF32(9.85), player.health);
     try std.testing.expect(particles.entries[0].active);
     try expectFloatClose(4.9, player.ammo);
 }

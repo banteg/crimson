@@ -6,7 +6,7 @@ const survival_creatures = @import("creatures.zig");
 const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 
 pub const particle_pool_size: usize = 0x80;
 
@@ -55,17 +55,17 @@ pub const ParticlePool = struct {
             .active = true,
             .render_flag = true,
             .pos = .{
-                .x = asF32F64(pos.x),
-                .y = asF32F64(pos.y),
+                .x = narrowF32(pos.x),
+                .y = narrowF32(pos.y),
             },
-            .vel = directionFromAngle(asF32F64(angle)).mul(90.0),
+            .vel = directionFromAngle(narrowF32(angle)).mul(90.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
-            .intensity = asF32F64(intensity),
-            .angle = asF32F64(angle),
-            .spin = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
+            .intensity = narrowF32(intensity),
+            .angle = narrowF32(angle),
+            .spin = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
             .owner_id = owner_id,
@@ -86,17 +86,17 @@ pub const ParticlePool = struct {
             .active = true,
             .render_flag = true,
             .pos = .{
-                .x = asF32F64(pos.x),
-                .y = asF32F64(pos.y),
+                .x = narrowF32(pos.x),
+                .y = narrowF32(pos.y),
             },
-            .vel = directionFromAngle(asF32F64(angle)).mul(30.0),
+            .vel = directionFromAngle(narrowF32(angle)).mul(30.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
             .intensity = 1.0,
-            .angle = asF32F64(angle),
-            .spin = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
+            .angle = narrowF32(angle),
+            .spin = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
             .owner_id = owner_id,
@@ -114,32 +114,32 @@ pub const ParticlePool = struct {
         world_size: f64,
     ) void {
         if (!(dt > 0.0)) return;
-        const dt_f32 = asF32F64(dt);
+        const dt_f32 = narrowF32(dt);
 
         for (&self.entries, 0..) |*entry, particle_idx| {
             if (!entry.active) continue;
             const style = entry.style_id;
 
             if (style == ParticleStyleId.bubblegun) {
-                entry.intensity = asF32F64(entry.intensity - dt_f32 * 0.11);
-                entry.spin = asF32F64(entry.spin + dt_f32 * 5.0);
+                entry.intensity = narrowF32(entry.intensity - dt_f32 * 0.11);
+                entry.spin = narrowF32(entry.spin + dt_f32 * 5.0);
                 var move_scale = entry.intensity;
                 if (move_scale <= 0.15) {
-                    move_scale = asF32F64(move_scale * 0.55);
+                    move_scale = narrowF32(move_scale * 0.55);
                 }
-                const move = entry.vel.mul(asF32F64(dt_f32 * move_scale));
+                const move = entry.vel.mul(narrowF32(dt_f32 * move_scale));
                 entry.pos = .{
-                    .x = asF32F64(entry.pos.x + move.x),
-                    .y = asF32F64(entry.pos.y + move.y),
+                    .x = narrowF32(entry.pos.x + move.x),
+                    .y = narrowF32(entry.pos.y + move.y),
                 };
             } else {
-                entry.intensity = asF32F64(entry.intensity - dt_f32 * 0.9);
-                entry.spin = asF32F64(entry.spin + dt_f32);
-                const move_scale = asF32F64(@max(entry.intensity, 0.15) * 2.5);
-                const move = entry.vel.mul(asF32F64(dt_f32 * move_scale));
+                entry.intensity = narrowF32(entry.intensity - dt_f32 * 0.9);
+                entry.spin = narrowF32(entry.spin + dt_f32);
+                const move_scale = narrowF32(@max(entry.intensity, 0.15) * 2.5);
+                const move = entry.vel.mul(narrowF32(dt_f32 * move_scale));
                 entry.pos = .{
-                    .x = asF32F64(entry.pos.x + move.x),
-                    .y = asF32F64(entry.pos.y + move.y),
+                    .x = narrowF32(entry.pos.x + move.x),
+                    .y = narrowF32(entry.pos.y + move.y),
                 };
             }
 
@@ -165,28 +165,28 @@ pub const ParticlePool = struct {
             }
 
             if (entry.render_flag) {
-                const jitter_base = asF32F64(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 100)) - 50)) * 0.06);
-                var jitter = asF32F64(jitter_base * @max(entry.intensity, 0.0) * dt_f32);
+                const jitter_base = narrowF32(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 100)) - 50)) * 0.06);
+                var jitter = narrowF32(jitter_base * @max(entry.intensity, 0.0) * dt_f32);
                 var speed: f32 = 82.0;
                 if (style == ParticleStyleId.flamethrower) {
-                    jitter = asF32F64(jitter * 1.96);
+                    jitter = narrowF32(jitter * 1.96);
                     speed = 82.0;
                 } else if (style == ParticleStyleId.bubblegun) {
-                    jitter = asF32F64(jitter * 1.1);
+                    jitter = narrowF32(jitter * 1.1);
                     speed = 62.0;
                 } else {
-                    jitter = asF32F64(jitter * 1.1);
+                    jitter = narrowF32(jitter * 1.1);
                     speed = 82.0;
                 }
-                entry.angle = asF32F64(entry.angle - jitter);
+                entry.angle = narrowF32(entry.angle - jitter);
                 entry.vel = directionFromAngle(entry.angle).mul(speed);
             }
 
             const alpha = std.math.clamp(entry.intensity, 0.0, 1.0);
             const shade = 1.0 - @max(entry.intensity, 0.0) * 0.95;
-            entry.age = asF32F64(alpha);
-            entry.scale_x = asF32F64(shade);
-            entry.scale_y = asF32F64(shade);
+            entry.age = narrowF32(alpha);
+            entry.scale_x = narrowF32(shade);
+            entry.scale_y = narrowF32(shade);
 
             if (style == ParticleStyleId.bubblegun and
                 !entry.render_flag and
@@ -197,15 +197,15 @@ pub const ParticlePool = struct {
                     const target = creatures.entries[@intCast(target_idx_i32)];
                     if (target.active) {
                         entry.pos = .{
-                            .x = asF32F64(target.pos.x),
-                            .y = asF32F64(target.pos.y),
+                            .x = narrowF32(target.pos.x),
+                            .y = narrowF32(target.pos.y),
                         };
                     }
                 }
             }
 
             if (entry.render_flag) {
-                const radius = asF32F64(@max(entry.intensity, 0.0) * 8.0);
+                const radius = narrowF32(@max(entry.intensity, 0.0) * 8.0);
                 const hit_idx = creatureFindInRadius(creatures, entry.pos, radius);
                 if (hit_idx) |target_idx| {
                     entry.render_flag = false;
@@ -213,29 +213,29 @@ pub const ParticlePool = struct {
                     if (style == ParticleStyleId.bubblegun) {
                         entry.target_id = @intCast(target_idx);
                         entry.pos = .{
-                            .x = asF32F64(creature.pos.x),
-                            .y = asF32F64(creature.pos.y),
+                            .x = narrowF32(creature.pos.x),
+                            .y = narrowF32(creature.pos.y),
                         };
                         entry.vel = .{};
                     } else {
                         entry.angle = wrapAngle(entry.angle);
                         const hit_delta = state_mod.Vec2{
-                            .x = asF32F64((entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x),
-                            .y = asF32F64((entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y),
+                            .x = narrowF32((entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x),
+                            .y = narrowF32((entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y),
                         };
                         const hit_angle = wrapAngle(hit_delta.toAngle());
                         const deflect_step = std.math.tau * 0.2;
                         if (entry.angle <= hit_angle) {
-                            entry.angle = asF32F64(entry.angle + deflect_step);
+                            entry.angle = narrowF32(entry.angle + deflect_step);
                         } else {
-                            entry.angle = asF32F64(entry.angle - deflect_step);
+                            entry.angle = narrowF32(entry.angle - deflect_step);
                         }
 
                         const bounce = directionFromAngle(entry.angle).mul(82.0);
-                        const speed_scale = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 10)) * 0.1);
+                        const speed_scale = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 10)) * 0.1);
                         entry.vel = .{
-                            .x = asF32F64(bounce.x * speed_scale),
-                            .y = asF32F64(bounce.y * speed_scale),
+                            .x = narrowF32(bounce.x * speed_scale),
+                            .y = narrowF32(bounce.y * speed_scale),
                         };
 
                         const damage = @max(0.0, entry.intensity * 10.0);
@@ -282,12 +282,12 @@ fn creatureFindInRadius(
         if (!creature.active) continue;
         if (!(creature.lifecycle_stage > 5.0)) continue;
 
-        const size = asF32F64(creature.size);
-        const dx = asF32F64(creature.pos.x - pos.x);
-        const dy = asF32F64(creature.pos.y - pos.y);
-        const dist_sq = asF32F64(asF32F64(dx * dx) + asF32F64(dy * dy));
-        const dist = asF32F64(asF32F64(std.math.sqrt(dist_sq)) - radius);
-        const threshold = asF32F64(asF32F64(size * 0.14285715) + 3.0);
+        const size = narrowF32(creature.size);
+        const dx = narrowF32(creature.pos.x - pos.x);
+        const dy = narrowF32(creature.pos.y - pos.y);
+        const dist_sq = narrowF32(narrowF32(dx * dx) + narrowF32(dy * dy));
+        const dist = narrowF32(narrowF32(std.math.sqrt(dist_sq)) - radius);
+        const threshold = narrowF32(narrowF32(size * 0.14285715) + 3.0);
         if (threshold < dist) continue;
         return idx;
     }
@@ -296,8 +296,8 @@ fn creatureFindInRadius(
 
 fn directionFromAngle(angle: f32) state_mod.Vec2 {
     return .{
-        .x = asF32F64(survival_math.cos(angle)),
-        .y = asF32F64(survival_math.sin(angle)),
+        .x = narrowF32(survival_math.cos(angle)),
+        .y = narrowF32(survival_math.sin(angle)),
     };
 }
 

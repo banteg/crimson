@@ -5,7 +5,7 @@ const native_math = @import("native_math.zig");
 const perks = @import("perks.zig");
 const state_mod = @import("state.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const BonusId = game_ids.BonusId;
 
@@ -181,8 +181,8 @@ pub const BonusPool = struct {
         for (&self.entries) |*entry| {
             if (isEmpty(entry.*)) continue;
 
-            const decay = asF32F64(dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0));
-            entry.time_left = asF32F64(entry.time_left - decay);
+            const decay = narrowF32(dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0));
+            entry.time_left = narrowF32(entry.time_left - decay);
             if (!entry.picked and state.game_mode == game_mode_tutorial) {
                 entry.time_left = 5.0;
             }
@@ -227,10 +227,10 @@ pub fn updatePrePickupTimers(
     if (!(dt > 0.0)) return;
 
     if (state.bonuses.weapon_power_up > 0.0) {
-        state.bonuses.weapon_power_up = asF32F64(state.bonuses.weapon_power_up - dt);
+        state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up - dt);
     }
     if (state.bonuses.energizer > 0.0) {
-        state.bonuses.energizer = asF32F64(state.bonuses.energizer - dt);
+        state.bonuses.energizer = narrowF32(state.bonuses.energizer - dt);
     }
     if (state.bonuses.reflex_boost > 0.0) {
         const reflex_before = state.bonuses.reflex_boost;
@@ -238,7 +238,7 @@ pub fn updatePrePickupTimers(
         if (reflex_before > 0.0 and reflex_before < 1.0) {
             subtract += reflex_timer_subtract_bias;
         }
-        state.bonuses.reflex_boost = asF32F64(reflex_before - subtract);
+        state.bonuses.reflex_boost = narrowF32(reflex_before - subtract);
     }
 }
 
@@ -261,13 +261,13 @@ pub fn bonusUpdate(
         if (state.bonuses.double_experience <= 0.0) {
             state.bonuses.double_experience = 0.0;
         } else {
-            state.bonuses.double_experience = asF32F64(state.bonuses.double_experience - dt);
+            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience - dt);
         }
 
         if (state.bonuses.freeze <= 0.0) {
             state.bonuses.freeze = 0.0;
         } else {
-            state.bonuses.freeze = asF32F64(state.bonuses.freeze - dt);
+            state.bonuses.freeze = narrowF32(state.bonuses.freeze - dt);
         }
     }
 
@@ -296,7 +296,7 @@ fn bonusTelekineticUpdate(
         };
 
         player.bonus_aim_hover_index = @intCast(hovered.index);
-        player.bonus_aim_hover_timer_ms = asF32F64(player.bonus_aim_hover_timer_ms + dt_ms);
+        player.bonus_aim_hover_timer_ms = narrowF32(player.bonus_aim_hover_timer_ms + dt_ms);
 
         if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
         if (!perkActive(player.*, PerkId.telekinetic)) continue;
@@ -354,10 +354,10 @@ fn applyBonus(
             }
         },
         .energizer => {
-            state.bonuses.energizer = asF32F64(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
+            state.bonuses.energizer = narrowF32(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .weapon_power_up => {
-            state.bonuses.weapon_power_up = asF32F64(state.bonuses.weapon_power_up + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
             player.reload_active = false;
@@ -366,10 +366,10 @@ fn applyBonus(
             player.ammo = @floatFromInt(player.clip_size);
         },
         .double_experience => {
-            state.bonuses.double_experience = asF32F64(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
+            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .reflex_boost => {
-            state.bonuses.reflex_boost = asF32F64(state.bonuses.reflex_boost + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
                 target.ammo = @floatFromInt(target.clip_size);
                 target.reload_active = false;
@@ -378,10 +378,10 @@ fn applyBonus(
             }
         },
         .shield => {
-            player.shield_timer = asF32F64(player.shield_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.shield_timer = narrowF32(player.shield_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .freeze => {
-            state.bonuses.freeze = asF32F64(state.bonuses.freeze + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .medikit => {
             if (player.health < 100.0) {
@@ -389,10 +389,10 @@ fn applyBonus(
             }
         },
         .speed => {
-            player.speed_bonus_timer = asF32F64(player.speed_bonus_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .fire_bullets => {
-            player.fire_bullets_timer = asF32F64(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
+            player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
             player.reload_active = false;

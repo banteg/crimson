@@ -9,7 +9,7 @@ const survival_spawn = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
 pub const main_projectile_pool_size: usize = 0x60;
@@ -73,17 +73,17 @@ pub const ProjectilePool = struct {
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = asF32F64(angle),
+            .angle = narrowF32(angle),
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = directionFromHeading(asF32F64(angle)).mul(1.5),
+            .vel = directionFromHeading(narrowF32(angle)).mul(1.5),
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
             .speed_scale = 1.0,
             .damage_pool = 1.0,
             .hit_radius = 1.0,
-            .base_damage = asF32F64(meta),
+            .base_damage = narrowF32(meta),
             .owner_id = owner_id,
             .hits_players = hits_players,
         };
@@ -162,7 +162,7 @@ pub const ProjectilePool = struct {
             candidate_has_cell[idx] = true;
             candidate_cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
             candidate_cell_y[idx] = @intFromFloat(@floor(creature.pos.y / bucket_size));
-            const find_margin = asF32F64(creature.size * 0.14285715 + 3.0);
+            const find_margin = narrowF32(creature.size * 0.14285715 + 3.0);
             if (find_margin > max_find_margin) {
                 max_find_margin = find_margin;
             }
@@ -186,7 +186,7 @@ pub const ProjectilePool = struct {
                     @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
                     else => dt,
                 };
-                proj.life_timer = asF32F64(proj.life_timer - linger_decay);
+                proj.life_timer = narrowF32(proj.life_timer - linger_decay);
                 applyIonLingerDamage(
                     state,
                     players,
@@ -203,7 +203,7 @@ pub const ProjectilePool = struct {
             if (proj.pos.x < -margin or proj.pos.y < -margin or
                 proj.pos.x > world_size + margin or proj.pos.y > world_size + margin)
             {
-                proj.life_timer = asF32F64(proj.life_timer - dt);
+                proj.life_timer = narrowF32(proj.life_timer - dt);
                 continue;
             }
 
@@ -217,25 +217,25 @@ pub const ProjectilePool = struct {
 
             var step: i32 = 0;
             while (step < steps) : (step += 3) {
-                const step_scale = asF32F64(dt * 20.0 * proj.speed_scale * 3.0);
+                const step_scale = narrowF32(dt * 20.0 * proj.speed_scale * 3.0);
                 acc = .{
-                    .x = asF32F64(acc.x + direction.x * step_scale),
-                    .y = asF32F64(acc.y + direction.y * step_scale),
+                    .x = narrowF32(acc.x + direction.x * step_scale),
+                    .y = narrowF32(acc.y + direction.y * step_scale),
                 };
 
                 if (!(acc.length() >= 4.0 or steps <= step + 3)) continue;
 
                 const move = acc;
                 proj.pos = .{
-                    .x = asF32F64(proj.pos.x + move.x),
-                    .y = asF32F64(proj.pos.y + move.y),
+                    .x = narrowF32(proj.pos.x + move.x),
+                    .y = narrowF32(proj.pos.y + move.y),
                 };
                 acc = .{};
 
                 var hit_idx: ?usize = null;
                 const proj_cell_x: i32 = @intFromFloat(@floor(proj.pos.x / bucket_size));
                 const proj_cell_y: i32 = @intFromFloat(@floor(proj.pos.y / bucket_size));
-                const max_axis_delta = asF32F64(proj.hit_radius + max_find_margin + 0.001);
+                const max_axis_delta = narrowF32(proj.hit_radius + max_find_margin + 0.001);
                 const cell_span: i32 = @intFromFloat(@ceil(max_axis_delta / bucket_size));
                 for (creatures.entries, 0..) |creature, idx| {
                     if (!collidable_snapshot[idx]) continue;
@@ -293,7 +293,7 @@ pub const ProjectilePool = struct {
                         if (hit_player_idx) |player_idx| {
                             proj.life_timer = 0.25;
                             if (players[player_idx].shield_timer <= 0.0) {
-                                players[player_idx].health = asF32F64(players[player_idx].health - 10.0);
+                                players[player_idx].health = narrowF32(players[player_idx].health - 10.0);
                             }
                         }
                     }
@@ -305,16 +305,16 @@ pub const ProjectilePool = struct {
                     tick_stats.first_hit_projectile_index = @intCast(proj_idx);
                     tick_stats.first_hit_type_id = proj.type_id;
                     tick_stats.first_hit_origin = .{
-                        .x = asF32F64(proj.origin.x),
-                        .y = asF32F64(proj.origin.y),
+                        .x = narrowF32(proj.origin.x),
+                        .y = narrowF32(proj.origin.y),
                     };
                     tick_stats.first_hit_pos = .{
-                        .x = asF32F64(proj.pos.x),
-                        .y = asF32F64(proj.pos.y),
+                        .x = narrowF32(proj.pos.x),
+                        .y = narrowF32(proj.pos.y),
                     };
-                    tick_stats.first_hit_target_size = asF32F64(creatures.entries[hit_idx.?].size);
-                    tick_stats.first_hit_target_x = asF32F64(creatures.entries[hit_idx.?].pos.x);
-                    tick_stats.first_hit_target_y = asF32F64(creatures.entries[hit_idx.?].pos.y);
+                    tick_stats.first_hit_target_size = narrowF32(creatures.entries[hit_idx.?].size);
+                    tick_stats.first_hit_target_x = narrowF32(creatures.entries[hit_idx.?].pos.x);
+                    tick_stats.first_hit_target_y = narrowF32(creatures.entries[hit_idx.?].pos.y);
                 }
 
                 const owner_player_idx = ownerIdToPlayerIndex(proj.owner_id, players.len);
@@ -351,8 +351,8 @@ pub const ProjectilePool = struct {
                     proj.life_timer = 0.25;
                     const jitter = @as(f64, @floatFromInt(state.rng.rand() & 3));
                     proj.pos = .{
-                        .x = asF32F64(proj.pos.x + direction.x * jitter),
-                        .y = asF32F64(proj.pos.y + direction.y * jitter),
+                        .x = narrowF32(proj.pos.x + direction.x * jitter),
+                        .y = narrowF32(proj.pos.y + direction.y * jitter),
                     };
                 }
 
@@ -370,8 +370,8 @@ pub const ProjectilePool = struct {
                     // Native pulse-gun post-hit behavior pushes the target using the
                     // current projectile move delta before damage resolution.
                     creatures.entries[hit_idx.?].pos = .{
-                        .x = asF32F64(creatures.entries[hit_idx.?].pos.x + move.x * 3.0),
-                        .y = asF32F64(creatures.entries[hit_idx.?].pos.y + move.y * 3.0),
+                        .x = narrowF32(creatures.entries[hit_idx.?].pos.x + move.x * 3.0),
+                        .y = narrowF32(creatures.entries[hit_idx.?].pos.y + move.y * 3.0),
                     };
                 }
                 consumeIonHitEffectsRng(state, proj.type_id);
@@ -380,7 +380,7 @@ pub const ProjectilePool = struct {
                 if (dist < 50.0) dist = 50.0;
                 const damage_scale = state_mod.weaponDamageScale(proj.type_id);
                 const damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95;
-                const impulse_axis = asF32F64(survival_math.cos(proj.angle - native_half_pi) * proj.speed_scale);
+                const impulse_axis = narrowF32(survival_math.cos(proj.angle - native_half_pi) * proj.speed_scale);
                 const impulse = state_mod.Vec2{
                     .x = impulse_axis,
                     .y = impulse_axis,
@@ -416,7 +416,7 @@ pub const ProjectilePool = struct {
                             dt,
                             world_size,
                         );
-                        proj.damage_pool -= asF32F64(creatures.entries[hit_idx.?].hp);
+                        proj.damage_pool -= narrowF32(creatures.entries[hit_idx.?].hp);
                     }
                     const idx = hit_idx.?;
                     collidable_snapshot[idx] = creatures.entries[idx].active and
@@ -427,7 +427,7 @@ pub const ProjectilePool = struct {
                         candidate_has_cell[idx] = true;
                         candidate_cell_x[idx] = @intFromFloat(@floor(creatures.entries[idx].pos.x / bucket_size));
                         candidate_cell_y[idx] = @intFromFloat(@floor(creatures.entries[idx].pos.y / bucket_size));
-                        const find_margin = asF32F64(creatures.entries[idx].size * 0.14285715 + 3.0);
+                        const find_margin = narrowF32(creatures.entries[idx].size * 0.14285715 + 3.0);
                         if (find_margin > max_find_margin) {
                             max_find_margin = find_margin;
                         }
@@ -573,16 +573,16 @@ fn consumeFreezeHitShardRng(state: *state_mod.GameplayState) void {
 }
 
 fn creatureHitRadius(size: f64) f64 {
-    const radius = asF32F64(size * 0.14285715 + 3.0);
+    const radius = narrowF32(size * 0.14285715 + 3.0);
     if (radius < 0.0) return 0.0;
     return radius;
 }
 
 fn directionFromHeading(heading: f32) state_mod.Vec2 {
-    const radians = asF32F64(heading - std.math.pi / 2.0);
+    const radians = narrowF32(heading - std.math.pi / 2.0);
     return .{
-        .x = asF32F64(survival_math.cos(radians)),
-        .y = asF32F64(survival_math.sin(radians)),
+        .x = narrowF32(survival_math.cos(radians)),
+        .y = narrowF32(survival_math.sin(radians)),
     };
 }
 

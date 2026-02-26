@@ -4,7 +4,7 @@ const native_math = @import("native_math.zig");
 const crt_rand_mult: u32 = 214_013;
 const crt_rand_inc: u32 = 2_531_011;
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 
 pub const CreatureTypeId = enum(i32) {
     zombie = 0,
@@ -248,13 +248,13 @@ pub const quest_completion_music_end_ms: f64 = 0x803;
 pub const quest_completion_transition_ms: f64 = 0x9C4;
 
 pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
-    const timer = asF32F64(slot.timer);
-    const interval = asF32F64(slot.interval);
-    const dt = asF32F64(frame_dt);
+    const timer = narrowF32(slot.timer);
+    const interval = narrowF32(slot.interval);
+    const dt = narrowF32(frame_dt);
 
-    slot.timer = asF32F64(timer - dt);
+    slot.timer = narrowF32(timer - dt);
     if (slot.timer < 0.0) {
-        slot.timer = asF32F64(slot.timer + interval);
+        slot.timer = narrowF32(slot.timer + interval);
         if (slot.count < slot.limit) {
             slot.count += 1;
             return slot.child_template_id;
@@ -1109,9 +1109,9 @@ test "spawn slot tick behavior parity" {
         const spawned = tickSpawnSlot(&slot, case.dt);
         try std.testing.expectEqual(case.expected_spawn, spawned);
 
-        var expected_timer = asF32F64(asF32F64(case.timer) - asF32F64(case.dt));
+        var expected_timer = narrowF32(narrowF32(case.timer) - narrowF32(case.dt));
         if (expected_timer < 0.0) {
-            expected_timer = asF32F64(expected_timer + asF32F64(slot.interval));
+            expected_timer = narrowF32(expected_timer + narrowF32(slot.interval));
         }
         try expectFloatClose(expected_timer, slot.timer);
         try std.testing.expectEqual(case.expected_count, slot.count);

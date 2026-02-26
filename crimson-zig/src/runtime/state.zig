@@ -5,7 +5,7 @@ const survival_math = @import("math.zig");
 
 const survival_spawn = @import("spawn.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 
 pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;
@@ -497,10 +497,10 @@ pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
         player.reload_active = true;
     }
     if (playerPerkActive(player, .fastloader)) {
-        reload_time = asF32F64(reload_time * 0.7);
+        reload_time = narrowF32(reload_time * 0.7);
     }
     if (state.bonuses.weapon_power_up > 0.0) {
-        reload_time = asF32F64(reload_time * 0.6);
+        reload_time = narrowF32(reload_time * 0.6);
     }
     player.reload_timer = @max(0.0, reload_time);
     player.reload_timer_max = player.reload_timer;
@@ -590,16 +590,16 @@ pub fn timeScaleReflexBoostBonus(
     time_scale_active: bool,
     dt: f32,
 ) f32 {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (!(dt_f32 > 0.0)) return dt_f32;
     if (!time_scale_active) return dt_f32;
 
-    const reflex_f32 = asF32F64(reflex_boost_timer);
-    var time_scale_factor = asF32F64(0.3);
+    const reflex_f32 = narrowF32(reflex_boost_timer);
+    var time_scale_factor = narrowF32(0.3);
     if (reflex_f32 < 1.0) {
-        time_scale_factor = asF32F64((1.0 - reflex_f32) * 0.7 + 0.3);
+        time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
     }
-    return asF32F64(dt_f32 * time_scale_factor);
+    return narrowF32(dt_f32 * time_scale_factor);
 }
 
 pub fn survivalLevelThreshold(level_in: i32) i32 {
@@ -640,8 +640,8 @@ pub fn survivalRecordRecentDeath(
     if (recent_count < 3) {
         const idx: usize = @intCast(recent_count);
         state.survival_recent_death_pos[idx] = .{
-            .x = asF32F64(pos.x),
-            .y = asF32F64(pos.y),
+            .x = narrowF32(pos.x),
+            .y = narrowF32(pos.y),
         };
     }
 
@@ -680,9 +680,9 @@ pub fn survivalUpdateWeaponHandouts(
         const pos1 = state.survival_recent_death_pos[1];
         const pos2 = state.survival_recent_death_pos[2];
 
-        const centroid_scale = asF32F64(0.33333334);
-        const centroid_x = asF32F64(asF32F64(pos0.x + pos1.x + pos2.x) * centroid_scale);
-        const centroid_y = asF32F64(asF32F64(pos0.y + pos1.y + pos2.y) * centroid_scale);
+        const centroid_scale = narrowF32(0.33333334);
+        const centroid_x = narrowF32(narrowF32(pos0.x + pos1.x + pos2.x) * centroid_scale);
+        const centroid_y = narrowF32(narrowF32(pos0.y + pos1.y + pos2.y) * centroid_scale);
 
         const dx = player.pos.x - centroid_x;
         const dy = player.pos.y - centroid_y;
@@ -936,7 +936,7 @@ test "fastloader scales reload timer" {
     try std.testing.expect(base_player.reload_active);
     try std.testing.expect(perk_player.reload_active);
     try expectFloatClose(reload_time, base_player.reload_timer);
-    try expectFloatClose(asF32F64(reload_time * 0.7), perk_player.reload_timer);
+    try expectFloatClose(narrowF32(reload_time * 0.7), perk_player.reload_timer);
     try expectFloatClose(perk_player.reload_timer, perk_player.reload_timer_max);
 }
 

@@ -15,7 +15,7 @@ const state_mod = @import("state.zig");
 const survival_weapon_runtime = @import("weapons.zig");
 const survival_math = @import("math.zig");
 
-const asF32F64 = native_math.roundF32;
+const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
@@ -583,7 +583,7 @@ pub fn runReplayScaffoldWithTrace(
         const dt_sim = state_mod.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
-            asF32F64(dt_world),
+            narrowF32(dt_world),
         );
         const dt_frame_ms = dt_tick * 1000.0;
         const dt_sim_ms = dt_sim * 1000.0;
@@ -737,7 +737,7 @@ pub fn runReplayScaffoldWithTrace(
             state_mod.survivalUpdateWeaponHandouts(
                 &state,
                 players[0..],
-                asF32F64(elapsed_before_ms),
+                narrowF32(elapsed_before_ms),
             );
 
             const stage_result = survival_spawn.advanceSurvivalSpawnStage(
@@ -1461,7 +1461,7 @@ fn cameraShakeUpdate(
         return;
     }
 
-    state.camera_shake_timer = asF32F64(state.camera_shake_timer - asF32F64(dt * 3.0));
+    state.camera_shake_timer = narrowF32(state.camera_shake_timer - narrowF32(dt * 3.0));
     if (state.camera_shake_timer >= 0.0) return;
 
     state.camera_shake_pulses -= 1;
@@ -1493,8 +1493,8 @@ fn cameraShakeUpdate(
     }
 
     state.camera_shake_offset = .{
-        .x = asF32F64(@as(f32, @floatFromInt(mag_x))),
-        .y = asF32F64(@as(f32, @floatFromInt(mag_y))),
+        .x = narrowF32(@as(f32, @floatFromInt(mag_x))),
+        .y = narrowF32(@as(f32, @floatFromInt(mag_y))),
     };
 }
 
@@ -1666,12 +1666,12 @@ fn applyPyrokineticEffects(
         if (target_idx == -1) continue;
 
         var creature = &creatures.entries[@intCast(target_idx)];
-        creature.collision_timer = asF32F64(creature.collision_timer - dt);
+        creature.collision_timer = narrowF32(creature.collision_timer - dt);
         if (creature.collision_timer >= 0.0) continue;
 
         creature.collision_timer = 0.5;
         for (burn_intensities) |intensity| {
-            const angle = asF32F64(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
+            const angle = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
             _ = particles.spawnParticle(state, creature.pos, angle, intensity, -100);
         }
         // Consume native fx_queue_add_random RNG even though verifier does not render decals.
@@ -1709,8 +1709,8 @@ fn creatureFindInRadius(
         const creature = creatures[idx];
         if (!creature.active) continue;
         if (!(creature.lifecycle_stage > 5.0)) continue;
-        const dist = asF32F64(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
-        const threshold = asF32F64(creature.size * 0.14285715 + 3.0);
+        const dist = narrowF32(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
+        const threshold = narrowF32(creature.size * 0.14285715 + 3.0);
         if (threshold < dist) continue;
         return @intCast(idx);
     }
@@ -1746,7 +1746,7 @@ fn applyNukeBonus(
         const meta = state_mod.weaponProjectileMeta(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
-        projectiles.entries[proj_idx].speed_scale *= asF32F64(speed_scale);
+        projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
     }
 
     for (0..2) |_| {
@@ -1816,13 +1816,13 @@ fn applyFinalRevengeOnDeathTransition(
     const owner_id: i32 = -1 - player.index;
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        const dx = asF32F64(creature.pos.x - player.pos.x);
-        const dy = asF32F64(creature.pos.y - player.pos.y);
+        const dx = narrowF32(creature.pos.x - player.pos.x);
+        const dy = narrowF32(creature.pos.y - player.pos.y);
         if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
-        const distance = asF32F64(std.math.sqrt(asF32F64(dx * dx + dy * dy)));
-        const remaining = asF32F64(512.0 - distance);
+        const distance = narrowF32(std.math.sqrt(narrowF32(dx * dx + dy * dy)));
+        const remaining = narrowF32(512.0 - distance);
         if (!(remaining > 0.0)) continue;
-        const damage = asF32F64(remaining * 5.0);
+        const damage = narrowF32(remaining * 5.0);
         _ = creatures.applyExplosionDamage(
             state,
             players,
@@ -2136,7 +2136,7 @@ fn applyReplayPerkCreatureEffects(
         PerkId.breathing_room => {
             for (&creatures.entries) |*creature| {
                 if (!creature.active) continue;
-                creature.lifecycle_stage = asF32F64(creature.lifecycle_stage - dt_frame);
+                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_frame);
             }
         },
         PerkId.lifeline_50_50 => {
@@ -2175,10 +2175,10 @@ fn applyCaptureBootstrapEvent(
                 }
             }
         }
-        players[idx].pos.x = asF32F64(payload.pos_x);
-        players[idx].pos.y = asF32F64(payload.pos_y);
-        players[idx].health = asF32F64(payload.health);
-        players[idx].ammo = asF32F64(payload.ammo);
+        players[idx].pos.x = narrowF32(payload.pos_x);
+        players[idx].pos.y = narrowF32(payload.pos_y);
+        players[idx].health = narrowF32(payload.health);
+        players[idx].ammo = narrowF32(payload.ammo);
         players[idx].experience = payload.experience;
         if (payload.level > 0) {
             players[idx].level = payload.level;
@@ -2190,25 +2190,25 @@ fn applyCaptureBootstrapEvent(
             players[idx].reload_active = reload_active;
         }
         if (payload.reload_timer) |reload_timer| {
-            players[idx].reload_timer = @max(0.0, asF32F64(reload_timer));
+            players[idx].reload_timer = @max(0.0, narrowF32(reload_timer));
         }
         if (payload.reload_timer_max) |reload_timer_max| {
-            players[idx].reload_timer_max = @max(0.0, asF32F64(reload_timer_max));
+            players[idx].reload_timer_max = @max(0.0, narrowF32(reload_timer_max));
         }
         if (payload.shot_cooldown) |shot_cooldown| {
-            players[idx].shot_cooldown = @max(0.0, asF32F64(shot_cooldown));
+            players[idx].shot_cooldown = @max(0.0, narrowF32(shot_cooldown));
         }
         if (payload.spread_heat) |spread_heat| {
-            players[idx].spread_heat = @max(0.0, asF32F64(spread_heat));
+            players[idx].spread_heat = @max(0.0, narrowF32(spread_heat));
         }
         if (payload.aim_x) |aim_x| {
-            players[idx].aim.x = asF32F64(aim_x);
+            players[idx].aim.x = narrowF32(aim_x);
         }
         if (payload.aim_y) |aim_y| {
-            players[idx].aim.y = asF32F64(aim_y);
+            players[idx].aim.y = narrowF32(aim_y);
         }
         if (payload.aim_heading) |aim_heading| {
-            players[idx].aim_heading = asF32F64(aim_heading);
+            players[idx].aim_heading = narrowF32(aim_heading);
             players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
@@ -2218,40 +2218,40 @@ fn applyCaptureBootstrapEvent(
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
         }
         if (payload.alt_ammo) |alt_ammo| {
-            players[idx].alt_ammo = asF32F64(alt_ammo);
+            players[idx].alt_ammo = narrowF32(alt_ammo);
         }
         if (payload.alt_reload_active) |alt_reload_active| {
             players[idx].alt_reload_active = alt_reload_active;
         }
         if (payload.alt_reload_timer) |alt_reload_timer| {
-            players[idx].alt_reload_timer = @max(0.0, asF32F64(alt_reload_timer));
+            players[idx].alt_reload_timer = @max(0.0, narrowF32(alt_reload_timer));
         }
         if (payload.alt_reload_timer_max) |alt_reload_timer_max| {
-            players[idx].alt_reload_timer_max = @max(0.0, asF32F64(alt_reload_timer_max));
+            players[idx].alt_reload_timer_max = @max(0.0, narrowF32(alt_reload_timer_max));
         }
         if (payload.alt_shot_cooldown) |alt_shot_cooldown| {
-            players[idx].alt_shot_cooldown = @max(0.0, asF32F64(alt_shot_cooldown));
+            players[idx].alt_shot_cooldown = @max(0.0, narrowF32(alt_shot_cooldown));
         }
         if (payload.shield_ms) |shield_ms| {
-            players[idx].shield_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(shield_ms)) / 1000.0));
+            players[idx].shield_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(shield_ms)) / 1000.0));
         }
         if (payload.fire_bullets_ms) |fire_bullets_ms| {
-            players[idx].fire_bullets_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0));
+            players[idx].fire_bullets_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0));
         }
         if (payload.speed_bonus_ms) |speed_bonus_ms| {
-            players[idx].speed_bonus_timer = @max(0.0, asF32F64(@as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0));
+            players[idx].speed_bonus_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0));
         }
         if (payload.hot_tempered_timer) |hot_tempered_timer| {
-            players[idx].hot_tempered_timer = @max(0.0, asF32F64(hot_tempered_timer));
+            players[idx].hot_tempered_timer = @max(0.0, narrowF32(hot_tempered_timer));
         }
         if (payload.man_bomb_timer) |man_bomb_timer| {
-            players[idx].man_bomb_timer = @max(0.0, asF32F64(man_bomb_timer));
+            players[idx].man_bomb_timer = @max(0.0, narrowF32(man_bomb_timer));
         }
         if (payload.living_fortress_timer) |living_fortress_timer| {
-            players[idx].living_fortress_timer = @max(0.0, asF32F64(living_fortress_timer));
+            players[idx].living_fortress_timer = @max(0.0, narrowF32(living_fortress_timer));
         }
         if (payload.fire_cough_timer) |fire_cough_timer| {
-            players[idx].fire_cough_timer = @max(0.0, asF32F64(fire_cough_timer));
+            players[idx].fire_cough_timer = @max(0.0, narrowF32(fire_cough_timer));
         }
     }
 
@@ -2291,22 +2291,22 @@ fn applyCaptureBootstrapEvent(
     state.time_scale_active = state.bonuses.reflex_boost > 0.0;
 
     if (bootstrap.perk_interval_man_bomb) |value| {
-        state.perk_interval_man_bomb = @max(0.0, asF32F64(value));
+        state.perk_interval_man_bomb = @max(0.0, narrowF32(value));
     }
     if (bootstrap.perk_interval_fire_cough) |value| {
-        state.perk_interval_fire_cough = @max(0.0, asF32F64(value));
+        state.perk_interval_fire_cough = @max(0.0, narrowF32(value));
     }
     if (bootstrap.perk_interval_hot_tempered) |value| {
-        state.perk_interval_hot_tempered = @max(0.0, asF32F64(value));
+        state.perk_interval_hot_tempered = @max(0.0, narrowF32(value));
     }
 
     if (bootstrap.quest_session) |quest_session| {
-        quest_spawn_timeline_ms.* = @max(0.0, asF32F64(quest_session.spawn_timeline_ms));
-        quest_no_creatures_timer_ms.* = @max(0.0, asF32F64(quest_session.no_creatures_timer_ms));
+        quest_spawn_timeline_ms.* = @max(0.0, narrowF32(quest_session.spawn_timeline_ms));
+        quest_no_creatures_timer_ms.* = @max(0.0, narrowF32(quest_session.no_creatures_timer_ms));
         if (quest_session.completion_transition_ms < 0.0) {
             quest_completion_transition_ms.* = -1.0;
         } else {
-            quest_completion_transition_ms.* = @max(0.0, asF32F64(quest_session.completion_transition_ms));
+            quest_completion_transition_ms.* = @max(0.0, narrowF32(quest_session.completion_transition_ms));
         }
     }
 }
@@ -2362,18 +2362,18 @@ fn applyCaptureCreatureSpawnEvent(
 
         if (row.has_pos) {
             entry.pos = .{
-                .x = asF32F64(row.pos_x),
-                .y = asF32F64(row.pos_y),
+                .x = narrowF32(row.pos_x),
+                .y = narrowF32(row.pos_y),
             };
         }
-        if (row.has_heading) entry.heading = asF32F64(row.heading);
-        if (row.has_target_heading) entry.target_heading = asF32F64(row.target_heading);
+        if (row.has_heading) entry.heading = narrowF32(row.heading);
+        if (row.has_target_heading) entry.target_heading = narrowF32(row.target_heading);
         if (row.has_ai_mode) entry.ai_mode = @enumFromInt(row.ai_mode);
         if (row.has_link_index) entry.link_index = row.link_index;
-        if (row.has_hp) entry.hp = asF32F64(row.hp);
-        if (row.has_lifecycle_stage) entry.lifecycle_stage = asF32F64(row.lifecycle_stage);
-        if (row.has_orbit_angle) entry.orbit_angle = asF32F64(row.orbit_angle);
-        if (row.has_orbit_radius) entry.orbit_radius = asF32F64(row.orbit_radius);
+        if (row.has_hp) entry.hp = narrowF32(row.hp);
+        if (row.has_lifecycle_stage) entry.lifecycle_stage = narrowF32(row.lifecycle_stage);
+        if (row.has_orbit_angle) entry.orbit_angle = narrowF32(row.orbit_angle);
+        if (row.has_orbit_radius) entry.orbit_radius = narrowF32(row.orbit_radius);
         if (row.has_flags) entry.flags = @intCast(@max(0, flags_i32));
         if (row.has_type_id) entry.type_id = row.type_id;
     }
@@ -2431,7 +2431,7 @@ fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    state_mod.resetPlayers(players, asF32F64(world_size), null);
+    state_mod.resetPlayers(players, narrowF32(world_size), null);
     for (players) |*player| {
         const quest_weapon = state_mod.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
         state_mod.weaponAssignPlayer(player, quest_weapon);
@@ -2462,7 +2462,7 @@ fn applyJinxedEffects(
     dt: f64,
 ) void {
     if (state.jinxed_timer >= 0.0) {
-        state.jinxed_timer = asF32F64(state.jinxed_timer - asF32F64(dt));
+        state.jinxed_timer = narrowF32(state.jinxed_timer - narrowF32(dt));
     }
     if (state.jinxed_timer >= 0.0) return;
     if (players.len == 0) return;
@@ -2470,11 +2470,11 @@ fn applyJinxedEffects(
 
     if ((state.rng.rand() % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
-        players[target_idx].health = asF32F64(players[target_idx].health - 5.0);
+        players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
     }
 
     const timer_roll = @as(f64, @floatFromInt(state.rng.rand() % 0x14));
-    state.jinxed_timer = asF32F64(asF32F64(timer_roll * 0.1) + state.jinxed_timer + 2.0);
+    state.jinxed_timer = narrowF32(narrowF32(timer_roll * 0.1) + state.jinxed_timer + 2.0);
 
     if (state.bonuses.freeze > 0.0) return;
 
@@ -2490,8 +2490,8 @@ fn applyJinxedEffects(
     if (!creatures.entries[idx].active) return;
 
     creatures.entries[idx].hp = -1.0;
-    creatures.entries[idx].lifecycle_stage = asF32F64(
-        creatures.entries[idx].lifecycle_stage - asF32F64(dt * 20.0),
+    creatures.entries[idx].lifecycle_stage = narrowF32(
+        creatures.entries[idx].lifecycle_stage - narrowF32(dt * 20.0),
     );
     awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
 }
@@ -2532,12 +2532,12 @@ fn awardExperienceOnceFromReward(
     player: *state_mod.PlayerState,
     reward_value: f64,
 ) i32 {
-    const reward_f32 = asF32F64(reward_value);
+    const reward_f32 = narrowF32(reward_value);
     if (reward_f32 <= 0.0) return 0;
 
     const before = player.experience;
-    const before_f32 = asF32F64(@as(f32, @floatFromInt(before)));
-    const total_f32 = asF32F64(before_f32 + reward_f32);
+    const before_f32 = narrowF32(@as(f32, @floatFromInt(before)));
+    const total_f32 = narrowF32(before_f32 + reward_f32);
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
     return after - before;
@@ -2602,16 +2602,16 @@ fn updatePlayerFromReplayInput(
     dt: f64,
 ) void {
     const prev_pos = player.pos;
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     var movement_dt = dt_f32;
     if (state.time_scale_active and movement_dt > 0.0) {
-        const reflex_f32 = asF32F64(state.bonuses.reflex_boost);
-        var time_scale_factor = asF32F64(0.3);
+        const reflex_f32 = narrowF32(state.bonuses.reflex_boost);
+        var time_scale_factor = narrowF32(0.3);
         if (reflex_f32 < 1.0) {
-            time_scale_factor = asF32F64((1.0 - reflex_f32) * 0.7 + 0.3);
+            time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
         }
         if (time_scale_factor > 0.0) {
-            movement_dt = asF32F64((0.6 / time_scale_factor) * movement_dt);
+            movement_dt = narrowF32((0.6 / time_scale_factor) * movement_dt);
         }
     }
 
@@ -2619,8 +2619,8 @@ fn updatePlayerFromReplayInput(
     const aim_scheme = resolveAimSchemeForUpdate(flags);
 
     var raw_move = state_mod.Vec2{
-        .x = asF32F64(input.move_x),
-        .y = asF32F64(input.move_y),
+        .x = narrowF32(input.move_x),
+        .y = narrowF32(input.move_y),
     };
     const raw_mag = raw_move.length();
     var move = directionFromHeadingNative(player.heading);
@@ -2649,16 +2649,16 @@ fn updatePlayerFromReplayInput(
             if (player.turn_speed > 7.0) player.turn_speed = 7.0;
 
             if (turning_left) {
-                player.turn_speed = asF32F64(player.turn_speed + movement_dt * 10.0);
-                const turn_step = asF32F64(player.turn_speed * movement_dt * 0.5);
-                player.heading = asF32F64(player.heading - turn_step);
-                player.aim_heading = asF32F64(player.aim_heading - turn_step);
+                player.turn_speed = narrowF32(player.turn_speed + movement_dt * 10.0);
+                const turn_step = narrowF32(player.turn_speed * movement_dt * 0.5);
+                player.heading = narrowF32(player.heading - turn_step);
+                player.aim_heading = narrowF32(player.aim_heading - turn_step);
                 turned = true;
             } else if (turning_right) {
-                player.turn_speed = asF32F64(player.turn_speed + movement_dt * 10.0);
-                const turn_step = asF32F64(player.turn_speed * movement_dt * 0.5);
-                player.heading = asF32F64(player.heading + turn_step);
-                player.aim_heading = asF32F64(player.aim_heading + turn_step);
+                player.turn_speed = narrowF32(player.turn_speed + movement_dt * 10.0);
+                const turn_step = narrowF32(player.turn_speed * movement_dt * 0.5);
+                player.heading = narrowF32(player.heading + turn_step);
+                player.aim_heading = narrowF32(player.aim_heading + turn_step);
                 turned = true;
             }
 
@@ -2709,11 +2709,11 @@ fn updatePlayerFromReplayInput(
             if (!moving_backward and target_heading == relative_move_heading_none) {
                 playerDecelerateMoveSpeed(player, movement_dt);
                 move = directionFromHeadingNative(player.heading);
-                const move_dx = asF32F64(move.x * player.move_speed * speed_multiplier * 25.0);
-                const move_dy = asF32F64(move.y * player.move_speed * speed_multiplier * 25.0);
+                const move_dx = narrowF32(move.x * player.move_speed * speed_multiplier * 25.0);
+                const move_dy = narrowF32(move.y * player.move_speed * speed_multiplier * 25.0);
                 move_delta_override = .{
-                    .x = asF32F64(movement_dt * move_dx),
-                    .y = asF32F64(movement_dt * move_dy),
+                    .x = narrowF32(movement_dt * move_dx),
+                    .y = narrowF32(movement_dt * move_dy),
                 };
             } else {
                 const heading_result = playerHeadingApproachTargetWithDelta(
@@ -2721,7 +2721,7 @@ fn updatePlayerFromReplayInput(
                     target_heading,
                     movement_dt,
                 );
-                player.aim_heading = asF32F64(player.aim_heading + heading_result.turn_delta);
+                player.aim_heading = narrowF32(player.aim_heading + heading_result.turn_delta);
                 playerAccelerateMoveSpeed(player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move = directionFromHeadingNative(player.heading);
@@ -2729,11 +2729,11 @@ fn updatePlayerFromReplayInput(
                     (native_pi - heading_result.diff) *
                     speed_multiplier *
                     relative_move_turn_align_scale;
-                const move_dx = asF32F64(move.x * player.move_speed * turn_align);
-                const move_dy = asF32F64(move.y * player.move_speed * turn_align);
+                const move_dx = narrowF32(move.x * player.move_speed * turn_align);
+                const move_dy = narrowF32(move.y * player.move_speed * turn_align);
                 move_delta_override = .{
-                    .x = asF32F64(movement_dt * move_dx),
-                    .y = asF32F64(movement_dt * move_dy),
+                    .x = narrowF32(movement_dt * move_dx),
+                    .y = narrowF32(movement_dt * move_dy),
                 };
             }
         } else {
@@ -2788,22 +2788,22 @@ fn updatePlayerFromReplayInput(
         override
     else
         state_mod.Vec2{
-            .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
-            .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
+            .x = narrowF32(move.x * narrowF32(speed * movement_dt)),
+            .y = narrowF32(move.y * narrowF32(speed * movement_dt)),
         };
     if (perkActive(player.*, PerkId.alternate_weapon)) {
         delta = .{
-            .x = asF32F64(delta.x * 0.8),
-            .y = asF32F64(delta.y * 0.8),
+            .x = narrowF32(delta.x * 0.8),
+            .y = narrowF32(delta.y * 0.8),
         };
     }
     const pos_after_move = state_mod.Vec2{
-        .x = asF32F64(player.pos.x + delta.x),
-        .y = asF32F64(player.pos.y + delta.y),
+        .x = narrowF32(player.pos.x + delta.x),
+        .y = narrowF32(player.pos.y + delta.y),
     };
     player.pos = .{
-        .x = asF32F64(pos_after_move.x),
-        .y = asF32F64(pos_after_move.y),
+        .x = narrowF32(pos_after_move.x),
+        .y = narrowF32(pos_after_move.y),
     };
 
     const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
@@ -2814,11 +2814,11 @@ fn updatePlayerFromReplayInput(
         player.man_bomb_timer = 0.0;
         player.living_fortress_timer = 0.0;
     }
-    player.move_phase = asF32F64(player.move_phase + asF32F64(phase_sign * movement_dt * player.move_speed * 19.0));
+    player.move_phase = narrowF32(player.move_phase + narrowF32(phase_sign * movement_dt * player.move_speed * 19.0));
 
     player.aim = .{
-        .x = asF32F64(input.aim_x),
-        .y = asF32F64(input.aim_y),
+        .x = narrowF32(input.aim_x),
+        .y = narrowF32(input.aim_y),
     };
     var aim_dir = state_mod.Vec2.sub(player.aim, player.pos);
     const aim_len_sq = aim_dir.lengthSq();
@@ -2834,22 +2834,22 @@ fn finalizePlayerPostUpdate(
     world_size: f64,
 ) void {
     while (player.move_phase > 14.0) {
-        player.move_phase = asF32F64(player.move_phase - 14.0);
+        player.move_phase = narrowF32(player.move_phase - 14.0);
     }
     while (player.move_phase < 0.0) {
-        player.move_phase = asF32F64(player.move_phase + 14.0);
+        player.move_phase = narrowF32(player.move_phase + 14.0);
     }
 
     const half_size = @max(0.0, player.size * 0.5);
     const clamped_pos = player.pos.clampRect(
         half_size,
         half_size,
-        asF32F64(world_size - half_size),
-        asF32F64(world_size - half_size),
+        narrowF32(world_size - half_size),
+        narrowF32(world_size - half_size),
     );
     player.pos = .{
-        .x = asF32F64(clamped_pos.x),
-        .y = asF32F64(clamped_pos.y),
+        .x = narrowF32(clamped_pos.x),
+        .y = narrowF32(clamped_pos.y),
     };
     if (player.muzzle_flash_alpha > 0.8) {
         player.muzzle_flash_alpha = 0.8;
@@ -2883,19 +2883,19 @@ fn playerMoveDeltaFromHeading(
     speed_scale: f64,
 ) state_mod.Vec2 {
     const move = directionFromHeadingNative(player.heading);
-    const move_dx = asF32F64(move.x * player.move_speed * speed_scale);
-    const move_dy = asF32F64(move.y * player.move_speed * speed_scale);
+    const move_dx = narrowF32(move.x * player.move_speed * speed_scale);
+    const move_dy = narrowF32(move.y * player.move_speed * speed_scale);
     return .{
-        .x = asF32F64(movement_dt * move_dx),
-        .y = asF32F64(movement_dt * move_dy),
+        .x = narrowF32(movement_dt * move_dx),
+        .y = narrowF32(movement_dt * move_dy),
     };
 }
 
 fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
-    const radians = asF32F64(heading - native_half_pi);
+    const radians = narrowF32(heading - native_half_pi);
     return .{
-        .x = asF32F64(survival_math.cos(radians)),
-        .y = asF32F64(survival_math.sin(radians)),
+        .x = narrowF32(survival_math.cos(radians)),
+        .y = narrowF32(survival_math.sin(radians)),
     };
 }
 
@@ -2903,15 +2903,15 @@ fn playerAccelerateMoveSpeed(
     player: *state_mod.PlayerState,
     dt: f64,
 ) void {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (perkActive(player.*, PerkId.long_distance_runner)) {
         if (player.move_speed < 2.0) {
-            player.move_speed = asF32F64(player.move_speed + dt_f32 * 4.0);
+            player.move_speed = narrowF32(player.move_speed + dt_f32 * 4.0);
         }
-        player.move_speed = asF32F64(player.move_speed + dt_f32);
+        player.move_speed = narrowF32(player.move_speed + dt_f32);
         if (player.move_speed > 2.8) player.move_speed = 2.8;
     } else {
-        player.move_speed = asF32F64(player.move_speed + dt_f32 * 5.0);
+        player.move_speed = narrowF32(player.move_speed + dt_f32 * 5.0);
         if (player.move_speed > 2.0) player.move_speed = 2.0;
     }
 }
@@ -2920,8 +2920,8 @@ fn playerDecelerateMoveSpeed(
     player: *state_mod.PlayerState,
     dt: f64,
 ) void {
-    const dt_f32 = asF32F64(dt);
-    player.move_speed = asF32F64(player.move_speed - dt_f32 * 15.0);
+    const dt_f32 = narrowF32(dt);
+    player.move_speed = narrowF32(player.move_speed - dt_f32 * 15.0);
     if (player.move_speed < 0.0) player.move_speed = 0.0;
 }
 
@@ -2943,36 +2943,36 @@ fn playerHeadingApproachTargetWithDelta(
     target_heading: f64,
     dt: f64,
 ) HeadingApproachResult {
-    var heading = asF32F64(normalizeHeading(player.heading));
+    var heading = narrowF32(normalizeHeading(player.heading));
     player.heading = heading;
-    const target = asF32F64(target_heading);
+    const target = narrowF32(target_heading);
 
-    const direct = asF32F64(@abs(asF32F64(target - heading)));
+    const direct = narrowF32(@abs(narrowF32(target - heading)));
     var high = heading;
     if (target > high) high = target;
     var low = heading;
     if (target < low) low = target;
-    const wrapped = asF32F64(@abs(asF32F64(native_tau - high + low)));
+    const wrapped = narrowF32(@abs(narrowF32(native_tau - high + low)));
     const diff = if (direct >= wrapped) wrapped else direct;
 
-    const dt_f32 = asF32F64(dt);
-    const scaled = asF32F64(dt_f32 * diff);
+    const dt_f32 = narrowF32(dt);
+    const scaled = narrowF32(dt_f32 * diff);
     var turn_delta: f64 = 0.0;
     if (direct <= wrapped) {
         if (target > heading) {
-            turn_delta = asF32F64(scaled * 5.0);
+            turn_delta = narrowF32(scaled * 5.0);
         } else {
-            turn_delta = asF32F64(scaled * -5.0);
+            turn_delta = narrowF32(scaled * -5.0);
         }
     } else {
         if (target >= heading) {
-            turn_delta = asF32F64(scaled * -5.0);
+            turn_delta = narrowF32(scaled * -5.0);
         } else {
-            turn_delta = asF32F64(scaled * 5.0);
+            turn_delta = narrowF32(scaled * 5.0);
         }
     }
 
-    heading = asF32F64(heading + turn_delta);
+    heading = narrowF32(heading + turn_delta);
     player.heading = heading;
     return .{
         .diff = diff,
@@ -2989,7 +2989,7 @@ fn playerHeadingApproachTarget(
 }
 
 fn normalizeHeading(value: f64) f64 {
-    const wrapped = native_math.wrapAngle0Tau(asF32F64(value));
+    const wrapped = native_math.wrapAngle0Tau(narrowF32(value));
     return native_math.f64f32(wrapped);
 }
 
@@ -2997,11 +2997,11 @@ fn applyPerkWorldDtSteps(
     players: []const state_mod.PlayerState,
     dt: f64,
 ) f64 {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (!(dt_f32 > 0.0)) return dt_f32;
     if (players.len == 0) return dt_f32;
     if (!perkActive(players[0], PerkId.reflex_boosted)) return dt_f32;
-    return asF32F64(dt_f32 * 0.9);
+    return narrowF32(dt_f32 * 0.9);
 }
 
 fn playerFrameDtAfterRoundtrip(
@@ -3009,22 +3009,22 @@ fn playerFrameDtAfterRoundtrip(
     time_scale_active: bool,
     reflex_boost_timer: f64,
 ) f64 {
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     if (!time_scale_active or dt_f32 <= 0.0) {
         return dt_f32;
     }
 
-    const reflex_f32 = asF32F64(reflex_boost_timer);
-    var time_scale_factor = asF32F64(0.3);
+    const reflex_f32 = narrowF32(reflex_boost_timer);
+    var time_scale_factor = narrowF32(0.3);
     if (reflex_f32 < 1.0) {
-        time_scale_factor = asF32F64((1.0 - reflex_f32) * 0.7 + 0.3);
+        time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
     }
     if (time_scale_factor <= 0.0) {
         return dt_f32;
     }
 
-    const movement_dt = asF32F64((0.6 / time_scale_factor) * dt_f32);
-    return asF32F64(time_scale_factor * movement_dt * 1.6666666);
+    const movement_dt = narrowF32((0.6 / time_scale_factor) * dt_f32);
+    return narrowF32(time_scale_factor * movement_dt * 1.6666666);
 }
 
 fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
@@ -5093,12 +5093,12 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     }
 
     var expected_perk_speed: f64 = 0.0;
-    const dt_f32 = asF32F64(dt);
+    const dt_f32 = narrowF32(dt);
     for (0..steps) |_| {
         if (expected_perk_speed < 2.0) {
-            expected_perk_speed = asF32F64(expected_perk_speed + dt_f32 * 4.0);
+            expected_perk_speed = narrowF32(expected_perk_speed + dt_f32 * 4.0);
         }
-        expected_perk_speed = asF32F64(expected_perk_speed + dt_f32);
+        expected_perk_speed = narrowF32(expected_perk_speed + dt_f32);
         if (expected_perk_speed > 2.8) {
             expected_perk_speed = 2.8;
         }
@@ -5119,7 +5119,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     updatePlayerFromReplayInput(&perk_player, coast_input, move_flags, &state, dt);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
-    const expected_coast_speed = asF32F64(expected_perk_speed - dt_f32 * 15.0);
+    const expected_coast_speed = narrowF32(expected_perk_speed - dt_f32 * 15.0);
     try std.testing.expectApproxEqAbs(expected_coast_speed, perk_player.move_speed, 1e-6);
     try std.testing.expect(perk_player.pos.x > prev_x);
 }
