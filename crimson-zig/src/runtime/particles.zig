@@ -2,6 +2,7 @@ const std = @import("std");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -281,7 +282,7 @@ fn creatureFindInRadius(
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;
-        if (!(creature.lifecycle_stage > 5.0)) continue;
+        if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
 
         const size = narrowF32(creature.size);
         const dx = narrowF32(creature.pos.x - pos.x);

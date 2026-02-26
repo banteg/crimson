@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -16,7 +17,6 @@ const PerkId = perks.PerkId;
 
 pub const max_creatures: usize = 0x180;
 
-const creature_lifecycle_stage_alive: f64 = 16.0;
 const creature_speed_scale: f64 = 30.0;
 const creature_turn_rate_scale: f64 = native_math.roundTripF32(native_math.native_turn_rate_scale);
 const contact_damage_cooldown: f64 = 1.0;
@@ -55,7 +55,7 @@ pub const CreatureState = struct {
     contact_damage: f64 = 0.0,
     plague_infected: bool = false,
     collision_timer: f64 = plague_collision_period,
-    lifecycle_stage: f64 = creature_lifecycle_stage_alive,
+    lifecycle_stage: creature_lifecycle.Stage = creature_lifecycle.alive,
     attack_cooldown: f64 = 0.0,
     last_hit_owner: owner_ref.OwnerRef = owner_local_player,
     flags: u32 = 0,
@@ -146,7 +146,7 @@ pub const CreaturePool = struct {
             .contact_damage = narrowF32(init.contact_damage),
             .plague_infected = false,
             .collision_timer = 0.0,
-            .lifecycle_stage = creature_lifecycle_stage_alive,
+            .lifecycle_stage = creature_lifecycle.alive,
             .attack_cooldown = 0.0,
             .last_hit_owner = owner_local_player,
             .flags = init.flags,
@@ -1844,7 +1844,7 @@ pub const CreaturePool = struct {
             if (!(creature.hp > 0.0)) {
                 applySelfDamageTickToDead(creature, dt);
                 tickAi7LinkTimer(creature, dt_ms, &state.rng);
-                if (creature.lifecycle_stage == creature_lifecycle_stage_alive) {
+                if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
                     creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
                 }
                 tickDead(creature, dt, &self.kill_count, state);
@@ -2035,7 +2035,7 @@ pub const CreaturePool = struct {
             }
 
             const contact_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
-            if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
+            if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and
                 creature.attack_cooldown <= 0.0 and
@@ -2079,7 +2079,7 @@ pub const CreaturePool = struct {
             {
                 creature.plague_infected = true;
             }
-            if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
+            if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
                 contact_sq < 30.0 * 30.0 and
                 creature.size <= 30.0)
             {
@@ -2093,7 +2093,7 @@ pub const CreaturePool = struct {
     pub fn finalizePostRenderLifecycle(self: *CreaturePool) void {
         for (&self.entries) |*creature| {
             if (!creature.active) continue;
-            if (creature.lifecycle_stage < -10.0) {
+            if (creature_lifecycle.isDespawned(creature.lifecycle_stage)) {
                 creature.active = false;
             }
         }
@@ -2317,7 +2317,7 @@ pub const CreaturePool = struct {
         var creature = &self.entries[creature_index];
         if (!creature.active) return 0;
         creature.last_hit_owner = owner;
-        const death_start_needed = creature.lifecycle_stage == creature_lifecycle_stage_alive;
+        const death_start_needed = creature_lifecycle.isAlive(creature.lifecycle_stage);
 
         // Native nuke path applies damage to active corpse entries as well.
         if (!(creature.hp > 0.0)) {
@@ -2636,7 +2636,7 @@ pub const CreaturePool = struct {
         for (self.entries, 0..) |creature, idx| {
             if (!creature.active) continue;
             if (!(creature.hp > 0.0)) continue;
-            if (creature.lifecycle_stage <= 5.0) continue;
+            if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
 
             const to_creature = state_mod.Vec2.sub(creature.pos, origin);
             const along = dot(to_creature, dir);
@@ -2680,7 +2680,7 @@ pub const CreaturePool = struct {
             }
             return 0;
         }
-        const death_start_needed = creature.lifecycle_stage == creature_lifecycle_stage_alive;
+        const death_start_needed = creature_lifecycle.isAlive(creature.lifecycle_stage);
 
         creature.hp -= damage;
         creature.vel = .{
@@ -3316,7 +3316,7 @@ fn spawnSplitChildrenOnDeath(
         child.size = narrowF32(source.size - 8.0);
         child.move_speed = narrowF32(source.move_speed + 0.1);
         child.contact_damage = narrowF32(source.contact_damage * 0.7);
-        child.lifecycle_stage = creature_lifecycle_stage_alive;
+        child.lifecycle_stage = creature_lifecycle.alive;
         self.entries[child_idx] = child;
     }
 
@@ -5319,7 +5319,7 @@ test "radioactive kill awards base xp without death multipliers" {
 
     try std.testing.expectEqual(@as(i32, 112), players[0].experience);
     try std.testing.expect(pool.entries[0].hp < 0.0);
-    try expectFloatClose(creature_lifecycle_stage_alive - dt, pool.entries[0].lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive - dt, pool.entries[0].lifecycle_stage);
 }
 
 test "radioactive sets hp to one for lizard type creatures" {
@@ -5357,7 +5357,7 @@ test "radioactive sets hp to one for lizard type creatures" {
 
     try std.testing.expectEqual(@as(i32, 100), players[0].experience);
     try expectFloatClose(1.0, pool.entries[0].hp);
-    try expectFloatClose(creature_lifecycle_stage_alive, pool.entries[0].lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive, pool.entries[0].lifecycle_stage);
     try expectFloatClose(0.5, pool.entries[0].collision_timer);
 }
 
@@ -5940,8 +5940,8 @@ test "split on death spawns two smaller children" {
     const child1 = pool.entries[1];
     const child2 = pool.entries[2];
     try std.testing.expect(child1.active and child2.active);
-    try expectFloatClose(creature_lifecycle_stage_alive, child1.lifecycle_stage);
-    try expectFloatClose(creature_lifecycle_stage_alive, child2.lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive, child1.lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive, child2.lifecycle_stage);
     try std.testing.expect(child1.phase_seed >= 0.0 and child1.phase_seed <= 255.0);
     try std.testing.expect(child2.phase_seed >= 0.0 and child2.phase_seed <= 255.0);
     try expectFloatClose(-native_half_pi, child1.heading);
@@ -6289,7 +6289,7 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
     try std.testing.expectEqual(@as(usize, 3), active_count);
     try std.testing.expect(pool.entries[0].active);
     try std.testing.expect(pool.entries[0].hp < 0.0);
-    try expectFloatClose(creature_lifecycle_stage_alive - 0.2, pool.entries[0].lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive - 0.2, pool.entries[0].lifecycle_stage);
     try std.testing.expect(pool.entries[1].active);
     try std.testing.expect(pool.entries[2].active);
     try expectFloatClose(40.0, pool.entries[1].size);
@@ -6331,7 +6331,7 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
 
     const dt = 0.063;
     try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
-    try expectFloatClose(creature_lifecycle_stage_alive - dt, pool.entries[0].lifecycle_stage);
+    try expectFloatClose(creature_lifecycle.alive - dt, pool.entries[0].lifecycle_stage);
 }
 
 test "single-player dead player uses dead-target AI position" {

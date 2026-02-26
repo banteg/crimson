@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
 const bonus_runtime = @import("bonuses.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
@@ -22,7 +23,6 @@ const math = @import("math.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const GameModeId = game_ids.GameModeId;
-const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
 const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
 const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
@@ -1661,7 +1661,7 @@ fn applyShockChainBonus(
     var best_dist_sq: f64 = 1e12;
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        if (creature.lifecycle_stage != creature_lifecycle_stage_alive) continue;
+        if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
         const d_sq = distanceSq(origin, creature.pos);
         if (d_sq < best_dist_sq) {
             best_dist_sq = d_sq;
@@ -1758,7 +1758,7 @@ fn creatureFindInRadius(
     while (idx < max_index) : (idx += 1) {
         const creature = creatures[idx];
         if (!creature.active) continue;
-        if (!(creature.lifecycle_stage > 5.0)) continue;
+        if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
         const dist = narrowF32(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
         const threshold = narrowF32(creature.size * 0.14285715 + 3.0);
         if (threshold < dist) continue;
@@ -2607,7 +2607,7 @@ fn applyFreezePickupCorpseCleanupRng(
         if (!creature.active) continue;
         if (creature.hp > 0.0) continue;
 
-        if (creature.lifecycle_stage < -10.0) {
+        if (creature_lifecycle.isDespawned(creature.lifecycle_stage)) {
             creature.active = false;
             continue;
         }
@@ -4726,7 +4726,7 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
     var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0].active = true;
-    creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
 
     var particles = particles_mod.ParticlePool{};
     particles.entries[0].active = true;
@@ -4982,7 +4982,7 @@ test "evil eyes targeting defaults to alive player slot" {
         .{
             .active = true,
             .pos = .{ .x = 100.0, .y = 200.0 },
-            .lifecycle_stage = 16.0,
+            .lifecycle_stage = creature_lifecycle.alive,
             .size = 50.0,
             .hp = 100.0,
         },
@@ -5016,14 +5016,14 @@ test "evil eyes targeting assigns each alive owner" {
         .{
             .active = true,
             .pos = .{ .x = 100.0, .y = 200.0 },
-            .lifecycle_stage = 16.0,
+            .lifecycle_stage = creature_lifecycle.alive,
             .size = 50.0,
             .hp = 100.0,
         },
         .{
             .active = true,
             .pos = .{ .x = 140.0, .y = 200.0 },
-            .lifecycle_stage = 16.0,
+            .lifecycle_stage = creature_lifecycle.alive,
             .size = 50.0,
             .hp = 100.0,
         },
@@ -5058,7 +5058,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
+        .lifecycle_stage = creature_lifecycle.alive,
         .collision_timer = 0.1,
         .size = 50.0,
         .hp = 100.0,
@@ -5092,7 +5092,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
+        .lifecycle_stage = creature_lifecycle.alive,
         .collision_timer = 0.034000009298324585,
         .size = 50.0,
         .hp = 100.0,
@@ -5139,7 +5139,7 @@ test "pyrokinetic defaults to first alive player slot" {
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
+        .lifecycle_stage = creature_lifecycle.alive,
         .collision_timer = 0.1,
         .size = 50.0,
         .hp = 100.0,
@@ -5174,7 +5174,7 @@ test "pyrokinetic targets all alive owners in default mode" {
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
+        .lifecycle_stage = creature_lifecycle.alive,
         .collision_timer = 0.1,
         .size = 50.0,
         .hp = 100.0,
@@ -5182,7 +5182,7 @@ test "pyrokinetic targets all alive owners in default mode" {
     creatures.entries[1] = .{
         .active = true,
         .pos = .{ .x = 140.0, .y = 200.0 },
-        .lifecycle_stage = 16.0,
+        .lifecycle_stage = creature_lifecycle.alive,
         .collision_timer = 0.1,
         .size = 50.0,
         .hp = 100.0,
@@ -5657,7 +5657,7 @@ test "jinxed kills creature and awards base reward" {
     var creatures = creatures_mod.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
-    creatures.entries[2].lifecycle_stage = 16.0;
+    creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[2].reward_value = 12.7;
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5690,7 +5690,7 @@ test "jinxed reward uses float32 sum before truncation" {
     var creatures = creatures_mod.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
-    creatures.entries[2].lifecycle_stage = 16.0;
+    creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[2].reward_value = 97.99636190476191;
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5775,7 +5775,7 @@ test "jinxed pool uses full 384-slot upper bound" {
     var default_creatures = creatures_mod.CreaturePool{};
     default_creatures.entries[0x17F].active = true;
     default_creatures.entries[0x17F].hp = 100.0;
-    default_creatures.entries[0x17F].lifecycle_stage = 16.0;
+    default_creatures.entries[0x17F].lifecycle_stage = creature_lifecycle.alive;
     default_creatures.entries[0x17F].reward_value = 12.7;
 
     applyJinxedEffects(&default_state, default_players[0..], &default_creatures, dt);
@@ -5869,7 +5869,7 @@ test "final revenge aoe includes active non-positive hp entries" {
         .contact_damage = 0.0,
     });
     creatures.entries[0].hp = 0.0;
-    creatures.entries[0].lifecycle_stage = 16.0;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,

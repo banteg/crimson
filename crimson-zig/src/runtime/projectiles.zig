@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -18,7 +19,6 @@ const WeaponId = state_mod.WeaponId;
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
-const creature_lifecycle_stage_alive: f64 = 16.0;
 
 pub const Projectile = struct {
     active: bool = false,
@@ -163,7 +163,7 @@ pub const ProjectilePool = struct {
         const bucket_size: f64 = 64.0;
         for (creatures.entries, 0..) |creature, idx| {
             collidable_snapshot[idx] = creature.active and
-                creature.lifecycle_stage > 5.0;
+                creature_lifecycle.isCollidable(creature.lifecycle_stage);
             if (!collidable_snapshot[idx]) continue;
             candidate_has_cell[idx] = true;
             candidate_cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
@@ -246,7 +246,7 @@ pub const ProjectilePool = struct {
                 for (creatures.entries, 0..) |creature, idx| {
                     if (!collidable_snapshot[idx]) continue;
                     if (!candidate_has_cell[idx]) continue;
-                    if (!(creature.active and creature.lifecycle_stage > 5.0)) continue;
+                    if (!(creature.active and creature_lifecycle.isCollidable(creature.lifecycle_stage))) continue;
                     const in_span =
                         @abs(candidate_cell_x[idx] - proj_cell_x) <= cell_span and
                         @abs(candidate_cell_y[idx] - proj_cell_y) <= cell_span;
@@ -343,7 +343,7 @@ pub const ProjectilePool = struct {
                 }
 
                 if (owner_player_idx) |idx| {
-                    if (idx < state.shots_hit.len and creatures.entries[hit_idx.?].lifecycle_stage == creature_lifecycle_stage_alive) {
+                    if (idx < state.shots_hit.len and creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
                         state.shots_hit[idx] += 1;
                     }
                 }
@@ -425,7 +425,7 @@ pub const ProjectilePool = struct {
                     }
                     const idx = hit_idx.?;
                     collidable_snapshot[idx] = creatures.entries[idx].active and
-                        creatures.entries[idx].lifecycle_stage > 5.0;
+                        creature_lifecycle.isCollidable(creatures.entries[idx].lifecycle_stage);
                     if (!collidable_snapshot[idx]) {
                         candidate_has_cell[idx] = false;
                     } else {
@@ -532,7 +532,7 @@ fn applyIonLingerDamage(
 
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        if (!(creature.lifecycle_stage > 5.0)) continue;
+        if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
         const creature_radius = creatureHitRadius(creature.size);
         const hit_radius = radius + creature_radius;
         if (runtime_helpers.distanceSq(proj.pos, creature.pos) <= hit_radius * hit_radius) {
@@ -739,7 +739,7 @@ test "pulse gun hit applies post-hit target push" {
 
     creatures.entries[0].pos = .{ .x = initial_creature_x, .y = initial_creature_y };
     creatures.entries[0].hp = 1000.0;
-    creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[0].active = true;
 
     var pulse_pool = ProjectilePool{};
