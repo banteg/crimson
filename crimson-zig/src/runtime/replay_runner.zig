@@ -1095,7 +1095,7 @@ fn buildTickTrace(
     var projectile_type11_found = false;
     var projectile_type11_closest = projectiles_mod.Projectile{};
     var projectile_type11_closest_found = false;
-    var projectile_type11_closest_dist = std.math.inf(f64);
+    var projectile_type11_closest_dist = std.math.inf(f32);
     const projectile1 = projectiles.entries[1];
     var projectile_type21_count: usize = 0;
     var projectile_type21 = projectiles_mod.Projectile{};
@@ -1364,9 +1364,9 @@ fn buildTickTrace(
             .projectile_first_hit_origin_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_origin.y),
             .projectile_first_hit_pos_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.x),
             .projectile_first_hit_pos_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.y),
-            .projectile_first_hit_target_size_q4 = quantizeQ4(projectile_tick_stats.first_hit_target_size),
-            .projectile_first_hit_target_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_target_x),
-            .projectile_first_hit_target_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_target_y),
+            .projectile_first_hit_target_size_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_size)),
+            .projectile_first_hit_target_x_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_x)),
+            .projectile_first_hit_target_y_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_y)),
         },
         .creatures = .{
             .creature0_active = creatures.entries[0].active,
@@ -1469,25 +1469,25 @@ fn buildTickTrace(
     };
 }
 
-fn quantizeQ4(value: f64) i32 {
+fn quantizeQ4(value: f32) i32 {
     const scaled = @round(value * 10000.0);
-    if (scaled <= @as(f64, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f64, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
+    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
+    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
     return @intFromFloat(scaled);
 }
 
-fn quantizeQ6(value: f64) i32 {
+fn quantizeQ6(value: f32) i32 {
     const scaled = @round(value * 1_000_000.0);
-    if (scaled <= @as(f64, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f64, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
+    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
+    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
     return @intFromFloat(scaled);
 }
 
-fn bonusTimerMs(seconds: f64) i32 {
+fn bonusTimerMs(seconds: f32) i32 {
     if (!(seconds > 0.0)) return 0;
     const ms = @round(seconds * 1000.0);
     if (ms <= 0.0) return 0;
-    if (ms >= @as(f64, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
+    if (ms >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
     return @intFromFloat(ms);
 }
 
