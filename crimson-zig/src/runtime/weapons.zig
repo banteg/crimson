@@ -27,6 +27,11 @@ inline fn weaponId(value: i32) WeaponId {
     return state_mod.weaponIdFromInt(value).?;
 }
 
+inline fn projectileMetaFromRawId(raw_id: i32) f32 {
+    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
+    return state_mod.weaponProjectileMeta(weapon_id);
+}
+
 pub const TickInputFlags = struct {
     fire_down: bool = false,
     fire_pressed: bool = false,
@@ -137,7 +142,7 @@ pub fn stepPlayerForTick(
                     while (idx < count) : (idx += 1) {
                         const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
-                        const meta = state_mod.weaponProjectileMeta(type_id);
+                        const meta = state_mod.weaponProjectileMeta(.plasma_minigun);
                         _ = projectiles.spawn(player.pos, angle, type_id, owner_id, meta, false);
                     }
                 }
@@ -278,9 +283,9 @@ fn tryFireWeaponWithForce(
 
     const shot_cooldown_base = state_mod.weaponShotCooldown(weapon_id);
     const pellet_count = @max(0, state_mod.weaponPelletCount(weapon_id));
-    const weapon_spread_heat = state_mod.weaponSpreadHeatIncById(weapon_id);
+    const weapon_spread_heat = state_mod.weaponSpreadHeatInc(weapon_id);
     const fire_bullets_weapon_id = WeaponId.fire_bullets;
-    const fire_bullets_spread_heat = state_mod.weaponSpreadHeatIncById(fire_bullets_weapon_id);
+    const fire_bullets_spread_heat = state_mod.weaponSpreadHeatInc(fire_bullets_weapon_id);
 
     var shot_cooldown = shot_cooldown_base;
 
@@ -311,7 +316,7 @@ fn tryFireWeaponWithForce(
     }
     player.shot_cooldown = @max(0.0, shot_cooldown);
 
-    const weapon_flags = state_mod.weaponFlagsById(player.weapon_id);
+    const weapon_flags = state_mod.weaponFlags(player.weapon_id);
 
     if ((weapon_flags & 0x1) != 0) {
         // spawn_shell_casing randoms: angle speed rotation rotation_step.
@@ -348,7 +353,7 @@ fn tryFireWeaponWithForce(
     }
 
     if (is_fire_bullets) {
-        const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets));
+        const meta = state_mod.weaponProjectileMeta(.fire_bullets);
         for (0..@as(usize, @intCast(shot_count))) |_| {
             const jitter_roll = state.rng.rand();
             const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
@@ -365,14 +370,14 @@ fn tryFireWeaponWithForce(
         .multi_plasma => {
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)), false);
-            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun)), false);
-            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)), false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun)), false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)), false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(.plasma_rifle), false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weaponProjectileMeta(.plasma_minigun), false);
+            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(.plasma_rifle), false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, state_mod.weaponProjectileMeta(.plasma_minigun), false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, state_mod.weaponProjectileMeta(.plasma_rifle), false);
         },
         .plasma_shotgun => {
-            const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun));
+            const meta = state_mod.weaponProjectileMeta(.plasma_minigun);
             for (0..14) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
                 const id = projectiles.spawn(
@@ -387,7 +392,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .gauss_shotgun => {
-            const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.gauss_gun));
+            const meta = state_mod.weaponProjectileMeta(.gauss_gun);
             for (0..6) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
                 const id = projectiles.spawn(
@@ -402,7 +407,7 @@ fn tryFireWeaponWithForce(
             }
         },
         .ion_shotgun => {
-            const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.ion_minigun));
+            const meta = state_mod.weaponProjectileMeta(.ion_minigun);
             for (0..8) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
                 const id = projectiles.spawn(
@@ -510,7 +515,7 @@ fn tryFireWeaponWithForce(
         else => {
             const type_id = state_mod.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const type_id_i32 = @intFromEnum(type_id);
-            const meta = state_mod.weaponProjectileMeta(type_id_i32);
+            const meta = projectileMetaFromRawId(type_id_i32);
             const pellets = @max(1, state_mod.weaponPelletCount(player.weapon_id));
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
@@ -742,7 +747,7 @@ fn spawnPerkProjectile(
         }
     }
 
-    const meta = state_mod.weaponProjectileMeta(spawn_type_id);
+    const meta = projectileMetaFromRawId(spawn_type_id);
     _ = projectiles.spawn(
         pos,
         angle,
@@ -1730,7 +1735,7 @@ test "shotgun family fires expected pellet counts and formulas" {
         try std.testing.expectEqual(@as(i32, @intCast(case.expected_count)), state.weapon_shots_fired[0][@intCast(case.weapon_id)]);
 
         var rng = survival_spawn.Crand.init(0);
-        if ((state_mod.weaponFlags(case.weapon_id) & 0x1) != 0) {
+        if ((state_mod.weaponFlags(weaponId(case.weapon_id)) & 0x1) != 0) {
             _ = rng.rand();
             _ = rng.rand();
             _ = rng.rand();

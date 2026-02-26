@@ -12,6 +12,7 @@ const survival_math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
+const WeaponId = state_mod.WeaponId;
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
@@ -70,7 +71,7 @@ pub const ProjectilePool = struct {
             }
         }
 
-        const meta = if (base_damage > 0.0) base_damage else state_mod.weaponProjectileMeta(type_id);
+        const meta = if (base_damage > 0.0) base_damage else projectileMetaFromRawId(type_id);
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
@@ -379,7 +380,7 @@ pub const ProjectilePool = struct {
 
                 var dist = state_mod.Vec2.sub(proj.origin, proj.pos).length();
                 if (dist < 50.0) dist = 50.0;
-                const damage_scale = state_mod.weaponDamageScale(proj.type_id);
+                const damage_scale = damageScaleFromRawId(proj.type_id);
                 const damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95;
                 const impulse_axis = narrowF32(survival_math.cos(proj.angle - native_half_pi) * proj.speed_scale);
                 const impulse = state_mod.Vec2{
@@ -649,6 +650,16 @@ fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
         if (as_usize < player_len) return as_usize;
     }
     return null;
+}
+
+fn projectileMetaFromRawId(raw_id: i32) f32 {
+    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
+    return state_mod.weaponProjectileMeta(weapon_id);
+}
+
+fn damageScaleFromRawId(raw_id: i32) f32 {
+    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 1.0;
+    return state_mod.weaponDamageScale(weapon_id);
 }
 
 fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
@@ -951,7 +962,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
+        state_mod.weaponProjectileMeta(WeaponId.pistol),
         false,
     );
     _ = base_pool.update(
@@ -975,7 +986,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
+        state_mod.weaponProjectileMeta(WeaponId.pistol),
         false,
     );
     _ = greased_pool.update(

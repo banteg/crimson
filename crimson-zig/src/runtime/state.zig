@@ -325,31 +325,19 @@ pub fn weaponPelletCount(weapon_id: WeaponId) i32 {
     return weapon_stats.get(weapon_id).pellet_count;
 }
 
-pub fn weaponProjectileMeta(weapon_id: i32) f32 {
-    const weapon_enum = weaponIdFromInt(weapon_id) orelse return 45.0;
-    return weapon_stats.get(weapon_enum).projectile_meta;
+pub fn weaponProjectileMeta(weapon_id: WeaponId) f32 {
+    return weapon_stats.get(weapon_id).projectile_meta;
 }
 
-pub fn weaponDamageScale(weapon_id: i32) f32 {
-    const weapon_enum = weaponIdFromInt(weapon_id) orelse return 1.0;
-    return weapon_stats.get(weapon_enum).damage_scale;
+pub fn weaponDamageScale(weapon_id: WeaponId) f32 {
+    return weapon_stats.get(weapon_id).damage_scale;
 }
 
-pub fn weaponFlags(weapon_id: i32) u32 {
-    const weapon_enum = weaponIdFromInt(weapon_id) orelse return 0;
-    return weapon_stats.get(weapon_enum).flags;
-}
-
-pub fn weaponSpreadHeatInc(weapon_id: i32) f32 {
-    const weapon_enum = weaponIdFromInt(weapon_id) orelse return 0.0;
-    return weapon_stats.get(weapon_enum).spread_heat_inc;
-}
-
-pub fn weaponFlagsById(weapon_id: WeaponId) u32 {
+pub fn weaponFlags(weapon_id: WeaponId) u32 {
     return weapon_stats.get(weapon_id).flags;
 }
 
-pub fn weaponSpreadHeatIncById(weapon_id: WeaponId) f32 {
+pub fn weaponSpreadHeatInc(weapon_id: WeaponId) f32 {
     return weapon_stats.get(weapon_id).spread_heat_inc;
 }
 

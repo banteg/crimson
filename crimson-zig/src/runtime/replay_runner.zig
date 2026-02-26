@@ -1578,7 +1578,7 @@ fn applyPendingCreatureProjectiles(
         const angle = state.pending_creature_projectile_angles[idx];
         const pos = state.pending_creature_projectile_positions[idx];
         const owner_id = state.pending_creature_projectile_owner_ids[idx];
-        const meta = state_mod.weaponProjectileMeta(type_id);
+        const meta = projectileMetaFromRawId(type_id);
         _ = projectiles.spawn(pos, angle, type_id, owner_id, meta, true);
     }
     state.pending_creature_projectile_count = 0;
@@ -1599,7 +1599,7 @@ fn applyFireblastBonus(
     for (0..count) |idx| {
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-        const meta = state_mod.weaponProjectileMeta(type_id);
+        const meta = projectileMetaFromRawId(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
     }
 }
@@ -1629,7 +1629,7 @@ fn applyShockChainBonus(
     const angle = state_mod.Vec2.sub(target.pos, origin).toHeading();
     const projectile_owner_id: i32 = -100;
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
-    const meta = state_mod.weaponProjectileMeta(type_id);
+    const meta = projectileMetaFromRawId(type_id);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
@@ -1644,6 +1644,11 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
+}
+
+fn projectileMetaFromRawId(raw_id: i32) f32 {
+    const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
+    return state_mod.weaponProjectileMeta(weapon_id);
 }
 
 fn applyPyrokineticEffects(
@@ -1743,7 +1748,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
-        const meta = state_mod.weaponProjectileMeta(type_id);
+        const meta = projectileMetaFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
@@ -1753,7 +1758,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
-        const meta = state_mod.weaponProjectileMeta(type_id);
+        const meta = projectileMetaFromRawId(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
     }
 
