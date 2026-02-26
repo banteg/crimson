@@ -1822,7 +1822,7 @@ pub const CreaturePool = struct {
                         },
                         &state.rng,
                         state,
-                        @floatCast(world_size),
+                        world_size,
                     );
                 }
             }
@@ -2361,7 +2361,7 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            @floatCast(world_size),
+            world_size,
             true,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
@@ -2408,7 +2408,7 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            @as(f64, world_size),
+            world_size,
             false,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
@@ -2456,7 +2456,7 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            @as(f64, world_size),
+            world_size,
             true,
         );
 
@@ -3373,7 +3373,7 @@ fn consumeDeathSideEffectsRng(
     players: []state_mod.PlayerState,
     bonus_pool: *bonus_runtime.BonusPool,
     death_pos: state_mod.Vec2,
-    world_size: f64,
+    world_size: f32,
     plan_death_sfx: bool,
 ) void {
     const spawned_bonus = bonus_pool.trySpawnOnKill(

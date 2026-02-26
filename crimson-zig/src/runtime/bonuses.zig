@@ -19,14 +19,14 @@ pub const BonusRuntimeError = error{
 pub const bonus_pool_size: usize = 16;
 const weapon_drop_id_count: u32 = 0x21;
 
-const bonus_spawn_margin: f64 = 32.0;
-const bonus_spawn_min_distance: f64 = 32.0;
-const bonus_pickup_radius: f64 = 26.0;
+const bonus_spawn_margin: f32 = 32.0;
+const bonus_spawn_min_distance: f32 = 32.0;
+const bonus_pickup_radius: f32 = 26.0;
 const bonus_pickup_decay_rate: f32 = 3.0;
 const bonus_pickup_linger: f32 = 0.5;
 const bonus_time_max: f32 = 10.0;
-const bonus_weapon_near_radius: f64 = 56.0;
-const bonus_aim_hover_radius: f64 = 24.0;
+const bonus_weapon_near_radius: f32 = 56.0;
+const bonus_aim_hover_radius: f32 = 24.0;
 const bonus_telekinetic_pickup_ms: f32 = 650.0;
 const reflex_timer_subtract_bias: f32 = 4e-9;
 
@@ -70,7 +70,7 @@ pub const BonusPool = struct {
         pos: state_mod.Vec2,
         state: *state_mod.GameplayState,
         players: []const state_mod.PlayerState,
-        world_size: f64,
+        world_size: f32,
     ) ?*BonusEntry {
         if (state.demo_mode_active) return null;
         if (state.game_mode == .rush or state.game_mode == .typo or state.game_mode == .tutorial) return null;
@@ -338,7 +338,7 @@ fn applyBonus(
         effective_amount = defaultBonusAmount(bonus_id);
     }
 
-    const economist_multiplier: f64 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
+    const economist_multiplier: f32 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
 
     switch (bonus_id) {
         .points => {
@@ -351,7 +351,7 @@ fn applyBonus(
             state.bonuses.energizer = narrowF32(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .weapon_power_up => {
-            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
             player.reload_active = false;
@@ -363,7 +363,7 @@ fn applyBonus(
             state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .reflex_boost => {
-            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
                 target.ammo = @floatFromInt(target.clip_size);
                 target.reload_active = false;
@@ -372,10 +372,10 @@ fn applyBonus(
             }
         },
         .shield => {
-            player.shield_timer = narrowF32(player.shield_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.shield_timer = narrowF32(player.shield_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .freeze => {
-            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .medikit => {
             if (player.health < 100.0) {
@@ -383,7 +383,7 @@ fn applyBonus(
             }
         },
         .speed => {
-            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .fire_bullets => {
             player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
@@ -432,12 +432,12 @@ fn applyBonus(
     }
 }
 
-fn bonusApplySeconds(bonus_id: BonusId, amount: i32) f64 {
+fn bonusApplySeconds(bonus_id: BonusId, amount: i32) f32 {
     return switch (bonus_id) {
         .energizer => 8.0,
         .double_experience => 6.0,
         .fire_bullets => 5.0,
-        else => @as(f64, @floatFromInt(amount)),
+        else => @as(f32, @floatFromInt(amount)),
     };
 }
 
@@ -644,7 +644,7 @@ fn isEmpty(entry: BonusEntry) bool {
     return entry.bonus_id == .unused and !entry.picked and entry.time_left <= 0.0 and entry.time_max <= 0.0 and entry.amount == 0;
 }
 
-fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
@@ -723,7 +723,7 @@ fn spawnAtPos(
     pos: state_mod.Vec2,
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
-    world_size: f64,
+    world_size: f32,
 ) AllocSlot {
     if (state.game_mode == .rush) return .sentinel;
     if (pos.x < bonus_spawn_margin or pos.y < bonus_spawn_margin or
