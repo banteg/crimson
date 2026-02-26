@@ -147,11 +147,20 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
     aim_x = 321.123456789123
     aim_y = -654.987654321987
 
-    replay_obj = _minimal_wire_replay_obj()
-    header = replay_obj["header"]
-    assert isinstance(header, dict)
-    header["input_quantization"] = "f32"
-    replay_obj["inputs"] = [[[move_x, move_y, aim_x, aim_y, 0]]]
+    replay_obj: dict[str, object] = {
+        "header": {
+            "game_mode_id": 1,
+            "seed": 1,
+            "replay_format_version": int(REPLAY_FORMAT_VERSION),
+            "player_count": 1,
+            "input_quantization": "f32",
+            "status": {
+                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
+            },
+        },
+        "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],
+        "events": [],
+    }
 
     replay = load_replay(msgspec.msgpack.encode(replay_obj))
 
