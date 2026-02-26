@@ -13,9 +13,13 @@ pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
 }
 
-pub inline fn f64f32(value: anytype) f64 {
+pub inline fn roundTripF32(value: anytype) f64 {
     const rounded: f32 = roundF32(value);
     return @floatCast(rounded);
+}
+
+pub inline fn f64f32(value: anytype) f64 {
+    return roundTripF32(value);
 }
 
 pub inline fn sinNative(value: f32) f32 {

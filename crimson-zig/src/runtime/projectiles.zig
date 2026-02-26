@@ -15,7 +15,7 @@ const PerkId = perks.PerkId;
 const WeaponId = state_mod.WeaponId;
 
 pub const main_projectile_pool_size: usize = 0x60;
-const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
+const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
 const creature_lifecycle_stage_alive: f64 = 16.0;
 
 pub const Projectile = struct {

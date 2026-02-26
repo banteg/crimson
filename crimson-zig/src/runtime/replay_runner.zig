@@ -19,9 +19,9 @@ const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const GameModeId = game_ids.GameModeId;
 const creature_lifecycle_stage_alive: f64 = 16.0;
-const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
-const native_pi: f64 = native_math.f64f32(native_math.native_pi);
-const native_tau: f64 = native_math.f64f32(native_math.native_tau);
+const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
+const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
+const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
 const relative_move_heading_none: f64 = -1.0;
 const relative_move_heading_forward: f64 = 0.0;
 const relative_move_heading_forward_right: f64 = 0.7853981852531433;
@@ -29,7 +29,7 @@ const relative_move_heading_right: f64 = native_half_pi;
 const relative_move_heading_backward_right: f64 = 2.356194496154785;
 const relative_move_heading_backward: f64 = native_pi;
 const relative_move_heading_backward_left: f64 = 3.9269909858703613;
-const relative_move_heading_left: f64 = native_math.f64f32(native_tau - native_half_pi);
+const relative_move_heading_left: f64 = native_math.roundTripF32(native_tau - native_half_pi);
 const relative_move_heading_forward_left: f64 = 5.4977874755859375;
 const relative_move_turn_align_scale: f64 = 7.957746982574463;
 const movement_control_relative: i32 = 1;
@@ -3029,7 +3029,7 @@ fn playerHeadingApproachTarget(
 
 fn normalizeHeading(value: f64) f64 {
     const wrapped = native_math.wrapAngle0Tau(narrowF32(value));
-    return native_math.f64f32(wrapped);
+    return native_math.roundTripF32(wrapped);
 }
 
 fn applyPerkWorldDtSteps(

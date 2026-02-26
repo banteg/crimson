@@ -16,13 +16,13 @@ pub const max_creatures: usize = 0x180;
 
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const creature_speed_scale: f64 = 30.0;
-const creature_turn_rate_scale: f64 = native_math.f64f32(native_math.native_turn_rate_scale);
+const creature_turn_rate_scale: f64 = native_math.roundTripF32(native_math.native_turn_rate_scale);
 const contact_damage_cooldown: f64 = 1.0;
 const plague_collision_period: f64 = 0.5;
 const owner_id_player_0: i32 = -100;
-const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
-const native_pi: f64 = native_math.f64f32(native_math.native_pi);
-const native_tau: f64 = native_math.f64f32(native_math.native_tau);
+const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
+const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
+const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
 
 pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
@@ -2901,7 +2901,7 @@ fn orbitTargetF32(
 
 fn headingFromDeltaF32(dx: f64, dy: f64) f64 {
     const heading = native_math.headingFromDeltaNative(narrowF32(dx), narrowF32(dy));
-    return native_math.f64f32(heading);
+    return native_math.roundTripF32(heading);
 }
 
 fn angleApproach(
@@ -2910,7 +2910,7 @@ fn angleApproach(
     rate: f64,
     dt: f64,
 ) f64 {
-    const angle = native_math.f64f32(native_math.wrapAngle0Tau(narrowF32(current)));
+    const angle = native_math.roundTripF32(native_math.wrapAngle0Tau(narrowF32(current)));
     const target_f = narrowF32(target);
     const rate_f = narrowF32(rate);
     const dt_f = narrowF32(dt);
