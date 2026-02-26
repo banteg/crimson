@@ -61,7 +61,7 @@ pub fn runReplayVerify(
 ) !backend_python.CommandOutput {
     switch (parseNativeSubset(verify_args)) {
         .ok => |request| return runNativeVerify(allocator, request),
-        .unsupported => |detail| return buildNotPortedOutput(allocator, detail),
+        .unsupported => |detail| return buildUnsupportedVerifyOptionOutput(allocator, detail),
         .invalid => |detail| return buildInvalidVerifyArgsOutput(allocator, detail),
     }
 }
@@ -128,24 +128,32 @@ fn runNativeVerify(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
-    defer tick_trace.deinit(allocator);
-
-    const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
-    const scaffold = replay_runner.runReplayScaffoldWithTrace(
-        replay,
-        trace_out,
-        allocator,
-        .{},
-    ) catch |err| {
+    const scaffold = blk: {
         if (request.debug_trace_jsonl) |trace_path| {
-            writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch {};
+            var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
+            defer tick_trace.deinit(allocator);
+
+            const traced = replay_runner.runReplayScaffoldWithTrace(
+                replay,
+                &tick_trace,
+                allocator,
+                .{},
+            ) catch |err| {
+                writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+                    return buildVerifyFailedOutput(allocator, trace_err);
+                };
+                return buildNotPortedOutputForReplayRunnerError(allocator, err);
+            };
+            writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+                return buildVerifyFailedOutput(allocator, trace_err);
+            };
+            break :blk traced;
         }
-        return buildNotPortedOutputForReplayRunnerError(allocator, err);
+
+        break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{}) catch |err| {
+            return buildNotPortedOutputForReplayRunnerError(allocator, err);
+        };
     };
-    if (request.debug_trace_jsonl) |trace_path| {
-        writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch {};
-    }
 
     const replay_sha256 = try sha256HexAlloc(allocator, replay_bytes);
     defer allocator.free(replay_sha256);
@@ -758,6 +766,23 @@ fn buildInvalidVerifyArgsOutput(
     };
 }
 
+fn buildUnsupportedVerifyOptionOutput(
+    allocator: std.mem.Allocator,
+    detail: []const u8,
+) !backend_python.CommandOutput {
+    var stderr_buf: std.ArrayList(u8) = .empty;
+    defer stderr_buf.deinit(allocator);
+
+    var writer = stderr_buf.writer(allocator);
+    try writer.print("unsupported replay verify option in native verifier: {s}\n", .{detail});
+
+    return .{
+        .stdout = try allocator.dupe(u8, ""),
+        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .exit_code = 1,
+    };
+}
+
 fn buildNotPortedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
@@ -917,12 +942,12 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--score-metric")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --score-metric" };
             idx += 1;
-            request.score_metric = parseScoreMetric(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = verify_contract.scoreMetricFromString(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "--score-metric=")) {
             const value = arg["--score-metric=".len..];
-            request.score_metric = parseScoreMetric(value) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = verify_contract.scoreMetricFromString(value) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
 
@@ -942,7 +967,7 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         }
 
         if (std.mem.startsWith(u8, arg, "-")) {
-            return .{ .unsupported = arg };
+            return .{ .invalid = arg };
         }
 
         if (replay_file == null) {
@@ -961,13 +986,6 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
 fn parseOutputFormat(raw: []const u8) ?OutputFormat {
     if (std.mem.eql(u8, raw, "human")) return .human;
     if (std.mem.eql(u8, raw, "json")) return .json;
-    return null;
-}
-
-fn parseScoreMetric(raw: []const u8) ?verify_contract.ScoreMetric {
-    if (std.mem.eql(u8, raw, "auto")) return .auto;
-    if (std.mem.eql(u8, raw, "score_xp")) return .score_xp;
-    if (std.mem.eql(u8, raw, "elapsed_ms")) return .elapsed_ms;
     return null;
 }
 
@@ -1096,6 +1114,17 @@ test "parse native subset reports unsupported options" {
     }
 }
 
+test "parse native subset reports unknown option as invalid" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--unknown-option",
+    });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("--unknown-option", detail),
+        else => return error.TestExpectedInvalidOption,
+    }
+}
+
 test "parse native subset reports unsupported lenient events option" {
     const parsed = parseNativeSubset(&.{
         "survival_20260224_041009_score76661.crd",
@@ -1143,6 +1172,18 @@ test "build verify payload score mismatch" {
 
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+}
+
+test "unsupported verify option output has dedicated wording" {
+    const allocator = std.testing.allocator;
+    const output = try buildUnsupportedVerifyOptionOutput(allocator, "--trace-rng");
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(
+        std.mem.indexOf(u8, output.stderr, "unsupported replay verify option in native verifier") != null,
+    );
 }
 
 test "survival sim not ported output maps unsupported weapon fire path" {
