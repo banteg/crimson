@@ -42,6 +42,9 @@ def apply_replay_tick_events(
     strict_events: bool,
     on_capture_state_transition: Callable[[int, int | None, int | None], None] | None = None,
 ) -> int | None:
+    _AI7_LINK_INDEX_MIN = -1723
+    _AI7_LINK_INDEX_MAX = -700
+
     state = world.state
     players = world.players
     perk_state = state.perk_selection
@@ -234,7 +237,7 @@ def apply_replay_tick_events(
                     if (
                         idx in spawned_indices
                         and link_index_i is not None
-                        and -1723 <= int(link_index_i) <= -700
+                        and _AI7_LINK_INDEX_MIN <= int(link_index_i) <= _AI7_LINK_INDEX_MAX
                         and (flags_i & int(CreatureFlags.AI7_LINK_TIMER)) != 0
                     ):
                         state.rng.rand()
