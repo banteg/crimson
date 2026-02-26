@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 
 const survival_bonuses = @import("survival_bonuses.zig");
 const survival_perks = @import("survival_perks.zig");
@@ -1971,7 +1972,7 @@ pub const CreaturePool = struct {
                             state,
                             creature.pos,
                             creature.heading,
-                            survival_state.ProjectileTypeId.plasma_rifle,
+                            @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
                             @intCast(idx),
                         );
                         creature.attack_cooldown = asF32F64(creature.attack_cooldown + 1.0);
@@ -2136,7 +2137,8 @@ pub const CreaturePool = struct {
         }
 
         var result = ShotResolutionResult{};
-        const projectile_type_id = survival_state.projectileTypeIdFromWeaponId(weapon_id) orelse weapon_id;
+        const weapon_enum = survival_state.weaponIdFromInt(weapon_id) orelse .none;
+        const projectile_type_id = survival_state.projectileTypeIdFromWeaponId(weapon_enum) orelse weapon_id;
         const damage_scale = survival_state.weaponDamageScale(weapon_id);
         const owner_id: i32 = -1 - player.index;
         var hit_audio_game_tune_started = state.game_tune_started;
@@ -3055,7 +3057,7 @@ pub fn consumeProjectileHitPresentationPreRng(
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
 
-    if (projectile_type_id == survival_state.ProjectileTypeId.blade_gun) {
+    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
         for (0..8) |_| {
             _ = state.rng.rand() & 0xff;
             consumeSpawnBloodSplatterRng(state);
@@ -3101,8 +3103,8 @@ pub fn consumeProjectileHitPresentationPostRng(
     // Native consumes one draw before post-hit decal branching.
     _ = state.rng.rand();
 
-    if (projectile_type_id == survival_state.ProjectileTypeId.gauss_gun or
-        projectile_type_id == survival_state.ProjectileTypeId.fire_bullets)
+    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) or
+        projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
     {
         consumeLargeHitStreakRng(state, freeze_active);
         return;
@@ -3156,9 +3158,9 @@ pub fn consumeHitSfxRng(
         _ = state.rng.rand();
         return;
     }
-    if (projectile_type_id == survival_state.ProjectileTypeId.ion_rifle or
-        projectile_type_id == survival_state.ProjectileTypeId.ion_minigun or
-        projectile_type_id == survival_state.ProjectileTypeId.ion_cannon)
+    if (projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) or
+        projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) or
+        projectile_type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_cannon))
     {
         return;
     }
@@ -3723,7 +3725,7 @@ test "spawn init and shot resolution award xp on kill" {
         0,
         .{ .x = 300.0, .y = 100.0 },
         1,
-        survival_state.WeaponId.pistol,
+        @intFromEnum(game_ids.WeaponId.pistol),
         1024.0,
     );
     try std.testing.expectEqual(@as(i32, 1), result.hits);
@@ -3967,7 +3969,7 @@ test "projectile pre-hit rng counts include bloody spread draw per splatter" {
     };
     player.perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
 
-    consumeProjectileHitPresentationPreRng(&state, &player, survival_state.ProjectileTypeId.pistol);
+    consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.pistol));
 
     var expected_rng = survival_spawn.Crand.init(1234);
     for (0..134) |_| {
@@ -3984,7 +3986,7 @@ test "projectile pre-hit rng counts include blade-gun angle draws under freeze" 
         .pos = .{},
     };
 
-    consumeProjectileHitPresentationPreRng(&state, &player, survival_state.ProjectileTypeId.blade_gun);
+    consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.blade_gun));
 
     var expected_rng = survival_spawn.Crand.init(1234);
     for (0..88) |_| {
@@ -6004,7 +6006,7 @@ test "ranged shock creature queues projectile along heading not direct aim" {
     pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
 
     try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
-    try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, state.pending_creature_projectile_type_ids[0]);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), state.pending_creature_projectile_type_ids[0]);
     try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_owner_ids[0]);
     try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectile_angles[0]);
 

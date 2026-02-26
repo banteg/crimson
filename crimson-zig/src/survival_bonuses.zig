@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 
 const survival_perks = @import("survival_perks.zig");
 const survival_state = @import("survival_state.zig");
@@ -26,6 +27,10 @@ const game_mode_rush: i32 = 2;
 const game_mode_quests: i32 = 3;
 const game_mode_typo: i32 = 4;
 const game_mode_tutorial: i32 = 8;
+
+inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
+    return @intCast(@intFromEnum(weapon_id));
+}
 
 pub const BonusEntry = struct {
     bonus_id: i32 = 0,
@@ -72,7 +77,7 @@ pub const BonusPool = struct {
 
         var has_pistol = false;
         for (players) |player| {
-            if (player.weapon_id == survival_state.WeaponId.pistol) {
+            if (player.weapon_id == game_ids.WeaponId.pistol) {
                 has_pistol = true;
                 break;
             }
@@ -81,13 +86,13 @@ pub const BonusPool = struct {
         if (has_pistol and (state.rng.rand() & 3) < 3) {
             const slot = spawnAtPos(self, pos, state, players, world_size);
             var entry = slotPtr(self, slot);
-            entry.bonus_id = survival_state.BonusId.weapon;
+            entry.bonus_id = @intFromEnum(game_ids.BonusId.weapon);
 
             var weapon_id = weaponPickRandomAvailable(state);
-            entry.amount = weapon_id;
-            if (weapon_id == survival_state.WeaponId.pistol) {
+            entry.amount = survival_state.weaponIdToInt(weapon_id);
+            if (weapon_id == game_ids.WeaponId.pistol) {
                 weapon_id = weaponPickRandomAvailable(state);
-                entry.amount = weapon_id;
+                entry.amount = survival_state.weaponIdToInt(weapon_id);
             }
 
             if (countMatches(self, entry.bonus_id) > 1) {
@@ -95,7 +100,7 @@ pub const BonusPool = struct {
                 return null;
             }
 
-            if (entry.amount == survival_state.WeaponId.pistol or anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) {
+            if (entry.amount == survival_state.weaponIdToInt(.pistol) or anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) {
                 clearEntry(self, entry);
                 return null;
             }
@@ -121,7 +126,7 @@ pub const BonusPool = struct {
         const slot = spawnAtPos(self, pos, state, players, world_size);
         var entry = slotPtr(self, slot);
 
-        if (entry.bonus_id == survival_state.BonusId.weapon) {
+        if (entry.bonus_id == @intFromEnum(game_ids.BonusId.weapon)) {
             const near_sq = bonus_weapon_near_radius * bonus_weapon_near_radius;
             var near_player = false;
             for (players) |player| {
@@ -131,19 +136,25 @@ pub const BonusPool = struct {
                 }
             }
             if (near_player) {
-                entry.bonus_id = survival_state.BonusId.points;
+                entry.bonus_id = @intFromEnum(game_ids.BonusId.points);
                 entry.amount = 100;
             }
         }
 
-        if (entry.bonus_id != survival_state.BonusId.points and countMatches(self, entry.bonus_id) > 1) {
+        if (entry.bonus_id != @intFromEnum(game_ids.BonusId.points) and countMatches(self, entry.bonus_id) > 1) {
             clearEntry(self, entry);
             return null;
         }
 
-        if (entry.bonus_id == survival_state.BonusId.weapon and carriedWeaponId(players, entry.amount)) {
-            clearEntry(self, entry);
-            return null;
+        if (entry.bonus_id == @intFromEnum(game_ids.BonusId.weapon)) {
+            const weapon_id = survival_state.weaponIdFromInt(entry.amount) orelse {
+                clearEntry(self, entry);
+                return null;
+            };
+            if (carriedWeaponId(players, weapon_id)) {
+                clearEntry(self, entry);
+                return null;
+            }
         }
 
         if (slot == .sentinel) return null;
@@ -177,7 +188,7 @@ pub const BonusPool = struct {
                     clearEntry(self, entry);
                     continue;
                 }
-                entry.bonus_id = survival_state.BonusId.unused;
+                entry.bonus_id = @intFromEnum(game_ids.BonusId.unused);
                 expired_to_unused = true;
             }
 
@@ -320,7 +331,7 @@ fn applyBonus(
     amount: i32,
     origin_pos: ?survival_state.Vec2,
 ) BonusRuntimeError!void {
-    if (bonus_id == survival_state.BonusId.unused) return;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.unused)) return;
 
     var effective_amount = amount;
     if (effective_amount < 0) effective_amount = 0;
@@ -331,16 +342,16 @@ fn applyBonus(
     const economist_multiplier: f64 = if (perkActive(player.*, survival_perks.PerkId.bonus_economist)) 1.5 else 1.0;
 
     switch (bonus_id) {
-        survival_state.BonusId.points => {
+        @intFromEnum(game_ids.BonusId.points) => {
             const target = if (players.len > 0) &players[0] else player;
             if (effective_amount > 0) {
                 target.experience += effective_amount;
             }
         },
-        survival_state.BonusId.energizer => {
+        @intFromEnum(game_ids.BonusId.energizer) => {
             state.bonuses.energizer = asF32F64(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
-        survival_state.BonusId.weapon_power_up => {
+        @intFromEnum(game_ids.BonusId.weapon_power_up) => {
             state.bonuses.weapon_power_up = asF32F64(state.bonuses.weapon_power_up + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
@@ -349,10 +360,10 @@ fn applyBonus(
             player.reload_timer_max = 0.0;
             player.ammo = @floatFromInt(player.clip_size);
         },
-        survival_state.BonusId.double_experience => {
+        @intFromEnum(game_ids.BonusId.double_experience) => {
             state.bonuses.double_experience = asF32F64(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
-        survival_state.BonusId.reflex_boost => {
+        @intFromEnum(game_ids.BonusId.reflex_boost) => {
             state.bonuses.reflex_boost = asF32F64(state.bonuses.reflex_boost + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
                 target.ammo = @floatFromInt(target.clip_size);
@@ -361,21 +372,21 @@ fn applyBonus(
                 target.reload_timer_max = 0.0;
             }
         },
-        survival_state.BonusId.shield => {
+        @intFromEnum(game_ids.BonusId.shield) => {
             player.shield_timer = asF32F64(player.shield_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
-        survival_state.BonusId.freeze => {
+        @intFromEnum(game_ids.BonusId.freeze) => {
             state.bonuses.freeze = asF32F64(state.bonuses.freeze + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
-        survival_state.BonusId.medikit => {
+        @intFromEnum(game_ids.BonusId.medikit) => {
             if (player.health < 100.0) {
                 player.health = @min(100.0, player.health + 10.0);
             }
         },
-        survival_state.BonusId.speed => {
+        @intFromEnum(game_ids.BonusId.speed) => {
             player.speed_bonus_timer = asF32F64(player.speed_bonus_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
         },
-        survival_state.BonusId.fire_bullets => {
+        @intFromEnum(game_ids.BonusId.fire_bullets) => {
             player.fire_bullets_timer = asF32F64(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
@@ -384,7 +395,7 @@ fn applyBonus(
             player.reload_timer_max = 0.0;
             player.ammo = @floatFromInt(player.clip_size);
         },
-        survival_state.BonusId.weapon => {
+        @intFromEnum(game_ids.BonusId.weapon) => {
             if (perkActive(player.*, survival_perks.PerkId.alternate_weapon) and player.alt_weapon_id == null) {
                 player.alt_weapon_id = player.weapon_id;
                 player.alt_clip_size = player.clip_size;
@@ -394,23 +405,24 @@ fn applyBonus(
                 player.alt_shot_cooldown = player.shot_cooldown;
                 player.alt_reload_timer_max = player.reload_timer_max;
             }
-            survival_state.weaponAssignPlayerWithState(player, effective_amount, state);
+            const weapon_id = survival_state.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
+            survival_state.weaponAssignPlayerWithState(player, weapon_id, state);
         },
-        survival_state.BonusId.nuke => {
+        @intFromEnum(game_ids.BonusId.nuke) => {
             if (state.pending_nuke_count < state.pending_nuke_origins.len) {
                 const slot: usize = @intCast(state.pending_nuke_count);
                 state.pending_nuke_origins[slot] = origin_pos orelse player.pos;
                 state.pending_nuke_count += 1;
             }
         },
-        survival_state.BonusId.shock_chain => {
+        @intFromEnum(game_ids.BonusId.shock_chain) => {
             if (state.pending_shock_chain_count < state.pending_shock_chain_origins.len) {
                 const slot: usize = @intCast(state.pending_shock_chain_count);
                 state.pending_shock_chain_origins[slot] = origin_pos orelse player.pos;
                 state.pending_shock_chain_count += 1;
             }
         },
-        survival_state.BonusId.fireblast => {
+        @intFromEnum(game_ids.BonusId.fireblast) => {
             if (state.pending_fireblast_count < state.pending_fireblast_origins.len) {
                 const slot: usize = @intCast(state.pending_fireblast_count);
                 state.pending_fireblast_origins[slot] = origin_pos orelse player.pos;
@@ -423,30 +435,30 @@ fn applyBonus(
 
 fn bonusApplySeconds(bonus_id: i32, amount: i32) f64 {
     return switch (bonus_id) {
-        survival_state.BonusId.energizer => 8.0,
-        survival_state.BonusId.double_experience => 6.0,
-        survival_state.BonusId.fire_bullets => 5.0,
+        @intFromEnum(game_ids.BonusId.energizer) => 8.0,
+        @intFromEnum(game_ids.BonusId.double_experience) => 6.0,
+        @intFromEnum(game_ids.BonusId.fire_bullets) => 5.0,
         else => @as(f64, @floatFromInt(amount)),
     };
 }
 
 fn defaultBonusAmount(bonus_id: i32) i32 {
     return switch (bonus_id) {
-        survival_state.BonusId.unused => 0,
-        survival_state.BonusId.points => 500,
-        survival_state.BonusId.energizer => 8,
-        survival_state.BonusId.weapon => 3,
-        survival_state.BonusId.weapon_power_up => 10,
-        survival_state.BonusId.nuke => 1,
-        survival_state.BonusId.double_experience => 1,
-        survival_state.BonusId.shock_chain => 1,
-        survival_state.BonusId.fireblast => 1,
-        survival_state.BonusId.reflex_boost => 3,
-        survival_state.BonusId.shield => 7,
-        survival_state.BonusId.freeze => 5,
-        survival_state.BonusId.medikit => 10,
-        survival_state.BonusId.speed => 8,
-        survival_state.BonusId.fire_bullets => 4,
+        @intFromEnum(game_ids.BonusId.unused) => 0,
+        @intFromEnum(game_ids.BonusId.points) => 500,
+        @intFromEnum(game_ids.BonusId.energizer) => 8,
+        @intFromEnum(game_ids.BonusId.weapon) => 3,
+        @intFromEnum(game_ids.BonusId.weapon_power_up) => 10,
+        @intFromEnum(game_ids.BonusId.nuke) => 1,
+        @intFromEnum(game_ids.BonusId.double_experience) => 1,
+        @intFromEnum(game_ids.BonusId.shock_chain) => 1,
+        @intFromEnum(game_ids.BonusId.fireblast) => 1,
+        @intFromEnum(game_ids.BonusId.reflex_boost) => 3,
+        @intFromEnum(game_ids.BonusId.shield) => 7,
+        @intFromEnum(game_ids.BonusId.freeze) => 5,
+        @intFromEnum(game_ids.BonusId.medikit) => 10,
+        @intFromEnum(game_ids.BonusId.speed) => 8,
+        @intFromEnum(game_ids.BonusId.fire_bullets) => 4,
         else => 0,
     };
 }
@@ -463,7 +475,7 @@ fn anyPerkActive(players: []const survival_state.PlayerState, perk_id: i32) bool
     return false;
 }
 
-fn carriedWeaponId(players: []const survival_state.PlayerState, weapon_id: i32) bool {
+fn carriedWeaponId(players: []const survival_state.PlayerState, weapon_id: game_ids.WeaponId) bool {
     for (players) |player| {
         if (player.weapon_id == weapon_id) return true;
         if (player.alt_weapon_id) |alt_id| {
@@ -486,7 +498,7 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
     }
 
     state.weapon_available = [_]bool{false} ** survival_state.weapon_count_size;
-    state.weapon_available[@intCast(survival_state.WeaponId.pistol)] = true;
+    state.weapon_available[weaponIdIndex(.pistol)] = true;
 
     if (unlock_index > 0) {
         const limit: usize = @min(@as(usize, @intCast(unlock_index)), quest_unlock_weapon_by_index.len);
@@ -498,13 +510,13 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
     }
 
     if (game_mode == game_mode_survival) {
-        state.weapon_available[@intCast(survival_state.WeaponId.assault_rifle)] = true;
-        state.weapon_available[@intCast(survival_state.WeaponId.shotgun)] = true;
-        state.weapon_available[@intCast(survival_state.WeaponId.submachine_gun)] = true;
+        state.weapon_available[weaponIdIndex(.assault_rifle)] = true;
+        state.weapon_available[weaponIdIndex(.shotgun)] = true;
+        state.weapon_available[weaponIdIndex(.submachine_gun)] = true;
     }
 
     if (!state.demo_mode_active and unlock_index_full >= 0x28) {
-        state.weapon_available[@intCast(survival_state.WeaponId.splitter_gun)] = true;
+        state.weapon_available[weaponIdIndex(.splitter_gun)] = true;
     }
 
     state.weapon_available_game_mode = game_mode;
@@ -512,7 +524,7 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
     state.weapon_available_unlock_index_full = unlock_index_full;
 }
 
-pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) i32 {
+pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) game_ids.WeaponId {
     weaponRefreshAvailable(state);
 
     for (0..1000) |_| {
@@ -533,13 +545,13 @@ pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) i32 {
         if (state.game_mode == game_mode_quests and
             state.quest_stage_major == 5 and
             state.quest_stage_minor == 10 and
-            weapon_id == survival_state.WeaponId.ion_cannon)
+            weapon_id == @intFromEnum(game_ids.WeaponId.ion_cannon))
         {
             continue;
         }
-        return weapon_id;
+        return @enumFromInt(weapon_id);
     }
-    return survival_state.WeaponId.pistol;
+    return .pistol;
 }
 
 fn bonusPickRandomType(
@@ -549,7 +561,7 @@ fn bonusPickRandomType(
 ) i32 {
     var has_fire_bullets_drop = false;
     for (pool.entries) |entry| {
-        if (entry.bonus_id == survival_state.BonusId.fire_bullets and !entry.picked) {
+        if (entry.bonus_id == @intFromEnum(game_ids.BonusId.fire_bullets) and !entry.picked) {
             has_fire_bullets_drop = true;
             break;
         }
@@ -563,7 +575,7 @@ fn bonusPickRandomType(
 
         return bonus_id;
     }
-    return survival_state.BonusId.points;
+    return @intFromEnum(game_ids.BonusId.points);
 }
 
 fn bonusPickSuppressed(
@@ -572,26 +584,26 @@ fn bonusPickSuppressed(
     bonus_id: i32,
     has_fire_bullets_drop: bool,
 ) bool {
-    if (state.shock_chain_links_left > 0 and bonus_id == survival_state.BonusId.shock_chain) return true;
+    if (state.shock_chain_links_left > 0 and bonus_id == @intFromEnum(game_ids.BonusId.shock_chain)) return true;
 
     if (state.game_mode == game_mode_quests and state.quest_stage_minor == 10) {
         const major = state.quest_stage_major;
-        if (bonus_id == survival_state.BonusId.nuke) {
+        if (bonus_id == @intFromEnum(game_ids.BonusId.nuke)) {
             if (major == 2 or major == 4 or major == 5) return true;
             if (state.hardcore and major == 3) return true;
         }
-        if (bonus_id == survival_state.BonusId.freeze) {
+        if (bonus_id == @intFromEnum(game_ids.BonusId.freeze)) {
             if (major == 4) return true;
             if (state.hardcore and major == 2) return true;
         }
     }
 
-    if (bonus_id == survival_state.BonusId.freeze and state.bonuses.freeze > 0.0) return true;
-    if (bonus_id == survival_state.BonusId.shield and anyShieldActive(players)) return true;
-    if (bonus_id == survival_state.BonusId.weapon and has_fire_bullets_drop) return true;
-    if (bonus_id == survival_state.BonusId.weapon and anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) return true;
-    if (bonus_id == survival_state.BonusId.medikit and anyPerkActive(players, survival_perks.PerkId.death_clock)) return true;
-    if (bonus_id == survival_state.BonusId.unused) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.freeze) and state.bonuses.freeze > 0.0) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.shield) and anyShieldActive(players)) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.weapon) and has_fire_bullets_drop) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.weapon) and anyPerkActive(players, survival_perks.PerkId.my_favourite_weapon)) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.medikit) and anyPerkActive(players, survival_perks.PerkId.death_clock)) return true;
+    if (bonus_id == @intFromEnum(game_ids.BonusId.unused)) return true;
     return false;
 }
 
@@ -607,14 +619,14 @@ fn bonusIdFromRoll(
     state: *survival_state.GameplayState,
 ) i32 {
     if (roll < 1 or roll > 162) return 0;
-    if (roll <= 13) return survival_state.BonusId.points;
+    if (roll <= 13) return @intFromEnum(game_ids.BonusId.points);
     if (roll == 14) {
-        if ((state.rng.rand() & 0x3f) == 0) return survival_state.BonusId.energizer;
-        return survival_state.BonusId.weapon;
+        if ((state.rng.rand() & 0x3f) == 0) return @intFromEnum(game_ids.BonusId.energizer);
+        return @intFromEnum(game_ids.BonusId.weapon);
     }
 
     var v5 = roll - 14;
-    var v6 = survival_state.BonusId.weapon;
+    var v6 = @intFromEnum(game_ids.BonusId.weapon);
     while (v5 > 10) {
         v5 -= 10;
         v6 += 1;
@@ -652,7 +664,7 @@ fn consumeBonusPickupEffectsRng(
     state: *survival_state.GameplayState,
     bonus_id: i32,
 ) void {
-    if (bonus_id != survival_state.BonusId.nuke) {
+    if (bonus_id != @intFromEnum(game_ids.BonusId.nuke)) {
         // emit_bonus_pickup_effects -> spawn_burst(count=12, scale_step set).
         for (0..12) |_| {
             _ = state.rng.rand();
@@ -739,9 +751,9 @@ fn spawnAtPos(
     entry.time_left = bonus_time_max;
     entry.time_max = bonus_time_max;
 
-    if (bonus_id == survival_state.BonusId.weapon) {
-        entry.amount = weaponPickRandomAvailable(state);
-    } else if (bonus_id == survival_state.BonusId.points) {
+    if (bonus_id == @intFromEnum(game_ids.BonusId.weapon)) {
+        entry.amount = survival_state.weaponIdToInt(weaponPickRandomAvailable(state));
+    } else if (bonus_id == @intFromEnum(game_ids.BonusId.points)) {
         entry.amount = if ((state.rng.rand() & 7) < 3) 1000 else 500;
     } else {
         entry.amount = defaultBonusAmount(bonus_id);
@@ -760,7 +772,7 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    survival_state.weaponAssignPlayer(&players[0], survival_state.WeaponId.pistol);
+    survival_state.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     var spawned = false;
     for (0..512) |_| {
@@ -827,11 +839,11 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    survival_state.weaponAssignPlayer(&players[0], survival_state.WeaponId.pistol);
+    survival_state.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     const spawned = pool.trySpawnOnKill(.{ .x = 420.0, .y = 420.0 }, &state, players[0..], 1024.0);
     try std.testing.expect(spawned != null);
-    try std.testing.expectEqual(survival_state.BonusId.weapon, spawned.?.bonus_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.BonusId.weapon), spawned.?.bonus_id);
     try std.testing.expectEqual(@as(i32, 11), spawned.?.amount);
     try std.testing.expectEqual(@as(u32, 258_047_690), state.rng.state);
 }
@@ -847,7 +859,7 @@ test "bonus economist extends double experience timer" {
         &base_state,
         &base_player,
         base_players[0..],
-        survival_state.BonusId.double_experience,
+        @intFromEnum(game_ids.BonusId.double_experience),
         10,
         null,
     );
@@ -864,7 +876,7 @@ test "bonus economist extends double experience timer" {
         &perk_state,
         &perk_player,
         perk_players[0..],
-        survival_state.BonusId.double_experience,
+        @intFromEnum(game_ids.BonusId.double_experience),
         10,
         null,
     );
@@ -878,21 +890,21 @@ test "alternate weapon stashes previous weapon on first pickup" {
         .pos = .{},
     };
     var players = [_]survival_state.PlayerState{player};
-    survival_state.weaponAssignPlayer(&player, survival_state.WeaponId.pistol);
+    survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts[@intCast(survival_perks.PerkId.alternate_weapon)] = 1;
 
     try applyBonus(
         &state,
         &player,
         players[0..],
-        survival_state.BonusId.weapon,
-        survival_state.WeaponId.assault_rifle,
+        @intFromEnum(game_ids.BonusId.weapon),
+        @intFromEnum(game_ids.WeaponId.assault_rifle),
         null,
     );
 
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, player.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon_id);
     try std.testing.expect(player.alt_weapon_id != null);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, player.alt_weapon_id.?);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.alt_weapon_id.?);
     try std.testing.expectEqual(@as(i32, 10), player.alt_clip_size);
 }
 
@@ -904,7 +916,7 @@ test "bonus magnet allows spawn on secondary roll" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = survival_state.WeaponId.assault_rifle,
+            .weapon_id = game_ids.WeaponId.assault_rifle,
         },
     };
 
@@ -923,7 +935,7 @@ test "bonus magnet allows spawn on secondary roll" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = survival_state.WeaponId.assault_rifle,
+            .weapon_id = game_ids.WeaponId.assault_rifle,
         },
     };
     perk_players[0].perk_counts[@intCast(survival_perks.PerkId.bonus_magnet)] = 1;
@@ -945,35 +957,35 @@ test "bonus pick random type quest suppression parity" {
         false,
         2,
         10,
-        survival_state.BonusId.freeze,
+        @intFromEnum(game_ids.BonusId.freeze),
     );
     try runQuestSuppressionCase(
         suppression_seed,
         true,
         2,
         10,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
     );
     try runQuestSuppressionCase(
         suppression_seed,
         false,
         4,
         10,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
     );
     try runQuestSuppressionCase(
         suppression_seed,
         false,
         5,
         10,
-        survival_state.BonusId.freeze,
+        @intFromEnum(game_ids.BonusId.freeze),
     );
     try runQuestSuppressionCase(
         suppression_seed,
         true,
         3,
         10,
-        survival_state.BonusId.freeze,
+        @intFromEnum(game_ids.BonusId.freeze),
     );
 }
 
@@ -983,11 +995,11 @@ test "weapon refresh available includes survival defaults" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.pistol)]);
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.assault_rifle)]);
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.shotgun)]);
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.submachine_gun)]);
-    try std.testing.expect(!state.weapon_available[@intCast(survival_state.WeaponId.flamethrower)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.shotgun)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.submachine_gun)]);
+    try std.testing.expect(!state.weapon_available[weaponIdIndex(.flamethrower)]);
 }
 
 test "weapon refresh available unlocks quest weapon ids by unlock index" {
@@ -998,9 +1010,9 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.pistol)]);
-    try std.testing.expect(state.weapon_available[@intCast(survival_state.WeaponId.assault_rifle)]);
-    try std.testing.expect(!state.weapon_available[@intCast(survival_state.WeaponId.shotgun)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
+    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
+    try std.testing.expect(!state.weapon_available[weaponIdIndex(.shotgun)]);
 }
 
 test "weapon pick random available enforces unlock table in quests" {
@@ -1010,7 +1022,7 @@ test "weapon pick random available enforces unlock table in quests" {
     state.status_quest_unlock_index_full = 0;
 
     const picked = weaponPickRandomAvailable(&state);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, picked);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, picked);
 }
 
 test "weapon pick random available rerolls used weapons on even gate" {
@@ -1019,19 +1031,19 @@ test "weapon pick random available rerolls used weapons on even gate" {
     state.game_mode = game_mode_quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
-    state.status_weapon_usage_counts[@intCast(survival_state.WeaponId.pistol)] = 1;
+    state.status_weapon_usage_counts[weaponIdIndex(.pistol)] = 1;
 
     const picked = weaponPickRandomAvailable(&state);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, picked);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, picked);
 }
 
 fn findSeedForWeaponReroll(max_seed: u32) ?u32 {
     var seed: u32 = 0;
     while (seed < max_seed) : (seed += 1) {
         var state = survival_state.GameplayState.init(seed);
-        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, @intCast(survival_state.WeaponId.pistol))) continue;
+        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.pistol))) continue;
         if ((state.rng.rand() & 1) != 0) continue;
-        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, @intCast(survival_state.WeaponId.assault_rifle))) continue;
+        if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.assault_rifle))) continue;
         return seed;
     }
     return null;
@@ -1078,7 +1090,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
     setTestBonusEntry(
         &pool,
         0,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
         .{ .x = 100.0, .y = 100.0 },
         0,
     );
@@ -1113,7 +1125,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
     setTestBonusEntry(
         &pool,
         0,
-        survival_state.BonusId.nuke,
+        @intFromEnum(game_ids.BonusId.nuke),
         .{ .x = 100.0, .y = 100.0 },
         1,
     );
@@ -1139,7 +1151,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
     setTestBonusEntry(
         &pool,
         0,
-        survival_state.BonusId.shock_chain,
+        @intFromEnum(game_ids.BonusId.shock_chain),
         .{ .x = 100.0, .y = 100.0 },
         1,
     );
@@ -1165,14 +1177,14 @@ test "telekinetic picks only one bonus per frame across players" {
     setTestBonusEntry(
         &pool,
         0,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
         .{ .x = 100.0, .y = 100.0 },
         500,
     );
     setTestBonusEntry(
         &pool,
         1,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
         .{ .x = 200.0, .y = 200.0 },
         500,
     );
@@ -1206,14 +1218,14 @@ test "telekinetic hover timer carries across bonus switch" {
     setTestBonusEntry(
         &pool,
         0,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
         .{ .x = 100.0, .y = 100.0 },
         500,
     );
     setTestBonusEntry(
         &pool,
         1,
-        survival_state.BonusId.points,
+        @intFromEnum(game_ids.BonusId.points),
         .{ .x = 130.0, .y = 100.0 },
         500,
     );

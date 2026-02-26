@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 
 const survival_bonuses = @import("survival_bonuses.zig");
 const survival_state = @import("survival_state.zig");
@@ -293,7 +294,7 @@ pub fn applyPerk(
             for (0..100) |_| {
                 const candidate = survival_bonuses.weaponPickRandomAvailable(state);
                 selected = candidate;
-                if (candidate != survival_state.WeaponId.pistol and candidate != current) break;
+                if (candidate != game_ids.WeaponId.pistol and candidate != current) break;
             }
             survival_state.weaponAssignPlayerWithState(&players[0], selected, state);
         },
@@ -494,12 +495,12 @@ fn pyromaniacAllowed(
     player: *const survival_state.PlayerState,
     player_count: i32,
 ) bool {
-    if (player.weapon_id == survival_state.WeaponId.flamethrower) return true;
+    if (player.weapon_id == game_ids.WeaponId.flamethrower) return true;
     if (state.preserve_bugs or player_count <= 1) return false;
 
     for (players) |source_player| {
         if (source_player.health <= 0.0) continue;
-        if (source_player.weapon_id == survival_state.WeaponId.flamethrower) return true;
+        if (source_player.weapon_id == game_ids.WeaponId.flamethrower) return true;
     }
     return false;
 }
@@ -691,8 +692,8 @@ test "perk generate choices forces monster vision first on quest 3-4" {
 test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
     var state = survival_state.GameplayState.init(0x1234);
     var players = [_]survival_state.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
-        .{ .index = 1, .pos = .{}, .weapon_id = survival_state.WeaponId.flamethrower },
+        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
+        .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.flamethrower },
     };
 
     try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
@@ -700,11 +701,11 @@ test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
     players[1].health = 0.0;
     try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
 
-    players[0].weapon_id = survival_state.WeaponId.flamethrower;
+    players[0].weapon_id = game_ids.WeaponId.flamethrower;
     try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
 
     state.preserve_bugs = true;
-    players[0].weapon_id = survival_state.WeaponId.pistol;
+    players[0].weapon_id = game_ids.WeaponId.pistol;
     players[1].health = 100.0;
     try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
 }
@@ -712,7 +713,7 @@ test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
 test "perk generate choices rejects pyromaniac when no player has flamethrower" {
     var state = survival_state.GameplayState.init(0x1234);
     var players = [_]survival_state.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
     setOnlyPerksAvailable(&state, 0, &.{
         PerkId.pyromaniac,
@@ -931,12 +932,12 @@ test "random weapon assigns non-pistol weapon from pistol baseline" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = survival_state.WeaponId.pistol,
+            .weapon_id = game_ids.WeaponId.pistol,
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon_id);
 }
 
 test "random weapon rerolls pistol when current weapon is not pistol" {
@@ -945,12 +946,12 @@ test "random weapon rerolls pistol when current weapon is not pistol" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = survival_state.WeaponId.shotgun,
+            .weapon_id = game_ids.WeaponId.shotgun,
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon_id);
 }
 
 test "random weapon retry cap applies last roll after 100 attempts" {
@@ -966,12 +967,12 @@ test "random weapon retry cap applies last roll after 100 attempts" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = survival_state.WeaponId.pistol,
+            .weapon_id = game_ids.WeaponId.pistol,
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, players[0].weapon_id);
     try std.testing.expectEqual(expected.rng.state, state.rng.state);
 }
 
@@ -1069,8 +1070,8 @@ test "infernal contract grants levels and forces low health" {
 test "ammo maniac reassigns weapons and boosts clip size for all players" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.assault_rifle },
-        .{ .index = 1, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.assault_rifle },
+        .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
     survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
     survival_state.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
@@ -1096,7 +1097,7 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
 test "my favourite weapon increases clip size and keeps current ammo on apply" {
     var state = survival_state.GameplayState.init(1);
     var players = [_]survival_state.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = survival_state.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
     survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
 

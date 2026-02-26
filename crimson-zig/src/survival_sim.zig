@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 
 const replay_codec = @import("replay_codec.zig");
 const survival_bonuses = @import("survival_bonuses.zig");
@@ -403,7 +404,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     var quest_play_hit_sfx: bool = false;
     var quest_play_completion_music: bool = false;
     var pending_capture_state_reset = false;
-    var quest_start_weapon_id_for_reset: i32 = survival_state.WeaponId.pistol;
+    var quest_start_weapon_id_for_reset: i32 = @intFromEnum(game_ids.WeaponId.pistol);
     var reset_quest_spawn_entries_len: usize = 0;
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
     var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
@@ -436,7 +437,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     if (game_mode == game_mode_rush) {
         enforceRushLoadout(players[0..]);
     } else if (game_mode == game_mode_quests) {
-        var quest_start_weapon_id = options.quest_start_weapon_id orelse survival_state.WeaponId.pistol;
+        var quest_start_weapon_id = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
         applyQuestStageFromHeader(&state, header);
         if (options.quest_spawn_entries) |entries| {
             std.debug.assert(entries.len <= quest_spawn_entries_storage.len);
@@ -456,7 +457,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
             };
             quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
             if (options.quest_start_weapon_id == null) {
-                quest_start_weapon_id = built.start_weapon_id;
+                quest_start_weapon_id = @intFromEnum(built.start_weapon_id);
             }
             if (quest_spawn_entries.len == 0) {
                 return error.UnsupportedQuestSpawnTable;
@@ -473,7 +474,8 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         const weapon_id = @max(1, quest_start_weapon_id);
         quest_start_weapon_id_for_reset = weapon_id;
         for (players) |*player| {
-            survival_state.weaponAssignPlayer(player, weapon_id);
+            const start_weapon = survival_state.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
+            survival_state.weaponAssignPlayer(player, start_weapon);
         }
     }
 
@@ -835,7 +837,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         ) catch |err| switch (err) {
             error.UnsupportedBonusApplyPath => return error.UnsupportedBonusApplyPath,
         };
-        if (state.debug_last_picked_bonus_id == survival_state.BonusId.freeze) {
+        if (state.debug_last_picked_bonus_id == @intFromEnum(game_ids.BonusId.freeze)) {
             applyFreezePickupCorpseCleanupRng(
                 &state,
                 &creatures,
@@ -960,7 +962,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
     const most_used_weapon_id = survival_state.mostUsedWeaponIdForPlayer(
         state,
         0,
-        players[0].weapon_id,
+        @intFromEnum(players[0].weapon_id),
     );
 
     return .{
@@ -976,7 +978,7 @@ pub fn runSurvivalReplayScaffoldWithTrace(
         .wave_spawn_rng_state = state.rng.state,
         .player_level = players[0].level,
         .player_experience = players[0].experience,
-        .player_weapon_id = players[0].weapon_id,
+        .player_weapon_id = @intFromEnum(players[0].weapon_id),
         .most_used_weapon_id = most_used_weapon_id,
         .shots_fired = shots.fired,
         .shots_hit = shots.hit,
@@ -1182,7 +1184,7 @@ fn buildTickTrace(
         .creature_active_index_xor = creature_active_index_xor,
         .creature_state_hash = creature_state_hash,
         .perk_pending = state.perk_selection.pending_count,
-        .player_weapon_id = player.weapon_id,
+        .player_weapon_id = @intFromEnum(player.weapon_id),
         .player_ammo_q4 = quantizeQ4(player.ammo),
         .player_health_q4 = quantizeQ4(player.health),
         .player_pos_x_q4 = quantizeQ4(player.pos.x),
@@ -1564,7 +1566,7 @@ fn applyFireblastBonus(
     const step = std.math.tau / @as(f64, @floatFromInt(count));
     for (0..count) |idx| {
         const angle = @as(f64, @floatFromInt(idx)) * step;
-        const type_id = survival_state.ProjectileTypeId.plasma_rifle;
+        const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
         const meta = survival_state.weaponProjectileMeta(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
     }
@@ -1593,7 +1595,7 @@ fn applyShockChainBonus(
     const target = creatures.entries[best_idx];
     const angle = survival_state.Vec2.sub(target.pos, origin).toHeading();
     const projectile_owner_id: i32 = -100;
-    const type_id = survival_state.ProjectileTypeId.ion_rifle;
+    const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
     const meta = survival_state.weaponProjectileMeta(type_id);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
@@ -1740,7 +1742,7 @@ fn applyNukeBonus(
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
-        var type_id = survival_state.ProjectileTypeId.pistol;
+        var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
         const meta = survival_state.weaponProjectileMeta(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
@@ -1750,7 +1752,7 @@ fn applyNukeBonus(
 
     for (0..2) |_| {
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
-        var type_id = survival_state.ProjectileTypeId.gauss_gun;
+        var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
         const meta = survival_state.weaponProjectileMeta(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
@@ -1861,10 +1863,10 @@ fn applyPlayerProjectileSpawnRules(
 
     var shot_credit: i32 = 1;
     if (player_index) |idx| {
-        if (type_id.* != survival_state.ProjectileTypeId.fire_bullets and
+        if (type_id.* != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
             players[idx].fire_bullets_timer > 0.0)
         {
-            type_id.* = survival_state.ProjectileTypeId.fire_bullets;
+            type_id.* = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
             shot_credit = 2;
         }
         if (idx < state.shots_fired.len) {
@@ -1950,8 +1952,8 @@ fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
 
 fn enforceRushLoadout(players: []survival_state.PlayerState) void {
     for (players) |*player| {
-        if (player.weapon_id != survival_state.WeaponId.assault_rifle) {
-            survival_state.weaponAssignPlayer(player, survival_state.WeaponId.assault_rifle);
+        if (player.weapon_id != game_ids.WeaponId.assault_rifle) {
+            survival_state.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
         player.ammo = @floatFromInt(@max(0, player.clip_size));
     }
@@ -2158,8 +2160,12 @@ fn applyCaptureBootstrapEvent(
     const player_count = @min(players.len, bootstrap.player_count);
     for (0..player_count) |idx| {
         const payload = bootstrap.players[idx];
-        if (payload.weapon_id > 0 and players[idx].weapon_id != payload.weapon_id) {
-            survival_state.weaponAssignPlayer(&players[idx], payload.weapon_id);
+        if (payload.weapon_id > 0) {
+            if (survival_state.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
+                if (players[idx].weapon_id != weapon_id) {
+                    survival_state.weaponAssignPlayer(&players[idx], weapon_id);
+                }
+            }
         }
         players[idx].pos.x = asF32F64(payload.pos_x);
         players[idx].pos.y = asF32F64(payload.pos_y);
@@ -2198,7 +2204,7 @@ fn applyCaptureBootstrapEvent(
             players[idx].aim_dir = survival_state.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
-            players[idx].alt_weapon_id = if (alt_weapon_id > 0) alt_weapon_id else null;
+            players[idx].alt_weapon_id = if (alt_weapon_id > 0) survival_state.weaponIdFromInt(alt_weapon_id) else null;
         }
         if (payload.alt_clip_size) |alt_clip_size| {
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
@@ -2417,8 +2423,9 @@ fn applyCaptureStateReset(
 
     survival_state.resetPlayers(players, world_size, null);
     for (players) |*player| {
-        survival_state.weaponAssignPlayer(player, quest_start_weapon_id);
-        if (quest_start_weapon_id == survival_state.WeaponId.pistol) {
+        const quest_weapon = survival_state.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
+        survival_state.weaponAssignPlayer(player, quest_weapon);
+        if (quest_start_weapon_id == @intFromEnum(game_ids.WeaponId.pistol)) {
             player.clip_size = @max(12, player.clip_size);
             if (player.ammo < 12.0) {
                 player.ammo = 12.0;
@@ -2913,7 +2920,7 @@ fn playerDecelerateMoveSpeed(
 fn playerApplyMoveSpeedCaps(
     player: *survival_state.PlayerState,
 ) void {
-    if (player.weapon_id == survival_state.WeaponId.mean_minigun and player.move_speed > 0.8) {
+    if (player.weapon_id == game_ids.WeaponId.mean_minigun and player.move_speed > 0.8) {
         player.move_speed = 0.8;
     }
 }
@@ -3053,8 +3060,8 @@ test "survival scaffold tracks event and input counters" {
     try std.testing.expectEqual(@as(usize, 1), result.reload_pressed_count);
     try std.testing.expectEqual(@as(usize, 0), result.stage_spawn_count);
     try std.testing.expectEqual(@as(usize, 1), result.wave_spawn_count);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.player_weapon_id);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.most_used_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.player_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.most_used_weapon_id);
     try std.testing.expectEqual(@as(i32, 0), result.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
@@ -3310,7 +3317,7 @@ test "survival scaffold tracks weapon runtime counters" {
     const result = try runSurvivalReplayScaffold(replay);
     try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
-    try std.testing.expectEqual(survival_state.WeaponId.pistol, result.most_used_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.most_used_weapon_id);
 }
 
 test "survival scaffold honors dt overrides for elapsed_ms" {
@@ -3601,7 +3608,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
             bootstrap.player_count = 1;
             bootstrap.perk_pending_count = 1;
             bootstrap.players[0] = .{
-                .weapon_id = survival_state.WeaponId.assault_rifle,
+                .weapon_id = @intFromEnum(game_ids.WeaponId.assault_rifle),
                 .ammo = 6.0,
             };
 
@@ -3658,8 +3665,8 @@ test "rush scaffold is deterministic and enforces assault rifle loadout" {
     const result1 = try runSurvivalReplayScaffold(replay);
     try std.testing.expectEqual(result0.wave_spawn_rng_state, result1.wave_spawn_rng_state);
     try std.testing.expectEqual(@as(usize, 10), result0.ticks);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result0.player_weapon_id);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result0.most_used_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result0.player_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result0.most_used_weapon_id);
 }
 
 test "rush scaffold honors dt overrides for elapsed_ms" {
@@ -3771,7 +3778,7 @@ test "rush scaffold accepts capture bootstrap events" {
 
     const result = try runSurvivalReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.player_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
     try std.testing.expectEqual(@as(i32, 123), result.player_experience);
 }
 
@@ -3783,7 +3790,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
     };
     bootstrap.player_count = 1;
     bootstrap.players[0] = .{
-        .weapon_id = survival_state.WeaponId.assault_rifle,
+        .weapon_id = @intFromEnum(game_ids.WeaponId.assault_rifle),
         .pos_x = 512.0,
         .pos_y = 512.0,
         .health = 100.0,
@@ -3837,8 +3844,8 @@ test "rush scaffold supports multiplayer replays" {
 
     const result = try runSurvivalReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 3), result.ticks);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.player_weapon_id);
-    try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.most_used_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.most_used_weapon_id);
 }
 
 test "rush scaffold disables progression updates even above level threshold" {
@@ -3849,7 +3856,7 @@ test "rush scaffold disables progression updates even above level threshold" {
     };
     bootstrap.player_count = 1;
     bootstrap.players[0] = .{
-        .weapon_id = survival_state.WeaponId.assault_rifle,
+        .weapon_id = @intFromEnum(game_ids.WeaponId.assault_rifle),
         .experience = 2060,
         .level = 1,
         .ammo = 50.0,
@@ -3937,8 +3944,8 @@ test "rush scaffold supports player counts 1 through 4" {
 
         const result = try runSurvivalReplayScaffold(replay);
         try std.testing.expectEqual(@as(usize, 2), result.ticks);
-        try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.player_weapon_id);
-        try std.testing.expectEqual(survival_state.WeaponId.assault_rifle, result.most_used_weapon_id);
+        try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
+        try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.most_used_weapon_id);
     }
 }
 
@@ -3965,11 +3972,11 @@ test "quest scaffold is deterministic with explicit spawn entries" {
     };
     const result0 = try runSurvivalReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
-        .quest_start_weapon_id = survival_state.WeaponId.pistol,
+        .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
     const result1 = try runSurvivalReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
-        .quest_start_weapon_id = survival_state.WeaponId.pistol,
+        .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
     try std.testing.expectEqual(result0.wave_spawn_rng_state, result1.wave_spawn_rng_state);
     try std.testing.expectEqual(@as(usize, 10), result0.ticks);
@@ -3983,7 +3990,7 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
     };
     bootstrap.player_count = 1;
     bootstrap.players[0] = .{
-        .weapon_id = survival_state.WeaponId.pistol,
+        .weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
         .pos_x = 512.0,
         .pos_y = 512.0,
         .health = 100.0,
@@ -4014,7 +4021,7 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
 
     const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
-        .quest_start_weapon_id = survival_state.WeaponId.pistol,
+        .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
     try std.testing.expectEqual(@as(i64, 16), result.elapsed_ms_sim);
 }
@@ -4070,10 +4077,10 @@ test "quest scaffold supports multiplayer replays with explicit start weapon" {
     defer replay.deinit(allocator);
 
     const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
-        .quest_start_weapon_id = survival_state.WeaponId.ion_cannon,
+        .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.ion_cannon),
     });
     try std.testing.expectEqual(@as(usize, 2), result.ticks);
-    try std.testing.expectEqual(survival_state.WeaponId.ion_cannon, result.player_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.ion_cannon), result.player_weapon_id);
     try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
 }
 
@@ -4144,9 +4151,9 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
         seed: u32,
         expected_start_weapon: i32,
     }{
-        .{ .quest_level = "1.1", .seed = 101, .expected_start_weapon = survival_state.WeaponId.pistol },
+        .{ .quest_level = "1.1", .seed = 101, .expected_start_weapon = @intFromEnum(game_ids.WeaponId.pistol) },
         .{ .quest_level = "2.5", .seed = 205, .expected_start_weapon = 6 },
-        .{ .quest_level = "3.3", .seed = 205, .expected_start_weapon = survival_state.WeaponId.pistol },
+        .{ .quest_level = "3.3", .seed = 205, .expected_start_weapon = @intFromEnum(game_ids.WeaponId.pistol) },
         .{ .quest_level = "3.9", .seed = 999, .expected_start_weapon = 6 },
     };
 
@@ -5097,7 +5104,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
 
     const proj = projectiles.entries[0];
     try std.testing.expect(proj.active);
-    try std.testing.expectEqual(survival_state.ProjectileTypeId.fire_bullets, proj.type_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets), proj.type_id);
 
     const muzzle_dir = blk: {
         const dir = directionFromHeadingNative(0.0);
@@ -5140,7 +5147,7 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
     for (projectiles.entries) |entry| {
         if (!entry.active) continue;
         active_count += 1;
-        try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, entry.type_id);
+        try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), entry.type_id);
     }
     try std.testing.expectEqual(@as(i32, 16), active_count);
     try std.testing.expectEqual(@as(i32, 0), state.pending_fireblast_count);
@@ -5177,8 +5184,8 @@ test "pending fireblast does not convert into fire bullets while guard is active
     var fire_bullets_count: i32 = 0;
     for (projectiles.entries) |entry| {
         if (!entry.active) continue;
-        if (entry.type_id == survival_state.ProjectileTypeId.plasma_rifle) plasma_count += 1;
-        if (entry.type_id == survival_state.ProjectileTypeId.fire_bullets) fire_bullets_count += 1;
+        if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)) plasma_count += 1;
+        if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets)) fire_bullets_count += 1;
     }
     try std.testing.expectEqual(@as(i32, 16), plasma_count);
     try std.testing.expectEqual(@as(i32, 0), fire_bullets_count);
@@ -5309,12 +5316,12 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     var gauss_count: i32 = 0;
     for (projectiles.entries) |entry| {
         if (!entry.active) continue;
-        if (entry.type_id == survival_state.ProjectileTypeId.pistol) {
+        if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.pistol)) {
             pistol_count += 1;
             try std.testing.expectApproxEqAbs(@as(f64, 55.0), entry.base_damage, 1e-6);
             try std.testing.expect(entry.speed_scale >= 0.5);
             try std.testing.expect(entry.speed_scale < 1.0);
-        } else if (entry.type_id == survival_state.ProjectileTypeId.gauss_gun) {
+        } else if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
             gauss_count += 1;
             try std.testing.expectApproxEqAbs(@as(f64, 215.0), entry.base_damage, 1e-6);
             try std.testing.expectApproxEqAbs(@as(f64, 1.0), entry.speed_scale, 1e-6);
@@ -5331,7 +5338,7 @@ test "pending creature projectile queue materializes hostile shots before projec
     var projectiles = survival_projectiles.ProjectilePool{};
 
     state.pending_creature_projectile_count = 1;
-    state.pending_creature_projectile_type_ids[0] = survival_state.ProjectileTypeId.plasma_rifle;
+    state.pending_creature_projectile_type_ids[0] = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
     state.pending_creature_projectile_owner_ids[0] = 17;
     state.pending_creature_projectile_angles[0] = native_half_pi;
     state.pending_creature_projectile_positions[0] = .{ .x = 100.0, .y = 200.0 };
@@ -5341,7 +5348,7 @@ test "pending creature projectile queue materializes hostile shots before projec
     try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_count);
     try std.testing.expect(projectiles.entries[0].active);
     try std.testing.expect(projectiles.entries[0].hits_players);
-    try std.testing.expectEqual(survival_state.ProjectileTypeId.plasma_rifle, projectiles.entries[0].type_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectiles.entries[0].type_id);
     try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner_id);
     try std.testing.expectApproxEqAbs(@as(f64, 100.0), projectiles.entries[0].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 200.0), projectiles.entries[0].pos.y, 1e-6);

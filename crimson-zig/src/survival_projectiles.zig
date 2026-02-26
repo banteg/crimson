@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 
 const survival_bonuses = @import("survival_bonuses.zig");
 const survival_creatures = @import("survival_creatures.zig");
@@ -179,14 +180,14 @@ pub const ProjectilePool = struct {
             }
 
             if (proj.life_timer < 0.4) {
-                if (proj.type_id == survival_state.ProjectileTypeId.ion_rifle or
-                    proj.type_id == survival_state.ProjectileTypeId.ion_minigun)
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) or
+                    proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_minigun))
                 {
                     resetShockChainIfOwner(state, proj_idx);
                 }
                 const linger_decay: f64 = switch (proj.type_id) {
-                    survival_state.ProjectileTypeId.gauss_gun => dt * 0.1,
-                    survival_state.ProjectileTypeId.ion_cannon => dt * 0.7,
+                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => dt * 0.1,
+                    @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
                     else => dt,
                 };
                 proj.life_timer = asF32F64(proj.life_timer - linger_decay);
@@ -347,9 +348,9 @@ pub const ProjectilePool = struct {
                 }
 
                 if (proj.life_timer != 0.25 and
-                    proj.type_id != survival_state.ProjectileTypeId.fire_bullets and
-                    proj.type_id != survival_state.ProjectileTypeId.gauss_gun and
-                    proj.type_id != survival_state.ProjectileTypeId.blade_gun)
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) and
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     proj.life_timer = 0.25;
                     const jitter = @as(f64, @floatFromInt(state.rng.rand() & 3));
@@ -359,7 +360,7 @@ pub const ProjectilePool = struct {
                     };
                 }
 
-                if (proj.type_id == survival_state.ProjectileTypeId.ion_rifle) {
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle)) {
                     postHitIonRifleShockChain(
                         state,
                         self,
@@ -369,7 +370,7 @@ pub const ProjectilePool = struct {
                         hit_idx.?,
                     );
                 }
-                if (proj.type_id == survival_state.ProjectileTypeId.pulse_gun) {
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.pulse_gun)) {
                     // Native pulse-gun post-hit behavior pushes the target using the
                     // current projectile move delta before damage resolution.
                     creatures.entries[hit_idx.?].pos = .{
@@ -440,8 +441,8 @@ pub const ProjectilePool = struct {
                 // Native `projectile_update` spawns one freeze shard for non-gauss/non-fire
                 // projectile hits while Freeze bonus is active.
                 if (state.bonuses.freeze > 0.0 and
-                    proj.type_id != survival_state.ProjectileTypeId.gauss_gun and
-                    proj.type_id != survival_state.ProjectileTypeId.fire_bullets)
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) and
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
                 {
                     consumeFreezeHitShardRng(state);
                 }
@@ -455,9 +456,9 @@ pub const ProjectilePool = struct {
                 }
 
                 if (proj.life_timer == 0.25 and
-                    proj.type_id != survival_state.ProjectileTypeId.fire_bullets and
-                    proj.type_id != survival_state.ProjectileTypeId.gauss_gun and
-                    proj.type_id != survival_state.ProjectileTypeId.blade_gun)
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) and
+                    proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     if (presentation_player != null) {
                         survival_creatures.consumeProjectileHitPresentationPostRng(
@@ -528,15 +529,15 @@ fn applyIonLingerDamage(
     var damage: f64 = 0.0;
     var radius: f64 = 0.0;
     switch (proj.type_id) {
-        survival_state.ProjectileTypeId.ion_minigun => {
+        @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => {
             damage = dt * 40.0;
             radius = ion_scale * 60.0;
         },
-        survival_state.ProjectileTypeId.ion_rifle => {
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => {
             damage = dt * 100.0;
             radius = ion_scale * 88.0;
         },
-        survival_state.ProjectileTypeId.ion_cannon => {
+        @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => {
             damage = dt * 300.0;
             radius = ion_scale * 128.0;
         },
@@ -650,9 +651,9 @@ fn consumeIonHitEffectsRng(
 ) void {
     var burst_scale: f64 = 0.0;
     switch (projectile_type_id) {
-        survival_state.ProjectileTypeId.ion_minigun => burst_scale = 0.8,
-        survival_state.ProjectileTypeId.ion_rifle => burst_scale = 1.2,
-        survival_state.ProjectileTypeId.ion_cannon => burst_scale = 2.2,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => burst_scale = 0.8,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => burst_scale = 1.2,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => burst_scale = 2.2,
         else => return,
     }
 
@@ -724,7 +725,7 @@ test "projectile hit consumes hit-presentation rng" {
     _ = pool.spawn(
         players[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -1,
         55.0,
         false,
@@ -764,7 +765,7 @@ test "pulse gun hit applies post-hit target push" {
     _ = base_pool.spawn(
         players[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
         45.0,
         false,
@@ -783,7 +784,7 @@ test "pulse gun hit applies post-hit target push" {
     _ = pulse_pool.spawn(
         players[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pulse_gun,
+        @intFromEnum(game_ids.ProjectileTypeId.pulse_gun),
         -100,
         45.0,
         false,
@@ -829,7 +830,7 @@ test "projectile hit pass does not retarget newly spawned split children in new 
     const proj_idx = pool.spawn(
         .{ .x = 100.0, .y = 100.0 },
         0.0,
-        survival_state.ProjectileTypeId.fire_bullets,
+        @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
         -100,
         300.0,
         false,
@@ -877,7 +878,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
     _ = pool.spawn(
         players[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
         45.0,
         false,
@@ -920,7 +921,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
     _ = pool.spawn(
         players[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
         45.0,
         false,
@@ -964,7 +965,7 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
     _ = pool.spawn(
         creatures.entries[0].pos,
         0.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
         45.0,
         false,
@@ -986,9 +987,9 @@ test "barrel greaser doubles pistol projectile movement steps" {
     _ = base_pool.spawn(
         .{},
         std.math.pi / 2.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        survival_state.weaponProjectileMeta(survival_state.ProjectileTypeId.pistol),
+        survival_state.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
         false,
     );
     _ = base_pool.update(
@@ -1010,9 +1011,9 @@ test "barrel greaser doubles pistol projectile movement steps" {
     _ = greased_pool.spawn(
         .{},
         std.math.pi / 2.0,
-        survival_state.ProjectileTypeId.pistol,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        survival_state.weaponProjectileMeta(survival_state.ProjectileTypeId.pistol),
+        survival_state.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
         false,
     );
     _ = greased_pool.update(
@@ -1054,7 +1055,7 @@ test "ion gun master increases ion rifle linger radius" {
     const idx_without = pool_without.spawn(
         .{},
         0.0,
-        survival_state.ProjectileTypeId.ion_rifle,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
         -100,
         45.0,
         false,
@@ -1094,7 +1095,7 @@ test "ion gun master increases ion rifle linger radius" {
     const idx_with = pool_with.spawn(
         .{},
         0.0,
-        survival_state.ProjectileTypeId.ion_rifle,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
         -100,
         45.0,
         false,
@@ -1127,7 +1128,7 @@ test "ranged projectile can damage player when no creature is hit" {
     _ = pool.spawn(
         .{},
         native_half_pi,
-        survival_state.ProjectileTypeId.plasma_rifle,
+        @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
         0,
         45.0,
         true,
@@ -1188,7 +1189,7 @@ test "ranged projectile can damage creature before player collision" {
     _ = pool.spawn(
         .{},
         native_half_pi,
-        survival_state.ProjectileTypeId.plasma_rifle,
+        @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
         0,
         45.0,
         true,

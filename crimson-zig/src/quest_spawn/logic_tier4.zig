@@ -1,22 +1,20 @@
 const std = @import("std");
 
 const common = @import("logic_common.zig");
+const game_ids = @import("../game_ids.zig");
 const survival_spawn = @import("../survival_spawn.zig");
 
-const weapon_id_pistol: i32 = 1;
-const weapon_id_rocket_minigun: i32 = 18;
-
 pub const tier4_builders = [_]common.LevelBuilder{
-    .{ .level_key = 401, .start_weapon_id = weapon_id_rocket_minigun, .build = build_401_major_alien_breach },
-    .{ .level_key = 402, .start_weapon_id = weapon_id_pistol, .build = build_402_zombie_time },
-    .{ .level_key = 403, .start_weapon_id = weapon_id_pistol, .build = build_403_lizard_zombie_pact },
-    .{ .level_key = 404, .start_weapon_id = weapon_id_pistol, .build = build_404_the_collaboration },
-    .{ .level_key = 405, .start_weapon_id = weapon_id_pistol, .build = build_405_the_massacre },
-    .{ .level_key = 406, .start_weapon_id = weapon_id_pistol, .build = build_406_the_unblitzkrieg },
-    .{ .level_key = 407, .start_weapon_id = weapon_id_pistol, .build = build_407_gauntlet },
-    .{ .level_key = 408, .start_weapon_id = weapon_id_pistol, .build = build_408_syntax_terror },
-    .{ .level_key = 409, .start_weapon_id = weapon_id_pistol, .build = build_409_the_annihilation },
-    .{ .level_key = 410, .start_weapon_id = weapon_id_pistol, .build = build_410_the_end_of_all },
+    .{ .level_key = 401, .start_weapon_id = game_ids.WeaponId.rocket_minigun, .build = build_401_major_alien_breach },
+    .{ .level_key = 402, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_402_zombie_time },
+    .{ .level_key = 403, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_403_lizard_zombie_pact },
+    .{ .level_key = 404, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_404_the_collaboration },
+    .{ .level_key = 405, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_405_the_massacre },
+    .{ .level_key = 406, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_406_the_unblitzkrieg },
+    .{ .level_key = 407, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_407_gauntlet },
+    .{ .level_key = 408, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_408_syntax_terror },
+    .{ .level_key = 409, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_409_the_annihilation },
+    .{ .level_key = 410, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_410_the_end_of_all },
 };
 
 fn build_401_major_alien_breach(

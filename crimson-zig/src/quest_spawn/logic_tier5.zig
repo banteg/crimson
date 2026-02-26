@@ -1,20 +1,20 @@
 const std = @import("std");
 
 const common = @import("logic_common.zig");
+const game_ids = @import("../game_ids.zig");
 const survival_spawn = @import("../survival_spawn.zig");
-const survival_state = @import("../survival_state.zig");
 
 pub const tier5_builders = [_]common.LevelBuilder{
-    .{ .level_key = 501, .start_weapon_id = survival_state.WeaponId.pistol, .build = build501TheBeating },
-    .{ .level_key = 502, .start_weapon_id = survival_state.WeaponId.pistol, .build = build502TheSpankingOfTheDead },
-    .{ .level_key = 503, .start_weapon_id = survival_state.WeaponId.pistol, .build = build503TheFortress },
-    .{ .level_key = 504, .start_weapon_id = survival_state.WeaponId.pistol, .build = build504TheGangWars },
-    .{ .level_key = 505, .start_weapon_id = survival_state.WeaponId.pistol, .build = build505KneeDeepInTheDead },
-    .{ .level_key = 506, .start_weapon_id = survival_state.WeaponId.pistol, .build = build506CrossFire },
-    .{ .level_key = 507, .start_weapon_id = survival_state.WeaponId.pistol, .build = build507ArmyOfThree },
-    .{ .level_key = 508, .start_weapon_id = survival_state.WeaponId.pistol, .build = build508MonsterBlues },
-    .{ .level_key = 509, .start_weapon_id = survival_state.WeaponId.pistol, .build = build509Nagolipoli },
-    .{ .level_key = 510, .start_weapon_id = survival_state.WeaponId.pistol, .build = build510TheGathering },
+    .{ .level_key = 501, .start_weapon_id = game_ids.WeaponId.pistol, .build = build501TheBeating },
+    .{ .level_key = 502, .start_weapon_id = game_ids.WeaponId.pistol, .build = build502TheSpankingOfTheDead },
+    .{ .level_key = 503, .start_weapon_id = game_ids.WeaponId.pistol, .build = build503TheFortress },
+    .{ .level_key = 504, .start_weapon_id = game_ids.WeaponId.pistol, .build = build504TheGangWars },
+    .{ .level_key = 505, .start_weapon_id = game_ids.WeaponId.pistol, .build = build505KneeDeepInTheDead },
+    .{ .level_key = 506, .start_weapon_id = game_ids.WeaponId.pistol, .build = build506CrossFire },
+    .{ .level_key = 507, .start_weapon_id = game_ids.WeaponId.pistol, .build = build507ArmyOfThree },
+    .{ .level_key = 508, .start_weapon_id = game_ids.WeaponId.pistol, .build = build508MonsterBlues },
+    .{ .level_key = 509, .start_weapon_id = game_ids.WeaponId.pistol, .build = build509Nagolipoli },
+    .{ .level_key = 510, .start_weapon_id = game_ids.WeaponId.pistol, .build = build510TheGathering },
 };
 
 fn halfFloor(value: f64) f64 {

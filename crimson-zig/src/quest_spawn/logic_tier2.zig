@@ -1,21 +1,18 @@
 const common = @import("logic_common.zig");
 const survival_spawn = @import("../survival_spawn.zig");
-
-const weapon_id_pistol: i32 = 1;
-const weapon_id_submachine_gun: i32 = 5;
-const weapon_id_gauss_gun: i32 = 6;
+const game_ids = @import("../game_ids.zig");
 
 pub const tier2_builders = [_]common.LevelBuilder{
-    .{ .level_key = 201, .start_weapon_id = weapon_id_pistol, .build = build21EverredPastures },
-    .{ .level_key = 202, .start_weapon_id = weapon_id_pistol, .build = build22SpiderSpawns },
-    .{ .level_key = 203, .start_weapon_id = weapon_id_pistol, .build = build23ArachnoidFarm },
-    .{ .level_key = 204, .start_weapon_id = weapon_id_pistol, .build = build24TwoFronts },
-    .{ .level_key = 205, .start_weapon_id = weapon_id_gauss_gun, .build = build25SweepStakes },
-    .{ .level_key = 206, .start_weapon_id = weapon_id_pistol, .build = build26EvilZombiesAtLarge },
-    .{ .level_key = 207, .start_weapon_id = weapon_id_submachine_gun, .build = build27SurvivalOfTheFastest },
-    .{ .level_key = 208, .start_weapon_id = weapon_id_pistol, .build = build28LandOfLizards },
-    .{ .level_key = 209, .start_weapon_id = weapon_id_pistol, .build = build29GhostPatrols },
-    .{ .level_key = 210, .start_weapon_id = weapon_id_pistol, .build = build210Spideroids },
+    .{ .level_key = 201, .start_weapon_id = game_ids.WeaponId.pistol, .build = build21EverredPastures },
+    .{ .level_key = 202, .start_weapon_id = game_ids.WeaponId.pistol, .build = build22SpiderSpawns },
+    .{ .level_key = 203, .start_weapon_id = game_ids.WeaponId.pistol, .build = build23ArachnoidFarm },
+    .{ .level_key = 204, .start_weapon_id = game_ids.WeaponId.pistol, .build = build24TwoFronts },
+    .{ .level_key = 205, .start_weapon_id = game_ids.WeaponId.gauss_gun, .build = build25SweepStakes },
+    .{ .level_key = 206, .start_weapon_id = game_ids.WeaponId.pistol, .build = build26EvilZombiesAtLarge },
+    .{ .level_key = 207, .start_weapon_id = game_ids.WeaponId.submachine_gun, .build = build27SurvivalOfTheFastest },
+    .{ .level_key = 208, .start_weapon_id = game_ids.WeaponId.pistol, .build = build28LandOfLizards },
+    .{ .level_key = 209, .start_weapon_id = game_ids.WeaponId.pistol, .build = build29GhostPatrols },
+    .{ .level_key = 210, .start_weapon_id = game_ids.WeaponId.pistol, .build = build210Spideroids },
 };
 
 fn build21EverredPastures(

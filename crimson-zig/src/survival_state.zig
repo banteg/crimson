@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("game_ids.zig");
 const survival_math = @import("survival_math.zig");
 
 const survival_spawn = @import("survival_spawn.zig");
@@ -7,57 +8,45 @@ pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;
 pub const perk_count_size: usize = 0x80;
 
-pub const WeaponId = struct {
-    pub const none: i32 = 0;
-    pub const pistol: i32 = 1;
-    pub const assault_rifle: i32 = 2;
-    pub const shotgun: i32 = 3;
-    pub const submachine_gun: i32 = 5;
-    pub const ion_cannon: i32 = 23;
-    pub const splitter_gun: i32 = 29;
-    pub const flamethrower: i32 = 8;
-    pub const mean_minigun: i32 = 7;
-    pub const shrinkifier_5k: i32 = 24;
-    pub const blade_gun: i32 = 25;
+pub const WeaponId = game_ids.WeaponId;
+
+const ProjectileTypeId = struct {
+    pub const pistol: i32 = @intFromEnum(game_ids.ProjectileTypeId.pistol);
+    pub const assault_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.assault_rifle);
+    pub const shotgun: i32 = @intFromEnum(game_ids.ProjectileTypeId.shotgun);
+    pub const submachine_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.submachine_gun);
+    pub const gauss_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
+    pub const plasma_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
+    pub const plasma_minigun: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
+    pub const pulse_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.pulse_gun);
+    pub const ion_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
+    pub const ion_minigun: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_minigun);
+    pub const ion_cannon: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_cannon);
+    pub const shrinkifier: i32 = @intFromEnum(game_ids.ProjectileTypeId.shrinkifier);
+    pub const blade_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.blade_gun);
+    pub const plasma_cannon: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon);
+    pub const splitter_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.splitter_gun);
+    pub const plague_spreader: i32 = @intFromEnum(game_ids.ProjectileTypeId.plague_spreader);
+    pub const rainbow_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.rainbow_gun);
+    pub const fire_bullets: i32 = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
 };
 
-pub const ProjectileTypeId = struct {
-    pub const pistol: i32 = 0x01;
-    pub const assault_rifle: i32 = 0x02;
-    pub const shotgun: i32 = 0x03;
-    pub const submachine_gun: i32 = 0x05;
-    pub const gauss_gun: i32 = 0x06;
-    pub const plasma_rifle: i32 = 0x09;
-    pub const plasma_minigun: i32 = 0x0B;
-    pub const pulse_gun: i32 = 0x13;
-    pub const ion_rifle: i32 = 0x15;
-    pub const ion_minigun: i32 = 0x16;
-    pub const ion_cannon: i32 = 0x17;
-    pub const shrinkifier: i32 = 0x18;
-    pub const blade_gun: i32 = 0x19;
-    pub const plasma_cannon: i32 = 0x1C;
-    pub const splitter_gun: i32 = 0x1D;
-    pub const plague_spreader: i32 = 0x29;
-    pub const rainbow_gun: i32 = 0x2B;
-    pub const fire_bullets: i32 = 0x2D;
-};
-
-pub const BonusId = struct {
-    pub const unused: i32 = 0;
-    pub const points: i32 = 1;
-    pub const energizer: i32 = 2;
-    pub const weapon: i32 = 3;
-    pub const weapon_power_up: i32 = 4;
-    pub const nuke: i32 = 5;
-    pub const double_experience: i32 = 6;
-    pub const shock_chain: i32 = 7;
-    pub const fireblast: i32 = 8;
-    pub const reflex_boost: i32 = 9;
-    pub const shield: i32 = 10;
-    pub const freeze: i32 = 11;
-    pub const medikit: i32 = 12;
-    pub const speed: i32 = 13;
-    pub const fire_bullets: i32 = 14;
+const BonusId = struct {
+    pub const unused: i32 = @intFromEnum(game_ids.BonusId.unused);
+    pub const points: i32 = @intFromEnum(game_ids.BonusId.points);
+    pub const energizer: i32 = @intFromEnum(game_ids.BonusId.energizer);
+    pub const weapon: i32 = @intFromEnum(game_ids.BonusId.weapon);
+    pub const weapon_power_up: i32 = @intFromEnum(game_ids.BonusId.weapon_power_up);
+    pub const nuke: i32 = @intFromEnum(game_ids.BonusId.nuke);
+    pub const double_experience: i32 = @intFromEnum(game_ids.BonusId.double_experience);
+    pub const shock_chain: i32 = @intFromEnum(game_ids.BonusId.shock_chain);
+    pub const fireblast: i32 = @intFromEnum(game_ids.BonusId.fireblast);
+    pub const reflex_boost: i32 = @intFromEnum(game_ids.BonusId.reflex_boost);
+    pub const shield: i32 = @intFromEnum(game_ids.BonusId.shield);
+    pub const freeze: i32 = @intFromEnum(game_ids.BonusId.freeze);
+    pub const medikit: i32 = @intFromEnum(game_ids.BonusId.medikit);
+    pub const speed: i32 = @intFromEnum(game_ids.BonusId.speed);
+    pub const fire_bullets: i32 = @intFromEnum(game_ids.BonusId.fire_bullets);
 };
 
 pub const Vec2 = struct {
@@ -140,7 +129,7 @@ pub const PlayerState = struct {
     aim_heading: f64 = 0.0,
     aim_dir: Vec2 = .{ .x = 1.0, .y = 0.0 },
 
-    weapon_id: i32 = WeaponId.pistol,
+    weapon_id: WeaponId = .pistol,
     clip_size: i32 = 0,
     ammo: f64 = 0.0,
     reload_active: bool = false,
@@ -153,7 +142,7 @@ pub const PlayerState = struct {
     spread_heat: f64 = 0.01,
     muzzle_flash_alpha: f64 = 0.0,
 
-    alt_weapon_id: ?i32 = null,
+    alt_weapon_id: ?WeaponId = null,
     alt_clip_size: i32 = 0,
     alt_ammo: f64 = 0.0,
     alt_reload_active: bool = false,
@@ -224,7 +213,7 @@ pub const GameplayState = struct {
     perk_available: [perk_count_size]bool = [_]bool{false} ** perk_count_size,
     perk_available_unlock_index: i32 = -1,
 
-    survival_reward_weapon_guard_id: i32 = WeaponId.pistol,
+    survival_reward_weapon_guard_id: WeaponId = .pistol,
     survival_reward_handout_enabled: bool = true,
     survival_reward_fire_seen: bool = false,
     survival_reward_damage_seen: bool = false,
@@ -321,24 +310,33 @@ pub const weapon_spread_heat_inc = [_]f64{
     0.0, 0.0, 0.0, 0.0, 0.0, 0.04, 0.05, 0.09, 0.4, 0.22, 0.0, 0.0, 0.0, 0.0, 0.04, 0.05, 1.0, 1.0,
 };
 
-pub fn weaponClipSize(weapon_id: i32) i32 {
-    if (weapon_id < 0 or weapon_id >= weapon_clip_sizes.len) return 0;
-    return weapon_clip_sizes[@intCast(weapon_id)];
+pub inline fn weaponIdToInt(weapon_id: WeaponId) i32 {
+    return @intFromEnum(weapon_id);
 }
 
-pub fn weaponReloadTime(weapon_id: i32) f64 {
-    if (weapon_id < 0 or weapon_id >= weapon_reload_times.len) return 0.0;
-    return weapon_reload_times[@intCast(weapon_id)];
+pub fn weaponIdFromInt(value: i32) ?WeaponId {
+    if (value < 0 or value >= weapon_count_size) return null;
+    return @enumFromInt(value);
 }
 
-pub fn weaponShotCooldown(weapon_id: i32) f64 {
-    if (weapon_id < 0 or weapon_id >= weapon_shot_cooldowns.len) return 0.0;
-    return weapon_shot_cooldowns[@intCast(weapon_id)];
+pub fn weaponClipSize(weapon_id: WeaponId) i32 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_clip_sizes[idx];
 }
 
-pub fn weaponPelletCount(weapon_id: i32) i32 {
-    if (weapon_id < 0 or weapon_id >= weapon_pellet_counts.len) return 0;
-    return weapon_pellet_counts[@intCast(weapon_id)];
+pub fn weaponReloadTime(weapon_id: WeaponId) f64 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_reload_times[idx];
+}
+
+pub fn weaponShotCooldown(weapon_id: WeaponId) f64 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_shot_cooldowns[idx];
+}
+
+pub fn weaponPelletCount(weapon_id: WeaponId) i32 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_pellet_counts[idx];
 }
 
 pub fn weaponProjectileMeta(weapon_id: i32) f64 {
@@ -361,42 +359,52 @@ pub fn weaponSpreadHeatInc(weapon_id: i32) f64 {
     return weapon_spread_heat_inc[@intCast(weapon_id)];
 }
 
-pub fn projectileTypeIdFromWeaponId(weapon_id: i32) ?i32 {
+pub fn weaponFlagsById(weapon_id: WeaponId) u32 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_flags[idx];
+}
+
+pub fn weaponSpreadHeatIncById(weapon_id: WeaponId) f64 {
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
+    return weapon_spread_heat_inc[idx];
+}
+
+pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?i32 {
     return switch (weapon_id) {
-        1 => ProjectileTypeId.pistol,
-        2 => ProjectileTypeId.assault_rifle,
-        3 => ProjectileTypeId.shotgun,
-        4 => ProjectileTypeId.shotgun,
-        5 => ProjectileTypeId.submachine_gun,
-        6 => ProjectileTypeId.gauss_gun,
-        7 => ProjectileTypeId.pistol,
-        8 => null,
-        9 => ProjectileTypeId.plasma_rifle,
-        10 => ProjectileTypeId.plasma_rifle,
-        11 => ProjectileTypeId.plasma_minigun,
-        12 => null,
-        13 => null,
-        14 => ProjectileTypeId.plasma_minigun,
-        15 => null,
-        16 => null,
-        17 => null,
-        18 => null,
-        19 => ProjectileTypeId.pulse_gun,
-        20 => ProjectileTypeId.shotgun,
-        21 => ProjectileTypeId.ion_rifle,
-        22 => ProjectileTypeId.ion_minigun,
-        23 => ProjectileTypeId.ion_cannon,
-        24 => ProjectileTypeId.shrinkifier,
-        25 => ProjectileTypeId.blade_gun,
-        28 => ProjectileTypeId.plasma_cannon,
-        29 => ProjectileTypeId.splitter_gun,
-        30 => ProjectileTypeId.gauss_gun,
-        31 => ProjectileTypeId.ion_minigun,
-        41 => ProjectileTypeId.plague_spreader,
-        42 => null,
-        43 => ProjectileTypeId.rainbow_gun,
-        45 => ProjectileTypeId.fire_bullets,
-        else => if (weapon_id >= 0 and weapon_id < weapon_count_size) weapon_id else null,
+        .pistol => ProjectileTypeId.pistol,
+        .assault_rifle => ProjectileTypeId.assault_rifle,
+        .shotgun => ProjectileTypeId.shotgun,
+        .sawed_off_shotgun => ProjectileTypeId.shotgun,
+        .submachine_gun => ProjectileTypeId.submachine_gun,
+        .gauss_gun => ProjectileTypeId.gauss_gun,
+        .mean_minigun => ProjectileTypeId.pistol,
+        .flamethrower => null,
+        .plasma_rifle => ProjectileTypeId.plasma_rifle,
+        .multi_plasma => ProjectileTypeId.plasma_rifle,
+        .plasma_minigun => ProjectileTypeId.plasma_minigun,
+        .rocket_launcher => null,
+        .seeker_rockets => null,
+        .plasma_shotgun => ProjectileTypeId.plasma_minigun,
+        .blow_torch => null,
+        .hr_flamer => null,
+        .mini_rocket_swarmers => null,
+        .rocket_minigun => null,
+        .pulse_gun => ProjectileTypeId.pulse_gun,
+        .jackhammer => ProjectileTypeId.shotgun,
+        .ion_rifle => ProjectileTypeId.ion_rifle,
+        .ion_minigun => ProjectileTypeId.ion_minigun,
+        .ion_cannon => ProjectileTypeId.ion_cannon,
+        .shrinkifier_5k => ProjectileTypeId.shrinkifier,
+        .blade_gun => ProjectileTypeId.blade_gun,
+        .plasma_cannon => ProjectileTypeId.plasma_cannon,
+        .splitter_gun => ProjectileTypeId.splitter_gun,
+        .gauss_shotgun => ProjectileTypeId.gauss_gun,
+        .ion_shotgun => ProjectileTypeId.ion_minigun,
+        .plague_spreader_gun => ProjectileTypeId.plague_spreader,
+        .bubblegun => null,
+        .rainbow_gun => ProjectileTypeId.rainbow_gun,
+        .fire_bullets => ProjectileTypeId.fire_bullets,
+        else => @intFromEnum(weapon_id),
     };
 }
 
@@ -409,11 +417,11 @@ pub const ProjectileTypeIds = struct {
     }
 };
 
-pub fn projectileTypeIdsFromWeaponId(weapon_id: i32) ProjectileTypeIds {
-    if (weapon_id == WeaponId.none) {
+pub fn projectileTypeIdsFromWeaponId(weapon_id: WeaponId) ProjectileTypeIds {
+    if (weapon_id == .none) {
         return .{};
     }
-    if (weapon_id == 10) {
+    if (weapon_id == .multi_plasma) {
         return .{
             .count = 2,
             .values = .{ ProjectileTypeId.plasma_rifle, ProjectileTypeId.plasma_minigun },
@@ -429,7 +437,7 @@ pub fn projectileTypeIdsFromWeaponId(weapon_id: i32) ProjectileTypeIds {
 
 pub fn weaponAssignPlayer(
     player: *PlayerState,
-    weapon_id: i32,
+    weapon_id: WeaponId,
 ) void {
     var clip_size = @max(0, weaponClipSize(weapon_id));
     if (playerPerkActive(player, 12)) {
@@ -452,17 +460,16 @@ pub fn weaponAssignPlayer(
 
 pub fn incrementWeaponUsage(
     state: *GameplayState,
-    weapon_id: i32,
+    weapon_id: WeaponId,
 ) void {
     if (state.demo_mode_active) return;
-    if (weapon_id < 0 or weapon_id >= state.status_weapon_usage_counts.len) return;
-    const idx: usize = @intCast(weapon_id);
+    const idx: usize = @intCast(@intFromEnum(weapon_id));
     state.status_weapon_usage_counts[idx] +%= 1;
 }
 
 pub fn weaponAssignPlayerWithState(
     player: *PlayerState,
-    weapon_id: i32,
+    weapon_id: WeaponId,
     state: *GameplayState,
 ) void {
     incrementWeaponUsage(state, weapon_id);
@@ -763,10 +770,11 @@ test "projectile type id mapping mirrors native fire paths" {
     };
 
     for (cases) |case| {
-        try std.testing.expectEqual(case.type_id, projectileTypeIdFromWeaponId(case.weapon_id).?);
+        const weapon_id = weaponIdFromInt(case.weapon_id).?;
+        try std.testing.expectEqual(case.type_id, projectileTypeIdFromWeaponId(weapon_id).?);
     }
 
-    const multi_plasma_types = projectileTypeIdsFromWeaponId(10).slice();
+    const multi_plasma_types = projectileTypeIdsFromWeaponId(.multi_plasma).slice();
     try std.testing.expectEqual(@as(usize, 2), multi_plasma_types.len);
     try std.testing.expectEqual(@as(i32, 0x09), multi_plasma_types[0]);
     try std.testing.expectEqual(@as(i32, 0x0B), multi_plasma_types[1]);
@@ -775,8 +783,9 @@ test "projectile type id mapping mirrors native fire paths" {
 test "non projectile weapons map to empty projectile type ids" {
     const non_projectile_weapons = [_]i32{ 8, 12, 13, 15, 16, 17, 18, 42 };
     for (non_projectile_weapons) |weapon_id| {
-        try std.testing.expectEqual(@as(?i32, null), projectileTypeIdFromWeaponId(weapon_id));
-        try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(weapon_id).slice().len);
+        const id = weaponIdFromInt(weapon_id).?;
+        try std.testing.expectEqual(@as(?i32, null), projectileTypeIdFromWeaponId(id));
+        try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(id).slice().len);
     }
 }
 
@@ -966,5 +975,5 @@ test "weapon assign with state resets latch, sets aux timer, and records usage" 
 
     try std.testing.expectEqual(@as(i32, 0), player.weapon_reset_latch);
     try expectFloatClose(2.0, player.aux_timer);
-    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts[@intCast(WeaponId.shotgun)]);
+    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts[@intCast(weaponIdToInt(WeaponId.shotgun))]);
 }

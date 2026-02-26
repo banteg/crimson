@@ -1,4 +1,5 @@
 const std = @import("std");
+const game_ids = @import("../game_ids.zig");
 
 const survival_math = @import("../survival_math.zig");
 const survival_spawn = @import("../survival_spawn.zig");
@@ -10,7 +11,7 @@ pub const QuestSpawnBuildError = error{
 
 pub const QuestSpawnBuildResult = struct {
     entries: []const survival_spawn.QuestSpawnEntry,
-    start_weapon_id: i32,
+    start_weapon_id: game_ids.WeaponId,
 };
 
 pub const BuildContext = struct {
@@ -28,7 +29,7 @@ pub const BuildFn = *const fn (
 
 pub const LevelBuilder = struct {
     level_key: i32,
-    start_weapon_id: i32,
+    start_weapon_id: game_ids.WeaponId,
     build: BuildFn,
 };
 

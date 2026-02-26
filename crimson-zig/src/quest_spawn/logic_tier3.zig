@@ -1,38 +1,18 @@
 const common = @import("logic_common.zig");
+const game_ids = @import("../game_ids.zig");
 const survival_spawn = @import("../survival_spawn.zig");
 
-const weapon_id_pistol: i32 = 1;
-const weapon_id_gauss_gun: i32 = 6;
-const weapon_id_plasma_minigun: i32 = 11;
-
-const spawn_id_zombie_boss_spawner_00: i32 = 0x00;
-const spawn_id_alien_spawner_child_1d_fast_07: i32 = 0x07;
-const spawn_id_alien_spawner_child_31_fast_0c: i32 = 0x0C;
-const spawn_id_alien_spawner_child_31_slow_0d: i32 = 0x0D;
-const spawn_id_formation_chain_lizard_4_11: i32 = 0x11;
-const spawn_id_ai1_alien_blue_tint_1a: i32 = 0x1A;
-const spawn_id_ai1_spider_sp1_blue_tint_1b: i32 = 0x1B;
-const spawn_id_ai1_lizard_blue_tint_1c: i32 = 0x1C;
-const spawn_id_alien_const_purple_ghost_21: i32 = 0x21;
-const spawn_id_alien_const_green_ghost_22: i32 = 0x22;
-const spawn_id_alien_const_green_ghost_small_23: i32 = 0x23;
-const spawn_id_alien_const_red_fast_2b: i32 = 0x2B;
-const spawn_id_lizard_random_2e: i32 = 0x2E;
-const spawn_id_lizard_random_31: i32 = 0x31;
-const spawn_id_spider_sp1_ai7_timer_38: i32 = 0x38;
-const spawn_id_spider_sp1_const_blue_40: i32 = 0x40;
-
 pub const tier3_builders = [_]common.LevelBuilder{
-    .{ .level_key = 301, .start_weapon_id = weapon_id_pistol, .build = build301TheBlighting },
-    .{ .level_key = 302, .start_weapon_id = weapon_id_pistol, .build = build302LizardKings },
-    .{ .level_key = 303, .start_weapon_id = weapon_id_pistol, .build = build303TheKilling },
-    .{ .level_key = 304, .start_weapon_id = weapon_id_pistol, .build = build304HiddenEvil },
-    .{ .level_key = 305, .start_weapon_id = weapon_id_pistol, .build = build305SurroundedByReptiles },
-    .{ .level_key = 306, .start_weapon_id = weapon_id_pistol, .build = build306TheLizquidation },
-    .{ .level_key = 307, .start_weapon_id = weapon_id_plasma_minigun, .build = build307SpidersInc },
-    .{ .level_key = 308, .start_weapon_id = weapon_id_pistol, .build = build308LizardRaze },
-    .{ .level_key = 309, .start_weapon_id = weapon_id_gauss_gun, .build = build309DejaVu },
-    .{ .level_key = 310, .start_weapon_id = weapon_id_pistol, .build = build310ZombieMasters },
+    .{ .level_key = 301, .start_weapon_id = game_ids.WeaponId.pistol, .build = build301TheBlighting },
+    .{ .level_key = 302, .start_weapon_id = game_ids.WeaponId.pistol, .build = build302LizardKings },
+    .{ .level_key = 303, .start_weapon_id = game_ids.WeaponId.pistol, .build = build303TheKilling },
+    .{ .level_key = 304, .start_weapon_id = game_ids.WeaponId.pistol, .build = build304HiddenEvil },
+    .{ .level_key = 305, .start_weapon_id = game_ids.WeaponId.pistol, .build = build305SurroundedByReptiles },
+    .{ .level_key = 306, .start_weapon_id = game_ids.WeaponId.pistol, .build = build306TheLizquidation },
+    .{ .level_key = 307, .start_weapon_id = game_ids.WeaponId.plasma_minigun, .build = build307SpidersInc },
+    .{ .level_key = 308, .start_weapon_id = game_ids.WeaponId.pistol, .build = build308LizardRaze },
+    .{ .level_key = 309, .start_weapon_id = game_ids.WeaponId.gauss_gun, .build = build309DejaVu },
+    .{ .level_key = 310, .start_weapon_id = game_ids.WeaponId.pistol, .build = build310ZombieMasters },
 };
 
 fn build301TheBlighting(
@@ -50,7 +30,7 @@ fn build301TheBlighting(
         len,
         edges_wide.right,
         0.0,
-        spawn_id_alien_const_red_fast_2b,
+        common.SpawnId.alien_const_red_fast_2b,
         1500,
         2,
     );
@@ -59,7 +39,7 @@ fn build301TheBlighting(
         len,
         edges_wide.left,
         0.0,
-        spawn_id_alien_const_red_fast_2b,
+        common.SpawnId.alien_const_red_fast_2b,
         1500,
         2,
     );
@@ -68,7 +48,7 @@ fn build301TheBlighting(
         len,
         .{ .x = 896.0, .y = 128.0 },
         0.0,
-        spawn_id_alien_spawner_child_1d_fast_07,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
         1,
     );
@@ -77,7 +57,7 @@ fn build301TheBlighting(
         len,
         .{ .x = 128.0, .y = 128.0 },
         0.0,
-        spawn_id_alien_spawner_child_1d_fast_07,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
         1,
     );
@@ -86,7 +66,7 @@ fn build301TheBlighting(
         len,
         .{ .x = 128.0, .y = 896.0 },
         0.0,
-        spawn_id_alien_spawner_child_1d_fast_07,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
         1,
     );
@@ -95,7 +75,7 @@ fn build301TheBlighting(
         len,
         .{ .x = 896.0, .y = 896.0 },
         0.0,
-        spawn_id_alien_spawner_child_1d_fast_07,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
         1,
     );
@@ -109,7 +89,7 @@ fn build301TheBlighting(
                 len,
                 edges_wide.left,
                 0.0,
-                spawn_id_alien_const_red_fast_2b,
+                common.SpawnId.alien_const_red_fast_2b,
                 trigger,
                 4,
             );
@@ -120,13 +100,13 @@ fn build301TheBlighting(
                 len,
                 edges_wide.right,
                 0.0,
-                spawn_id_alien_const_red_fast_2b,
+                common.SpawnId.alien_const_red_fast_2b,
                 trigger,
                 4,
             );
         }
 
-        const spawn_id = if (@mod(wave, 2) == 0) spawn_id_ai1_alien_blue_tint_1a else spawn_id_ai1_lizard_blue_tint_1c;
+        const spawn_id = if (@mod(wave, 2) == 0) common.SpawnId.ai1_alien_blue_tint_1a else common.SpawnId.ai1_lizard_blue_tint_1c;
         switch (@mod(wave, 5)) {
             0 => {
                 try common.appendSpawn(out_entries, len, edges.right, 0.0, spawn_id, trigger, 12);
@@ -164,7 +144,7 @@ fn build302LizardKings(
         len,
         .{ .x = 1152.0, .y = 512.0 },
         0.0,
-        spawn_id_formation_chain_lizard_4_11,
+        common.SpawnId.formation_chain_lizard_4_11,
         1500,
         1,
     );
@@ -173,7 +153,7 @@ fn build302LizardKings(
         len,
         .{ .x = -128.0, .y = 512.0 },
         0.0,
-        spawn_id_formation_chain_lizard_4_11,
+        common.SpawnId.formation_chain_lizard_4_11,
         1500,
         1,
     );
@@ -182,7 +162,7 @@ fn build302LizardKings(
         len,
         .{ .x = 1152.0, .y = 896.0 },
         0.0,
-        spawn_id_formation_chain_lizard_4_11,
+        common.SpawnId.formation_chain_lizard_4_11,
         1500,
         1,
     );
@@ -197,7 +177,7 @@ fn build302LizardKings(
             len,
             point,
             -angle,
-            spawn_id_lizard_random_31,
+            common.SpawnId.lizard_random_31,
             trigger,
             1,
         );
@@ -220,9 +200,9 @@ fn build303TheKilling(
         _ = rng.randBelow(0x8000);
 
         const spawn_id = switch (@mod(wave, 3)) {
-            0 => spawn_id_ai1_alien_blue_tint_1a,
-            1 => spawn_id_ai1_spider_sp1_blue_tint_1b,
-            else => spawn_id_ai1_lizard_blue_tint_1c,
+            0 => common.SpawnId.ai1_alien_blue_tint_1a,
+            1 => common.SpawnId.ai1_spider_sp1_blue_tint_1b,
+            else => common.SpawnId.ai1_lizard_blue_tint_1c,
         };
 
         switch (@mod(wave, 5)) {
@@ -243,7 +223,7 @@ fn build303TheKilling(
                             .y = @as(f64, @floatFromInt(y)),
                         },
                         0.0,
-                        spawn_id_alien_spawner_child_1d_fast_07,
+                        common.SpawnId.alien_spawner_child_1d_fast_07,
                         trigger + offset,
                         3,
                     );
@@ -267,7 +247,7 @@ fn build304HiddenEvil(
         len,
         edges.bottom,
         0.0,
-        spawn_id_alien_const_purple_ghost_21,
+        common.SpawnId.alien_const_purple_ghost_21,
         500,
         50,
     );
@@ -276,7 +256,7 @@ fn build304HiddenEvil(
         len,
         edges.bottom,
         0.0,
-        spawn_id_alien_const_green_ghost_22,
+        common.SpawnId.alien_const_green_ghost_22,
         15000,
         30,
     );
@@ -285,7 +265,7 @@ fn build304HiddenEvil(
         len,
         edges.bottom,
         0.0,
-        spawn_id_alien_const_green_ghost_small_23,
+        common.SpawnId.alien_const_green_ghost_small_23,
         25000,
         20,
     );
@@ -294,7 +274,7 @@ fn build304HiddenEvil(
         len,
         edges.bottom,
         0.0,
-        spawn_id_alien_const_green_ghost_small_23,
+        common.SpawnId.alien_const_green_ghost_small_23,
         30000,
         30,
     );
@@ -303,7 +283,7 @@ fn build304HiddenEvil(
         len,
         edges.bottom,
         0.0,
-        spawn_id_alien_const_green_ghost_22,
+        common.SpawnId.alien_const_green_ghost_22,
         35000,
         30,
     );
@@ -326,7 +306,7 @@ fn build305SurroundedByReptiles(
             len,
             .{ .x = 256.0, .y = y },
             0.0,
-            spawn_id_alien_spawner_child_31_slow_0d,
+            common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
             1,
         );
@@ -335,7 +315,7 @@ fn build305SurroundedByReptiles(
             len,
             .{ .x = 768.0, .y = y },
             0.0,
-            spawn_id_alien_spawner_child_31_slow_0d,
+            common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
             1,
         );
@@ -351,7 +331,7 @@ fn build305SurroundedByReptiles(
             len,
             .{ .x = x, .y = 256.0 },
             0.0,
-            spawn_id_alien_spawner_child_31_slow_0d,
+            common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
             1,
         );
@@ -360,7 +340,7 @@ fn build305SurroundedByReptiles(
             len,
             .{ .x = x, .y = 768.0 },
             0.0,
-            spawn_id_alien_spawner_child_31_slow_0d,
+            common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
             1,
         );
@@ -385,7 +365,7 @@ fn build306TheLizquidation(
             len,
             edges.right,
             0.0,
-            spawn_id_lizard_random_2e,
+            common.SpawnId.lizard_random_2e,
             trigger,
             count,
         );
@@ -394,7 +374,7 @@ fn build306TheLizquidation(
             len,
             edges.left,
             0.0,
-            spawn_id_lizard_random_2e,
+            common.SpawnId.lizard_random_2e,
             trigger,
             count,
         );
@@ -404,7 +384,7 @@ fn build306TheLizquidation(
                 len,
                 .{ .x = ctx.width + 128.0, .y = edges.right.y },
                 0.0,
-                spawn_id_alien_const_red_fast_2b,
+                common.SpawnId.alien_const_red_fast_2b,
                 1500,
                 2,
             );
@@ -428,7 +408,7 @@ fn build307SpidersInc(
         len,
         edges.bottom,
         0.0,
-        spawn_id_spider_sp1_ai7_timer_38,
+        common.SpawnId.spider_sp1_ai7_timer_38,
         500,
         1,
     );
@@ -437,7 +417,7 @@ fn build307SpidersInc(
         len,
         .{ .x = center.x + 64.0, .y = edges.bottom.y },
         0.0,
-        spawn_id_spider_sp1_ai7_timer_38,
+        common.SpawnId.spider_sp1_ai7_timer_38,
         500,
         1,
     );
@@ -446,7 +426,7 @@ fn build307SpidersInc(
         len,
         edges.top,
         0.0,
-        spawn_id_spider_sp1_const_blue_40,
+        common.SpawnId.spider_sp1_const_blue_40,
         500,
         4,
     );
@@ -460,7 +440,7 @@ fn build307SpidersInc(
             len,
             edges.bottom,
             0.0,
-            spawn_id_spider_sp1_ai7_timer_38,
+            common.SpawnId.spider_sp1_ai7_timer_38,
             trigger,
             count,
         );
@@ -469,7 +449,7 @@ fn build307SpidersInc(
             len,
             edges.top,
             0.0,
-            spawn_id_spider_sp1_ai7_timer_38,
+            common.SpawnId.spider_sp1_ai7_timer_38,
             trigger,
             count,
         );
@@ -493,7 +473,7 @@ fn build308LizardRaze(
             len,
             edges.right,
             0.0,
-            spawn_id_lizard_random_2e,
+            common.SpawnId.lizard_random_2e,
             trigger,
             6,
         );
@@ -502,7 +482,7 @@ fn build308LizardRaze(
             len,
             edges.left,
             0.0,
-            spawn_id_lizard_random_2e,
+            common.SpawnId.lizard_random_2e,
             trigger,
             6,
         );
@@ -513,7 +493,7 @@ fn build308LizardRaze(
         len,
         .{ .x = 128.0, .y = 256.0 },
         0.0,
-        spawn_id_alien_spawner_child_31_fast_0c,
+        common.SpawnId.alien_spawner_child_31_fast_0c,
         10000,
         1,
     );
@@ -522,7 +502,7 @@ fn build308LizardRaze(
         len,
         .{ .x = 128.0, .y = 384.0 },
         0.0,
-        spawn_id_alien_spawner_child_31_fast_0c,
+        common.SpawnId.alien_spawner_child_31_fast_0c,
         10000,
         1,
     );
@@ -531,7 +511,7 @@ fn build308LizardRaze(
         len,
         .{ .x = 128.0, .y = 512.0 },
         0.0,
-        spawn_id_alien_spawner_child_31_fast_0c,
+        common.SpawnId.alien_spawner_child_31_fast_0c,
         10000,
         1,
     );
@@ -557,7 +537,7 @@ fn build309DejaVu(
                 len,
                 pos,
                 0.0,
-                spawn_id_alien_spawner_child_31_slow_0d,
+                common.SpawnId.alien_spawner_child_31_slow_0d,
                 trigger,
                 1,
             );
@@ -578,7 +558,7 @@ fn build310ZombieMasters(
         len,
         .{ .x = 256.0, .y = 256.0 },
         0.0,
-        spawn_id_zombie_boss_spawner_00,
+        common.SpawnId.zombie_boss_spawner_00,
         1000,
         ctx.player_count,
     );
@@ -587,7 +567,7 @@ fn build310ZombieMasters(
         len,
         .{ .x = 512.0, .y = 256.0 },
         0.0,
-        spawn_id_zombie_boss_spawner_00,
+        common.SpawnId.zombie_boss_spawner_00,
         6000,
         1,
     );
@@ -596,7 +576,7 @@ fn build310ZombieMasters(
         len,
         .{ .x = 768.0, .y = 256.0 },
         0.0,
-        spawn_id_zombie_boss_spawner_00,
+        common.SpawnId.zombie_boss_spawner_00,
         14000,
         ctx.player_count,
     );
@@ -605,7 +585,7 @@ fn build310ZombieMasters(
         len,
         .{ .x = 768.0, .y = 768.0 },
         0.0,
-        spawn_id_zombie_boss_spawner_00,
+        common.SpawnId.zombie_boss_spawner_00,
         18000,
         1,
     );
