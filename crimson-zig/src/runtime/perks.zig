@@ -21,8 +21,8 @@ const PerkFlag = enum {
 };
 const PerkFlagSet = std.EnumSet(PerkFlag);
 
-pub const perk_id_max: i32 = @intFromEnum(PerkId.lifeline_50_50);
-const perk_id_max_usize: usize = @intCast(@intFromEnum(PerkId.lifeline_50_50));
+pub const perk_id_max: i32 = @intCast(state_mod.perk_count_size - 1);
+const perk_id_max_usize: usize = state_mod.perk_count_size - 1;
 const perk_base_available_max_id: i32 = 27;
 
 inline fn perkIdInt(perk_id: PerkId) i32 {

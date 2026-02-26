@@ -7,13 +7,13 @@ const survival_spawn = @import("spawn.zig");
 
 const narrowF32 = native_math.roundF32;
 
-pub const max_players: usize = 4;
-pub const weapon_count_size: usize = 54;
-pub const perk_count_size: usize = 0x80;
-
 pub const WeaponId = game_ids.WeaponId;
 pub const PerkId = game_ids.PerkId;
 pub const GameModeId = game_ids.GameModeId;
+
+pub const max_players: usize = 4;
+pub const weapon_count_size: usize = 54;
+pub const perk_count_size: usize = @typeInfo(PerkId).@"enum".fields.len;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
 const PerkCounts = std.EnumArray(PerkId, i32);
 
@@ -300,6 +300,10 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
 
 comptime {
     std.debug.assert(weapon_count_size == @typeInfo(WeaponId).@"enum".fields.len);
+    inline for (@typeInfo(PerkId).@"enum".fields, 0..) |field, idx| {
+        std.debug.assert(field.value == idx);
+    }
+    std.debug.assert(perk_count_size == @typeInfo(PerkId).@"enum".fields.len);
 }
 
 pub inline fn weaponIdToInt(weapon_id: WeaponId) i32 {
