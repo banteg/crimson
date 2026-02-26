@@ -2,6 +2,7 @@ pub const backend_python = @import("backend_python.zig");
 pub const cli = @import("cli.zig");
 pub const hash = @import("hash.zig");
 pub const quest_spawn_builder = @import("quest_spawn_builder.zig");
+pub const quest_spawn_builder_option4 = @import("quest_spawn_builder_option4.zig");
 pub const replay_codec = @import("replay_codec.zig");
 pub const survival_sim = @import("survival_sim.zig");
 pub const survival_spawn = @import("survival_spawn.zig");
