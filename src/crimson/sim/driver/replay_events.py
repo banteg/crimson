@@ -31,6 +31,13 @@ from ...replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
 from ..world_state import WorldState
 from .setup import ReplayRunnerError
 
+_AI7_LINK_TIMER_ROLLOVER_MIN = -1723
+_AI7_LINK_TIMER_ROLLOVER_MAX = -700
+
+
+def _is_ai7_link_timer_rollover_value(link_index: int) -> bool:
+    return _AI7_LINK_TIMER_ROLLOVER_MIN <= int(link_index) <= _AI7_LINK_TIMER_ROLLOVER_MAX
+
 
 def apply_replay_tick_events(
     events: list[object],
@@ -225,7 +232,7 @@ def apply_replay_tick_events(
 
                     # Spawn hooks are deferred to post-step in original-capture quest replay.
                     # For freshly spawned AI7 creatures, native consumed one RNG draw in
-                    # `creature_update_all` when the timer rolled from `0` to a negative
+                    # `creature_update_all` when non-negative timer state rolled into
                     # cooldown (`link_index = -700 - (rand & 0x3ff)`), but replay applies
                     # `added_head.link_index` directly. Backfill that RNG draw here so
                     # stream parity stays aligned with capture.
@@ -234,7 +241,7 @@ def apply_replay_tick_events(
                     if (
                         idx in spawned_indices
                         and link_index_i is not None
-                        and -1723 <= int(link_index_i) <= -700
+                        and _is_ai7_link_timer_rollover_value(link_index_i)
                         and (flags_i & int(CreatureFlags.AI7_LINK_TIMER)) != 0
                     ):
                         state.rng.rand()
