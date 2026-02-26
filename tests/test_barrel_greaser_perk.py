@@ -66,6 +66,6 @@ def test_barrel_greaser_doubles_projectile_speed_steps() -> None:
     greased_x = _step_pistol_projectile(barrel_greaser_active=True)
     # Movement is flushed from an accumulator in chunks, so doubling internal
     # step count does not map to an exact x2 world-space displacement.
-    assert_float_close(base_x, 18.239999771118164)
+    assert_float_close(base_x, 18.240001678466797)
     assert_float_close(greased_x, 35.519996643066406)
     assert greased_x > base_x

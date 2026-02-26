@@ -139,7 +139,8 @@ class ProjectilePool:
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        world_size = float(options.world_size)
+        dt = float(f32(float(dt)))
+        world_size = float(f32(float(options.world_size)))
         damage_scale_by_type = options.damage_scale_by_type
         ion_aoe_scale = float(options.ion_aoe_scale)
         detail_preset = int(options.detail_preset)
@@ -264,8 +265,6 @@ class ProjectilePool:
                 continue
 
             steps = int(proj.travel_budget)
-            if steps <= 0:
-                steps = 1
             if barrel_greaser_active and proj.owner.is_player():
                 steps *= 2
 
