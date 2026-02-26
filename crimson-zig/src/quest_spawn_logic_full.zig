@@ -31,7 +31,6 @@ pub fn buildQuestSpawnTable(
         .width = world_size,
         .height = world_size,
         .player_count = player_count,
-        .full_version = true,
     };
     var rng = common.PythonRandom.init(seed);
     var len: usize = 0;

@@ -409,7 +409,7 @@ fn build_407_gauntlet(
     out_entries: []survival_spawn.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const player_count = ctx.player_count + (if (ctx.full_version) @as(i32, 4) else @as(i32, 0));
+    const player_count = ctx.player_count + 4;
     const center = common.centerPoint(ctx.width, ctx.height);
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
 
@@ -506,7 +506,7 @@ fn build_408_syntax_terror(
     out_entries: []survival_spawn.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const player_count = ctx.player_count + (if (ctx.full_version) @as(i32, 4) else @as(i32, 0));
+    const player_count = ctx.player_count + 4;
     const loop_count = player_count + 9;
 
     var outer_seed: i32 = 0x14C9;
@@ -709,23 +709,21 @@ fn build_410_the_end_of_all(
         trigger += 300;
     }
 
-    if (ctx.full_version) {
-        trigger = 62_800;
-        idx = 0;
-        while (idx < 12) : (idx += 1) {
-            const angle = 0.5235988 + @as(f64, @floatFromInt(idx)) * 0.5235988;
-            const pos = ring_point(center, 180.0, angle);
-            try common.appendSpawn(
-                out_entries,
-                len,
-                pos,
-                0.0,
-                common.SpawnId.alien_spawner_child_1d_fast_07,
-                trigger,
-                1,
-            );
-            trigger += 500;
-        }
+    trigger = 62_800;
+    idx = 0;
+    while (idx < 12) : (idx += 1) {
+        const angle = 0.5235988 + @as(f64, @floatFromInt(idx)) * 0.5235988;
+        const pos = ring_point(center, 180.0, angle);
+        try common.appendSpawn(
+            out_entries,
+            len,
+            pos,
+            0.0,
+            common.SpawnId.alien_spawner_child_1d_fast_07,
+            trigger,
+            1,
+        );
+        trigger += 500;
     }
 
     trigger = 48_000;
