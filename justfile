@@ -28,6 +28,11 @@ check *args:
     sg test
     uv run pytest {{args}}
 
+check-zig:
+    cd crimson-zig && zig build
+    cd crimson-zig && zig build test
+    cd crimson-zig && zig build wasm
+
 ty:
     uv run ty check src tests
 
