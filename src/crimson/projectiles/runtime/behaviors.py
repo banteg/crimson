@@ -11,6 +11,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
 from ...math_parity import f32
+from ...owner_ref import OwnerRef
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..effects import (
     _spawn_ion_hit_effects,
@@ -60,7 +61,7 @@ class _ProjectileHitPerkCtx:
     proj: Projectile
     creature: CreatureState
     rng: Callable[[], int]
-    owner_perk_active: Callable[[int, int], bool]
+    owner_perk_active: Callable[[OwnerRef, int], bool]
     poison_idx: int
 
 
@@ -68,7 +69,7 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 
 
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
-    if ctx.owner_perk_active(int(ctx.proj.owner_id), int(ctx.poison_idx)) and (int(ctx.rng()) & 7) == 1:
+    if ctx.owner_perk_active(ctx.proj.owner, int(ctx.poison_idx)) and (int(ctx.rng()) & 7) == 1:
         ctx.creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
 
@@ -117,7 +118,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=int(proj.owner_id),
+                owner_id=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -140,7 +141,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=int(proj.owner_id),
+                owner_id=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -163,7 +164,7 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=int(proj.owner_id),
+                owner_id=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -178,12 +179,12 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     # Native player-hit checks in `projectile_update` key off `owner_id != -100`.
     # Splitter children are spawned with `owner_id = hit creature index`, so they
     # can hit players even when the parent projectile owner was `-100`.
-    split_hits_players = int(hit_idx) != -100
+    split_hits_players = OwnerRef.from_creature(int(hit_idx)).to_legacy() != -100
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=int(hit_idx),
+        owner_id=OwnerRef.from_creature(int(hit_idx)),
         base_damage=proj.base_damage,
         hits_players=split_hits_players,
     )
@@ -191,7 +192,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         pos=proj.pos,
         angle=proj.angle + 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=int(hit_idx),
+        owner_id=OwnerRef.from_creature(int(hit_idx)),
         base_damage=proj.base_damage,
         hits_players=split_hits_players,
     )
@@ -249,7 +250,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     pos=origin_pos,
                     angle=angle,
                     type_id=int(hit.proj.type_id),
-                    owner_id=hit_creature,
+                    owner_id=OwnerRef.from_creature(hit_creature),
                     base_damage=hit.proj.base_damage,
                 )
             finally:
@@ -283,7 +284,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 pos=hit.proj.pos + ring_offset,
                 angle=ring_angle,
                 type_id=ProjectileTypeId.PLASMA_RIFLE,
-                owner_id=-100,
+                owner_id=OwnerRef.from_local_player(0),
                 base_damage=plasma_meta,
             )
     finally:
@@ -316,7 +317,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
             float(creature.hp) + 1.0,
             damage_type=CreatureDamageType.BULLET,
             impulse=Vec2(),
-            owner_id=int(hit.proj.owner_id),
+            owner_id=hit.proj.owner,
             apply_creature_damage=ctx.apply_creature_damage,
         )
     hit.proj.life_timer = 0.25

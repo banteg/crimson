@@ -13,6 +13,7 @@ from grim.math import clamp
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import f32
+from .owner_ref import OwnerLike, OwnerRef, owner_ref
 
 __all__ = [
     "FX_QUEUE_CAPACITY",
@@ -85,7 +86,15 @@ class Particle:
     spin: float = 0.0
     style_id: int = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
-    owner_id: int = -100
+    owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
+
+    @property
+    def owner_id(self) -> int:
+        return self.owner.to_legacy()
+
+    @owner_id.setter
+    def owner_id(self, value: OwnerLike) -> None:
+        self.owner = owner_ref(value)
 
 
 class ParticlePool:
@@ -116,7 +125,7 @@ class ParticlePool:
         pos: Vec2,
         angle: float,
         intensity: float = 1.0,
-        owner_id: int = -100,
+        owner_id: OwnerLike = -100,
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
 
@@ -135,7 +144,7 @@ class ParticlePool:
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
-        entry.owner_id = int(owner_id)
+        entry.owner = owner_ref(owner_id)
         return idx
 
     def spawn_particle_slow(
@@ -143,7 +152,7 @@ class ParticlePool:
         *,
         pos: Vec2,
         angle: float,
-        owner_id: int = -100,
+        owner_id: OwnerLike = -100,
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
 
@@ -162,7 +171,7 @@ class ParticlePool:
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
-        entry.owner_id = int(owner_id)
+        entry.owner = owner_ref(owner_id)
         return idx
 
     def iter_active(self) -> list[Particle]:
@@ -257,7 +266,7 @@ class ParticlePool:
                     target_id = int(entry.target_id)
                     entry.target_id = -1
                     if kill_creature is not None:
-                        kill_creature(target_id, int(entry.owner_id))
+                        kill_creature(target_id, entry.owner.to_legacy())
                     elif creatures is not None and 0 <= target_id < len(creatures):
                         creatures[target_id].hp = -1.0
                         creatures[target_id].active = False
@@ -331,7 +340,7 @@ class ParticlePool:
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
                             if apply_creature_damage is not None:
-                                apply_creature_damage(int(hit_idx), float(damage), 4, Vec2(), int(entry.owner_id))
+                                apply_creature_damage(int(hit_idx), float(damage), 4, Vec2(), entry.owner.to_legacy())
                             else:
                                 creature.hp -= float(damage)
 

@@ -35,6 +35,7 @@ from ..math_parity import (
     heading_add_pi_f32,
     heading_to_direction_f32,
 )
+from ..owner_ref import OwnerLike, OwnerRef, owner_ref
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
@@ -227,13 +228,8 @@ def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:
     )
 
 
-def _owner_id_to_player_index(owner_id: int) -> int | None:
-    # Native uses `-1/-2/-3/-4` for player indices and `-100` as a player-owned sentinel.
-    if owner_id == -100:
-        return 0
-    if owner_id < 0:
-        return -1 - owner_id
-    return None
+def _owner_to_player_index(owner: OwnerLike) -> int | None:
+    return owner_ref(owner).player_index()
 
 
 def _projectile_meta_for_type_id(type_id: int) -> float:
@@ -286,13 +282,21 @@ class CreatureState:
     size: float = 50.0
     anim_phase: float = 0.0
     hit_flash_timer: float = 0.0
-    last_hit_owner_id: int = -100
+    last_hit_owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
     tint: RGBA = field(default_factory=RGBA)
 
     # Rewrite-only helpers (not in native struct, but derived from spawn plans).
     spawn_slot_index: int | None = None
     bonus_id: int | None = None
     bonus_duration_override: int | None = None
+
+    @property
+    def last_hit_owner_id(self) -> int:
+        return self.last_hit_owner.to_legacy()
+
+    @last_hit_owner_id.setter
+    def last_hit_owner_id(self, value: OwnerLike) -> None:
+        self.last_hit_owner = owner_ref(value)
 
 
 @dataclass(frozen=True, slots=True)
@@ -398,7 +402,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
     prev_guard = bool(ctx.state.bonus_spawn_guard)
     ctx.state.bonus_spawn_guard = True
-    creature.last_hit_owner_id = -1 - int(ctx.player.index)
+    creature.last_hit_owner = OwnerRef.from_player(int(ctx.player.index))
     ctx.deaths.append(
         ctx.pool.handle_death(
             ctx.creature_index,
@@ -944,7 +948,7 @@ class CreaturePool:
                 damage_amount=float(damage_amount),
                 damage_type=CreatureDamageType.SELF_TICK,
                 impulse=Vec2(),
-                owner_id=int(creature.last_hit_owner_id),
+                owner_id=creature.last_hit_owner,
                 dt=dt,
                 players=players,
                 rand=rand,
@@ -1333,7 +1337,7 @@ class CreaturePool:
                 type_id=int(creature.type_id),
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
-                owner_id=int(creature.last_hit_owner_id),
+                owner_id=creature.last_hit_owner.to_legacy(),
                 suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
                 plan_death_sfx=bool(plan_death_sfx),
             )
@@ -1437,7 +1441,7 @@ class CreaturePool:
         entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         entry.hit_flash_timer = 0.0
         entry.anim_phase = 0.0
-        entry.last_hit_owner_id = -100
+        entry.last_hit_owner = OwnerRef.from_local_player(0)
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
@@ -1590,7 +1594,7 @@ class CreaturePool:
 
         killer: PlayerState | None = None
         if players:
-            player_index = _owner_id_to_player_index(int(creature.last_hit_owner_id))
+            player_index = _owner_to_player_index(creature.last_hit_owner)
             if player_index is None or not (0 <= player_index < len(players)):
                 player_index = 0
             killer = players[player_index]
@@ -1626,6 +1630,6 @@ class CreaturePool:
             type_id=int(creature.type_id),
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
-            owner_id=int(creature.last_hit_owner_id),
+            owner_id=creature.last_hit_owner.to_legacy(),
             suppress_death_sfx=bool(armored_death),
         )

@@ -11,6 +11,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects_atlas import EffectId
 from ...math_parity import f32
+from ...owner_ref import OwnerLike, owner_ref
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -48,7 +49,7 @@ class SecondaryProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: int,
-        owner_id: int = -100,
+        owner_id: OwnerLike = -100,
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
         creatures: Sequence[CreatureState] | None = None,
@@ -66,7 +67,7 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = int(type_id)
         entry.pos = pos
-        entry.owner_id = int(owner_id)
+        entry.owner = owner_ref(owner_id)
         entry.target_id = -1
         entry.target_hint_active = False
         entry.target_hint = Vec2()
@@ -128,7 +129,7 @@ class SecondaryProjectilePool:
             creature_index: int,
             damage: float,
             *,
-            owner_id: int,
+            owner_id: OwnerLike,
             impulse: Vec2 = Vec2(),
         ) -> None:
             _apply_damage_to_creature(
@@ -137,7 +138,7 @@ class SecondaryProjectilePool:
                 float(damage),
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
-                owner_id=int(owner_id),
+                owner_id=owner_id,
                 apply_creature_damage=apply_creature_damage,
             )
 
@@ -200,7 +201,7 @@ class SecondaryProjectilePool:
                         _apply_secondary_damage(
                             creature_idx,
                             damage,
-                            owner_id=int(entry.owner_id),
+                            owner_id=entry.owner,
                             impulse=impulse,
                         )
                         creature_spatial.sync_index(int(creature_idx))
@@ -294,12 +295,10 @@ class SecondaryProjectilePool:
                     break
             if hit_idx is not None:
                 if runtime_state is not None:
-                    owner_id = int(entry.owner_id)
-                    if owner_id < 0 and creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
+                    owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
+                    if owner_player_index is not None and creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
                         shots_hit = runtime_state.shots_hit
-                        player_index = 0 if owner_id == -100 else (-1 - owner_id)
-                        if 0 <= player_index < len(shots_hit):
-                            shots_hit[player_index] += 1
+                        shots_hit[owner_player_index] += 1
 
                 if sfx_queue is not None:
                     sfx_queue.append("sfx_explosion_medium")
@@ -355,7 +354,7 @@ class SecondaryProjectilePool:
                 _apply_secondary_damage(
                     hit_idx,
                     damage,
-                    owner_id=int(entry.owner_id),
+                    owner_id=entry.owner,
                     impulse=entry.vel / float(dt),
                 )
                 creature_spatial.sync_index(int(hit_idx))

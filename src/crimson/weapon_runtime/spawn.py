@@ -5,6 +5,7 @@ from typing import Protocol
 
 from grim.geom import Vec2
 
+from ..owner_ref import OwnerLike, OwnerRef, owner_ref
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
@@ -14,15 +15,22 @@ class _HasPos(Protocol):
     pos: Vec2
 
 
+def owner_ref_for_player(player_index: int) -> OwnerRef:
+    return OwnerRef.from_player(int(player_index))
+
+
+def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) -> OwnerRef:
+    if not state.friendly_fire_enabled:
+        return OwnerRef.from_local_player(0)
+    return owner_ref_for_player(player_index)
+
+
 def owner_id_for_player(player_index: int) -> int:
-    # crimsonland.exe uses -1/-2/-3 for players (and sometimes -100 in demo paths).
-    return -1 - int(player_index)
+    return owner_ref_for_player(player_index).to_legacy()
 
 
 def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> int:
-    if not state.friendly_fire_enabled:
-        return -100
-    return owner_id_for_player(player_index)
+    return owner_ref_for_player_projectiles(state, player_index).to_legacy()
 
 
 def projectile_meta_for_type_id(type_id: int) -> float:
@@ -47,7 +55,7 @@ def _shots_fired_player_index(
     *,
     state: GameplayState,
     players: list[PlayerState] | None,
-    owner_id: int,
+    owner: OwnerRef,
     owner_player_index: int | None,
 ) -> int | None:
     if owner_player_index is not None:
@@ -55,12 +63,12 @@ def _shots_fired_player_index(
         if 0 <= player_index < len(state.shots_fired):
             return int(player_index)
 
-    if owner_id in (-1, -2, -3):
-        player_index = -1 - int(owner_id)
+    if owner.is_player() and not (owner.local_host and owner.index == 0):
+        player_index = int(owner.index)
         if 0 <= player_index < len(state.shots_fired):
             return int(player_index)
 
-    if owner_id == -100 and players and len(players) == 1:
+    if owner.local_host and owner.index == 0 and players and len(players) == 1:
         player_index = int(players[0].index)
         if 0 <= player_index < len(state.shots_fired):
             return int(player_index)
@@ -72,7 +80,7 @@ def _fire_bullets_active(
     players: list[PlayerState] | None,
     *,
     state: GameplayState,
-    owner_id: int,
+    owner: OwnerRef,
     owner_player_index: int | None,
 ) -> bool:
     if not players:
@@ -86,10 +94,9 @@ def _fire_bullets_active(
     resolved_owner_slot: int | None = None
     if owner_player_index is not None:
         resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_player_index))
-    elif owner_id < 0 and owner_id != -100:
-        owner_index = -1 - int(owner_id)
-        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_index))
-    elif len(players) == 1:
+    elif owner.is_player() and not (owner.local_host and owner.index == 0):
+        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner.index))
+    elif owner.local_host and owner.index == 0 and len(players) == 1:
         # Callers that only pass one player are explicitly indicating the owner
         # context (for example owner_id -100 with friendly fire disabled).
         resolved_owner_slot = 0
@@ -108,19 +115,19 @@ def projectile_spawn(
     pos: Vec2,
     angle: float,
     type_id: int,
-    owner_id: int,
+    owner_id: OwnerLike,
     owner_player_index: int | None = None,
     hits_players: bool = False,
 ) -> int:
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
     type_id = int(type_id)
-    owner_id = int(owner_id)
-    if (not state.bonus_spawn_guard) and owner_id in (-100, -1, -2, -3):
+    owner = owner_ref(owner_id)
+    if (not state.bonus_spawn_guard) and owner.is_player():
         while True:
             player_index = _shots_fired_player_index(
                 state=state,
                 players=players,
-                owner_id=owner_id,
+                owner=owner,
                 owner_player_index=owner_player_index,
             )
             state.shots_fired_total += 1
@@ -131,7 +138,7 @@ def projectile_spawn(
             if not _fire_bullets_active(
                 players,
                 state=state,
-                owner_id=owner_id,
+                owner=owner,
                 owner_player_index=owner_player_index,
             ):
                 break
@@ -142,7 +149,7 @@ def projectile_spawn(
         pos=pos,
         angle=float(angle),
         type_id=int(type_id),
-        owner_id=int(owner_id),
+        owner_id=owner,
         base_damage=float(meta),
         hits_players=bool(hits_players),
     )
@@ -155,7 +162,7 @@ def spawn_projectile_ring(
     count: int,
     angle_offset: float,
     type_id: int,
-    owner_id: int,
+    owner_id: OwnerLike,
     owner_player_index: int | None = None,
     players: list[PlayerState] | None = None,
 ) -> None:
@@ -169,6 +176,6 @@ def spawn_projectile_ring(
             pos=origin.pos,
             angle=float(idx) * step + float(angle_offset),
             type_id=int(type_id),
-            owner_id=int(owner_id),
+            owner_id=owner_id,
             owner_player_index=owner_player_index,
         )
