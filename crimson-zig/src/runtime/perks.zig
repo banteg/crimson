@@ -354,26 +354,26 @@ fn consumeSpawnBurstRng(
 pub fn updatePerkEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) void {
     if (dt > 0.0) {
         for (players) |*player| {
             if (player.shield_timer <= 0.0) {
                 player.shield_timer = 0.0;
             } else {
-                player.shield_timer -= narrowF32(dt);
+                player.shield_timer -= dt;
             }
 
             if (player.fire_bullets_timer <= 0.0) {
                 player.fire_bullets_timer = 0.0;
             } else {
-                player.fire_bullets_timer -= narrowF32(dt);
+                player.fire_bullets_timer -= dt;
             }
 
             if (player.speed_bonus_timer <= 0.0) {
                 player.speed_bonus_timer = 0.0;
             } else {
-                player.speed_bonus_timer -= narrowF32(dt);
+                player.speed_bonus_timer -= dt;
             }
         }
     }
@@ -388,15 +388,15 @@ pub fn updatePerkEffects(
             var repeat: usize = 0;
             while (repeat < players.len) : (repeat += 1) {
                 if (players[0].health <= 0.0 or players[0].health >= 100.0) continue;
-                players[0].health += narrowF32(dt);
+                players[0].health += dt;
                 if (players[0].health > 100.0) {
                     players[0].health = 100.0;
                 }
             }
         } else {
-            var heal_amount = narrowF32(dt);
+            var heal_amount = dt;
             if (perkActive(&players[0], PerkId.greater_regeneration)) {
-                heal_amount = narrowF32(dt) * 2.0;
+                heal_amount = dt * 2.0;
             }
             for (players) |*player| {
                 if (player.health <= 0.0 or player.health >= 100.0) continue;
@@ -408,7 +408,7 @@ pub fn updatePerkEffects(
         }
     }
 
-    state.lean_mean_exp_timer = narrowF32(state.lean_mean_exp_timer - dt);
+    state.lean_mean_exp_timer -= dt;
     if (state.lean_mean_exp_timer < 0.0) {
         state.lean_mean_exp_timer = 0.25;
         const perk_count = perkCountGet(&players[0], PerkId.lean_mean_exp_machine);
@@ -423,7 +423,7 @@ pub fn updatePerkEffects(
         if (player.health <= 0.0) {
             player.health = 0.0;
         } else {
-            player.health -= narrowF32(dt) * 3.3333333;
+            player.health -= dt * 3.3333333;
         }
     }
 }

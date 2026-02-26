@@ -317,7 +317,7 @@ pub const SecondaryProjectilePool = struct {
                     consumeExplosionBurstRng(state, detail_preset);
                 }
 
-                const damage: f64 = switch (entry.type_id) {
+                const damage: f32 = switch (entry.type_id) {
                     SecondaryProjectileTypeId.rocket => narrowF32(entry.speed * 50.0 + 500.0),
                     SecondaryProjectileTypeId.homing_rocket => narrowF32(entry.speed * 20.0 + 80.0),
                     SecondaryProjectileTypeId.rocket_minigun => narrowF32(entry.speed * 20.0 + 40.0),
@@ -335,7 +335,7 @@ pub const SecondaryProjectilePool = struct {
                     },
                     entry.owner,
                     dt_f32,
-                    @as(f64, world_size),
+                    world_size,
                     null,
                 );
 

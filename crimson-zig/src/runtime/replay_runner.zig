@@ -608,13 +608,13 @@ pub fn runReplayScaffoldWithTrace(
         }
 
         const dt_world = if (apply_world_dt_steps)
-            applyPerkWorldDtSteps(players[0..], dt_tick)
+            applyPerkWorldDtSteps(players[0..], narrowF32(dt_tick))
         else
-            dt_tick;
+            narrowF32(dt_tick);
         const dt_sim = survival_progression.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
-            narrowF32(dt_world),
+            dt_world,
         );
         const dt_frame_ms = dt_tick * 1000.0;
         const dt_sim_ms = dt_sim * 1000.0;
@@ -624,27 +624,27 @@ pub fn runReplayScaffoldWithTrace(
         for (creatures.entries, 0..) |creature, idx| {
             freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
         }
-        var health_before_creatures: [state_mod.max_players]f64 = undefined;
+        var health_before_creatures: [state_mod.max_players]f32 = undefined;
         for (players, 0..) |player, player_idx| {
             health_before_creatures[player_idx] = player.health;
         }
         updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
-        perks.updatePerkEffects(&state, players[0..], dt_sim);
-        applyJinxedEffects(&state, players[0..], &creatures, dt_sim);
+        perks.updatePerkEffects(&state, players[0..], narrowF32(dt_sim));
+        applyJinxedEffects(&state, players[0..], &creatures, narrowF32(dt_sim));
         applyPyrokineticEffects(
             &state,
             players[0..],
             &creatures,
             &particles,
-            dt_sim,
+            narrowF32(dt_sim),
         );
         const rng_after_perk_effects = state.rng.state;
 
         try creatures.update(
             &state,
             players[0..],
-            dt_sim,
-            @floatCast(header.world_size),
+            narrowF32(dt_sim),
+            narrowF32(header.world_size),
             &bonuses,
         );
         applyPendingCreatureProjectiles(&state, &projectiles);
@@ -657,8 +657,8 @@ pub fn runReplayScaffoldWithTrace(
                 health_before_creatures[player_idx],
                 &creatures,
                 &bonuses,
-                dt_sim,
-                @floatCast(header.world_size),
+                narrowF32(dt_sim),
+                narrowF32(header.world_size),
                 header.detail_preset,
             );
         }
@@ -702,7 +702,7 @@ pub fn runReplayScaffoldWithTrace(
             const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicks(
                 &state,
                 player,
-                dt_sim,
+                narrowF32(dt_sim),
             );
             player_preprocessed_alive[player_idx] = should_tick_perks;
             if (!should_tick_perks) continue;
@@ -710,7 +710,7 @@ pub fn runReplayScaffoldWithTrace(
                 &state,
                 player,
                 &projectiles,
-                dt_sim,
+                narrowF32(dt_sim),
             );
         }
         for (tick_inputs[0..players.len], players, 0..) |input, *player, player_idx| {
@@ -743,7 +743,7 @@ pub fn runReplayScaffoldWithTrace(
                     .single_player_mode = players.len == 1,
                     .preprocessed_player_tick = true,
                 },
-                dt_sim,
+                narrowF32(dt_sim),
             ) catch |err| switch (err) {
                 error.UnsupportedWeaponFirePath => return error.UnsupportedWeaponFirePath,
             };
@@ -754,11 +754,11 @@ pub fn runReplayScaffoldWithTrace(
                 health_before_player_step,
                 &creatures,
                 &bonuses,
-                dt_sim,
-                @floatCast(header.world_size),
+                narrowF32(dt_sim),
+                narrowF32(header.world_size),
                 header.detail_preset,
             );
-            finalizePlayerPostUpdate(player, @floatCast(header.world_size));
+            finalizePlayerPostUpdate(player, narrowF32(header.world_size));
         }
         const rng_after_player_update = state.rng.state;
 
@@ -880,7 +880,7 @@ pub fn runReplayScaffoldWithTrace(
         const rng_after_spawns = state.rng.state;
 
         const dt_after_player = playerFrameDtAfterRoundtrip(
-            dt_sim,
+            narrowF32(dt_sim),
             state.time_scale_active,
             state.bonuses.reflex_boost,
         );
@@ -912,7 +912,7 @@ pub fn runReplayScaffoldWithTrace(
             &creatures,
             &bonuses,
             dt_after_player,
-            @floatCast(header.world_size),
+            narrowF32(header.world_size),
             tick_index,
         );
         const rng_after_bonus_update = state.rng.state;
@@ -1499,14 +1499,14 @@ fn hashMix(seed: u64, value: u64) u64 {
 
 fn cameraShakeUpdate(
     state: *state_mod.GameplayState,
-    dt: f64,
+    dt: f32,
 ) void {
     if (state.camera_shake_timer <= 0.0) {
         state.camera_shake_offset = .{};
         return;
     }
 
-    state.camera_shake_timer = narrowF32(state.camera_shake_timer - narrowF32(dt * 3.0));
+    state.camera_shake_timer = narrowF32(state.camera_shake_timer - dt * 3.0);
     if (state.camera_shake_timer >= 0.0) return;
 
     state.camera_shake_pulses -= 1;
@@ -1549,8 +1549,8 @@ fn applyPendingBonusEffects(
     projectiles: *projectiles_mod.ProjectilePool,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
-    dt: f64,
-    world_size: f64,
+    dt: f32,
+    world_size: f32,
     tick_index: usize,
 ) void {
     state.debug_nuke_kills_last = 0;
@@ -1641,9 +1641,9 @@ fn applyFireblastBonus(
     defer state.bonus_spawn_guard = prev_spawn_guard;
 
     const count: usize = 16;
-    const step = std.math.tau / @as(f64, @floatFromInt(count));
+    const step = std.math.tau / @as(f32, @floatFromInt(count));
     for (0..count) |idx| {
-        const angle = @as(f64, @floatFromInt(idx)) * step;
+        const angle = @as(f32, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
         const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
@@ -1659,7 +1659,7 @@ fn applyShockChainBonus(
     if (creatures.entries.len == 0) return;
 
     var best_idx: ?usize = null;
-    var best_dist_sq: f64 = 1e12;
+    var best_dist_sq: f32 = 1e12;
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
         if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
@@ -1686,7 +1686,7 @@ fn applyShockChainBonus(
     state.shock_chain_projectile_id = @intCast(proj_idx);
 }
 
-fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
@@ -1702,12 +1702,12 @@ fn applyPyrokineticEffects(
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
     particles: *particles_mod.ParticlePool,
-    dt: f64,
+    dt: f32,
 ) void {
     if (!(dt > 0.0)) return;
     if (players.len == 0) return;
 
-    const burn_intensities = [_]f64{ 0.8, 0.6, 0.4, 0.3, 0.2 };
+    const burn_intensities = [_]f32{ 0.8, 0.6, 0.4, 0.3, 0.2 };
 
     for (players) |*player| {
         if (player.health <= 0.0) continue;
@@ -1722,12 +1722,12 @@ fn applyPyrokineticEffects(
 
         creature.collision_timer = 0.5;
         for (burn_intensities) |intensity| {
-            const angle = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
+            const angle = narrowF32(@as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
             _ = particles.spawnParticle(
                 state,
                 creature.pos,
-                narrowF32(angle),
-                narrowF32(intensity),
+                angle,
+                intensity,
                 owner_ref.OwnerRef.fromLocalPlayer(0),
             );
         }
@@ -1757,7 +1757,7 @@ fn updateEvilEyesTargets(
 fn creatureFindInRadius(
     creatures: []const creatures_mod.CreatureState,
     pos: state_mod.Vec2,
-    radius: f64,
+    radius: f32,
     start_index: usize,
 ) i32 {
     var idx = start_index;
@@ -1781,8 +1781,8 @@ fn applyNukeBonus(
     creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     origin: state_mod.Vec2,
-    dt: f64,
-    world_size: f64,
+    dt: f32,
+    world_size: f32,
     tick_index: usize,
 ) void {
     if (players.len == 0) return;
@@ -1797,17 +1797,17 @@ fn applyNukeBonus(
     bullet_count += 4;
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
+        const angle = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-        const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
+        const speed_scale = @as(f32, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
     }
 
     for (0..2) |_| {
-        const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
+        const angle = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
@@ -1853,11 +1853,11 @@ fn applyFinalRevengeOnDeathTransition(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     player_index: usize,
-    health_before: f64,
+    health_before: f32,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
-    dt: f64,
-    world_size: f64,
+    dt: f32,
+    world_size: f32,
     detail_preset: i32,
 ) void {
     if (player_index >= players.len) return;
@@ -2080,7 +2080,7 @@ fn applyReplayEvent(
                 applied.?,
                 state,
                 creatures,
-                dt_frame,
+                narrowF32(dt_frame),
             );
             perk_pick_count.* += 1;
         },
@@ -2118,7 +2118,7 @@ fn applyReplayEvent(
                 perk_id,
                 state,
                 creatures,
-                dt_frame,
+                narrowF32(dt_frame),
             );
             if (capture_perk_apply.outside_before) {
                 if (capture_perk_apply.pending_after) |pending_after| {
@@ -2179,7 +2179,7 @@ fn applyReplayPerkCreatureEffects(
     perk_id: PerkId,
     state: *state_mod.GameplayState,
     creatures: *creatures_mod.CreaturePool,
-    dt_frame: f64,
+    dt_frame: f32,
 ) void {
     switch (perk_id) {
         PerkId.breathing_room => {
@@ -2436,7 +2436,7 @@ fn applyCaptureStateReset(
     projectiles: *projectiles_mod.ProjectilePool,
     secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
     bonuses: *bonus_runtime.BonusPool,
-    world_size: f64,
+    world_size: f32,
     quest_start_weapon_id: i32,
     fx_toggle: i32,
     capture_spawn_events_authoritative: bool,
@@ -2480,7 +2480,7 @@ fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    player_runtime.resetPlayers(players, narrowF32(world_size), null);
+    player_runtime.resetPlayers(players, world_size, null);
     for (players) |*player| {
         const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id);
         player_runtime.weaponAssignPlayer(player, quest_weapon);
@@ -2508,10 +2508,10 @@ fn applyJinxedEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
-    dt: f64,
+    dt: f32,
 ) void {
     if (state.jinxed_timer >= 0.0) {
-        state.jinxed_timer = narrowF32(state.jinxed_timer - narrowF32(dt));
+        state.jinxed_timer = narrowF32(state.jinxed_timer - dt);
     }
     if (state.jinxed_timer >= 0.0) return;
     if (players.len == 0) return;
@@ -2522,7 +2522,7 @@ fn applyJinxedEffects(
         players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
     }
 
-    const timer_roll = @as(f64, @floatFromInt(state.rng.rand() % 0x14));
+    const timer_roll = @as(f32, @floatFromInt(state.rng.rand() % 0x14));
     state.jinxed_timer = narrowF32(narrowF32(timer_roll * 0.1) + state.jinxed_timer + 2.0);
 
     if (state.bonuses.freeze > 0.0) return;
@@ -2540,7 +2540,7 @@ fn applyJinxedEffects(
 
     creatures.entries[idx].hp = -1.0;
     creatures.entries[idx].lifecycle_stage = narrowF32(
-        creatures.entries[idx].lifecycle_stage - narrowF32(dt * 20.0),
+        creatures.entries[idx].lifecycle_stage - dt * 20.0,
     );
     awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
 }
@@ -2568,7 +2568,7 @@ fn selectJinxedAccidentTarget(
 fn awardExperienceFromReward(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    reward_value: f64,
+    reward_value: f32,
 ) void {
     const first_gain = awardExperienceOnceFromReward(player, reward_value);
     if (first_gain <= 0) return;
@@ -2579,14 +2579,13 @@ fn awardExperienceFromReward(
 
 fn awardExperienceOnceFromReward(
     player: *state_mod.PlayerState,
-    reward_value: f64,
+    reward_value: f32,
 ) i32 {
-    const reward_f32 = narrowF32(reward_value);
-    if (reward_f32 <= 0.0) return 0;
+    if (reward_value <= 0.0) return 0;
 
     const before = player.experience;
     const before_f32 = narrowF32(@as(f32, @floatFromInt(before)));
-    const total_f32 = narrowF32(before_f32 + reward_f32);
+    const total_f32 = narrowF32(before_f32 + reward_value);
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
     return after - before;
@@ -2880,7 +2879,7 @@ fn updatePlayerFromReplayInput(
 
 fn finalizePlayerPostUpdate(
     player: *state_mod.PlayerState,
-    world_size: f64,
+    world_size: f32,
 ) void {
     while (player.move_phase > 14.0) {
         player.move_phase = narrowF32(player.move_phase - 14.0);
@@ -3044,35 +3043,32 @@ fn normalizeHeading(value: f64) f64 {
 
 fn applyPerkWorldDtSteps(
     players: []const state_mod.PlayerState,
-    dt: f64,
-) f64 {
-    const dt_f32 = narrowF32(dt);
-    if (!(dt_f32 > 0.0)) return dt_f32;
-    if (players.len == 0) return dt_f32;
-    if (!perkActive(players[0], PerkId.reflex_boosted)) return dt_f32;
-    return narrowF32(dt_f32 * 0.9);
+    dt: f32,
+) f32 {
+    if (!(dt > 0.0)) return dt;
+    if (players.len == 0) return dt;
+    if (!perkActive(players[0], PerkId.reflex_boosted)) return dt;
+    return narrowF32(dt * 0.9);
 }
 
 fn playerFrameDtAfterRoundtrip(
-    dt: f64,
+    dt: f32,
     time_scale_active: bool,
-    reflex_boost_timer: f64,
-) f64 {
-    const dt_f32 = narrowF32(dt);
-    if (!time_scale_active or dt_f32 <= 0.0) {
-        return dt_f32;
+    reflex_boost_timer: f32,
+) f32 {
+    if (!time_scale_active or dt <= 0.0) {
+        return dt;
     }
 
-    const reflex_f32 = narrowF32(reflex_boost_timer);
     var time_scale_factor = narrowF32(0.3);
-    if (reflex_f32 < 1.0) {
-        time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
+    if (reflex_boost_timer < 1.0) {
+        time_scale_factor = narrowF32((1.0 - reflex_boost_timer) * 0.7 + 0.3);
     }
     if (time_scale_factor <= 0.0) {
-        return dt_f32;
+        return dt;
     }
 
-    const movement_dt = narrowF32((0.6 / time_scale_factor) * dt_f32);
+    const movement_dt = narrowF32((0.6 / time_scale_factor) * dt);
     return narrowF32(time_scale_factor * movement_dt * 1.6666666);
 }
 

@@ -22,13 +22,13 @@ const weapon_drop_id_count: u32 = 0x21;
 const bonus_spawn_margin: f64 = 32.0;
 const bonus_spawn_min_distance: f64 = 32.0;
 const bonus_pickup_radius: f64 = 26.0;
-const bonus_pickup_decay_rate: f64 = 3.0;
+const bonus_pickup_decay_rate: f32 = 3.0;
 const bonus_pickup_linger: f32 = 0.5;
 const bonus_time_max: f32 = 10.0;
 const bonus_weapon_near_radius: f64 = 56.0;
 const bonus_aim_hover_radius: f64 = 24.0;
 const bonus_telekinetic_pickup_ms: f32 = 650.0;
-const reflex_timer_subtract_bias: f64 = 4e-9;
+const reflex_timer_subtract_bias: f32 = 4e-9;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
     return @intCast(@intFromEnum(weapon_id));
@@ -164,7 +164,7 @@ pub const BonusPool = struct {
         self: *BonusPool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        dt: f64,
+        dt: f32,
         pickup_bonus_ids: *[bonus_pool_size]BonusId,
         pickup_count: *usize,
     ) BonusRuntimeError!void {
@@ -175,8 +175,8 @@ pub const BonusPool = struct {
         for (&self.entries) |*entry| {
             if (isEmpty(entry.*)) continue;
 
-            const decay = narrowF32(dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0));
-            entry.time_left = narrowF32(entry.time_left - decay);
+            const decay = dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0);
+            entry.time_left -= decay;
             if (!entry.picked and state.game_mode == .tutorial) {
                 entry.time_left = 5.0;
             }
@@ -216,15 +216,15 @@ pub const BonusPool = struct {
 
 pub fn updatePrePickupTimers(
     state: *state_mod.GameplayState,
-    dt: f64,
+    dt: f32,
 ) void {
     if (!(dt > 0.0)) return;
 
     if (state.bonuses.weapon_power_up > 0.0) {
-        state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up - dt);
+        state.bonuses.weapon_power_up -= dt;
     }
     if (state.bonuses.energizer > 0.0) {
-        state.bonuses.energizer = narrowF32(state.bonuses.energizer - dt);
+        state.bonuses.energizer -= dt;
     }
     if (state.bonuses.reflex_boost > 0.0) {
         const reflex_before = state.bonuses.reflex_boost;
@@ -232,7 +232,7 @@ pub fn updatePrePickupTimers(
         if (reflex_before > 0.0 and reflex_before < 1.0) {
             subtract += reflex_timer_subtract_bias;
         }
-        state.bonuses.reflex_boost = narrowF32(reflex_before - subtract);
+        state.bonuses.reflex_boost = reflex_before - subtract;
     }
 }
 
@@ -240,7 +240,7 @@ pub fn bonusUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) BonusRuntimeError!void {
     state.debug_last_picked_bonus_id = .unused;
     state.debug_last_picked_bonus_amount = 0;
@@ -255,13 +255,13 @@ pub fn bonusUpdate(
         if (state.bonuses.double_experience <= 0.0) {
             state.bonuses.double_experience = 0.0;
         } else {
-            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience - dt);
+            state.bonuses.double_experience -= dt;
         }
 
         if (state.bonuses.freeze <= 0.0) {
             state.bonuses.freeze = 0.0;
         } else {
-            state.bonuses.freeze = narrowF32(state.bonuses.freeze - dt);
+            state.bonuses.freeze -= dt;
         }
     }
 
@@ -274,7 +274,7 @@ fn bonusTelekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
     pickup_bonus_ids: *[bonus_pool_size]BonusId,
     pickup_count: *usize,
 ) BonusRuntimeError!void {
@@ -290,7 +290,7 @@ fn bonusTelekineticUpdate(
         };
 
         player.bonus_aim_hover_index = @intCast(hovered.index);
-        player.bonus_aim_hover_timer_ms = narrowF32(player.bonus_aim_hover_timer_ms + dt_ms);
+        player.bonus_aim_hover_timer_ms += dt_ms;
 
         if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
         if (!perkActive(player.*, PerkId.telekinetic)) continue;
@@ -1070,7 +1070,7 @@ fn runTelekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) BonusRuntimeError!void {
     var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
     var pickup_count: usize = 0;

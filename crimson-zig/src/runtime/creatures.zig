@@ -1795,13 +1795,13 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
         bonus_pool: *bonus_runtime.BonusPool,
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
-        const dt_f32 = narrowF32(dt);
+        const dt_f32 = dt;
 
         if (!self.capture_spawn_events_authoritative) {
             const slot_count_snapshot = self.spawn_slot_count;
@@ -1822,7 +1822,7 @@ pub const CreaturePool = struct {
                         },
                         &state.rng,
                         state,
-                        world_size,
+                        @floatCast(world_size),
                     );
                 }
             }
@@ -1833,8 +1833,8 @@ pub const CreaturePool = struct {
         const single_player_dead_target_pos: ?state_mod.Vec2 =
             if (players.len == 1 and players[0].health <= 0.0)
                 .{
-                    .x = narrowF32(world_size * (27.0 / 64.0)),
-                    .y = narrowF32(world_size * (27.0 / 64.0)),
+                    .x = world_size * (27.0 / 64.0),
+                    .y = world_size * (27.0 / 64.0),
                 }
             else
                 null;
@@ -1863,7 +1863,7 @@ pub const CreaturePool = struct {
                     .{},
                     creature.last_hit_owner,
                     dt_f32,
-                    narrowF32(world_size),
+                    world_size,
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
@@ -1898,7 +1898,7 @@ pub const CreaturePool = struct {
                             idx,
                             creature.last_hit_owner,
                             dt_f32,
-                            narrowF32(world_size),
+                            world_size,
                         );
                         // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
@@ -1998,12 +1998,12 @@ pub const CreaturePool = struct {
                 if (reverted_x < 0.0) {
                     reverted_x = 0.0;
                 } else if (reverted_x > world_size) {
-                    reverted_x = narrowF32(world_size);
+                    reverted_x = world_size;
                 }
                 if (reverted_y < 0.0) {
                     reverted_y = 0.0;
                 } else if (reverted_y > world_size) {
-                    reverted_y = narrowF32(world_size);
+                    reverted_y = world_size;
                 }
                 creature.pos = .{
                     .x = reverted_x,
@@ -2025,7 +2025,7 @@ pub const CreaturePool = struct {
                         players,
                         bonus_pool,
                         creature.pos,
-                        world_size,
+                        @floatCast(world_size),
                         true,
                     );
                     state.bonus_spawn_guard = prev_spawn_guard;
@@ -2054,7 +2054,7 @@ pub const CreaturePool = struct {
                         .{},
                         owner_ref.OwnerRef.fromPlayer(@intCast(player.index)),
                         dt_f32,
-                        narrowF32(world_size),
+                        world_size,
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
                         tickDead(creature, dt_f32, &self.kill_count, state);
@@ -2302,11 +2302,11 @@ pub const CreaturePool = struct {
         players: []state_mod.PlayerState,
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
-        damage: f64,
+        damage: f32,
         impulse: state_mod.Vec2,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
         killed_out: ?*bool,
     ) i32 {
         if (killed_out) |k| {
@@ -2323,12 +2323,12 @@ pub const CreaturePool = struct {
         // Native nuke path applies damage to active corpse entries as well.
         if (!(creature.hp > 0.0)) {
             if (dt > 0.0) {
-                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt * 15.0));
+                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt * 15.0);
             }
             return 0;
         }
 
-        creature.hp = narrowF32(creature.hp - narrowF32(damage));
+        creature.hp = narrowF32(creature.hp - damage);
         creature.vel = .{
             .x = creature.vel.x - impulse.x,
             .y = creature.vel.y - impulse.y,
@@ -2339,7 +2339,7 @@ pub const CreaturePool = struct {
         }
 
         if (dt > 0.0) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
         } else {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
         }
@@ -2361,11 +2361,11 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            world_size,
+            @floatCast(world_size),
             true,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
         }
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
