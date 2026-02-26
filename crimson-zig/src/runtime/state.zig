@@ -1,9 +1,9 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
-const survival_math = @import("math.zig");
+const math = @import("math.zig");
 
-const survival_spawn = @import("spawn.zig");
+const spawn_mod = @import("spawn.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -65,13 +65,13 @@ pub const Vec2 = struct {
 
     pub fn fromAngle(angle: f32) Vec2 {
         return .{
-            .x = survival_math.cos(angle),
-            .y = survival_math.sin(angle),
+            .x = math.cos(angle),
+            .y = math.sin(angle),
         };
     }
 
     pub fn toAngle(self: Vec2) f32 {
-        return survival_math.atan2(self.y, self.x);
+        return math.atan2(self.y, self.x);
     }
 
     pub fn toHeading(self: Vec2) f32 {
@@ -159,7 +159,7 @@ pub const PendingCreatureProjectile = struct {
 };
 
 pub const GameplayState = struct {
-    rng: survival_spawn.Crand,
+    rng: spawn_mod.Crand,
     fx_toggle: i32 = 0,
     bonuses: BonusTimers = .{},
     plaguebearer_infection_count: i32 = 0,
@@ -224,7 +224,7 @@ pub const GameplayState = struct {
 
     pub fn init(seed: u32) GameplayState {
         return .{
-            .rng = survival_spawn.Crand.init(seed),
+            .rng = spawn_mod.Crand.init(seed),
         };
     }
 };

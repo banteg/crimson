@@ -4,16 +4,16 @@ const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
 const bonus_runtime = @import("bonuses.zig");
-const survival_creatures = @import("creatures.zig");
+const creatures_mod = @import("creatures.zig");
 const perks = @import("perks.zig");
-const survival_particles = @import("particles.zig");
-const survival_projectiles = @import("projectiles.zig");
-const survival_secondary_projectiles = @import("secondary_projectiles.zig");
-const survival_spawn = @import("spawn.zig");
+const particles_mod = @import("particles.zig");
+const projectiles_mod = @import("projectiles.zig");
+const secondary_projectiles_mod = @import("secondary_projectiles.zig");
+const spawn_mod = @import("spawn.zig");
 const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
 const state_mod = @import("state.zig");
-const survival_weapon_runtime = @import("weapons.zig");
-const survival_math = @import("math.zig");
+const weapons_runtime = @import("weapons.zig");
+const math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -66,8 +66,8 @@ pub const ReplayRunnerError = error{
     UnsupportedBonusApplyPath,
 };
 
-fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!survival_spawn.CreatureAiMode {
-    const mode: survival_spawn.CreatureAiMode = @enumFromInt(value);
+fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!spawn_mod.CreatureAiMode {
+    const mode: spawn_mod.CreatureAiMode = @enumFromInt(value);
     return switch (mode) {
         .orbit_player,
         .orbit_player_tight,
@@ -366,7 +366,7 @@ pub const ReplayScaffoldOptions = struct {
     strict_events: bool = true,
     inter_tick_rand_draws: i32 = 0,
     dt_frame_overrides: ?[]const DtFrameOverride = null,
-    quest_spawn_entries: ?[]const survival_spawn.QuestSpawnEntry = null,
+    quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
 };
 
@@ -450,8 +450,8 @@ pub fn runReplayScaffoldWithTrace(
     var pending_capture_state_reset = false;
     var quest_start_weapon_id_for_reset: i32 = @intFromEnum(game_ids.WeaponId.pistol);
     var reset_quest_spawn_entries_len: usize = 0;
-    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
+    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
+    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = &.{};
     var state = state_mod.GameplayState.init(header.seed);
     state.fx_toggle = header.fx_toggle;
     state.game_mode = game_mode;
@@ -459,11 +459,11 @@ pub fn runReplayScaffoldWithTrace(
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players_len: usize = @intCast(header.player_count);
     var players = players_storage[0..players_len];
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
-    var particles = survival_particles.ParticlePool{};
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var particles = particles_mod.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
     var bonuses = bonus_runtime.BonusPool{};
     state_mod.resetPlayers(players[0..], @floatCast(header.world_size), null);
     state.status_quest_unlock_index = header.status.quest_unlock_index;
@@ -515,7 +515,7 @@ pub fn runReplayScaffoldWithTrace(
         }
         reset_quest_spawn_entries_len = quest_spawn_entries.len;
         if (header.hardcore) {
-            survival_spawn.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
+            spawn_mod.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
         }
         if (capture_spawn_events_authoritative) {
             quest_spawn_entries = &.{};
@@ -615,7 +615,7 @@ pub fn runReplayScaffoldWithTrace(
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
         const elapsed_after_ms = elapsed_before_ms + (if (game_mode == .survival) dt_sim_ms else dt_frame_ms);
-        var freeze_corpse_at_tick_start = [_]bool{false} ** survival_creatures.max_creatures;
+        var freeze_corpse_at_tick_start = [_]bool{false} ** creatures_mod.max_creatures;
         for (creatures.entries, 0..) |creature, idx| {
             freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
         }
@@ -694,14 +694,14 @@ pub fn runReplayScaffoldWithTrace(
         }
         var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
         for (players, 0..) |*player, player_idx| {
-            const should_tick_perks = survival_weapon_runtime.preprocessPlayerForPerkTicks(
+            const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicks(
                 &state,
                 player,
                 dt_sim,
             );
             player_preprocessed_alive[player_idx] = should_tick_perks;
             if (!should_tick_perks) continue;
-            survival_weapon_runtime.applyPlayerPerkTicks(
+            weapons_runtime.applyPlayerPerkTicks(
                 &state,
                 player,
                 &projectiles,
@@ -722,7 +722,7 @@ pub fn runReplayScaffoldWithTrace(
                 &state,
                 dt_sim,
             );
-            survival_weapon_runtime.stepPlayerForTick(
+            weapons_runtime.stepPlayerForTick(
                 &state,
                 player,
                 &projectiles,
@@ -766,7 +766,7 @@ pub fn runReplayScaffoldWithTrace(
                 narrowF32(elapsed_before_ms),
             );
 
-            const stage_result = survival_spawn.advanceSurvivalSpawnStage(
+            const stage_result = spawn_mod.advanceSurvivalSpawnStage(
                 spawn_stage,
                 players[0].level,
             );
@@ -784,7 +784,7 @@ pub fn runReplayScaffoldWithTrace(
             }
             rng_after_stage_spawns = state.rng.state;
 
-            const wave_result = survival_spawn.tickSurvivalWaveSpawnsBatch(
+            const wave_result = spawn_mod.tickSurvivalWaveSpawnsBatch(
                 spawn_cooldown,
                 dt_sim_ms,
                 &state.rng,
@@ -799,7 +799,7 @@ pub fn runReplayScaffoldWithTrace(
             creatures.spawnInits(wave_result.slice());
             rng_after_wave_spawns = state.rng.state;
         } else if (game_mode == .rush) {
-            const wave_result = survival_spawn.tickRushModeSpawnsBatch(
+            const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 spawn_cooldown,
                 dt_frame_ms,
                 &state.rng,
@@ -815,7 +815,7 @@ pub fn runReplayScaffoldWithTrace(
             rng_after_wave_spawns = state.rng.state;
         } else {
             quest_creatures_none_active = creatures.activeCount() == 0;
-            const quest_spawns = survival_spawn.tickQuestModeSpawns(
+            const quest_spawns = spawn_mod.tickQuestModeSpawns(
                 quest_spawn_entries,
                 quest_spawn_timeline_ms,
                 dt_frame_ms,
@@ -838,7 +838,7 @@ pub fn runReplayScaffoldWithTrace(
                 };
             }
 
-            const spawn_table_empty_now = survival_spawn.questSpawnTableEmpty(quest_spawn_entries);
+            const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(quest_spawn_entries);
             if (quest_creatures_none_active and spawn_table_empty_now) {
                 state.bonuses.reflex_boost = 0.0;
                 state.time_scale_active = false;
@@ -852,7 +852,7 @@ pub fn runReplayScaffoldWithTrace(
                 }
             }
             if (any_alive_after) {
-                const quest_completion = survival_spawn.tickQuestCompletionTransition(
+                const quest_completion = spawn_mod.tickQuestCompletionTransition(
                     quest_completion_transition_ms,
                     dt_frame_ms,
                     quest_creatures_none_active,
@@ -1060,10 +1060,10 @@ fn buildTickTrace(
     elapsed_ms_sim: f64,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
-    creatures: *const survival_creatures.CreaturePool,
+    creatures: *const creatures_mod.CreaturePool,
     bonuses: *const bonus_runtime.BonusPool,
-    projectiles: *const survival_projectiles.ProjectilePool,
-    projectile_tick_stats: survival_projectiles.ProjectileTickStats,
+    projectiles: *const projectiles_mod.ProjectilePool,
+    projectile_tick_stats: projectiles_mod.ProjectileTickStats,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
     rng_after_projectiles: u32,
@@ -1077,23 +1077,23 @@ fn buildTickTrace(
 ) ReplayTickTrace {
     var projectile_count: usize = 0;
     var projectile_state_hash: u64 = 1469598103934665603;
-    var projectile0 = survival_projectiles.Projectile{};
+    var projectile0 = projectiles_mod.Projectile{};
     var projectile0_found = false;
     var projectile_type1_count: usize = 0;
     var projectile_type6_count: usize = 0;
-    var projectile_type6 = survival_projectiles.Projectile{};
+    var projectile_type6 = projectiles_mod.Projectile{};
     var projectile_type6_found = false;
-    var projectile_type6_b = survival_projectiles.Projectile{};
+    var projectile_type6_b = projectiles_mod.Projectile{};
     var projectile_type6_b_found = false;
     var projectile_type11_count: usize = 0;
-    var projectile_type11 = survival_projectiles.Projectile{};
+    var projectile_type11 = projectiles_mod.Projectile{};
     var projectile_type11_found = false;
-    var projectile_type11_closest = survival_projectiles.Projectile{};
+    var projectile_type11_closest = projectiles_mod.Projectile{};
     var projectile_type11_closest_found = false;
     var projectile_type11_closest_dist = std.math.inf(f64);
     const projectile1 = projectiles.entries[1];
     var projectile_type21_count: usize = 0;
-    var projectile_type21 = survival_projectiles.Projectile{};
+    var projectile_type21 = projectiles_mod.Projectile{};
     var projectile_type21_found = false;
     const projectile6 = projectiles.entries[6];
     var projectile_type45_count: usize = 0;
@@ -1541,8 +1541,8 @@ fn cameraShakeUpdate(
 fn applyPendingBonusEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     dt: f64,
     world_size: f64,
@@ -1598,7 +1598,7 @@ fn applyPendingBonusEffects(
 
 fn applyPendingCreatureProjectiles(
     state: *state_mod.GameplayState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
 ) void {
     if (state.pending_creature_projectile_count <= 0) {
         state.pending_creature_projectile_count = 0;
@@ -1627,7 +1627,7 @@ fn applyPendingCreatureProjectiles(
 
 fn applyFireblastBonus(
     state: *state_mod.GameplayState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     origin: state_mod.Vec2,
 ) void {
     const projectile_owner_id: i32 = -100;
@@ -1647,8 +1647,8 @@ fn applyFireblastBonus(
 
 fn applyShockChainBonus(
     state: *state_mod.GameplayState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
     origin: state_mod.Vec2,
 ) void {
     if (creatures.entries.len == 0) return;
@@ -1695,8 +1695,8 @@ fn projectileMetaFromRawId(raw_id: i32) f32 {
 fn applyPyrokineticEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    creatures: *survival_creatures.CreaturePool,
-    particles: *survival_particles.ParticlePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
     dt: f64,
 ) void {
     if (!(dt > 0.0)) return;
@@ -1731,7 +1731,7 @@ fn applyPyrokineticEffects(
 fn updateEvilEyesTargets(
     _: *const state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    creatures: []const survival_creatures.CreatureState,
+    creatures: []const creatures_mod.CreatureState,
 ) void {
     if (players.len == 0) return;
     for (players) |*player| {
@@ -1744,13 +1744,13 @@ fn updateEvilEyesTargets(
 }
 
 fn creatureFindInRadius(
-    creatures: []const survival_creatures.CreatureState,
+    creatures: []const creatures_mod.CreatureState,
     pos: state_mod.Vec2,
     radius: f64,
     start_index: usize,
 ) i32 {
     var idx = start_index;
-    const max_index = @min(creatures.len, survival_creatures.max_creatures);
+    const max_index = @min(creatures.len, creatures_mod.max_creatures);
     while (idx < max_index) : (idx += 1) {
         const creature = creatures[idx];
         if (!creature.active) continue;
@@ -1766,8 +1766,8 @@ fn creatureFindInRadius(
 fn applyNukeBonus(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     origin: state_mod.Vec2,
     dt: f64,
@@ -1843,7 +1843,7 @@ fn applyFinalRevengeOnDeathTransition(
     players: []state_mod.PlayerState,
     player_index: usize,
     health_before: f64,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     dt: f64,
     world_size: f64,
@@ -2009,7 +2009,7 @@ fn applyReplayEvent(
     event: replay_codec.ReplayEvent,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     dt_frame: f64,
     quest_spawn_timeline_ms: *f64,
     quest_no_creatures_timer_ms: *f64,
@@ -2171,7 +2171,7 @@ fn classifyTickEvent(
 fn applyReplayPerkCreatureEffects(
     perk_id: PerkId,
     state: *state_mod.GameplayState,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     dt_frame: f64,
 ) void {
     switch (perk_id) {
@@ -2187,7 +2187,7 @@ fn applyReplayPerkCreatureEffects(
                 if (kill_toggle and
                     creature.active and
                     creature.hp <= 500.0 and
-                    (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0)
+                    (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0)
                 {
                     creature.active = false;
                     consumeSpawnBurstRng(state, 4);
@@ -2353,11 +2353,11 @@ fn applyCaptureBootstrapEvent(
 
 fn applyCaptureCreatureSpawnEvent(
     state: *state_mod.GameplayState,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     event: replay_codec.CaptureCreatureSpawnEvent,
 ) ReplayRunnerError!void {
-    var spawned_indices = [_]bool{false} ** survival_creatures.max_creatures;
-    var active_before = [_]bool{false} ** survival_creatures.max_creatures;
+    var spawned_indices = [_]bool{false} ** creatures_mod.max_creatures;
+    var active_before = [_]bool{false} ** creatures_mod.max_creatures;
     for (creatures.entries, 0..) |entry, idx| {
         active_before[idx] = entry.active;
     }
@@ -2397,7 +2397,7 @@ fn applyCaptureCreatureSpawnEvent(
             row.has_link_index and
             row.link_index >= -1723 and
             row.link_index <= -700 and
-            (flags_i32 & @as(i32, @intCast(survival_spawn.CreatureFlags.ai7_link_timer))) != 0)
+            (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0)
         {
             _ = state.rng.rand();
         }
@@ -2424,18 +2424,18 @@ fn applyCaptureCreatureSpawnEvent(
 fn applyCaptureStateReset(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    creatures: *survival_creatures.CreaturePool,
-    particles: *survival_particles.ParticlePool,
-    projectiles: *survival_projectiles.ProjectilePool,
-    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
     bonuses: *bonus_runtime.BonusPool,
     world_size: f64,
     quest_start_weapon_id: i32,
     fx_toggle: i32,
     capture_spawn_events_authoritative: bool,
-    quest_spawn_entries_storage: []survival_spawn.QuestSpawnEntry,
+    quest_spawn_entries_storage: []spawn_mod.QuestSpawnEntry,
     reset_quest_spawn_entries_len: usize,
-    quest_spawn_entries: *[]survival_spawn.QuestSpawnEntry,
+    quest_spawn_entries: *[]spawn_mod.QuestSpawnEntry,
     quest_spawn_timeline_ms: *f64,
     quest_no_creatures_timer_ms: *f64,
     quest_completion_transition_ms: *f64,
@@ -2500,7 +2500,7 @@ fn applyCaptureStateReset(
 fn applyJinxedEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     dt: f64,
 ) void {
     if (state.jinxed_timer >= 0.0) {
@@ -2599,7 +2599,7 @@ fn consumeSpawnBurstRng(
 
 fn applyFreezePickupCorpseCleanupRng(
     state: *state_mod.GameplayState,
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     freeze_corpse_at_tick_start: []const bool,
 ) void {
     for (&creatures.entries, 0..) |*creature, idx| {
@@ -2936,8 +2936,8 @@ fn playerMoveDeltaFromHeading(
 fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
     const radians = narrowF32(heading - native_half_pi);
     return .{
-        .x = narrowF32(survival_math.cos(radians)),
-        .y = narrowF32(survival_math.sin(radians)),
+        .x = narrowF32(math.cos(radians)),
+        .y = narrowF32(math.sin(radians)),
     };
 }
 
@@ -4011,11 +4011,11 @@ test "quest scaffold is deterministic with explicit spawn entries" {
     });
     defer replay.deinit(allocator);
 
-    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+    const quest_entries = [_]spawn_mod.QuestSpawnEntry{
         .{
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = 0.0,
-            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .spawn_id = spawn_mod.SpawnId.formation_ring_alien_8_12,
             .trigger_ms = 5000,
             .count = 1,
         },
@@ -4048,11 +4048,11 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
     };
     bootstrap.reflex_boost_ms = 500;
 
-    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+    const quest_entries = [_]spawn_mod.QuestSpawnEntry{
         .{
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = 0.0,
-            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .spawn_id = spawn_mod.SpawnId.formation_ring_alien_8_12,
             .trigger_ms = 100_000,
             .count = 1,
         },
@@ -4088,11 +4088,11 @@ test "quest scaffold advances spawn timeline and fires entries" {
     });
     defer replay.deinit(allocator);
 
-    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+    const quest_entries = [_]spawn_mod.QuestSpawnEntry{
         .{
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = 0.0,
-            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .spawn_id = spawn_mod.SpawnId.formation_ring_alien_8_12,
             .trigger_ms = 200,
             .count = 1,
         },
@@ -4250,11 +4250,11 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     });
     defer replay_baseline.deinit(allocator);
 
-    const quest_entries = [_]survival_spawn.QuestSpawnEntry{
+    const quest_entries = [_]spawn_mod.QuestSpawnEntry{
         .{
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = 0.0,
-            .spawn_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .spawn_id = spawn_mod.SpawnId.formation_ring_alien_8_12,
             .trigger_ms = 5000,
             .count = 1,
         },
@@ -4382,7 +4382,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         };
     }
 
-    const empty_entries = [_]survival_spawn.QuestSpawnEntry{};
+    const empty_entries = [_]spawn_mod.QuestSpawnEntry{};
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
     _ = try runReplayScaffoldWithTrace(
@@ -4400,7 +4400,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
 
 test "capture creature spawn event applies added head overrides" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.reset();
 
     var event = replay_codec.CaptureCreatureSpawnEvent{
@@ -4421,7 +4421,7 @@ test "capture creature spawn event applies added head overrides" {
         .has_target_heading = true,
         .target_heading = 0.621416449546814,
         .has_ai_mode = true,
-        .ai_mode = @intFromEnum(survival_spawn.CreatureAiMode.follow_link),
+        .ai_mode = @intFromEnum(spawn_mod.CreatureAiMode.follow_link),
         .has_link_index = true,
         .link_index = 0,
         .has_hp = true,
@@ -4446,7 +4446,7 @@ test "capture creature spawn event applies added head overrides" {
     try std.testing.expect(creature.active);
     try std.testing.expectApproxEqAbs(@as(f64, 1.1278764009475708), creature.heading, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 0.621416449546814), creature.target_heading, 1e-6);
-    try std.testing.expectEqual(survival_spawn.CreatureAiMode.follow_link, creature.ai_mode);
+    try std.testing.expectEqual(spawn_mod.CreatureAiMode.follow_link, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 0), creature.link_index);
     try std.testing.expectApproxEqAbs(@as(f64, 123.5), creature.hp, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 9.5), creature.lifecycle_stage, 1e-6);
@@ -4460,7 +4460,7 @@ test "capture creature spawn event applies added head overrides" {
 
 test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {
     var base_state = state_mod.GameplayState.init(0x1234ABCD);
-    var base_creatures = survival_creatures.CreaturePool{};
+    var base_creatures = creatures_mod.CreaturePool{};
     base_creatures.reset();
     var base_event = replay_codec.CaptureCreatureSpawnEvent{
         .tick_index = 0,
@@ -4476,21 +4476,21 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     const rng_after_base = base_state.rng.state;
 
     var rollover_state = state_mod.GameplayState.init(0x1234ABCD);
-    var rollover_creatures = survival_creatures.CreaturePool{};
+    var rollover_creatures = creatures_mod.CreaturePool{};
     rollover_creatures.reset();
     var rollover_event = base_event;
     rollover_event.added_head_count = 1;
     rollover_event.added_head[0] = .{
         .index = 0,
         .has_flags = true,
-        .flags = @intCast(survival_spawn.CreatureFlags.ai7_link_timer),
+        .flags = @intCast(spawn_mod.CreatureFlags.ai7_link_timer),
         .has_link_index = true,
         .link_index = -975,
     };
     try applyCaptureCreatureSpawnEvent(&rollover_state, &rollover_creatures, rollover_event);
     const rng_after_rollover = rollover_state.rng.state;
 
-    var probe_rng = survival_spawn.Crand.init(rng_after_base);
+    var probe_rng = spawn_mod.Crand.init(rng_after_base);
     _ = probe_rng.rand();
     try std.testing.expectEqual(probe_rng.state, rng_after_rollover);
     try std.testing.expectEqual(@as(i32, -975), rollover_creatures.entries[0].link_index);
@@ -4498,7 +4498,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
 
 test "capture creature spawn event applies added head rows without spawn rows" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.reset();
 
     var seed_event = replay_codec.CaptureCreatureSpawnEvent{
@@ -4524,7 +4524,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
         .has_target_heading = true,
         .target_heading = 0.521416425704956,
         .has_ai_mode = true,
-        .ai_mode = @intFromEnum(survival_spawn.CreatureAiMode.orbit_player),
+        .ai_mode = @intFromEnum(spawn_mod.CreatureAiMode.orbit_player),
         .has_link_index = true,
         .link_index = 1,
         .has_orbit_radius = true,
@@ -4538,7 +4538,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
     try std.testing.expect(creature.active);
     try std.testing.expectApproxEqAbs(@as(f64, 0.28999999165534973), creature.heading, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 0.521416425704956), creature.target_heading, 1e-6);
-    try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, creature.ai_mode);
+    try std.testing.expectEqual(spawn_mod.CreatureAiMode.orbit_player, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 1), creature.link_index);
     try std.testing.expectApproxEqAbs(@as(f64, 1.25), creature.orbit_radius, 1e-6);
     try std.testing.expectEqual(@as(u32, 5), creature.flags);
@@ -4546,7 +4546,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
 
 test "capture creature spawn event hard fails on invalid ai mode enum" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.reset();
 
     var seed_event = replay_codec.CaptureCreatureSpawnEvent{
@@ -4668,25 +4668,25 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     const players = players_storage[0..1];
     state_mod.resetPlayers(players, 1024.0, null);
 
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
 
-    var particles = survival_particles.ParticlePool{};
+    var particles = particles_mod.ParticlePool{};
     particles.entries[0].active = true;
 
-    var projectiles = survival_projectiles.ProjectilePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
     projectiles.entries[0].active = true;
 
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
     secondary_projectiles.entries[0].active = true;
 
     var bonuses = bonus_runtime.BonusPool{};
     bonuses.entries[0].bonus_id = .weapon;
     bonuses.entries[0].amount = 12;
 
-    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
+    var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
+    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = &.{};
     var quest_spawn_timeline_ms: f64 = 100.0;
     var quest_no_creatures_timer_ms: f64 = 50.0;
     var quest_completion_transition_ms: f64 = 42.0;
@@ -4723,8 +4723,8 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
 test "shock chain bonus no-ops when no alive target exists" {
     var state = state_mod.GameplayState.init(0x1234);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = 0.0;
 
@@ -4766,7 +4766,7 @@ test "quest scaffold rejects oversized quest spawn override table" {
     defer replay.deinit(allocator);
 
     const oversized = try allocator.alloc(
-        survival_spawn.QuestSpawnEntry,
+        spawn_mod.QuestSpawnEntry,
         max_test_quest_spawn_entries + 1,
     );
     defer allocator.free(oversized);
@@ -4922,7 +4922,7 @@ test "evil eyes targeting defaults to alive player slot" {
     };
     players[1].perk_counts.set(PerkId.evil_eyes, 1);
 
-    var creatures = [_]survival_creatures.CreatureState{
+    var creatures = [_]creatures_mod.CreatureState{
         .{
             .active = true,
             .pos = .{ .x = 100.0, .y = 200.0 },
@@ -4956,7 +4956,7 @@ test "evil eyes targeting assigns each alive owner" {
     players[0].perk_counts.set(PerkId.evil_eyes, 1);
     players[1].perk_counts.set(PerkId.evil_eyes, 1);
 
-    var creatures = [_]survival_creatures.CreatureState{
+    var creatures = [_]creatures_mod.CreatureState{
         .{
             .active = true,
             .pos = .{ .x = 100.0, .y = 200.0 },
@@ -4978,7 +4978,7 @@ test "evil eyes targeting assigns each alive owner" {
     try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
 }
 
-fn activeParticleCount(particles: *const survival_particles.ParticlePool) usize {
+fn activeParticleCount(particles: *const particles_mod.ParticlePool) usize {
     var count: usize = 0;
     for (particles.entries) |entry| {
         if (entry.active) count += 1;
@@ -4998,7 +4998,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
     };
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -5008,7 +5008,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
         .hp = 100.0,
     };
 
-    var particles = survival_particles.ParticlePool{};
+    var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -5032,7 +5032,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
     };
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -5042,7 +5042,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
         .hp = 100.0,
     };
 
-    var particles = survival_particles.ParticlePool{};
+    var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(
         &state,
@@ -5079,7 +5079,7 @@ test "pyrokinetic defaults to first alive player slot" {
     };
     players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -5088,7 +5088,7 @@ test "pyrokinetic defaults to first alive player slot" {
         .size = 50.0,
         .hp = 100.0,
     };
-    var particles = survival_particles.ParticlePool{};
+    var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -5114,7 +5114,7 @@ test "pyrokinetic targets all alive owners in default mode" {
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
     players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -5131,7 +5131,7 @@ test "pyrokinetic targets all alive owners in default mode" {
         .size = 50.0,
         .hp = 100.0,
     };
-    var particles = survival_particles.ParticlePool{};
+    var particles = particles_mod.ParticlePool{};
 
     applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -5240,7 +5240,7 @@ test "alternate weapon slows movement by 20 percent" {
 
 test "fire cough projectile uses pre-move player position for muzzle origin" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5251,7 +5251,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
     player.perk_counts.set(PerkId.fire_caugh, 1);
 
     const before_pos = player.pos;
-    survival_weapon_runtime.applyPlayerPerkTicks(
+    weapons_runtime.applyPlayerPerkTicks(
         &state,
         &player,
         &projectiles,
@@ -5277,8 +5277,8 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
 
     const muzzle_dir = blk: {
         const dir = directionFromHeadingNative(0.0);
-        const cos_theta = survival_math.cos(-0.150915);
-        const sin_theta = survival_math.sin(-0.150915);
+        const cos_theta = math.cos(-0.150915);
+        const sin_theta = math.sin(-0.150915);
         break :blk state_mod.Vec2{
             .x = dir.x * cos_theta - dir.y * sin_theta,
             .y = dir.x * sin_theta + dir.y * cos_theta,
@@ -5294,8 +5294,8 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
@@ -5331,8 +5331,8 @@ test "pending fireblast does not convert into fire bullets while guard is active
             .fire_bullets_timer = 1.0,
         },
     };
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
@@ -5365,8 +5365,8 @@ test "pending nuke damage is limited to radius" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
@@ -5422,8 +5422,8 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     players[0].perk_counts.set(PerkId.poison_bullets, 1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
@@ -5432,7 +5432,7 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
         .move_speed = 0.0,
         .health = 2000.0,
@@ -5455,7 +5455,7 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         1,
     );
 
-    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+    try std.testing.expect((creatures.entries[0].flags & spawn_mod.CreatureFlags.self_damage_tick) == 0);
 }
 
 test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
@@ -5463,8 +5463,8 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_nuke_origins[0] = players[0].pos;
@@ -5504,7 +5504,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
 
 test "pending creature projectile queue materializes hostile shots before projectile step" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
 
     state.pending_creature_projectile_count = 1;
     state.pending_creature_projectiles[0] = .{
@@ -5528,7 +5528,7 @@ test "pending creature projectile queue materializes hostile shots before projec
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
     var state = state_mod.GameplayState.init(1);
     const before_rng = state.rng.state;
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
 
     for (0..8) |idx| {
         creatures.entries[idx].active = true;
@@ -5539,7 +5539,7 @@ test "lifeline 50-50 replay perk effect deactivates every other eligible creatur
         };
         creatures.entries[idx].flags = 0;
     }
-    creatures.entries[3].flags = survival_spawn.CreatureFlags.anim_ping_pong;
+    creatures.entries[3].flags = spawn_mod.CreatureFlags.anim_ping_pong;
     creatures.entries[5].hp = 600.0;
 
     applyReplayPerkCreatureEffects(
@@ -5565,7 +5565,7 @@ fn findSeedForRandModSequence(
 
     var seed: u32 = 0;
     while (seed < max_seed) : (seed += 1) {
-        var rng = survival_spawn.Crand.init(seed);
+        var rng = spawn_mod.Crand.init(seed);
         var matches = true;
         for (moduli, targets) |modulus, target| {
             if (modulus == 0) return null;
@@ -5598,7 +5598,7 @@ test "jinxed kills creature and awards base reward" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
     creatures.entries[2].lifecycle_stage = 16.0;
@@ -5631,7 +5631,7 @@ test "jinxed reward uses float32 sum before truncation" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
     creatures.entries[2].lifecycle_stage = 16.0;
@@ -5666,7 +5666,7 @@ test "jinxed accident can target another alive player" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
 
@@ -5688,7 +5688,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
 
@@ -5716,7 +5716,7 @@ test "jinxed pool uses full 384-slot upper bound" {
         },
     };
     default_players[0].perk_counts.set(PerkId.jinxed, 1);
-    var default_creatures = survival_creatures.CreaturePool{};
+    var default_creatures = creatures_mod.CreaturePool{};
     default_creatures.entries[0x17F].active = true;
     default_creatures.entries[0x17F].hp = 100.0;
     default_creatures.entries[0x17F].lifecycle_stage = 16.0;
@@ -5752,7 +5752,7 @@ test "final revenge explosion applies radial damage on death transition" {
         },
     };
     players[0].perk_counts.set(PerkId.final_revenge, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
@@ -5795,7 +5795,7 @@ test "final revenge aoe includes active non-positive hp entries" {
         },
     };
     players[0].perk_counts.set(PerkId.final_revenge, 1);
-    var creatures = survival_creatures.CreaturePool{};
+    var creatures = creatures_mod.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{

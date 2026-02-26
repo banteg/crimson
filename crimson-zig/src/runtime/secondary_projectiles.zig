@@ -1,7 +1,7 @@
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
-const survival_creatures = @import("creatures.zig");
+const creatures_mod = @import("creatures.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
 
@@ -49,7 +49,7 @@ pub const SecondaryProjectilePool = struct {
         owner_id: i32,
         time_to_live: f64,
         target_hint: ?state_mod.Vec2,
-        creatures: ?*const survival_creatures.CreaturePool,
+        creatures: ?*const creatures_mod.CreaturePool,
     ) usize {
         var index: usize = self.entries.len - 1;
         for (self.entries, 0..) |entry, idx| {
@@ -113,7 +113,7 @@ pub const SecondaryProjectilePool = struct {
         self: *SecondaryProjectilePool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        creatures: *survival_creatures.CreaturePool,
+        creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
         dt: f64,
         world_size: f64,
@@ -138,8 +138,8 @@ pub const SecondaryProjectilePool = struct {
                 const radius = narrowF32(scale * t * 80.0);
                 const radius_sq = narrowF32(radius * radius);
                 const damage = narrowF32(dt_f32 * scale * 700.0);
-                var collidable_snapshot = [_]bool{false} ** survival_creatures.max_creatures;
-                var candidate_snapshot = [_]bool{false} ** survival_creatures.max_creatures;
+                var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
+                var candidate_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
                 var max_find_margin: f64 = 0.0;
                 for (creatures.entries, 0..) |creature, idx| {
                     collidable_snapshot[idx] = creature.active and
@@ -412,7 +412,7 @@ fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
 }
 
 fn creatureFindNearestAlive(
-    creatures: *const survival_creatures.CreaturePool,
+    creatures: *const creatures_mod.CreaturePool,
     origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;

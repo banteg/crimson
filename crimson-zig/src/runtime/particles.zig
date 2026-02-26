@@ -2,7 +2,7 @@ const std = @import("std");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
-const survival_creatures = @import("creatures.zig");
+const creatures_mod = @import("creatures.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
 
@@ -108,7 +108,7 @@ pub const ParticlePool = struct {
         self: *ParticlePool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        creatures: *survival_creatures.CreaturePool,
+        creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
         dt: f64,
         world_size: f64,
@@ -273,7 +273,7 @@ pub const ParticlePool = struct {
 };
 
 fn creatureFindInRadius(
-    creatures: *survival_creatures.CreaturePool,
+    creatures: *creatures_mod.CreaturePool,
     pos: state_mod.Vec2,
     radius: f32,
 ) ?usize {

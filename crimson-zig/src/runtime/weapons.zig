@@ -2,14 +2,14 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const survival_creatures = @import("creatures.zig");
-const survival_particles = @import("particles.zig");
+const creatures_mod = @import("creatures.zig");
+const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
-const survival_projectiles = @import("projectiles.zig");
-const survival_secondary_projectiles = @import("secondary_projectiles.zig");
+const projectiles_mod = @import("projectiles.zig");
+const secondary_projectiles_mod = @import("secondary_projectiles.zig");
 const state_mod = @import("state.zig");
-const survival_spawn = @import("spawn.zig");
-const survival_math = @import("math.zig");
+const spawn_mod = @import("spawn.zig");
+const math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 
@@ -70,10 +70,10 @@ pub fn preprocessPlayerForPerkTicks(
 pub fn stepPlayerForTick(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
-    particles: *survival_particles.ParticlePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
     input_flags: TickInputFlags,
     dt: f64,
 ) WeaponRuntimeError!void {
@@ -226,10 +226,10 @@ pub fn stepPlayerForTick(
 pub fn tryFireWeapon(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
-    particles: *survival_particles.ParticlePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
 ) WeaponRuntimeError!bool {
     return tryFireWeaponWithForce(
         state,
@@ -245,10 +245,10 @@ pub fn tryFireWeapon(
 fn tryFireWeaponWithForce(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
-    secondary_projectiles: *survival_secondary_projectiles.SecondaryProjectilePool,
-    creatures: *survival_creatures.CreaturePool,
-    particles: *survival_particles.ParticlePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
+    creatures: *creatures_mod.CreaturePool,
+    particles: *particles_mod.ParticlePool,
     force_pre_swap_fire_gate: bool,
 ) WeaponRuntimeError!bool {
     if (player.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
@@ -269,7 +269,7 @@ fn tryFireWeaponWithForce(
                 @as(f64, 0.15)
             else
                 @as(f64, 1.0);
-            survival_creatures.applyPlayerContactDamage(
+            creatures_mod.applyPlayerContactDamage(
                 state,
                 player,
                 health_cost,
@@ -437,7 +437,7 @@ fn tryFireWeaponWithForce(
                 1.0,
                 -100,
             );
-            particles.entries[particle_id].style_id = survival_particles.ParticleStyleId.blow_torch;
+            particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.blow_torch;
         },
         .hr_flamer => {
             const particle_id = particles.spawnParticle(
@@ -447,7 +447,7 @@ fn tryFireWeaponWithForce(
                 1.0,
                 -100,
             );
-            particles.entries[particle_id].style_id = survival_particles.ParticleStyleId.hr_flamer;
+            particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.hr_flamer;
         },
         .bubblegun => {
             _ = particles.spawnParticleSlow(
@@ -461,7 +461,7 @@ fn tryFireWeaponWithForce(
             _ = secondary_projectiles.spawn(
                 muzzle,
                 shot_angle,
-                survival_secondary_projectiles.SecondaryProjectileTypeId.rocket,
+                secondary_projectiles_mod.SecondaryProjectileTypeId.rocket,
                 secondary_owner_id,
                 2.0,
                 null,
@@ -472,7 +472,7 @@ fn tryFireWeaponWithForce(
             _ = secondary_projectiles.spawn(
                 muzzle,
                 shot_angle,
-                survival_secondary_projectiles.SecondaryProjectileTypeId.homing_rocket,
+                secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
                 secondary_owner_id,
                 2.0,
                 player.aim,
@@ -491,7 +491,7 @@ fn tryFireWeaponWithForce(
                 _ = secondary_projectiles.spawn(
                     muzzle,
                     angle,
-                    survival_secondary_projectiles.SecondaryProjectileTypeId.homing_rocket,
+                    secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
                     secondary_owner_id,
                     2.0,
                     player.aim,
@@ -504,7 +504,7 @@ fn tryFireWeaponWithForce(
             _ = secondary_projectiles.spawn(
                 muzzle,
                 shot_angle,
-                survival_secondary_projectiles.SecondaryProjectileTypeId.rocket_minigun,
+                secondary_projectiles_mod.SecondaryProjectileTypeId.rocket_minigun,
                 secondary_owner_id,
                 2.0,
                 null,
@@ -581,7 +581,7 @@ fn tryFireWeaponWithForce(
 pub fn applyPlayerPerkTicks(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     dt: f64,
 ) void {
     tickManBomb(state, player, projectiles, dt);
@@ -593,7 +593,7 @@ pub fn applyPlayerPerkTicks(
 fn tickManBomb(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     dt: f64,
 ) void {
     if (!perkActive(player.*, PerkId.man_bomb)) {
@@ -641,7 +641,7 @@ fn tickLivingFortress(
 fn tickFireCaugh(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     dt: f64,
 ) void {
     if (!perkActive(player.*, PerkId.fire_caugh)) {
@@ -692,7 +692,7 @@ fn tickFireCaugh(
 fn tickHotTempered(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     dt: f64,
 ) void {
     if (!perkActive(player.*, PerkId.hot_tempered)) {
@@ -728,7 +728,7 @@ fn tickHotTempered(
 fn spawnPerkProjectile(
     state: *state_mod.GameplayState,
     player: *const state_mod.PlayerState,
-    projectiles: *survival_projectiles.ProjectilePool,
+    projectiles: *projectiles_mod.ProjectilePool,
     pos: state_mod.Vec2,
     angle: f64,
     type_id: i32,
@@ -860,15 +860,15 @@ fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
 fn directionFromHeading(heading: f64) state_mod.Vec2 {
     const radians = narrowF32(heading - std.math.pi / 2.0);
     return .{
-        .x = narrowF32(survival_math.cos(radians)),
-        .y = narrowF32(survival_math.sin(radians)),
+        .x = narrowF32(math.cos(radians)),
+        .y = narrowF32(math.sin(radians)),
     };
 }
 
 fn rotateVec(vec: state_mod.Vec2, theta: f64) state_mod.Vec2 {
     const theta_f = narrowF32(theta);
-    const cos_theta = narrowF32(survival_math.cos(theta_f));
-    const sin_theta = narrowF32(survival_math.sin(theta_f));
+    const cos_theta = narrowF32(math.cos(theta_f));
+    const sin_theta = narrowF32(math.sin(theta_f));
     return .{
         .x = narrowF32(vec.x * cos_theta - vec.y * sin_theta),
         .y = narrowF32(vec.x * sin_theta + vec.y * cos_theta),
@@ -883,7 +883,7 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
-fn activeProjectileCount(projectiles: *const survival_projectiles.ProjectilePool) usize {
+fn activeProjectileCount(projectiles: *const projectiles_mod.ProjectilePool) usize {
     var count: usize = 0;
     for (projectiles.entries) |entry| {
         if (entry.active) count += 1;
@@ -892,7 +892,7 @@ fn activeProjectileCount(projectiles: *const survival_projectiles.ProjectilePool
 }
 
 fn activeProjectileTypeCount(
-    projectiles: *const survival_projectiles.ProjectilePool,
+    projectiles: *const projectiles_mod.ProjectilePool,
     type_id: i32,
 ) usize {
     var count: usize = 0;
@@ -903,7 +903,7 @@ fn activeProjectileTypeCount(
 }
 
 fn activeSecondaryProjectileCount(
-    secondary_projectiles: *const survival_secondary_projectiles.SecondaryProjectilePool,
+    secondary_projectiles: *const secondary_projectiles_mod.SecondaryProjectilePool,
 ) usize {
     var count: usize = 0;
     for (secondary_projectiles.entries) |entry| {
@@ -919,7 +919,7 @@ fn findSeedForNthRandValue(
 ) ?u32 {
     for (0..search_limit) |seed_usize| {
         const seed: u32 = @intCast(seed_usize);
-        var rng = survival_spawn.Crand.init(seed);
+        var rng = spawn_mod.Crand.init(seed);
         var value: u32 = 0;
         for (0..draw_index) |_| {
             value = rng.rand();
@@ -931,10 +931,10 @@ fn findSeedForNthRandValue(
 
 test "weapon usage tracks most used weapon" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -957,10 +957,10 @@ test "weapon usage tracks most used weapon" {
 
 test "weapon runtime starts reload when ammo is depleted" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1003,10 +1003,10 @@ test "weapon runtime starts reload when ammo is depleted" {
 
 test "manual reload starts even when clip is full" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1031,10 +1031,10 @@ test "manual reload starts even when clip is full" {
 
 test "manual reload requires single player mode" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1059,10 +1059,10 @@ test "manual reload requires single player mode" {
 
 test "anxious loader reduces reload timer on fire press" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
 
     var base_player = state_mod.PlayerState{
         .index = 0,
@@ -1109,10 +1109,10 @@ test "anxious loader reduces reload timer on fire press" {
 
 test "angry reloader spawns plasma ring at half reload" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1149,10 +1149,10 @@ test "angry reloader spawns plasma ring at half reload" {
 
 test "angry reloader does not trigger once reload is below half" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1180,7 +1180,7 @@ test "angry reloader does not trigger once reload is below half" {
 
 test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1203,7 +1203,7 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
 
 test "hot tempered spawns alternating plasma projectiles when charged" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1224,10 +1224,10 @@ test "hot tempered spawns alternating plasma projectiles when charged" {
 
 test "stationary reloader triples reload speed" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
 
     var base_player = state_mod.PlayerState{
         .index = 0,
@@ -1274,10 +1274,10 @@ test "stationary reloader triples reload speed" {
 
 test "alternate weapon reload press swaps and adds cooldown" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 512.0, .y = 512.0 },
@@ -1313,10 +1313,10 @@ test "alternate weapon reload press swaps and adds cooldown" {
 
 test "alternate weapon held reload uses cooldown gate" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1371,10 +1371,10 @@ test "alternate weapon held reload uses cooldown gate" {
 
 test "alternate weapon release resets cooldown gate" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1425,10 +1425,10 @@ test "alternate weapon release resets cooldown gate" {
 
 test "alternate weapon multiplayer hold is not cleared by other player" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player0 = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1478,10 +1478,10 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
 
 test "alternate weapon swap preserves same-tick fire gate" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 512.0, .y = 512.0 },
@@ -1512,10 +1512,10 @@ test "alternate weapon swap preserves same-tick fire gate" {
 
 test "alternate weapon swap allows same-tick fire with swapped reload timer" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 512.0, .y = 512.0 },
@@ -1555,10 +1555,10 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
 
 test "multi plasma and mini rocket use special shot counts" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1577,10 +1577,10 @@ test "multi plasma and mini rocket use special shot counts" {
 
 test "multi plasma fires five projectiles with fixed spread profile" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1621,10 +1621,10 @@ test "plasma shotgun uses masked jitter and random speed scale" {
     const seed = findSeedForNthRandValue(4, 255, 200_000) orelse unreachable;
 
     var state = state_mod.GameplayState.init(seed);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1645,7 +1645,7 @@ test "plasma shotgun uses masked jitter and random speed scale" {
     try expectFloatClose(expected_angle_masked, projectiles.entries[0].angle);
     try std.testing.expect(@abs(projectiles.entries[0].angle - expected_angle_modulo) > 1e-4);
 
-    var rng = survival_spawn.Crand.init(seed);
+    var rng = spawn_mod.Crand.init(seed);
     _ = rng.rand();
     _ = rng.rand();
     _ = rng.rand();
@@ -1661,10 +1661,10 @@ test "plasma shotgun uses masked jitter and random speed scale" {
 
 test "plasma shotgun consumes one ammo per shot" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1716,10 +1716,10 @@ test "shotgun family fires expected pellet counts and formulas" {
 
     for (cases) |case| {
         var state = state_mod.GameplayState.init(0);
-        var projectiles = survival_projectiles.ProjectilePool{};
-        var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-        var creatures = survival_creatures.CreaturePool{};
-        var particles = survival_particles.ParticlePool{};
+        var projectiles = projectiles_mod.ProjectilePool{};
+        var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+        var creatures = creatures_mod.CreaturePool{};
+        var particles = particles_mod.ParticlePool{};
         var player = state_mod.PlayerState{
             .index = 0,
             .pos = .{},
@@ -1733,7 +1733,7 @@ test "shotgun family fires expected pellet counts and formulas" {
         try std.testing.expectEqual(case.expected_count, activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@as(i32, @intCast(case.expected_count)), state.weapon_shots_fired[0][@intCast(case.weapon_id)]);
 
-        var rng = survival_spawn.Crand.init(0);
+        var rng = spawn_mod.Crand.init(0);
         if ((state_mod.weapon_stats.get(weaponId(case.weapon_id)).flags & 0x1) != 0) {
             _ = rng.rand();
             _ = rng.rand();
@@ -1771,10 +1771,10 @@ test "shotgun family fires expected pellet counts and formulas" {
 
 test "fire bullets on shotgun spawns pellet count projectiles and keeps ammo" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1802,10 +1802,10 @@ test "fire bullets overrides rocket family into primary projectile pool" {
     const rocket_weapon_ids = [_]i32{ 12, 13, 17, 18 };
     for (rocket_weapon_ids) |weapon_id| {
         var state = state_mod.GameplayState.init(1);
-        var projectiles = survival_projectiles.ProjectilePool{};
-        var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-        var creatures = survival_creatures.CreaturePool{};
-        var particles = survival_particles.ParticlePool{};
+        var projectiles = projectiles_mod.ProjectilePool{};
+        var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+        var creatures = creatures_mod.CreaturePool{};
+        var particles = particles_mod.ParticlePool{};
         var player = state_mod.PlayerState{
             .index = 0,
             .pos = .{},
@@ -1831,10 +1831,10 @@ test "fire bullets overrides rocket family into primary projectile pool" {
 
 test "fire bullets can fire at zero ammo and then trigger reload" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1858,10 +1858,10 @@ test "fire bullets can fire at zero ammo and then trigger reload" {
 
 test "negative ammo still fires then enters reload for non fire bullets" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1888,10 +1888,10 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
         .index = 0,
         .pos = .{},
     };
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(projectiles.entries[0].active);
@@ -1899,10 +1899,10 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
 
 test "fastshot scales shot cooldown" {
     var base_state = state_mod.GameplayState.init(1);
-    var base_projectiles = survival_projectiles.ProjectilePool{};
-    var base_secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var base_creatures = survival_creatures.CreaturePool{};
-    var base_particles = survival_particles.ParticlePool{};
+    var base_projectiles = projectiles_mod.ProjectilePool{};
+    var base_secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var base_creatures = creatures_mod.CreaturePool{};
+    var base_particles = particles_mod.ParticlePool{};
     var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1921,10 +1921,10 @@ test "fastshot scales shot cooldown" {
     const base_cooldown = base_player.shot_cooldown;
 
     var perk_state = state_mod.GameplayState.init(1);
-    var perk_projectiles = survival_projectiles.ProjectilePool{};
-    var perk_secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var perk_creatures = survival_creatures.CreaturePool{};
-    var perk_particles = survival_particles.ParticlePool{};
+    var perk_projectiles = projectiles_mod.ProjectilePool{};
+    var perk_secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var perk_creatures = creatures_mod.CreaturePool{};
+    var perk_particles = particles_mod.ParticlePool{};
     var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -1947,10 +1947,10 @@ test "fastshot scales shot cooldown" {
 
 test "sharpshooter forces spread heat and slows firing" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
@@ -1990,10 +1990,10 @@ test "sharpshooter forces spread heat and slows firing" {
 
 test "regression bullets fires during reload and costs experience" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -2022,10 +2022,10 @@ test "regression bullets fires during reload and costs experience" {
 
 test "regression bullets blocks fire when experience is zero" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -2051,10 +2051,10 @@ test "regression bullets blocks fire when experience is zero" {
 
 test "regression bullets fire ammo class drains reduced xp and spends fractional ammo" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -2083,10 +2083,10 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
 
 test "ammunition within fires during reload and costs health" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -2117,10 +2117,10 @@ test "ammunition within fires during reload and costs health" {
 
 test "ammunition within blocks fire when experience is zero" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
@@ -2148,10 +2148,10 @@ test "ammunition within blocks fire when experience is zero" {
 
 test "ammunition within fire ammo class costs less health and spends fractional ammo" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = survival_projectiles.ProjectilePool{};
-    var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var creatures = survival_creatures.CreaturePool{};
-    var particles = survival_particles.ParticlePool{};
+    var projectiles = projectiles_mod.ProjectilePool{};
+    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var creatures = creatures_mod.CreaturePool{};
+    var particles = particles_mod.ParticlePool{};
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
