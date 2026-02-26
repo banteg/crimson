@@ -141,7 +141,7 @@ pub const SecondaryProjectilePool = struct {
                 const damage = narrowF32(dt_f32 * scale * 700.0);
                 var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
                 var candidate_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
-                var max_find_margin: f64 = 0.0;
+                var max_find_margin: f32 = 0.0;
                 for (creatures.entries, 0..) |creature, idx| {
                     collidable_snapshot[idx] = creature.active and
                         creature_lifecycle.isCollidable(creature.lifecycle_stage);
@@ -151,7 +151,7 @@ pub const SecondaryProjectilePool = struct {
                         max_find_margin = find_margin;
                     }
                 }
-                const bucket_size: f64 = 64.0;
+                const bucket_size: f32 = 64.0;
                 const proj_cell_x: i32 = @intFromFloat(@floor(entry.pos.x / bucket_size));
                 const proj_cell_y: i32 = @intFromFloat(@floor(entry.pos.y / bucket_size));
                 const max_axis_delta = narrowF32(radius + max_find_margin + 0.001);
