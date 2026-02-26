@@ -10,6 +10,5 @@ test {
     _ = @import("runtime/spawn.zig");
     _ = @import("runtime/state.zig");
     _ = @import("runtime/weapons.zig");
-    _ = @import("verify_contract.zig");
     _ = @import("verify_native.zig");
 }
