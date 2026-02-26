@@ -354,7 +354,7 @@ pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?ProjectileTypeId {
         .bubblegun => null,
         .rainbow_gun => ProjectileTypeId.rainbow_gun,
         .fire_bullets => ProjectileTypeId.fire_bullets,
-        else => std.meta.intToEnum(ProjectileTypeId, @intFromEnum(weapon_id)) catch null,
+        else => null,
     };
 }
 
