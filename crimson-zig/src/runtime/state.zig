@@ -13,6 +13,9 @@ pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;
 pub const perk_count_size: usize = @typeInfo(PerkId).@"enum".fields.len;
 const PerkCounts = std.EnumArray(PerkId, i32);
+pub const WeaponUsageCounts = std.EnumArray(WeaponId, u32);
+pub const WeaponAvailability = std.EnumArray(WeaponId, bool);
+pub const PerkAvailability = std.EnumArray(PerkId, bool);
 
 pub const Vec2 = struct {
     x: f32 = 0.0,
@@ -177,12 +180,12 @@ pub const GameplayState = struct {
     quest_stage_minor: i32 = 0,
     status_quest_unlock_index: i32 = 0,
     status_quest_unlock_index_full: i32 = 0,
-    status_weapon_usage_counts: [weapon_count_size]u32 = [_]u32{0} ** weapon_count_size,
-    weapon_available: [weapon_count_size]bool = [_]bool{false} ** weapon_count_size,
+    status_weapon_usage_counts: WeaponUsageCounts = WeaponUsageCounts.initFill(0),
+    weapon_available: WeaponAvailability = WeaponAvailability.initFill(false),
     weapon_available_game_mode: ?GameModeId = null,
     weapon_available_unlock_index: i32 = -1,
     weapon_available_unlock_index_full: i32 = -1,
-    perk_available: [perk_count_size]bool = [_]bool{false} ** perk_count_size,
+    perk_available: PerkAvailability = PerkAvailability.initFill(false),
     perk_available_unlock_index: i32 = -1,
 
     survival_reward_weapon_guard_id: WeaponId = .pistol,

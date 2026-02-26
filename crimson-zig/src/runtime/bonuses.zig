@@ -495,26 +495,26 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
         return;
     }
 
-    state.weapon_available = [_]bool{false} ** state_mod.weapon_count_size;
-    state.weapon_available[weaponIdIndex(.pistol)] = true;
+    state.weapon_available = state_mod.WeaponAvailability.initFill(false);
+    state.weapon_available.set(.pistol, true);
 
     if (unlock_index > 0) {
         const limit: usize = @min(@as(usize, @intCast(unlock_index)), quest_unlock_weapon_by_index.len);
         for (quest_unlock_weapon_by_index[0..limit]) |weapon_id| {
-            if (weapon_id > 0 and weapon_id < state.weapon_available.len) {
-                state.weapon_available[@intCast(weapon_id)] = true;
+            if (weapon_id > 0 and weapon_id < state_mod.weapon_count_size) {
+                state.weapon_available.set(weapon_data.weaponIdFromInt(weapon_id), true);
             }
         }
     }
 
     if (game_mode == .survival) {
-        state.weapon_available[weaponIdIndex(.assault_rifle)] = true;
-        state.weapon_available[weaponIdIndex(.shotgun)] = true;
-        state.weapon_available[weaponIdIndex(.submachine_gun)] = true;
+        state.weapon_available.set(.assault_rifle, true);
+        state.weapon_available.set(.shotgun, true);
+        state.weapon_available.set(.submachine_gun, true);
     }
 
     if (!state.demo_mode_active and unlock_index_full >= 0x28) {
-        state.weapon_available[weaponIdIndex(.splitter_gun)] = true;
+        state.weapon_available.set(.splitter_gun, true);
     }
 
     state.weapon_available_game_mode = game_mode;
@@ -528,26 +528,26 @@ pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.Weapo
     for (0..1000) |_| {
         var base_rand = state.rng.rand();
         var weapon_id: i32 = @intCast(base_rand % weapon_drop_id_count + 1);
+        var weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
 
-        if (weapon_id >= 0 and weapon_id < state.status_weapon_usage_counts.len and
-            state.status_weapon_usage_counts[@intCast(weapon_id)] != 0 and
+        if (state.status_weapon_usage_counts.get(weapon_enum) != 0 and
             (state.rng.rand() & 1) == 0)
         {
             base_rand = state.rng.rand();
             weapon_id = @intCast(base_rand % weapon_drop_id_count + 1);
+            weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
         }
 
-        if (weapon_id < 0 or weapon_id >= state.weapon_available.len) continue;
-        if (!state.weapon_available[@intCast(weapon_id)]) continue;
+        if (!state.weapon_available.get(weapon_enum)) continue;
 
         if (state.game_mode == .quests and
             state.quest_stage_major == 5 and
             state.quest_stage_minor == 10 and
-            weapon_id == @intFromEnum(game_ids.WeaponId.ion_cannon))
+            weapon_enum == game_ids.WeaponId.ion_cannon)
         {
             continue;
         }
-        return @enumFromInt(weapon_id);
+        return weapon_enum;
     }
     return .pistol;
 }
@@ -833,7 +833,7 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     state.game_mode = .survival;
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 50;
-    state.status_weapon_usage_counts[29] = 10;
+    state.status_weapon_usage_counts.set(.splitter_gun, 10);
 
     var pool = BonusPool{};
     var players = [_]state_mod.PlayerState{
@@ -995,11 +995,11 @@ test "weapon refresh available includes survival defaults" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.shotgun)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.submachine_gun)]);
-    try std.testing.expect(!state.weapon_available[weaponIdIndex(.flamethrower)]);
+    try std.testing.expect(state.weapon_available.get(.pistol));
+    try std.testing.expect(state.weapon_available.get(.assault_rifle));
+    try std.testing.expect(state.weapon_available.get(.shotgun));
+    try std.testing.expect(state.weapon_available.get(.submachine_gun));
+    try std.testing.expect(!state.weapon_available.get(.flamethrower));
 }
 
 test "weapon refresh available unlocks quest weapon ids by unlock index" {
@@ -1010,9 +1010,9 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
-    try std.testing.expect(!state.weapon_available[weaponIdIndex(.shotgun)]);
+    try std.testing.expect(state.weapon_available.get(.pistol));
+    try std.testing.expect(state.weapon_available.get(.assault_rifle));
+    try std.testing.expect(!state.weapon_available.get(.shotgun));
 }
 
 test "weapon pick random available enforces unlock table in quests" {
@@ -1031,7 +1031,7 @@ test "weapon pick random available rerolls used weapons on even gate" {
     state.game_mode = .quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
-    state.status_weapon_usage_counts[weaponIdIndex(.pistol)] = 1;
+    state.status_weapon_usage_counts.set(.pistol, 1);
 
     const picked = weaponPickRandomAvailable(&state);
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, picked);

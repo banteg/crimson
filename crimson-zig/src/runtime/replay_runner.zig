@@ -473,8 +473,9 @@ pub fn runReplayScaffoldWithTrace(
     state.status_quest_unlock_index = header.status.quest_unlock_index;
     state.status_quest_unlock_index_full = header.status.quest_unlock_index_full;
     for (header.status.weapon_usage_counts, 0..) |count, idx| {
-        if (idx >= state.status_weapon_usage_counts.len) break;
-        state.status_weapon_usage_counts[idx] = count;
+        if (idx >= state_mod.weapon_count_size) break;
+        const weapon_id: game_ids.WeaponId = @enumFromInt(idx);
+        state.status_weapon_usage_counts.set(weapon_id, count);
     }
 
     var elapsed_ms_sim: f64 = 0.0;

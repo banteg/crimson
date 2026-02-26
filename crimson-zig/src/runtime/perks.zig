@@ -130,17 +130,16 @@ pub fn perksRebuildAvailable(
 ) void {
     if (state.perk_available_unlock_index == quest_unlock_index) return;
 
-    state.perk_available = [_]bool{false} ** state_mod.perk_count_size;
+    state.perk_available = state_mod.PerkAvailability.initFill(false);
 
     var perk_id: i32 = 1;
     while (perk_id <= perk_base_available_max_id) : (perk_id += 1) {
-        if (perk_id < state.perk_available.len) {
-            state.perk_available[@intCast(perk_id)] = true;
-        }
+        if (perk_id >= state_mod.perk_count_size) break;
+        state.perk_available.set(@enumFromInt(perk_id), true);
     }
 
     for (perk_always_available) |always_id| {
-        state.perk_available[perkIdIndex(always_id)] = true;
+        state.perk_available.set(always_id, true);
     }
 
     if (quest_unlock_index > 0) {
@@ -150,12 +149,12 @@ pub fn perksRebuildAvailable(
         );
         for (quest_unlock_perk_by_index[0..limit]) |maybe_perk_id| {
             if (maybe_perk_id) |perk_unlock_id| {
-                state.perk_available[perkIdIndex(perk_unlock_id)] = true;
+                state.perk_available.set(perk_unlock_id, true);
             }
         }
     }
 
-    state.perk_available[perkIdIndex(PerkId.antiperk)] = false;
+    state.perk_available.set(PerkId.antiperk, false);
     state.perk_available_unlock_index = quest_unlock_index;
 }
 
@@ -442,8 +441,7 @@ fn perkGenerateChoices(
     var offerable = [_]bool{false} ** (perk_id_max_usize + 1);
     for (all_perk_ids[1..]) |perk_id| {
         const perk_idx = perkIdIndex(perk_id);
-        if (perk_idx >= state.perk_available.len) continue;
-        if (!state.perk_available[perk_idx]) continue;
+        if (!state.perk_available.get(perk_id)) continue;
         if (perkCanOffer(state, player, perk_id, game_mode, player_count)) {
             offerable[perk_idx] = true;
         }
@@ -609,9 +607,9 @@ fn setOnlyPerksAvailable(
     unlock_index: i32,
     perk_ids: []const PerkId,
 ) void {
-    state.perk_available = [_]bool{false} ** state_mod.perk_count_size;
+    state.perk_available = state_mod.PerkAvailability.initFill(false);
     for (perk_ids) |perk_id| {
-        state.perk_available[perkIdIndex(perk_id)] = true;
+        state.perk_available.set(perk_id, true);
     }
     state.perk_available_unlock_index = unlock_index;
 }
