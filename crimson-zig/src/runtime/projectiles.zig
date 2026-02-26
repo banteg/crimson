@@ -402,7 +402,7 @@ pub const ProjectilePool = struct {
                             hit_idx.?,
                             damage_amount,
                             impulse,
-                            proj.owner.toLegacy(),
+                            proj.owner,
                             dt,
                             world_size,
                         );
@@ -417,7 +417,7 @@ pub const ProjectilePool = struct {
                             hit_idx.?,
                             remaining,
                             impulse,
-                            proj.owner.toLegacy(),
+                            proj.owner,
                             dt,
                             world_size,
                         );
@@ -543,7 +543,7 @@ fn applyIonLingerDamage(
                 idx,
                 damage,
                 .{},
-                proj.owner.toLegacy(),
+                proj.owner,
                 dt,
                 world_size,
             );

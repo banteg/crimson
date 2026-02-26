@@ -1203,7 +1203,7 @@ fn buildTickTrace(
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.contact_damage))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.lifecycle_stage))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.attack_cooldown))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner_id)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner.toLegacy())));
         creature_state_hash = hashMix(creature_state_hash, creature.flags);
     }
 
@@ -1781,7 +1781,7 @@ fn applyNukeBonus(
     if (players.len == 0) return;
     const player = &players[0];
     const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
-    const damage_owner_id: i32 = -1 - player.index;
+    const damage_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     var nuke_kill_count: i32 = 0;
     state.camera_shake_pulses = 0x14;
     state.camera_shake_timer = 0.2;
@@ -1828,7 +1828,7 @@ fn applyNukeBonus(
             idx,
             damage,
             .{},
-            damage_owner_id,
+            damage_owner,
             dt,
             world_size,
             null,
@@ -1863,7 +1863,7 @@ fn applyFinalRevengeOnDeathTransition(
     state.bonus_spawn_guard = true;
     defer state.bonus_spawn_guard = prev_spawn_guard;
 
-    const owner_id: i32 = -1 - player.index;
+    const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
         const dx = narrowF32(creature.pos.x - player.pos.x);
@@ -1880,7 +1880,7 @@ fn applyFinalRevengeOnDeathTransition(
             idx,
             damage,
             .{},
-            owner_id,
+            owner,
             dt,
             world_size,
             null,

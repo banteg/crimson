@@ -156,7 +156,7 @@ pub const ParticlePool = struct {
                             players,
                             bonuses,
                             @intCast(target_idx_i32),
-                            entry.owner.toLegacy(),
+                            entry.owner,
                             dt_f32,
                             world_size,
                         );
@@ -248,7 +248,7 @@ pub const ParticlePool = struct {
                                 target_idx,
                                 damage,
                                 .{},
-                                entry.owner.toLegacy(),
+                                entry.owner,
                                 dt_f32,
                                 world_size,
                             );
