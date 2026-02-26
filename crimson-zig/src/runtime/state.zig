@@ -594,8 +594,8 @@ pub fn timeScaleReflexBoostBonus(
 
 pub fn survivalLevelThreshold(level_in: i32) i32 {
     const level = @max(1, level_in);
-    const level_f64: f32 = @floatFromInt(level);
-    const value = 1000.0 + std.math.pow(f32, level_f64, 1.8) * 1000.0;
+    const level_f32: f32 = @floatFromInt(level);
+    const value = 1000.0 + std.math.pow(f32, level_f32, 1.8) * 1000.0;
     return @intFromFloat(value);
 }
 
