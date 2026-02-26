@@ -255,10 +255,9 @@ pub const CreaturePool = struct {
                 );
             },
             0x00 => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie),
                         .health = 8500.0,
@@ -268,17 +267,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 50.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) | @intFromEnum(survival_spawn.CreatureFlags.anim_long_strip),
-                    true,
+                    1.0,
+                    812,
+                    0.7,
+                    0x41,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.0, 812, 0.7, 0x41);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x07 => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 1000.0,
@@ -288,17 +286,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.0,
+                    100,
+                    2.2,
+                    0x1D,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.0, 100, 2.2, 0x1D);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x08 => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 1000.0,
@@ -308,17 +305,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.0,
+                    100,
+                    2.8,
+                    0x1D,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.0, 100, 2.8, 0x1D);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x09 => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 450.0,
@@ -328,17 +324,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.0,
+                    16,
+                    2.0,
+                    0x1D,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.0, 16, 2.0, 0x1D);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0A => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 1000.0,
@@ -348,17 +343,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    2.0,
+                    100,
+                    5.0,
+                    0x32,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 2.0, 100, 5.0, 0x32);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0B => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 3500.0,
@@ -368,17 +362,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    2.0,
+                    100,
+                    6.0,
+                    0x3C,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 2.0, 100, 6.0, 0x3C);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0C => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 50.0,
@@ -388,17 +381,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.5,
+                    100,
+                    2.0,
+                    0x31,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.5, 100, 2.0, 0x31);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0D => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 50.0,
@@ -408,17 +400,16 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    2.0,
+                    100,
+                    6.0,
+                    0x31,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 2.0, 100, 6.0, 0x31);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0E => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                const parent_idx = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 50.0,
@@ -428,11 +419,11 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.5,
+                    64,
+                    1.05,
+                    0x1C,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.5, 64, 1.05, 0x1C);
-                self.entries[parent_idx].link_index = slot_idx;
 
                 const angle_step = std.math.pi / 12.0;
                 var primary_child_idx: usize = parent_idx;
@@ -468,10 +459,9 @@ pub const CreaturePool = struct {
                 self.entries[primary_child_idx].heading = narrowF32(call.heading);
             },
             0x10 => {
-                const parent_idx = self.spawnFromStatsWithFlags(
+                _ = self.spawnParentWithSpawnSlot(
                     rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
+                    call,
                     .{
                         .type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien),
                         .health = 50.0,
@@ -481,11 +471,11 @@ pub const CreaturePool = struct {
                         .contact_damage = 0.0,
                     },
                     @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
-                    true,
+                    1.5,
+                    100,
+                    2.3,
+                    0x32,
                 );
-                _ = rng.rand() % 314;
-                const slot_idx = self.registerSpawnSlot(parent_idx, 1.5, 100, 2.3, 0x32);
-                self.entries[parent_idx].link_index = slot_idx;
             },
             0x0F => {
                 _ = self.spawnFromStats(
@@ -2521,6 +2511,31 @@ pub const CreaturePool = struct {
         stats: SpawnStats,
     ) usize {
         return self.spawnFromStatsWithFlags(rng, pos, heading, stats, 0, true);
+    }
+
+    fn spawnParentWithSpawnSlot(
+        self: *CreaturePool,
+        rng: *survival_spawn.Crand,
+        call: survival_spawn.SpawnTemplateCall,
+        stats: SpawnStats,
+        flags: u32,
+        timer: f64,
+        limit: i32,
+        interval: f64,
+        child_template_id: i32,
+    ) usize {
+        const parent_idx = self.spawnFromStatsWithFlags(
+            rng,
+            .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
+            call.heading,
+            stats,
+            flags,
+            true,
+        );
+        _ = rng.rand() % 314;
+        const slot_idx = self.registerSpawnSlot(parent_idx, timer, limit, interval, child_template_id);
+        self.entries[parent_idx].link_index = slot_idx;
+        return parent_idx;
     }
 
     fn spawnFromStatsWithFlags(
