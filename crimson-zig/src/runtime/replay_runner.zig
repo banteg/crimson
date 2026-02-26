@@ -16,6 +16,7 @@ const survival_weapon_runtime = @import("weapons.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
+const PerkId = survival_perks.PerkId;
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
 const native_pi: f64 = native_math.f64f32(native_math.native_pi);
@@ -46,7 +47,6 @@ const TickEventPhase = enum {
     post_menu_open,
 };
 const max_test_quest_spawn_entries: usize = 1024;
-const perk_id_jinxed: i32 = survival_perks.PerkId.jinxed;
 
 pub const ReplayRunnerError = error{
     OutOfMemory,
@@ -2455,7 +2455,7 @@ fn applyJinxedEffects(
     }
     if (state.jinxed_timer >= 0.0) return;
     if (players.len == 0) return;
-    if (!perkActive(players[0], perk_id_jinxed)) return;
+    if (!perkActive(players[0], PerkId.jinxed)) return;
 
     if ((state.rng.rand() % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
@@ -5418,7 +5418,7 @@ test "jinxed kills creature and awards base reward" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
@@ -5451,7 +5451,7 @@ test "jinxed reward uses float32 sum before truncation" {
             .experience = 139_451,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
@@ -5487,7 +5487,7 @@ test "jinxed accident can target another alive player outside preserve bugs mode
             .health = 70.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var creatures = survival_creatures.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5521,7 +5521,7 @@ test "jinxed preserve bugs keeps accident damage on player zero" {
             .health = 70.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var creatures = survival_creatures.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5543,7 +5543,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
             .health = 50.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var creatures = survival_creatures.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5572,7 +5572,7 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
             .experience = 100,
         },
     };
-    default_players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    default_players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var default_creatures = survival_creatures.CreaturePool{};
     default_creatures.entries[0x17F].active = true;
     default_creatures.entries[0x17F].hp = 100.0;
@@ -5595,7 +5595,7 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
             .experience = 100,
         },
     };
-    bug_players[0].perk_counts[@intCast(perk_id_jinxed)] = 1;
+    bug_players[0].perk_counts[@intCast(PerkId.jinxed)] = 1;
     var bug_creatures = survival_creatures.CreaturePool{};
     bug_creatures.entries[0x17F].active = true;
     bug_creatures.entries[0x17F].hp = 100.0;

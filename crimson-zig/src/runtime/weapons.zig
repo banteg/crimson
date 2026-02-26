@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const survival_creatures = @import("creatures.zig");
 const survival_particles = @import("particles.zig");
+const survival_perks = @import("perks.zig");
 const survival_projectiles = @import("projectiles.zig");
 const survival_secondary_projectiles = @import("secondary_projectiles.zig");
 const survival_state = @import("state.zig");
@@ -13,23 +14,12 @@ const survival_math = @import("math.zig");
 const asF32F64 = native_math.roundF32;
 
 const WeaponId = game_ids.WeaponId;
+const PerkId = survival_perks.PerkId;
 
 pub const WeaponRuntimeError = error{
     UnsupportedWeaponFirePath,
 };
 
-const perk_id_sharpshooter: i32 = 2;
-const perk_id_fastshot: i32 = 14;
-const perk_id_regression_bullets: i32 = 23;
-const perk_id_ammunition_within: i32 = 35;
-const perk_id_alternate_weapon: i32 = 9;
-const perk_id_anxious_loader: i32 = 18;
-const perk_id_angry_reloader: i32 = 50;
-const perk_id_hot_tempered: i32 = 31;
-const perk_id_man_bomb: i32 = 53;
-const perk_id_fire_caugh: i32 = 54;
-const perk_id_living_fortress: i32 = 55;
-const perk_id_stationary_reloader: i32 = 52;
 const reload_preload_underflow_eps: f64 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
@@ -102,11 +92,11 @@ pub fn stepPlayerForTick(
         player.shot_cooldown = 0.0;
     }
 
-    const reload_scale: f64 = if (player.reload_stationary_latch and perkActive(player.*, perk_id_stationary_reloader))
+    const reload_scale: f64 = if (player.reload_stationary_latch and perkActive(player.*, PerkId.stationary_reloader))
         3.0
     else
         1.0;
-    if (perkActive(player.*, perk_id_anxious_loader) and input_flags.fire_pressed and player.reload_timer > 0.0) {
+    if (perkActive(player.*, PerkId.anxious_loader) and input_flags.fire_pressed and player.reload_timer > 0.0) {
         const anxious_next = asF32F64(player.reload_timer - 0.05);
         player.reload_timer = anxious_next;
         if (anxious_next <= 0.0) {
@@ -127,7 +117,7 @@ pub fn stepPlayerForTick(
     }
 
     if (player.reload_timer > 0.0) {
-        if (perkActive(player.*, perk_id_angry_reloader) and
+        if (perkActive(player.*, PerkId.angry_reloader) and
             player.reload_timer_max > 0.5 and
             player.reload_timer > player.reload_timer_max * 0.5)
         {
@@ -160,7 +150,7 @@ pub fn stepPlayerForTick(
         }
     }
 
-    const has_alt_weapon_perk = perkActive(player.*, perk_id_alternate_weapon);
+    const has_alt_weapon_perk = perkActive(player.*, PerkId.alternate_weapon);
     const manual_reload_allowed =
         input_flags.reload_pressed and
         !state.demo_mode_active and
@@ -172,7 +162,7 @@ pub fn stepPlayerForTick(
         survival_state.playerStartReload(player, state);
     }
 
-    if (perkActive(player.*, perk_id_sharpshooter)) {
+    if (perkActive(player.*, PerkId.sharpshooter)) {
         player.spread_heat = 0.02;
     } else {
         player.spread_heat = @max(0.01, player.spread_heat - asF32F64(dt) * 0.4);
@@ -262,7 +252,7 @@ fn tryFireWeaponWithForce(
     if (player.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
         if (player.experience <= 0) return false;
 
-        if (perkActive(player.*, perk_id_regression_bullets)) {
+        if (perkActive(player.*, PerkId.regression_bullets)) {
             const reload_time = survival_state.weaponReloadTime(weapon_id);
             const factor: f64 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
             const drained = reload_time * factor;
@@ -270,7 +260,7 @@ fn tryFireWeaponWithForce(
             var after: i32 = @intFromFloat(before - drained);
             if (after < 0) after = 0;
             player.experience = after;
-        } else if (perkActive(player.*, perk_id_ammunition_within)) {
+        } else if (perkActive(player.*, PerkId.ammunition_within)) {
             const health_cost: f64 = if (weaponUsesFireAmmoClass(weapon_id))
                 @as(f64, 0.15)
             else
@@ -313,10 +303,10 @@ fn tryFireWeaponWithForce(
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = survival_state.weaponShotCooldown(fire_bullets_weapon_id);
     }
-    if (perkActive(player.*, perk_id_fastshot)) {
+    if (perkActive(player.*, PerkId.fastshot)) {
         shot_cooldown = asF32F64(shot_cooldown * 0.88);
     }
-    if (perkActive(player.*, perk_id_sharpshooter)) {
+    if (perkActive(player.*, PerkId.sharpshooter)) {
         shot_cooldown = asF32F64(shot_cooldown * 1.05);
     }
     player.shot_cooldown = @max(0.0, shot_cooldown);
@@ -572,7 +562,7 @@ fn tryFireWeaponWithForce(
 
     player.shot_seq += 1;
 
-    if (!perkActive(player.*, perk_id_sharpshooter)) {
+    if (!perkActive(player.*, PerkId.sharpshooter)) {
         const spread_heat_base = if (is_fire_bullets) fire_bullets_spread_heat else weapon_spread_heat;
         const spread_inc = spread_heat_base * 1.3;
         player.spread_heat = std.math.clamp(
@@ -607,7 +597,7 @@ fn tickManBomb(
     projectiles: *survival_projectiles.ProjectilePool,
     dt: f64,
 ) void {
-    if (!perkActive(player.*, perk_id_man_bomb)) {
+    if (!perkActive(player.*, PerkId.man_bomb)) {
         player.man_bomb_timer = 0.0;
         return;
     }
@@ -642,7 +632,7 @@ fn tickLivingFortress(
     player: *survival_state.PlayerState,
     dt: f64,
 ) void {
-    if (perkActive(player.*, perk_id_living_fortress)) {
+    if (perkActive(player.*, PerkId.living_fortress)) {
         player.living_fortress_timer = @min(30.0, player.living_fortress_timer + asF32F64(dt));
     } else {
         player.living_fortress_timer = 0.0;
@@ -655,7 +645,7 @@ fn tickFireCaugh(
     projectiles: *survival_projectiles.ProjectilePool,
     dt: f64,
 ) void {
-    if (!perkActive(player.*, perk_id_fire_caugh)) {
+    if (!perkActive(player.*, PerkId.fire_caugh)) {
         player.fire_cough_timer = 0.0;
         return;
     }
@@ -706,7 +696,7 @@ fn tickHotTempered(
     projectiles: *survival_projectiles.ProjectilePool,
     dt: f64,
 ) void {
-    if (!perkActive(player.*, perk_id_hot_tempered)) {
+    if (!perkActive(player.*, PerkId.hot_tempered)) {
         player.hot_tempered_timer = 0.0;
         return;
     }
@@ -1093,7 +1083,7 @@ test "anxious loader reduces reload timer on fire press" {
         .reload_timer = 1.0,
         .reload_timer_max = 1.0,
     };
-    perk_player.perk_counts[@intCast(perk_id_anxious_loader)] = 1;
+    perk_player.perk_counts[@intCast(PerkId.anxious_loader)] = 1;
 
     try stepPlayerForTick(
         &state,
@@ -1136,7 +1126,7 @@ test "angry reloader spawns plasma ring at half reload" {
         .clip_size = 10,
         .ammo = 0.0,
     };
-    player.perk_counts[@intCast(perk_id_angry_reloader)] = 1;
+    player.perk_counts[@intCast(PerkId.angry_reloader)] = 1;
 
     try stepPlayerForTick(
         &state,
@@ -1174,7 +1164,7 @@ test "angry reloader does not trigger once reload is below half" {
         .reload_timer = 0.95,
         .reload_timer_max = 2.0,
     };
-    player.perk_counts[@intCast(perk_id_angry_reloader)] = 1;
+    player.perk_counts[@intCast(PerkId.angry_reloader)] = 1;
 
     try stepPlayerForTick(
         &state,
@@ -1199,7 +1189,7 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .man_bomb_timer = 3.9,
     };
-    player.perk_counts[@intCast(perk_id_man_bomb)] = 1;
+    player.perk_counts[@intCast(PerkId.man_bomb)] = 1;
     state.bonus_spawn_guard = true;
 
     applyPlayerPerkTicks(&state, &player, &projectiles, 0.2);
@@ -1222,7 +1212,7 @@ test "hot tempered spawns alternating plasma projectiles when charged" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .hot_tempered_timer = 1.95,
     };
-    player.perk_counts[@intCast(perk_id_hot_tempered)] = 1;
+    player.perk_counts[@intCast(PerkId.hot_tempered)] = 1;
 
     applyPlayerPerkTicks(&state, &player, &projectiles, 0.1);
 
@@ -1258,7 +1248,7 @@ test "stationary reloader triples reload speed" {
         .reload_timer = 1.0,
         .reload_timer_max = 1.0,
     };
-    perk_player.perk_counts[@intCast(perk_id_stationary_reloader)] = 1;
+    perk_player.perk_counts[@intCast(PerkId.stationary_reloader)] = 1;
 
     try stepPlayerForTick(
         &state,
@@ -1296,7 +1286,7 @@ test "alternate weapon reload press swaps and adds cooldown" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1335,7 +1325,7 @@ test "alternate weapon held reload uses cooldown gate" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1393,7 +1383,7 @@ test "alternate weapon release resets cooldown gate" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1452,8 +1442,8 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player0.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
-    player1.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player0.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
+    player1.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player0, game_ids.WeaponId.assault_rifle);
     player0.alt_weapon_id = game_ids.WeaponId.pistol;
     player0.alt_clip_size = 10;
@@ -1500,7 +1490,7 @@ test "alternate weapon swap preserves same-tick fire gate" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player, weaponId(11));
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1534,7 +1524,7 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(perk_id_alternate_weapon)] = 1;
+    player.perk_counts[@intCast(PerkId.alternate_weapon)] = 1;
     survival_state.weaponAssignPlayer(&player, weaponId(29));
     player.ammo = 2.0;
     player.reload_active = false;
@@ -1948,7 +1938,7 @@ test "fastshot scales shot cooldown" {
     };
     survival_state.weaponAssignPlayer(&perk_player, game_ids.WeaponId.pistol);
     perk_player.ammo = 2.0;
-    perk_player.perk_counts[@intCast(perk_id_fastshot)] = 1;
+    perk_player.perk_counts[@intCast(PerkId.fastshot)] = 1;
     try std.testing.expect(try tryFireWeapon(
         &perk_state,
         &perk_player,
@@ -1974,7 +1964,7 @@ test "sharpshooter forces spread heat and slows firing" {
         .spread_heat = 0.48,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
-    player.perk_counts[@intCast(perk_id_sharpshooter)] = 1;
+    player.perk_counts[@intCast(PerkId.sharpshooter)] = 1;
 
     try stepPlayerForTick(
         &state,
@@ -2017,7 +2007,7 @@ test "regression bullets fires during reload and costs experience" {
         .experience = 1000,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.perk_counts[@intCast(PerkId.regression_bullets)] = 1;
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2049,7 +2039,7 @@ test "regression bullets blocks fire when experience is zero" {
         .experience = 0,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.perk_counts[@intCast(PerkId.regression_bullets)] = 1;
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2078,7 +2068,7 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
         .experience = 1000,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
-    player.perk_counts[@intCast(perk_id_regression_bullets)] = 1;
+    player.perk_counts[@intCast(PerkId.regression_bullets)] = 1;
     player.ammo = 5.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2111,7 +2101,7 @@ test "ammunition within fires during reload and costs health" {
         .experience = 1,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.perk_counts[@intCast(PerkId.ammunition_within)] = 1;
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2145,7 +2135,7 @@ test "ammunition within blocks fire when experience is zero" {
         .experience = 0,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.perk_counts[@intCast(PerkId.ammunition_within)] = 1;
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2176,7 +2166,7 @@ test "ammunition within fire ammo class costs less health and spends fractional 
         .experience = 1,
     };
     survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
-    player.perk_counts[@intCast(perk_id_ammunition_within)] = 1;
+    player.perk_counts[@intCast(PerkId.ammunition_within)] = 1;
     player.ammo = 5.0;
     player.reload_active = true;
     player.reload_timer = 0.5;

@@ -10,14 +10,11 @@ const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
+const PerkId = survival_perks.PerkId;
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
 const creature_lifecycle_stage_alive: f64 = 16.0;
-const perk_id_poison_bullets: i32 = 25;
-const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
-const perk_id_barrel_greaser: i32 = 34;
-const perk_id_ion_gun_master: i32 = survival_perks.PerkId.ion_gun_master;
 
 pub const Projectile = struct {
     active: bool = false,
@@ -134,13 +131,13 @@ pub const ProjectilePool = struct {
         var ion_gun_master_active = false;
         var ion_scale: f64 = 1.0;
         for (players) |player| {
-            if (perk_id_barrel_greaser >= 0 and perk_id_barrel_greaser < player.perk_counts.len and
-                player.perk_counts[@intCast(perk_id_barrel_greaser)] > 0)
+            if (PerkId.barrel_greaser >= 0 and PerkId.barrel_greaser < player.perk_counts.len and
+                player.perk_counts[@intCast(PerkId.barrel_greaser)] > 0)
             {
                 barrel_greaser_active = true;
             }
-            if (perk_id_ion_gun_master >= 0 and perk_id_ion_gun_master < player.perk_counts.len and
-                player.perk_counts[@intCast(perk_id_ion_gun_master)] > 0)
+            if (PerkId.ion_gun_master >= 0 and PerkId.ion_gun_master < player.perk_counts.len and
+                player.perk_counts[@intCast(PerkId.ion_gun_master)] > 0)
             {
                 ion_gun_master_active = true;
             }
@@ -329,7 +326,7 @@ pub const ProjectilePool = struct {
                 const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
 
                 if (owner_player) |player| {
-                    if (perkActive(player, perk_id_poison_bullets)) {
+                    if (perkActive(player, PerkId.poison_bullets)) {
                         const poison_roll = state.rng.rand();
                         if ((poison_roll & 7) == 1) {
                             creatures.entries[hit_idx.?].flags |= survival_spawn.CreatureFlags.self_damage_tick;
@@ -853,7 +850,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -896,7 +893,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -939,8 +936,8 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(perk_id_poison_bullets)] = 1;
-    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+    players[0].perk_counts[@intCast(PerkId.poison_bullets)] = 1;
+    players[0].perk_counts[@intCast(PerkId.toxic_avenger)] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = survival_bonuses.BonusPool{};
@@ -1004,7 +1001,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
     var greased_players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    greased_players[0].perk_counts[@intCast(perk_id_barrel_greaser)] = 1;
+    greased_players[0].perk_counts[@intCast(PerkId.barrel_greaser)] = 1;
     var greased_pool = ProjectilePool{};
     _ = greased_pool.spawn(
         .{},
@@ -1073,7 +1070,7 @@ test "ion gun master increases ion rifle linger radius" {
     var players_with = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players_with[0].perk_counts[@intCast(perk_id_ion_gun_master)] = 1;
+    players_with[0].perk_counts[@intCast(PerkId.ion_gun_master)] = 1;
     var creatures_with = survival_creatures.CreaturePool{};
     var bonuses_with = survival_bonuses.BonusPool{};
     _ = creatures_with.spawnInit(.{

@@ -9,6 +9,7 @@ const survival_state = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
+const PerkId = survival_perks.PerkId;
 
 pub const max_creatures: usize = 0x180;
 
@@ -1933,7 +1934,7 @@ pub const CreaturePool = struct {
                 creature.vel = move_delta;
                 creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
             }
-            if (perkActive(player, perk_id_plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
+            if (perkActive(player, PerkId.plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
                 spreadPlagueInfection(self.entries[0..], creature);
             }
 
@@ -1943,7 +1944,7 @@ pub const CreaturePool = struct {
                 creature.attack_cooldown -= dt;
             }
 
-            if (perkActive(player, perk_id_radioactive)) {
+            if (perkActive(player, PerkId.radioactive)) {
                 const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt * 1.5;
@@ -2051,7 +2052,7 @@ pub const CreaturePool = struct {
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
-                if (perkActive(player, perk_id_mr_melee)) {
+                if (perkActive(player, PerkId.mr_melee)) {
                     _ = self.applyDamage(
                         state,
                         players,
@@ -2068,9 +2069,9 @@ pub const CreaturePool = struct {
                     }
                 }
                 if (player.shield_timer <= 0.0) {
-                    if (perkActive(player, perk_id_toxic_avenger)) {
+                    if (perkActive(player, PerkId.toxic_avenger)) {
                         creature.flags |= survival_spawn.CreatureFlags.self_damage_tick | survival_spawn.CreatureFlags.self_damage_tick_strong;
-                    } else if (perkActive(player, perk_id_veins_of_poison)) {
+                    } else if (perkActive(player, PerkId.veins_of_poison)) {
                         creature.flags |= survival_spawn.CreatureFlags.self_damage_tick;
                     }
                 }
@@ -2149,7 +2150,7 @@ pub const CreaturePool = struct {
                 continue;
             };
 
-            if (perkActive(player, perk_id_poison_bullets)) {
+            if (perkActive(player, PerkId.poison_bullets)) {
                 _ = state.rng.rand();
             }
             consumeProjectileHitPresentationPreRng(state, player, projectile_type_id);
@@ -2211,16 +2212,16 @@ pub const CreaturePool = struct {
             }
         }
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, perk_id_uranium_filled_bullets)) {
+        if (anyPlayerHasPerk(players, PerkId.uranium_filled_bullets)) {
             damage_amount *= 2.0;
         }
-        if (anyPlayerHasPerk(players, perk_id_barrel_greaser)) {
+        if (anyPlayerHasPerk(players, PerkId.barrel_greaser)) {
             damage_amount *= 1.4;
         }
-        if (anyPlayerHasPerk(players, perk_id_doctor)) {
+        if (anyPlayerHasPerk(players, PerkId.doctor)) {
             damage_amount *= 1.2;
         }
-        if (anyPlayerHasPerk(players, perk_id_living_fortress)) {
+        if (anyPlayerHasPerk(players, PerkId.living_fortress)) {
             for (players) |player| {
                 if (!(player.health > 0.0)) continue;
                 if (!(player.living_fortress_timer > 0.0)) continue;
@@ -2254,7 +2255,7 @@ pub const CreaturePool = struct {
         world_size: f64,
     ) i32 {
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, perk_id_ion_gun_master)) {
+        if (anyPlayerHasPerk(players, PerkId.ion_gun_master)) {
             damage_amount *= 1.2;
         }
         return self.applyDamage(
@@ -2283,7 +2284,7 @@ pub const CreaturePool = struct {
         world_size: f64,
     ) i32 {
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, perk_id_pyromaniac)) {
+        if (anyPlayerHasPerk(players, PerkId.pyromaniac)) {
             damage_amount *= 1.5;
             _ = state.rng.rand();
         }
@@ -3025,13 +3026,13 @@ fn creatureFrozenByEvilEyes(
 
     if (state.preserve_bugs) {
         const player0 = players[0];
-        if (!perkActive(&player0, perk_id_evil_eyes)) return false;
+        if (!perkActive(&player0, PerkId.evil_eyes)) return false;
         return player0.evil_eyes_target_creature == creature_index_i32;
     }
 
     for (players) |*player| {
         if (player.health <= 0.0) continue;
-        if (!perkActive(player, perk_id_evil_eyes)) continue;
+        if (!perkActive(player, PerkId.evil_eyes)) continue;
         if (player.evil_eyes_target_creature == creature_index_i32) return true;
     }
     return false;
@@ -3051,7 +3052,7 @@ pub fn consumeProjectileHitPresentationPreRng(
         }
     }
 
-    if (perkActive(player, perk_id_bloody_mess_quick_learner)) {
+    if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
         for (0..8) |_| {
             _ = state.rng.rand() & 0x1f;
             consumeSpawnBloodSplatterRng(state);
@@ -3222,7 +3223,7 @@ fn awardExperienceFromReward(
     player: *survival_state.PlayerState,
     reward_value: f64,
 ) i32 {
-    if (perkActive(player, perk_id_bloody_mess_quick_learner)) {
+    if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
         const scaled_reward: i32 = @intFromFloat(reward_value * 1.3);
         return awardExperience(state, player, scaled_reward);
     }
@@ -3526,28 +3527,6 @@ fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
 }
 
-const perk_id_bloody_mess_quick_learner: i32 = 1;
-const perk_id_poison_bullets: i32 = 25;
-const perk_id_plaguebearer: i32 = survival_perks.PerkId.plaguebearer;
-const perk_id_pyromaniac: i32 = survival_perks.PerkId.pyromaniac;
-const perk_id_uranium_filled_bullets: i32 = survival_perks.PerkId.uranium_filled_bullets;
-const perk_id_doctor: i32 = survival_perks.PerkId.doctor;
-const perk_id_barrel_greaser: i32 = survival_perks.PerkId.barrel_greaser;
-const perk_id_living_fortress: i32 = survival_perks.PerkId.living_fortress;
-const perk_id_ion_gun_master: i32 = survival_perks.PerkId.ion_gun_master;
-const perk_id_final_revenge: i32 = survival_perks.PerkId.final_revenge;
-const perk_id_unstoppable: i32 = survival_perks.PerkId.unstoppable;
-const perk_id_tough_reloader: i32 = survival_perks.PerkId.tough_reloader;
-const perk_id_thick_skinned: i32 = survival_perks.PerkId.thick_skinned;
-const perk_id_ninja: i32 = survival_perks.PerkId.ninja;
-const perk_id_dodger: i32 = survival_perks.PerkId.dodger;
-const perk_id_highlander: i32 = survival_perks.PerkId.highlander;
-const perk_id_death_clock: i32 = survival_perks.PerkId.death_clock;
-const perk_id_mr_melee: i32 = survival_perks.PerkId.mr_melee;
-const perk_id_radioactive: i32 = survival_perks.PerkId.radioactive;
-const perk_id_evil_eyes: i32 = survival_perks.PerkId.evil_eyes;
-const perk_id_veins_of_poison: i32 = survival_perks.PerkId.veins_of_poison;
-const perk_id_toxic_avenger: i32 = survival_perks.PerkId.toxic_avenger;
 const game_mode_rush: i32 = 2;
 const thick_skinned_damage_scale_f32: f64 = 0.6660000085830688;
 
@@ -3571,10 +3550,10 @@ pub fn applyPlayerContactDamage(
     dt: f64,
 ) void {
     if (!(damage > 0.0)) return;
-    if (perkActive(player, perk_id_death_clock)) return;
+    if (perkActive(player, PerkId.death_clock)) return;
 
     var damage_scaled = damage;
-    if (perkActive(player, perk_id_tough_reloader) and player.reload_active) {
+    if (perkActive(player, PerkId.tough_reloader) and player.reload_active) {
         damage_scaled = asF32F64(damage_scaled * 0.5);
     }
     const spread_heat_damage = damage_scaled;
@@ -3583,18 +3562,18 @@ pub fn applyPlayerContactDamage(
     if (player.shield_timer > 0.0) return;
 
     var dodged = false;
-    if (perkActive(player, perk_id_ninja)) {
+    if (perkActive(player, PerkId.ninja)) {
         dodged = (state.rng.rand() % 3) == 0;
-    } else if (perkActive(player, perk_id_dodger)) {
+    } else if (perkActive(player, PerkId.dodger)) {
         dodged = (state.rng.rand() % 5) == 0;
     }
 
-    if (perkActive(player, perk_id_thick_skinned)) {
+    if (perkActive(player, PerkId.thick_skinned)) {
         damage_scaled = asF32F64(damage_scaled * thick_skinned_damage_scale_f32);
     }
 
     if (!dodged) {
-        if (perkActive(player, perk_id_highlander)) {
+        if (perkActive(player, PerkId.highlander)) {
             if ((state.rng.rand() % 10) == 0) {
                 player.health = 0.0;
             }
@@ -3608,12 +3587,12 @@ pub fn applyPlayerContactDamage(
 
     if (player.health >= 0.0) {
         _ = state.rng.rand() % 3;
-    } else if (!perkActive(player, perk_id_final_revenge)) {
+    } else if (!perkActive(player, PerkId.final_revenge)) {
         _ = state.rng.rand() & 1;
     }
 
     if (!dodged) {
-        if (!perkActive(player, perk_id_unstoppable)) {
+        if (!perkActive(player, PerkId.unstoppable)) {
             const jitter_i32: i32 = @as(i32, @intCast(state.rng.rand() % 100)) - 50;
             player.heading = asF32F64(player.heading + @as(f64, @floatFromInt(jitter_i32)) * 0.04);
             player.spread_heat = asF32F64(@min(
@@ -3729,7 +3708,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+    players[0].perk_counts[@intCast(PerkId.bloody_mess_quick_learner)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -3839,7 +3818,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+    players[0].perk_counts[@intCast(PerkId.bloody_mess_quick_learner)] = 1;
 
     const gained = pool.applyExplosionDamage(
         &state,
@@ -3949,7 +3928,7 @@ test "projectile pre-hit rng counts include bloody spread draw per splatter" {
         .index = 0,
         .pos = .{},
     };
-    player.perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+    player.perk_counts[@intCast(PerkId.bloody_mess_quick_learner)] = 1;
 
     consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.pistol));
 
@@ -5086,7 +5065,7 @@ test "veins of poison sets self-damage flag on contact hit" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_veins_of_poison)] = 1;
+    players[0].perk_counts[@intCast(PerkId.veins_of_poison)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5120,7 +5099,7 @@ test "veins of poison skips self-damage flag when shielded" {
             .shield_timer = 1.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_veins_of_poison)] = 1;
+    players[0].perk_counts[@intCast(PerkId.veins_of_poison)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5153,7 +5132,7 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+    players[0].perk_counts[@intCast(PerkId.toxic_avenger)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5221,7 +5200,7 @@ test "toxic avenger skips strong self-damage flag when shielded" {
             .shield_timer = 1.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_toxic_avenger)] = 1;
+    players[0].perk_counts[@intCast(PerkId.toxic_avenger)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5255,7 +5234,7 @@ test "radioactive tick deals damage and wraps collision timer" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
+    players[0].perk_counts[@intCast(PerkId.radioactive)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5295,8 +5274,8 @@ test "radioactive kill awards base xp without death multipliers" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
-    players[0].perk_counts[@intCast(perk_id_bloody_mess_quick_learner)] = 1;
+    players[0].perk_counts[@intCast(PerkId.radioactive)] = 1;
+    players[0].perk_counts[@intCast(PerkId.bloody_mess_quick_learner)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5334,7 +5313,7 @@ test "radioactive sets hp to one for lizard type creatures" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_radioactive)] = 1;
+    players[0].perk_counts[@intCast(PerkId.radioactive)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5371,7 +5350,7 @@ test "mr melee damages attacking creature on contact tick" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_mr_melee)] = 1;
+    players[0].perk_counts[@intCast(PerkId.mr_melee)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5403,7 +5382,7 @@ test "mr melee does not prevent player damage when attacker dies" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_mr_melee)] = 1;
+    players[0].perk_counts[@intCast(PerkId.mr_melee)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5466,7 +5445,7 @@ test "evil eyes freezes targeted creature movement" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(perk_id_evil_eyes)] = 1;
+    players[0].perk_counts[@intCast(PerkId.evil_eyes)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5538,7 +5517,7 @@ test "tough reloader halves damage while reloading" {
         .health = 100.0,
         .reload_active = true,
     };
-    player.perk_counts[@intCast(perk_id_tough_reloader)] = 1;
+    player.perk_counts[@intCast(PerkId.tough_reloader)] = 1;
 
     applyPlayerContactDamage(
         &state,
@@ -5560,8 +5539,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
         .pos = .{},
         .health = 100.0,
     };
-    safe_player.perk_counts[@intCast(perk_id_highlander)] = 1;
-    safe_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    safe_player.perk_counts[@intCast(PerkId.highlander)] = 1;
+    safe_player.perk_counts[@intCast(PerkId.unstoppable)] = 1;
     applyPlayerContactDamage(&safe_state, &safe_player, 10.0, 0.1);
     try expectFloatClose(100.0, safe_player.health);
 
@@ -5571,8 +5550,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
         .pos = .{},
         .health = 100.0,
     };
-    lethal_player.perk_counts[@intCast(perk_id_highlander)] = 1;
-    lethal_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    lethal_player.perk_counts[@intCast(PerkId.highlander)] = 1;
+    lethal_player.perk_counts[@intCast(PerkId.unstoppable)] = 1;
     applyPlayerContactDamage(&lethal_state, &lethal_player, 10.0, 0.1);
     try expectFloatClose(0.0, lethal_player.health);
 }
@@ -5601,7 +5580,7 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
         .heading = 1.0,
         .spread_heat = 0.1,
     };
-    perk_player.perk_counts[@intCast(perk_id_unstoppable)] = 1;
+    perk_player.perk_counts[@intCast(PerkId.unstoppable)] = 1;
     applyPlayerContactDamage(&perk_state, &perk_player, 10.0, 0.1);
     try expectFloatClose(90.0, perk_player.health);
     try expectFloatClose(1.0, perk_player.heading);
@@ -5617,8 +5596,8 @@ test "tough reloader spread heat uses post-reload damage before thick skinned" {
         .reload_active = true,
         .spread_heat = 0.1,
     };
-    player.perk_counts[@intCast(perk_id_tough_reloader)] = 1;
-    player.perk_counts[@intCast(perk_id_thick_skinned)] = 1;
+    player.perk_counts[@intCast(PerkId.tough_reloader)] = 1;
+    player.perk_counts[@intCast(PerkId.thick_skinned)] = 1;
 
     applyPlayerContactDamage(
         &state,
@@ -5637,7 +5616,7 @@ test "doctor increases projectile damage by 20 percent" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(perk_id_doctor)] = 1;
+    players[0].perk_counts[@intCast(PerkId.doctor)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5677,7 +5656,7 @@ test "pyromaniac increases fire damage and consumes rng" {
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(perk_id_pyromaniac)] = 1;
+    players[0].perk_counts[@intCast(PerkId.pyromaniac)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5760,7 +5739,7 @@ test "living fortress scales projectile damage by alive player timers" {
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(perk_id_living_fortress)] = 1;
+    players[0].perk_counts[@intCast(PerkId.living_fortress)] = 1;
     players[0].living_fortress_timer = 10.0;
     players[1].living_fortress_timer = 20.0;
 
@@ -5799,7 +5778,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(perk_id_barrel_greaser)] = 1;
+    players[0].perk_counts[@intCast(PerkId.barrel_greaser)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5836,7 +5815,7 @@ test "ion gun master increases ion damage by 20 percent" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(perk_id_ion_gun_master)] = 1;
+    players[0].perk_counts[@intCast(PerkId.ion_gun_master)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5873,7 +5852,7 @@ test "uranium filled bullets doubles projectile damage" {
     var players = [_]survival_state.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(perk_id_uranium_filled_bullets)] = 1;
+    players[0].perk_counts[@intCast(PerkId.uranium_filled_bullets)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -6178,7 +6157,7 @@ test "plaguebearer spreads between nearby creatures" {
             .pos = .{ .x = 500.0, .y = 500.0 },
         },
     };
-    players[0].perk_counts[@intCast(perk_id_plaguebearer)] = 1;
+    players[0].perk_counts[@intCast(PerkId.plaguebearer)] = 1;
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
