@@ -7,7 +7,7 @@ tags:
 
 # Zig replay verifier status (`crimson-zig/`)
 
-Last reviewed: **2026-02-25**
+Last reviewed: **2026-02-26**
 
 Scope target: fast, headless, deterministic verification with a native fast-path
 for latest-ruleset **1-4 player Survival/Rush/Quest** replays (`preserve_bugs=false`),
@@ -35,6 +35,18 @@ with explicit hard-fail behavior for unsupported native paths.
 - Differential harness for tick-level Python-vs-Zig comparisons:
   - `uv run crimson-zig/scripts/diff_survival_verifiers.py ...`
 - Unsupported/not-yet-ported native paths hard-fail instead of silently accepting.
+
+## Runtime ownership model (Zig rewrite)
+
+- Internal gameplay runtime uses a typed owner union (`OwnerRef`) instead of raw
+  magic owner IDs.
+  - `OwnerRef.player{index, local_host}`
+  - `OwnerRef.creature{index}`
+  - `OwnerRef.none`
+- Legacy owner-id encoding (`-100`, `-1-n`, `>=0`) is treated as an interop
+  format only, not the internal simulation representation.
+- Any required legacy serialization/trace surface is emitted by explicit
+  conversion (`OwnerRef.toLegacy()`) at boundaries.
 
 ## Not fully ported / known parity gaps
 
