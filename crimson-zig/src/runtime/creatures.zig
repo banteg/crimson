@@ -17,14 +17,14 @@ const PerkId = perks.PerkId;
 
 pub const max_creatures: usize = 0x180;
 
-const creature_speed_scale: f64 = 30.0;
-const creature_turn_rate_scale: f64 = native_math.roundTripF32(native_math.native_turn_rate_scale);
-const contact_damage_cooldown: f64 = 1.0;
-const plague_collision_period: f64 = 0.5;
+const creature_speed_scale: f32 = 30.0;
+const creature_turn_rate_scale: f32 = native_math.native_turn_rate_scale;
+const contact_damage_cooldown: f32 = 1.0;
+const plague_collision_period: f32 = 0.5;
 const owner_local_player: owner_ref.OwnerRef = owner_ref.OwnerRef.fromLocalPlayer(0);
-const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
-const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
-const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
+const native_half_pi: f32 = native_math.native_half_pi;
+const native_pi: f32 = native_math.native_pi;
+const native_tau: f32 = native_math.native_tau;
 
 pub const CreatureRuntimeError = error{
     UnsupportedSpawnTemplate,
@@ -36,27 +36,27 @@ pub const CreatureState = struct {
     pos: state_mod.Vec2 = .{},
     target: state_mod.Vec2 = .{},
     target_offset: state_mod.Vec2 = .{},
-    heading: f64 = 0.0,
-    target_heading: f64 = 0.0,
-    phase_seed: f64 = 0.0,
+    heading: f32 = 0.0,
+    target_heading: f32 = 0.0,
+    phase_seed: f32 = 0.0,
     vel: state_mod.Vec2 = .{},
-    move_scale: f64 = 1.0,
+    move_scale: f32 = 1.0,
     force_target: i32 = 0,
     ai_mode: spawn_mod.CreatureAiMode = .orbit_player,
     // Native keeps this stale across slot reuse for some spawn paths.
     link_index: i32 = -1,
-    orbit_angle: f64 = 0.0,
-    orbit_radius: f64 = 0.0,
-    hp: f64 = 0.0,
-    max_hp: f64 = 0.0,
-    move_speed: f64 = 0.0,
-    reward_value: f64 = 0.0,
-    size: f64 = 0.0,
-    contact_damage: f64 = 0.0,
+    orbit_angle: f32 = 0.0,
+    orbit_radius: f32 = 0.0,
+    hp: f32 = 0.0,
+    max_hp: f32 = 0.0,
+    move_speed: f32 = 0.0,
+    reward_value: f32 = 0.0,
+    size: f32 = 0.0,
+    contact_damage: f32 = 0.0,
     plague_infected: bool = false,
-    collision_timer: f64 = plague_collision_period,
+    collision_timer: f32 = plague_collision_period,
     lifecycle_stage: creature_lifecycle.Stage = creature_lifecycle.alive,
-    attack_cooldown: f64 = 0.0,
+    attack_cooldown: f32 = 0.0,
     last_hit_owner: owner_ref.OwnerRef = owner_local_player,
     flags: u32 = 0,
 };
@@ -1801,6 +1801,7 @@ pub const CreaturePool = struct {
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
+        const dt_f32 = narrowF32(dt);
 
         if (!self.capture_spawn_events_authoritative) {
             const slot_count_snapshot = self.spawn_slot_count;
@@ -1884,9 +1885,9 @@ pub const CreaturePool = struct {
                 dt,
             );
             if (creature.plague_infected) {
-                creature.collision_timer -= dt;
+                creature.collision_timer = narrowF32(creature.collision_timer - dt_f32);
                 if (creature.collision_timer < 0.0) {
-                    creature.collision_timer += plague_collision_period;
+                    creature.collision_timer = narrowF32(creature.collision_timer + plague_collision_period);
                     creature.hp = narrowF32(creature.hp - 15.0);
                     if (creature.hp < 0.0) {
                         state.plaguebearer_infection_count += 1;
@@ -1914,11 +1915,11 @@ pub const CreaturePool = struct {
                     creature.heading,
                     creature.target_heading,
                     turn_rate,
-                    dt,
+                    dt_f32,
                 );
                 const move_delta = movementDeltaFromHeadingF32(
                     creature.heading,
-                    dt,
+                    dt_f32,
                     creature.move_scale,
                     creature.move_speed,
                 );
@@ -1932,13 +1933,13 @@ pub const CreaturePool = struct {
             if (creature.attack_cooldown <= 0.0) {
                 creature.attack_cooldown = 0.0;
             } else {
-                creature.attack_cooldown -= dt;
+                creature.attack_cooldown = narrowF32(creature.attack_cooldown - dt_f32);
             }
 
             if (perkActive(player, PerkId.radioactive)) {
                 const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist < 100.0) {
-                    creature.collision_timer -= dt * 1.5;
+                    creature.collision_timer = narrowF32(creature.collision_timer - narrowF32(dt_f32 * 1.5));
                     if (creature.collision_timer < 0.0) {
                         creature.collision_timer = plague_collision_period;
                         const pulse_damage = narrowF32(narrowF32(100.0 - dist) * 0.3);
@@ -1949,7 +1950,7 @@ pub const CreaturePool = struct {
                                 creature.hp = 1.0;
                             } else {
                                 awardBaseExperienceFromReward(player, creature.reward_value);
-                                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
+                                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_f32);
                             }
                         }
                     }
@@ -1982,7 +1983,7 @@ pub const CreaturePool = struct {
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
                         creature.attack_cooldown = narrowF32(
-                            @as(f64, @floatFromInt(state.rng.rand() & 3)) * 0.1 +
+                            @as(f32, @floatFromInt(state.rng.rand() & 3)) * 0.1 +
                                 creature.orbit_angle +
                                 creature.attack_cooldown,
                         );
@@ -2197,12 +2198,12 @@ pub const CreaturePool = struct {
             var creature = &self.entries[creature_index];
             if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
                 const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
-                const jitter = @as(f64, @floatFromInt(jitter_i32)) * 0.002;
-                const size = @max(1e-6, creature.size);
+                const jitter = @as(f32, @floatFromInt(jitter_i32)) * 0.002;
+                const size = @max(@as(f32, 1e-6), creature.size);
                 var turn = jitter / (size * 0.025);
-                const half_pi = std.math.pi / 2.0;
+                const half_pi: f32 = std.math.pi / 2.0;
                 if (turn > half_pi) turn = half_pi;
-                creature.heading += turn;
+                creature.heading = narrowF32(creature.heading + turn);
             }
         }
         var damage_amount = damage;
@@ -2322,12 +2323,12 @@ pub const CreaturePool = struct {
         // Native nuke path applies damage to active corpse entries as well.
         if (!(creature.hp > 0.0)) {
             if (dt > 0.0) {
-                creature.lifecycle_stage -= dt * 15.0;
+                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt * 15.0));
             }
             return 0;
         }
 
-        creature.hp -= damage;
+        creature.hp = narrowF32(creature.hp - narrowF32(damage));
         creature.vel = .{
             .x = creature.vel.x - impulse.x,
             .y = creature.vel.y - impulse.y,
@@ -2338,9 +2339,9 @@ pub const CreaturePool = struct {
         }
 
         if (dt > 0.0) {
-            creature.lifecycle_stage -= dt;
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
         } else {
-            creature.lifecycle_stage -= 0.001;
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
         }
         if (!death_start_needed) return 0;
         const split_can_reuse_slot =
@@ -2364,7 +2365,7 @@ pub const CreaturePool = struct {
             true,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage -= dt;
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
         }
 
         const slot = ownerToPlayerIndex(owner, players.len);
@@ -2412,7 +2413,7 @@ pub const CreaturePool = struct {
             false,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage -= dt;
+            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
         }
 
         const slot = ownerToPlayerIndex(owner, players.len);
@@ -2860,7 +2861,7 @@ fn linkTargetF32(
     };
 }
 
-fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = narrowF32(b.x - a.x);
     const dy = narrowF32(b.y - a.y);
     const dist_sq = dx * dx + dy * dy;
@@ -2869,9 +2870,9 @@ fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
 
 fn orbitTargetF32(
     player_pos: state_mod.Vec2,
-    orbit_phase: f64,
-    dist: f64,
-    scale: f64,
+    orbit_phase: f32,
+    dist: f32,
+    scale: f32,
 ) state_mod.Vec2 {
     const orbit_dist = narrowF32(narrowF32(dist) * narrowF32(scale));
     const phase = narrowF32(orbit_phase);
@@ -2885,21 +2886,20 @@ fn orbitTargetF32(
     };
 }
 
-fn headingFromDeltaF32(dx: f64, dy: f64) f64 {
-    const heading = native_math.headingFromDeltaNative(narrowF32(dx), narrowF32(dy));
-    return native_math.roundTripF32(heading);
+fn headingFromDeltaF32(dx: f32, dy: f32) f32 {
+    return native_math.headingFromDeltaNative(dx, dy);
 }
 
 fn angleApproach(
-    current: f64,
-    target: f64,
-    rate: f64,
-    dt: f64,
-) f64 {
-    const angle = native_math.roundTripF32(native_math.wrapAngle0Tau(narrowF32(current)));
-    const target_f = narrowF32(target);
-    const rate_f = narrowF32(rate);
-    const dt_f = narrowF32(dt);
+    current: f32,
+    target: f32,
+    rate: f32,
+    dt: f32,
+) f32 {
+    const angle = native_math.wrapAngle0Tau(current);
+    const target_f = target;
+    const rate_f = rate;
+    const dt_f = dt;
     const tau = native_tau;
 
     const direct = narrowF32(@abs(narrowF32(target_f - angle)));
@@ -2926,10 +2926,10 @@ fn angleApproach(
 }
 
 fn movementDeltaFromHeadingF32(
-    heading: f64,
-    dt: f64,
-    move_scale: f64,
-    move_speed: f64,
+    heading: f32,
+    dt: f32,
+    move_scale: f32,
+    move_speed: f32,
 ) state_mod.Vec2 {
     const radians = narrowF32(heading) - native_half_pi;
 
@@ -2996,11 +2996,11 @@ fn applySpiderSp1Ai7Tail(creature: *CreatureState) void {
     creature.move_speed = narrowF32(creature.move_speed * 1.2);
 }
 
-fn hitRadiusFor(creature: CreatureState) f64 {
-    return @max(0.0, creature.size * 0.14285715 + 3.0);
+fn hitRadiusFor(creature: CreatureState) f32 {
+    return @max(@as(f32, 0.0), narrowF32(creature.size * 0.14285715 + 3.0));
 }
 
-fn projectileHitDamage(origin: state_mod.Vec2, hit: state_mod.Vec2, damage_scale: f64) f64 {
+fn projectileHitDamage(origin: state_mod.Vec2, hit: state_mod.Vec2, damage_scale: f32) f32 {
     var dist = state_mod.Vec2.sub(hit, origin).length();
     if (dist < 50.0) dist = 50.0;
     const scaled = narrowF32((100.0 / dist) * damage_scale * 30.0 + 10.0);
@@ -3257,7 +3257,7 @@ fn awardExperienceRaw(
     return after - before;
 }
 
-fn wrapAngle(value: f64) f64 {
+fn wrapAngle(value: f32) f32 {
     var angle = narrowF32(value);
     while (angle <= -std.math.pi) {
         angle = narrowF32(angle + native_tau);
@@ -3271,7 +3271,7 @@ fn wrapAngle(value: f64) f64 {
 fn queueCreatureProjectile(
     state: *state_mod.GameplayState,
     pos: state_mod.Vec2,
-    angle: f64,
+    angle: f32,
     type_id: i32,
     owner: owner_ref.OwnerRef,
 ) void {
@@ -3303,7 +3303,7 @@ fn spawnSplitChildrenOnDeath(
     if ((source.flags & spawn_mod.CreatureFlags.split_on_death) == 0) return;
     if (!(source.size > 35.0)) return;
 
-    const heading_offsets = [_]f64{ -native_half_pi, native_half_pi };
+    const heading_offsets = [_]f32{ -native_half_pi, native_half_pi };
     for (heading_offsets) |heading_offset| {
         const child_idx = allocCreatureSlot(self, &state.rng);
         var child = source;
@@ -3462,13 +3462,14 @@ fn tickDead(
     }
 }
 
-fn selfDamageTickAmount(flags: u32, dt: f64) f64 {
-    if (!(dt > 0.0)) return 0.0;
+fn selfDamageTickAmount(flags: u32, dt: f64) f32 {
+    const dt_f32 = narrowF32(dt);
+    if (!(dt_f32 > 0.0)) return 0.0;
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick_strong) != 0) {
-        return narrowF32(dt * 180.0);
+        return narrowF32(dt_f32 * 180.0);
     }
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick) != 0) {
-        return narrowF32(dt * 60.0);
+        return narrowF32(dt_f32 * 60.0);
     }
     return 0.0;
 }
@@ -3483,8 +3484,8 @@ fn applySelfDamageTickToDead(
     }
 }
 
-fn headingDirectionF32(heading: f64) state_mod.Vec2 {
-    const radians = narrowF32(heading) - native_half_pi;
+fn headingDirectionF32(heading: f32) state_mod.Vec2 {
+    const radians = heading - native_half_pi;
     return .{
         .x = narrowF32(math.cos(radians)),
         .y = narrowF32(math.sin(radians)),
@@ -3521,7 +3522,7 @@ fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
 }
 
-const thick_skinned_damage_scale_f32: f64 = 0.6660000085830688;
+const thick_skinned_damage_scale_f32: f32 = 0.6660000085830688;
 
 fn creatureTypeHasContactSfx(type_id: i32) bool {
     return type_id == @intFromEnum(spawn_mod.CreatureTypeId.zombie) or

@@ -1,7 +1,7 @@
 const std = @import("std");
 
 pub const CreatureLifecycle = struct {
-    pub const Stage = f64;
+    pub const Stage = f32;
 
     pub const alive: Stage = 16.0;
     pub const collidable_min: Stage = 5.0;
