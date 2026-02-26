@@ -390,6 +390,10 @@ Minigun projectiles centered on the player. Projectile count is
 Only triggers when reload time exceeds 0.5 s. Benefits from Stationary Reloader's
 3× reload speed. Friendly fire applies when enabled.
 
+!!! note "Pulse Gun interaction"
+    Pulse Gun reload is `0.1 s`, so it never satisfies Angry Reloader's
+    `reload_time > 0.5 s` trigger condition and will not fire the plasma ring.
+
 Unlocked by quest 5.6 (*Cross Fire*).
 
 ## 51. Ion Gun Master

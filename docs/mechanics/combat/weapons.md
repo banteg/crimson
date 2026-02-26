@@ -210,6 +210,11 @@ Clip 16 · Damage 1.0 · Fire 0.1 s · Reload 0.1 s · Electric
 Electric bolts that knock enemies back on hit. Near-instant reload
 means you're almost never caught empty. Great for keeping distance.
 
+!!! note "Angry Reloader interaction"
+    Angry Reloader's mid-reload plasma ring only triggers when reload time is
+    strictly above `0.5 s`. Pulse Gun reload is `0.1 s`, so this weapon never
+    triggers that perk effect.
+
 ### 20. Jackhammer
 
 Clip 16 · Damage 1.0 · Fire 0.14 s · Reload 3.0 s · 4 pellets · Bullet
