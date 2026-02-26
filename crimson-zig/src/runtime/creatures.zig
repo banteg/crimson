@@ -969,12 +969,12 @@ pub const CreaturePool = struct {
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
-                            .x = narrowF32(x_offset),
-                            .y = narrowF32(y_offset),
+                            .x = x_offset,
+                            .y = y_offset,
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
-                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
+                            .x = narrowF32(call.pos.x) + x_offset,
+                            .y = narrowF32(call.pos.y) + y_offset,
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1020,12 +1020,12 @@ pub const CreaturePool = struct {
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
-                            .x = narrowF32(x_offset),
-                            .y = narrowF32(y_offset),
+                            .x = x_offset,
+                            .y = y_offset,
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
-                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
+                            .x = narrowF32(call.pos.x) + x_offset,
+                            .y = narrowF32(call.pos.y) + y_offset,
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1071,12 +1071,12 @@ pub const CreaturePool = struct {
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
-                            .x = narrowF32(x_offset),
-                            .y = narrowF32(y_offset),
+                            .x = x_offset,
+                            .y = y_offset,
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
-                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
+                            .x = narrowF32(call.pos.x) + x_offset,
+                            .y = narrowF32(call.pos.y) + y_offset,
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1122,12 +1122,12 @@ pub const CreaturePool = struct {
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
-                            .x = narrowF32(x_offset),
-                            .y = narrowF32(y_offset),
+                            .x = x_offset,
+                            .y = y_offset,
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
-                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
+                            .x = narrowF32(call.pos.x) + x_offset,
+                            .y = narrowF32(call.pos.y) + y_offset,
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1172,12 +1172,12 @@ pub const CreaturePool = struct {
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
-                            .x = narrowF32(x_offset),
-                            .y = narrowF32(y_offset),
+                            .x = x_offset,
+                            .y = y_offset,
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
-                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
+                            .x = narrowF32(call.pos.x) + x_offset,
+                            .y = narrowF32(call.pos.y) + y_offset,
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                     }
@@ -1846,7 +1846,7 @@ pub const CreaturePool = struct {
                 applySelfDamageTickToDead(creature, dt_f32);
                 tickAi7LinkTimer(creature, dt_ms, &state.rng);
                 if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
-                    creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
+                    creature.lifecycle_stage -= dt_f32;
                 }
                 tickDead(creature, dt_f32, &self.kill_count, state);
                 continue;
@@ -1859,10 +1859,10 @@ pub const CreaturePool = struct {
                     players,
                     bonus_pool,
                     idx,
-                    narrowF32(self_tick_damage),
+                    self_tick_damage,
                     .{},
                     creature.last_hit_owner,
-                    narrowF32(dt),
+                    dt_f32,
                     narrowF32(world_size),
                 );
                 if (!(creature.hp > 0.0)) {
@@ -1939,10 +1939,10 @@ pub const CreaturePool = struct {
             if (perkActive(player, PerkId.radioactive)) {
                 const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist < 100.0) {
-                    creature.collision_timer = narrowF32(creature.collision_timer - narrowF32(dt_f32 * 1.5));
+                    creature.collision_timer -= dt_f32 * 1.5;
                     if (creature.collision_timer < 0.0) {
                         creature.collision_timer = plague_collision_period;
-                        const pulse_damage = narrowF32(narrowF32(100.0 - dist) * 0.3);
+                        const pulse_damage = (100.0 - dist) * 0.3;
                         creature.hp = narrowF32(creature.hp - pulse_damage);
                         runtime_helpers.consumeAddRandomRng(state);
                         if (creature.hp < 0.0) {
@@ -2053,7 +2053,7 @@ pub const CreaturePool = struct {
                         25.0,
                         .{},
                         owner_ref.OwnerRef.fromPlayer(@intCast(player.index)),
-                        narrowF32(dt),
+                        dt_f32,
                         narrowF32(world_size),
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
@@ -2067,7 +2067,7 @@ pub const CreaturePool = struct {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                applyPlayerContactDamage(state, player, creature.contact_damage, narrowF32(dt));
+                applyPlayerContactDamage(state, player, creature.contact_damage, dt_f32);
                 runtime_helpers.consumeAddRandomRng(state);
                 creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
             }
@@ -2085,7 +2085,7 @@ pub const CreaturePool = struct {
                 creature.size <= 30.0)
             {
                 creature.hp = 0.0;
-                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
+                creature.lifecycle_stage -= dt_f32;
                 continue;
             }
         }
@@ -2739,8 +2739,8 @@ fn creatureAiUpdateTarget(
 ) void {
     const dist_to_player = distanceF32(creature.pos, player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
-    const phase_scale = narrowF32(3.7);
-    const orbit_phase = narrowF32(narrowF32(@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi);
+    const phase_scale: f32 = 3.7;
+    const orbit_phase = (@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi;
 
     creature.force_target = 0;
     var move_scale: f32 = 1.0;
@@ -2874,15 +2874,15 @@ fn orbitTargetF32(
     dist: f32,
     scale: f32,
 ) state_mod.Vec2 {
-    const orbit_dist = narrowF32(narrowF32(dist) * narrowF32(scale));
-    const phase = narrowF32(orbit_phase);
-    const px = narrowF32(player_pos.x);
-    const py = narrowF32(player_pos.y);
-    const orbit_x = narrowF32(math.cos(phase));
-    const orbit_y = narrowF32(math.sin(phase));
+    const orbit_dist = dist * scale;
+    const phase = orbit_phase;
+    const px = player_pos.x;
+    const py = player_pos.y;
+    const orbit_x = math.cos(phase);
+    const orbit_y = math.sin(phase);
     return .{
-        .x = narrowF32(narrowF32(orbit_x * orbit_dist) + px),
-        .y = narrowF32(narrowF32(orbit_y * orbit_dist) + py),
+        .x = orbit_x * orbit_dist + px,
+        .y = orbit_y * orbit_dist + py,
     };
 }
 
@@ -3251,7 +3251,7 @@ fn awardExperienceRaw(
     const before = player.experience;
     const before_f32: f32 = @floatFromInt(before);
     const amount_f32: f32 = @floatFromInt(amount);
-    const total_f32 = narrowF32(narrowF32(before_f32) + narrowF32(amount_f32));
+    const total_f32 = before_f32 + amount_f32;
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
     return after - before;
@@ -3500,7 +3500,7 @@ fn awardExperienceOnceFromReward(
 
     const before = player.experience;
     const before_f32: f32 = @floatFromInt(before);
-    const total_f32 = narrowF32(narrowF32(before_f32) + reward_f32);
+    const total_f32 = before_f32 + reward_f32;
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
     return after - before;
@@ -3513,7 +3513,7 @@ fn awardBaseExperienceFromReward(
     const reward_f32 = reward_value;
     if (!(reward_f32 > 0.0)) return;
     const before_f32: f32 = @floatFromInt(player.experience);
-    const total_f32 = narrowF32(narrowF32(before_f32) + reward_f32);
+    const total_f32 = before_f32 + reward_f32;
     player.experience = @intFromFloat(total_f32);
 }
 
