@@ -2132,7 +2132,7 @@ pub const CreaturePool = struct {
             @intFromEnum(type_id)
         else
             weapon_id;
-        const damage_scale = state_mod.weaponDamageScale(weapon_enum);
+        const damage_scale = state_mod.weapon_stats.get(weapon_enum).damage_scale;
         const owner_id: i32 = -1 - player.index;
         var hit_audio_game_tune_started = state.game_tune_started;
 

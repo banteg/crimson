@@ -319,38 +319,6 @@ pub fn weaponIdFromInt(value: i32) ?WeaponId {
     return @enumFromInt(value);
 }
 
-pub fn weaponClipSize(weapon_id: WeaponId) i32 {
-    return weapon_stats.get(weapon_id).clip_size;
-}
-
-pub fn weaponReloadTime(weapon_id: WeaponId) f32 {
-    return weapon_stats.get(weapon_id).reload_time;
-}
-
-pub fn weaponShotCooldown(weapon_id: WeaponId) f32 {
-    return weapon_stats.get(weapon_id).shot_cooldown;
-}
-
-pub fn weaponPelletCount(weapon_id: WeaponId) i32 {
-    return weapon_stats.get(weapon_id).pellet_count;
-}
-
-pub fn weaponProjectileMeta(weapon_id: WeaponId) f32 {
-    return weapon_stats.get(weapon_id).projectile_meta;
-}
-
-pub fn weaponDamageScale(weapon_id: WeaponId) f32 {
-    return weapon_stats.get(weapon_id).damage_scale;
-}
-
-pub fn weaponFlags(weapon_id: WeaponId) u32 {
-    return weapon_stats.get(weapon_id).flags;
-}
-
-pub fn weaponSpreadHeatInc(weapon_id: WeaponId) f32 {
-    return weapon_stats.get(weapon_id).spread_heat_inc;
-}
-
 pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?ProjectileTypeId {
     return switch (weapon_id) {
         .pistol => ProjectileTypeId.pistol,
@@ -421,7 +389,7 @@ pub fn weaponAssignPlayer(
     player: *PlayerState,
     weapon_id: WeaponId,
 ) void {
-    var clip_size = @max(0, weaponClipSize(weapon_id));
+    var clip_size = @max(0, weapon_stats.get(weapon_id).clip_size);
     if (playerPerkActive(player, .ammo_maniac)) {
         clip_size += @max(1, @divTrunc(clip_size, 4));
     }
@@ -522,7 +490,7 @@ pub fn playerSwapAltWeapon(player: *PlayerState) bool {
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
-    var reload_time = weaponReloadTime(player.weapon_id);
+    var reload_time = weapon_stats.get(player.weapon_id).reload_time;
     if (player.reload_active and (playerPerkActive(player, .ammunition_within) or playerPerkActive(player, .regression_bullets))) {
         return;
     }
@@ -942,7 +910,7 @@ test "time scale reflex boost bonus mirrors f32 latch" {
 
 test "fastloader scales reload timer" {
     const weapon_id = WeaponId.assault_rifle;
-    const reload_time = weaponReloadTime(weapon_id);
+    const reload_time = weapon_stats.get(weapon_id).reload_time;
     try std.testing.expect(reload_time > 0.0);
 
     var base_state = GameplayState.init(1);

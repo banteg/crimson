@@ -656,12 +656,12 @@ fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
     const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
-    return state_mod.weaponProjectileMeta(weapon_id);
+    return state_mod.weapon_stats.get(weapon_id).projectile_meta;
 }
 
 fn damageScaleFromRawId(raw_id: i32) f32 {
     const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 1.0;
-    return state_mod.weaponDamageScale(weapon_id);
+    return state_mod.weapon_stats.get(weapon_id).damage_scale;
 }
 
 fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
@@ -964,7 +964,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        state_mod.weaponProjectileMeta(WeaponId.pistol),
+        state_mod.weapon_stats.get(WeaponId.pistol).projectile_meta,
         false,
     );
     _ = base_pool.update(
@@ -988,7 +988,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        state_mod.weaponProjectileMeta(WeaponId.pistol),
+        state_mod.weapon_stats.get(WeaponId.pistol).projectile_meta,
         false,
     );
     _ = greased_pool.update(

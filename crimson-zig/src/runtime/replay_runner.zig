@@ -1689,7 +1689,7 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
     const weapon_id = state_mod.weaponIdFromInt(raw_id) orelse return 45.0;
-    return state_mod.weaponProjectileMeta(weapon_id);
+    return state_mod.weapon_stats.get(weapon_id).projectile_meta;
 }
 
 fn applyPyrokineticEffects(
