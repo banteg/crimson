@@ -966,7 +966,7 @@ test "random weapon rerolls pistol when current weapon is not pistol" {
 
 test "random weapon retry cap applies last roll after 100 attempts" {
     var state = state_mod.GameplayState.init(1234);
-    state.game_mode = 3;
+    state.game_mode = .quests;
 
     var expected = state;
     for (0..100) |_| {

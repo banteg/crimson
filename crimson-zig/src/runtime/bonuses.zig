@@ -8,6 +8,7 @@ const state_mod = @import("state.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const BonusId = game_ids.BonusId;
+const GameModeId = game_ids.GameModeId;
 
 pub const BonusRuntimeError = error{
     UnsupportedBonusApplyPath,
@@ -26,12 +27,6 @@ const bonus_weapon_near_radius: f64 = 56.0;
 const bonus_aim_hover_radius: f64 = 24.0;
 const bonus_telekinetic_pickup_ms: f64 = 650.0;
 const reflex_timer_subtract_bias: f64 = 4e-9;
-
-const game_mode_survival: i32 = 1;
-const game_mode_rush: i32 = 2;
-const game_mode_quests: i32 = 3;
-const game_mode_typo: i32 = 4;
-const game_mode_tutorial: i32 = 8;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
     return @intCast(@intFromEnum(weapon_id));
@@ -76,7 +71,7 @@ pub const BonusPool = struct {
         world_size: f64,
     ) ?*BonusEntry {
         if (state.demo_mode_active) return null;
-        if (state.game_mode == game_mode_rush or state.game_mode == game_mode_typo or state.game_mode == game_mode_tutorial) return null;
+        if (state.game_mode == .rush or state.game_mode == .typo or state.game_mode == .tutorial) return null;
         if (state.bonus_spawn_guard) return null;
         if (players.len == 0) return null;
 
@@ -183,7 +178,7 @@ pub const BonusPool = struct {
 
             const decay = narrowF32(dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0));
             entry.time_left = narrowF32(entry.time_left - decay);
-            if (!entry.picked and state.game_mode == game_mode_tutorial) {
+            if (!entry.picked and state.game_mode == .tutorial) {
                 entry.time_left = 5.0;
             }
 
@@ -493,7 +488,8 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
     const unlock_index_full = state.status_quest_unlock_index_full;
     const game_mode = state.game_mode;
 
-    if (state.weapon_available_game_mode == game_mode and
+    if (state.weapon_available_game_mode != null and
+        state.weapon_available_game_mode.? == game_mode and
         state.weapon_available_unlock_index == unlock_index and
         state.weapon_available_unlock_index_full == unlock_index_full)
     {
@@ -512,7 +508,7 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
         }
     }
 
-    if (game_mode == game_mode_survival) {
+    if (game_mode == .survival) {
         state.weapon_available[weaponIdIndex(.assault_rifle)] = true;
         state.weapon_available[weaponIdIndex(.shotgun)] = true;
         state.weapon_available[weaponIdIndex(.submachine_gun)] = true;
@@ -545,7 +541,7 @@ pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.Weapo
         if (weapon_id < 0 or weapon_id >= state.weapon_available.len) continue;
         if (!state.weapon_available[@intCast(weapon_id)]) continue;
 
-        if (state.game_mode == game_mode_quests and
+        if (state.game_mode == .quests and
             state.quest_stage_major == 5 and
             state.quest_stage_minor == 10 and
             weapon_id == @intFromEnum(game_ids.WeaponId.ion_cannon))
@@ -588,7 +584,7 @@ fn bonusPickSuppressed(
 ) bool {
     if (state.shock_chain_links_left > 0 and bonus_id == .shock_chain) return true;
 
-    if (state.game_mode == game_mode_quests and state.quest_stage_minor == 10) {
+    if (state.game_mode == .quests and state.quest_stage_minor == 10) {
         const major = state.quest_stage_major;
         if (bonus_id == .nuke) {
             if (major == 2 or major == 4 or major == 5) return true;
@@ -730,7 +726,7 @@ fn spawnAtPos(
     players: []const state_mod.PlayerState,
     world_size: f64,
 ) AllocSlot {
-    if (state.game_mode == game_mode_rush) return .sentinel;
+    if (state.game_mode == .rush) return .sentinel;
     if (pos.x < bonus_spawn_margin or pos.y < bonus_spawn_margin or
         pos.x > world_size - bonus_spawn_margin or pos.y > world_size - bonus_spawn_margin)
     {
@@ -769,7 +765,7 @@ fn spawnAtPos(
 
 test "bonus pool spawn-on-kill can materialize weapon drop" {
     var state = state_mod.GameplayState.init(1234);
-    state.game_mode = game_mode_survival;
+    state.game_mode = .survival;
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 49;
 
@@ -795,13 +791,13 @@ test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
     };
 
     const cases = [_]struct {
-        game_mode: i32,
+        game_mode: GameModeId,
         demo_mode_active: bool,
     }{
-        .{ .game_mode = game_mode_typo, .demo_mode_active = false },
-        .{ .game_mode = game_mode_rush, .demo_mode_active = false },
-        .{ .game_mode = game_mode_tutorial, .demo_mode_active = false },
-        .{ .game_mode = game_mode_survival, .demo_mode_active = true },
+        .{ .game_mode = .typo, .demo_mode_active = false },
+        .{ .game_mode = .rush, .demo_mode_active = false },
+        .{ .game_mode = .tutorial, .demo_mode_active = false },
+        .{ .game_mode = .survival, .demo_mode_active = true },
     };
 
     for (cases) |case| {
@@ -835,7 +831,7 @@ test "bonus update pre-pickup decrements timers" {
 test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     var state = state_mod.GameplayState.init(1);
     state.rng.state = 3_857_056_479;
-    state.game_mode = game_mode_survival;
+    state.game_mode = .survival;
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 50;
     state.status_weapon_usage_counts[29] = 10;
@@ -915,7 +911,7 @@ test "alternate weapon stashes previous weapon on first pickup" {
 
 test "bonus magnet allows spawn on secondary roll" {
     var base_state = state_mod.GameplayState.init(7);
-    base_state.game_mode = game_mode_survival;
+    base_state.game_mode = .survival;
     var base_pool = BonusPool{};
     var base_players = [_]state_mod.PlayerState{
         .{
@@ -934,7 +930,7 @@ test "bonus magnet allows spawn on secondary roll" {
     try std.testing.expect(base_spawned == null);
 
     var perk_state = state_mod.GameplayState.init(7);
-    perk_state.game_mode = game_mode_survival;
+    perk_state.game_mode = .survival;
     var perk_pool = BonusPool{};
     var perk_players = [_]state_mod.PlayerState{
         .{
@@ -996,7 +992,7 @@ test "bonus pick random type quest suppression parity" {
 
 test "weapon refresh available includes survival defaults" {
     var state = state_mod.GameplayState.init(1);
-    state.game_mode = game_mode_survival;
+    state.game_mode = .survival;
 
     weaponRefreshAvailable(&state);
 
@@ -1009,7 +1005,7 @@ test "weapon refresh available includes survival defaults" {
 
 test "weapon refresh available unlocks quest weapon ids by unlock index" {
     var state = state_mod.GameplayState.init(1);
-    state.game_mode = game_mode_quests;
+    state.game_mode = .quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
 
@@ -1022,7 +1018,7 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
 
 test "weapon pick random available enforces unlock table in quests" {
     var state = state_mod.GameplayState.init(1);
-    state.game_mode = game_mode_quests;
+    state.game_mode = .quests;
     state.status_quest_unlock_index = 0;
     state.status_quest_unlock_index_full = 0;
 
@@ -1033,7 +1029,7 @@ test "weapon pick random available enforces unlock table in quests" {
 test "weapon pick random available rerolls used weapons on even gate" {
     const seed = findSeedForWeaponReroll(2_000_000) orelse unreachable;
     var state = state_mod.GameplayState.init(seed);
-    state.game_mode = game_mode_quests;
+    state.game_mode = .quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
     state.status_weapon_usage_counts[weaponIdIndex(.pistol)] = 1;
@@ -1265,7 +1261,7 @@ fn runQuestSuppressionCase(
     expected_bonus_id: BonusId,
 ) !void {
     var state = state_mod.GameplayState.init(seed);
-    state.game_mode = game_mode_quests;
+    state.game_mode = .quests;
     state.hardcore = hardcore;
     state.quest_stage_major = quest_stage_major;
     state.quest_stage_minor = quest_stage_minor;

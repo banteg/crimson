@@ -17,6 +17,7 @@ const survival_math = @import("math.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
+const GameModeId = game_ids.GameModeId;
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = native_math.f64f32(native_math.native_half_pi);
 const native_pi: f64 = native_math.f64f32(native_math.native_pi);
@@ -37,9 +38,6 @@ const movement_control_dual_action_pad: i32 = 3;
 const movement_control_computer: i32 = 5;
 const aim_scheme_mouse: i32 = 0;
 const aim_scheme_computer: i32 = 5;
-const game_mode_survival: i32 = 1;
-const game_mode_rush: i32 = 2;
-const game_mode_quests: i32 = 3;
 const TickEventPhase = enum {
     pre_step,
     post_state_transition,
@@ -403,12 +401,9 @@ pub fn runReplayScaffoldWithTrace(
     options: ReplayScaffoldOptions,
 ) ReplayRunnerError!ReplayScaffoldResult {
     const header = replay.header;
-    if (header.game_mode_id != game_mode_survival and
-        header.game_mode_id != game_mode_rush and
-        header.game_mode_id != game_mode_quests)
-    {
+    const game_mode = std.meta.intToEnum(GameModeId, header.game_mode_id) catch {
         return error.UnsupportedGameMode;
-    }
+    };
     if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
@@ -457,7 +452,7 @@ pub fn runReplayScaffoldWithTrace(
     var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
     var state = state_mod.GameplayState.init(header.seed);
     state.fx_toggle = header.fx_toggle;
-    state.game_mode = header.game_mode_id;
+    state.game_mode = game_mode;
     try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players_len: usize = @intCast(header.player_count);
@@ -485,10 +480,9 @@ pub fn runReplayScaffoldWithTrace(
     const dt_nominal: f64 = 1.0 / @as(f64, @floatFromInt(header.tick_rate));
     const quest_unlock_index = header.status.quest_unlock_index;
     const player_count = header.player_count;
-    const game_mode = header.game_mode_id;
-    if (game_mode == game_mode_rush) {
+    if (game_mode == .rush) {
         enforceRushLoadout(players[0..]);
-    } else if (game_mode == game_mode_quests) {
+    } else if (game_mode == .quests) {
         var quest_start_weapon_id = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
         applyQuestStageFromHeader(&state, header);
         if (options.quest_spawn_entries) |entries| {
@@ -618,7 +612,7 @@ pub fn runReplayScaffoldWithTrace(
         const dt_frame_ms = dt_tick * 1000.0;
         const dt_sim_ms = dt_sim * 1000.0;
         const elapsed_before_ms = elapsed_ms_sim;
-        const elapsed_after_ms = elapsed_before_ms + (if (game_mode == game_mode_survival) dt_sim_ms else dt_frame_ms);
+        const elapsed_after_ms = elapsed_before_ms + (if (game_mode == .survival) dt_sim_ms else dt_frame_ms);
         var freeze_corpse_at_tick_start = [_]bool{false} ** survival_creatures.max_creatures;
         for (creatures.entries, 0..) |creature, idx| {
             freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
@@ -693,7 +687,7 @@ pub fn runReplayScaffoldWithTrace(
         );
         const rng_after_particles = state.rng.state;
 
-        if (game_mode == game_mode_rush) {
+        if (game_mode == .rush) {
             enforceRushLoadout(players[0..]);
         }
         var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
@@ -763,7 +757,7 @@ pub fn runReplayScaffoldWithTrace(
 
         var rng_after_stage_spawns = state.rng.state;
         var rng_after_wave_spawns = state.rng.state;
-        if (game_mode == game_mode_survival) {
+        if (game_mode == .survival) {
             state_mod.survivalUpdateWeaponHandouts(
                 &state,
                 players[0..],
@@ -802,7 +796,7 @@ pub fn runReplayScaffoldWithTrace(
             wave_spawn_count += wave_result.count;
             creatures.spawnInits(wave_result.slice());
             rng_after_wave_spawns = state.rng.state;
-        } else if (game_mode == game_mode_rush) {
+        } else if (game_mode == .rush) {
             const wave_result = survival_spawn.tickRushModeSpawnsBatch(
                 spawn_cooldown,
                 dt_frame_ms,
@@ -884,7 +878,7 @@ pub fn runReplayScaffoldWithTrace(
             state.bonuses.reflex_boost,
         );
         cameraShakeUpdate(&state, dt_after_player);
-        if (game_mode != game_mode_rush) {
+        if (game_mode != .rush) {
             _ = state_mod.survivalProgressionUpdate(&state, players[0..]);
         }
         state.time_scale_active = state.bonuses.reflex_boost > 0.0;
@@ -915,7 +909,7 @@ pub fn runReplayScaffoldWithTrace(
             tick_index,
         );
         const rng_after_bonus_update = state.rng.state;
-        if (game_mode == game_mode_survival) {
+        if (game_mode == .survival) {
             state_mod.survivalEnforceRewardWeaponGuard(state, players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
@@ -954,7 +948,7 @@ pub fn runReplayScaffoldWithTrace(
         }
 
         if (trace_out) |trace| {
-            const trace_elapsed_ms = if (game_mode == game_mode_quests)
+            const trace_elapsed_ms = if (game_mode == .quests)
                 quest_spawn_timeline_ms
             else
                 elapsed_ms_sim;
@@ -1016,7 +1010,7 @@ pub fn runReplayScaffoldWithTrace(
     const tick_rate_f64: f64 = @floatFromInt(header.tick_rate);
     const ticks_f64: f64 = @floatFromInt(replay.tickCount());
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f64 * (1000.0 / tick_rate_f64)));
-    const elapsed_ms_sim_i64: i64 = if (game_mode == game_mode_quests)
+    const elapsed_ms_sim_i64: i64 = if (game_mode == .quests)
         @intFromFloat(quest_spawn_timeline_ms)
     else
         @intFromFloat(elapsed_ms_sim);
@@ -2018,7 +2012,7 @@ fn applyReplayEvent(
     quest_no_creatures_timer_ms: *f64,
     quest_completion_transition_ms: *f64,
     pending_capture_state_reset: *bool,
-    game_mode: i32,
+    game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
     strict_events: bool,
@@ -2026,14 +2020,10 @@ fn applyReplayEvent(
     perk_pick_count: *usize,
     menu_open_seen_this_tick: *bool,
 ) ReplayRunnerError!void {
-    const game_mode_id = std.meta.intToEnum(game_ids.GameModeId, game_mode) catch {
-        return error.UnsupportedGameMode;
-    };
-
     switch (event) {
         .perk_menu_open => |open| {
             menu_open_seen_this_tick.* = true;
-            if (game_mode == game_mode_rush) {
+            if (game_mode == .rush) {
                 if (strict_events) return error.UnsupportedEventKind;
                 return;
             }
@@ -2043,14 +2033,14 @@ fn applyReplayEvent(
             _ = perks.perkSelectionCurrentChoices(
                 state,
                 players,
-                game_mode_id,
+                game_mode,
                 player_count,
                 quest_unlock_index,
             );
             perk_menu_open_count.* += 1;
         },
         .perk_pick => |pick| {
-            if (game_mode == game_mode_rush) {
+            if (game_mode == .rush) {
                 if (strict_events) return error.UnsupportedEventKind;
                 return;
             }
@@ -2061,7 +2051,7 @@ fn applyReplayEvent(
                 state,
                 players,
                 pick.choice_index,
-                game_mode_id,
+                game_mode,
                 player_count,
                 quest_unlock_index,
             ) catch |err| switch (err) {
@@ -2095,7 +2085,7 @@ fn applyReplayEvent(
             );
         },
         .capture_perk_apply => |capture_perk_apply| {
-            if (game_mode == game_mode_rush) {
+            if (game_mode == .rush) {
                 if (strict_events) return error.UnsupportedEventKind;
                 return;
             }
@@ -2133,7 +2123,7 @@ fn applyReplayEvent(
             }
         },
         .capture_perk_pending => |capture_perk_pending| {
-            if (game_mode == game_mode_rush) {
+            if (game_mode == .rush) {
                 if (strict_events) return error.UnsupportedEventKind;
                 return;
             }
@@ -3602,7 +3592,7 @@ test "capture perk pending event sets pending without shifting rng in survival a
     const run = struct {
         fn runCase(
             allocator_inner: std.mem.Allocator,
-            game_mode_id: i32,
+            game_mode_id: GameModeId,
             apply_pending_event: bool,
         ) !struct { rng_state: u32, pending: i32 } {
             var bootstrap = replay_codec.CaptureBootstrapEvent{
@@ -3617,7 +3607,7 @@ test "capture perk pending event sets pending without shifting rng in survival a
                 },
             };
             const replay = try buildTestReplay(allocator_inner, .{
-                .game_mode_id = game_mode_id,
+                .game_mode_id = @intFromEnum(game_mode_id),
                 .tick_rate = 60,
                 .seed = 0x1234,
                 .inputs = &.{0},
@@ -3634,7 +3624,7 @@ test "capture perk pending event sets pending without shifting rng in survival a
             defer replay.deinit(allocator_inner);
 
             const result = try runReplayScaffoldWithOptions(replay, .{
-                .quest_spawn_entries = if (game_mode_id == game_mode_quests) &.{} else null,
+                .quest_spawn_entries = if (game_mode_id == .quests) &.{} else null,
             });
             return .{
                 .rng_state = result.wave_spawn_rng_state,
@@ -3643,7 +3633,7 @@ test "capture perk pending event sets pending without shifting rng in survival a
         }
     }.runCase;
 
-    for ([_]i32{ game_mode_survival, game_mode_quests }) |mode| {
+    for ([_]GameModeId{ .survival, .quests }) |mode| {
         const baseline = try run(allocator, mode, false);
         const with_pending = try run(allocator, mode, true);
         try std.testing.expectEqual(baseline.rng_state, with_pending.rng_state);
@@ -3680,7 +3670,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
             };
 
             const replay = try buildTestReplay(allocator_inner, .{
-                .game_mode_id = game_mode_survival,
+                .game_mode_id = @intFromEnum(GameModeId.survival),
                 .tick_rate = 60,
                 .seed = 0x1234,
                 .inputs = &.{0},
@@ -3710,7 +3700,7 @@ test "rush scaffold is deterministic and enforces assault rifle loadout" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -3730,7 +3720,7 @@ test "rush scaffold honors dt overrides for elapsed_ms" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .tick_rate = 60,
         .inputs = &.{0},
         .events = &.{},
@@ -3750,7 +3740,7 @@ test "rush scaffold spawn cadence uses raw frame dt, not sim dt" {
 
     const inputs = [_]u32{0} ** 15;
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = inputs[0..],
@@ -3768,7 +3758,7 @@ test "rush scaffold inter-tick rand draws shift rng deterministically" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = &.{ 0, 0, 0 },
@@ -3793,7 +3783,7 @@ test "rush scaffold rejects replay events" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .tick_rate = 60,
         .inputs = &.{0},
         .events = &.{
@@ -3823,7 +3813,7 @@ test "rush scaffold accepts capture bootstrap events" {
     };
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 42,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -3856,7 +3846,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
     bootstrap.digital_move_enabled_by_player[0] = true;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -3886,7 +3876,7 @@ test "rush scaffold supports multiplayer replays" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplayMulti(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .player_count = 2,
@@ -3921,7 +3911,7 @@ test "rush scaffold disables progression updates even above level threshold" {
     };
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_rush,
+        .game_mode_id = @intFromEnum(GameModeId.rush),
         .seed = 0x1234,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -3955,7 +3945,7 @@ test "survival scaffold supports player counts 1 through 4" {
         };
 
         const replay = try buildTestReplayMulti(allocator, .{
-            .game_mode_id = game_mode_survival,
+            .game_mode_id = @intFromEnum(GameModeId.survival),
             .seed = 0x1234,
             .tick_rate = 60,
             .player_count = player_count,
@@ -3990,7 +3980,7 @@ test "rush scaffold supports player counts 1 through 4" {
         };
 
         const replay = try buildTestReplayMulti(allocator, .{
-            .game_mode_id = game_mode_rush,
+            .game_mode_id = @intFromEnum(GameModeId.rush),
             .seed = 0x1234,
             .tick_rate = 60,
             .player_count = player_count,
@@ -4010,7 +4000,7 @@ test "quest scaffold is deterministic with explicit spawn entries" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = &.{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -4066,7 +4056,7 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
     };
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -4087,7 +4077,7 @@ test "quest scaffold advances spawn timeline and fires entries" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -4119,7 +4109,7 @@ test "quest scaffold supports multiplayer replays with explicit start weapon" {
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplayMulti(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .player_count = 2,
@@ -4145,7 +4135,7 @@ test "quest scaffold resolves native quest preset and start weapon from replay h
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 205,
         .tick_rate = 60,
         .quest_level = "2.5",
@@ -4167,7 +4157,7 @@ test "quest scaffold supports dynamic quest seed variants when no spawn entries 
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 999,
         .tick_rate = 60,
         .quest_level = "2.5",
@@ -4189,7 +4179,7 @@ test "quest scaffold rejects unknown quest level when no spawn entries are provi
     const allocator = std.testing.allocator;
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 999,
         .tick_rate = 60,
         .quest_level = "9.9",
@@ -4222,7 +4212,7 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             const rows = [_][]const u32{row_storage[0..players_len]};
 
             const replay = try buildTestReplayMulti(allocator, .{
-                .game_mode_id = game_mode_quests,
+                .game_mode_id = @intFromEnum(GameModeId.quests),
                 .seed = case.seed,
                 .tick_rate = 60,
                 .player_count = player_count,
@@ -4249,7 +4239,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
 
     const inputs = [_]u32{0} ** 20;
     const replay_baseline = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = inputs[0..],
@@ -4311,7 +4301,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         .{ .capture_bootstrap = bootstrap },
     };
     const replay_bootstrapped = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = inputs[0..],
@@ -4373,7 +4363,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
     };
 
     const replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = inputs[0..],
@@ -4592,7 +4582,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     const allocator = std.testing.allocator;
 
     var replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = &.{ 0, replay_codec.fire_down_flag },
@@ -4666,7 +4656,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
 
 test "capture state reset clears transient pools and restores header fx toggle" {
     var state = state_mod.GameplayState.init(0x1234);
-    state.game_mode = game_mode_quests;
+    state.game_mode = .quests;
     state.fx_toggle = 1;
     state.hardcore = true;
     state.perk_selection.pending_count = 2;
@@ -4750,7 +4740,7 @@ test "shock chain bonus no-ops when no alive target exists" {
 test "resolve quest level key ignores seed fallback outside i32 range" {
     const allocator = std.testing.allocator;
     var replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = std.math.maxInt(u32),
         .tick_rate = 60,
         .inputs = &.{0},
@@ -4764,7 +4754,7 @@ test "resolve quest level key ignores seed fallback outside i32 range" {
 test "quest scaffold rejects oversized quest spawn override table" {
     const allocator = std.testing.allocator;
     var replay = try buildTestReplay(allocator, .{
-        .game_mode_id = game_mode_quests,
+        .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
         .inputs = &.{0},
@@ -4847,7 +4837,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
         ) !struct { x_q4: i32, y_q4: i32 } {
             const events = [_]replay_codec.ReplayEvent{ bootstrap, reflex_apply };
             var replay = try buildTestReplay(allocator_inner, .{
-                .game_mode_id = game_mode_quests,
+                .game_mode_id = @intFromEnum(GameModeId.quests),
                 .seed = 101,
                 .tick_rate = 60,
                 .inputs = &.{0},
@@ -5867,7 +5857,7 @@ test "final revenge aoe includes active non-positive hp entries" {
 }
 
 const TestReplayConfig = struct {
-    game_mode_id: i32 = game_mode_survival,
+    game_mode_id: i32 = @intFromEnum(GameModeId.survival),
     seed: u32 = 1,
     tick_rate: i32,
     quest_level: []const u8 = "",
@@ -5876,7 +5866,7 @@ const TestReplayConfig = struct {
 };
 
 const TestReplayMultiConfig = struct {
-    game_mode_id: i32 = game_mode_survival,
+    game_mode_id: i32 = @intFromEnum(GameModeId.survival),
     seed: u32 = 1,
     tick_rate: i32,
     player_count: i32,

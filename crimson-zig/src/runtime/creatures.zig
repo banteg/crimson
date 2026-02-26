@@ -3156,7 +3156,7 @@ pub fn consumeHitSfxRng(
     projectile_type_id: i32,
 ) void {
     // Mirrors plan_hit_sfx_keys: first eligible hit starts tune and consumes one RNG draw.
-    if (!state.demo_mode_active and state.game_mode != game_mode_rush and !game_tune_started.*) {
+    if (!state.demo_mode_active and state.game_mode != .rush and !game_tune_started.*) {
         game_tune_started.* = true;
         _ = state.rng.rand();
         return;
@@ -3535,7 +3535,6 @@ fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
 }
 
-const game_mode_rush: i32 = 2;
 const thick_skinned_damage_scale_f32: f64 = 0.6660000085830688;
 
 fn creatureTypeHasContactSfx(type_id: i32) bool {

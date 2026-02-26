@@ -13,6 +13,7 @@ pub const perk_count_size: usize = 0x80;
 
 pub const WeaponId = game_ids.WeaponId;
 pub const PerkId = game_ids.PerkId;
+pub const GameModeId = game_ids.GameModeId;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
 const PerkCounts = std.EnumArray(PerkId, i32);
 
@@ -161,7 +162,7 @@ pub const GameplayState = struct {
     game_tune_started: bool = false,
     hardcore: bool = false,
     preserve_bugs: bool = false,
-    game_mode: i32 = 1,
+    game_mode: GameModeId = .survival,
     friendly_fire_enabled: bool = false,
     lean_mean_exp_timer: f32 = 0.25,
     jinxed_timer: f32 = 0.0,
@@ -174,7 +175,7 @@ pub const GameplayState = struct {
     status_quest_unlock_index_full: i32 = 0,
     status_weapon_usage_counts: [weapon_count_size]u32 = [_]u32{0} ** weapon_count_size,
     weapon_available: [weapon_count_size]bool = [_]bool{false} ** weapon_count_size,
-    weapon_available_game_mode: i32 = -1,
+    weapon_available_game_mode: ?GameModeId = null,
     weapon_available_unlock_index: i32 = -1,
     weapon_available_unlock_index_full: i32 = -1,
     perk_available: [perk_count_size]bool = [_]bool{false} ** perk_count_size,
