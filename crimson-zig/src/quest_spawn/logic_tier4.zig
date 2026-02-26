@@ -23,7 +23,7 @@ fn build_401_major_alien_breach(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 4000;
     var offset: i32 = 0;
     while (offset < 0x5DC) : (offset += 0xF) {
@@ -58,7 +58,7 @@ fn build_402_zombie_time(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1500;
     while (trigger < 0x17CDC) {
         try common.appendSpawn(
@@ -89,7 +89,7 @@ fn build_403_lizard_zombie_pact(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1500;
     var wave: i32 = 0;
     while (trigger < 0x1BB5C) {
@@ -149,7 +149,7 @@ fn build_404_the_collaboration(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1500;
     var wave: i32 = 0;
     while (trigger < 0x2B55C) {
@@ -201,8 +201,8 @@ fn build_405_the_massacre(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
-    const edges_wide = common.edgeMidpoints(ctx.width, ctx.width, 128.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     var trigger: i32 = 1500;
     var wave: i32 = 0;
@@ -232,6 +232,49 @@ fn build_405_the_massacre(
     }
 }
 
+const UnblitzkriegSweepAxis = enum { horizontal, vertical };
+
+fn unblitzkriegCoord(reverse: bool, i_var5: i32) f64 {
+    return if (reverse)
+        @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)))
+    else
+        @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
+}
+
+fn appendUnblitzkriegSweep(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    trigger: *i32,
+    axis: UnblitzkriegSweepAxis,
+    fixed_coord: f64,
+    reverse: bool,
+    trigger_step: i32,
+    start_toggle: bool,
+) common.QuestSpawnBuildError!void {
+    var i_var5: i32 = 0;
+    var toggle = start_toggle;
+    var idx: i32 = 0;
+    while (idx < 10) : (idx += 1) {
+        const coord = unblitzkriegCoord(reverse, i_var5);
+        const pos: spawn_runtime.Vec2 = switch (axis) {
+            .horizontal => .{ .x = coord, .y = fixed_coord },
+            .vertical => .{ .x = fixed_coord, .y = coord },
+        };
+        try common.appendSpawn(
+            out_entries,
+            len,
+            pos,
+            0.0,
+            unblitzkrieg_spawn_id_for(toggle),
+            trigger.*,
+            1,
+        );
+        trigger.* += trigger_step;
+        toggle = !toggle;
+        i_var5 += 0x270;
+    }
+}
+
 fn build_406_the_unblitzkrieg(
     _: common.BuildContext,
     _: *common.PythonRandom,
@@ -240,41 +283,8 @@ fn build_406_the_unblitzkrieg(
 ) common.QuestSpawnBuildError!void {
     var trigger: i32 = 500;
 
-    var i_var5: i32 = 0;
-    var idx: i32 = 0;
-    while (idx < 10) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = 824.0, .y = y },
-            0.0,
-            unblitzkrieg_spawn_id_for(@mod(idx, 2) == 1),
-            trigger,
-            1,
-        );
-        trigger += 1800;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    var toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const x = @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = x, .y = 824.0 },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 1500;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .vertical, 824.0, false, 1800, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .horizontal, 824.0, true, 1500, false);
 
     try common.appendSpawn(
         out_entries,
@@ -286,119 +296,12 @@ fn build_406_the_unblitzkrieg(
         1,
     );
 
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = 200.0, .y = y },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 1200;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const x = @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = x, .y = 200.0 },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 800;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = 824.0, .y = y },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 800;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const x = @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = x, .y = 824.0 },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 700;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = 200.0, .y = y },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 700;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
-
-    i_var5 = 0;
-    toggle = false;
-    idx = 0;
-    while (idx < 10) : (idx += 1) {
-        const x = @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = x, .y = 200.0 },
-            0.0,
-            unblitzkrieg_spawn_id_for(toggle),
-            trigger,
-            1,
-        );
-        trigger += 800;
-        toggle = !toggle;
-        i_var5 += 0x270;
-    }
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .vertical, 200.0, true, 1200, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .horizontal, 200.0, false, 800, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .vertical, 824.0, false, 800, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .horizontal, 824.0, true, 700, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .vertical, 200.0, true, 700, false);
+    try appendUnblitzkriegSweep(out_entries, len, &trigger, .horizontal, 200.0, false, 800, false);
 }
 
 fn build_407_gauntlet(
@@ -409,64 +312,35 @@ fn build_407_gauntlet(
 ) common.QuestSpawnBuildError!void {
     const player_count = ctx.player_count + 4;
     const center = common.centerPoint(ctx.width, ctx.height);
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
 
     const ring_count = player_count + 9;
     if (ring_count > 0) {
-        var trigger: i32 = 0;
         const step = std.math.tau / @as(f64, @floatFromInt(ring_count));
-        var idx: i32 = 0;
-        while (idx < ring_count) : (idx += 1) {
-            const angle = @as(f64, @floatFromInt(idx)) * step;
-            const pos = ring_point(center, 158.0, angle);
-            try common.appendSpawn(
-                out_entries,
-                len,
-                pos,
-                0.0,
-                common.SpawnId.alien_spawner_child_32_slow_0a,
-                trigger,
-                1,
-            );
-            trigger += 200;
-        }
+        try common.appendRingSpawns(
+            out_entries,
+            len,
+            center,
+            158.0,
+            ring_count,
+            step,
+            0.0,
+            .zero,
+            common.SpawnId.alien_spawner_child_32_slow_0a,
+            0,
+            200,
+            1,
+        );
     }
 
     if (ring_count > 0) {
         var trigger: i32 = 4000;
         var count: i32 = 2;
         while (count < ring_count + 2) : (count += 1) {
-            try common.appendSpawn(
+            try common.appendSpawnAtAllEdges(
                 out_entries,
                 len,
-                edges.right,
-                0.0,
-                common.SpawnId.zombie_random_41,
-                trigger,
-                count,
-            );
-            try common.appendSpawn(
-                out_entries,
-                len,
-                edges.left,
-                0.0,
-                common.SpawnId.zombie_random_41,
-                trigger,
-                count,
-            );
-            try common.appendSpawn(
-                out_entries,
-                len,
-                edges.bottom,
-                0.0,
-                common.SpawnId.zombie_random_41,
-                trigger,
-                count,
-            );
-            try common.appendSpawn(
-                out_entries,
-                len,
-                edges.top,
+                edges,
                 0.0,
                 common.SpawnId.zombie_random_41,
                 trigger,
@@ -478,23 +352,21 @@ fn build_407_gauntlet(
 
     const outer_count = player_count + 0x11;
     if (outer_count > 0) {
-        var trigger: i32 = 42_500;
         const step = std.math.tau / @as(f64, @floatFromInt(outer_count));
-        var idx: i32 = 0;
-        while (idx < outer_count) : (idx += 1) {
-            const angle = @as(f64, @floatFromInt(idx)) * step;
-            const pos = ring_point(center, 258.0, angle);
-            try common.appendSpawn(
-                out_entries,
-                len,
-                pos,
-                0.0,
-                common.SpawnId.alien_spawner_child_32_slow_0a,
-                trigger,
-                1,
-            );
-            trigger += 500;
-        }
+        try common.appendRingSpawns(
+            out_entries,
+            len,
+            center,
+            258.0,
+            outer_count,
+            step,
+            0.0,
+            .zero,
+            common.SpawnId.alien_spawner_child_32_slow_0a,
+            42_500,
+            500,
+            1,
+        );
     }
 }
 
@@ -599,80 +471,13 @@ fn build_409_the_annihilation(
     }
 }
 
-fn build_410_the_end_of_all(
-    ctx: common.BuildContext,
-    _: *common.PythonRandom,
+fn appendEndOfAllAlternatingEdgeSpiders(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
+    edges_wide: common.EdgePoints,
+    trigger_start: i32,
 ) common.QuestSpawnBuildError!void {
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = 128.0, .y = 128.0 },
-        0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
-        3000,
-        1,
-    );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = 896.0, .y = 128.0 },
-        0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
-        6000,
-        1,
-    );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = 128.0, .y = 896.0 },
-        0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
-        9000,
-        1,
-    );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = 896.0, .y = 896.0 },
-        0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
-        12_000,
-        1,
-    );
-
-    const center = common.centerPoint(ctx.width, ctx.height);
-    const edges_wide = common.edgeMidpoints(ctx.width, ctx.height, 128.0);
-
-    var trigger: i32 = 13_000;
-    var idx: i32 = 0;
-    while (idx < 6) : (idx += 1) {
-        const angle = @as(f64, @floatFromInt(idx)) * 1.0471976;
-        const pos = ring_point(center, 80.0, angle);
-        try common.appendSpawn(
-            out_entries,
-            len,
-            pos,
-            0.0,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
-            trigger,
-            1,
-        );
-        trigger += 300;
-    }
-
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = 512.0, .y = 512.0 },
-        0.0,
-        common.SpawnId.alien_spawner_child_3c_slow_0b,
-        trigger,
-        1,
-    );
-
-    trigger = 18_000;
+    var trigger = trigger_start;
     var y: i32 = 0x100;
     var toggle = false;
     while (y < 0x300) : (y += 0x80) {
@@ -689,58 +494,113 @@ fn build_410_the_end_of_all(
         trigger += 1000;
         toggle = !toggle;
     }
+}
 
-    trigger = 43_000;
-    idx = 0;
-    while (idx < 6) : (idx += 1) {
-        const angle = 0.5235988 + @as(f64, @floatFromInt(idx)) * 1.0471976;
-        const pos = ring_point(center, 80.0, angle);
-        try common.appendSpawn(
-            out_entries,
-            len,
-            pos,
-            0.0,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
-            trigger,
-            1,
-        );
-        trigger += 300;
-    }
+fn build_410_the_end_of_all(
+    ctx: common.BuildContext,
+    _: *common.PythonRandom,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+) common.QuestSpawnBuildError!void {
+    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
+    try common.appendSpawn(
+        out_entries,
+        len,
+        corners.top_left,
+        0.0,
+        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        3000,
+        1,
+    );
+    try common.appendSpawn(
+        out_entries,
+        len,
+        corners.top_right,
+        0.0,
+        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        6000,
+        1,
+    );
+    try common.appendSpawn(
+        out_entries,
+        len,
+        corners.bottom_left,
+        0.0,
+        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        9000,
+        1,
+    );
+    try common.appendSpawn(
+        out_entries,
+        len,
+        corners.bottom_right,
+        0.0,
+        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        12_000,
+        1,
+    );
 
-    trigger = 62_800;
-    idx = 0;
-    while (idx < 12) : (idx += 1) {
-        const angle = 0.5235988 + @as(f64, @floatFromInt(idx)) * 0.5235988;
-        const pos = ring_point(center, 180.0, angle);
-        try common.appendSpawn(
-            out_entries,
-            len,
-            pos,
-            0.0,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
-            trigger,
-            1,
-        );
-        trigger += 500;
-    }
+    const center = common.centerPoint(ctx.width, ctx.height);
+    const edges_wide = common.edgeMidpoints(ctx.width, ctx.height, 128.0);
 
-    trigger = 48_000;
-    y = 0x100;
-    toggle = false;
-    while (y < 0x300) : (y += 0x80) {
-        const x = if (toggle) edges_wide.right.x else edges_wide.left.x;
-        try common.appendSpawn(
-            out_entries,
-            len,
-            .{ .x = x, .y = @floatFromInt(y) },
-            0.0,
-            common.SpawnId.spider_sp1_const_ranged_variant_3c,
-            trigger,
-            2,
-        );
-        trigger += 1000;
-        toggle = !toggle;
-    }
+    try common.appendRingSpawns(
+        out_entries,
+        len,
+        center,
+        80.0,
+        6,
+        1.0471976,
+        0.0,
+        .zero,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
+        13_000,
+        300,
+        1,
+    );
+
+    try common.appendSpawn(
+        out_entries,
+        len,
+        .{ .x = 512.0, .y = 512.0 },
+        0.0,
+        common.SpawnId.alien_spawner_child_3c_slow_0b,
+        14_800,
+        1,
+    );
+
+    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, edges_wide, 18_000);
+
+    try common.appendRingSpawns(
+        out_entries,
+        len,
+        center,
+        80.0,
+        6,
+        1.0471976,
+        0.5235988,
+        .zero,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
+        43_000,
+        300,
+        1,
+    );
+
+    try common.appendRingSpawns(
+        out_entries,
+        len,
+        center,
+        180.0,
+        12,
+        0.5235988,
+        0.5235988,
+        .zero,
+        common.SpawnId.alien_spawner_child_1d_fast_07,
+        62_800,
+        500,
+        1,
+    );
+
+    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, edges_wide, 48_000);
 }
 
 fn unblitzkrieg_spawn_id_for(toggle: bool) common.SpawnId {
@@ -748,8 +608,4 @@ fn unblitzkrieg_spawn_id_for(toggle: bool) common.SpawnId {
         common.SpawnId.alien_spawner_child_31_slow_0d
     else
         common.SpawnId.alien_spawner_child_1d_fast_07;
-}
-
-fn ring_point(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
-    return common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
 }

@@ -25,14 +25,12 @@ fn build_1_1_land_hostile(
 ) common.QuestSpawnBuildError!void {
     _ = rng;
     const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
-    const top_left = common.cornerPointTopLeft(ctx.width, ctx.height, default_edge_offset);
-    const top_right = common.cornerPointTopRight(ctx.width, ctx.height, default_edge_offset);
-    const bottom_left = common.cornerPointBottomLeft(ctx.width, ctx.height, default_edge_offset);
+    const corners = common.cornerPoints(ctx.width, ctx.height, default_edge_offset);
 
     try common.appendSpawn(out_entries, len, edges.bottom, 0.0, common.SpawnId.alien_const_pale_green_26, 500, 1);
-    try common.appendSpawn(out_entries, len, bottom_left, 0.0, common.SpawnId.alien_const_pale_green_26, 2500, 2);
-    try common.appendSpawn(out_entries, len, top_left, 0.0, common.SpawnId.alien_const_pale_green_26, 6500, 3);
-    try common.appendSpawn(out_entries, len, top_right, 0.0, common.SpawnId.alien_const_pale_green_26, 11500, 4);
+    try common.appendSpawn(out_entries, len, corners.bottom_left, 0.0, common.SpawnId.alien_const_pale_green_26, 2500, 2);
+    try common.appendSpawn(out_entries, len, corners.top_left, 0.0, common.SpawnId.alien_const_pale_green_26, 6500, 3);
+    try common.appendSpawn(out_entries, len, corners.top_right, 0.0, common.SpawnId.alien_const_pale_green_26, 11500, 4);
 }
 
 fn build_1_2_minor_alien_breach(
@@ -140,8 +138,7 @@ fn build_1_4_frontline_assault(
 ) common.QuestSpawnBuildError!void {
     _ = rng;
     const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
-    const top_left = common.cornerPointTopLeft(ctx.width, ctx.height, default_edge_offset);
-    const top_right = common.cornerPointTopRight(ctx.width, ctx.height, default_edge_offset);
+    const corners = common.cornerPoints(ctx.width, ctx.height, default_edge_offset);
     var step: i32 = 2500;
 
     for (2..22) |i_usize| {
@@ -160,7 +157,7 @@ fn build_1_4_frontline_assault(
             try common.appendSpawn(
                 out_entries,
                 len,
-                top_left,
+                corners.top_left,
                 0.0,
                 common.SpawnId.alien_const_pale_green_26,
                 trigger,
@@ -172,7 +169,7 @@ fn build_1_4_frontline_assault(
             try common.appendSpawn(
                 out_entries,
                 len,
-                top_right,
+                corners.top_right,
                 0.0,
                 common.SpawnId.alien_const_pale_green_26,
                 trigger,
@@ -419,17 +416,14 @@ fn build_1_10_8_legged_terror(
         1,
     );
 
-    const top_left = common.cornerPointTopLeft(ctx.width, ctx.height, 25.0);
-    const top_right = common.cornerPointTopRight(ctx.width, ctx.height, 25.0);
-    const bottom_left = common.cornerPointBottomLeft(ctx.width, ctx.height, 25.0);
-    const bottom_right = common.cornerPointBottomRight(ctx.width, ctx.height, 25.0);
+    const corners = common.cornerPoints(ctx.width, ctx.height, 25.0);
 
     var trigger: i32 = 6000;
     while (trigger < 36800) {
         try common.appendSpawn(
             out_entries,
             len,
-            top_left,
+            corners.top_left,
             0.0,
             common.SpawnId.spider_sp1_random_3d,
             trigger,
@@ -438,7 +432,7 @@ fn build_1_10_8_legged_terror(
         try common.appendSpawn(
             out_entries,
             len,
-            top_right,
+            corners.top_right,
             0.0,
             common.SpawnId.spider_sp1_random_3d,
             trigger,
@@ -447,7 +441,7 @@ fn build_1_10_8_legged_terror(
         try common.appendSpawn(
             out_entries,
             len,
-            bottom_left,
+            corners.bottom_left,
             0.0,
             common.SpawnId.spider_sp1_random_3d,
             trigger,
@@ -456,7 +450,7 @@ fn build_1_10_8_legged_terror(
         try common.appendSpawn(
             out_entries,
             len,
-            bottom_right,
+            corners.bottom_right,
             0.0,
             common.SpawnId.spider_sp1_random_3d,
             trigger,

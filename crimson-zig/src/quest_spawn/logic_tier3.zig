@@ -22,8 +22,9 @@ fn build301TheBlighting(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
-    const edges_wide = common.edgeMidpoints(ctx.width, ctx.width, 128.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
+    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -46,7 +47,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 128.0 },
+        corners.top_right,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -55,7 +56,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 128.0 },
+        corners.top_left,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -64,7 +65,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 896.0 },
+        corners.bottom_left,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -73,7 +74,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 896.0 },
+        corners.bottom_right,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -142,7 +143,7 @@ fn build302LizardKings(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1152.0, .y = 512.0 },
+        common.squareEdgeMidpoints(ctx.width, 128.0).right,
         0.0,
         common.SpawnId.formation_chain_lizard_4_11,
         1500,
@@ -171,7 +172,7 @@ fn build302LizardKings(
     var angle: f64 = 0.0;
     var idx: i32 = 0;
     while (idx < 28) : (idx += 1) {
-        const point = common.addVec(center, common.mulVec(common.vecFromAngle(angle), 256.0));
+        const point = common.ringPoint(center, 256.0, angle);
         try common.appendSpawn(
             out_entries,
             len,
@@ -192,7 +193,7 @@ fn build303TheKilling(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 2000;
     var wave: i32 = 0;
     while (wave < 10) : (wave += 1) {
@@ -297,14 +298,22 @@ fn build305SurroundedByReptiles(
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
     _ = rng;
+    const vertical_start_left: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 256.0 };
+    const vertical_start_right: spawn_runtime.Vec2 = .{ .x = 768.0, .y = 256.0 };
+    const vertical_step: spawn_runtime.Vec2 = .{ .x = 0.0, .y = 102.4 };
+    const horizontal_start_top: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 256.0 };
+    const horizontal_start_bottom: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 768.0 };
+    const horizontal_step: spawn_runtime.Vec2 = .{ .x = 102.4, .y = 0.0 };
+
     var trigger: i32 = 1000;
     var idx: i32 = 0;
     while (idx < 5) : (idx += 1) {
-        const y = 256.0 + (102.4 * @as(f64, @floatFromInt(idx)));
+        const left_pos = common.linePointAt(vertical_start_left, vertical_step, idx);
+        const right_pos = common.linePointAt(vertical_start_right, vertical_step, idx);
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 256.0, .y = y },
+            left_pos,
             0.0,
             common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
@@ -313,7 +322,7 @@ fn build305SurroundedByReptiles(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 768.0, .y = y },
+            right_pos,
             0.0,
             common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
@@ -325,11 +334,12 @@ fn build305SurroundedByReptiles(
     trigger = 8000;
     idx = 0;
     while (idx < 5) : (idx += 1) {
-        const x = 256.0 + (102.4 * @as(f64, @floatFromInt(idx)));
+        const top_pos = common.linePointAt(horizontal_start_top, horizontal_step, idx);
+        const bottom_pos = common.linePointAt(horizontal_start_bottom, horizontal_step, idx);
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = x, .y = 256.0 },
+            top_pos,
             0.0,
             common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
@@ -338,7 +348,7 @@ fn build305SurroundedByReptiles(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = x, .y = 768.0 },
+            bottom_pos,
             0.0,
             common.SpawnId.alien_spawner_child_31_slow_0d,
             trigger,
@@ -355,7 +365,7 @@ fn build306TheLizquidation(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1500;
     var wave: i32 = 0;
     while (wave < 10) : (wave += 1) {
@@ -400,7 +410,7 @@ fn build307SpidersInc(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     const center = common.centerPoint(ctx.width, ctx.height);
 
     try common.appendSpawn(
@@ -465,7 +475,7 @@ fn build308LizardRaze(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1500;
     while (trigger < 91500) : (trigger += 6000) {
         try common.appendSpawn(
@@ -528,20 +538,19 @@ fn build309DejaVu(
     var step: i32 = 2000;
     while (step > 560) : (step -= 0x50) {
         const angle = common.randomAngle(rng);
-        const direction = common.vecFromAngle(angle);
-        var radius: f64 = 84.0;
-        while (radius < 252.0) : (radius += 42.0) {
-            const pos = common.addVec(center, common.mulVec(direction, radius));
-            try common.appendSpawn(
-                out_entries,
-                len,
-                pos,
-                0.0,
-                common.SpawnId.alien_spawner_child_31_slow_0d,
-                trigger,
-                1,
-            );
-        }
+        try common.appendRadialSpawns(
+            out_entries,
+            len,
+            center,
+            angle,
+            84.0,
+            252.0,
+            42.0,
+            .zero,
+            common.SpawnId.alien_spawner_child_31_slow_0d,
+            trigger,
+            1,
+        );
         trigger += step;
     }
 }

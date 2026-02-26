@@ -21,23 +21,6 @@ fn halfFloor(value: f64) f64 {
     return @floor(value * 0.5);
 }
 
-fn appendRing(
-    out_entries: []spawn_runtime.QuestSpawnEntry,
-    len: *usize,
-    center: spawn_runtime.Vec2,
-    radius: f64,
-    count: usize,
-    step: f64,
-    trigger_ms: i32,
-    spawn_id: common.SpawnId,
-) common.QuestSpawnBuildError!void {
-    for (0..count) |idx| {
-        const angle = @as(f64, @floatFromInt(idx)) * step;
-        const pos = common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
-        try common.appendSpawn(out_entries, len, pos, angle, spawn_id, trigger_ms, 1);
-    }
-}
-
 fn build501TheBeating(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
@@ -295,6 +278,7 @@ fn build504TheGangWars(
     _ = rng;
 
     const half_height = halfFloor(ctx.height);
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -333,7 +317,7 @@ fn build504TheGangWars(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1152.0 },
+        edges_wide.bottom,
         0.0,
         common.SpawnId.formation_chain_alien_10_13,
         50_500,
@@ -357,7 +341,7 @@ fn build504TheGangWars(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1152.0 },
+        edges_wide.bottom,
         0.0,
         common.SpawnId.formation_chain_alien_10_13,
         107_500,
@@ -470,6 +454,7 @@ fn build506CrossFire(
     _ = rng;
 
     const mid_y = ctx.height * 0.5;
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -519,7 +504,7 @@ fn build506CrossFire(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1152.0 },
+        edges_wide.bottom,
         0.0,
         common.SpawnId.spider_sp1_const_blue_40,
         26_000,
@@ -542,8 +527,9 @@ fn build507ArmyOfThree(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = ctx;
     _ = rng;
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -557,7 +543,7 @@ fn build507ArmyOfThree(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 512.0 },
+        edges.left,
         0.0,
         common.SpawnId.formation_grid_alien_white_15,
         5500,
@@ -584,7 +570,7 @@ fn build507ArmyOfThree(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 512.0 },
+        edges.left,
         0.0,
         common.SpawnId.formation_grid_spider_sp1_white_17,
         22_500,
@@ -611,7 +597,7 @@ fn build507ArmyOfThree(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 512.0 },
+        edges.left,
         0.0,
         common.SpawnId.formation_grid_lizard_white_16,
         39_500,
@@ -629,7 +615,7 @@ fn build507ArmyOfThree(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1152.0 },
+        edges_wide.bottom,
         0.0,
         common.SpawnId.formation_grid_alien_white_15,
         52_500,
@@ -655,6 +641,7 @@ fn build508MonsterBlues(
     _ = rng;
 
     const mid_y = ctx.height * 0.5;
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
 
     try common.appendSpawn(
         out_entries,
@@ -677,7 +664,7 @@ fn build508MonsterBlues(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1088.0 },
+        edges.bottom,
         0.0,
         common.SpawnId.spider_sp1_random_03,
         17_500,
@@ -686,7 +673,7 @@ fn build508MonsterBlues(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = -64.0 },
+        edges.top,
         0.0,
         common.SpawnId.spider_sp1_random_03,
         17_500,
@@ -705,7 +692,7 @@ fn build508MonsterBlues(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = -64.0, .y = 512.0 },
+            edges.left,
             0.0,
             spawn_id,
             trigger,
@@ -724,25 +711,34 @@ fn build509Nagolipoli(
     _ = rng;
 
     const center = common.centerPoint(ctx.width, ctx.height);
-    try appendRing(
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    try common.appendRingSpawns(
         out_entries,
         len,
         center,
         128.0,
         8,
         0.7853982,
-        2000,
+        0.0,
+        .angle,
         common.SpawnId.spider_sp1_const_blue_40,
+        2000,
+        0,
+        1,
     );
-    try appendRing(
+    try common.appendRingSpawns(
         out_entries,
         len,
         center,
         178.0,
         12,
         0.5235988,
-        8000,
+        0.0,
+        .angle,
         common.SpawnId.spider_sp1_const_blue_40,
+        8000,
+        0,
+        1,
     );
 
     var trigger: i32 = 13_000;
@@ -793,13 +789,16 @@ fn build509Nagolipoli(
     const last_wave = if (wave > 0) wave - 1 else 0;
 
     var base_left = (last_wave + 0x97 + wave * 4) * 0xA0;
+    const left_line_start: spawn_runtime.Vec2 = .{ .x = 64.0, .y = 256.0 };
+    const right_line_start: spawn_runtime.Vec2 = .{ .x = 960.0, .y = 256.0 };
+    const vertical_step: spawn_runtime.Vec2 = .{ .x = 0.0, .y = 85.333336 };
     var idx: i32 = 0;
     while (idx < 6) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(idx)) * 85.333336 + 256.0;
+        const pos = common.linePointAt(left_line_start, vertical_step, idx);
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 64.0, .y = y },
+            pos,
             0.0,
             common.SpawnId.alien_spawner_child_32_slow_0a,
             base_left,
@@ -811,11 +810,11 @@ fn build509Nagolipoli(
     var base_right = wave * 800 + 25_000;
     idx = 0;
     while (idx < 6) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(idx)) * 85.333336 + 256.0;
+        const pos = common.linePointAt(right_line_start, vertical_step, idx);
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 960.0, .y = y },
+            pos,
             0.0,
             common.SpawnId.alien_spawner_child_32_slow_0a,
             base_right,
@@ -848,7 +847,7 @@ fn build509Nagolipoli(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1088.0 },
+        edges.bottom,
         3.926991,
         common.SpawnId.ai1_lizard_blue_tint_1c,
         base_vertical,
@@ -857,7 +856,7 @@ fn build509Nagolipoli(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = -64.0 },
+        edges.top,
         3.926991,
         common.SpawnId.ai1_lizard_blue_tint_1c,
         base_vertical,
@@ -871,8 +870,8 @@ fn build510TheGathering(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = ctx;
     _ = rng;
+    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -967,7 +966,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -128.0, .y = 512.0 },
+        edges_wide.left,
         0.0,
         common.SpawnId.spider_sp1_const_shock_boss_3a,
         90_500,
@@ -976,7 +975,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1152.0, .y = 512.0 },
+        edges_wide.right,
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         99_500,
@@ -985,7 +984,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1152.0, .y = 512.0 },
+        edges_wide.right,
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         109_500,

@@ -40,6 +40,23 @@ pub const EdgePoints = struct {
     bottom: spawn_runtime.Vec2,
 };
 
+pub const CornerPoints = struct {
+    top_left: spawn_runtime.Vec2,
+    top_right: spawn_runtime.Vec2,
+    bottom_left: spawn_runtime.Vec2,
+    bottom_right: spawn_runtime.Vec2,
+};
+
+pub const RingHeadingMode = enum {
+    zero,
+    angle,
+};
+
+pub const RadialHeadingMode = enum {
+    zero,
+    from_center,
+};
+
 pub inline fn appendEntry(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
@@ -82,6 +99,28 @@ pub inline fn edgeMidpoints(width: f64, height: f64, offset: f64) EdgePoints {
         .right = .{ .x = width + offset, .y = center.y },
         .top = .{ .x = center.x, .y = -offset },
         .bottom = .{ .x = center.x, .y = height + offset },
+    };
+}
+
+pub inline fn squareEdgeMidpoints(width: f64, offset: f64) EdgePoints {
+    return edgeMidpoints(width, width, offset);
+}
+
+pub inline fn cornerPoints(width: f64, height: f64, offset: f64) CornerPoints {
+    return .{
+        .top_left = .{ .x = -offset, .y = -offset },
+        .top_right = .{ .x = width + offset, .y = -offset },
+        .bottom_left = .{ .x = -offset, .y = height + offset },
+        .bottom_right = .{ .x = width + offset, .y = height + offset },
+    };
+}
+
+pub inline fn insetCornerPoints(width: f64, height: f64, inset: f64) CornerPoints {
+    return .{
+        .top_left = .{ .x = inset, .y = inset },
+        .top_right = .{ .x = width - inset, .y = inset },
+        .bottom_left = .{ .x = inset, .y = height - inset },
+        .bottom_right = .{ .x = width - inset, .y = height - inset },
     };
 }
 
@@ -143,6 +182,90 @@ pub inline fn mulVec(vec: spawn_runtime.Vec2, scalar: f64) spawn_runtime.Vec2 {
 
 pub inline fn toAngle(vec: spawn_runtime.Vec2) f64 {
     return math_runtime.atan2(vec.y, vec.x);
+}
+
+pub inline fn linePointAt(start: spawn_runtime.Vec2, step: spawn_runtime.Vec2, idx: i32) spawn_runtime.Vec2 {
+    return addVec(start, mulVec(step, @as(f64, @floatFromInt(idx))));
+}
+
+pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
+    return addVec(center, mulVec(vecFromAngle(angle), radius));
+}
+
+pub inline fn appendSpawnAtAllEdges(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    edges: EdgePoints,
+    heading: f64,
+    spawn_id: SpawnId,
+    trigger_ms: i32,
+    count: i32,
+) QuestSpawnBuildError!void {
+    try appendSpawn(out_entries, len, edges.right, heading, spawn_id, trigger_ms, count);
+    try appendSpawn(out_entries, len, edges.left, heading, spawn_id, trigger_ms, count);
+    try appendSpawn(out_entries, len, edges.bottom, heading, spawn_id, trigger_ms, count);
+    try appendSpawn(out_entries, len, edges.top, heading, spawn_id, trigger_ms, count);
+}
+
+pub fn appendRingSpawns(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    center: spawn_runtime.Vec2,
+    radius: f64,
+    count: i32,
+    step: f64,
+    start_angle: f64,
+    heading_mode: RingHeadingMode,
+    spawn_id: SpawnId,
+    trigger_start: i32,
+    trigger_step: i32,
+    spawn_count: i32,
+) QuestSpawnBuildError!void {
+    if (count <= 0) return;
+    var trigger = trigger_start;
+    var idx: i32 = 0;
+    while (idx < count) : (idx += 1) {
+        const angle = start_angle + @as(f64, @floatFromInt(idx)) * step;
+        const heading = switch (heading_mode) {
+            .zero => 0.0,
+            .angle => angle,
+        };
+        try appendSpawn(
+            out_entries,
+            len,
+            ringPoint(center, radius, angle),
+            heading,
+            spawn_id,
+            trigger,
+            spawn_count,
+        );
+        trigger += trigger_step;
+    }
+}
+
+pub fn appendRadialSpawns(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    center: spawn_runtime.Vec2,
+    angle: f64,
+    radius_start: f64,
+    radius_end: f64,
+    radius_step: f64,
+    heading_mode: RadialHeadingMode,
+    spawn_id: SpawnId,
+    trigger_ms: i32,
+    count: i32,
+) QuestSpawnBuildError!void {
+    const direction = vecFromAngle(angle);
+    var radius = radius_start;
+    while (radius < radius_end) : (radius += radius_step) {
+        const pos = addVec(center, mulVec(direction, radius));
+        const heading = switch (heading_mode) {
+            .zero => 0.0,
+            .from_center => headingFromCenter(pos, center),
+        };
+        try appendSpawn(out_entries, len, pos, heading, spawn_id, trigger_ms, count);
+    }
 }
 
 pub const PythonRandom = struct {

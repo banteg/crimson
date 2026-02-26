@@ -22,7 +22,7 @@ fn build21EverredPastures(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var wave: i32 = 1;
     while (wave <= 8) : (wave += 1) {
         const trigger = (wave - 1) * 13_000 + 1_500;
@@ -91,12 +91,13 @@ fn build22SpiderSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = ctx;
     _ = rng;
+    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 128.0 },
+        corners.top_left,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         1_500,
@@ -105,7 +106,7 @@ fn build22SpiderSpawns(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 896.0 },
+        corners.bottom_right,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         1_500,
@@ -114,7 +115,7 @@ fn build22SpiderSpawns(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 128.0 },
+        corners.top_right,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         1_500,
@@ -123,7 +124,7 @@ fn build22SpiderSpawns(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 896.0 },
+        corners.bottom_left,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         1_500,
@@ -132,7 +133,7 @@ fn build22SpiderSpawns(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 512.0 },
+        edges.left,
         0.0,
         common.SpawnId.spider_sp1_ai7_timer_38,
         3_000,
@@ -168,7 +169,7 @@ fn build22SpiderSpawns(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1088.0, .y = 512.0 },
+        edges.right,
         0.0,
         common.SpawnId.spider_sp1_ai7_timer_38,
         21_000,
@@ -203,14 +204,17 @@ fn build23ArachnoidFarm(
     _ = rng;
     const count_a = ctx.player_count + 4;
     if (count_a >= 0) {
+        const top_start: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 256.0 };
+        const bottom_start: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 768.0 };
+        const line_step: spawn_runtime.Vec2 = .{ .x = 102.4, .y = 0.0 };
         var trigger: i32 = 500;
         var idx: i32 = 0;
         while (idx < count_a) : (idx += 1) {
-            const x = 256.0 + @as(f64, @floatFromInt(idx)) * 102.4;
+            const pos = common.linePointAt(top_start, line_step, idx);
             try common.appendSpawn(
                 out_entries,
                 len,
-                .{ .x = x, .y = 256.0 },
+                pos,
                 0.0,
                 common.SpawnId.alien_spawner_child_32_slow_0a,
                 trigger,
@@ -221,11 +225,11 @@ fn build23ArachnoidFarm(
         trigger = 10_500;
         idx = 0;
         while (idx < count_a) : (idx += 1) {
-            const x = 256.0 + @as(f64, @floatFromInt(idx)) * 102.4;
+            const pos = common.linePointAt(bottom_start, line_step, idx);
             try common.appendSpawn(
                 out_entries,
                 len,
-                .{ .x = x, .y = 768.0 },
+                pos,
                 0.0,
                 common.SpawnId.alien_spawner_child_32_slow_0a,
                 trigger,
@@ -237,14 +241,16 @@ fn build23ArachnoidFarm(
 
     const count_b = ctx.player_count + 7;
     if (count_b >= 0) {
+        const mid_start: spawn_runtime.Vec2 = .{ .x = 256.0, .y = 512.0 };
+        const mid_step: spawn_runtime.Vec2 = .{ .x = 64.0, .y = 0.0 };
         var trigger: i32 = 40_500;
         var idx: i32 = 0;
         while (idx < count_b) : (idx += 1) {
-            const x = 256.0 + @as(f64, @floatFromInt(idx)) * 64.0;
+            const pos = common.linePointAt(mid_start, mid_step, idx);
             try common.appendSpawn(
                 out_entries,
                 len,
-                .{ .x = x, .y = 512.0 },
+                pos,
                 0.0,
                 common.SpawnId.alien_spawner_child_32_fast_10,
                 trigger,
@@ -262,7 +268,7 @@ fn build24TwoFronts(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var wave: i32 = 0;
     while (wave < 40) : (wave += 1) {
         const trigger_a = wave * 2_000 + 1_000;
@@ -340,20 +346,19 @@ fn build25SweepStakes(
     var step: i32 = 2_000;
     while (step > 720) {
         const angle = common.randomAngle(rng);
-        const direction = common.vecFromAngle(angle);
-        var radius: f64 = 84.0;
-        while (radius < 252.0) : (radius += 42.0) {
-            const pos = common.addVec(center, common.mulVec(direction, radius));
-            try common.appendSpawn(
-                out_entries,
-                len,
-                pos,
-                common.headingFromCenter(pos, center),
-                common.SpawnId.alien_ai7_orbiter_36,
-                trigger,
-                1,
-            );
-        }
+        try common.appendRadialSpawns(
+            out_entries,
+            len,
+            center,
+            angle,
+            84.0,
+            252.0,
+            42.0,
+            .from_center,
+            common.SpawnId.alien_ai7_orbiter_36,
+            trigger,
+            1,
+        );
         trigger += @max(step, 600);
         step -= 0x50;
     }
@@ -366,7 +371,7 @@ fn build26EvilZombiesAtLarge(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     var trigger: i32 = 1_500;
     var count: i32 = 4;
     while (count <= 13) : (count += 1) {
@@ -416,8 +421,8 @@ fn build27SurvivalOfTheFastest(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = ctx;
     _ = rng;
+    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
 
     var trigger: i32 = 500;
     var x: i32 = 0x100;
@@ -497,7 +502,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 128.0 },
+        corners.top_left,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         22_300,
@@ -506,7 +511,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 128.0 },
+        corners.top_right,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         22_300,
@@ -515,7 +520,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 128.0, .y = 896.0 },
+        corners.bottom_left,
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         24_300,
@@ -524,7 +529,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 896.0, .y = 896.0 },
+        corners.bottom_right,
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         24_300,
@@ -634,16 +639,17 @@ fn build29GhostPatrols(
 }
 
 fn build210Spideroids(
-    _: common.BuildContext,
+    ctx: common.BuildContext,
     rng: *common.PythonRandom,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
+    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1088.0, .y = 512.0 },
+        edges.right,
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         1_000,
@@ -652,7 +658,7 @@ fn build210Spideroids(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 512.0 },
+        edges.left,
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         3_000,
@@ -661,7 +667,7 @@ fn build210Spideroids(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1088.0, .y = 256.0 },
+        .{ .x = edges.right.x, .y = 256.0 },
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         6_000,
@@ -670,7 +676,7 @@ fn build210Spideroids(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 1088.0, .y = 762.0 },
+        .{ .x = edges.right.x, .y = 762.0 },
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         9_000,
@@ -679,7 +685,7 @@ fn build210Spideroids(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = 512.0, .y = 1088.0 },
+        edges.bottom,
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         9_000,
@@ -688,7 +694,7 @@ fn build210Spideroids(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = -64.0, .y = 762.0 },
+        .{ .x = edges.left.x, .y = 762.0 },
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         9_000,
