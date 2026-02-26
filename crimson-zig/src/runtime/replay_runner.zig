@@ -23,19 +23,19 @@ const math = @import("math.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const GameModeId = game_ids.GameModeId;
-const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
-const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
-const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
-const relative_move_heading_none: f64 = -1.0;
-const relative_move_heading_forward: f64 = 0.0;
-const relative_move_heading_forward_right: f64 = 0.7853981852531433;
-const relative_move_heading_right: f64 = native_half_pi;
-const relative_move_heading_backward_right: f64 = 2.356194496154785;
-const relative_move_heading_backward: f64 = native_pi;
-const relative_move_heading_backward_left: f64 = 3.9269909858703613;
-const relative_move_heading_left: f64 = native_math.roundTripF32(native_tau - native_half_pi);
-const relative_move_heading_forward_left: f64 = 5.4977874755859375;
-const relative_move_turn_align_scale: f64 = 7.957746982574463;
+const native_half_pi: f32 = native_math.native_half_pi;
+const native_pi: f32 = native_math.native_pi;
+const native_tau: f32 = native_math.native_tau;
+const relative_move_heading_none: f32 = -1.0;
+const relative_move_heading_forward: f32 = 0.0;
+const relative_move_heading_forward_right: f32 = 0.7853981852531433;
+const relative_move_heading_right: f32 = native_half_pi;
+const relative_move_heading_backward_right: f32 = 2.356194496154785;
+const relative_move_heading_backward: f32 = native_pi;
+const relative_move_heading_backward_left: f32 = 3.9269909858703613;
+const relative_move_heading_left: f32 = narrowF32(native_tau - native_half_pi);
+const relative_move_heading_forward_left: f32 = 5.4977874755859375;
+const relative_move_turn_align_scale: f32 = 7.957746982574463;
 const movement_control_relative: i32 = 1;
 const movement_control_static: i32 = 2;
 const movement_control_dual_action_pad: i32 = 3;
@@ -2682,8 +2682,8 @@ fn updatePlayerFromReplayInput(
         speed_multiplier += 1.0;
     }
 
-    var speed: f64 = 0.0;
-    var phase_sign: f64 = 1.0;
+    var speed: f32 = 0.0;
+    var phase_sign: f32 = 1.0;
     var move_delta_override: ?state_mod.Vec2 = null;
     const player_controlled_movement =
         move_mode != movement_control_computer and
@@ -2790,14 +2790,14 @@ fn updatePlayerFromReplayInput(
             }
         } else {
             const moving_input = raw_mag > 0.2;
-            var turn_alignment_scale: f64 = 1.0;
+            var turn_alignment_scale: f32 = 1.0;
             if (moving_input) {
                 const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
                 raw_move = raw_move.mul(inv);
                 const target_heading = normalizeHeading(raw_move.toHeading());
                 const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
                 move = directionFromHeadingNative(player.heading);
-                turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+                turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
                 playerAccelerateMoveSpeed(player, movement_dt);
             } else {
                 playerDecelerateMoveSpeed(player, movement_dt);
@@ -2812,16 +2812,16 @@ fn updatePlayerFromReplayInput(
             }
         }
     } else {
-        const move_input_threshold: f64 = 0.2;
+        const move_input_threshold: f32 = 0.2;
         const moving_input = raw_mag > move_input_threshold;
-        var turn_alignment_scale: f64 = 1.0;
+        var turn_alignment_scale: f32 = 1.0;
         if (moving_input) {
             const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
             raw_move = raw_move.mul(inv);
             const target_heading = normalizeHeading(raw_move.toHeading());
             const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
             move = directionFromHeadingNative(player.heading);
-            turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+            turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
             playerAccelerateMoveSpeed(player, movement_dt);
         } else {
             playerDecelerateMoveSpeed(player, movement_dt);
@@ -2943,7 +2943,7 @@ fn playerMoveDeltaFromHeading(
     };
 }
 
-fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
+fn directionFromHeadingNative(heading: f32) state_mod.Vec2 {
     const radians = narrowF32(heading - native_half_pi);
     return .{
         .x = narrowF32(math.cos(radians)),
@@ -2984,18 +2984,18 @@ fn playerApplyMoveSpeedCaps(
 }
 
 const HeadingApproachResult = struct {
-    diff: f64,
-    turn_delta: f64,
+    diff: f32,
+    turn_delta: f32,
 };
 
 fn playerHeadingApproachTargetWithDelta(
     player: *state_mod.PlayerState,
-    target_heading: f64,
-    dt: f64,
+    target_heading: f32,
+    dt: f32,
 ) HeadingApproachResult {
-    var heading = narrowF32(normalizeHeading(player.heading));
+    var heading = normalizeHeading(player.heading);
     player.heading = heading;
-    const target = narrowF32(target_heading);
+    const target = target_heading;
 
     const direct = narrowF32(@abs(narrowF32(target - heading)));
     var high = heading;
@@ -3005,9 +3005,8 @@ fn playerHeadingApproachTargetWithDelta(
     const wrapped = narrowF32(@abs(narrowF32(native_tau - high + low)));
     const diff = if (direct >= wrapped) wrapped else direct;
 
-    const dt_f32 = narrowF32(dt);
-    const scaled = narrowF32(dt_f32 * diff);
-    var turn_delta: f64 = 0.0;
+    const scaled = narrowF32(dt * diff);
+    var turn_delta: f32 = 0.0;
     if (direct <= wrapped) {
         if (target > heading) {
             turn_delta = narrowF32(scaled * 5.0);
@@ -3032,15 +3031,14 @@ fn playerHeadingApproachTargetWithDelta(
 
 fn playerHeadingApproachTarget(
     player: *state_mod.PlayerState,
-    target_heading: f64,
-    dt: f64,
-) f64 {
+    target_heading: f32,
+    dt: f32,
+) f32 {
     return playerHeadingApproachTargetWithDelta(player, target_heading, dt).diff;
 }
 
-fn normalizeHeading(value: f64) f64 {
-    const wrapped = native_math.wrapAngle0Tau(narrowF32(value));
-    return native_math.roundTripF32(wrapped);
+fn normalizeHeading(value: f32) f32 {
+    return native_math.wrapAngle0Tau(value);
 }
 
 fn applyPerkWorldDtSteps(
