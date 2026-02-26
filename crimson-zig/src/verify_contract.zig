@@ -24,10 +24,7 @@ pub const ScoreMetric = enum {
 };
 
 pub fn scoreMetricFromString(raw: []const u8) ?ScoreMetric {
-    if (std.mem.eql(u8, raw, "auto")) return .auto;
-    if (std.mem.eql(u8, raw, "score_xp")) return .score_xp;
-    if (std.mem.eql(u8, raw, "elapsed_ms")) return .elapsed_ms;
-    return null;
+    return std.meta.stringToEnum(ScoreMetric, raw);
 }
 
 pub fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) ScoreMetric {
@@ -42,11 +39,7 @@ pub fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) ScoreMetric {
 }
 
 pub fn scoreMetricLabel(metric: ScoreMetric) []const u8 {
-    return switch (metric) {
-        .auto => "auto",
-        .score_xp => "score_xp",
-        .elapsed_ms => "elapsed_ms",
-    };
+    return @tagName(metric);
 }
 
 test "resolve metric for survival stays score_xp" {
