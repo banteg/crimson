@@ -192,13 +192,13 @@ pub const CreaturePool = struct {
                 );
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
-                const transient_heading = narrowF32(@as(f64, @floatFromInt(rng.rand() % 314)) * 0.01);
+                const transient_heading = narrowF32(@as(f32, @floatFromInt(rng.rand() % 314)) * 0.01);
                 self.entries[parent_idx].heading = transient_heading;
 
                 const angle_step = std.math.pi / 4.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..8) |idx| {
-                    const angle = @as(f64, @floatFromInt(idx)) * angle_step;
+                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
                     const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
@@ -430,7 +430,7 @@ pub const CreaturePool = struct {
                 const angle_step = std.math.pi / 12.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..24) |idx| {
-                    const angle = @as(f64, @floatFromInt(idx)) * angle_step;
+                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
                     const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
@@ -514,7 +514,7 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
-                    const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
+                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
                     const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
@@ -532,7 +532,7 @@ pub const CreaturePool = struct {
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
                     self.entries[child_idx].target_offset = .{
-                        .x = narrowF32(-256.0 + @as(f64, @floatFromInt(idx)) * 64.0),
+                        .x = narrowF32(-256.0 + @as(f32, @floatFromInt(idx)) * 64.0),
                         .y = -256.0,
                     };
                     self.entries[child_idx].pos = .{
@@ -630,7 +630,7 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..10) |idx| {
-                    const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
+                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
                     const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
@@ -950,9 +950,9 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -973,8 +973,8 @@ pub const CreaturePool = struct {
                             .y = narrowF32(y_offset),
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(call.pos.x + x_offset),
-                            .y = narrowF32(call.pos.y + y_offset),
+                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
+                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1001,9 +1001,9 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1024,8 +1024,8 @@ pub const CreaturePool = struct {
                             .y = narrowF32(y_offset),
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(call.pos.x + x_offset),
-                            .y = narrowF32(call.pos.y + y_offset),
+                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
+                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1052,9 +1052,9 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1075,8 +1075,8 @@ pub const CreaturePool = struct {
                             .y = narrowF32(y_offset),
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(call.pos.x + x_offset),
-                            .y = narrowF32(call.pos.y + y_offset),
+                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
+                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1103,9 +1103,9 @@ pub const CreaturePool = struct {
 
                 var last_idx = parent_idx;
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1126,8 +1126,8 @@ pub const CreaturePool = struct {
                             .y = narrowF32(y_offset),
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(call.pos.x + x_offset),
-                            .y = narrowF32(call.pos.y + y_offset),
+                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
+                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                         last_idx = child_idx;
@@ -1153,9 +1153,9 @@ pub const CreaturePool = struct {
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
                 for (0..9) |x_idx| {
-                    const x_offset = -64.0 * @as(f64, @floatFromInt(x_idx));
+                    const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
-                        const y_offset = 128.0 + 16.0 * @as(f64, @floatFromInt(y_idx));
+                        const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
                         const child_idx = self.spawnFromStats(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1176,8 +1176,8 @@ pub const CreaturePool = struct {
                             .y = narrowF32(y_offset),
                         };
                         self.entries[child_idx].pos = .{
-                            .x = narrowF32(call.pos.x + x_offset),
-                            .y = narrowF32(call.pos.y + y_offset),
+                            .x = narrowF32(narrowF32(call.pos.x) + x_offset),
+                            .y = narrowF32(narrowF32(call.pos.y) + y_offset),
                         };
                         self.entries[child_idx].target = self.entries[child_idx].pos;
                     }
@@ -1201,7 +1201,7 @@ pub const CreaturePool = struct {
 
                 const angle_step = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
-                    const angle = @as(f64, @floatFromInt(idx)) * angle_step;
+                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
                     const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(110.0);
                     const child_idx = self.spawnFromStats(
                         rng,
