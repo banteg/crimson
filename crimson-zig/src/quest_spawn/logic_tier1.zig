@@ -409,7 +409,7 @@ fn build_1_10_8_legged_terror(
     try common.appendSpawn(
         out_entries,
         len,
-        .{ .x = ctx.width - 256.0, .y = @floor(ctx.width / 2.0) },
+        .{ .x = ctx.width - 256.0, .y = @floor(ctx.height / 2.0) },
         0.0,
         common.SpawnId.spider_sp1_const_shock_boss_3a,
         1000,
