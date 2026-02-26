@@ -395,7 +395,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = 1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01;
+                projectiles.entries[id].speed_scale = asF32F64(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
             }
         },
         .gauss_shotgun => {
@@ -411,7 +411,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = 1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01;
+                projectiles.entries[id].speed_scale = asF32F64(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .ion_shotgun => {
@@ -427,7 +427,7 @@ fn tryFireWeaponWithForce(
                     meta,
                     false,
                 );
-                projectiles.entries[id].speed_scale = 1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01;
+                projectiles.entries[id].speed_scale = asF32F64(1.4 + @as(f64, @floatFromInt(state.rng.rand() % 0x50)) * 0.01);
             }
         },
         .flamethrower => {
@@ -544,7 +544,7 @@ fn tryFireWeaponWithForce(
                 if (pellets > 1 and
                     (player.weapon_id == .shotgun or player.weapon_id == .sawed_off_shotgun or player.weapon_id == .jackhammer))
                 {
-                    projectiles.entries[id].speed_scale = 1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01;
+                    projectiles.entries[id].speed_scale = asF32F64(1.0 + @as(f64, @floatFromInt(state.rng.rand() % 100)) * 0.01);
                 }
             }
         },

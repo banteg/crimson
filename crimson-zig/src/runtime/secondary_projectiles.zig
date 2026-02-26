@@ -21,15 +21,15 @@ pub const SecondaryProjectileTypeId = struct {
 
 pub const SecondaryProjectile = struct {
     active: bool = false,
-    angle: f64 = 0.0,
-    speed: f64 = 0.0,
+    angle: f32 = 0.0,
+    speed: f32 = 0.0,
     pos: survival_state.Vec2 = .{},
     vel: survival_state.Vec2 = .{},
-    detonation_t: f64 = 0.0,
-    detonation_scale: f64 = 1.0,
+    detonation_t: f32 = 0.0,
+    detonation_scale: f32 = 1.0,
     type_id: i32 = 0,
     owner_id: i32 = -100,
-    trail_timer: f64 = 0.0,
+    trail_timer: f32 = 0.0,
     target_id: i32 = -1,
     target_hint_active: bool = false,
     target_hint: survival_state.Vec2 = .{},
@@ -87,11 +87,11 @@ pub const SecondaryProjectilePool = struct {
             return index;
         }
 
-        var base_speed: f64 = 90.0;
+        var base_speed: f32 = 90.0;
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             base_speed = 190.0;
         }
-        entry.vel = directionFromHeading(entry.angle).mul(asF32F64(base_speed));
+        entry.vel = directionFromHeading(entry.angle).mul(base_speed);
         entry.speed = asF32F64(time_to_live);
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
@@ -404,8 +404,8 @@ pub const SecondaryProjectilePool = struct {
     }
 };
 
-fn directionFromHeading(heading: f64) survival_state.Vec2 {
-    const radians = heading - std.math.pi / 2.0;
+fn directionFromHeading(heading: f32) survival_state.Vec2 {
+    const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
         .x = asF32F64(survival_math.cos(radians)),
         .y = asF32F64(survival_math.sin(radians)),

@@ -1750,7 +1750,7 @@ fn applyNukeBonus(
         const meta = survival_state.weaponProjectileMeta(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
-        projectiles.entries[proj_idx].speed_scale *= speed_scale;
+        projectiles.entries[proj_idx].speed_scale *= asF32F64(speed_scale);
     }
 
     for (0..2) |_| {

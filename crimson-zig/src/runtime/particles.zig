@@ -22,13 +22,13 @@ pub const Particle = struct {
     render_flag: bool = false,
     pos: survival_state.Vec2 = .{},
     vel: survival_state.Vec2 = .{},
-    scale_x: f64 = 1.0,
-    scale_y: f64 = 1.0,
-    scale_z: f64 = 1.0,
-    age: f64 = 0.0,
-    intensity: f64 = 0.0,
-    angle: f64 = 0.0,
-    spin: f64 = 0.0,
+    scale_x: f32 = 1.0,
+    scale_y: f32 = 1.0,
+    scale_z: f32 = 1.0,
+    age: f32 = 0.0,
+    intensity: f32 = 0.0,
+    angle: f32 = 0.0,
+    spin: f32 = 0.0,
     style_id: i32 = ParticleStyleId.flamethrower,
     target_id: i32 = -1,
     owner_id: i32 = -100,
@@ -58,7 +58,7 @@ pub const ParticlePool = struct {
                 .x = asF32F64(pos.x),
                 .y = asF32F64(pos.y),
             },
-            .vel = directionFromAngle(angle).mul(90.0),
+            .vel = directionFromAngle(asF32F64(angle)).mul(90.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
@@ -89,7 +89,7 @@ pub const ParticlePool = struct {
                 .x = asF32F64(pos.x),
                 .y = asF32F64(pos.y),
             },
-            .vel = directionFromAngle(angle).mul(30.0),
+            .vel = directionFromAngle(asF32F64(angle)).mul(30.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
@@ -143,7 +143,7 @@ pub const ParticlePool = struct {
                 };
             }
 
-            const alive_cutoff: f64 = if (style == ParticleStyleId.flamethrower) 0.0 else 0.8;
+            const alive_cutoff: f32 = if (style == ParticleStyleId.flamethrower) 0.0 else 0.8;
             if (!(entry.intensity > alive_cutoff)) {
                 entry.active = false;
                 if (style == ParticleStyleId.bubblegun and entry.target_id != -1) {
@@ -165,9 +165,9 @@ pub const ParticlePool = struct {
             }
 
             if (entry.render_flag) {
-                const jitter_base = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 100)) - 50)) * 0.06;
+                const jitter_base = asF32F64(@as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 100)) - 50)) * 0.06);
                 var jitter = asF32F64(jitter_base * @max(entry.intensity, 0.0) * dt_f32);
-                var speed: f64 = 82.0;
+                var speed: f32 = 82.0;
                 if (style == ParticleStyleId.flamethrower) {
                     jitter = asF32F64(jitter * 1.96);
                     speed = 82.0;
@@ -179,7 +179,7 @@ pub const ParticlePool = struct {
                     speed = 82.0;
                 }
                 entry.angle = asF32F64(entry.angle - jitter);
-                entry.vel = directionFromAngle(entry.angle).mul(asF32F64(speed));
+                entry.vel = directionFromAngle(entry.angle).mul(speed);
             }
 
             const alpha = std.math.clamp(entry.intensity, 0.0, 1.0);
@@ -275,7 +275,7 @@ pub const ParticlePool = struct {
 fn creatureFindInRadius(
     creatures: *survival_creatures.CreaturePool,
     pos: survival_state.Vec2,
-    radius: f64,
+    radius: f32,
 ) ?usize {
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
@@ -294,15 +294,15 @@ fn creatureFindInRadius(
     return null;
 }
 
-fn directionFromAngle(angle: f64) survival_state.Vec2 {
+fn directionFromAngle(angle: f32) survival_state.Vec2 {
     return .{
         .x = asF32F64(survival_math.cos(angle)),
         .y = asF32F64(survival_math.sin(angle)),
     };
 }
 
-fn wrapAngle(angle: f64) f64 {
-    return asF32F64(@mod(asF32F64(angle), std.math.tau));
+fn wrapAngle(angle: f32) f32 {
+    return native_math.wrapAngle0Tau(angle);
 }
 
 fn consumeAddRandomRng(state: *survival_state.GameplayState) void {

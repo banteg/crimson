@@ -21,17 +21,17 @@ const perk_id_ion_gun_master: i32 = survival_perks.PerkId.ion_gun_master;
 
 pub const Projectile = struct {
     active: bool = false,
-    angle: f64 = 0.0,
+    angle: f32 = 0.0,
     pos: survival_state.Vec2 = .{},
     origin: survival_state.Vec2 = .{},
     vel: survival_state.Vec2 = .{},
     type_id: i32 = 0,
-    life_timer: f64 = 0.0,
-    reserved: f64 = 0.0,
-    speed_scale: f64 = 1.0,
-    damage_pool: f64 = 1.0,
-    hit_radius: f64 = 1.0,
-    base_damage: f64 = 0.0,
+    life_timer: f32 = 0.0,
+    reserved: f32 = 0.0,
+    speed_scale: f32 = 1.0,
+    damage_pool: f32 = 1.0,
+    hit_radius: f32 = 1.0,
+    base_damage: f32 = 0.0,
     owner_id: i32 = 0,
     hits_players: bool = false,
 };
@@ -76,10 +76,10 @@ pub const ProjectilePool = struct {
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = angle,
+            .angle = asF32F64(angle),
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = directionFromHeading(angle).mul(1.5),
+            .vel = directionFromHeading(asF32F64(angle)).mul(1.5),
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
@@ -423,7 +423,7 @@ pub const ProjectilePool = struct {
                             dt,
                             world_size,
                         );
-                        proj.damage_pool -= creatures.entries[hit_idx.?].hp;
+                        proj.damage_pool -= asF32F64(creatures.entries[hit_idx.?].hp);
                     }
                     const idx = hit_idx.?;
                     collidable_snapshot[idx] = creatures.entries[idx].active and
@@ -585,7 +585,7 @@ fn creatureHitRadius(size: f64) f64 {
     return radius;
 }
 
-fn directionFromHeading(heading: f64) survival_state.Vec2 {
+fn directionFromHeading(heading: f32) survival_state.Vec2 {
     const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
         .x = asF32F64(survival_math.cos(radians)),
