@@ -32,6 +32,9 @@ pub inline fn atan2Native(y: f32, x: f32) f32 {
 
 pub inline fn wrapAngle0Tau(value: f32) f32 {
     var angle = roundF32(value);
+    // Keep iterative wrapping to match decompiled native behavior for finite values.
+    // Non-finite inputs would otherwise never converge (e.g. +/-inf).
+    if (!std.math.isFinite(angle)) return angle;
     while (angle < 0.0) {
         angle = roundF32(angle + native_tau);
     }
@@ -54,4 +57,22 @@ pub inline fn headingFromDeltaNative(dx: f32, dy: f32) f32 {
 
 pub inline fn headingAddPiNative(heading: f32) f32 {
     return roundF32(heading + native_pi);
+}
+
+test "wrap angle 0..tau keeps native finite behavior" {
+    const tol: f32 = 1e-6;
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), wrapAngle0Tau(roundF32(native_tau + 0.25)), tol);
+    try std.testing.expectApproxEqAbs(roundF32(native_tau - 0.25), wrapAngle0Tau(-0.25), tol);
+    try std.testing.expectApproxEqAbs(native_tau, wrapAngle0Tau(native_tau), tol);
+}
+
+test "wrap angle 0..tau returns non-finite unchanged" {
+    const pos_inf = std.math.inf(f32);
+    const neg_inf = -std.math.inf(f32);
+    const nan = std.math.nan(f32);
+
+    try std.testing.expect(std.math.isPositiveInf(wrapAngle0Tau(pos_inf)));
+    try std.testing.expect(std.math.isNegativeInf(wrapAngle0Tau(neg_inf)));
+    try std.testing.expect(std.math.isNan(wrapAngle0Tau(nan)));
 }
