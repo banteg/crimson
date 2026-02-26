@@ -35,24 +35,6 @@ const ProjectileTypeId = struct {
     pub const fire_bullets: i32 = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
 };
 
-const BonusId = struct {
-    pub const unused: i32 = @intFromEnum(game_ids.BonusId.unused);
-    pub const points: i32 = @intFromEnum(game_ids.BonusId.points);
-    pub const energizer: i32 = @intFromEnum(game_ids.BonusId.energizer);
-    pub const weapon: i32 = @intFromEnum(game_ids.BonusId.weapon);
-    pub const weapon_power_up: i32 = @intFromEnum(game_ids.BonusId.weapon_power_up);
-    pub const nuke: i32 = @intFromEnum(game_ids.BonusId.nuke);
-    pub const double_experience: i32 = @intFromEnum(game_ids.BonusId.double_experience);
-    pub const shock_chain: i32 = @intFromEnum(game_ids.BonusId.shock_chain);
-    pub const fireblast: i32 = @intFromEnum(game_ids.BonusId.fireblast);
-    pub const reflex_boost: i32 = @intFromEnum(game_ids.BonusId.reflex_boost);
-    pub const shield: i32 = @intFromEnum(game_ids.BonusId.shield);
-    pub const freeze: i32 = @intFromEnum(game_ids.BonusId.freeze);
-    pub const medikit: i32 = @intFromEnum(game_ids.BonusId.medikit);
-    pub const speed: i32 = @intFromEnum(game_ids.BonusId.speed);
-    pub const fire_bullets: i32 = @intFromEnum(game_ids.BonusId.fire_bullets);
-};
-
 pub const Vec2 = struct {
     x: f32 = 0.0,
     y: f32 = 0.0,
@@ -248,7 +230,7 @@ pub const GameplayState = struct {
     debug_nuke_kills_last: i32 = 0,
     debug_nuke_tick_last: i32 = -1,
     debug_nuke_kill_index_sum: i32 = 0,
-    debug_last_picked_bonus_id: i32 = 0,
+    debug_last_picked_bonus_id: game_ids.BonusId = .unused,
     debug_last_picked_bonus_amount: i32 = 0,
     player_alt_weapon_swap_cooldown_ms: i32 = 0,
     player_spread_damping_scalar: f32 = 1.0,

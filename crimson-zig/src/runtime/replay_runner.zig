@@ -851,7 +851,7 @@ pub fn runReplayScaffoldWithTrace(
         ) catch |err| switch (err) {
             error.UnsupportedBonusApplyPath => return error.UnsupportedBonusApplyPath,
         };
-        if (state.debug_last_picked_bonus_id == @intFromEnum(game_ids.BonusId.freeze)) {
+        if (state.debug_last_picked_bonus_id == .freeze) {
             applyFreezePickupCorpseCleanupRng(
                 &state,
                 &creatures,
@@ -1167,12 +1167,12 @@ fn buildTickTrace(
     var bonus1_id: i32 = 0;
     var bonus1_amount: i32 = 0;
     for (bonuses.entries) |entry| {
-        if (entry.bonus_id == 0) continue;
+        if (entry.bonus_id == .unused) continue;
         if (bonus_active_count == 0) {
-            bonus0_id = entry.bonus_id;
+            bonus0_id = @intFromEnum(entry.bonus_id);
             bonus0_amount = entry.amount;
         } else if (bonus_active_count == 1) {
-            bonus1_id = entry.bonus_id;
+            bonus1_id = @intFromEnum(entry.bonus_id);
             bonus1_amount = entry.amount;
         }
         bonus_active_count += 1;
@@ -1403,7 +1403,7 @@ fn buildTickTrace(
         .debug_nuke_kills_last = state.debug_nuke_kills_last,
         .debug_nuke_tick_last = state.debug_nuke_tick_last,
         .debug_nuke_kill_index_sum = state.debug_nuke_kill_index_sum,
-        .debug_last_picked_bonus_id = state.debug_last_picked_bonus_id,
+        .debug_last_picked_bonus_id = @intFromEnum(state.debug_last_picked_bonus_id),
         .debug_last_picked_bonus_amount = state.debug_last_picked_bonus_amount,
     };
 }
