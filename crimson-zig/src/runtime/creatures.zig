@@ -2368,8 +2368,7 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
         }
 
-        const slot = ownerToPlayerIndex(owner, players.len);
-        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
+        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -2416,8 +2415,7 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
         }
 
-        const slot = ownerToPlayerIndex(owner, players.len);
-        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
+        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -2462,8 +2460,7 @@ pub const CreaturePool = struct {
             true,
         );
 
-        const slot = ownerToPlayerIndex(owner, players.len);
-        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
+        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
 
         if (dt > 0.0 and state.bonuses.freeze > 0.0) {
             for (0..8) |_| {
@@ -2719,8 +2716,7 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage -= dt;
         }
 
-        const slot = ownerToPlayerIndex(owner, players.len);
-        const xp_gained = awardExperienceFromReward(state, &players[slot], death_reward_value);
+        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -3206,8 +3202,18 @@ fn tickAi7LinkTimer(
     }
 }
 
-fn ownerToPlayerIndex(owner: owner_ref.OwnerRef, player_count: usize) usize {
-    return owner.playerIndexInBounds(player_count) orelse 0;
+fn ownerToPlayerIndex(owner: owner_ref.OwnerRef, player_count: usize) ?usize {
+    return owner.playerIndexInBounds(player_count);
+}
+
+fn awardExperienceForOwner(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    owner: owner_ref.OwnerRef,
+    reward_value: f32,
+) i32 {
+    const slot = ownerToPlayerIndex(owner, players.len) orelse return 0;
+    return awardExperienceFromReward(state, &players[slot], reward_value);
 }
 
 fn awardExperienceFromReward(
@@ -5956,6 +5962,42 @@ test "split on death spawns two smaller children" {
     try expectFloatClose(7.0, child2.contact_damage);
     try expectFloatClose(60.0, child1.reward_value);
     try expectFloatClose(60.0, child2.reward_value);
+}
+
+test "kill no corpse does not award xp for non-player owner" {
+    var pool = CreaturePool{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 40.0,
+        .move_speed = 2.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 90.0,
+        .contact_damage = 10.0,
+    });
+
+    const gained = pool.killNoCorpse(
+        &state,
+        players[0..],
+        &bonuses,
+        0,
+        owner_ref.OwnerRef.fromCreature(0),
+        0.016,
+        10_000.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), gained);
+    try std.testing.expectEqual(@as(i32, 0), players[0].experience);
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {
