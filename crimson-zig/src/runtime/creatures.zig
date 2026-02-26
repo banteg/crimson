@@ -2570,10 +2570,10 @@ pub const CreaturePool = struct {
         const slot_idx = self.spawn_slot_count;
         self.spawn_slots[slot_idx] = .{
             .owner_creature = @intCast(owner_idx),
-            .timer = timer,
+            .timer = narrowF32(timer),
             .count = 0,
             .limit = limit,
-            .interval = interval,
+            .interval = narrowF32(interval),
             .child_template_id = child_template_id,
         };
         self.spawn_slot_count += 1;

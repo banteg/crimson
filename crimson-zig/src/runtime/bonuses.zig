@@ -23,11 +23,11 @@ const bonus_spawn_margin: f64 = 32.0;
 const bonus_spawn_min_distance: f64 = 32.0;
 const bonus_pickup_radius: f64 = 26.0;
 const bonus_pickup_decay_rate: f64 = 3.0;
-const bonus_pickup_linger: f64 = 0.5;
-const bonus_time_max: f64 = 10.0;
+const bonus_pickup_linger: f32 = 0.5;
+const bonus_time_max: f32 = 10.0;
 const bonus_weapon_near_radius: f64 = 56.0;
 const bonus_aim_hover_radius: f64 = 24.0;
-const bonus_telekinetic_pickup_ms: f64 = 650.0;
+const bonus_telekinetic_pickup_ms: f32 = 650.0;
 const reflex_timer_subtract_bias: f64 = 4e-9;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
@@ -37,8 +37,8 @@ inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
 pub const BonusEntry = struct {
     bonus_id: BonusId = .unused,
     picked: bool = false,
-    time_left: f64 = 0.0,
-    time_max: f64 = 0.0,
+    time_left: f32 = 0.0,
+    time_max: f32 = 0.0,
     pos: state_mod.Vec2 = .{},
     amount: i32 = 0,
 };
@@ -205,7 +205,7 @@ pub const BonusPool = struct {
                 state.debug_last_picked_bonus_amount = entry.amount;
                 appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
                 entry.picked = true;
-                entry.time_left = bonus_pickup_linger;
+                entry.time_left = narrowF32(bonus_pickup_linger);
                 picked_now = true;
                 break;
             }
@@ -304,7 +304,7 @@ fn bonusTelekineticUpdate(
         try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
         appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
         entry.picked = true;
-        entry.time_left = bonus_pickup_linger;
+        entry.time_left = narrowF32(bonus_pickup_linger);
         player.bonus_aim_hover_index = -1;
         player.bonus_aim_hover_timer_ms = 0.0;
         break;
@@ -431,7 +431,7 @@ fn applyBonus(
                 state.pending_fireblast_count += 1;
             }
         },
-        else => {},
+        .unused => {},
     }
 }
 
@@ -751,8 +751,8 @@ fn spawnAtPos(
     entry.bonus_id = bonus_id;
     entry.picked = false;
     entry.pos = pos;
-    entry.time_left = bonus_time_max;
-    entry.time_max = bonus_time_max;
+    entry.time_left = narrowF32(bonus_time_max);
+    entry.time_max = narrowF32(bonus_time_max);
 
     if (bonus_id == .weapon) {
         entry.amount = weapon_data.weaponIdToInt(weaponPickRandomAvailable(state));
@@ -1062,8 +1062,8 @@ fn setTestBonusEntry(
     pool.entries[idx] = .{
         .bonus_id = bonus_id,
         .picked = false,
-        .time_left = bonus_time_max,
-        .time_max = bonus_time_max,
+        .time_left = narrowF32(bonus_time_max),
+        .time_max = narrowF32(bonus_time_max),
         .pos = pos,
         .amount = amount,
     };

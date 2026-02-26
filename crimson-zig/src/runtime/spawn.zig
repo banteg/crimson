@@ -188,10 +188,10 @@ pub const SpawnTemplateCall = struct {
 
 pub const SpawnSlotInit = struct {
     owner_creature: i32,
-    timer: f64,
+    timer: f32,
     count: i32,
     limit: i32,
-    interval: f64,
+    interval: f32,
     child_template_id: i32,
 };
 
@@ -248,13 +248,11 @@ pub const quest_completion_music_end_ms: f64 = 0x803;
 pub const quest_completion_transition_ms: f64 = 0x9C4;
 
 pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
-    const timer = narrowF32(slot.timer);
-    const interval = narrowF32(slot.interval);
     const dt = narrowF32(frame_dt);
 
-    slot.timer = narrowF32(timer - dt);
+    slot.timer = narrowF32(slot.timer - dt);
     if (slot.timer < 0.0) {
-        slot.timer = narrowF32(slot.timer + interval);
+        slot.timer = narrowF32(slot.timer + slot.interval);
         if (slot.count < slot.limit) {
             slot.count += 1;
             return slot.child_template_id;
@@ -1099,7 +1097,7 @@ test "spawn slot tick behavior parity" {
     for (cases) |case| {
         var slot = SpawnSlotInit{
             .owner_creature = 0,
-            .timer = case.timer,
+            .timer = narrowF32(case.timer),
             .count = case.count,
             .limit = 10,
             .interval = 0.7,
