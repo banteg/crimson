@@ -116,8 +116,6 @@ fn writeStderr(bytes: []const u8) !void {
     var buffer: [4096]u8 = undefined;
     var writer = std.fs.File.stderr().writer(&buffer);
     const err = &writer.interface;
-    if (bytes.len > 0) {
-        try err.writeAll(bytes);
-    }
+    try err.writeAll(bytes);
     try err.flush();
 }
