@@ -559,11 +559,10 @@ pub fn mostUsedWeaponIdForPlayer(
     var best = start;
     var best_count = counts[start];
 
-    var idx = start + 1;
-    while (idx < counts.len) : (idx += 1) {
-        if (counts[idx] > best_count) {
+    for (counts[start + 1 ..], start + 1..) |count, idx| {
+        if (count > best_count) {
             best = idx;
-            best_count = counts[idx];
+            best_count = count;
         }
     }
 

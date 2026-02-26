@@ -1802,9 +1802,7 @@ pub const CreaturePool = struct {
 
         if (!self.capture_spawn_events_authoritative) {
             const slot_count_snapshot = self.spawn_slot_count;
-            var slot_idx: usize = 0;
-            while (slot_idx < slot_count_snapshot) : (slot_idx += 1) {
-                const slot = &self.spawn_slots[slot_idx];
+            for (self.spawn_slots[0..slot_count_snapshot]) |*slot| {
                 if (slot.owner_creature < 0) continue;
                 const owner_idx: usize = @intCast(slot.owner_creature);
                 if (owner_idx >= self.entries.len) continue;

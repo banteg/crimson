@@ -138,8 +138,7 @@ pub fn stepPlayerForTick(
                 const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
                 if (count > 0) {
                     const step = std.math.tau / @as(f64, @floatFromInt(count));
-                    var idx: i32 = 0;
-                    while (idx < count) : (idx += 1) {
+                    for (0..@as(usize, @intCast(count))) |idx| {
                         const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
                         const meta = state_mod.weaponProjectileMeta(.plasma_minigun);
