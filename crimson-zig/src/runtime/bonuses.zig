@@ -468,7 +468,7 @@ fn defaultBonusAmount(bonus_id: BonusId) i32 {
 }
 
 fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 fn anyPerkActive(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
@@ -875,7 +875,7 @@ test "bonus economist extends double experience timer" {
         .index = 0,
         .pos = .{},
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.bonus_economist))] = 1;
+    perk_player.perk_counts.set(PerkId.bonus_economist, 1);
     var perk_players = [_]state_mod.PlayerState{perk_player};
     try applyBonus(
         &perk_state,
@@ -896,7 +896,7 @@ test "alternate weapon stashes previous weapon on first pickup" {
     };
     var players = [_]state_mod.PlayerState{player};
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
 
     try applyBonus(
         &state,
@@ -943,7 +943,7 @@ test "bonus magnet allows spawn on secondary roll" {
             .weapon_id = game_ids.WeaponId.assault_rifle,
         },
     };
-    perk_players[0].perk_counts[@intCast(@intFromEnum(PerkId.bonus_magnet))] = 1;
+    perk_players[0].perk_counts.set(PerkId.bonus_magnet, 1);
 
     const perk_spawned = perk_pool.trySpawnOnKill(
         .{ .x = 100.0, .y = 100.0 },
@@ -1116,7 +1116,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    perk_player.perk_counts.set(PerkId.telekinetic, 1);
     var perk_players = [_]state_mod.PlayerState{perk_player};
     try runTelekineticUpdate(&pool, &state, perk_players[0..], 0.7);
 
@@ -1141,7 +1141,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    player.perk_counts.set(PerkId.telekinetic, 1);
     var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1167,7 +1167,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    player.perk_counts.set(PerkId.telekinetic, 1);
     var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1206,8 +1206,8 @@ test "telekinetic picks only one bonus per frame across players" {
         .health = 100.0,
         .aim = .{ .x = 200.0, .y = 200.0 },
     };
-    player0.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    player1.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    player0.perk_counts.set(PerkId.telekinetic, 1);
+    player1.perk_counts.set(PerkId.telekinetic, 1);
     var players = [_]state_mod.PlayerState{ player0, player1 };
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
@@ -1241,7 +1241,7 @@ test "telekinetic hover timer carries across bonus switch" {
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
+    player.perk_counts.set(PerkId.telekinetic, 1);
     var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.4);

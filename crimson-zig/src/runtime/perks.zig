@@ -50,12 +50,12 @@ const default_perk_flags = perkFlagSet(&.{ .quest_mode_allowed, .two_player_allo
 const perk_flags_by_id = std.EnumArray(PerkId, PerkFlagSet).initDefault(default_perk_flags, .{
     .instant_winner = perkFlagSet(&.{ .quest_mode_allowed, .two_player_allowed, .stackable }),
     .grim_deal = PerkFlagSet.initEmpty(),
-    .alternate_weapon = perkFlagSet(&.{ .quest_mode_allowed }),
-    .fatal_lottery = perkFlagSet(&.{ .stackable }),
+    .alternate_weapon = perkFlagSet(&.{.quest_mode_allowed}),
+    .fatal_lottery = perkFlagSet(&.{.stackable}),
     .random_weapon = perkFlagSet(&.{ .quest_mode_allowed, .stackable }),
     .final_revenge = PerkFlagSet.initEmpty(),
     .highlander = PerkFlagSet.initEmpty(),
-    .breathing_room = perkFlagSet(&.{ .two_player_allowed }),
+    .breathing_room = perkFlagSet(&.{.two_player_allowed}),
 });
 
 const QuestUnlockPair = struct {
@@ -239,7 +239,7 @@ pub fn applyPerk(
     perk_id: PerkId,
 ) PerkApplyError!void {
     if (players.len == 0) return;
-    players[0].perk_counts[perkIdIndex(perk_id)] += 1;
+    players[0].perk_counts.set(perk_id, players[0].perk_counts.get(perk_id) + 1);
     if (players.len > 1) {
         const shared = players[0].perk_counts;
         for (players[1..]) |*player| {
@@ -566,13 +566,12 @@ fn perkFlags(perk_id: PerkId) PerkFlagSet {
 }
 
 fn perkCountGet(player: *const state_mod.PlayerState, perk_id: PerkId) i32 {
-    return player.perk_counts[perkIdIndex(perk_id)];
+    return player.perk_counts.get(perk_id);
 }
 
 fn adjustPerkCount(player: *state_mod.PlayerState, perk_id: PerkId, amount: i32) void {
-    const perk_index = perkIdIndex(perk_id);
-    const current = player.perk_counts[perk_index];
-    player.perk_counts[perk_index] = @max(0, current + amount);
+    const current = player.perk_counts.get(perk_id);
+    player.perk_counts.set(perk_id, @max(0, current + amount));
 }
 
 fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
@@ -757,7 +756,7 @@ test "perk generate choices blocks jinxed when death clock is active" {
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.death_clock))] = 1;
+    players[0].perk_counts.set(PerkId.death_clock, 1);
     setOnlyPerksAvailable(&state, 0, &.{
         PerkId.jinxed,
         PerkId.sharpshooter,
@@ -790,12 +789,12 @@ test "death clock apply and update mirror runtime hooks" {
             .health = 25.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 2;
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 2);
+    players[0].perk_counts.set(PerkId.greater_regeneration, 1);
 
     try applyPerk(&state, players[0..], PerkId.death_clock);
-    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))]);
-    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))]);
+    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts.get(PerkId.regeneration));
+    try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts.get(PerkId.greater_regeneration));
     try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
@@ -811,7 +810,7 @@ test "regeneration heals when rng allows" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -826,7 +825,7 @@ test "regeneration skips when rng blocks" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.0), players[0].health, 1e-6);
@@ -841,8 +840,8 @@ test "greater regeneration doubles heal by default" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
+    players[0].perk_counts.set(PerkId.greater_regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
@@ -858,8 +857,8 @@ test "greater regeneration remains no-op in preserve bugs mode" {
             .health = 90.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.greater_regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
+    players[0].perk_counts.set(PerkId.greater_regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -879,7 +878,7 @@ test "regeneration multiplayer targets all alive players by default" {
             .health = 80.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
@@ -901,7 +900,7 @@ test "regeneration preserve bugs repeats write to player zero only" {
             .health = 80.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.regeneration))] = 1;
+    players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
@@ -1102,7 +1101,7 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
     try std.testing.expect(!players[1].reload_active);
     try std.testing.expectEqual(@as(f64, 0.0), players[0].reload_timer);
     try std.testing.expectEqual(@as(f64, 0.0), players[1].reload_timer);
-    try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts[@intCast(@intFromEnum(PerkId.ammo_maniac))]);
+    try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts.get(PerkId.ammo_maniac));
 }
 
 test "my favourite weapon increases clip size and keeps current ammo on apply" {
@@ -1171,7 +1170,7 @@ test "lean mean exp machine ticks xp and ignores double experience multiplier" {
             .pos = .{ .x = 10.0, .y = 20.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
+    players[0].perk_counts.set(PerkId.lean_mean_exp_machine, 2);
 
     updatePerkEffects(&state, players[0..], 0.2);
     try std.testing.expectEqual(@as(i32, 0), players[0].experience);
@@ -1194,8 +1193,8 @@ test "lean mean exp machine tick awards player zero only in multiplayer" {
             .pos = .{ .x = 30.0, .y = 40.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.lean_mean_exp_machine))] = 2;
+    players[0].perk_counts.set(PerkId.lean_mean_exp_machine, 2);
+    players[1].perk_counts.set(PerkId.lean_mean_exp_machine, 2);
 
     updatePerkEffects(&state, players[0..], 0.1);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);

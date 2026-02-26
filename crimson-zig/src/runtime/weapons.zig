@@ -877,7 +877,7 @@ fn rotateVec(vec: state_mod.Vec2, theta: f64) state_mod.Vec2 {
 }
 
 fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {
@@ -1081,7 +1081,7 @@ test "anxious loader reduces reload timer on fire press" {
         .reload_timer = 1.0,
         .reload_timer_max = 1.0,
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.anxious_loader))] = 1;
+    perk_player.perk_counts.set(PerkId.anxious_loader, 1);
 
     try stepPlayerForTick(
         &state,
@@ -1124,7 +1124,7 @@ test "angry reloader spawns plasma ring at half reload" {
         .clip_size = 10,
         .ammo = 0.0,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.angry_reloader))] = 1;
+    player.perk_counts.set(PerkId.angry_reloader, 1);
 
     try stepPlayerForTick(
         &state,
@@ -1162,7 +1162,7 @@ test "angry reloader does not trigger once reload is below half" {
         .reload_timer = 0.95,
         .reload_timer_max = 2.0,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.angry_reloader))] = 1;
+    player.perk_counts.set(PerkId.angry_reloader, 1);
 
     try stepPlayerForTick(
         &state,
@@ -1187,7 +1187,7 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .man_bomb_timer = 3.9,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.man_bomb))] = 1;
+    player.perk_counts.set(PerkId.man_bomb, 1);
     state.bonus_spawn_guard = true;
 
     applyPlayerPerkTicks(&state, &player, &projectiles, 0.2);
@@ -1210,7 +1210,7 @@ test "hot tempered spawns alternating plasma projectiles when charged" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .hot_tempered_timer = 1.95,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.hot_tempered))] = 1;
+    player.perk_counts.set(PerkId.hot_tempered, 1);
 
     applyPlayerPerkTicks(&state, &player, &projectiles, 0.1);
 
@@ -1246,7 +1246,7 @@ test "stationary reloader triples reload speed" {
         .reload_timer = 1.0,
         .reload_timer_max = 1.0,
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.stationary_reloader))] = 1;
+    perk_player.perk_counts.set(PerkId.stationary_reloader, 1);
 
     try stepPlayerForTick(
         &state,
@@ -1284,7 +1284,7 @@ test "alternate weapon reload press swaps and adds cooldown" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1323,7 +1323,7 @@ test "alternate weapon held reload uses cooldown gate" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1381,7 +1381,7 @@ test "alternate weapon release resets cooldown gate" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1440,8 +1440,8 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
         .pos = .{},
         .aim = .{ .x = 100.0, .y = 0.0 },
     };
-    player0.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
-    player1.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player0.perk_counts.set(PerkId.alternate_weapon, 1);
+    player1.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player0, game_ids.WeaponId.assault_rifle);
     player0.alt_weapon_id = game_ids.WeaponId.pistol;
     player0.alt_clip_size = 10;
@@ -1488,7 +1488,7 @@ test "alternate weapon swap preserves same-tick fire gate" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player, weaponId(11));
     player.alt_weapon_id = game_ids.WeaponId.pistol;
     player.alt_clip_size = 10;
@@ -1522,7 +1522,7 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
         .pos = .{ .x = 512.0, .y = 512.0 },
         .aim = .{ .x = 700.0, .y = 512.0 },
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    player.perk_counts.set(PerkId.alternate_weapon, 1);
     state_mod.weaponAssignPlayer(&player, weaponId(29));
     player.ammo = 2.0;
     player.reload_active = false;
@@ -1933,7 +1933,7 @@ test "fastshot scales shot cooldown" {
     };
     state_mod.weaponAssignPlayer(&perk_player, game_ids.WeaponId.pistol);
     perk_player.ammo = 2.0;
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.fastshot))] = 1;
+    perk_player.perk_counts.set(PerkId.fastshot, 1);
     try std.testing.expect(try tryFireWeapon(
         &perk_state,
         &perk_player,
@@ -1959,7 +1959,7 @@ test "sharpshooter forces spread heat and slows firing" {
         .spread_heat = 0.48,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.sharpshooter))] = 1;
+    player.perk_counts.set(PerkId.sharpshooter, 1);
 
     try stepPlayerForTick(
         &state,
@@ -2002,7 +2002,7 @@ test "regression bullets fires during reload and costs experience" {
         .experience = 1000,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.regression_bullets))] = 1;
+    player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2034,7 +2034,7 @@ test "regression bullets blocks fire when experience is zero" {
         .experience = 0,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.regression_bullets))] = 1;
+    player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2063,7 +2063,7 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
         .experience = 1000,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.regression_bullets))] = 1;
+    player.perk_counts.set(PerkId.regression_bullets, 1);
     player.ammo = 5.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2096,7 +2096,7 @@ test "ammunition within fires during reload and costs health" {
         .experience = 1,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.ammunition_within))] = 1;
+    player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2130,7 +2130,7 @@ test "ammunition within blocks fire when experience is zero" {
         .experience = 0,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.ammunition_within))] = 1;
+    player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 0.0;
     player.reload_active = true;
     player.reload_timer = 0.5;
@@ -2161,7 +2161,7 @@ test "ammunition within fire ammo class costs less health and spends fractional 
         .experience = 1,
     };
     state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
-    player.perk_counts[@intCast(@intFromEnum(PerkId.ammunition_within))] = 1;
+    player.perk_counts.set(PerkId.ammunition_within, 1);
     player.ammo = 5.0;
     player.reload_active = true;
     player.reload_timer = 0.5;

@@ -3024,7 +3024,7 @@ fn projectileHitDamage(origin: state_mod.Vec2, hit: state_mod.Vec2, damage_scale
 }
 
 fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 fn anyPlayerHasPerk(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
@@ -3718,7 +3718,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.bloody_mess_quick_learner))] = 1;
+    players[0].perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -3828,7 +3828,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.bloody_mess_quick_learner))] = 1;
+    players[0].perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
 
     const gained = pool.applyExplosionDamage(
         &state,
@@ -3938,7 +3938,7 @@ test "projectile pre-hit rng counts include bloody spread draw per splatter" {
         .index = 0,
         .pos = .{},
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.bloody_mess_quick_learner))] = 1;
+    player.perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
 
     consumeProjectileHitPresentationPreRng(&state, &player, @intFromEnum(game_ids.ProjectileTypeId.pistol));
 
@@ -5075,7 +5075,7 @@ test "veins of poison sets self-damage flag on contact hit" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.veins_of_poison))] = 1;
+    players[0].perk_counts.set(PerkId.veins_of_poison, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5109,7 +5109,7 @@ test "veins of poison skips self-damage flag when shielded" {
             .shield_timer = 1.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.veins_of_poison))] = 1;
+    players[0].perk_counts.set(PerkId.veins_of_poison, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5142,7 +5142,7 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.toxic_avenger))] = 1;
+    players[0].perk_counts.set(PerkId.toxic_avenger, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5210,7 +5210,7 @@ test "toxic avenger skips strong self-damage flag when shielded" {
             .shield_timer = 1.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.toxic_avenger))] = 1;
+    players[0].perk_counts.set(PerkId.toxic_avenger, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5244,7 +5244,7 @@ test "radioactive tick deals damage and wraps collision timer" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.radioactive))] = 1;
+    players[0].perk_counts.set(PerkId.radioactive, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5284,8 +5284,8 @@ test "radioactive kill awards base xp without death multipliers" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.radioactive))] = 1;
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.bloody_mess_quick_learner))] = 1;
+    players[0].perk_counts.set(PerkId.radioactive, 1);
+    players[0].perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5323,7 +5323,7 @@ test "radioactive sets hp to one for lizard type creatures" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.radioactive))] = 1;
+    players[0].perk_counts.set(PerkId.radioactive, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5360,7 +5360,7 @@ test "mr melee damages attacking creature on contact tick" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.mr_melee))] = 1;
+    players[0].perk_counts.set(PerkId.mr_melee, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5392,7 +5392,7 @@ test "mr melee does not prevent player damage when attacker dies" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.mr_melee))] = 1;
+    players[0].perk_counts.set(PerkId.mr_melee, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5455,7 +5455,7 @@ test "evil eyes freezes targeted creature movement" {
             .health = 100.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.evil_eyes))] = 1;
+    players[0].perk_counts.set(PerkId.evil_eyes, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5527,7 +5527,7 @@ test "tough reloader halves damage while reloading" {
         .health = 100.0,
         .reload_active = true,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.tough_reloader))] = 1;
+    player.perk_counts.set(PerkId.tough_reloader, 1);
 
     applyPlayerContactDamage(
         &state,
@@ -5549,8 +5549,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
         .pos = .{},
         .health = 100.0,
     };
-    safe_player.perk_counts[@intCast(@intFromEnum(PerkId.highlander))] = 1;
-    safe_player.perk_counts[@intCast(@intFromEnum(PerkId.unstoppable))] = 1;
+    safe_player.perk_counts.set(PerkId.highlander, 1);
+    safe_player.perk_counts.set(PerkId.unstoppable, 1);
     applyPlayerContactDamage(&safe_state, &safe_player, 10.0, 0.1);
     try expectFloatClose(100.0, safe_player.health);
 
@@ -5560,8 +5560,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
         .pos = .{},
         .health = 100.0,
     };
-    lethal_player.perk_counts[@intCast(@intFromEnum(PerkId.highlander))] = 1;
-    lethal_player.perk_counts[@intCast(@intFromEnum(PerkId.unstoppable))] = 1;
+    lethal_player.perk_counts.set(PerkId.highlander, 1);
+    lethal_player.perk_counts.set(PerkId.unstoppable, 1);
     applyPlayerContactDamage(&lethal_state, &lethal_player, 10.0, 0.1);
     try expectFloatClose(0.0, lethal_player.health);
 }
@@ -5590,7 +5590,7 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
         .heading = 1.0,
         .spread_heat = 0.1,
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.unstoppable))] = 1;
+    perk_player.perk_counts.set(PerkId.unstoppable, 1);
     applyPlayerContactDamage(&perk_state, &perk_player, 10.0, 0.1);
     try expectFloatClose(90.0, perk_player.health);
     try expectFloatClose(1.0, perk_player.heading);
@@ -5606,8 +5606,8 @@ test "tough reloader spread heat uses post-reload damage before thick skinned" {
         .reload_active = true,
         .spread_heat = 0.1,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.tough_reloader))] = 1;
-    player.perk_counts[@intCast(@intFromEnum(PerkId.thick_skinned))] = 1;
+    player.perk_counts.set(PerkId.tough_reloader, 1);
+    player.perk_counts.set(PerkId.thick_skinned, 1);
 
     applyPlayerContactDamage(
         &state,
@@ -5626,7 +5626,7 @@ test "doctor increases projectile damage by 20 percent" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.doctor))] = 1;
+    players[0].perk_counts.set(PerkId.doctor, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5666,7 +5666,7 @@ test "pyromaniac increases fire damage and consumes rng" {
             .pos = .{},
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.pyromaniac))] = 1;
+    players[0].perk_counts.set(PerkId.pyromaniac, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5749,7 +5749,7 @@ test "living fortress scales projectile damage by alive player timers" {
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.living_fortress))] = 1;
+    players[0].perk_counts.set(PerkId.living_fortress, 1);
     players[0].living_fortress_timer = 10.0;
     players[1].living_fortress_timer = 20.0;
 
@@ -5788,7 +5788,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] = 1;
+    players[0].perk_counts.set(PerkId.barrel_greaser, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5825,7 +5825,7 @@ test "ion gun master increases ion damage by 20 percent" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] = 1;
+    players[0].perk_counts.set(PerkId.ion_gun_master, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -5862,7 +5862,7 @@ test "uranium filled bullets doubles projectile damage" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.uranium_filled_bullets))] = 1;
+    players[0].perk_counts.set(PerkId.uranium_filled_bullets, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
@@ -6167,7 +6167,7 @@ test "plaguebearer spreads between nearby creatures" {
             .pos = .{ .x = 500.0, .y = 500.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.plaguebearer))] = 1;
+    players[0].perk_counts.set(PerkId.plaguebearer, 1);
 
     _ = pool.spawnInit(.{
         .origin_template_id = -1,

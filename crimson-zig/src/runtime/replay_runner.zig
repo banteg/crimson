@@ -1252,10 +1252,10 @@ fn buildTickTrace(
             .player_reload_timer_q4 = quantizeQ4(player.reload_timer),
             .player_shot_cooldown_q4 = quantizeQ4(player.shot_cooldown),
             .player_shot_seq = player.shot_seq,
-            .player_perk31_count = player.perk_counts[@intCast(@intFromEnum(PerkId.hot_tempered))],
-            .player_perk53_count = player.perk_counts[@intCast(@intFromEnum(PerkId.man_bomb))],
-            .player_perk54_count = player.perk_counts[@intCast(@intFromEnum(PerkId.fire_caugh))],
-            .player_perk55_count = player.perk_counts[@intCast(@intFromEnum(PerkId.living_fortress))],
+            .player_perk31_count = player.perk_counts.get(PerkId.hot_tempered),
+            .player_perk53_count = player.perk_counts.get(PerkId.man_bomb),
+            .player_perk54_count = player.perk_counts.get(PerkId.fire_caugh),
+            .player_perk55_count = player.perk_counts.get(PerkId.living_fortress),
             .player_hot_tempered_timer_q6 = quantizeQ6(player.hot_tempered_timer),
             .player_shield_timer_q4 = quantizeQ4(player.shield_timer),
             .player_man_bomb_timer_q6 = quantizeQ6(player.man_bomb_timer),
@@ -2295,14 +2295,12 @@ fn applyCaptureBootstrapEvent(
         state.perk_selection.choices[idx] = bootstrap.perk_choices[idx];
     }
     for (players, 0..) |*player, player_idx| {
-        for (&player.perk_counts) |*count| {
-            count.* = 0;
-        }
+        player.perk_counts = std.EnumArray(PerkId, i32).initFill(0);
         const perk_counts = bootstrap.player_perk_counts[player_idx];
         for (0..perk_counts.pair_count) |pair_idx| {
             const pair = perk_counts.pairs[pair_idx];
-            if (pair.perk_id < 0 or pair.perk_id >= player.perk_counts.len) continue;
-            player.perk_counts[@intCast(pair.perk_id)] = pair.count;
+            const perk_id = std.meta.intToEnum(PerkId, pair.perk_id) catch continue;
+            player.perk_counts.set(perk_id, pair.count);
         }
     }
 
@@ -3061,7 +3059,7 @@ fn playerFrameDtAfterRoundtrip(
 }
 
 fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 test "replay scaffold rejects unsupported demo/preserve feature flags" {
@@ -4874,7 +4872,7 @@ test "evil eyes targeting defaults to alive player slot" {
             .aim = .{ .x = 100.0, .y = 200.0 },
         },
     };
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.evil_eyes))] = 1;
+    players[1].perk_counts.set(PerkId.evil_eyes, 1);
 
     var creatures = [_]survival_creatures.CreatureState{
         .{
@@ -4907,8 +4905,8 @@ test "evil eyes targeting assigns each alive owner" {
             .aim = .{ .x = 140.0, .y = 200.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.evil_eyes))] = 1;
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.evil_eyes))] = 1;
+    players[0].perk_counts.set(PerkId.evil_eyes, 1);
+    players[1].perk_counts.set(PerkId.evil_eyes, 1);
 
     var creatures = [_]survival_creatures.CreatureState{
         .{
@@ -4950,7 +4948,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
             .aim = .{ .x = 100.0, .y = 200.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
+    players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[0] = .{
@@ -4984,7 +4982,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
             .aim = .{ .x = 100.0, .y = 200.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
+    players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[0] = .{
@@ -5031,7 +5029,7 @@ test "pyrokinetic defaults to first alive player slot" {
             .aim = .{ .x = 100.0, .y = 200.0 },
         },
     };
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
+    players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[0] = .{
@@ -5065,8 +5063,8 @@ test "pyrokinetic targets all alive owners in default mode" {
             .aim = .{ .x = 140.0, .y = 200.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
-    players[1].perk_counts[@intCast(@intFromEnum(PerkId.pyrokinetic))] = 1;
+    players[0].perk_counts.set(PerkId.pyrokinetic, 1);
+    players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[0] = .{
@@ -5107,7 +5105,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.long_distance_runner))] = 1;
+    perk_player.perk_counts.set(PerkId.long_distance_runner, 1);
 
     const move_input = replay_codec.ReplayPlayerInput{
         .move_x = 1.0,
@@ -5172,7 +5170,7 @@ test "alternate weapon slows movement by 20 percent" {
         .move_speed = 2.0,
         .heading = move_heading,
     };
-    perk_player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
+    perk_player.perk_counts.set(PerkId.alternate_weapon, 1);
 
     const input = replay_codec.ReplayPlayerInput{
         .move_x = 1.0,
@@ -5202,7 +5200,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
         .aim_heading = 0.0,
         .fire_cough_timer = 1.95,
     };
-    player.perk_counts[@intCast(@intFromEnum(PerkId.fire_caugh))] = 1;
+    player.perk_counts.set(PerkId.fire_caugh, 1);
 
     const before_pos = player.pos;
     survival_weapon_runtime.applyPlayerPerkTicks(
@@ -5375,7 +5373,7 @@ test "poison bullets does not trigger on pending nuke radius damage" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
+    players[0].perk_counts.set(PerkId.poison_bullets, 1);
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
@@ -5549,7 +5547,7 @@ test "jinxed kills creature and awards base reward" {
             .experience = 100,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
+    players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
@@ -5582,7 +5580,7 @@ test "jinxed reward uses float32 sum before truncation" {
             .experience = 139_451,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
+    players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = survival_creatures.CreaturePool{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
@@ -5617,7 +5615,7 @@ test "jinxed accident can target another alive player" {
             .health = 70.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
+    players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = survival_creatures.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5639,7 +5637,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
             .health = 50.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
+    players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = survival_creatures.CreaturePool{};
 
     applyJinxedEffects(&state, players[0..], &creatures, dt);
@@ -5667,7 +5665,7 @@ test "jinxed pool uses full 384-slot upper bound" {
             .experience = 100,
         },
     };
-    default_players[0].perk_counts[@intCast(@intFromEnum(PerkId.jinxed))] = 1;
+    default_players[0].perk_counts.set(PerkId.jinxed, 1);
     var default_creatures = survival_creatures.CreaturePool{};
     default_creatures.entries[0x17F].active = true;
     default_creatures.entries[0x17F].hp = 100.0;
@@ -5687,7 +5685,7 @@ test "reflex boosted perk scales world dt by 0.9" {
     var perk_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    perk_players[0].perk_counts[@intCast(@intFromEnum(PerkId.reflex_boosted))] = 1;
+    perk_players[0].perk_counts.set(PerkId.reflex_boosted, 1);
 
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
@@ -5703,7 +5701,7 @@ test "final revenge explosion applies radial damage on death transition" {
             .health = -0.5,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.final_revenge))] = 1;
+    players[0].perk_counts.set(PerkId.final_revenge, 1);
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 
@@ -5746,7 +5744,7 @@ test "final revenge aoe includes active non-positive hp entries" {
             .health = -1.0,
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.final_revenge))] = 1;
+    players[0].perk_counts.set(PerkId.final_revenge, 1);
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
 

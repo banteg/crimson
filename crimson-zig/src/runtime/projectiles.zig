@@ -133,10 +133,10 @@ pub const ProjectilePool = struct {
         var ion_gun_master_active = false;
         var ion_scale: f64 = 1.0;
         for (players) |player| {
-            if (player.perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] > 0) {
+            if (player.perk_counts.get(PerkId.barrel_greaser) > 0) {
                 barrel_greaser_active = true;
             }
-            if (player.perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] > 0) {
+            if (player.perk_counts.get(PerkId.ion_gun_master) > 0) {
                 ion_gun_master_active = true;
             }
             if (barrel_greaser_active and ion_gun_master_active) {
@@ -663,7 +663,7 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
 }
 
 fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {
@@ -828,7 +828,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
+    players[0].perk_counts.set(PerkId.poison_bullets, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
@@ -871,7 +871,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
+    players[0].perk_counts.set(PerkId.poison_bullets, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
@@ -914,8 +914,8 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
-    players[0].perk_counts[@intCast(@intFromEnum(PerkId.toxic_avenger))] = 1;
+    players[0].perk_counts.set(PerkId.poison_bullets, 1);
+    players[0].perk_counts.set(PerkId.toxic_avenger, 1);
 
     var creatures = survival_creatures.CreaturePool{};
     var bonuses = bonus_runtime.BonusPool{};
@@ -979,7 +979,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
     var greased_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    greased_players[0].perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] = 1;
+    greased_players[0].perk_counts.set(PerkId.barrel_greaser, 1);
     var greased_pool = ProjectilePool{};
     _ = greased_pool.spawn(
         .{},
@@ -1048,7 +1048,7 @@ test "ion gun master increases ion rifle linger radius" {
     var players_with = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    players_with[0].perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] = 1;
+    players_with[0].perk_counts.set(PerkId.ion_gun_master, 1);
     var creatures_with = survival_creatures.CreaturePool{};
     var bonuses_with = bonus_runtime.BonusPool{};
     _ = creatures_with.spawnInit(.{

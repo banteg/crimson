@@ -14,6 +14,7 @@ pub const perk_count_size: usize = 0x80;
 pub const WeaponId = game_ids.WeaponId;
 pub const PerkId = game_ids.PerkId;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
+const PerkCounts = std.EnumArray(PerkId, i32);
 
 pub const Vec2 = struct {
     x: f32 = 0.0,
@@ -120,7 +121,7 @@ pub const PlayerState = struct {
     experience: i32 = 0,
     level: i32 = 1,
 
-    perk_counts: [perk_count_size]i32 = [_]i32{0} ** perk_count_size,
+    perk_counts: PerkCounts = PerkCounts.initFill(0),
     evil_eyes_target_creature: i32 = -1,
     plaguebearer_active: bool = false,
     hot_tempered_timer: f32 = 0.0,
@@ -495,7 +496,7 @@ pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
 }
 
 fn playerPerkActive(player: *const PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
+    return player.perk_counts.get(perk_id) > 0;
 }
 
 pub fn resetPlayers(
@@ -916,7 +917,7 @@ test "fastloader scales reload timer" {
         .pos = .{},
         .weapon_id = weapon_id,
     };
-    perk_player.perk_counts[3] = 1;
+    perk_player.perk_counts.set(.fastloader, 1);
 
     playerStartReload(&base_player, &base_state);
     playerStartReload(&perk_player, &perk_state);
