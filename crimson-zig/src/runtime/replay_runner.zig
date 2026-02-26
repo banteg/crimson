@@ -1025,7 +1025,7 @@ pub fn runReplayScaffoldWithTrace(
     const most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(
         state,
         0,
-        @intFromEnum(players[0].weapon_id),
+        players[0].weapon_id,
     );
 
     return .{
@@ -1042,7 +1042,7 @@ pub fn runReplayScaffoldWithTrace(
         .player_level = players[0].level,
         .player_experience = players[0].experience,
         .player_weapon_id = @intFromEnum(players[0].weapon_id),
-        .most_used_weapon_id = most_used_weapon_id,
+        .most_used_weapon_id = @intFromEnum(most_used_weapon_id),
         .shots_fired = shots.fired,
         .shots_hit = shots.hit,
         .creature_kill_count = creatures.kill_count,
