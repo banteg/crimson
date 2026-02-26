@@ -47,8 +47,8 @@ pub const ParticlePool = struct {
         self: *ParticlePool,
         state: *state_mod.GameplayState,
         pos: state_mod.Vec2,
-        angle: f64,
-        intensity: f64,
+        angle: f32,
+        intensity: f32,
         owner: owner_ref.OwnerRef,
     ) usize {
         const index = self.allocSlot(state);
@@ -60,13 +60,13 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = runtime_helpers.directionFromAngle(narrowF32(angle)).mul(90.0),
+            .vel = runtime_helpers.directionFromAngle(angle).mul(90.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
-            .intensity = narrowF32(intensity),
-            .angle = narrowF32(angle),
+            .intensity = intensity,
+            .angle = angle,
             .spin = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01,
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
@@ -79,7 +79,7 @@ pub const ParticlePool = struct {
         self: *ParticlePool,
         state: *state_mod.GameplayState,
         pos: state_mod.Vec2,
-        angle: f64,
+        angle: f32,
         owner: owner_ref.OwnerRef,
     ) usize {
         const index = self.allocSlot(state);
@@ -91,13 +91,13 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = runtime_helpers.directionFromAngle(narrowF32(angle)).mul(30.0),
+            .vel = runtime_helpers.directionFromAngle(angle).mul(30.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
             .intensity = 1.0,
-            .angle = narrowF32(angle),
+            .angle = angle,
             .spin = @as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01,
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
@@ -112,11 +112,11 @@ pub const ParticlePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) void {
         if (!(dt > 0.0)) return;
-        const dt_f32 = narrowF32(dt);
+        const dt_f32 = dt;
 
         for (&self.entries, 0..) |*entry, particle_idx| {
             if (!entry.active) continue;
@@ -159,7 +159,7 @@ pub const ParticlePool = struct {
                             @intCast(target_idx_i32),
                             entry.owner,
                             dt_f32,
-                            narrowF32(world_size),
+                            world_size,
                         );
                     }
                 }
@@ -251,7 +251,7 @@ pub const ParticlePool = struct {
                                 .{},
                                 entry.owner,
                                 dt_f32,
-                                narrowF32(world_size),
+                                world_size,
                             );
                         }
 

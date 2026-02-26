@@ -688,8 +688,8 @@ pub fn runReplayScaffoldWithTrace(
             players[0..],
             &creatures,
             &bonuses,
-            dt_sim,
-            @floatCast(header.world_size),
+            narrowF32(dt_sim),
+            narrowF32(header.world_size),
         );
         const rng_after_particles = state.rng.state;
 
@@ -1722,7 +1722,13 @@ fn applyPyrokineticEffects(
         creature.collision_timer = 0.5;
         for (burn_intensities) |intensity| {
             const angle = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
-            _ = particles.spawnParticle(state, creature.pos, angle, intensity, owner_ref.OwnerRef.fromLocalPlayer(0));
+            _ = particles.spawnParticle(
+                state,
+                creature.pos,
+                narrowF32(angle),
+                narrowF32(intensity),
+                owner_ref.OwnerRef.fromLocalPlayer(0),
+            );
         }
         // Consume native fx_queue_add_random RNG even though verifier does not render decals.
         _ = state.rng.rand();
