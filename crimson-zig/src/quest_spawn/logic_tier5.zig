@@ -2,7 +2,7 @@ const std = @import("std");
 
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier5_builders = [_]common.LevelBuilder{
     .{ .level_key = 501, .start_weapon_id = game_ids.WeaponId.pistol, .build = build501TheBeating },
@@ -22,9 +22,9 @@ fn halfFloor(value: f64) f64 {
 }
 
 fn appendRing(
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
-    center: survival_spawn.Vec2,
+    center: spawn_runtime.Vec2,
     radius: f64,
     count: usize,
     step: f64,
@@ -42,7 +42,7 @@ fn appendRing(
 fn build501TheBeating(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -154,7 +154,7 @@ fn build501TheBeating(
 fn build502TheSpankingOfTheDead(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -225,7 +225,7 @@ fn build502TheSpankingOfTheDead(
 fn build503TheFortress(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -290,7 +290,7 @@ fn build503TheFortress(
 fn build504TheGangWars(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -369,7 +369,7 @@ fn build504TheGangWars(
 fn build505KneeDeepInTheDead(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -465,7 +465,7 @@ fn build505KneeDeepInTheDead(
 fn build506CrossFire(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -540,7 +540,7 @@ fn build506CrossFire(
 fn build507ArmyOfThree(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
@@ -650,7 +650,7 @@ fn build507ArmyOfThree(
 fn build508MonsterBlues(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -719,7 +719,7 @@ fn build508MonsterBlues(
 fn build509Nagolipoli(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -869,7 +869,7 @@ fn build509Nagolipoli(
 fn build510TheGathering(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;

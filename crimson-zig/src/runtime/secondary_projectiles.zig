@@ -1,9 +1,9 @@
 const std = @import("std");
 
-const survival_bonuses = @import("survival_bonuses.zig");
-const survival_creatures = @import("survival_creatures.zig");
-const survival_state = @import("survival_state.zig");
-const survival_math = @import("survival_math.zig");
+const survival_bonuses = @import("bonuses.zig");
+const survival_creatures = @import("creatures.zig");
+const survival_state = @import("state.zig");
+const survival_math = @import("math.zig");
 
 pub const secondary_projectile_pool_size: usize = 0x40;
 const creature_lifecycle_stage_alive: f64 = 16.0;

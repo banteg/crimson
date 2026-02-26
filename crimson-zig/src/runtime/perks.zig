@@ -1,8 +1,8 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
+const game_ids = @import("../game_ids.zig");
 
-const survival_bonuses = @import("survival_bonuses.zig");
-const survival_state = @import("survival_state.zig");
+const survival_bonuses = @import("bonuses.zig");
+const survival_state = @import("state.zig");
 
 pub const PerkApplyError = error{
     UnsupportedPerkApplyHandler,

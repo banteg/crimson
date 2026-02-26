@@ -1,5 +1,5 @@
 const common = @import("logic_common.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 const game_ids = @import("../game_ids.zig");
 
 pub const tier2_builders = [_]common.LevelBuilder{
@@ -18,7 +18,7 @@ pub const tier2_builders = [_]common.LevelBuilder{
 fn build21EverredPastures(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -88,7 +88,7 @@ fn build21EverredPastures(
 fn build22SpiderSpawns(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
@@ -197,7 +197,7 @@ fn build22SpiderSpawns(
 fn build23ArachnoidFarm(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -258,7 +258,7 @@ fn build23ArachnoidFarm(
 fn build24TwoFronts(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -332,7 +332,7 @@ fn build24TwoFronts(
 fn build25SweepStakes(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const center = common.centerPoint(ctx.width, ctx.height);
@@ -362,7 +362,7 @@ fn build25SweepStakes(
 fn build26EvilZombiesAtLarge(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -413,7 +413,7 @@ fn build26EvilZombiesAtLarge(
 fn build27SurvivalOfTheFastest(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
@@ -535,7 +535,7 @@ fn build27SurvivalOfTheFastest(
 fn build28LandOfLizards(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
@@ -581,7 +581,7 @@ fn build28LandOfLizards(
 fn build29GhostPatrols(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -636,7 +636,7 @@ fn build29GhostPatrols(
 fn build210Spideroids(
     _: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;

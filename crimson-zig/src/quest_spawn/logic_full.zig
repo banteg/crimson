@@ -4,7 +4,7 @@ const tier2 = @import("logic_tier2.zig");
 const tier3 = @import("logic_tier3.zig");
 const tier4 = @import("logic_tier4.zig");
 const tier5 = @import("logic_tier5.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const QuestSpawnBuildError = common.QuestSpawnBuildError;
 pub const QuestSpawnBuildResult = common.QuestSpawnBuildResult;
@@ -22,7 +22,7 @@ pub fn buildQuestSpawnTable(
     player_count: i32,
     seed: u32,
     world_size: f64,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
 ) QuestSpawnBuildError!QuestSpawnBuildResult {
     if (player_count < 1 or player_count > 4) return error.UnsupportedQuestSpawnTable;
     const descriptor = lookupLevelBuilder(level_key) orelse return error.UnsupportedQuestSpawnTable;

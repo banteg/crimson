@@ -1,8 +1,8 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 
-const survival_math = @import("../survival_math.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const math_runtime = @import("../runtime/math.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const QuestSpawnBuildError = error{
     UnsupportedQuestSpawnTable,
@@ -10,7 +10,7 @@ pub const QuestSpawnBuildError = error{
 };
 
 pub const QuestSpawnBuildResult = struct {
-    entries: []const survival_spawn.QuestSpawnEntry,
+    entries: []const spawn_runtime.QuestSpawnEntry,
     start_weapon_id: game_ids.WeaponId,
 };
 
@@ -23,7 +23,7 @@ pub const BuildContext = struct {
 pub const BuildFn = *const fn (
     ctx: BuildContext,
     rng: *PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) QuestSpawnBuildError!void;
 
@@ -34,16 +34,16 @@ pub const LevelBuilder = struct {
 };
 
 pub const EdgePoints = struct {
-    left: survival_spawn.Vec2,
-    right: survival_spawn.Vec2,
-    top: survival_spawn.Vec2,
-    bottom: survival_spawn.Vec2,
+    left: spawn_runtime.Vec2,
+    right: spawn_runtime.Vec2,
+    top: spawn_runtime.Vec2,
+    bottom: spawn_runtime.Vec2,
 };
 
 pub inline fn appendEntry(
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
-    entry: survival_spawn.QuestSpawnEntry,
+    entry: spawn_runtime.QuestSpawnEntry,
 ) QuestSpawnBuildError!void {
     if (len.* >= out_entries.len) return error.OutOfSpace;
     out_entries[len.*] = entry;
@@ -51,9 +51,9 @@ pub inline fn appendEntry(
 }
 
 pub inline fn appendSpawn(
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
-    pos: survival_spawn.Vec2,
+    pos: spawn_runtime.Vec2,
     heading: f64,
     spawn_id: i32,
     trigger_ms: i32,
@@ -68,7 +68,7 @@ pub inline fn appendSpawn(
     });
 }
 
-pub inline fn centerPoint(width: f64, height: f64) survival_spawn.Vec2 {
+pub inline fn centerPoint(width: f64, height: f64) spawn_runtime.Vec2 {
     return .{
         .x = width * 0.5,
         .y = height * 0.5,
@@ -85,23 +85,23 @@ pub inline fn edgeMidpoints(width: f64, height: f64, offset: f64) EdgePoints {
     };
 }
 
-pub inline fn cornerPointTopLeft(width: f64, height: f64, offset: f64) survival_spawn.Vec2 {
+pub inline fn cornerPointTopLeft(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
     _ = width;
     _ = height;
     return .{ .x = -offset, .y = -offset };
 }
 
-pub inline fn cornerPointTopRight(width: f64, height: f64, offset: f64) survival_spawn.Vec2 {
+pub inline fn cornerPointTopRight(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
     _ = height;
     return .{ .x = width + offset, .y = -offset };
 }
 
-pub inline fn cornerPointBottomLeft(width: f64, height: f64, offset: f64) survival_spawn.Vec2 {
+pub inline fn cornerPointBottomLeft(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
     _ = width;
     return .{ .x = -offset, .y = height + offset };
 }
 
-pub inline fn cornerPointBottomRight(width: f64, height: f64, offset: f64) survival_spawn.Vec2 {
+pub inline fn cornerPointBottomRight(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
     return .{ .x = width + offset, .y = height + offset };
 }
 
@@ -109,40 +109,40 @@ pub inline fn randomAngle(rng: *PythonRandom) f64 {
     return @as(f64, @floatFromInt(rng.randBelow(0x264))) * 0.01;
 }
 
-pub inline fn headingFromCenter(point: survival_spawn.Vec2, center: survival_spawn.Vec2) f64 {
-    return survival_math.atan2(point.y - center.y, point.x - center.x) - (std.math.pi / 2.0);
+pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime.Vec2) f64 {
+    return math_runtime.atan2(point.y - center.y, point.x - center.x) - (std.math.pi / 2.0);
 }
 
-pub inline fn vecFromAngle(angle: f64) survival_spawn.Vec2 {
+pub inline fn vecFromAngle(angle: f64) spawn_runtime.Vec2 {
     return .{
-        .x = survival_math.cos(angle),
-        .y = survival_math.sin(angle),
+        .x = math_runtime.cos(angle),
+        .y = math_runtime.sin(angle),
     };
 }
 
-pub inline fn addVec(a: survival_spawn.Vec2, b: survival_spawn.Vec2) survival_spawn.Vec2 {
+pub inline fn addVec(a: spawn_runtime.Vec2, b: spawn_runtime.Vec2) spawn_runtime.Vec2 {
     return .{
         .x = a.x + b.x,
         .y = a.y + b.y,
     };
 }
 
-pub inline fn subVec(a: survival_spawn.Vec2, b: survival_spawn.Vec2) survival_spawn.Vec2 {
+pub inline fn subVec(a: spawn_runtime.Vec2, b: spawn_runtime.Vec2) spawn_runtime.Vec2 {
     return .{
         .x = a.x - b.x,
         .y = a.y - b.y,
     };
 }
 
-pub inline fn mulVec(vec: survival_spawn.Vec2, scalar: f64) survival_spawn.Vec2 {
+pub inline fn mulVec(vec: spawn_runtime.Vec2, scalar: f64) spawn_runtime.Vec2 {
     return .{
         .x = vec.x * scalar,
         .y = vec.y * scalar,
     };
 }
 
-pub inline fn toAngle(vec: survival_spawn.Vec2) f64 {
-    return survival_math.atan2(vec.y, vec.x);
+pub inline fn toAngle(vec: spawn_runtime.Vec2) f64 {
+    return math_runtime.atan2(vec.y, vec.x);
 }
 
 pub const PythonRandom = struct {

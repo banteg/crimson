@@ -3,7 +3,7 @@ const std = @import("std");
 
 const backend_python = @import("backend_python.zig");
 const replay_codec = @import("replay_codec.zig");
-const survival_sim = @import("survival_sim.zig");
+const replay_runner = @import("runtime/replay_runner.zig");
 const verify_contract = @import("verify_contract.zig");
 
 const hex = "0123456789abcdef";
@@ -128,23 +128,23 @@ fn runNativeVerify(
     replay_codec.validateReplayBootstrap(header) catch |err| {
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
-    var tick_trace: std.ArrayList(survival_sim.SurvivalTickTrace) = .empty;
+    var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
     defer tick_trace.deinit(allocator);
 
     const trace_out = if (request.debug_trace_jsonl != null) &tick_trace else null;
-    const scaffold = survival_sim.runSurvivalReplayScaffoldWithTrace(
+    const scaffold = replay_runner.runReplayScaffoldWithTrace(
         replay,
         trace_out,
         allocator,
         .{},
     ) catch |err| {
         if (request.debug_trace_jsonl) |trace_path| {
-            writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
+            writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch {};
         }
-        return buildNotPortedOutputForSurvivalSimError(allocator, err);
+        return buildNotPortedOutputForReplayRunnerError(allocator, err);
     };
     if (request.debug_trace_jsonl) |trace_path| {
-        writeSurvivalTickTraceJsonl(trace_path, tick_trace.items) catch {};
+        writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch {};
     }
 
     const replay_sha256 = try sha256HexAlloc(allocator, replay_bytes);
@@ -236,9 +236,9 @@ fn runNativeVerify(
     };
 }
 
-fn writeSurvivalTickTraceJsonl(
+fn writeReplayTickTraceJsonl(
     trace_path: []const u8,
-    trace: []const survival_sim.SurvivalTickTrace,
+    trace: []const replay_runner.ReplayTickTrace,
 ) !void {
     const file = try std.fs.cwd().createFile(trace_path, .{
         .truncate = true,
@@ -820,19 +820,19 @@ fn buildNotPortedOutputForReplayCodecError(
     return buildNotPortedOutput(allocator, detail);
 }
 
-fn buildNotPortedOutputForSurvivalSimError(
+fn buildNotPortedOutputForReplayRunnerError(
     allocator: std.mem.Allocator,
-    err: survival_sim.SurvivalSimError,
+    err: replay_runner.ReplayRunnerError,
 ) !backend_python.CommandOutput {
     const detail = switch (err) {
-        error.OutOfMemory => "survival simulation scaffold ran out of memory",
-        error.UnsupportedGameMode => "survival simulation scaffold only supports survival/rush/quest modes",
-        error.UnsupportedPlayerCount => "survival simulation scaffold only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "survival simulation scaffold only supports raw/f32 quantization",
-        error.UnsupportedPreserveBugs => "survival simulation scaffold does not support preserve_bugs=true",
+        error.OutOfMemory => "replay simulation scaffold ran out of memory",
+        error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
+        error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
+        error.UnsupportedInputQuantization => "replay simulation scaffold only supports raw/f32 quantization",
+        error.UnsupportedPreserveBugs => "replay simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
         error.UnsupportedEventKind => "replay events include kinds unsupported for this mode",
-        error.UnsupportedEventPlayerIndex => "survival simulation scaffold encountered an out-of-range player_index event",
+        error.UnsupportedEventPlayerIndex => "replay simulation scaffold encountered an out-of-range player_index event",
         error.InvalidPerkPickEvent => "replay perk_pick event could not be applied in current perk state",
         error.UnsupportedPerkApplyHandler => "replay selected a perk with apply/effect behavior not yet ported",
         error.UnsupportedSpawnTemplate => "replay triggered survival template spawns not yet ported in native creature runtime",
@@ -1145,7 +1145,7 @@ test "build verify payload score mismatch" {
 
 test "survival sim not ported output maps unsupported weapon fire path" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForSurvivalSimError(allocator, error.UnsupportedWeaponFirePath);
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedWeaponFirePath);
     defer allocator.free(output.stdout);
     defer allocator.free(output.stderr);
 
@@ -1155,7 +1155,7 @@ test "survival sim not ported output maps unsupported weapon fire path" {
 
 test "survival sim not ported output maps unsupported bonus apply path" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForSurvivalSimError(allocator, error.UnsupportedBonusApplyPath);
+    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedBonusApplyPath);
     defer allocator.free(output.stdout);
     defer allocator.free(output.stderr);
 

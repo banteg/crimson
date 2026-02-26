@@ -1,6 +1,6 @@
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 const default_edge_offset: f64 = 64.0;
 
@@ -20,7 +20,7 @@ pub const tier1_builders = [_]common.LevelBuilder{
 fn build_1_1_land_hostile(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -38,7 +38,7 @@ fn build_1_1_land_hostile(
 fn build_1_2_minor_alien_breach(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -103,7 +103,7 @@ fn build_1_2_minor_alien_breach(
 fn build_1_3_target_practice(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const center = common.centerPoint(ctx.width, ctx.height);
@@ -135,7 +135,7 @@ fn build_1_3_target_practice(
 fn build_1_4_frontline_assault(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -209,7 +209,7 @@ fn build_1_4_frontline_assault(
 fn build_1_5_alien_dens(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -231,7 +231,7 @@ fn build_1_5_alien_dens(
 fn build_1_6_the_random_factor(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const center = common.centerPoint(ctx.width, ctx.height);
@@ -277,7 +277,7 @@ fn build_1_6_the_random_factor(
 fn build_1_7_spider_wave_syndrome(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -301,7 +301,7 @@ fn build_1_7_spider_wave_syndrome(
 fn build_1_8_alien_squads(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -341,7 +341,7 @@ fn build_1_8_alien_squads(
 fn build_1_9_nesting_grounds(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -405,7 +405,7 @@ fn build_1_9_nesting_grounds(
 fn build_1_10_8_legged_terror(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;

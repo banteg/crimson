@@ -1,11 +1,11 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
+const game_ids = @import("../game_ids.zig");
 
-const survival_bonuses = @import("survival_bonuses.zig");
-const survival_perks = @import("survival_perks.zig");
-const survival_spawn = @import("survival_spawn.zig");
-const survival_state = @import("survival_state.zig");
-const survival_math = @import("survival_math.zig");
+const survival_bonuses = @import("bonuses.zig");
+const survival_perks = @import("perks.zig");
+const survival_spawn = @import("spawn.zig");
+const survival_state = @import("state.zig");
+const survival_math = @import("math.zig");
 
 pub const max_creatures: usize = 0x180;
 

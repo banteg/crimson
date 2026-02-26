@@ -1,6 +1,6 @@
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier3_builders = [_]common.LevelBuilder{
     .{ .level_key = 301, .start_weapon_id = game_ids.WeaponId.pistol, .build = build301TheBlighting },
@@ -18,7 +18,7 @@ pub const tier3_builders = [_]common.LevelBuilder{
 fn build301TheBlighting(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -133,7 +133,7 @@ fn build301TheBlighting(
 fn build302LizardKings(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -189,7 +189,7 @@ fn build302LizardKings(
 fn build303TheKilling(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -237,7 +237,7 @@ fn build303TheKilling(
 fn build304HiddenEvil(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -292,7 +292,7 @@ fn build304HiddenEvil(
 fn build305SurroundedByReptiles(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = ctx;
@@ -351,7 +351,7 @@ fn build305SurroundedByReptiles(
 fn build306TheLizquidation(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -396,7 +396,7 @@ fn build306TheLizquidation(
 fn build307SpidersInc(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -461,7 +461,7 @@ fn build307SpidersInc(
 fn build308LizardRaze(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
@@ -520,7 +520,7 @@ fn build308LizardRaze(
 fn build309DejaVu(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const center = common.centerPoint(ctx.width, ctx.height);
@@ -549,7 +549,7 @@ fn build309DejaVu(
 fn build310ZombieMasters(
     ctx: common.BuildContext,
     rng: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;

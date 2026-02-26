@@ -2,7 +2,7 @@ const std = @import("std");
 
 const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
-const survival_spawn = @import("../survival_spawn.zig");
+const spawn_runtime = @import("../runtime/spawn.zig");
 
 pub const tier4_builders = [_]common.LevelBuilder{
     .{ .level_key = 401, .start_weapon_id = game_ids.WeaponId.rocket_minigun, .build = build_401_major_alien_breach },
@@ -20,7 +20,7 @@ pub const tier4_builders = [_]common.LevelBuilder{
 fn build_401_major_alien_breach(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -55,7 +55,7 @@ fn build_401_major_alien_breach(
 fn build_402_zombie_time(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -86,7 +86,7 @@ fn build_402_zombie_time(
 fn build_403_lizard_zombie_pact(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -146,7 +146,7 @@ fn build_403_lizard_zombie_pact(
 fn build_404_the_collaboration(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -198,7 +198,7 @@ fn build_404_the_collaboration(
 fn build_405_the_massacre(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const edges = common.edgeMidpoints(ctx.width, ctx.width, 64.0);
@@ -235,7 +235,7 @@ fn build_405_the_massacre(
 fn build_406_the_unblitzkrieg(
     _: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     var trigger: i32 = 500;
@@ -404,7 +404,7 @@ fn build_406_the_unblitzkrieg(
 fn build_407_gauntlet(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const player_count = ctx.player_count + 4;
@@ -501,7 +501,7 @@ fn build_407_gauntlet(
 fn build_408_syntax_terror(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const player_count = ctx.player_count + 4;
@@ -544,7 +544,7 @@ fn build_408_syntax_terror(
 fn build_409_the_annihilation(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     const half_w = @floor(ctx.width / 2.0);
@@ -602,7 +602,7 @@ fn build_409_the_annihilation(
 fn build_410_the_end_of_all(
     ctx: common.BuildContext,
     _: *common.PythonRandom,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     try common.appendSpawn(
@@ -750,6 +750,6 @@ fn unblitzkrieg_spawn_id_for(toggle: bool) i32 {
         common.SpawnId.alien_spawner_child_1d_fast_07;
 }
 
-fn ring_point(center: survival_spawn.Vec2, radius: f64, angle: f64) survival_spawn.Vec2 {
+fn ring_point(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
     return common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
 }

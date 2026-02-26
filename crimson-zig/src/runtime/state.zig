@@ -1,8 +1,8 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
-const survival_math = @import("survival_math.zig");
+const game_ids = @import("../game_ids.zig");
+const survival_math = @import("math.zig");
 
-const survival_spawn = @import("survival_spawn.zig");
+const survival_spawn = @import("spawn.zig");
 
 pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;

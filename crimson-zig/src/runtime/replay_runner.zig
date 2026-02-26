@@ -1,18 +1,18 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
+const game_ids = @import("../game_ids.zig");
 
-const replay_codec = @import("replay_codec.zig");
-const survival_bonuses = @import("survival_bonuses.zig");
-const survival_creatures = @import("survival_creatures.zig");
-const survival_perks = @import("survival_perks.zig");
-const survival_particles = @import("survival_particles.zig");
-const survival_projectiles = @import("survival_projectiles.zig");
-const survival_secondary_projectiles = @import("survival_secondary_projectiles.zig");
-const survival_spawn = @import("survival_spawn.zig");
-const quest_spawn_logic = @import("quest_spawn/logic_full.zig");
-const survival_state = @import("survival_state.zig");
-const survival_weapon_runtime = @import("survival_weapon_runtime.zig");
-const survival_math = @import("survival_math.zig");
+const replay_codec = @import("../replay_codec.zig");
+const survival_bonuses = @import("bonuses.zig");
+const survival_creatures = @import("creatures.zig");
+const survival_perks = @import("perks.zig");
+const survival_particles = @import("particles.zig");
+const survival_projectiles = @import("projectiles.zig");
+const survival_secondary_projectiles = @import("secondary_projectiles.zig");
+const survival_spawn = @import("spawn.zig");
+const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
+const survival_state = @import("state.zig");
+const survival_weapon_runtime = @import("weapons.zig");
+const survival_math = @import("math.zig");
 const creature_lifecycle_stage_alive: f64 = 16.0;
 const native_half_pi: f64 = 1.5707963705062866;
 const native_pi: f64 = 3.1415927410125732;
@@ -45,7 +45,7 @@ const TickEventPhase = enum {
 const max_test_quest_spawn_entries: usize = 1024;
 const perk_id_jinxed: i32 = survival_perks.PerkId.jinxed;
 
-pub const SurvivalSimError = error{
+pub const ReplayRunnerError = error{
     OutOfMemory,
     UnsupportedGameMode,
     UnsupportedPlayerCount,
@@ -62,7 +62,7 @@ pub const SurvivalSimError = error{
     UnsupportedBonusApplyPath,
 };
 
-pub const SurvivalReplayScaffoldResult = struct {
+pub const ReplayScaffoldResult = struct {
     ticks: usize,
     elapsed_ms_nominal: i64,
     elapsed_ms_sim: i64,
@@ -93,7 +93,7 @@ pub const SurvivalReplayScaffoldResult = struct {
     quest_play_completion_music: bool,
 };
 
-pub const SurvivalTickTrace = struct {
+pub const ReplayTickTrace = struct {
     tick: usize,
     rng_state: u32,
     rng_after_perk_effects: u32,
@@ -335,17 +335,17 @@ pub const ReplayScaffoldOptions = struct {
     quest_start_weapon_id: ?i32 = null,
 };
 
-pub fn runSurvivalReplayScaffold(
+pub fn runReplayScaffold(
     replay: replay_codec.Replay,
-) SurvivalSimError!SurvivalReplayScaffoldResult {
-    return runSurvivalReplayScaffoldWithOptions(replay, .{});
+) ReplayRunnerError!ReplayScaffoldResult {
+    return runReplayScaffoldWithOptions(replay, .{});
 }
 
-pub fn runSurvivalReplayScaffoldWithOptions(
+pub fn runReplayScaffoldWithOptions(
     replay: replay_codec.Replay,
     options: ReplayScaffoldOptions,
-) SurvivalSimError!SurvivalReplayScaffoldResult {
-    return runSurvivalReplayScaffoldWithTrace(
+) ReplayRunnerError!ReplayScaffoldResult {
+    return runReplayScaffoldWithTrace(
         replay,
         null,
         std.heap.page_allocator,
@@ -353,12 +353,12 @@ pub fn runSurvivalReplayScaffoldWithOptions(
     );
 }
 
-pub fn runSurvivalReplayScaffoldWithTrace(
+pub fn runReplayScaffoldWithTrace(
     replay: replay_codec.Replay,
-    trace_out: ?*std.ArrayList(SurvivalTickTrace),
+    trace_out: ?*std.ArrayList(ReplayTickTrace),
     trace_allocator: std.mem.Allocator,
     options: ReplayScaffoldOptions,
-) SurvivalSimError!SurvivalReplayScaffoldResult {
+) ReplayRunnerError!ReplayScaffoldResult {
     const header = replay.header;
     if (header.game_mode_id != game_mode_survival and
         header.game_mode_id != game_mode_rush and
@@ -1016,7 +1016,7 @@ fn buildTickTrace(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
-) SurvivalTickTrace {
+) ReplayTickTrace {
     var projectile_count: usize = 0;
     var projectile_state_hash: u64 = 1469598103934665603;
     var projectile0 = survival_projectiles.Projectile{};
@@ -1976,7 +1976,7 @@ fn applyReplayEvent(
     perk_menu_open_count: *usize,
     perk_pick_count: *usize,
     menu_open_seen_this_tick: *bool,
-) SurvivalSimError!void {
+) ReplayRunnerError!void {
     switch (event) {
         .perk_menu_open => |open| {
             menu_open_seen_this_tick.* = true;
@@ -2307,7 +2307,7 @@ fn applyCaptureCreatureSpawnEvent(
     state: *survival_state.GameplayState,
     creatures: *survival_creatures.CreaturePool,
     event: replay_codec.CaptureCreatureSpawnEvent,
-) SurvivalSimError!void {
+) ReplayRunnerError!void {
     var spawned_indices = [_]bool{false} ** survival_creatures.max_creatures;
     var active_before = [_]bool{false} ** survival_creatures.max_creatures;
     for (creatures.entries, 0..) |entry, idx| {
@@ -3050,7 +3050,7 @@ test "survival scaffold tracks event and input counters" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 2), result.ticks);
     try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_nominal);
     try std.testing.expectEqual(@as(i64, 33), result.elapsed_ms_sim);
@@ -3083,7 +3083,7 @@ test "survival scaffold rejects unsupported event player index" {
 
     try std.testing.expectError(
         error.UnsupportedEventPlayerIndex,
-        runSurvivalReplayScaffold(replay),
+        runReplayScaffold(replay),
     );
 }
 
@@ -3102,7 +3102,7 @@ test "survival scaffold accepts multiplayer event player indices" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
     try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), result.fire_pressed_count);
@@ -3126,7 +3126,7 @@ test "survival scaffold rejects multiplayer event player index out of bounds" {
 
     try std.testing.expectError(
         error.UnsupportedEventPlayerIndex,
-        runSurvivalReplayScaffold(replay),
+        runReplayScaffold(replay),
     );
 }
 
@@ -3144,7 +3144,7 @@ test "survival scaffold rejects invalid perk pick event in strict mode" {
 
     try std.testing.expectError(
         error.InvalidPerkPickEvent,
-        runSurvivalReplayScaffold(replay),
+        runReplayScaffold(replay),
     );
 }
 
@@ -3160,7 +3160,7 @@ test "survival scaffold can skip invalid perk pick event in non-strict mode" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .strict_events = false,
     });
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
@@ -3190,8 +3190,8 @@ test "survival scaffold treats same-tick stale perk pick after menu open as stri
     });
     defer with_stale_pick.deinit(allocator);
 
-    const menu_result = try runSurvivalReplayScaffold(menu_only);
-    const stale_result = try runSurvivalReplayScaffold(with_stale_pick);
+    const menu_result = try runReplayScaffold(menu_only);
+    const stale_result = try runReplayScaffold(with_stale_pick);
 
     try std.testing.expectEqual(menu_result.wave_spawn_rng_state, stale_result.wave_spawn_rng_state);
     try std.testing.expectEqual(menu_result.perk_pending_count, stale_result.perk_pending_count);
@@ -3248,7 +3248,7 @@ test "survival scaffold defers menu-open processing in original capture replays"
         fn runCase(
             allocator_inner: std.mem.Allocator,
             menu_before_pick: bool,
-        ) !SurvivalReplayScaffoldResult {
+        ) !ReplayScaffoldResult {
             var bootstrap = replay_codec.CaptureBootstrapEvent{
                 .tick_index = 0,
             };
@@ -3288,7 +3288,7 @@ test "survival scaffold defers menu-open processing in original capture replays"
                     },
             });
             defer replay.deinit(allocator_inner);
-            return runSurvivalReplayScaffold(replay);
+            return runReplayScaffold(replay);
         }
     }.runCase;
 
@@ -3314,7 +3314,7 @@ test "survival scaffold tracks weapon runtime counters" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.most_used_weapon_id);
@@ -3330,7 +3330,7 @@ test "survival scaffold honors dt overrides for elapsed_ms" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .dt_frame_overrides = &.{
             .{ .tick_index = 0, .dt_frame = 0.5 },
         },
@@ -3349,11 +3349,11 @@ test "survival scaffold inter-tick rand draws shift rng deterministically" {
     });
     defer replay.deinit(allocator);
 
-    const baseline = try runSurvivalReplayScaffold(replay);
-    const shifted = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const baseline = try runReplayScaffold(replay);
+    const shifted = try runReplayScaffoldWithOptions(replay, .{
         .inter_tick_rand_draws = 1,
     });
-    const shifted_again = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const shifted_again = try runReplayScaffoldWithOptions(replay, .{
         .inter_tick_rand_draws = 1,
     });
 
@@ -3391,7 +3391,7 @@ test "survival scaffold applies capture bootstrap payload state" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
     try std.testing.expectEqual(@as(i32, 321), result.player_experience);
     try std.testing.expectEqual(@as(i32, 5), result.player_level);
@@ -3419,8 +3419,8 @@ test "survival scaffold applies terminal tick events" {
     });
     defer without_terminal_event.deinit(allocator);
 
-    const with_result = try runSurvivalReplayScaffold(with_terminal_event);
-    const without_result = try runSurvivalReplayScaffold(without_terminal_event);
+    const with_result = try runReplayScaffold(with_terminal_event);
+    const without_result = try runReplayScaffold(without_terminal_event);
     try std.testing.expect(with_result.wave_spawn_rng_state != without_result.wave_spawn_rng_state);
 }
 
@@ -3460,9 +3460,9 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             replay.inputs[0][0].aim_x = 700.0;
             replay.inputs[0][0].aim_y = 512.0;
 
-            var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+            var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
-            const result = try runSurvivalReplayScaffoldWithTrace(
+            const result = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,
                 allocator_inner,
@@ -3528,7 +3528,7 @@ test "survival scaffold bootstrap perk counts enable alternate weapon swap" {
             });
             defer replay.deinit(allocator_inner);
 
-            const result = try runSurvivalReplayScaffold(replay);
+            const result = try runReplayScaffold(replay);
             return result.player_weapon_id;
         }
     }.runCase;
@@ -3576,7 +3576,7 @@ test "capture perk pending event sets pending without shifting rng in survival a
             });
             defer replay.deinit(allocator_inner);
 
-            const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+            const result = try runReplayScaffoldWithOptions(replay, .{
                 .quest_spawn_entries = if (game_mode_id == game_mode_quests) &.{} else null,
             });
             return .{
@@ -3601,7 +3601,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
         fn runCase(
             allocator_inner: std.mem.Allocator,
             include_perk_apply: bool,
-        ) !SurvivalReplayScaffoldResult {
+        ) !ReplayScaffoldResult {
             var bootstrap = replay_codec.CaptureBootstrapEvent{
                 .tick_index = 0,
             };
@@ -3638,7 +3638,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
                     },
             });
             defer replay.deinit(allocator_inner);
-            return runSurvivalReplayScaffold(replay);
+            return runReplayScaffold(replay);
         }
     }.runCase;
 
@@ -3661,8 +3661,8 @@ test "rush scaffold is deterministic and enforces assault rifle loadout" {
     });
     defer replay.deinit(allocator);
 
-    const result0 = try runSurvivalReplayScaffold(replay);
-    const result1 = try runSurvivalReplayScaffold(replay);
+    const result0 = try runReplayScaffold(replay);
+    const result1 = try runReplayScaffold(replay);
     try std.testing.expectEqual(result0.wave_spawn_rng_state, result1.wave_spawn_rng_state);
     try std.testing.expectEqual(@as(usize, 10), result0.ticks);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result0.player_weapon_id);
@@ -3680,7 +3680,7 @@ test "rush scaffold honors dt overrides for elapsed_ms" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .dt_frame_overrides = &.{
             .{ .tick_index = 0, .dt_frame = 0.5 },
         },
@@ -3701,7 +3701,7 @@ test "rush scaffold spawn cadence uses raw frame dt, not sim dt" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     // Rush starts with one immediate spawn batch (2 creatures). A second batch should
     // not land until tick 15 at 60Hz.
     try std.testing.expectEqual(@as(usize, 2), result.wave_spawn_count);
@@ -3719,11 +3719,11 @@ test "rush scaffold inter-tick rand draws shift rng deterministically" {
     });
     defer replay.deinit(allocator);
 
-    const baseline = try runSurvivalReplayScaffold(replay);
-    const shifted = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const baseline = try runReplayScaffold(replay);
+    const shifted = try runReplayScaffoldWithOptions(replay, .{
         .inter_tick_rand_draws = 1,
     });
-    const shifted_again = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const shifted_again = try runReplayScaffoldWithOptions(replay, .{
         .inter_tick_rand_draws = 1,
     });
 
@@ -3745,7 +3745,7 @@ test "rush scaffold rejects replay events" {
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(error.UnsupportedEventKind, runSurvivalReplayScaffold(replay));
+    try std.testing.expectError(error.UnsupportedEventKind, runReplayScaffold(replay));
 }
 
 test "rush scaffold accepts capture bootstrap events" {
@@ -3776,7 +3776,7 @@ test "rush scaffold accepts capture bootstrap events" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 1), result.ticks);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
     try std.testing.expectEqual(@as(i32, 123), result.player_experience);
@@ -3813,9 +3813,9 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
     replay.inputs[0][0].aim_x = 600.0;
     replay.inputs[0][0].aim_y = 512.0;
 
-    var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
-    _ = try runSurvivalReplayScaffoldWithTrace(
+    _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
         allocator,
@@ -3842,7 +3842,7 @@ test "rush scaffold supports multiplayer replays" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(usize, 3), result.ticks);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.most_used_weapon_id);
@@ -3874,7 +3874,7 @@ test "rush scaffold disables progression updates even above level threshold" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffold(replay);
+    const result = try runReplayScaffold(replay);
     try std.testing.expectEqual(@as(i32, 2060), result.player_experience);
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
     try std.testing.expectEqual(@as(i32, 0), result.perk_pending_count);
@@ -3912,7 +3912,7 @@ test "survival scaffold supports player counts 1 through 4" {
         });
         defer replay.deinit(allocator);
 
-        const result = try runSurvivalReplayScaffold(replay);
+        const result = try runReplayScaffold(replay);
         try std.testing.expectEqual(@as(usize, 2), result.ticks);
         try std.testing.expectEqual(@as(usize, 1), result.perk_menu_open_count);
     }
@@ -3942,7 +3942,7 @@ test "rush scaffold supports player counts 1 through 4" {
         });
         defer replay.deinit(allocator);
 
-        const result = try runSurvivalReplayScaffold(replay);
+        const result = try runReplayScaffold(replay);
         try std.testing.expectEqual(@as(usize, 2), result.ticks);
         try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.player_weapon_id);
         try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result.most_used_weapon_id);
@@ -3970,11 +3970,11 @@ test "quest scaffold is deterministic with explicit spawn entries" {
             .count = 1,
         },
     };
-    const result0 = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result0 = try runReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
         .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
-    const result1 = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result1 = try runReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
         .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
@@ -4019,7 +4019,7 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
         .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.pistol),
     });
@@ -4047,7 +4047,7 @@ test "quest scaffold advances spawn timeline and fires entries" {
             .count = 1,
         },
     };
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
         .dt_frame_overrides = &.{
             .{ .tick_index = 0, .dt_frame = 0.5 },
@@ -4076,7 +4076,7 @@ test "quest scaffold supports multiplayer replays with explicit start weapon" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .quest_start_weapon_id = @intFromEnum(game_ids.WeaponId.ion_cannon),
     });
     try std.testing.expectEqual(@as(usize, 2), result.ticks);
@@ -4097,7 +4097,7 @@ test "quest scaffold resolves native quest preset and start weapon from replay h
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .dt_frame_overrides = &.{
             .{ .tick_index = 0, .dt_frame = 3.0 },
         },
@@ -4119,7 +4119,7 @@ test "quest scaffold supports dynamic quest seed variants when no spawn entries 
     });
     defer replay.deinit(allocator);
 
-    const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+    const result = try runReplayScaffoldWithOptions(replay, .{
         .dt_frame_overrides = &.{
             .{ .tick_index = 0, .dt_frame = 3.0 },
         },
@@ -4141,7 +4141,7 @@ test "quest scaffold rejects unknown quest level when no spawn entries are provi
     });
     defer replay.deinit(allocator);
 
-    try std.testing.expectError(error.UnsupportedQuestSpawnTable, runSurvivalReplayScaffold(replay));
+    try std.testing.expectError(error.UnsupportedQuestSpawnTable, runReplayScaffold(replay));
 }
 
 test "quest scaffold supports player counts 1 through 4 across static and dynamic levels" {
@@ -4175,7 +4175,7 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             });
             defer replay.deinit(allocator);
 
-            const result = try runSurvivalReplayScaffoldWithOptions(replay, .{
+            const result = try runReplayScaffoldWithOptions(replay, .{
                 .dt_frame_overrides = &.{
                     .{ .tick_index = 0, .dt_frame = 3.0 },
                 },
@@ -4218,9 +4218,9 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         };
     }
 
-    var baseline_trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    var baseline_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer baseline_trace.deinit(allocator);
-    _ = try runSurvivalReplayScaffoldWithTrace(
+    _ = try runReplayScaffoldWithTrace(
         replay_baseline,
         &baseline_trace,
         allocator,
@@ -4262,9 +4262,9 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     });
     defer replay_bootstrapped.deinit(allocator);
 
-    var bootstrapped_trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    var bootstrapped_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer bootstrapped_trace.deinit(allocator);
-    _ = try runSurvivalReplayScaffoldWithTrace(
+    _ = try runReplayScaffoldWithTrace(
         replay_bootstrapped,
         &bootstrapped_trace,
         allocator,
@@ -4333,9 +4333,9 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
     }
 
     const empty_entries = [_]survival_spawn.QuestSpawnEntry{};
-    var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
-    _ = try runSurvivalReplayScaffoldWithTrace(
+    _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
         allocator,
@@ -4546,9 +4546,9 @@ test "quest scaffold resets run state on capture transition to terminal state" {
         break :blk events;
     };
 
-    var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+    var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
-    const result = try runSurvivalReplayScaffoldWithTrace(
+    const result = try runReplayScaffoldWithTrace(
         replay,
         &trace,
         allocator,
@@ -4622,9 +4622,9 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             replay.inputs[0][0].aim_x = 700.0;
             replay.inputs[0][0].aim_y = 512.0;
 
-            var trace: std.ArrayList(SurvivalTickTrace) = .empty;
+            var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
-            _ = try runSurvivalReplayScaffoldWithTrace(
+            _ = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,
                 allocator_inner,

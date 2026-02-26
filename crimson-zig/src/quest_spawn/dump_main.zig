@@ -2,7 +2,7 @@ const std = @import("std");
 const crimson_zig = @import("crimson_zig");
 
 const quest_spawn_logic_full = crimson_zig.quest_spawn_logic_full;
-const survival_spawn = crimson_zig.survival_spawn;
+const spawn_runtime = crimson_zig.spawn;
 
 const usage =
     \\Usage:
@@ -51,7 +51,7 @@ pub fn main() !void {
     else
         1024.0;
 
-    var storage = [_]survival_spawn.QuestSpawnEntry{undefined} ** 4096;
+    var storage = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 4096;
     const result = buildByImpl(
         impl,
         level_key,
@@ -98,7 +98,7 @@ fn buildByImpl(
     player_count: i32,
     seed: u32,
     world_size: f64,
-    out_entries: []survival_spawn.QuestSpawnEntry,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
 ) !quest_spawn_logic_full.QuestSpawnBuildResult {
     if (std.mem.eql(u8, impl, "main")) {
         return quest_spawn_logic_full.buildQuestSpawnTable(

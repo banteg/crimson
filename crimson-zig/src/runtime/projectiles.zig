@@ -1,12 +1,12 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
+const game_ids = @import("../game_ids.zig");
 
-const survival_bonuses = @import("survival_bonuses.zig");
-const survival_creatures = @import("survival_creatures.zig");
-const survival_perks = @import("survival_perks.zig");
-const survival_spawn = @import("survival_spawn.zig");
-const survival_state = @import("survival_state.zig");
-const survival_math = @import("survival_math.zig");
+const survival_bonuses = @import("bonuses.zig");
+const survival_creatures = @import("creatures.zig");
+const survival_perks = @import("perks.zig");
+const survival_spawn = @import("spawn.zig");
+const survival_state = @import("state.zig");
+const survival_math = @import("math.zig");
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = 1.5707963705062866;

@@ -1,8 +1,8 @@
 const std = @import("std");
-const game_ids = @import("game_ids.zig");
+const game_ids = @import("../game_ids.zig");
 
-const survival_perks = @import("survival_perks.zig");
-const survival_state = @import("survival_state.zig");
+const survival_perks = @import("perks.zig");
+const survival_state = @import("state.zig");
 
 pub const BonusRuntimeError = error{
     UnsupportedBonusApplyPath,
