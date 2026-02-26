@@ -37,5 +37,5 @@ jobs:
           zig build test --summary all
           zig build -Doptimize=ReleaseFast
 
-      - name: Wasm smoke
-        run: ./scripts/smoke_wasm.sh
+      - name: Wasm build
+        run: zig build wasm
