@@ -134,7 +134,7 @@ fn runNativeVerify(
     };
 
     const resolution = resolveReplayPath(allocator, request.replay_file, base_dir) catch |err| {
-        return buildVerifyFailedOutput(allocator, err);
+        return buildVerifyFailedOutput(allocator, @errorName(err));
     };
     defer resolution.deinit(allocator);
 
@@ -151,7 +151,7 @@ fn runNativeVerify(
         resolution.resolved_path,
         replay_codec.max_replay_payload_bytes,
     ) catch |err| {
-        return buildVerifyFailedOutput(allocator, err);
+        return buildVerifyFailedOutput(allocator, @errorName(err));
     };
     defer allocator.free(replay_bytes);
 
@@ -194,12 +194,12 @@ fn runNativeVerify(
                 .{},
             ) catch |err| {
                 writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
-                    return buildVerifyFailedOutput(allocator, trace_err);
+                    return buildVerifyFailedOutput(allocator, @errorName(trace_err));
                 };
                 return buildNotPortedOutputForReplayRunnerError(allocator, err);
             };
             writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
-                return buildVerifyFailedOutput(allocator, trace_err);
+                return buildVerifyFailedOutput(allocator, @errorName(trace_err));
             };
             break :blk traced;
         }
@@ -209,8 +209,8 @@ fn runNativeVerify(
         };
     };
 
-    const replay_sha256 = try sha256HexAlloc(allocator, replay_bytes);
-    defer allocator.free(replay_sha256);
+    var replay_sha256: [64]u8 = undefined;
+    hash.sha256HexLower(replay_bytes, &replay_sha256);
 
     const run_result = RunResult{
         .game_mode_id = header.game_mode_id,
@@ -228,7 +228,7 @@ fn runNativeVerify(
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
-        replay_sha256,
+        replay_sha256[0..],
         run_result,
         resolved_metric,
         request.submitted_score,
@@ -237,7 +237,7 @@ fn runNativeVerify(
 
     if (request.json_out) |json_out_path| {
         writeFileWithParents(json_out_path, payload) catch |err| {
-            return buildVerifyFailedOutput(allocator, err);
+            return buildVerifyFailedOutput(allocator, @errorName(err));
         };
     }
 
@@ -687,12 +687,6 @@ fn buildVerifyPayload(
     return payload_writer.toOwnedSlice();
 }
 
-fn sha256HexAlloc(allocator: std.mem.Allocator, bytes: []const u8) ![]u8 {
-    var out: [64]u8 = undefined;
-    hash.sha256HexLower(bytes, &out);
-    return try allocator.dupe(u8, out[0..]);
-}
-
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
     if (std.fs.path.dirname(path)) |dir| {
         if (dir.len > 0) try std.fs.cwd().makePath(dir);
@@ -717,26 +711,34 @@ fn buildReplayNotFoundOutput(
     }
     try writer.writeByte('\n');
 
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
+
     return .{
-        .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stdout = stdout,
+        .stderr = stderr,
         .exit_code = 1,
     };
 }
 
 fn buildVerifyFailedOutput(
     allocator: std.mem.Allocator,
-    err: anytype,
+    detail: []const u8,
 ) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
     var writer = stderr_buf.writer(allocator);
-    try writer.print("replay verification failed: {s}\n", .{@errorName(err)});
+    try writer.print("replay verification failed: {s}\n", .{detail});
+
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
 
     return .{
-        .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stdout = stdout,
+        .stderr = stderr,
         .exit_code = 1,
     };
 }
@@ -751,9 +753,13 @@ fn buildInvalidVerifyArgsOutput(
     var writer = stderr_buf.writer(allocator);
     try writer.print("invalid replay verify args: {s}\n", .{detail});
 
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
+
     return .{
-        .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stdout = stdout,
+        .stderr = stderr,
         .exit_code = 1,
     };
 }
@@ -768,9 +774,13 @@ fn buildUnsupportedVerifyOptionOutput(
     var writer = stderr_buf.writer(allocator);
     try writer.print("unsupported replay verify option in native verifier: {s}\n", .{detail});
 
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
+
     return .{
-        .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stdout = stdout,
+        .stderr = stderr,
         .exit_code = 1,
     };
 }
@@ -785,9 +795,13 @@ fn buildNotPortedOutput(
     var writer = stderr_buf.writer(allocator);
     try writer.print("replay verification path not yet ported: {s}\n", .{detail});
 
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
+
     return .{
-        .stdout = try allocator.dupe(u8, ""),
-        .stderr = try stderr_buf.toOwnedSlice(allocator),
+        .stdout = stdout,
+        .stderr = stderr,
         .exit_code = 1,
     };
 }
@@ -821,22 +835,21 @@ fn buildNotPortedOutputForReplayCodecError(
     allocator: std.mem.Allocator,
     err: replay_codec.ReplayCodecError,
 ) !CommandOutput {
-    const detail = switch (err) {
-        error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
-        error.InvalidHeaderValue => "replay header contains invalid values",
-        error.MissingHeaderField => "replay header missing required fields",
-        error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnsupportedInputShape => "replay input rows are not in the canonical wire shape",
-        error.UnsupportedEventShape => "replay events are not in the canonical wire shape",
-        error.UnsupportedEventKind => "replay events include kinds not yet ported",
-        error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
-        error.UnsupportedInputQuantization => "replay input quantization is not supported",
-        error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
-        error.InvalidGzipPayload => "unable to inflate replay gzip payload",
-        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
-        error.OutOfMemory => "native replay msgpack decode ran out of memory",
-    };
-    return buildNotPortedOutput(allocator, detail);
+    switch (err) {
+        error.InvalidMsgpack => return buildVerifyFailedOutput(allocator, "replay payload is not valid msgpack wire format"),
+        error.InvalidHeaderValue => return buildVerifyFailedOutput(allocator, "replay header contains invalid values"),
+        error.MissingHeaderField => return buildVerifyFailedOutput(allocator, "replay header missing required fields"),
+        error.UnsupportedInputShape => return buildVerifyFailedOutput(allocator, "replay input rows are not in the canonical wire shape"),
+        error.UnsupportedEventShape => return buildVerifyFailedOutput(allocator, "replay events are not in the canonical wire shape"),
+        error.InvalidGzipPayload => return buildVerifyFailedOutput(allocator, "unable to inflate replay gzip payload"),
+        error.UnsupportedReplayFormatVersion => return buildNotPortedOutput(allocator, "replay format version is not supported"),
+        error.UnsupportedEventKind => return buildNotPortedOutput(allocator, "replay events include kinds not yet ported"),
+        error.UnsupportedBootstrapKind => return buildNotPortedOutput(allocator, "replay bootstrap kind is not supported"),
+        error.UnsupportedInputQuantization => return buildNotPortedOutput(allocator, "replay input quantization is not supported"),
+        error.BootstrapSeedMismatch => return buildNotPortedOutput(allocator, "replay bootstrap seed does not match canonical terrain bootstrap draws"),
+        error.PayloadTooLarge => return buildNotPortedOutput(allocator, "replay payload exceeds max decompressed size"),
+        error.OutOfMemory => return buildNotPortedOutput(allocator, "native replay msgpack decode ran out of memory"),
+    }
 }
 
 fn buildNotPortedOutputForReplayRunnerError(
@@ -990,9 +1003,14 @@ fn resolveReplayPath(
 ) !ReplayResolution {
     const primary_exists = try isFile(replay_file);
     if (primary_exists) {
+        const resolved_path = try allocator.dupe(u8, replay_file);
+        errdefer allocator.free(resolved_path);
+        const tried_primary = try allocator.dupe(u8, replay_file);
+        errdefer allocator.free(tried_primary);
+
         return .{
-            .resolved_path = try allocator.dupe(u8, replay_file),
-            .tried_primary = try allocator.dupe(u8, replay_file),
+            .resolved_path = resolved_path,
+            .tried_primary = tried_primary,
             .tried_secondary = null,
             .exists = true,
         };
@@ -1000,21 +1018,33 @@ fn resolveReplayPath(
 
     if (!std.fs.path.isAbsolute(replay_file) and isSingleSegmentPath(replay_file)) {
         const secondary = try std.fs.path.join(allocator, &.{ base_dir, "replays", replay_file });
+        errdefer allocator.free(secondary);
         const secondary_exists = try isFile(secondary);
+
+        const resolved_path = if (secondary_exists)
+            try allocator.dupe(u8, secondary)
+        else
+            try allocator.dupe(u8, replay_file);
+        errdefer allocator.free(resolved_path);
+        const tried_primary = try allocator.dupe(u8, replay_file);
+        errdefer allocator.free(tried_primary);
+
         return .{
-            .resolved_path = if (secondary_exists)
-                try allocator.dupe(u8, secondary)
-            else
-                try allocator.dupe(u8, replay_file),
-            .tried_primary = try allocator.dupe(u8, replay_file),
+            .resolved_path = resolved_path,
+            .tried_primary = tried_primary,
             .tried_secondary = secondary,
             .exists = secondary_exists,
         };
     }
 
+    const resolved_path = try allocator.dupe(u8, replay_file);
+    errdefer allocator.free(resolved_path);
+    const tried_primary = try allocator.dupe(u8, replay_file);
+    errdefer allocator.free(tried_primary);
+
     return .{
-        .resolved_path = try allocator.dupe(u8, replay_file),
-        .tried_primary = try allocator.dupe(u8, replay_file),
+        .resolved_path = resolved_path,
+        .tried_primary = tried_primary,
         .tried_secondary = null,
         .exists = false,
     };
@@ -1207,6 +1237,42 @@ test "unsupported verify option output has dedicated wording" {
     try std.testing.expect(
         std.mem.indexOf(u8, output.stderr, "unsupported replay verify option in native verifier") != null,
     );
+}
+
+test "replay codec malformed payload errors map to verify failed output" {
+    const allocator = std.testing.allocator;
+    const cases = [_]struct {
+        err: replay_codec.ReplayCodecError,
+        detail: []const u8,
+    }{
+        .{ .err = error.InvalidMsgpack, .detail = "replay payload is not valid msgpack wire format" },
+        .{ .err = error.InvalidHeaderValue, .detail = "replay header contains invalid values" },
+        .{ .err = error.MissingHeaderField, .detail = "replay header missing required fields" },
+        .{ .err = error.UnsupportedInputShape, .detail = "replay input rows are not in the canonical wire shape" },
+        .{ .err = error.UnsupportedEventShape, .detail = "replay events are not in the canonical wire shape" },
+        .{ .err = error.InvalidGzipPayload, .detail = "unable to inflate replay gzip payload" },
+    };
+
+    for (cases) |case_item| {
+        const output = try buildNotPortedOutputForReplayCodecError(allocator, case_item.err);
+        defer output.deinit(allocator);
+
+        try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") != null);
+        try std.testing.expect(std.mem.indexOf(u8, output.stderr, case_item.detail) != null);
+        try std.testing.expect(std.mem.indexOf(u8, output.stderr, "path not yet ported") == null);
+    }
+}
+
+test "replay codec unsupported event kind remains not ported output" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayCodecError(allocator, error.UnsupportedEventKind);
+    defer output.deinit(allocator);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification path not yet ported:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay events include kinds not yet ported") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "replay verification failed:") == null);
 }
 
 test "survival sim not ported output maps unsupported weapon fire path" {
