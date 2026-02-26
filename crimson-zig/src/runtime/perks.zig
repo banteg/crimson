@@ -20,6 +20,12 @@ const PerkFlags = struct {
     pub const stackable: u32 = 0x4;
 };
 
+const PerkFlag = enum {
+    quest_mode_allowed,
+    two_player_allowed,
+    stackable,
+};
+
 pub const perk_id_max: i32 = @intFromEnum(PerkId.lifeline_50_50);
 const perk_id_max_usize: usize = @intCast(@intFromEnum(PerkId.lifeline_50_50));
 const perk_base_available_max_id: i32 = 27;
@@ -36,18 +42,88 @@ fn perkIdFromInt(value: i32) ?PerkId {
     return std.meta.intToEnum(PerkId, value) catch null;
 }
 
-const perk_flags_by_id = [_]u32{
-    3, 3, 3, 3, 3, 3, 3, 7, 0, 1, 3, 3, 3, 3, 3, 4, 5, 3, 3, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+inline fn perkFlagMask(comptime flags: []const PerkFlag) u32 {
+    var mask: u32 = 0;
+    inline for (flags) |flag| {
+        mask |= switch (flag) {
+            .quest_mode_allowed => PerkFlags.quest_mode_allowed,
+            .two_player_allowed => PerkFlags.two_player_allowed,
+            .stackable => PerkFlags.stackable,
+        };
+    }
+    return mask;
+}
+
+const default_perk_flags: u32 = perkFlagMask(&.{ .quest_mode_allowed, .two_player_allowed });
+
+const perk_flags_by_id = std.EnumArray(PerkId, u32).initDefault(default_perk_flags, .{
+    .instant_winner = perkFlagMask(&.{ .quest_mode_allowed, .two_player_allowed, .stackable }),
+    .grim_deal = 0,
+    .alternate_weapon = perkFlagMask(&.{ .quest_mode_allowed }),
+    .fatal_lottery = perkFlagMask(&.{ .stackable }),
+    .random_weapon = perkFlagMask(&.{ .quest_mode_allowed, .stackable }),
+    .final_revenge = 0,
+    .highlander = 0,
+    .breathing_room = perkFlagMask(&.{ .two_player_allowed }),
+});
+
+const QuestUnlockPair = struct {
+    unlock_index: usize,
+    perk_id: PerkId,
 };
 
-const quest_unlock_perk_by_index = [_]?PerkId{
-    null,                   null,               PerkId.uranium_filled_bullets, null, PerkId.doctor,         null,                  PerkId.monster_vision,       null,                  PerkId.hot_tempered,        null,
-    PerkId.bonus_economist, null,               PerkId.thick_skinned,          null, PerkId.barrel_greaser, null,                  PerkId.ammunition_within,    null,                  PerkId.veins_of_poison,     null,
-    PerkId.toxic_avenger,   null,               PerkId.regeneration,           null, PerkId.pyromaniac,     null,                  PerkId.ninja,                null,                  PerkId.highlander,          null,
-    PerkId.jinxed,          null,               PerkId.perk_master,            null, PerkId.reflex_boosted, null,                  PerkId.greater_regeneration, null,                  PerkId.breathing_room,      null,
-    null,                   PerkId.death_clock, PerkId.my_favourite_weapon,    null, PerkId.bandage,        PerkId.angry_reloader, null,                        PerkId.ion_gun_master, PerkId.stationary_reloader, null,
+fn buildQuestUnlockTable(
+    comptime entry_count: usize,
+    comptime pairs: []const QuestUnlockPair,
+) [entry_count]?PerkId {
+    var table = [_]?PerkId{null} ** entry_count;
+    inline for (pairs) |pair| {
+        if (pair.unlock_index >= entry_count) {
+            @compileError(std.fmt.comptimePrint(
+                "quest unlock index {d} out of range {d}",
+                .{ pair.unlock_index, entry_count },
+            ));
+        }
+        if (table[pair.unlock_index] != null) {
+            @compileError(std.fmt.comptimePrint(
+                "duplicate quest unlock index {d}",
+                .{pair.unlock_index},
+            ));
+        }
+        table[pair.unlock_index] = pair.perk_id;
+    }
+    return table;
+}
+
+const quest_unlock_pairs = [_]QuestUnlockPair{
+    .{ .unlock_index = 2, .perk_id = .uranium_filled_bullets },
+    .{ .unlock_index = 4, .perk_id = .doctor },
+    .{ .unlock_index = 6, .perk_id = .monster_vision },
+    .{ .unlock_index = 8, .perk_id = .hot_tempered },
+    .{ .unlock_index = 10, .perk_id = .bonus_economist },
+    .{ .unlock_index = 12, .perk_id = .thick_skinned },
+    .{ .unlock_index = 14, .perk_id = .barrel_greaser },
+    .{ .unlock_index = 16, .perk_id = .ammunition_within },
+    .{ .unlock_index = 18, .perk_id = .veins_of_poison },
+    .{ .unlock_index = 20, .perk_id = .toxic_avenger },
+    .{ .unlock_index = 22, .perk_id = .regeneration },
+    .{ .unlock_index = 24, .perk_id = .pyromaniac },
+    .{ .unlock_index = 26, .perk_id = .ninja },
+    .{ .unlock_index = 28, .perk_id = .highlander },
+    .{ .unlock_index = 30, .perk_id = .jinxed },
+    .{ .unlock_index = 32, .perk_id = .perk_master },
+    .{ .unlock_index = 34, .perk_id = .reflex_boosted },
+    .{ .unlock_index = 36, .perk_id = .greater_regeneration },
+    .{ .unlock_index = 38, .perk_id = .breathing_room },
+    .{ .unlock_index = 41, .perk_id = .death_clock },
+    .{ .unlock_index = 42, .perk_id = .my_favourite_weapon },
+    .{ .unlock_index = 44, .perk_id = .bandage },
+    .{ .unlock_index = 45, .perk_id = .angry_reloader },
+    .{ .unlock_index = 47, .perk_id = .ion_gun_master },
+    .{ .unlock_index = 48, .perk_id = .stationary_reloader },
 };
+
+const quest_unlock_perk_by_index = buildQuestUnlockTable(50, &quest_unlock_pairs);
 
 const perk_always_available = [_]PerkId{
     PerkId.man_bomb,
@@ -495,7 +571,7 @@ fn prereqSatisfied(player: *const survival_state.PlayerState, perk_id: PerkId) b
 }
 
 fn perkFlags(perk_id: PerkId) u32 {
-    return perk_flags_by_id[perkIdIndex(perk_id)];
+    return perk_flags_by_id.get(perk_id);
 }
 
 fn perkCountGet(player: *const survival_state.PlayerState, perk_id: PerkId) i32 {
