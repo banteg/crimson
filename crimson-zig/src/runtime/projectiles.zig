@@ -136,11 +136,11 @@ pub const ProjectilePool = struct {
         var barrel_greaser_active = false;
         var ion_gun_master_active = false;
         var ion_scale: f32 = 1.0;
-        for (players) |player| {
-            if (player.perk_counts.get(PerkId.barrel_greaser) > 0) {
+        for (players) |*player| {
+            if (perks.perkActive(player, PerkId.barrel_greaser)) {
                 barrel_greaser_active = true;
             }
-            if (player.perk_counts.get(PerkId.ion_gun_master) > 0) {
+            if (perks.perkActive(player, PerkId.ion_gun_master)) {
                 ion_gun_master_active = true;
             }
             if (barrel_greaser_active and ion_gun_master_active) {
@@ -326,7 +326,7 @@ pub const ProjectilePool = struct {
                 const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
 
                 if (owner_player) |player| {
-                    if (perkActive(player, PerkId.poison_bullets)) {
+                    if (perks.perkActive(player, PerkId.poison_bullets)) {
                         const poison_roll = state.rng.rand();
                         if ((poison_roll & 7) == 1) {
                             creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
@@ -648,10 +648,6 @@ fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
 fn damageScaleFromRawId(raw_id: i32) f32 {
     const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
-}
-
-fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts.get(perk_id) > 0;
 }
 
 fn expectFloatClose(expected: f64, actual: f64) !void {

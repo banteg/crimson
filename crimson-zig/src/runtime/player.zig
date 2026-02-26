@@ -137,6 +137,7 @@ pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
 }
 
 fn playerPerkActive(player: *const PlayerState, perk_id: PerkId) bool {
+    // Keep this local in player runtime to avoid a player<->perks import cycle.
     return player.perk_counts.get(perk_id) > 0;
 }
 

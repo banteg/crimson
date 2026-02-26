@@ -49,6 +49,11 @@ const TickEventPhase = enum {
     post_menu_open,
 };
 const max_test_quest_spawn_entries: usize = 1024;
+// Native capture state-transition rows that target state 12 trigger a full run-state reset.
+const capture_state_reset_target: i32 = 12;
+// Legacy AI7 link-timer rows consume one RNG draw when link_index lands in this capture-authored sentinel range.
+const ai7_link_index_min: i32 = -1723;
+const ai7_link_index_max: i32 = -700;
 
 pub const ReplayRunnerError = error{
     OutOfMemory,
@@ -1711,7 +1716,7 @@ fn applyPyrokineticEffects(
 
     for (players) |*player| {
         if (player.health <= 0.0) continue;
-        if (!perkActive(player.*, PerkId.pyrokinetic)) continue;
+        if (!perks.perkActive(player, PerkId.pyrokinetic)) continue;
 
         const target_idx = creatureFindInRadius(creatures.entries[0..], player.aim, 12.0, 0);
         if (target_idx == -1) continue;
@@ -1746,7 +1751,7 @@ fn updateEvilEyesTargets(
 ) void {
     if (players.len == 0) return;
     for (players) |*player| {
-        if (player.health <= 0.0 or !perkActive(player.*, PerkId.evil_eyes)) {
+        if (player.health <= 0.0 or !perks.perkActive(player, PerkId.evil_eyes)) {
             player.evil_eyes_target_creature = -1;
             continue;
         }
@@ -1863,7 +1868,7 @@ fn applyFinalRevengeOnDeathTransition(
     if (player_index >= players.len) return;
     const player = &players[player_index];
     if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
-    if (!perkActive(player.*, PerkId.final_revenge)) return;
+    if (!perks.perkActive(player, PerkId.final_revenge)) return;
 
     consumeExplosionBurstRng(state, detail_preset);
     const prev_spawn_guard = state.bonus_spawn_guard;
@@ -2153,7 +2158,7 @@ fn applyReplayEvent(
         },
         .capture_state_transition => |capture_state_transition| {
             for (capture_state_transition.transitions[0..capture_state_transition.transition_count]) |transition| {
-                if (transition.target_state == 12) {
+                if (transition.target_state == capture_state_reset_target) {
                     pending_capture_state_reset.* = true;
                     break;
                 }
@@ -2402,8 +2407,8 @@ fn applyCaptureCreatureSpawnEvent(
         const flags_i32 = if (row.has_flags) row.flags else @as(i32, @intCast(entry.flags));
         if (spawned_indices[idx] and
             row.has_link_index and
-            row.link_index >= -1723 and
-            row.link_index <= -700 and
+            row.link_index >= ai7_link_index_min and
+            row.link_index <= ai7_link_index_max and
             (flags_i32 & @as(i32, @intCast(spawn_mod.CreatureFlags.ai7_link_timer))) != 0)
         {
             _ = state.rng.rand();
@@ -2515,7 +2520,7 @@ fn applyJinxedEffects(
     }
     if (state.jinxed_timer >= 0.0) return;
     if (players.len == 0) return;
-    if (!perkActive(players[0], PerkId.jinxed)) return;
+    if (!perks.perkActive(&players[0], PerkId.jinxed)) return;
 
     if ((state.rng.rand() % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
@@ -2838,7 +2843,7 @@ fn updatePlayerFromReplayInput(
             .x = narrowF32(move.x * narrowF32(speed * movement_dt)),
             .y = narrowF32(move.y * narrowF32(speed * movement_dt)),
         };
-    if (perkActive(player.*, PerkId.alternate_weapon)) {
+    if (perks.perkActive(player, PerkId.alternate_weapon)) {
         delta = .{
             .x = narrowF32(delta.x * 0.8),
             .y = narrowF32(delta.y * 0.8),
@@ -2950,7 +2955,7 @@ fn playerAccelerateMoveSpeed(
     player: *state_mod.PlayerState,
     dt: f32,
 ) void {
-    if (perkActive(player.*, PerkId.long_distance_runner)) {
+    if (perks.perkActive(player, PerkId.long_distance_runner)) {
         if (player.move_speed < 2.0) {
             player.move_speed = narrowF32(player.move_speed + dt * 4.0);
         }
@@ -3044,7 +3049,7 @@ fn applyPerkWorldDtSteps(
 ) f32 {
     if (!(dt > 0.0)) return dt;
     if (players.len == 0) return dt;
-    if (!perkActive(players[0], PerkId.reflex_boosted)) return dt;
+    if (!perks.perkActive(&players[0], PerkId.reflex_boosted)) return dt;
     return narrowF32(dt * 0.9);
 }
 
@@ -3067,10 +3072,6 @@ fn playerFrameDtAfterRoundtrip(
 
     const movement_dt = narrowF32((0.6 / time_scale_factor) * dt);
     return narrowF32(time_scale_factor * movement_dt * 1.6666666);
-}
-
-fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
-    return player.perk_counts.get(perk_id) > 0;
 }
 
 test "replay scaffold rejects unsupported demo/preserve feature flags" {
@@ -4673,11 +4674,11 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     };
     transition.transition_count = 1;
     transition.transitions[0] = .{
-        .target_state = 12,
+        .target_state = capture_state_reset_target,
         .has_before_state = true,
         .before_state = 9,
         .has_after_state = true,
-        .after_state = 12,
+        .after_state = capture_state_reset_target,
     };
 
     replay.events = blk: {
