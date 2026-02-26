@@ -59,7 +59,7 @@ pub const ProjectilePool = struct {
     pub fn spawn(
         self: *ProjectilePool,
         pos: state_mod.Vec2,
-        angle: f64,
+        angle: f32,
         type_id: i32,
         owner: owner_ref.OwnerRef,
         travel_budget: f32,
@@ -77,10 +77,10 @@ pub const ProjectilePool = struct {
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = narrowF32(angle),
+            .angle = angle,
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = runtime_helpers.directionFromHeading(narrowF32(angle)).mul(1.5),
+            .vel = runtime_helpers.directionFromHeading(angle).mul(1.5),
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,

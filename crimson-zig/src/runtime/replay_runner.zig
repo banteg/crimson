@@ -1624,7 +1624,7 @@ fn applyPendingCreatureProjectiles(
         const pos = pending.pos;
         const owner = pending.owner;
         const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(pos, angle, type_id, owner, meta, true);
+        _ = projectiles.spawn(pos, narrowF32(angle), type_id, owner, meta, true);
     }
     state.pending_creature_projectile_count = 0;
 }
@@ -1645,7 +1645,7 @@ fn applyFireblastBonus(
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
         const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
+        _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
 }
 
@@ -1681,7 +1681,7 @@ fn applyShockChainBonus(
     defer state.bonus_spawn_guard = prev_spawn_guard;
 
     state.shock_chain_links_left = 0x20;
-    const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
+    const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     state.shock_chain_projectile_id = @intCast(proj_idx);
 }
 
@@ -1800,7 +1800,7 @@ fn applyNukeBonus(
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
-        const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
+        const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
     }
@@ -1810,7 +1810,7 @@ fn applyNukeBonus(
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
+        _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
 
     consumeExplosionBurstRng(state, 5);
