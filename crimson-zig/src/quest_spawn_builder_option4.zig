@@ -1,7 +1,7 @@
 const std = @import("std");
 
+const quest_spawn_option4_data = @import("quest_spawn_option4_data.zig");
 const quest_spawn_builder = @import("quest_spawn_builder.zig");
-const quest_spawn_tables = @import("quest_spawn_tables.zig");
 const survival_spawn = @import("survival_spawn.zig");
 
 pub const QuestSpawnBuildError = quest_spawn_builder.QuestSpawnBuildError;
@@ -13,22 +13,7 @@ const dynamic_level_sweep_stakes: i32 = 205;
 const dynamic_level_the_killing: i32 = 303;
 const dynamic_level_deja_vu: i32 = 309;
 
-const quest_level_count: usize = 50;
-
-const LevelPatternKind = enum {
-    shared,
-    per_player,
-};
-
-const LevelPattern = struct {
-    level_key: i32,
-    start_weapon_id: i32,
-    kind: LevelPatternKind,
-    shared_entries: []const survival_spawn.QuestSpawnEntry = &.{},
-    entries_by_player: [4][]const survival_spawn.QuestSpawnEntry = .{ &.{}, &.{}, &.{}, &.{} },
-};
-
-const level_patterns = buildLevelPatterns();
+const level_patterns = quest_spawn_option4_data.level_patterns;
 
 pub fn buildQuestSpawnTable(
     level_key: i32,
@@ -78,83 +63,11 @@ fn isDynamicSeedLevel(level_key: i32) bool {
     };
 }
 
-fn lookupLevelPattern(level_key: i32) ?*const LevelPattern {
+fn lookupLevelPattern(level_key: i32) ?*const quest_spawn_option4_data.LevelPattern {
     for (&level_patterns) |*pattern| {
         if (pattern.level_key == level_key) return pattern;
     }
     return null;
-}
-
-fn buildLevelPatterns() [quest_level_count]LevelPattern {
-    @setEvalBranchQuota(2_000_000);
-    var patterns: [quest_level_count]LevelPattern = undefined;
-    var idx: usize = 0;
-
-    var major: i32 = 1;
-    while (major <= 5) : (major += 1) {
-        var minor: i32 = 1;
-        while (minor <= 10) : (minor += 1) {
-            const level_key = major * 100 + minor;
-            const p1 = requirePreset(level_key, 1);
-            const p2 = requirePreset(level_key, 2);
-            const p3 = requirePreset(level_key, 3);
-            const p4 = requirePreset(level_key, 4);
-
-            if (p1.start_weapon_id != p2.start_weapon_id or
-                p1.start_weapon_id != p3.start_weapon_id or
-                p1.start_weapon_id != p4.start_weapon_id)
-            {
-                @compileError(std.fmt.comptimePrint(
-                    "start_weapon_id diverged across players for level_key={d}",
-                    .{level_key},
-                ));
-            }
-
-            const all_equal = questEntriesEqual(p1.entries, p2.entries) and
-                questEntriesEqual(p1.entries, p3.entries) and
-                questEntriesEqual(p1.entries, p4.entries);
-            patterns[idx] = if (all_equal)
-                .{
-                    .level_key = level_key,
-                    .start_weapon_id = p1.start_weapon_id,
-                    .kind = .shared,
-                    .shared_entries = p1.entries,
-                }
-            else
-                .{
-                    .level_key = level_key,
-                    .start_weapon_id = p1.start_weapon_id,
-                    .kind = .per_player,
-                    .entries_by_player = .{ p1.entries, p2.entries, p3.entries, p4.entries },
-                };
-            idx += 1;
-        }
-    }
-    return patterns;
-}
-
-fn requirePreset(level_key: i32, player_count: i32) quest_spawn_tables.QuestPreset {
-    return quest_spawn_tables.lookupPreset(level_key, player_count) orelse
-        @compileError(std.fmt.comptimePrint(
-            "missing quest preset level_key={d} player_count={d}",
-            .{ level_key, player_count },
-        ));
-}
-
-fn questEntriesEqual(
-    left: []const survival_spawn.QuestSpawnEntry,
-    right: []const survival_spawn.QuestSpawnEntry,
-) bool {
-    if (left.len != right.len) return false;
-    for (left, right) |a, b| {
-        if (@as(u64, @bitCast(a.pos.x)) != @as(u64, @bitCast(b.pos.x))) return false;
-        if (@as(u64, @bitCast(a.pos.y)) != @as(u64, @bitCast(b.pos.y))) return false;
-        if (@as(u64, @bitCast(a.heading)) != @as(u64, @bitCast(b.heading))) return false;
-        if (a.spawn_id != b.spawn_id) return false;
-        if (a.trigger_ms != b.trigger_ms) return false;
-        if (a.count != b.count) return false;
-    }
-    return true;
 }
 
 fn expectEntryApproxEqual(
