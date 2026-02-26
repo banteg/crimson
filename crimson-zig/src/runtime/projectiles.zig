@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
@@ -32,7 +33,7 @@ pub const Projectile = struct {
     damage_pool: f32 = 1.0,
     hit_radius: f32 = 1.0,
     base_damage: f32 = 0.0,
-    owner_id: i32 = 0,
+    owner: owner_ref.OwnerRef = .{ .none = {} },
     hits_players: bool = false,
 };
 
@@ -60,7 +61,7 @@ pub const ProjectilePool = struct {
         pos: state_mod.Vec2,
         angle: f64,
         type_id: i32,
-        owner_id: i32,
+        owner: owner_ref.OwnerRef,
         base_damage: f64,
         hits_players: bool,
     ) usize {
@@ -87,7 +88,7 @@ pub const ProjectilePool = struct {
             .damage_pool = 1.0,
             .hit_radius = 1.0,
             .base_damage = narrowF32(meta),
-            .owner_id = owner_id,
+            .owner = owner,
             .hits_players = hits_players,
         };
 
@@ -214,7 +215,7 @@ pub const ProjectilePool = struct {
 
             var steps: i32 = @intFromFloat(proj.base_damage);
             if (steps <= 0) steps = 1;
-            if (barrel_greaser_active and proj.owner_id < 0) {
+            if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
             const direction = runtime_helpers.directionFromHeading(proj.angle);
@@ -262,8 +263,10 @@ pub const ProjectilePool = struct {
                 }
 
                 if (hit_idx) |idx| {
-                    if (proj.owner_id >= 0 and idx == @as(usize, @intCast(proj.owner_id))) {
-                        hit_idx = null;
+                    if (proj.owner.creatureIndexInBounds(creatures.entries.len)) |owner_idx| {
+                        if (idx == owner_idx) {
+                            hit_idx = null;
+                        }
                     }
                 }
                 if (hit_idx == null) {
@@ -274,10 +277,7 @@ pub const ProjectilePool = struct {
 
                     if (proj.hits_players and can_hit_players) {
                         var hit_player_idx: ?usize = null;
-                        const owner_player_idx: ?usize = if (proj.owner_id < 0 and proj.owner_id != -100)
-                            ownerIdToPlayerIndex(proj.owner_id, players.len)
-                        else
-                            null;
+                        const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
 
                         for (players, 0..) |player, idx| {
                             if (owner_player_idx) |owner_idx| {
@@ -322,7 +322,7 @@ pub const ProjectilePool = struct {
                     tick_stats.first_hit_target_y = narrowF32(creatures.entries[hit_idx.?].pos.y);
                 }
 
-                const owner_player_idx = ownerIdToPlayerIndex(proj.owner_id, players.len);
+                const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
                 const owner_player = if (owner_player_idx) |idx| &players[idx] else null;
                 const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
 
@@ -402,7 +402,7 @@ pub const ProjectilePool = struct {
                             hit_idx.?,
                             damage_amount,
                             impulse,
-                            proj.owner_id,
+                            proj.owner.toLegacy(),
                             dt,
                             world_size,
                         );
@@ -417,7 +417,7 @@ pub const ProjectilePool = struct {
                             hit_idx.?,
                             remaining,
                             impulse,
-                            proj.owner_id,
+                            proj.owner.toLegacy(),
                             dt,
                             world_size,
                         );
@@ -543,7 +543,7 @@ fn applyIonLingerDamage(
                 idx,
                 damage,
                 .{},
-                proj.owner_id,
+                proj.owner.toLegacy(),
                 dt,
                 world_size,
             );
@@ -610,7 +610,7 @@ fn postHitIonRifleShockChain(
         origin_pos,
         angle,
         proj.type_id,
-        @intCast(hit_idx),
+        owner_ref.OwnerRef.fromCreature(hit_idx),
         proj.base_damage,
         false,
     );
@@ -639,20 +639,6 @@ fn consumeIonHitEffectsRng(
         _ = state.rng.rand();
         _ = state.rng.rand();
     }
-}
-
-fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
-    if (owner_id == -100) {
-        if (player_len > 0) return 0;
-        return null;
-    }
-    if (owner_id < 0) {
-        const idx: i32 = -1 - owner_id;
-        if (idx < 0) return null;
-        const as_usize: usize = @intCast(idx);
-        if (as_usize < player_len) return as_usize;
-    }
-    return null;
 }
 
 fn projectileMetaFromRawId(raw_id: i32) f32 {
@@ -702,7 +688,7 @@ test "projectile hit consumes hit-presentation rng" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -1,
+        owner_ref.OwnerRef.fromPlayer(0),
         55.0,
         false,
     );
@@ -742,7 +728,7 @@ test "pulse gun hit applies post-hit target push" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -761,7 +747,7 @@ test "pulse gun hit applies post-hit target push" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pulse_gun),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -807,7 +793,7 @@ test "projectile hit pass does not retarget newly spawned split children in new 
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         300.0,
         false,
     );
@@ -855,7 +841,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -898,7 +884,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -942,7 +928,7 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
         creatures.entries[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -964,7 +950,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         .{},
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
         false,
     );
@@ -988,7 +974,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         .{},
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
         false,
     );
@@ -1032,7 +1018,7 @@ test "ion gun master increases ion rifle linger radius" {
         .{},
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -1072,7 +1058,7 @@ test "ion gun master increases ion rifle linger radius" {
         .{},
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        -100,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
         45.0,
         false,
     );
@@ -1105,7 +1091,7 @@ test "ranged projectile can damage player when no creature is hit" {
         .{},
         native_half_pi,
         @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        0,
+        owner_ref.OwnerRef.fromCreature(0),
         45.0,
         true,
     );
@@ -1166,7 +1152,7 @@ test "ranged projectile can damage creature before player collision" {
         .{},
         native_half_pi,
         @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        0,
+        owner_ref.OwnerRef.fromCreature(0),
         45.0,
         true,
     );

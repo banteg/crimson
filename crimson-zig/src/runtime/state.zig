@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const owner_ref = @import("owner_ref.zig");
 const math = @import("math.zig");
 
 const spawn_mod = @import("spawn.zig");
@@ -149,7 +150,7 @@ pub const BonusTimers = struct {
 
 pub const PendingCreatureProjectile = struct {
     type_id: i32 = 0,
-    owner_id: i32 = 0,
+    owner: owner_ref.OwnerRef = .{ .none = {} },
     angle: f32 = 0.0,
     pos: Vec2 = .{},
 };

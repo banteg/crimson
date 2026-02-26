@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
@@ -3301,7 +3302,7 @@ fn queueCreatureProjectile(
 
     state.pending_creature_projectiles[pending_count] = .{
         .type_id = type_id,
-        .owner_id = owner_id,
+        .owner = owner_ref.OwnerRef.fromLegacy(owner_id),
         .angle = narrowF32(angle),
         .pos = .{
             .x = narrowF32(pos.x),
@@ -6007,7 +6008,7 @@ test "ranged shock creature queues projectile along heading not direct aim" {
 
     try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), state.pending_creature_projectiles[0].type_id);
-    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectiles[0].owner_id);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectiles[0].owner.toLegacy());
     try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectiles[0].angle);
 
     const direct_aim = narrowF32(math.atan2(

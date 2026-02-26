@@ -2,6 +2,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
 
@@ -27,7 +28,7 @@ pub const SecondaryProjectile = struct {
     detonation_t: f32 = 0.0,
     detonation_scale: f32 = 1.0,
     type_id: SecondaryProjectileTypeId = .none,
-    owner_id: i32 = -100,
+    owner: owner_ref.OwnerRef = .{ .none = {} },
     trail_timer: f32 = 0.0,
     target_id: i32 = -1,
     target_hint_active: bool = false,
@@ -46,7 +47,7 @@ pub const SecondaryProjectilePool = struct {
         pos: state_mod.Vec2,
         angle: f64,
         type_id: SecondaryProjectileTypeId,
-        owner_id: i32,
+        owner: owner_ref.OwnerRef,
         time_to_live: f64,
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
@@ -72,7 +73,7 @@ pub const SecondaryProjectilePool = struct {
             .detonation_t = 0.0,
             .detonation_scale = 1.0,
             .type_id = type_id,
-            .owner_id = owner_id,
+            .owner = owner,
             .trail_timer = 0.0,
             .target_id = -1,
             .target_hint_active = false,
@@ -182,7 +183,7 @@ pub const SecondaryProjectilePool = struct {
                         idx,
                         damage,
                         impulse,
-                        entry.owner_id,
+                        entry.owner.toLegacy(),
                         dt_f32,
                         world_size,
                         &killed_now,
@@ -197,7 +198,7 @@ pub const SecondaryProjectilePool = struct {
                             players,
                             bonuses,
                             idx,
-                            entry.owner_id,
+                            entry.owner.toLegacy(),
                             dt_f32,
                             world_size,
                         );
@@ -285,10 +286,9 @@ pub const SecondaryProjectilePool = struct {
                 }
             }
             if (hit_idx) |idx| {
-                if (entry.owner_id < 0 and creatures.entries[idx].lifecycle_stage == creature_lifecycle_stage_alive) {
-                    const player_idx = if (entry.owner_id == -100) @as(i32, 0) else -1 - entry.owner_id;
-                    if (player_idx >= 0 and player_idx < state.shots_hit.len) {
-                        state.shots_hit[@intCast(player_idx)] += 1;
+                if (creatures.entries[idx].lifecycle_stage == creature_lifecycle_stage_alive) {
+                    if (entry.owner.playerIndexInBounds(state.shots_hit.len)) |player_idx| {
+                        state.shots_hit[player_idx] += 1;
                     }
                 }
 
@@ -333,7 +333,7 @@ pub const SecondaryProjectilePool = struct {
                         .x = narrowF32(entry.vel.x / dt_f32),
                         .y = narrowF32(entry.vel.y / dt_f32),
                     },
-                    entry.owner_id,
+                    entry.owner.toLegacy(),
                     dt_f32,
                     world_size,
                     null,

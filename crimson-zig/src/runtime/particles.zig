@@ -3,6 +3,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
 const state_mod = @import("state.zig");
 
@@ -31,7 +32,7 @@ pub const Particle = struct {
     spin: f32 = 0.0,
     style_id: ParticleStyleId = .flamethrower,
     target_id: i32 = -1,
-    owner_id: i32 = -100,
+    owner: owner_ref.OwnerRef = .{ .none = {} },
 };
 
 pub const ParticlePool = struct {
@@ -47,7 +48,7 @@ pub const ParticlePool = struct {
         pos: state_mod.Vec2,
         angle: f64,
         intensity: f64,
-        owner_id: i32,
+        owner: owner_ref.OwnerRef,
     ) usize {
         const index = self.allocSlot(state);
         const entry = &self.entries[index];
@@ -68,7 +69,7 @@ pub const ParticlePool = struct {
             .spin = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
-            .owner_id = owner_id,
+            .owner = owner,
         };
         return index;
     }
@@ -78,7 +79,7 @@ pub const ParticlePool = struct {
         state: *state_mod.GameplayState,
         pos: state_mod.Vec2,
         angle: f64,
-        owner_id: i32,
+        owner: owner_ref.OwnerRef,
     ) usize {
         const index = self.allocSlot(state);
         const entry = &self.entries[index];
@@ -99,7 +100,7 @@ pub const ParticlePool = struct {
             .spin = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01),
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
-            .owner_id = owner_id,
+            .owner = owner,
         };
         return index;
     }
@@ -155,7 +156,7 @@ pub const ParticlePool = struct {
                             players,
                             bonuses,
                             @intCast(target_idx_i32),
-                            entry.owner_id,
+                            entry.owner.toLegacy(),
                             dt_f32,
                             world_size,
                         );
@@ -247,7 +248,7 @@ pub const ParticlePool = struct {
                                 target_idx,
                                 damage,
                                 .{},
-                                entry.owner_id,
+                                entry.owner.toLegacy(),
                                 dt_f32,
                                 world_size,
                             );

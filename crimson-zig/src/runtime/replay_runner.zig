@@ -5,6 +5,7 @@ const native_math = @import("native_math.zig");
 const replay_codec = @import("../replay_codec.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
@@ -1119,7 +1120,7 @@ fn buildTickTrace(
         projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.damage_pool))));
         projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ6(entry.angle))));
         projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.speed_scale))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner_id)));
+        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner.toLegacy())));
         projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
         projectile_count += 1;
         if (!projectile0_found) {
@@ -1621,9 +1622,9 @@ fn applyPendingCreatureProjectiles(
         if (type_id <= 0) continue;
         const angle = pending.angle;
         const pos = pending.pos;
-        const owner_id = pending.owner_id;
+        const owner = pending.owner;
         const meta = projectileMetaFromRawId(type_id);
-        _ = projectiles.spawn(pos, angle, type_id, owner_id, meta, true);
+        _ = projectiles.spawn(pos, angle, type_id, owner, meta, true);
     }
     state.pending_creature_projectile_count = 0;
 }
@@ -1633,7 +1634,7 @@ fn applyFireblastBonus(
     projectiles: *projectiles_mod.ProjectilePool,
     origin: state_mod.Vec2,
 ) void {
-    const projectile_owner_id: i32 = -100;
+    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
     defer state.bonus_spawn_guard = prev_spawn_guard;
@@ -1644,7 +1645,7 @@ fn applyFireblastBonus(
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
         const meta = projectileMetaFromRawId(type_id);
-        _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+        _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
     }
 }
 
@@ -1671,7 +1672,7 @@ fn applyShockChainBonus(
 
     const target = creatures.entries[target_idx];
     const angle = state_mod.Vec2.sub(target.pos, origin).toHeading();
-    const projectile_owner_id: i32 = -100;
+    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
     const meta = projectileMetaFromRawId(type_id);
 
@@ -1680,7 +1681,7 @@ fn applyShockChainBonus(
     defer state.bonus_spawn_guard = prev_spawn_guard;
 
     state.shock_chain_links_left = 0x20;
-    const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+    const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
     state.shock_chain_projectile_id = @intCast(proj_idx);
 }
 
@@ -1721,7 +1722,7 @@ fn applyPyrokineticEffects(
         creature.collision_timer = 0.5;
         for (burn_intensities) |intensity| {
             const angle = narrowF32(@as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
-            _ = particles.spawnParticle(state, creature.pos, angle, intensity, -100);
+            _ = particles.spawnParticle(state, creature.pos, angle, intensity, owner_ref.OwnerRef.fromLocalPlayer(0));
         }
         // Consume native fx_queue_add_random RNG even though verifier does not render decals.
         _ = state.rng.rand();
@@ -1779,7 +1780,7 @@ fn applyNukeBonus(
 ) void {
     if (players.len == 0) return;
     const player = &players[0];
-    const projectile_owner_id: i32 = -100;
+    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
     const damage_owner_id: i32 = -1 - player.index;
     var nuke_kill_count: i32 = 0;
     state.camera_shake_pulses = 0x14;
@@ -1791,9 +1792,9 @@ fn applyNukeBonus(
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
+        applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileMetaFromRawId(type_id);
-        const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+        const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
     }
@@ -1801,9 +1802,9 @@ fn applyNukeBonus(
     for (0..2) |_| {
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
+        applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileMetaFromRawId(type_id);
-        _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
+        _ = projectiles.spawn(origin, angle, type_id, projectile_owner, meta, false);
     }
 
     consumeExplosionBurstRng(state, 5);
@@ -1890,24 +1891,20 @@ fn applyFinalRevengeOnDeathTransition(
 fn applyPlayerProjectileSpawnRules(
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
-    owner_id: i32,
+    owner: owner_ref.OwnerRef,
     type_id: *i32,
 ) void {
     if (state.bonus_spawn_guard) return;
-    if (owner_id != -100 and owner_id != -1 and owner_id != -2 and owner_id != -3) return;
-
-    var player_index: ?usize = null;
-    if (owner_id == -100 and players.len == 1) {
-        player_index = 0;
-    } else if (owner_id < 0 and owner_id != -100) {
-        const idx: i32 = -1 - owner_id;
-        if (idx >= 0) {
-            const as_usize: usize = @intCast(idx);
-            if (as_usize < players.len) {
-                player_index = as_usize;
-            }
-        }
-    }
+    const player_ref = switch (owner) {
+        .player => |ref| ref,
+        else => return,
+    };
+    const player_index: ?usize = if (player_ref.local_host and player_ref.index == 0)
+        if (players.len == 1) @as(?usize, 0) else null
+    else if (player_ref.index < players.len)
+        player_ref.index
+    else
+        null;
 
     var shot_credit: i32 = 1;
     if (player_index) |idx| {
@@ -5568,7 +5565,7 @@ test "pending creature projectile queue materializes hostile shots before projec
     state.pending_creature_projectile_count = 1;
     state.pending_creature_projectiles[0] = .{
         .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        .owner_id = 17,
+        .owner = owner_ref.OwnerRef.fromCreature(17),
         .angle = native_half_pi,
         .pos = .{ .x = 100.0, .y = 200.0 },
     };
@@ -5579,7 +5576,7 @@ test "pending creature projectile queue materializes hostile shots before projec
     try std.testing.expect(projectiles.entries[0].active);
     try std.testing.expect(projectiles.entries[0].hits_players);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectiles.entries[0].type_id);
-    try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner_id);
+    try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner.toLegacy());
     try std.testing.expectApproxEqAbs(@as(f64, 100.0), projectiles.entries[0].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 200.0), projectiles.entries[0].pos.y, 1e-6);
 }

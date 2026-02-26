@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
+const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -138,14 +139,17 @@ pub fn stepPlayerForTick(
                 state.bonus_spawn_guard = true;
                 defer state.bonus_spawn_guard = prev_spawn_guard;
 
-                const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
+                const owner = if (!state.friendly_fire_enabled)
+                    owner_ref.OwnerRef.fromLocalPlayer(0)
+                else
+                    owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
                 if (count > 0) {
                     const step = std.math.tau / @as(f64, @floatFromInt(count));
                     for (0..@as(usize, @intCast(count))) |idx| {
                         const angle = @as(f64, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
                         const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
-                        _ = projectiles.spawn(player.pos, angle, type_id, owner_id, meta, false);
+                        _ = projectiles.spawn(player.pos, angle, type_id, owner, meta, false);
                     }
                 }
             }
@@ -305,8 +309,8 @@ fn tryFireWeaponWithForce(
         player.aim_dir.toHeading();
     const muzzle_dir = rotateVec(directionFromHeading(aim_heading), -0.150915);
     const muzzle = state_mod.Vec2.add(player.pos, muzzle_dir.mul(16.0));
-    const projectile_owner_id: i32 = -100;
-    const secondary_owner_id: i32 = -1 - player.index;
+    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+    const secondary_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
@@ -363,7 +367,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 shot_angle + jitter,
                 @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
-                projectile_owner_id,
+                projectile_owner,
                 meta,
                 false,
             );
@@ -372,11 +376,11 @@ fn tryFireWeaponWithForce(
         .multi_plasma => {
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
-            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner_id, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle - spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_large, @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta, false);
+            _ = projectiles.spawn(muzzle, shot_angle + spread_small, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).projectile_meta, false);
         },
         .plasma_shotgun => {
             const meta = weapon_data.weapon_stats.get(.plasma_minigun).projectile_meta;
@@ -386,7 +390,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun),
-                    projectile_owner_id,
+                    projectile_owner,
                     meta,
                     false,
                 );
@@ -401,7 +405,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.gauss_gun),
-                    projectile_owner_id,
+                    projectile_owner,
                     meta,
                     false,
                 );
@@ -416,7 +420,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     shot_angle + jitter,
                     @intFromEnum(game_ids.ProjectileTypeId.ion_minigun),
-                    projectile_owner_id,
+                    projectile_owner,
                     meta,
                     false,
                 );
@@ -429,7 +433,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 particle_angle,
                 1.0,
-                -100,
+                owner_ref.OwnerRef.fromLocalPlayer(0),
             );
         },
         .blow_torch => {
@@ -438,7 +442,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 particle_angle,
                 1.0,
-                -100,
+                owner_ref.OwnerRef.fromLocalPlayer(0),
             );
             particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.blow_torch;
         },
@@ -448,7 +452,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 particle_angle,
                 1.0,
-                -100,
+                owner_ref.OwnerRef.fromLocalPlayer(0),
             );
             particles.entries[particle_id].style_id = particles_mod.ParticleStyleId.hr_flamer;
         },
@@ -457,7 +461,7 @@ fn tryFireWeaponWithForce(
                 state,
                 muzzle,
                 directionFromHeading(shot_angle).toAngle(),
-                -100,
+                owner_ref.OwnerRef.fromLocalPlayer(0),
             );
         },
         .rocket_launcher => {
@@ -465,7 +469,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 shot_angle,
                 secondary_projectiles_mod.SecondaryProjectileTypeId.rocket,
-                secondary_owner_id,
+                secondary_owner,
                 2.0,
                 null,
                 creatures,
@@ -476,7 +480,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 shot_angle,
                 secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                secondary_owner_id,
+                secondary_owner,
                 2.0,
                 player.aim,
                 creatures,
@@ -495,7 +499,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     angle,
                     secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                    secondary_owner_id,
+                    secondary_owner,
                     2.0,
                     player.aim,
                     creatures,
@@ -508,7 +512,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 shot_angle,
                 secondary_projectiles_mod.SecondaryProjectileTypeId.rocket_minigun,
-                secondary_owner_id,
+                secondary_owner,
                 2.0,
                 null,
                 creatures,
@@ -529,7 +533,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     angle,
                     type_id_i32,
-                    projectile_owner_id,
+                    projectile_owner,
                     meta,
                     false,
                 );
@@ -607,7 +611,10 @@ fn tickManBomb(
     player.man_bomb_timer += narrowF32(dt);
     if (player.man_bomb_timer <= state.perk_interval_man_bomb) return;
 
-    const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
+    const owner = if (!state.friendly_fire_enabled)
+        owner_ref.OwnerRef.fromLocalPlayer(0)
+    else
+        owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     for (0..8) |idx| {
         const type_id = if ((idx & 1) == 0)
             @intFromEnum(game_ids.ProjectileTypeId.ion_minigun)
@@ -623,7 +630,7 @@ fn tickManBomb(
             player.pos,
             angle,
             type_id,
-            owner_id,
+            owner,
         );
     }
     player.man_bomb_timer -= state.perk_interval_man_bomb;
@@ -655,7 +662,10 @@ fn tickFireCaugh(
     player.fire_cough_timer += narrowF32(dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
-    const owner_id: i32 = if (!state.friendly_fire_enabled) -100 else -1 - player.index;
+    const owner = if (!state.friendly_fire_enabled)
+        owner_ref.OwnerRef.fromLocalPlayer(0)
+    else
+        owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     const aim_heading = player.aim_heading;
     const origin_pos = player.pos;
     const muzzle = state_mod.Vec2.add(
@@ -682,7 +692,7 @@ fn tickFireCaugh(
         muzzle,
         angle,
         @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
-        owner_id,
+        owner,
     );
 
     // sprite_effects.spawn(...): slot scan + one rotation RNG draw in common case.
@@ -706,7 +716,10 @@ fn tickHotTempered(
     player.hot_tempered_timer += narrowF32(dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
-    const owner_id: i32 = if (state.friendly_fire_enabled) -1 - player.index else -100;
+    const owner = if (state.friendly_fire_enabled)
+        owner_ref.OwnerRef.fromPlayer(@intCast(player.index))
+    else
+        owner_ref.OwnerRef.fromLocalPlayer(0);
     for (0..8) |idx| {
         const type_id = if ((idx & 1) == 0)
             @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun)
@@ -720,7 +733,7 @@ fn tickHotTempered(
             player.pos,
             angle,
             type_id,
-            owner_id,
+            owner,
         );
     }
 
@@ -735,11 +748,11 @@ fn spawnPerkProjectile(
     pos: state_mod.Vec2,
     angle: f64,
     type_id: i32,
-    owner_id: i32,
+    owner: owner_ref.OwnerRef,
 ) void {
     var spawn_type_id = type_id;
     var shot_credit: i32 = 0;
-    const player_owned_spawn = owner_id == -100 or owner_id == -1 or owner_id == -2 or owner_id == -3;
+    const player_owned_spawn = owner.playerIndexInBounds(state.shots_fired.len) != null;
     if (!state.bonus_spawn_guard and player_owned_spawn) {
         shot_credit = 1;
         if (spawn_type_id != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and player.fire_bullets_timer > 0.0) {
@@ -754,15 +767,12 @@ fn spawnPerkProjectile(
         pos,
         angle,
         spawn_type_id,
-        owner_id,
+        owner,
         meta,
         false,
     );
-    if (shot_credit > 0 and owner_id < 0 and state.shots_fired.len > 0) {
-        const shooter_idx: usize = if (owner_id == -100)
-            0
-        else
-            @min(@as(usize, @intCast(-1 - owner_id)), state.shots_fired.len - 1);
+    if (shot_credit > 0 and state.shots_fired.len > 0) {
+        const shooter_idx = owner.playerIndexInBounds(state.shots_fired.len) orelse return;
         state.shots_fired[shooter_idx] += shot_credit;
         state.shots_fired_total += shot_credit;
         if (shooter_idx < state.weapon_shots_fired.len and
@@ -1146,7 +1156,7 @@ test "angry reloader spawns plasma ring at half reload" {
     for (projectiles.entries[0..15]) |proj| {
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), proj.type_id);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
     }
 }
 
@@ -1200,7 +1210,7 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
     try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, @intFromEnum(game_ids.ProjectileTypeId.ion_rifle)));
     for (projectiles.entries[0..8]) |proj| {
         try std.testing.expect(proj.active);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
     }
 }
 
@@ -1221,7 +1231,7 @@ test "hot tempered spawns alternating plasma projectiles when charged" {
     try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)));
     for (projectiles.entries[0..8]) |proj| {
         try std.testing.expect(proj.active);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
+        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
     }
 }
 
