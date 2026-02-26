@@ -509,7 +509,8 @@ fn tryFireWeaponWithForce(
         },
         else => {
             const type_id = state_mod.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
-            const meta = state_mod.weaponProjectileMeta(type_id);
+            const type_id_i32 = @intFromEnum(type_id);
+            const meta = state_mod.weaponProjectileMeta(type_id_i32);
             const pellets = @max(1, state_mod.weaponPelletCount(player.weapon_id));
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
@@ -520,7 +521,7 @@ fn tryFireWeaponWithForce(
                 const id = projectiles.spawn(
                     muzzle,
                     angle,
-                    type_id,
+                    type_id_i32,
                     projectile_owner_id,
                     meta,
                     false,

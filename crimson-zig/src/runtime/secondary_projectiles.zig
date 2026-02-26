@@ -11,12 +11,12 @@ const asF32F64 = native_math.roundF32;
 pub const secondary_projectile_pool_size: usize = 0x40;
 const creature_lifecycle_stage_alive: f64 = 16.0;
 
-pub const SecondaryProjectileTypeId = struct {
-    pub const none: i32 = 0;
-    pub const rocket: i32 = 1;
-    pub const homing_rocket: i32 = 2;
-    pub const detonation: i32 = 3;
-    pub const rocket_minigun: i32 = 4;
+pub const SecondaryProjectileTypeId = enum(i32) {
+    none = 0,
+    rocket = 1,
+    homing_rocket = 2,
+    detonation = 3,
+    rocket_minigun = 4,
 };
 
 pub const SecondaryProjectile = struct {
@@ -27,7 +27,7 @@ pub const SecondaryProjectile = struct {
     vel: state_mod.Vec2 = .{},
     detonation_t: f32 = 0.0,
     detonation_scale: f32 = 1.0,
-    type_id: i32 = 0,
+    type_id: SecondaryProjectileTypeId = .none,
     owner_id: i32 = -100,
     trail_timer: f32 = 0.0,
     target_id: i32 = -1,
@@ -46,7 +46,7 @@ pub const SecondaryProjectilePool = struct {
         self: *SecondaryProjectilePool,
         pos: state_mod.Vec2,
         angle: f64,
-        type_id: i32,
+        type_id: SecondaryProjectileTypeId,
         owner_id: i32,
         time_to_live: f64,
         target_hint: ?state_mod.Vec2,
@@ -294,7 +294,7 @@ pub const SecondaryProjectilePool = struct {
                     }
                 }
 
-                const hit_type = entry.type_id;
+                const hit_type = @intFromEnum(entry.type_id);
                 const det_scale: f64 = switch (entry.type_id) {
                     SecondaryProjectileTypeId.rocket => 1.0,
                     SecondaryProjectileTypeId.homing_rocket => 0.35,

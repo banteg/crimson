@@ -28,16 +28,16 @@ pub const CreatureAiMode = enum(i32) {
     _,
 };
 
-pub const CreatureFlags = struct {
-    pub const self_damage_tick: u32 = 0x01;
-    pub const self_damage_tick_strong: u32 = 0x02;
-    pub const anim_ping_pong: u32 = 0x04;
-    pub const split_on_death: u32 = 0x08;
-    pub const ranged_attack_shock: u32 = 0x10;
-    pub const anim_long_strip: u32 = 0x40;
-    pub const ai7_link_timer: u32 = 0x80;
-    pub const ranged_attack_variant: u32 = 0x100;
-    pub const bonus_on_death: u32 = 0x400;
+pub const CreatureFlags = enum(u32) {
+    self_damage_tick = 0x01,
+    self_damage_tick_strong = 0x02,
+    anim_ping_pong = 0x04,
+    split_on_death = 0x08,
+    ranged_attack_shock = 0x10,
+    anim_long_strip = 0x40,
+    ai7_link_timer = 0x80,
+    ranged_attack_variant = 0x100,
+    bonus_on_death = 0x400,
 };
 
 pub const SpawnId = enum(i32) {
@@ -511,7 +511,7 @@ pub fn buildSurvivalSpawnCreature(
         ),
     );
     if (creature.type_id == .spider_sp1) {
-        creature.flags |= CreatureFlags.ai7_link_timer;
+        creature.flags |= @intFromEnum(CreatureFlags.ai7_link_timer);
         move_speed = @as(f32, move_speed * @as(f32, 1.3));
     }
 
@@ -749,7 +749,7 @@ pub fn tickRushModeSpawnsBatch(
             elapsed_ms,
         );
         spider.ai_mode = CreatureAiMode.orbit_player_wide;
-        spider.flags |= CreatureFlags.ai7_link_timer;
+        spider.flags |= @intFromEnum(CreatureFlags.ai7_link_timer);
         spider.move_speed *= 1.4;
         if (result.count < result.spawns.len) {
             result.spawns[result.count] = spider;
@@ -1622,7 +1622,7 @@ test "rush wave triggers two creatures" {
 
     try std.testing.expect(spider.type_id == .spider_sp1);
     try std.testing.expectEqual(CreatureAiMode.orbit_player_wide, spider.ai_mode);
-    try std.testing.expect((spider.flags & CreatureFlags.ai7_link_timer) != 0);
+    try std.testing.expect((spider.flags & @intFromEnum(CreatureFlags.ai7_link_timer)) != 0);
     try expectFloatClose(-64.0, spider.pos.x);
     try expectFloatClose(512.0, spider.pos.y);
     try expectFloatClose(10.0, spider.health);
@@ -1694,13 +1694,13 @@ test "survival spawn xp threshold 25000 consumes extra rand" {
     var rng_24999 = Crand.init(1);
     const creature_24999 = buildSurvivalSpawnCreature(.{ .x = 1.0, .y = 2.0 }, &rng_24999, 24_999);
     try std.testing.expect(creature_24999.type_id == .spider_sp1);
-    try std.testing.expect((creature_24999.flags & CreatureFlags.ai7_link_timer) != 0);
+    try std.testing.expect((creature_24999.flags & @intFromEnum(CreatureFlags.ai7_link_timer)) != 0);
     try std.testing.expectEqual(@as(u32, 0xC1BBB05F), rng_24999.state);
 
     var rng_25000 = Crand.init(1);
     const creature_25000 = buildSurvivalSpawnCreature(.{ .x = 1.0, .y = 2.0 }, &rng_25000, 25_000);
     try std.testing.expect(creature_25000.type_id == .spider_sp1);
-    try std.testing.expect((creature_25000.flags & CreatureFlags.ai7_link_timer) != 0);
+    try std.testing.expect((creature_25000.flags & @intFromEnum(CreatureFlags.ai7_link_timer)) != 0);
     try std.testing.expectEqual(@as(u32, 0xA6E9C9A6), rng_25000.state);
 }
 

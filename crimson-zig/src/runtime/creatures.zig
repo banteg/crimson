@@ -266,7 +266,7 @@ pub const CreaturePool = struct {
                         .size = 64.0,
                         .contact_damage = 50.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.anim_long_strip,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) | @intFromEnum(survival_spawn.CreatureFlags.anim_long_strip),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -286,7 +286,7 @@ pub const CreaturePool = struct {
                         .size = 50.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -306,7 +306,7 @@ pub const CreaturePool = struct {
                         .size = 50.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -326,7 +326,7 @@ pub const CreaturePool = struct {
                         .size = 40.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -346,7 +346,7 @@ pub const CreaturePool = struct {
                         .size = 55.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -366,7 +366,7 @@ pub const CreaturePool = struct {
                         .size = 65.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -386,7 +386,7 @@ pub const CreaturePool = struct {
                         .size = 32.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -406,7 +406,7 @@ pub const CreaturePool = struct {
                         .size = 32.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -426,7 +426,7 @@ pub const CreaturePool = struct {
                         .size = 32.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -479,7 +479,7 @@ pub const CreaturePool = struct {
                         .size = 32.0,
                         .contact_damage = 0.0,
                     },
-                    survival_spawn.CreatureFlags.anim_ping_pong,
+                    @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -885,7 +885,7 @@ pub const CreaturePool = struct {
                         .size = 45.0,
                         .contact_damage = 10.0,
                     },
-                    survival_spawn.CreatureFlags.bonus_on_death,
+                    @intFromEnum(survival_spawn.CreatureFlags.bonus_on_death),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -1348,7 +1348,7 @@ pub const CreaturePool = struct {
                     .phase_seed = phase_seed,
                     .type_id = survival_spawn.CreatureTypeId.spider_sp2,
                     .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
-                    .flags = survival_spawn.CreatureFlags.ranged_attack_variant,
+                    .flags = @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant),
                     .size = size,
                     .move_speed = 3.2,
                     .health = 50.0,
@@ -1370,7 +1370,7 @@ pub const CreaturePool = struct {
                     .phase_seed = phase_seed,
                     .type_id = survival_spawn.CreatureTypeId.spider_sp1,
                     .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
-                    .flags = survival_spawn.CreatureFlags.ai7_link_timer,
+                    .flags = @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer),
                     .size = size,
                     .move_speed = 4.8,
                     .health = 50.0,
@@ -1393,7 +1393,7 @@ pub const CreaturePool = struct {
                     .phase_seed = phase_seed,
                     .type_id = survival_spawn.CreatureTypeId.spider_sp1,
                     .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
-                    .flags = survival_spawn.CreatureFlags.ai7_link_timer,
+                    .flags = @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer),
                     .size = size,
                     .move_speed = 4.8,
                     .health = 4.0,
@@ -1416,7 +1416,7 @@ pub const CreaturePool = struct {
                         .size = 80.0,
                         .contact_damage = 17.0,
                     },
-                    survival_spawn.CreatureFlags.split_on_death,
+                    @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
                     true,
                 );
                 _ = rng.rand() % 314;
@@ -1434,7 +1434,7 @@ pub const CreaturePool = struct {
                         .size = 64.0,
                         .contact_damage = 50.0,
                     },
-                    survival_spawn.CreatureFlags.ranged_attack_shock,
+                    @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock),
                     true,
                 );
                 self.entries[idx].orbit_angle = 0.9;
@@ -1471,7 +1471,7 @@ pub const CreaturePool = struct {
                         .size = 40.0,
                         .contact_damage = 20.0,
                     },
-                    survival_spawn.CreatureFlags.ranged_attack_variant | survival_spawn.CreatureFlags.ai7_link_timer,
+                    @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant) | @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer),
                     true,
                 );
                 self.entries[idx].ai_mode = survival_spawn.CreatureAiMode.chase_player;
@@ -1965,10 +1965,10 @@ pub const CreaturePool = struct {
                 }
             }
 
-            if ((creature.flags & (survival_spawn.CreatureFlags.ranged_attack_shock | survival_spawn.CreatureFlags.ranged_attack_variant)) != 0) {
+            if ((creature.flags & (@intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock) | @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant))) != 0) {
                 const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist > 64.0 and creature.attack_cooldown <= 0.0) {
-                    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0) {
+                    if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock)) != 0) {
                         queueCreatureProjectile(
                             state,
                             creature.pos,
@@ -1979,7 +1979,7 @@ pub const CreaturePool = struct {
                         creature.attack_cooldown = asF32F64(creature.attack_cooldown + 1.0);
                     }
 
-                    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_variant) != 0 and
+                    if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant)) != 0 and
                         creature.attack_cooldown <= 0.0)
                     {
                         const projectile_type: i32 = @intFromFloat(creature.orbit_radius);
@@ -2070,9 +2070,9 @@ pub const CreaturePool = struct {
                 }
                 if (player.shield_timer <= 0.0) {
                     if (perkActive(player, PerkId.toxic_avenger)) {
-                        creature.flags |= survival_spawn.CreatureFlags.self_damage_tick | survival_spawn.CreatureFlags.self_damage_tick_strong;
+                        creature.flags |= @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick) | @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong);
                     } else if (perkActive(player, PerkId.veins_of_poison)) {
-                        creature.flags |= survival_spawn.CreatureFlags.self_damage_tick;
+                        creature.flags |= @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick);
                     }
                 }
                 applyPlayerContactDamage(state, player, creature.contact_damage, dt);
@@ -2139,7 +2139,10 @@ pub const CreaturePool = struct {
 
         var result = ShotResolutionResult{};
         const weapon_enum = state_mod.weaponIdFromInt(weapon_id) orelse .none;
-        const projectile_type_id = state_mod.projectileTypeIdFromWeaponId(weapon_enum) orelse weapon_id;
+        const projectile_type_id: i32 = if (state_mod.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
+            @intFromEnum(type_id)
+        else
+            weapon_id;
         const damage_scale = state_mod.weaponDamageScale(weapon_id);
         const owner_id: i32 = -1 - player.index;
         var hit_audio_game_tune_started = state.game_tune_started;
@@ -2201,7 +2204,7 @@ pub const CreaturePool = struct {
         const jitter_rand = state.rng.rand();
         if (creature_index < self.entries.len) {
             var creature = &self.entries[creature_index];
-            if ((creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0) {
+            if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong)) == 0) {
                 const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
                 const jitter = @as(f64, @floatFromInt(jitter_i32)) * 0.002;
                 const size = @max(1e-6, creature.size);
@@ -2350,7 +2353,7 @@ pub const CreaturePool = struct {
         }
         if (!death_start_needed) return 0;
         const split_can_reuse_slot =
-            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
@@ -2405,7 +2408,7 @@ pub const CreaturePool = struct {
         if (!creature.active) return 0;
         if (creature.hp > 0.0) return 0;
         const split_can_reuse_slot =
-            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
@@ -2457,7 +2460,7 @@ pub const CreaturePool = struct {
         if (!creature.active) return 0;
         if (!(creature.hp > 0.0)) return 0;
         const split_can_reuse_slot =
-            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
@@ -2593,7 +2596,7 @@ pub const CreaturePool = struct {
         var flags: u32 = 0;
         var move_speed = base_move_speed;
         if (creature_type == .spider_sp1) {
-            flags |= survival_spawn.CreatureFlags.ai7_link_timer;
+            flags |= @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer);
             move_speed = asF32F64(move_speed * 1.2);
         }
 
@@ -2689,7 +2692,7 @@ pub const CreaturePool = struct {
         }
         if (!death_start_needed) return 0;
         const split_can_reuse_slot =
-            (creature.flags & survival_spawn.CreatureFlags.split_on_death) != 0 and
+            (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
@@ -2793,12 +2796,12 @@ fn creatureAiUpdateTarget(
             creature.target = orbitTargetF32(player_pos, orbit_phase, dist_to_player, 0.85);
         }
     } else if (ai_mode_after_primary == survival_spawn.CreatureAiMode.hold_timer) {
-        if ((creature.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0 and creature.link_index > 0) {
+        if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0 and creature.link_index > 0) {
             creature.target = .{
                 .x = asF32F64(creature.pos.x),
                 .y = asF32F64(creature.pos.y),
             };
-        } else if ((creature.flags & survival_spawn.CreatureFlags.ai7_link_timer) == 0 and creature.orbit_radius > 0.0) {
+        } else if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) == 0 and creature.orbit_radius > 0.0) {
             creature.target = .{
                 .x = asF32F64(creature.pos.x),
                 .y = asF32F64(creature.pos.y),
@@ -2985,10 +2988,10 @@ fn applyUnhandledCreatureTypeFallback(creature: *CreatureState) void {
 
 fn applySpiderSp1Ai7Tail(creature: *CreatureState) void {
     if (creature.type_id != @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)) return;
-    if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0) return;
-    if ((creature.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0) return;
+    if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock)) != 0) return;
+    if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0) return;
 
-    creature.flags |= survival_spawn.CreatureFlags.ai7_link_timer;
+    creature.flags |= @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer);
     creature.link_index = 0;
     creature.move_speed = asF32F64(creature.move_speed * 1.2);
 }
@@ -3193,7 +3196,7 @@ fn tickAi7LinkTimer(
     dt_ms: i32,
     rng: *survival_spawn.Crand,
 ) void {
-    if ((creature.flags & survival_spawn.CreatureFlags.ai7_link_timer) == 0) return;
+    if ((creature.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) == 0) return;
 
     if (creature.link_index < 0) {
         creature.link_index += dt_ms;
@@ -3304,7 +3307,7 @@ fn spawnSplitChildrenOnDeath(
     creature: *const CreatureState,
 ) void {
     const source = creature.*;
-    if ((source.flags & survival_spawn.CreatureFlags.split_on_death) == 0) return;
+    if ((source.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) == 0) return;
     if (!(source.size > 35.0)) return;
 
     const heading_offsets = [_]f64{ -native_half_pi, native_half_pi };
@@ -3431,8 +3434,8 @@ fn tickDead(
         return;
     }
     const long_strip =
-        (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) == 0 or
-        (creature.flags & survival_spawn.CreatureFlags.anim_long_strip) != 0;
+        (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong)) == 0 or
+        (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.anim_long_strip)) != 0;
     const next_lifecycle_stage = asF32F64(hitbox - asF32F64(dt * 28.0));
     creature.lifecycle_stage = asF32F64(next_lifecycle_stage);
     if (next_lifecycle_stage > 0.0) {
@@ -3454,7 +3457,7 @@ fn tickDead(
     }
     kill_count.* += 1;
     if (state.fx_toggle == 0 and
-        (creature.flags & survival_spawn.CreatureFlags.anim_ping_pong) != 0)
+        (creature.flags & @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong)) != 0)
     {
         const burst_counts = [_]usize{ 8, 6, 5 };
         for (burst_counts) |count| {
@@ -3468,10 +3471,10 @@ fn tickDead(
 
 fn selfDamageTickAmount(flags: u32, dt: f64) f64 {
     if (!(dt > 0.0)) return 0.0;
-    if ((flags & survival_spawn.CreatureFlags.self_damage_tick_strong) != 0) {
+    if ((flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong)) != 0) {
         return asF32F64(dt * 180.0);
     }
-    if ((flags & survival_spawn.CreatureFlags.self_damage_tick) != 0) {
+    if ((flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) != 0) {
         return asF32F64(dt * 60.0);
     }
     return 0.0;
@@ -3759,7 +3762,7 @@ test "split-on-death children use original source when first child reuses source
     }
     pool.entries[0] = .{
         .active = true,
-        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .hp = -5.0,
         .max_hp = 400.0,
         .size = 40.0,
@@ -3799,7 +3802,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
     }
     pool.entries[0] = .{
         .active = true,
-        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .hp = 5.0,
         .max_hp = 400.0,
         .size = 40.0,
@@ -3837,7 +3840,7 @@ test "applyDamage skips death side effects when lifecycle is already below alive
     var pool = CreaturePool{};
     pool.entries[0] = .{
         .active = true,
-        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .hp = 5.0,
         .max_hp = 400.0,
         .size = 40.0,
@@ -3879,7 +3882,7 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
     var pool = CreaturePool{};
     pool.entries[0] = .{
         .active = true,
-        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .hp = 5.0,
         .max_hp = 400.0,
         .size = 40.0,
@@ -3984,7 +3987,7 @@ test "template spawn supports survival late-stage templates" {
     const split_entry = pool.entries[0];
     try std.testing.expect(split_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2)), split_entry.type_id);
-    try std.testing.expect((split_entry.flags & survival_spawn.CreatureFlags.split_on_death) != 0);
+    try std.testing.expect((split_entry.flags & @intFromEnum(survival_spawn.CreatureFlags.split_on_death)) != 0);
     try expectFloatClose(400.0, split_entry.hp);
     try expectFloatClose(2.0, split_entry.move_speed);
     try expectFloatClose(1000.0, split_entry.reward_value);
@@ -4002,7 +4005,7 @@ test "template spawn supports survival late-stage templates" {
     const shock_entry = pool.entries[1];
     try std.testing.expect(shock_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), shock_entry.type_id);
-    try std.testing.expect((shock_entry.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0);
+    try std.testing.expect((shock_entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock)) != 0);
     try expectFloatClose(4500.0, shock_entry.hp);
     try expectFloatClose(2.0, shock_entry.move_speed);
     try expectFloatClose(4500.0, shock_entry.reward_value);
@@ -4022,8 +4025,8 @@ test "template spawn supports survival late-stage templates" {
     const ranged_entry = pool.entries[2];
     try std.testing.expect(ranged_entry.active);
     try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), ranged_entry.type_id);
-    try std.testing.expect((ranged_entry.flags & survival_spawn.CreatureFlags.ranged_attack_variant) != 0);
-    try std.testing.expect((ranged_entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+    try std.testing.expect((ranged_entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant)) != 0);
+    try std.testing.expect((ranged_entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
     try std.testing.expectEqual(survival_spawn.CreatureAiMode.chase_player, ranged_entry.ai_mode);
     try std.testing.expectEqual(@as(i32, 0), ranged_entry.link_index);
     try expectFloatClose(200.0, ranged_entry.hp);
@@ -4049,7 +4052,7 @@ test "template spawn supports quest random and ai7 templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, entry.ai_mode);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(68.0, entry.hp);
@@ -4160,7 +4163,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2)), entry.type_id);
-        try std.testing.expectEqual(@as(u32, survival_spawn.CreatureFlags.ranged_attack_variant), entry.flags);
+        try std.testing.expectEqual(@as(u32, @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant)), entry.flags);
         try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, entry.ai_mode);
         try expectFloatClose(50.0, entry.hp);
         try expectFloatClose(3.2, entry.move_speed);
@@ -4182,7 +4185,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(4.0, entry.hp);
         try expectFloatClose(4.8, entry.move_speed);
@@ -4204,7 +4207,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(1200.0, entry.hp);
         try expectFloatClose(2.4, entry.move_speed);
@@ -4226,7 +4229,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(70.0, entry.hp);
         try expectFloatClose(3.12, entry.move_speed);
@@ -4248,7 +4251,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(1000.0, entry.hp);
         try expectFloatClose(3.36, entry.move_speed);
@@ -4270,7 +4273,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(200.0, entry.hp);
         try expectFloatClose(2.76, entry.move_speed);
@@ -4292,7 +4295,7 @@ test "template spawn supports quest spider and zombie late templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(70.0, entry.hp);
         try expectFloatClose(2.64, entry.move_speed);
@@ -4401,7 +4404,7 @@ test "template spawn supports quest mid-tier random templates" {
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
         try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player_tight, entry.ai_mode);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(40.0, entry.hp);
         try expectFloatClose(2.88, entry.move_speed);
@@ -4564,7 +4567,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(59.0, entry.hp);
         try expectFloatClose(3.0, entry.move_speed);
@@ -4586,7 +4589,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(76.0, entry.hp);
         try expectFloatClose(1.8, entry.move_speed);
@@ -4608,7 +4611,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(survival_spawn.CreatureTypeId.spider_sp1)), entry.type_id);
-        try std.testing.expect((entry.flags & survival_spawn.CreatureFlags.ai7_link_timer) != 0);
+        try std.testing.expect((entry.flags & @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer)) != 0);
         try std.testing.expectEqual(@as(i32, 0), entry.link_index);
         try expectFloatClose(81.71428680419922, entry.hp);
         try expectFloatClose(1.8, entry.move_speed);
@@ -4625,7 +4628,7 @@ test "template spawn supports quest constant alien templates" {
     const expected_reward = [_]f64{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
     const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
     const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
-    const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, survival_spawn.CreatureFlags.bonus_on_death, 0, 0, 0, 0 };
+    const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, @intFromEnum(survival_spawn.CreatureFlags.bonus_on_death), 0, 0, 0, 0 };
     const expected_ai_mode = [_]survival_spawn.CreatureAiMode{
         survival_spawn.CreatureAiMode.orbit_player,
         survival_spawn.CreatureAiMode.orbit_player,
@@ -4865,15 +4868,15 @@ test "template spawn supports quest spawner templates and slot ticks" {
         expected_interval: f64,
         expected_child_template: i32,
     }{
-        .{ .template_id = 0x00, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.anim_long_strip, .expected_health = 8500.0, .expected_move_speed = 1.3, .expected_reward = 6600.0, .expected_size = 64.0, .expected_contact = 50.0, .expected_timer = 1.0, .expected_limit = 812, .expected_interval = 0.7, .expected_child_template = 0x41 },
-        .{ .template_id = 0x07, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 1000.0, .expected_move_speed = 2.0, .expected_reward = 3000.0, .expected_size = 50.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 100, .expected_interval = 2.2, .expected_child_template = 0x1D },
-        .{ .template_id = 0x08, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 1000.0, .expected_move_speed = 2.0, .expected_reward = 3000.0, .expected_size = 50.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 100, .expected_interval = 2.8, .expected_child_template = 0x1D },
-        .{ .template_id = 0x09, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 450.0, .expected_move_speed = 2.0, .expected_reward = 1000.0, .expected_size = 40.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 16, .expected_interval = 2.0, .expected_child_template = 0x1D },
-        .{ .template_id = 0x0A, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 1000.0, .expected_move_speed = 1.5, .expected_reward = 3000.0, .expected_size = 55.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 5.0, .expected_child_template = 0x32 },
-        .{ .template_id = 0x0B, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 3500.0, .expected_move_speed = 1.5, .expected_reward = 5000.0, .expected_size = 65.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 6.0, .expected_child_template = 0x3C },
-        .{ .template_id = 0x0C, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 50.0, .expected_move_speed = 2.8, .expected_reward = 1000.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 1.5, .expected_limit = 100, .expected_interval = 2.0, .expected_child_template = 0x31 },
-        .{ .template_id = 0x0D, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 50.0, .expected_move_speed = 1.3, .expected_reward = 1000.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 6.0, .expected_child_template = 0x31 },
-        .{ .template_id = 0x10, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = survival_spawn.CreatureFlags.anim_ping_pong, .expected_health = 50.0, .expected_move_speed = 2.8, .expected_reward = 800.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 1.5, .expected_limit = 100, .expected_interval = 2.3, .expected_child_template = 0x32 },
+        .{ .template_id = 0x00, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.zombie), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) | @intFromEnum(survival_spawn.CreatureFlags.anim_long_strip), .expected_health = 8500.0, .expected_move_speed = 1.3, .expected_reward = 6600.0, .expected_size = 64.0, .expected_contact = 50.0, .expected_timer = 1.0, .expected_limit = 812, .expected_interval = 0.7, .expected_child_template = 0x41 },
+        .{ .template_id = 0x07, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 1000.0, .expected_move_speed = 2.0, .expected_reward = 3000.0, .expected_size = 50.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 100, .expected_interval = 2.2, .expected_child_template = 0x1D },
+        .{ .template_id = 0x08, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 1000.0, .expected_move_speed = 2.0, .expected_reward = 3000.0, .expected_size = 50.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 100, .expected_interval = 2.8, .expected_child_template = 0x1D },
+        .{ .template_id = 0x09, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 450.0, .expected_move_speed = 2.0, .expected_reward = 1000.0, .expected_size = 40.0, .expected_contact = 0.0, .expected_timer = 1.0, .expected_limit = 16, .expected_interval = 2.0, .expected_child_template = 0x1D },
+        .{ .template_id = 0x0A, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 1000.0, .expected_move_speed = 1.5, .expected_reward = 3000.0, .expected_size = 55.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 5.0, .expected_child_template = 0x32 },
+        .{ .template_id = 0x0B, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 3500.0, .expected_move_speed = 1.5, .expected_reward = 5000.0, .expected_size = 65.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 6.0, .expected_child_template = 0x3C },
+        .{ .template_id = 0x0C, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 50.0, .expected_move_speed = 2.8, .expected_reward = 1000.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 1.5, .expected_limit = 100, .expected_interval = 2.0, .expected_child_template = 0x31 },
+        .{ .template_id = 0x0D, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 50.0, .expected_move_speed = 1.3, .expected_reward = 1000.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 2.0, .expected_limit = 100, .expected_interval = 6.0, .expected_child_template = 0x31 },
+        .{ .template_id = 0x10, .expected_type_id = @intFromEnum(survival_spawn.CreatureTypeId.alien), .expected_flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong), .expected_health = 50.0, .expected_move_speed = 2.8, .expected_reward = 800.0, .expected_size = 32.0, .expected_contact = 0.0, .expected_timer = 1.5, .expected_limit = 100, .expected_interval = 2.3, .expected_child_template = 0x32 },
     };
 
     for (spawners) |spawner| {
@@ -5071,7 +5074,7 @@ test "veins of poison sets self-damage flag on contact hit" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -5082,7 +5085,7 @@ test "veins of poison sets self-damage flag on contact hit" {
     pool.entries[0].collision_timer = 0.1;
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
-    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+    try std.testing.expect((pool.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) != 0);
 }
 
 test "veins of poison skips self-damage flag when shielded" {
@@ -5105,7 +5108,7 @@ test "veins of poison skips self-damage flag when shielded" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -5116,7 +5119,7 @@ test "veins of poison skips self-damage flag when shielded" {
     pool.entries[0].collision_timer = 0.1;
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
-    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+    try std.testing.expect((pool.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) == 0);
 }
 
 test "toxic avenger sets strong self-damage flags on contact hit" {
@@ -5138,7 +5141,7 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -5149,8 +5152,8 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
     pool.entries[0].collision_timer = 0.1;
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
-    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
-    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) != 0);
+    try std.testing.expect((pool.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) != 0);
+    try std.testing.expect((pool.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong)) != 0);
 }
 
 test "toxic avenger strong self-damage tick overrides weak tick" {
@@ -5171,9 +5174,9 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong |
-            survival_spawn.CreatureFlags.self_damage_tick |
-            survival_spawn.CreatureFlags.self_damage_tick_strong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) |
+            @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick) |
+            @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -5206,7 +5209,7 @@ test "toxic avenger skips strong self-damage flag when shielded" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -5217,7 +5220,7 @@ test "toxic avenger skips strong self-damage flag when shielded" {
     pool.entries[0].collision_timer = 0.1;
 
     pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
-    try std.testing.expect((pool.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) == 0);
+    try std.testing.expect((pool.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong)) == 0);
 }
 
 test "radioactive tick deals damage and wraps collision timer" {
@@ -5240,7 +5243,7 @@ test "radioactive tick deals damage and wraps collision timer" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 50.0,
@@ -5281,7 +5284,7 @@ test "radioactive kill awards base xp without death multipliers" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 5.0,
@@ -5319,7 +5322,7 @@ test "radioactive sets hp to one for lizard type creatures" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .lizard,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 5.0,
@@ -5487,7 +5490,7 @@ test "ai7 link timer consumes rng when timer crosses zero" {
         .phase_seed = 0.0,
         .type_id = .spider_sp1,
         .ai_mode = survival_spawn.CreatureAiMode.orbit_player,
-        .flags = survival_spawn.CreatureFlags.ai7_link_timer,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.ai7_link_timer),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 25.0,
@@ -5894,7 +5897,7 @@ test "split on death spawns two smaller children" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .spider_sp2,
-        .flags = survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .size = 40.0,
         .move_speed = 2.0,
         .health = 400.0,
@@ -5953,7 +5956,7 @@ test "ranged shock creature queues projectile along heading not direct aim" {
         .phase_seed = 0.0,
         .type_id = .alien,
         .ai_mode = survival_spawn.CreatureAiMode.chase_player,
-        .flags = survival_spawn.CreatureFlags.ranged_attack_shock,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock),
         .size = 50.0,
         .move_speed = 0.0,
         .health = 10.0,
@@ -5995,7 +5998,7 @@ test "ranged shock creature does not fire when too close" {
         .phase_seed = 0.0,
         .type_id = .alien,
         .ai_mode = survival_spawn.CreatureAiMode.chase_player,
-        .flags = survival_spawn.CreatureFlags.ranged_attack_shock,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_shock),
         .size = 50.0,
         .move_speed = 0.0,
         .health = 10.0,
@@ -6027,7 +6030,7 @@ test "ranged variant uses orbit radius as projectile type and random cooldown" {
         .phase_seed = 0.0,
         .type_id = .spider_sp1,
         .ai_mode = survival_spawn.CreatureAiMode.chase_player,
-        .flags = survival_spawn.CreatureFlags.ranged_attack_variant,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.ranged_attack_variant),
         .size = 50.0,
         .move_speed = 0.0,
         .health = 10.0,
@@ -6099,7 +6102,7 @@ test "plaguebearer infects weak creatures near player" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 1.0,
         .health = 100.0,
@@ -6129,7 +6132,7 @@ test "plaguebearer infection timer wrap applies damage" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 1.0,
         .health = 100.0,
@@ -6163,7 +6166,7 @@ test "plaguebearer spreads between nearby creatures" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -6177,7 +6180,7 @@ test "plaguebearer spreads between nearby creatures" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 100.0,
@@ -6209,7 +6212,7 @@ test "plaguebearer infection kill increments global count" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 1.0,
         .health = 10.0,
@@ -6243,7 +6246,7 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) | @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .size = 48.0,
         .move_speed = 1.0,
         .health = 10.0,

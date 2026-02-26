@@ -13,27 +13,7 @@ pub const perk_count_size: usize = 0x80;
 
 pub const WeaponId = game_ids.WeaponId;
 pub const PerkId = game_ids.PerkId;
-
-const ProjectileTypeId = struct {
-    pub const pistol: i32 = @intFromEnum(game_ids.ProjectileTypeId.pistol);
-    pub const assault_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.assault_rifle);
-    pub const shotgun: i32 = @intFromEnum(game_ids.ProjectileTypeId.shotgun);
-    pub const submachine_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.submachine_gun);
-    pub const gauss_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
-    pub const plasma_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-    pub const plasma_minigun: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
-    pub const pulse_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.pulse_gun);
-    pub const ion_rifle: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
-    pub const ion_minigun: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_minigun);
-    pub const ion_cannon: i32 = @intFromEnum(game_ids.ProjectileTypeId.ion_cannon);
-    pub const shrinkifier: i32 = @intFromEnum(game_ids.ProjectileTypeId.shrinkifier);
-    pub const blade_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.blade_gun);
-    pub const plasma_cannon: i32 = @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon);
-    pub const splitter_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.splitter_gun);
-    pub const plague_spreader: i32 = @intFromEnum(game_ids.ProjectileTypeId.plague_spreader);
-    pub const rainbow_gun: i32 = @intFromEnum(game_ids.ProjectileTypeId.rainbow_gun);
-    pub const fire_bullets: i32 = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
-};
+const ProjectileTypeId = game_ids.ProjectileTypeId;
 
 pub const Vec2 = struct {
     x: f32 = 0.0,
@@ -373,7 +353,7 @@ pub fn weaponSpreadHeatIncById(weapon_id: WeaponId) f32 {
     return weapon_stats.get(weapon_id).spread_heat_inc;
 }
 
-pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?i32 {
+pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?ProjectileTypeId {
     return switch (weapon_id) {
         .pistol => ProjectileTypeId.pistol,
         .assault_rifle => ProjectileTypeId.assault_rifle,
@@ -408,15 +388,15 @@ pub fn projectileTypeIdFromWeaponId(weapon_id: WeaponId) ?i32 {
         .bubblegun => null,
         .rainbow_gun => ProjectileTypeId.rainbow_gun,
         .fire_bullets => ProjectileTypeId.fire_bullets,
-        else => @intFromEnum(weapon_id),
+        else => std.meta.intToEnum(ProjectileTypeId, @intFromEnum(weapon_id)) catch null,
     };
 }
 
 pub const ProjectileTypeIds = struct {
     count: usize = 0,
-    values: [2]i32 = .{ 0, 0 },
+    values: [2]ProjectileTypeId = .{ .pistol, .pistol },
 
-    pub fn slice(self: *const ProjectileTypeIds) []const i32 {
+    pub fn slice(self: *const ProjectileTypeIds) []const ProjectileTypeId {
         return self.values[0..self.count];
     }
 };
@@ -435,7 +415,7 @@ pub fn projectileTypeIdsFromWeaponId(weapon_id: WeaponId) ProjectileTypeIds {
     const type_id = projectileTypeIdFromWeaponId(weapon_id) orelse return .{};
     return .{
         .count = 1,
-        .values = .{ type_id, 0 },
+        .values = .{ type_id, .pistol },
     };
 }
 
@@ -738,33 +718,33 @@ fn expectFloatClose(expected: f32, actual: f32) !void {
 test "projectile type id mapping mirrors native fire paths" {
     const cases = [_]struct {
         weapon_id: i32,
-        type_id: i32,
+        type_id: ProjectileTypeId,
     }{
-        .{ .weapon_id = 1, .type_id = 0x01 },
-        .{ .weapon_id = 2, .type_id = 0x02 },
-        .{ .weapon_id = 3, .type_id = 0x03 },
-        .{ .weapon_id = 4, .type_id = 0x03 },
-        .{ .weapon_id = 5, .type_id = 0x05 },
-        .{ .weapon_id = 6, .type_id = 0x06 },
-        .{ .weapon_id = 7, .type_id = 0x01 },
-        .{ .weapon_id = 9, .type_id = 0x09 },
-        .{ .weapon_id = 10, .type_id = 0x09 },
-        .{ .weapon_id = 11, .type_id = 0x0B },
-        .{ .weapon_id = 14, .type_id = 0x0B },
-        .{ .weapon_id = 19, .type_id = 0x13 },
-        .{ .weapon_id = 20, .type_id = 0x03 },
-        .{ .weapon_id = 21, .type_id = 0x15 },
-        .{ .weapon_id = 22, .type_id = 0x16 },
-        .{ .weapon_id = 23, .type_id = 0x17 },
-        .{ .weapon_id = 24, .type_id = 0x18 },
-        .{ .weapon_id = 25, .type_id = 0x19 },
-        .{ .weapon_id = 28, .type_id = 0x1C },
-        .{ .weapon_id = 29, .type_id = 0x1D },
-        .{ .weapon_id = 30, .type_id = 0x06 },
-        .{ .weapon_id = 31, .type_id = 0x16 },
-        .{ .weapon_id = 41, .type_id = 0x29 },
-        .{ .weapon_id = 43, .type_id = 0x2B },
-        .{ .weapon_id = 45, .type_id = 0x2D },
+        .{ .weapon_id = 1, .type_id = .pistol },
+        .{ .weapon_id = 2, .type_id = .assault_rifle },
+        .{ .weapon_id = 3, .type_id = .shotgun },
+        .{ .weapon_id = 4, .type_id = .shotgun },
+        .{ .weapon_id = 5, .type_id = .submachine_gun },
+        .{ .weapon_id = 6, .type_id = .gauss_gun },
+        .{ .weapon_id = 7, .type_id = .pistol },
+        .{ .weapon_id = 9, .type_id = .plasma_rifle },
+        .{ .weapon_id = 10, .type_id = .plasma_rifle },
+        .{ .weapon_id = 11, .type_id = .plasma_minigun },
+        .{ .weapon_id = 14, .type_id = .plasma_minigun },
+        .{ .weapon_id = 19, .type_id = .pulse_gun },
+        .{ .weapon_id = 20, .type_id = .shotgun },
+        .{ .weapon_id = 21, .type_id = .ion_rifle },
+        .{ .weapon_id = 22, .type_id = .ion_minigun },
+        .{ .weapon_id = 23, .type_id = .ion_cannon },
+        .{ .weapon_id = 24, .type_id = .shrinkifier },
+        .{ .weapon_id = 25, .type_id = .blade_gun },
+        .{ .weapon_id = 28, .type_id = .plasma_cannon },
+        .{ .weapon_id = 29, .type_id = .splitter_gun },
+        .{ .weapon_id = 30, .type_id = .gauss_gun },
+        .{ .weapon_id = 31, .type_id = .ion_minigun },
+        .{ .weapon_id = 41, .type_id = .plague_spreader },
+        .{ .weapon_id = 43, .type_id = .rainbow_gun },
+        .{ .weapon_id = 45, .type_id = .fire_bullets },
     };
 
     for (cases) |case| {
@@ -774,15 +754,15 @@ test "projectile type id mapping mirrors native fire paths" {
 
     const multi_plasma_types = projectileTypeIdsFromWeaponId(.multi_plasma).slice();
     try std.testing.expectEqual(@as(usize, 2), multi_plasma_types.len);
-    try std.testing.expectEqual(@as(i32, 0x09), multi_plasma_types[0]);
-    try std.testing.expectEqual(@as(i32, 0x0B), multi_plasma_types[1]);
+    try std.testing.expectEqual(ProjectileTypeId.plasma_rifle, multi_plasma_types[0]);
+    try std.testing.expectEqual(ProjectileTypeId.plasma_minigun, multi_plasma_types[1]);
 }
 
 test "non projectile weapons map to empty projectile type ids" {
     const non_projectile_weapons = [_]i32{ 8, 12, 13, 15, 16, 17, 18, 42 };
     for (non_projectile_weapons) |weapon_id| {
         const id = weaponIdFromInt(weapon_id).?;
-        try std.testing.expectEqual(@as(?i32, null), projectileTypeIdFromWeaponId(id));
+        try std.testing.expectEqual(@as(?ProjectileTypeId, null), projectileTypeIdFromWeaponId(id));
         try std.testing.expectEqual(@as(usize, 0), projectileTypeIdsFromWeaponId(id).slice().len);
     }
 }

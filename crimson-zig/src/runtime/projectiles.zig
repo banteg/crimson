@@ -325,7 +325,7 @@ pub const ProjectilePool = struct {
                     if (perkActive(player, PerkId.poison_bullets)) {
                         const poison_roll = state.rng.rand();
                         if ((poison_roll & 7) == 1) {
-                            creatures.entries[hit_idx.?].flags |= survival_spawn.CreatureFlags.self_damage_tick;
+                            creatures.entries[hit_idx.?].flags |= @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick);
                         }
                     }
                 }
@@ -805,7 +805,7 @@ test "projectile hit pass does not retarget newly spawned split children in new 
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong | survival_spawn.CreatureFlags.split_on_death,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong) | @intFromEnum(survival_spawn.CreatureFlags.split_on_death),
         .size = 40.0,
         .move_speed = 1.0,
         .health = 18.0,
@@ -855,7 +855,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 1000.0,
@@ -876,7 +876,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
 
     const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
     try std.testing.expect(tick.hit_count > 0);
-    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
+    try std.testing.expect((creatures.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) != 0);
 }
 
 test "poison bullets does not set self-damage flag when rng roll misses" {
@@ -898,7 +898,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 1000.0,
@@ -919,7 +919,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
 
     const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
     try std.testing.expect(tick.hit_count > 0);
-    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) == 0);
+    try std.testing.expect((creatures.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) == 0);
 }
 
 test "poison bullets with toxic avenger still applies weak bullet poison only" {
@@ -942,7 +942,7 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
         .heading = 0.0,
         .phase_seed = 0.0,
         .type_id = .alien,
-        .flags = survival_spawn.CreatureFlags.anim_ping_pong,
+        .flags = @intFromEnum(survival_spawn.CreatureFlags.anim_ping_pong),
         .size = 44.0,
         .move_speed = 0.0,
         .health = 1000.0,
@@ -962,8 +962,8 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
     );
 
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
-    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick) != 0);
-    try std.testing.expect((creatures.entries[0].flags & survival_spawn.CreatureFlags.self_damage_tick_strong) == 0);
+    try std.testing.expect((creatures.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick)) != 0);
+    try std.testing.expect((creatures.entries[0].flags & @intFromEnum(survival_spawn.CreatureFlags.self_damage_tick_strong)) == 0);
 }
 
 test "barrel greaser doubles pistol projectile movement steps" {

@@ -10,11 +10,11 @@ const asF32F64 = native_math.roundF32;
 
 pub const particle_pool_size: usize = 0x80;
 
-pub const ParticleStyleId = struct {
-    pub const flamethrower: i32 = 0;
-    pub const blow_torch: i32 = 1;
-    pub const hr_flamer: i32 = 2;
-    pub const bubblegun: i32 = 8;
+pub const ParticleStyleId = enum(i32) {
+    flamethrower = 0,
+    blow_torch = 1,
+    hr_flamer = 2,
+    bubblegun = 8,
 };
 
 pub const Particle = struct {
@@ -29,7 +29,7 @@ pub const Particle = struct {
     intensity: f32 = 0.0,
     angle: f32 = 0.0,
     spin: f32 = 0.0,
-    style_id: i32 = ParticleStyleId.flamethrower,
+    style_id: ParticleStyleId = .flamethrower,
     target_id: i32 = -1,
     owner_id: i32 = -100,
 };
@@ -118,7 +118,7 @@ pub const ParticlePool = struct {
 
         for (&self.entries, 0..) |*entry, particle_idx| {
             if (!entry.active) continue;
-            const style = entry.style_id & 0xff;
+            const style = entry.style_id;
 
             if (style == ParticleStyleId.bubblegun) {
                 entry.intensity = asF32F64(entry.intensity - dt_f32 * 0.11);
