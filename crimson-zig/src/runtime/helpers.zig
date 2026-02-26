@@ -46,18 +46,18 @@ pub fn distanceSqRoundedF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return narrowF32(distanceSq(a, b));
 }
 
+pub fn consumeRngDraws(state: *state_mod.GameplayState, count: i32) void {
+    if (count <= 0) return;
+    var draw_idx: i32 = 0;
+    while (draw_idx < count) : (draw_idx += 1) {
+        _ = state.rng.rand();
+    }
+}
+
 pub fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
+    consumeRngDraws(state, 4);
 }
 
 pub fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
-    _ = state.rng.rand();
+    consumeRngDraws(state, 6);
 }
