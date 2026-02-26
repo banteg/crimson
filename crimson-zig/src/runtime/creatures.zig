@@ -2549,12 +2549,12 @@ pub const CreaturePool = struct {
             .type_id = stats.type_id,
             .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
             .flags = flags,
-            .size = stats.size,
-            .move_speed = stats.move_speed,
-            .health = stats.health,
-            .max_health = stats.health,
-            .reward_value = stats.reward_value,
-            .contact_damage = stats.contact_damage,
+            .size = @as(f64, stats.size),
+            .move_speed = @as(f64, stats.move_speed),
+            .health = @as(f64, stats.health),
+            .max_health = @as(f64, stats.health),
+            .reward_value = @as(f64, stats.reward_value),
+            .contact_damage = @as(f64, stats.contact_damage),
         });
     }
 
@@ -2963,11 +2963,11 @@ fn advancePosByDeltaF32(
 
 const SpawnStats = struct {
     type_id: spawn_mod.CreatureTypeId,
-    health: f64,
-    move_speed: f64,
-    reward_value: f64,
-    size: f64,
-    contact_damage: f64,
+    health: f32,
+    move_speed: f32,
+    reward_value: f32,
+    size: f32,
+    contact_damage: f32,
 };
 
 fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f64, base: f64) f64 {
