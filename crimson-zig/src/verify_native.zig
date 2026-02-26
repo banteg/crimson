@@ -2,11 +2,10 @@ const builtin = @import("builtin");
 const std = @import("std");
 
 const backend_python = @import("backend_python.zig");
+const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const verify_contract = @import("verify_contract.zig");
-
-const hex = "0123456789abcdef";
 
 const OutputFormat = enum {
     human,
@@ -652,15 +651,9 @@ fn buildVerifyPayload(
 }
 
 fn sha256HexAlloc(allocator: std.mem.Allocator, bytes: []const u8) ![]u8 {
-    var digest: [32]u8 = undefined;
-    std.crypto.hash.sha2.Sha256.hash(bytes, &digest, .{});
-
-    const out = try allocator.alloc(u8, 64);
-    for (digest, 0..) |byte, idx| {
-        out[idx * 2] = hex[(byte >> 4) & 0x0f];
-        out[idx * 2 + 1] = hex[byte & 0x0f];
-    }
-    return out;
+    var out: [64]u8 = undefined;
+    hash.sha256HexLower(bytes, &out);
+    return try allocator.dupe(u8, out[0..]);
 }
 
 fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
