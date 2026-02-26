@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import struct
 from collections.abc import Sequence
 
 from grim.geom import Vec2
 
+from ..math_parity import f32
 from ..sim.input import PlayerInput
 from .types import (
     InputQuantization,
@@ -19,7 +19,7 @@ from .types import (
 
 
 def _quantize_f32(value: float) -> float:
-    return struct.unpack("<f", struct.pack("<f", float(value)))[0]
+    return float(f32(float(value)))
 
 
 def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "raw") -> PackedPlayerInput:

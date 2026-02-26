@@ -10,6 +10,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.original.capture import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_CREATURE_SPAWN_EVENT_KIND,
@@ -410,6 +411,18 @@ def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0)
     return float(aim_x), float(aim_y)
 
 
+def _replay_input_move_xy(replay: Replay, tick_index: int, player_index: int = 0) -> tuple[float, float]:
+    move_x = replay.inputs[tick_index][player_index][0]
+    move_y = replay.inputs[tick_index][player_index][1]
+    assert isinstance(move_x, int | float)
+    assert isinstance(move_y, int | float)
+    return float(move_x), float(move_y)
+
+
+def _assert_is_f32(value: float) -> None:
+    assert float(value) == float(f32(float(value)))
+
+
 def _minimal_strict_bootstrap_payload() -> Any:
     payload = capture_bootstrap_payload_from_event_payload(
         [
@@ -757,11 +770,54 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     assert replay.header.game_mode_id == int(GameMode.SURVIVAL)
     assert replay.header.seed == 0xBEEF
     assert replay.header.tick_rate == 75
+    assert replay.header.input_quantization == "f32"
     assert len(replay.inputs) == 1
     flags = _replay_input_flags(replay, 0, 0)
     fire_down, fire_pressed, _reload_pressed = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
+
+
+def test_convert_capture_to_replay_quantizes_input_vectors_and_world_size_to_f32(tmp_path: Path) -> None:
+    raw_move_x = 0.123456789123
+    raw_move_y = -0.234567891234
+    raw_aim_x = 540.123456789123
+    raw_aim_y = 500.987654321234
+    raw_world_size = 1024.123456789123
+
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0.input_approx = [
+        _base_input_approx(**{
+            "player_index": 0,
+            "move_dx": raw_move_x,
+            "move_dy": raw_move_y,
+            "aim_x": raw_aim_x,
+            "aim_y": raw_aim_y,
+        }),
+    ]
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0xBEEF, world_size=raw_world_size)
+
+    assert replay.header.input_quantization == "f32"
+    assert replay.header.world_size == float(f32(raw_world_size))
+    _assert_is_f32(replay.header.world_size)
+
+    move_x, move_y = _replay_input_move_xy(replay, 0, 0)
+    assert move_x == float(f32(raw_move_x))
+    assert move_y == float(f32(raw_move_y))
+    _assert_is_f32(move_x)
+    _assert_is_f32(move_y)
+
+    aim_x, aim_y = _replay_input_aim_xy(replay, 0, 0)
+    assert aim_x == float(f32(raw_aim_x))
+    assert aim_y == float(f32(raw_aim_y))
+    _assert_is_f32(aim_x)
+    _assert_is_f32(aim_y)
 
 
 def test_convert_capture_to_replay_heading_fallback_uses_checkpoint_pos(tmp_path: Path) -> None:
@@ -965,6 +1021,38 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     assert_float_close(payload.quest_session.completion_transition_ms, -1.0)
 
 
+def test_convert_capture_to_replay_bootstrap_payload_quantizes_quest_session_timers_to_f32(tmp_path: Path) -> None:
+    tick0 = _base_tick(tick_index=10, elapsed_ms=1600)
+    tick0.mode_hint = "quest_mode_update"
+    tick0.game_mode_id = int(GameMode.QUESTS)
+    tick0.event_heads = [
+        build_capture_event_head_quest_timeline_delta(
+            quest_spawn_timeline=16_777_217,
+            quest_spawn_stall_timer_ms=16_777_219,
+            quest_transition_timer_ms=16_777_221,
+        ),
+    ]
+
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    bootstrap = next(
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+    )
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    assert payload is not None
+    assert payload.quest_session is not None
+    assert payload.quest_session.spawn_timeline_ms == float(f32(16_777_217.0))
+    assert payload.quest_session.no_creatures_timer_ms == float(f32(16_777_219.0))
+    assert payload.quest_session.completion_transition_ms == float(f32(16_777_221.0))
+
+
 def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runtime_snapshot(
     tmp_path: Path,
 ) -> None:
@@ -1056,18 +1144,18 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     assert player.aim is not None
     assert_float_close(player.aim.x, 300.0)
     assert_float_close(player.aim.y, 320.0)
-    assert_float_close(player.aim.heading, 1.2)
+    assert_float_close(player.aim.heading, float(f32(1.2)))
     assert player.alt_weapon is not None
     assert player.alt_weapon.weapon_id == 4
     assert player.alt_weapon.clip_size == 10
     assert_float_close(player.alt_weapon.ammo, 7.0)
     assert player.alt_weapon.reload_active is True
-    assert_float_close(player.alt_weapon.reload_timer, 0.2)
-    assert_float_close(player.alt_weapon.shot_cooldown, 0.1)
-    assert_float_close(player.alt_weapon.reload_timer_max, 1.2)
+    assert_float_close(player.alt_weapon.reload_timer, float(f32(0.2)))
+    assert_float_close(player.alt_weapon.shot_cooldown, float(f32(0.1)))
+    assert_float_close(player.alt_weapon.reload_timer_max, float(f32(1.2)))
     assert player.perk_timers is not None
     assert set(player.perk_timers.keys()) == {"hot_tempered", "man_bomb", "living_fortress", "fire_cough"}
-    assert_float_close(player.perk_timers["hot_tempered"], 1.36)
+    assert_float_close(player.perk_timers["hot_tempered"], float(f32(1.36)))
     assert_float_close(player.perk_timers["man_bomb"], 0.0)
     assert_float_close(player.perk_timers["living_fortress"], 0.0)
     assert_float_close(player.perk_timers["fire_cough"], 0.0)
@@ -1185,7 +1273,8 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 
     assert payload.perk_intervals is not None
     perk_intervals = payload.perk_intervals
-    assert_float_close(perk_intervals["hot_tempered"], 1.4)
+    assert_float_close(perk_intervals["hot_tempered"], float(f32(1.4)))
+    _assert_is_f32(perk_intervals["hot_tempered"])
 
 
 def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_reset_interval_inference(
@@ -1603,6 +1692,82 @@ def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp
     assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
         (7, 0.28999999165534973, 0.521416425704956, 0, 1),
     )
+
+
+def test_convert_capture_to_replay_quantizes_quest_spawn_event_float_payloads_to_f32(tmp_path: Path) -> None:
+    spawn_x = 434.3393859869123
+    spawn_y = 455.5657348639987
+    spawn_heading = -4.083981990812345
+    lifecycle_heading = 1.1278764009481234
+    lifecycle_target_heading = 0.6214164495471234
+    lifecycle_hp = 200.123456789
+    lifecycle_stage = 16.123456789
+    lifecycle_orbit_angle = 0.2500000039
+    lifecycle_orbit_radius = 0.5000000081
+    lifecycle_pos_x = -256.123456789
+    lifecycle_pos_y = 256.987654321
+
+    tick0 = _base_tick(tick_index=0, elapsed_ms=16)
+    tick0.mode_hint = "quest_mode_update"
+    tick0.game_mode_id = int(GameMode.QUESTS)
+    lifecycle_added = msgspec.structs.replace(
+        build_capture_creature_lifecycle_entry(index=18),
+        heading=lifecycle_heading,
+        target_heading=lifecycle_target_heading,
+        ai_mode=3,
+        link_index=0,
+        hp=lifecycle_hp,
+        lifecycle_stage=lifecycle_stage,
+        orbit_angle=lifecycle_orbit_angle,
+        orbit_radius=lifecycle_orbit_radius,
+        flags=12,
+        type_id=2,
+        pos=CaptureVec2(x=lifecycle_pos_x, y=lifecycle_pos_y),
+    )
+    tick0.event_heads = [
+        build_capture_event_head_creature_spawn(
+            template_id=54,
+            pos=CaptureVec2(x=spawn_x, y=spawn_y),
+            heading=spawn_heading,
+            caller_static="0x00434373",
+        ),
+        build_capture_event_head_creature_lifecycle(added_head=[lifecycle_added]),
+    ]
+    obj = _capture_obj(ticks=[tick0])
+    path = tmp_path / "capture.json"
+    _write_capture(path, obj)
+
+    capture = load_capture(path)
+    replay = convert_capture_to_replay(capture, seed=0)
+
+    spawn_events = [
+        event
+        for event in replay.events
+        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+    ]
+    assert len(spawn_events) == 1
+    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == (
+        (
+            54,
+            float(f32(spawn_x)),
+            float(f32(spawn_y)),
+            float(f32(spawn_heading)),
+        ),
+    )
+
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload)
+    assert rows is not None
+    assert len(rows) == 1
+    row = rows[0]
+    assert_float_close(row.heading, float(f32(lifecycle_heading)))
+    assert_float_close(row.target_heading, float(f32(lifecycle_target_heading)))
+    assert_float_close(row.hp, float(f32(lifecycle_hp)))
+    assert_float_close(row.lifecycle_stage, float(f32(lifecycle_stage)))
+    assert_float_close(row.orbit_angle, float(f32(lifecycle_orbit_angle)))
+    assert_float_close(row.orbit_radius, float(f32(lifecycle_orbit_radius)))
+    assert row.pos is not None
+    assert_float_close(row.pos.x, float(f32(lifecycle_pos_x)))
+    assert_float_close(row.pos.y, float(f32(lifecycle_pos_y)))
 
 
 def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path) -> None:

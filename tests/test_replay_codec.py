@@ -5,6 +5,7 @@ import gzip
 import msgspec
 import pytest
 
+from crimson.math_parity import f32
 from crimson.replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
@@ -138,6 +139,46 @@ def test_replay_load_accepts_plain_msgpack_bytes() -> None:
     plain = gzip.decompress(blob)
     decoded = load_replay(plain)
     assert decoded.header == header
+
+
+def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
+    move_x = 0.123456789123
+    move_y = -0.987654321987
+    aim_x = 321.123456789123
+    aim_y = -654.987654321987
+
+    replay_obj: dict[str, object] = {
+        "header": {
+            "game_mode_id": 1,
+            "seed": 1,
+            "replay_format_version": int(REPLAY_FORMAT_VERSION),
+            "player_count": 1,
+            "input_quantization": "f32",
+            "status": {
+                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
+            },
+        },
+        "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],
+        "events": [],
+    }
+
+    replay = load_replay(msgspec.msgpack.encode(replay_obj))
+
+    packed = replay.inputs[0][0]
+    move_x_loaded = packed[0]
+    move_y_loaded = packed[1]
+    aim_loaded = packed[2]
+    assert isinstance(move_x_loaded, int | float)
+    assert isinstance(move_y_loaded, int | float)
+    assert isinstance(aim_loaded, list)
+    assert len(aim_loaded) >= 2
+    assert isinstance(aim_loaded[0], int | float)
+    assert isinstance(aim_loaded[1], int | float)
+
+    assert float(move_x_loaded) == float(f32(move_x))
+    assert float(move_y_loaded) == float(f32(move_y))
+    assert float(aim_loaded[0]) == float(f32(aim_x))
+    assert float(aim_loaded[1]) == float(f32(aim_y))
 
 
 def test_replay_recorder_validates_player_count() -> None:

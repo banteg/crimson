@@ -144,6 +144,16 @@ uv run crimson original convert-capture \
 This also writes `analysis/frida/gameplay_diff_capture.crd` by default
 (override with `--replay`).
 
+Conversion output cutover:
+
+- converted replay headers now carry `input_quantization="f32"`,
+- converted replay input vectors and capture-derived float payload fields are
+  canonicalized to float32 during conversion.
+
+After this cutover, replay/checkpoint hashes change when artifacts are
+regenerated. Always regenerate and version `.crd` and `.crd.chk` sidecar pairs
+together.
+
 ## Verify capture directly against rewrite sim
 
 ```text

@@ -15,6 +15,7 @@ from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..game_modes import GameMode
+from ..math_parity import f32
 from ..perks.ids import PerkId
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -373,6 +374,10 @@ def _finite_float_or_none(value: object) -> float | None:
     if not math.isfinite(candidate):
         return None
     return float(candidate)
+
+
+def _conversion_f32(value: float) -> float:
+    return float(f32(float(value)))
 
 
 def _estimate_sample_rate(tick_indices: list[int]) -> int:
@@ -757,11 +762,11 @@ def _tick_quest_session_bootstrap_payload(tick: CaptureTick) -> dict[str, float]
         transition_timer_ms = data.quest_transition_timer_ms
         payload: dict[str, float] = {}
         if timeline_ms is not None:
-            payload["spawn_timeline_ms"] = float(timeline_ms)
+            payload["spawn_timeline_ms"] = _conversion_f32(float(timeline_ms))
         if stall_timer_ms is not None:
-            payload["no_creatures_timer_ms"] = float(stall_timer_ms)
+            payload["no_creatures_timer_ms"] = _conversion_f32(float(stall_timer_ms))
         if transition_timer_ms is not None:
-            payload["completion_transition_ms"] = float(transition_timer_ms)
+            payload["completion_transition_ms"] = _conversion_f32(float(transition_timer_ms))
         if payload:
             return payload
     return None
@@ -1710,10 +1715,10 @@ def _capture_bootstrap_payload(
                 player_bonus_timers_ms = dict(before_player_bonus_timers_ms)
 
         player_payload: dict[str, object] = {
-            "pos": {"x": float(pos_x), "y": float(pos_y)},
-            "health": float(health),
+            "pos": {"x": _conversion_f32(float(pos_x)), "y": _conversion_f32(float(pos_y))},
+            "health": _conversion_f32(float(health)),
             "weapon_id": int(weapon_id),
-            "ammo": float(ammo),
+            "ammo": _conversion_f32(float(ammo)),
             "experience": int(experience),
             "level": int(level),
             "bonus_timers_ms": dict(player_bonus_timers_ms),
@@ -1737,17 +1742,20 @@ def _capture_bootstrap_payload(
             if reload_active is not None:
                 player_payload["reload_active"] = bool(reload_active)
             if reload_timer is not None:
-                player_payload["reload_timer"] = max(0.0, float(reload_timer))
+                player_payload["reload_timer"] = _conversion_f32(max(0.0, float(reload_timer)))
             if reload_timer_max is not None:
-                player_payload["reload_timer_max"] = max(0.0, float(reload_timer_max))
+                player_payload["reload_timer_max"] = _conversion_f32(max(0.0, float(reload_timer_max)))
             if shot_cooldown is not None:
-                player_payload["shot_cooldown"] = max(0.0, float(shot_cooldown))
+                player_payload["shot_cooldown"] = _conversion_f32(max(0.0, float(shot_cooldown)))
             if spread_heat is not None:
-                player_payload["spread_heat"] = max(0.0, float(spread_heat))
+                player_payload["spread_heat"] = _conversion_f32(max(0.0, float(spread_heat)))
             if aim_x is not None and aim_y is not None:
-                aim_payload: dict[str, float] = {"x": float(aim_x), "y": float(aim_y)}
+                aim_payload: dict[str, float] = {
+                    "x": _conversion_f32(float(aim_x)),
+                    "y": _conversion_f32(float(aim_y)),
+                }
                 if aim_heading is not None:
-                    aim_payload["heading"] = float(aim_heading)
+                    aim_payload["heading"] = _conversion_f32(float(aim_heading))
                 player_payload["aim"] = dict(aim_payload)
 
             alt_weapon = before_player.alt_weapon
@@ -1764,19 +1772,22 @@ def _capture_bootstrap_payload(
             if alt_clip_size is not None:
                 alt_payload["clip_size"] = max(0, int(alt_clip_size))
             if alt_ammo is not None:
-                alt_payload["ammo"] = float(alt_ammo)
+                alt_payload["ammo"] = _conversion_f32(float(alt_ammo))
             if alt_reload_active is not None:
                 alt_payload["reload_active"] = bool(alt_reload_active)
             if alt_reload_timer is not None:
-                alt_payload["reload_timer"] = max(0.0, float(alt_reload_timer))
+                alt_payload["reload_timer"] = _conversion_f32(max(0.0, float(alt_reload_timer)))
             if alt_shot_cooldown is not None:
-                alt_payload["shot_cooldown"] = max(0.0, float(alt_shot_cooldown))
+                alt_payload["shot_cooldown"] = _conversion_f32(max(0.0, float(alt_shot_cooldown)))
             if alt_reload_timer_max is not None:
-                alt_payload["reload_timer_max"] = max(0.0, float(alt_reload_timer_max))
+                alt_payload["reload_timer_max"] = _conversion_f32(max(0.0, float(alt_reload_timer_max)))
             if alt_payload:
                 player_payload["alt_weapon"] = dict(alt_payload)
             if before_player_perk_timers is not None:
-                player_payload["perk_timers"] = dict(before_player_perk_timers)
+                player_payload["perk_timers"] = {
+                    str(key): _conversion_f32(max(0.0, float(value)))
+                    for key, value in before_player_perk_timers.items()
+                }
 
         players.append(dict(player_payload))
 
@@ -1827,7 +1838,7 @@ def _capture_bootstrap_payload(
     if before_global_perk_intervals is not None:
         perk_intervals_payload.update(
             {
-                str(key): float(value)
+                str(key): _conversion_f32(float(value))
                 for key, value in before_global_perk_intervals.items()
                 if math.isfinite(float(value)) and float(value) > 0.0
             },
@@ -1835,7 +1846,7 @@ def _capture_bootstrap_payload(
     if perk_intervals is not None:
         perk_intervals_payload.update(
             {
-                str(key): float(value)
+                str(key): _conversion_f32(float(value))
                 for key, value in perk_intervals.items()
                 if math.isfinite(float(value)) and float(value) > 0.0
             },
@@ -2210,8 +2221,11 @@ def _tick_creature_spawn_rows(tick: CaptureTick) -> tuple[dict[str, object], ...
         out.append(
             {
                 "template_id": int(template_id),
-                "pos": {"x": float(data.pos.x), "y": float(data.pos.y)},
-                "heading": float(heading),
+                "pos": {
+                    "x": _conversion_f32(float(data.pos.x)),
+                    "y": _conversion_f32(float(data.pos.y)),
+                },
+                "heading": _conversion_f32(float(heading)),
             },
         )
     return tuple(out)
@@ -2237,26 +2251,29 @@ def _tick_creature_spawn_added_rows(tick: CaptureTick) -> tuple[dict[str, object
             type_id = row.type_id
             row_out: dict[str, object] = {"index": int(row.index)}
             if heading is not None:
-                row_out["heading"] = float(heading)
+                row_out["heading"] = _conversion_f32(float(heading))
             if target_heading is not None:
-                row_out["target_heading"] = float(target_heading)
+                row_out["target_heading"] = _conversion_f32(float(target_heading))
             if ai_mode is not None:
                 row_out["ai_mode"] = int(ai_mode)
             if link_index is not None:
                 row_out["link_index"] = int(link_index)
             if hp is not None:
-                row_out["hp"] = float(hp)
+                row_out["hp"] = _conversion_f32(float(hp))
             if lifecycle_stage is not None:
-                row_out["lifecycle_stage"] = float(lifecycle_stage)
+                row_out["lifecycle_stage"] = _conversion_f32(float(lifecycle_stage))
             if orbit_angle is not None:
-                row_out["orbit_angle"] = float(orbit_angle)
+                row_out["orbit_angle"] = _conversion_f32(float(orbit_angle))
             if orbit_radius is not None:
-                row_out["orbit_radius"] = float(orbit_radius)
+                row_out["orbit_radius"] = _conversion_f32(float(orbit_radius))
             if flags is not None:
                 row_out["flags"] = int(flags)
             if type_id is not None:
                 row_out["type_id"] = int(type_id)
-            row_out["pos"] = {"x": float(row.pos.x), "y": float(row.pos.y)}
+            row_out["pos"] = {
+                "x": _conversion_f32(float(row.pos.x)),
+                "y": _conversion_f32(float(row.pos.y)),
+            }
             out.append(row_out)
     return tuple(out)
 
@@ -2603,7 +2620,12 @@ def convert_capture_to_replay(
                 turn_left_pressed=turn_left_pressed,
                 turn_right_pressed=turn_right_pressed,
             )
-            inputs[tick_index][player_index] = [float(move_x), float(move_y), [float(aim_x), float(aim_y)], int(flags)]
+            inputs[tick_index][player_index] = [
+                _conversion_f32(float(move_x)),
+                _conversion_f32(float(move_y)),
+                [_conversion_f32(float(aim_x)), _conversion_f32(float(aim_y))],
+                int(flags),
+            ]
             if checkpoint_ammo is not None:
                 previous_checkpoint_ammo[int(player_index)] = float(checkpoint_ammo)
             if checkpoint_weapon_id is not None:
@@ -2731,8 +2753,9 @@ def convert_capture_to_replay(
             tick_rate=max(1, int(tick_rate)),
             player_count=int(resolved_player_count),
             preserve_bugs=True,
-            world_size=float(world_size),
+            world_size=_conversion_f32(float(world_size)),
             status=status_snapshot,
+            input_quantization="f32",
         ),
         inputs=inputs,
         events=list(events),  # ty:ignore[invalid-argument-type]
