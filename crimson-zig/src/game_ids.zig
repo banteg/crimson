@@ -94,6 +94,14 @@ pub const BonusId = enum(i32) {
     fire_bullets = 14,
 };
 
+pub const GameModeId = enum(i32) {
+    survival = 1,
+    rush = 2,
+    quests = 3,
+    typo = 4,
+    tutorial = 8,
+};
+
 pub const PerkId = enum(i32) {
     antiperk = 0,
     bloody_mess_quick_learner = 1,

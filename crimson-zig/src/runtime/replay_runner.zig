@@ -1980,6 +1980,10 @@ fn applyReplayEvent(
     perk_pick_count: *usize,
     menu_open_seen_this_tick: *bool,
 ) ReplayRunnerError!void {
+    const game_mode_id = std.meta.intToEnum(game_ids.GameModeId, game_mode) catch {
+        return error.UnsupportedGameMode;
+    };
+
     switch (event) {
         .perk_menu_open => |open| {
             menu_open_seen_this_tick.* = true;
@@ -1993,7 +1997,7 @@ fn applyReplayEvent(
             _ = perks.perkSelectionCurrentChoices(
                 state,
                 players,
-                game_mode,
+                game_mode_id,
                 player_count,
                 quest_unlock_index,
             );
@@ -2011,7 +2015,7 @@ fn applyReplayEvent(
                 state,
                 players,
                 pick.choice_index,
-                game_mode,
+                game_mode_id,
                 player_count,
                 quest_unlock_index,
             ) catch |err| switch (err) {

@@ -12,6 +12,7 @@ pub const PerkApplyError = error{
 };
 
 pub const PerkId = game_ids.PerkId;
+pub const GameModeId = game_ids.GameModeId;
 
 const PerkFlags = struct {
     pub const quest_mode_allowed: u32 = 0x1;
@@ -22,8 +23,6 @@ const PerkFlags = struct {
 pub const perk_id_max: i32 = @intFromEnum(PerkId.lifeline_50_50);
 const perk_id_max_usize: usize = @intCast(@intFromEnum(PerkId.lifeline_50_50));
 const perk_base_available_max_id: i32 = 27;
-const game_mode_quests: i32 = 3;
-const game_mode_tutorial: i32 = 8;
 
 inline fn perkIdInt(perk_id: PerkId) i32 {
     return @intFromEnum(perk_id);
@@ -101,7 +100,7 @@ pub fn perkChoiceCount(player: *const survival_state.PlayerState) i32 {
 pub fn perkSelectionCurrentChoices(
     state: *survival_state.GameplayState,
     players: []survival_state.PlayerState,
-    game_mode: i32,
+    game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
 ) []const i32 {
@@ -133,7 +132,7 @@ pub fn perkSelectionPick(
     state: *survival_state.GameplayState,
     players: []survival_state.PlayerState,
     choice_index: i32,
-    game_mode: i32,
+    game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
 ) PerkApplyError!?PerkId {
@@ -367,7 +366,7 @@ fn perkGenerateChoices(
     state: *survival_state.GameplayState,
     players: []const survival_state.PlayerState,
     player: *const survival_state.PlayerState,
-    game_mode: i32,
+    game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
 ) [7]i32 {
@@ -421,7 +420,7 @@ fn perkGenerateChoices(
         choices[choice_index] = perkIdInt(selected);
     }
 
-    if (game_mode == game_mode_tutorial) {
+    if (game_mode == .tutorial) {
         choices = .{
             perkIdInt(PerkId.sharpshooter),
             perkIdInt(PerkId.long_distance_runner),
@@ -468,14 +467,14 @@ fn perkCanOffer(
     state: *const survival_state.GameplayState,
     player: *const survival_state.PlayerState,
     perk_id: PerkId,
-    game_mode: i32,
+    game_mode: GameModeId,
     player_count: i32,
 ) bool {
     _ = state;
     if (perk_id == .antiperk) return false;
 
     const flags = perkFlags(perk_id);
-    if (game_mode == game_mode_quests and (flags & PerkFlags.quest_mode_allowed) == 0) {
+    if (game_mode == .quests and (flags & PerkFlags.quest_mode_allowed) == 0) {
         return false;
     }
     if (player_count == 2 and (flags & PerkFlags.two_player_allowed) == 0) {
@@ -563,7 +562,7 @@ test "perk menu open consumes rng and caches choices" {
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
-        1,
+        .survival,
         1,
         49,
     );
@@ -582,7 +581,7 @@ test "antiperk is never offerable" {
         &state,
         &player,
         PerkId.antiperk,
-        1,
+        .survival,
         1,
     ));
 }
@@ -598,7 +597,7 @@ test "perk pick decrements pending and refreshes choices" {
     _ = perkSelectionCurrentChoices(
         &state,
         players[0..],
-        1,
+        .survival,
         1,
         49,
     );
@@ -606,7 +605,7 @@ test "perk pick decrements pending and refreshes choices" {
         &state,
         players[0..],
         0,
-        1,
+        .survival,
         1,
         49,
     );
@@ -626,7 +625,7 @@ test "perk generate choices forces monster vision first on quest 3-4" {
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
-        game_mode_quests,
+        .quests,
         1,
         49,
     );
@@ -674,7 +673,7 @@ test "perk generate choices rejects pyromaniac when no player has flamethrower" 
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
-        1,
+        .survival,
         1,
         0,
     );
@@ -706,7 +705,7 @@ test "perk generate choices blocks jinxed when death clock is active" {
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
-        1,
+        .survival,
         1,
         0,
     );
