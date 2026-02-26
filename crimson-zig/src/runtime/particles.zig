@@ -159,7 +159,7 @@ pub const ParticlePool = struct {
                             @intCast(target_idx_i32),
                             entry.owner,
                             dt_f32,
-                            world_size,
+                            narrowF32(world_size),
                         );
                     }
                 }

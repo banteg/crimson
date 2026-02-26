@@ -200,7 +200,7 @@ pub const SecondaryProjectilePool = struct {
                             idx,
                             entry.owner,
                             dt_f32,
-                            world_size,
+                            narrowF32(world_size),
                         );
                     }
                 }
@@ -335,7 +335,7 @@ pub const SecondaryProjectilePool = struct {
                     },
                     entry.owner,
                     dt_f32,
-                    world_size,
+                    narrowF32(world_size),
                     null,
                 );
 

@@ -1843,16 +1843,16 @@ pub const CreaturePool = struct {
             if (!creature.active) continue;
             if (state.bonuses.freeze > 0.0) continue;
             if (!(creature.hp > 0.0)) {
-                applySelfDamageTickToDead(creature, dt);
+                applySelfDamageTickToDead(creature, dt_f32);
                 tickAi7LinkTimer(creature, dt_ms, &state.rng);
                 if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
                     creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
                 }
-                tickDead(creature, dt, &self.kill_count, state);
+                tickDead(creature, dt_f32, &self.kill_count, state);
                 continue;
             }
 
-            const self_tick_damage = selfDamageTickAmount(creature.flags, dt);
+            const self_tick_damage = selfDamageTickAmount(creature.flags, dt_f32);
             if (self_tick_damage > 0.0) {
                 _ = self.applyDamage(
                     state,
@@ -1867,7 +1867,7 @@ pub const CreaturePool = struct {
                 );
                 if (!(creature.hp > 0.0)) {
                     if (creature.active) {
-                        tickDead(creature, dt, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state);
                     }
                     continue;
                 }
@@ -1882,7 +1882,7 @@ pub const CreaturePool = struct {
                 creature,
                 if (single_player_dead_target_pos) |dead_target| dead_target else player.pos,
                 self.entries[0..],
-                dt,
+                dt_f32,
             );
             if (creature.plague_infected) {
                 creature.collision_timer = narrowF32(creature.collision_timer - dt_f32);
@@ -1897,8 +1897,8 @@ pub const CreaturePool = struct {
                             bonus_pool,
                             idx,
                             creature.last_hit_owner,
-                            dt,
-                            world_size,
+                            dt_f32,
+                            narrowF32(world_size),
                         );
                         // Plague timer kills consume one contact-SFX bank select draw.
                         consumeContactSfxRng(state, creature.type_id);
@@ -2057,7 +2057,7 @@ pub const CreaturePool = struct {
                         narrowF32(world_size),
                     );
                     if (!(creature.hp > 0.0) and creature.active) {
-                        tickDead(creature, dt, &self.kill_count, state);
+                        tickDead(creature, dt_f32, &self.kill_count, state);
                     }
                 }
                 if (player.shield_timer <= 0.0) {
@@ -2386,8 +2386,8 @@ pub const CreaturePool = struct {
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         if (creature_index >= self.entries.len) return 0;
         if (players.len == 0) return 0;
@@ -2409,7 +2409,7 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            world_size,
+            @as(f64, world_size),
             false,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
@@ -2434,8 +2434,8 @@ pub const CreaturePool = struct {
         bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         owner: owner_ref.OwnerRef,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) i32 {
         if (creature_index >= self.entries.len) return 0;
         if (players.len == 0) return 0;
@@ -2458,7 +2458,7 @@ pub const CreaturePool = struct {
             players,
             bonus_pool,
             creature.pos,
-            world_size,
+            @as(f64, world_size),
             true,
         );
 
@@ -2508,9 +2508,9 @@ pub const CreaturePool = struct {
         call: spawn_mod.SpawnTemplateCall,
         stats: SpawnStats,
         flags: u32,
-        timer: f64,
+        timer: f32,
         limit: i32,
-        interval: f64,
+        interval: f32,
         child_template_id: i32,
     ) usize {
         const parent_idx = self.spawnFromStatsWithFlags(
@@ -2561,19 +2561,19 @@ pub const CreaturePool = struct {
     fn registerSpawnSlot(
         self: *CreaturePool,
         owner_idx: usize,
-        timer: f64,
+        timer: f32,
         limit: i32,
-        interval: f64,
+        interval: f32,
         child_template_id: i32,
     ) i32 {
         if (self.spawn_slot_count >= self.spawn_slots.len) return -1;
         const slot_idx = self.spawn_slot_count;
         self.spawn_slots[slot_idx] = .{
             .owner_creature = @intCast(owner_idx),
-            .timer = narrowF32(timer),
+            .timer = timer,
             .count = 0,
             .limit = limit,
-            .interval = narrowF32(interval),
+            .interval = interval,
             .child_template_id = child_template_id,
         };
         self.spawn_slot_count += 1;
@@ -2735,9 +2735,8 @@ fn creatureAiUpdateTarget(
     creature: *CreatureState,
     player_pos: state_mod.Vec2,
     creatures: []const CreatureState,
-    dt: f64,
+    dt: f32,
 ) void {
-    const dt_f32 = narrowF32(dt);
     const dist_to_player = distanceF32(creature.pos, player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale = narrowF32(3.7);
@@ -2808,7 +2807,7 @@ fn creatureAiUpdateTarget(
                 .x = narrowF32(creature.pos.x),
                 .y = narrowF32(creature.pos.y),
             };
-            creature.orbit_radius = narrowF32(creature.orbit_radius - dt_f32);
+            creature.orbit_radius = narrowF32(creature.orbit_radius - dt);
         } else {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
         }
@@ -3417,24 +3416,24 @@ fn consumeDeathSideEffectsRng(
 
 fn tickDead(
     creature: *CreatureState,
-    dt: f64,
+    dt: f32,
     kill_count: *i32,
     state: *state_mod.GameplayState,
 ) void {
     if (!(dt > 0.0)) return;
     const hitbox = narrowF32(creature.lifecycle_stage);
     if (hitbox <= 0.0) {
-        creature.lifecycle_stage = narrowF32(hitbox - narrowF32(dt * 20.0));
+        creature.lifecycle_stage = narrowF32(hitbox - dt * 20.0);
         return;
     }
     const long_strip =
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0 or
         (creature.flags & spawn_mod.CreatureFlags.anim_long_strip) != 0;
-    const next_lifecycle_stage = narrowF32(hitbox - narrowF32(dt * 28.0));
+    const next_lifecycle_stage = narrowF32(hitbox - dt * 28.0);
     creature.lifecycle_stage = narrowF32(next_lifecycle_stage);
     if (next_lifecycle_stage > 0.0) {
         if (long_strip) {
-            const slide = narrowF32(next_lifecycle_stage * narrowF32(dt) * narrowF32(9.0));
+            const slide = narrowF32(next_lifecycle_stage * dt * 9.0);
             const direction = headingDirectionF32(creature.heading);
             creature.vel = .{
                 .x = narrowF32(direction.x * slide),
@@ -3463,21 +3462,20 @@ fn tickDead(
     }
 }
 
-fn selfDamageTickAmount(flags: u32, dt: f64) f32 {
-    const dt_f32 = narrowF32(dt);
-    if (!(dt_f32 > 0.0)) return 0.0;
+fn selfDamageTickAmount(flags: u32, dt: f32) f32 {
+    if (!(dt > 0.0)) return 0.0;
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick_strong) != 0) {
-        return narrowF32(dt_f32 * 180.0);
+        return narrowF32(dt * 180.0);
     }
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick) != 0) {
-        return narrowF32(dt_f32 * 60.0);
+        return narrowF32(dt * 60.0);
     }
     return 0.0;
 }
 
 fn applySelfDamageTickToDead(
     creature: *CreatureState,
-    dt: f64,
+    dt: f32,
 ) void {
     if (!(selfDamageTickAmount(creature.flags, dt) > 0.0)) return;
     if (dt > 0.0) {
