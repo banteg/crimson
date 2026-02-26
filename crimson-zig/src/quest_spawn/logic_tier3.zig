@@ -197,6 +197,7 @@ fn build303TheKilling(
     var trigger: i32 = 2000;
     var wave: i32 = 0;
     while (wave < 10) : (wave += 1) {
+        // Intentional throwaway draws to keep RNG phase aligned with native script flow.
         _ = rng.randBelow(0x8000);
         _ = rng.randBelow(0x8000);
 

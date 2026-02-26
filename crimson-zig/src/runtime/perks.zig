@@ -570,7 +570,7 @@ fn adjustPerkCount(player: *state_mod.PlayerState, perk_id: PerkId, amount: i32)
     player.perk_counts.set(perk_id, @max(0, current + amount));
 }
 
-fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
+pub fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return perkCountGet(player, perk_id) > 0;
 }
 
