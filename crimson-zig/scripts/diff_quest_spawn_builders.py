@@ -55,7 +55,7 @@ def parse_args() -> argparse.Namespace:
         "--impl",
         action="append",
         default=[],
-        help="Zig implementation id (legacy|option4|option6). Repeat for multiple impls.",
+        help="Zig implementation id (main|legacy). Repeat for multiple impls.",
     )
     parser.add_argument(
         "--dynamic-seed",
@@ -268,7 +268,7 @@ def _seeds_for_level(level_key: int, *, dynamic_seeds: tuple[int, ...], static_s
 def run() -> int:
     args = parse_args()
 
-    impls = tuple(args.impl) if args.impl else ("option4", "option6")
+    impls = tuple(args.impl) if args.impl else ("main",)
     dynamic_seeds = tuple(args.dynamic_seed) if args.dynamic_seed else (0, 1, 205, 999)
     if not dynamic_seeds:
         raise ValueError("dynamic seed list cannot be empty")
