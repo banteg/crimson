@@ -492,7 +492,8 @@ pub fn buildSurvivalSpawnCreature(
     }
     creature.type_id = type_id;
 
-    creature.size = @floatFromInt(rng.rand() % 20 + 44);
+    const size = narrowF32(@as(f32, @floatFromInt(rng.rand() % 20 + 44)));
+    creature.size = @floatCast(size);
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
@@ -501,13 +502,7 @@ pub fn buildSurvivalSpawnCreature(
 
     const move_speed_xp: f32 = @floatFromInt(@divTrunc(xp, 4000));
     const move_speed_scaled = @as(f32, move_speed_xp * @as(f32, 0.045));
-    var move_speed: f32 = @as(
-        f32,
-        @floatCast(
-            @as(f64, @floatCast(move_speed_scaled)) +
-                @as(f64, @floatCast(@as(f32, 0.9))),
-        ),
-    );
+    var move_speed = narrowF32(move_speed_scaled + 0.9);
     if (creature.type_id == .spider_sp1) {
         creature.flags |= CreatureFlags.ai7_link_timer;
         move_speed = @as(f32, move_speed * @as(f32, 1.3));
@@ -517,14 +512,7 @@ pub fn buildSurvivalSpawnCreature(
     const health_xp: f32 = @floatFromInt(xp);
     const health_scaled = @as(f32, health_xp * @as(f32, 0.00125));
     const health_rand = @as(f32, @floatFromInt(r_health & 0xF));
-    var health: f32 = @as(
-        f32,
-        @floatCast(
-            @as(f64, @floatCast(health_scaled)) +
-                @as(f64, @floatCast(health_rand)) +
-                @as(f64, @floatCast(@as(f32, 52.0))),
-        ),
-    );
+    var health = narrowF32(health_scaled + health_rand + 52.0);
 
     if (creature.type_id == .zombie) {
         move_speed = @as(f32, move_speed * @as(f32, 0.6));
@@ -538,31 +526,54 @@ pub fn buildSurvivalSpawnCreature(
     creature.health = @floatCast(health);
     creature.reward_value = 0.0;
 
-    const tint_a = 1.0;
-    var tint_r: f64 = 0.0;
-    var tint_g: f64 = 0.0;
-    var tint_b: f64 = 0.0;
+    const tint_a: f32 = 1.0;
+    var tint_r: f32 = 0.0;
+    var tint_g: f32 = 0.0;
+    var tint_b: f32 = 0.0;
     if (xp < 50_000) {
-        tint_r = 1.0 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.7;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(rand_b * 0.01 + 0.7);
     } else if (xp < 100_000) {
-        tint_r = 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.8 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(xp - 50_000)) * 6e-06 + @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.7;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const xp_delta_50k: f32 = @floatFromInt(xp - 50_000);
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(0.9 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.8 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(xp_delta_50k * 6e-06 + rand_b * 0.01 + 0.7);
     } else {
-        tint_r = 1.0 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 1.0 - @as(f64, @floatFromInt(xp - 100_000)) * 3e-06;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const xp_delta_100k: f32 = @floatFromInt(xp - 100_000);
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(rand_b * 0.01 + 1.0 - xp_delta_100k * 3e-06);
         if (tint_b < 0.5) tint_b = 0.5;
     }
-    creature.tint = .{ tint_r, tint_g, tint_b, tint_a };
+    creature.tint = .{
+        @floatCast(tint_r),
+        @floatCast(tint_g),
+        @floatCast(tint_b),
+        @floatCast(tint_a),
+    };
 
-    creature.contact_damage = creature.size * (2.0 / 21.0);
-    creature.reward_value = creature.health * 0.4 +
-        creature.contact_damage * 0.8 +
-        @as(f64, @floatCast(move_speed)) * 5.0 +
-        @as(f64, @floatFromInt(rng.rand() % 10 + 10));
+    const contact_damage = narrowF32(size * (2.0 / 21.0));
+    creature.contact_damage = @floatCast(contact_damage);
+    const reward_value = narrowF32(
+        health * 0.4 +
+            contact_damage * 0.8 +
+            move_speed * 5.0 +
+            @as(f32, @floatFromInt(rng.rand() % 10 + 10)),
+    );
+    creature.reward_value = @floatCast(reward_value);
 
     var r = rng.rand();
     if ((r % 180) < 2) {
@@ -602,7 +613,7 @@ pub fn buildSurvivalSpawnCreature(
     }
 
     creature.max_health = creature.health;
-    creature.reward_value *= 0.8;
+    creature.reward_value = @floatCast(narrowF32(@as(f32, @floatCast(creature.reward_value)) * 0.8));
     creature.tint = .{
         clamp01(creature.tint[0]),
         clamp01(creature.tint[1]),
@@ -642,19 +653,20 @@ pub fn buildRushModeSpawnCreature(
     creature.type_id = type_id;
     creature.ai_mode = CreatureAiMode.orbit_player;
 
-    creature.health = @as(f64, @floatFromInt(elapsed_ms)) * 1e-4 + 10.0;
+    const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
+    creature.health = @floatCast(narrowF32(elapsed_f32 * 1e-4 + 10.0));
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
         creature.heading = @floatCast(heading_scaled);
     }
-    creature.move_speed = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 2.5;
+    creature.move_speed = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 2.5));
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
     creature.tint = tint_rgba;
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
-    creature.size = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 47.0;
+    creature.size = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 47.0));
 
     return creature;
 }
@@ -705,25 +717,25 @@ pub fn tickRushModeSpawnsBatch(
         result.cooldown += 250.0;
 
         const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
-        const t = @as(f64, @floatFromInt(t_i32));
+        const t: f32 = @floatFromInt(t_i32);
         const tint = [4]f64{
-            clamp01(t * (1.0 / 120000.0) + 0.3),
-            clamp01(t * 10000.0 + 0.3),
-            clamp01(std.math.sin(t * 1e-4) + 0.3),
+            clamp01(@floatCast(narrowF32(t * (1.0 / 120000.0) + 0.3))),
+            clamp01(@floatCast(narrowF32(t * 10000.0 + 0.3))),
+            clamp01(@floatCast(narrowF32(std.math.sin(narrowF32(t * 1e-4)) + 0.3))),
             1.0,
         };
 
         const elapsed_ms: i32 = @intFromFloat(survival_elapsed_ms);
-        const theta = @as(f64, @floatFromInt(elapsed_ms)) * 0.001;
-        const terrain_width_f = @as(f64, @floatFromInt(terrain_width));
-        const terrain_height_f = @as(f64, @floatFromInt(terrain_height));
+        const theta = narrowF32(@as(f32, @floatFromInt(elapsed_ms)) * 0.001);
+        const terrain_width_f: f32 = @floatFromInt(terrain_width);
+        const terrain_height_f: f32 = @floatFromInt(terrain_height);
         const spawn_right = Vec2{
-            .x = terrain_width_f + 64.0,
-            .y = terrain_height_f * 0.5 + std.math.cos(theta) * 256.0,
+            .x = @floatCast(narrowF32(terrain_width_f + 64.0)),
+            .y = @floatCast(narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0)),
         };
         const spawn_left = Vec2{
             .x = -64.0,
-            .y = terrain_height_f * 0.5 + std.math.sin(theta) * 256.0,
+            .y = @floatCast(narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0)),
         };
 
         var alien = buildRushModeSpawnCreature(
@@ -1042,11 +1054,11 @@ pub fn advanceSurvivalSpawnStage(
 }
 
 fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
-    const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+    const phase_seed = narrowF32(@as(f32, @floatFromInt(rng.rand() & 0x17f)));
     return .{
         .origin_template_id = template_id,
         .pos = pos,
-        .phase_seed = phase_seed,
+        .phase_seed = @floatCast(phase_seed),
     };
 }
 
