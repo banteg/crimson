@@ -90,27 +90,29 @@ pub const ProjectilePool = struct {
             .hits_players = hits_players,
         };
 
-        if (type_id == 0x16) {
+        if (type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_minigun)) {
             entry.hit_radius = 3.0;
             return index;
         }
-        if (type_id == 0x15) {
+        if (type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_rifle)) {
             entry.hit_radius = 5.0;
             return index;
         }
-        if (type_id == 0x17 or type_id == 0x1C) {
+        if (type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) or
+            type_id == @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon))
+        {
             entry.hit_radius = 10.0;
         } else {
             entry.hit_radius = 1.0;
-            if (type_id == 0x06) {
+            if (type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
                 entry.damage_pool = 300.0;
                 return index;
             }
-            if (type_id == 0x2D) {
+            if (type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets)) {
                 entry.damage_pool = 240.0;
                 return index;
             }
-            if (type_id == 0x19) {
+            if (type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun)) {
                 entry.damage_pool = 50.0;
                 return index;
             }
