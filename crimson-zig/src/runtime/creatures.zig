@@ -2495,10 +2495,11 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
         pos: state_mod.Vec2,
-        heading: f64,
+        heading: anytype,
         stats: SpawnStats,
     ) usize {
-        return self.spawnFromStatsWithFlags(rng, pos, heading, stats, 0, true);
+        const heading_f32: f32 = @floatCast(heading);
+        return self.spawnFromStatsWithFlags(rng, pos, heading_f32, stats, 0, true);
     }
 
     fn spawnParentWithSpawnSlot(
@@ -2530,11 +2531,12 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
         pos: state_mod.Vec2,
-        heading: f64,
+        heading: anytype,
         stats: SpawnStats,
         flags: u32,
         set_heading: bool,
     ) usize {
+        const heading_f32: f32 = @floatCast(heading);
         const phase_seed = narrowF32(@as(f32, @floatFromInt(rng.rand() & 0x17f)));
         return self.spawnInit(.{
             .origin_template_id = -1,
@@ -2542,7 +2544,7 @@ pub const CreaturePool = struct {
                 .x = pos.x,
                 .y = pos.y,
             },
-            .heading = heading,
+            .heading = @as(f64, heading_f32),
             .set_heading = set_heading,
             .phase_seed = @floatCast(phase_seed),
             .type_id = stats.type_id,
