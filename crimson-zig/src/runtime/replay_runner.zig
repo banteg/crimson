@@ -1019,9 +1019,9 @@ pub fn runReplayScaffoldWithTrace(
     }
     if (event_index != events.len) return error.UnsupportedEventOrdering;
 
-    const tick_rate_f64: f64 = @floatFromInt(header.tick_rate);
-    const ticks_f64: f64 = @floatFromInt(replay.tickCount());
-    const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f64 * (1000.0 / tick_rate_f64)));
+    const tick_rate_f32: f32 = @floatFromInt(header.tick_rate);
+    const ticks_f32: f32 = @floatFromInt(replay.tickCount());
+    const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f32 * (1000.0 / tick_rate_f32)));
     const elapsed_ms_sim_i64: i64 = if (game_mode == .quests)
         @intFromFloat(quest_spawn_timeline_ms)
     else
