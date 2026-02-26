@@ -13,7 +13,6 @@ const GameplayState = state_mod.GameplayState;
 const Vec2 = state_mod.Vec2;
 
 const weapon_stats = weapon_data.weapon_stats;
-const weaponIdToInt = weapon_data.weaponIdToInt;
 
 pub fn weaponAssignPlayer(
     player: *PlayerState,
@@ -43,8 +42,8 @@ pub fn incrementWeaponUsage(
     weapon_id: WeaponId,
 ) void {
     if (state.demo_mode_active) return;
-    const idx: usize = @intCast(@intFromEnum(weapon_id));
-    state.status_weapon_usage_counts[idx] +%= 1;
+    const current = state.status_weapon_usage_counts.get(weapon_id);
+    state.status_weapon_usage_counts.set(weapon_id, current +% 1);
 }
 
 pub fn weaponAssignPlayerWithState(
@@ -220,5 +219,5 @@ test "weapon assign with state resets latch, sets aux timer, and records usage" 
 
     try std.testing.expectEqual(@as(i32, 0), player.weapon_reset_latch);
     try expectFloatClose(2.0, player.aux_timer);
-    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts[@intCast(weaponIdToInt(WeaponId.shotgun))]);
+    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts.get(WeaponId.shotgun));
 }

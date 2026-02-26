@@ -34,14 +34,14 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
 
 def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     pool = ProjectilePool(size=1)
-    meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].projectile_meta
-    base_damage = float(meta if meta is not None else 45.0)
+    meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].travel_budget
+    travel_budget = float(meta if meta is not None else 45.0)
     pool.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
-        base_damage=base_damage,
+        travel_budget=travel_budget,
     )
 
     players = [PlayerState(index=0, pos=Vec2())]
@@ -66,6 +66,6 @@ def test_barrel_greaser_doubles_projectile_speed_steps() -> None:
     greased_x = _step_pistol_projectile(barrel_greaser_active=True)
     # Movement is flushed from an accumulator in chunks, so doubling internal
     # step count does not map to an exact x2 world-space displacement.
-    assert_float_close(base_x, 18.239999771118164)
+    assert_float_close(base_x, 18.240001678466797)
     assert_float_close(greased_x, 35.519996643066406)
     assert greased_x > base_x

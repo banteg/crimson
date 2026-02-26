@@ -1,11 +1,48 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
-const backend_python = @import("backend_python.zig");
+const game_ids = @import("game_ids.zig");
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
-const verify_contract = @import("verify_contract.zig");
+
+const replay_schema_version: i32 = 1;
+
+pub const CommandOutput = struct {
+    stdout: []u8,
+    stderr: []u8,
+    exit_code: u8,
+
+    pub fn deinit(self: CommandOutput, allocator: std.mem.Allocator) void {
+        allocator.free(self.stdout);
+        allocator.free(self.stderr);
+    }
+};
+
+const ScoreMetric = enum {
+    auto,
+    score_xp,
+    elapsed_ms,
+};
+
+fn scoreMetricFromString(raw: []const u8) ?ScoreMetric {
+    return std.meta.stringToEnum(ScoreMetric, raw);
+}
+
+fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) ScoreMetric {
+    return switch (metric) {
+        .score_xp => .score_xp,
+        .elapsed_ms => .elapsed_ms,
+        .auto => switch (std.meta.intToEnum(game_ids.GameModeId, game_mode_id) catch @panic("invalid game mode id")) {
+            .rush, .quests => .elapsed_ms,
+            else => .score_xp,
+        },
+    };
+}
+
+fn scoreMetricLabel(metric: ScoreMetric) []const u8 {
+    return @tagName(metric);
+}
 
 const OutputFormat = enum {
     human,
@@ -17,7 +54,7 @@ const VerifyRequest = struct {
     output_format: OutputFormat = .human,
     json_out: ?[]const u8 = null,
     submitted_score: ?i64 = null,
-    score_metric: verify_contract.ScoreMetric = .auto,
+    score_metric: ScoreMetric = .auto,
     base_dir: ?[]const u8 = null,
     debug_trace_jsonl: ?[]const u8 = null,
 };
@@ -73,7 +110,7 @@ const VerifyPayload = struct {
 pub fn runReplayVerify(
     allocator: std.mem.Allocator,
     verify_args: []const []const u8,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     switch (parseNativeSubset(verify_args)) {
         .ok => |request| return runNativeVerify(allocator, request),
         .unsupported => |detail| return buildUnsupportedVerifyOptionOutput(allocator, detail),
@@ -84,7 +121,7 @@ pub fn runReplayVerify(
 fn runNativeVerify(
     allocator: std.mem.Allocator,
     request: VerifyRequest,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var default_base_dir: ?[]u8 = null;
     defer if (default_base_dir) |path| allocator.free(path);
 
@@ -187,7 +224,7 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    const resolved_metric: verify_contract.ScoreMetric = verify_contract.resolveScoreMetric(request.score_metric, run_result.game_mode_id);
+    const resolved_metric: ScoreMetric = resolveScoreMetric(request.score_metric, run_result.game_mode_id);
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
@@ -246,7 +283,7 @@ fn runNativeVerify(
             try writer.print(
                 "; score_claim metric={s} submitted={d} simulated={d} match={s}",
                 .{
-                    verify_contract.scoreMetricLabel(resolved_metric),
+                    scoreMetricLabel(resolved_metric),
                     submitted,
                     simulated_value,
                     if (claim_matches) "true" else "false",
@@ -618,7 +655,7 @@ fn buildVerifyPayload(
     replay_path: []const u8,
     replay_sha256: []const u8,
     run_result: RunResult,
-    resolved_metric: verify_contract.ScoreMetric,
+    resolved_metric: ScoreMetric,
     submitted_score: ?i64,
 ) ![]u8 {
     const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
@@ -630,13 +667,13 @@ fn buildVerifyPayload(
     else
         true;
     const score_claim: ?ScoreClaimPayload = if (submitted_score) |submitted| .{
-        .metric = verify_contract.scoreMetricLabel(resolved_metric),
+        .metric = scoreMetricLabel(resolved_metric),
         .submitted_score = submitted,
         .simulated_value = simulated_value,
         .match = claim_matches,
     } else null;
     const report: VerifyPayload = .{
-        .schema_version = verify_contract.replay_schema_version,
+        .schema_version = replay_schema_version,
         .status = if (claim_matches) "ok" else "score_mismatch",
         .replay = replay_path,
         .replay_sha256 = replay_sha256,
@@ -669,7 +706,7 @@ fn writeFileWithParents(path: []const u8, bytes: []const u8) !void {
 fn buildReplayNotFoundOutput(
     allocator: std.mem.Allocator,
     resolution: ReplayResolution,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
@@ -690,7 +727,7 @@ fn buildReplayNotFoundOutput(
 fn buildVerifyFailedOutput(
     allocator: std.mem.Allocator,
     err: anytype,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
@@ -707,7 +744,7 @@ fn buildVerifyFailedOutput(
 fn buildInvalidVerifyArgsOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
@@ -724,7 +761,7 @@ fn buildInvalidVerifyArgsOutput(
 fn buildUnsupportedVerifyOptionOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
@@ -741,7 +778,7 @@ fn buildUnsupportedVerifyOptionOutput(
 fn buildNotPortedOutput(
     allocator: std.mem.Allocator,
     detail: []const u8,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     var stderr_buf: std.ArrayList(u8) = .empty;
     defer stderr_buf.deinit(allocator);
 
@@ -783,7 +820,7 @@ fn unsupportedReplayHeaderDetail(
 fn buildNotPortedOutputForReplayCodecError(
     allocator: std.mem.Allocator,
     err: replay_codec.ReplayCodecError,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     const detail = switch (err) {
         error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
         error.InvalidHeaderValue => "replay header contains invalid values",
@@ -805,7 +842,7 @@ fn buildNotPortedOutputForReplayCodecError(
 fn buildNotPortedOutputForReplayRunnerError(
     allocator: std.mem.Allocator,
     err: replay_runner.ReplayRunnerError,
-) !backend_python.CommandOutput {
+) !CommandOutput {
     const detail = switch (err) {
         error.OutOfMemory => "replay simulation scaffold ran out of memory",
         error.InvalidHeaderValue => "replay simulation scaffold received invalid header values",
@@ -899,12 +936,12 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--score-metric")) {
             if (idx + 1 >= args.len) return .{ .invalid = "missing value for --score-metric" };
             idx += 1;
-            request.score_metric = verify_contract.scoreMetricFromString(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = scoreMetricFromString(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
         if (std.mem.startsWith(u8, arg, "--score-metric=")) {
             const value = arg["--score-metric=".len..];
-            request.score_metric = verify_contract.scoreMetricFromString(value) orelse return .{ .invalid = "invalid --score-metric value" };
+            request.score_metric = scoreMetricFromString(value) orelse return .{ .invalid = "invalid --score-metric value" };
             continue;
         }
 

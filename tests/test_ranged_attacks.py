@@ -115,7 +115,7 @@ def test_ranged_projectile_can_damage_player() -> None:
         angle=math.pi / 2.0,
         type_id=9,
         owner_id=0,
-        base_damage=45.0,
+        travel_budget=45.0,
         hits_players=True,
     )
 
@@ -158,7 +158,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         angle=math.pi / 2.0,
         type_id=9,
         owner_id=0,
-        base_damage=45.0,
+        travel_budget=45.0,
         hits_players=True,
     )
 

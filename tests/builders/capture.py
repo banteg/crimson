@@ -402,7 +402,7 @@ def build_capture_projectile_sample(*, index: int = 7) -> CaptureProjectileSampl
         speed_scale=1.0,
         damage_pool=22.0,
         hit_radius=8.0,
-        base_damage=15.0,
+        travel_budget=15.0,
         owner_id=0,
     )
 

@@ -1178,7 +1178,7 @@ class CaptureProjectileSample(msgspec.Struct, forbid_unknown_fields=True):
     speed_scale: float
     damage_pool: float
     hit_radius: float
-    base_damage: float
+    travel_budget: float
     owner_id: int
 
 

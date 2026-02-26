@@ -5,6 +5,7 @@ import random
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import cast
 
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
@@ -120,7 +121,7 @@ class GameWorld:
         for entry in WEAPON_TABLE:
             if entry.weapon_id <= 0:
                 continue
-            self._damage_scale_by_type[int(entry.weapon_id)] = float(entry.damage_scale or 1.0)
+            self._damage_scale_by_type[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
         player_count = 1
         if self.config is not None:
             player_count = self.config.player_count

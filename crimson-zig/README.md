@@ -30,18 +30,6 @@ zig build test
 zig build wasm
 ```
 
-## Smoke and Gates
-
-```bash
-./scripts/smoke_native.sh survival_20260224_041009_score76661.crd
-./scripts/smoke_wasm.sh
-./scripts/reference_acceptance.sh survival_20260224_041009_score76661.crd
-./scripts/perf_gate.sh survival_20260224_041009_score76661.crd 5
-```
-
-`perf_gate.sh` enforces the target `>=3x` speedup vs Python for the reference
-replay verification path.
-
 ## WASM exports
 
 - `crimson_alloc(size) -> ptr`

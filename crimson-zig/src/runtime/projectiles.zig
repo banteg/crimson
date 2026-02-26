@@ -4,6 +4,7 @@ const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -18,7 +19,6 @@ const WeaponId = state_mod.WeaponId;
 
 pub const main_projectile_pool_size: usize = 0x60;
 const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
-const creature_lifecycle_stage_alive: f64 = 16.0;
 
 pub const Projectile = struct {
     active: bool = false,
@@ -32,7 +32,7 @@ pub const Projectile = struct {
     speed_scale: f32 = 1.0,
     damage_pool: f32 = 1.0,
     hit_radius: f32 = 1.0,
-    base_damage: f32 = 0.0,
+    travel_budget: f32 = 0.0,
     owner: owner_ref.OwnerRef = .{ .none = {} },
     hits_players: bool = false,
 };
@@ -44,9 +44,9 @@ pub const ProjectileTickStats = struct {
     first_hit_type_id: i32 = 0,
     first_hit_origin: state_mod.Vec2 = .{},
     first_hit_pos: state_mod.Vec2 = .{},
-    first_hit_target_size: f64 = 0.0,
-    first_hit_target_x: f64 = 0.0,
-    first_hit_target_y: f64 = 0.0,
+    first_hit_target_size: f32 = 0.0,
+    first_hit_target_x: f32 = 0.0,
+    first_hit_target_y: f32 = 0.0,
 };
 
 pub const ProjectilePool = struct {
@@ -59,10 +59,10 @@ pub const ProjectilePool = struct {
     pub fn spawn(
         self: *ProjectilePool,
         pos: state_mod.Vec2,
-        angle: f64,
+        angle: f32,
         type_id: i32,
         owner: owner_ref.OwnerRef,
-        base_damage: f64,
+        travel_budget: f32,
         hits_players: bool,
     ) usize {
         var index: usize = self.entries.len - 1;
@@ -73,21 +73,21 @@ pub const ProjectilePool = struct {
             }
         }
 
-        const meta = if (base_damage > 0.0) base_damage else projectileMetaFromRawId(type_id);
+        const budget = if (travel_budget > 0.0) travel_budget else projectileTravelBudgetFromRawId(type_id);
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = narrowF32(angle),
+            .angle = angle,
             .pos = .{ .x = pos.x, .y = pos.y },
             .origin = .{ .x = pos.x, .y = pos.y },
-            .vel = runtime_helpers.directionFromHeading(narrowF32(angle)).mul(1.5),
+            .vel = runtime_helpers.directionFromHeading(angle).mul(1.5),
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
             .speed_scale = 1.0,
             .damage_pool = 1.0,
             .hit_radius = 1.0,
-            .base_damage = narrowF32(meta),
+            .travel_budget = budget,
             .owner = owner,
             .hits_players = hits_players,
         };
@@ -128,14 +128,14 @@ pub const ProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
     ) ProjectileTickStats {
         if (!(dt > 0.0)) return .{};
-        const margin = 64.0;
+        const margin: f32 = 64.0;
         var barrel_greaser_active = false;
         var ion_gun_master_active = false;
-        var ion_scale: f64 = 1.0;
+        var ion_scale: f32 = 1.0;
         for (players) |player| {
             if (player.perk_counts.get(PerkId.barrel_greaser) > 0) {
                 barrel_greaser_active = true;
@@ -159,11 +159,11 @@ pub const ProjectilePool = struct {
         var candidate_cell_x = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_cell_y = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_has_cell = [_]bool{false} ** creatures_mod.max_creatures;
-        var max_find_margin: f64 = 0.0;
-        const bucket_size: f64 = 64.0;
+        var max_find_margin: f32 = 0.0;
+        const bucket_size: f32 = 64.0;
         for (creatures.entries, 0..) |creature, idx| {
             collidable_snapshot[idx] = creature.active and
-                creature.lifecycle_stage > 5.0;
+                creature_lifecycle.isCollidable(creature.lifecycle_stage);
             if (!collidable_snapshot[idx]) continue;
             candidate_has_cell[idx] = true;
             candidate_cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
@@ -187,7 +187,7 @@ pub const ProjectilePool = struct {
                 {
                     resetShockChainIfOwner(state, proj_idx);
                 }
-                const linger_decay: f64 = switch (proj.type_id) {
+                const linger_decay: f32 = switch (proj.type_id) {
                     @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => dt * 0.1,
                     @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
                     else => dt,
@@ -213,8 +213,7 @@ pub const ProjectilePool = struct {
                 continue;
             }
 
-            var steps: i32 = @intFromFloat(proj.base_damage);
-            if (steps <= 0) steps = 1;
+            var steps: i32 = @intFromFloat(proj.travel_budget);
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
@@ -246,7 +245,7 @@ pub const ProjectilePool = struct {
                 for (creatures.entries, 0..) |creature, idx| {
                     if (!collidable_snapshot[idx]) continue;
                     if (!candidate_has_cell[idx]) continue;
-                    if (!(creature.active and creature.lifecycle_stage > 5.0)) continue;
+                    if (!(creature.active and creature_lifecycle.isCollidable(creature.lifecycle_stage))) continue;
                     const in_span =
                         @abs(candidate_cell_x[idx] - proj_cell_x) <= cell_span and
                         @abs(candidate_cell_y[idx] - proj_cell_y) <= cell_span;
@@ -343,7 +342,7 @@ pub const ProjectilePool = struct {
                 }
 
                 if (owner_player_idx) |idx| {
-                    if (idx < state.shots_hit.len and creatures.entries[hit_idx.?].lifecycle_stage == creature_lifecycle_stage_alive) {
+                    if (idx < state.shots_hit.len and creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
                         state.shots_hit[idx] += 1;
                     }
                 }
@@ -354,7 +353,7 @@ pub const ProjectilePool = struct {
                     proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
                 {
                     proj.life_timer = 0.25;
-                    const jitter = @as(f64, @floatFromInt(state.rng.rand() & 3));
+                    const jitter = @as(f32, @floatFromInt(state.rng.rand() & 3));
                     proj.pos = .{
                         .x = narrowF32(proj.pos.x + direction.x * jitter),
                         .y = narrowF32(proj.pos.y + direction.y * jitter),
@@ -400,11 +399,11 @@ pub const ProjectilePool = struct {
                             players,
                             bonuses,
                             hit_idx.?,
-                            damage_amount,
+                            narrowF32(damage_amount),
                             impulse,
                             proj.owner,
-                            dt,
-                            world_size,
+                            narrowF32(dt),
+                            narrowF32(world_size),
                         );
                         if (proj.life_timer != 0.25) {
                             proj.life_timer = 0.25;
@@ -418,14 +417,14 @@ pub const ProjectilePool = struct {
                             remaining,
                             impulse,
                             proj.owner,
-                            dt,
-                            world_size,
+                            narrowF32(dt),
+                            narrowF32(world_size),
                         );
                         proj.damage_pool -= narrowF32(creatures.entries[hit_idx.?].hp);
                     }
                     const idx = hit_idx.?;
                     collidable_snapshot[idx] = creatures.entries[idx].active and
-                        creatures.entries[idx].lifecycle_stage > 5.0;
+                        creature_lifecycle.isCollidable(creatures.entries[idx].lifecycle_stage);
                     if (!collidable_snapshot[idx]) {
                         candidate_has_cell[idx] = false;
                     } else {
@@ -508,12 +507,12 @@ fn applyIonLingerDamage(
     creatures: *creatures_mod.CreaturePool,
     bonus_pool: *bonus_runtime.BonusPool,
     proj: *Projectile,
-    dt: f64,
-    ion_scale: f64,
-    world_size: f64,
+    dt: f32,
+    ion_scale: f32,
+    world_size: f32,
 ) void {
-    var damage: f64 = 0.0;
-    var radius: f64 = 0.0;
+    var damage: f32 = 0.0;
+    var radius: f32 = 0.0;
     switch (proj.type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => {
             damage = dt * 40.0;
@@ -532,7 +531,7 @@ fn applyIonLingerDamage(
 
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        if (!(creature.lifecycle_stage > 5.0)) continue;
+        if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
         const creature_radius = creatureHitRadius(creature.size);
         const hit_radius = radius + creature_radius;
         if (runtime_helpers.distanceSq(proj.pos, creature.pos) <= hit_radius * hit_radius) {
@@ -541,7 +540,7 @@ fn applyIonLingerDamage(
                 players,
                 bonus_pool,
                 idx,
-                damage,
+                narrowF32(damage),
                 .{},
                 proj.owner,
                 dt,
@@ -562,7 +561,7 @@ fn consumeFreezeHitShardRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand() % 3;
 }
 
-fn creatureHitRadius(size: f64) f64 {
+fn creatureHitRadius(size: f32) f32 {
     const radius = narrowF32(size * 0.14285715 + 3.0);
     if (radius < 0.0) return 0.0;
     return radius;
@@ -586,7 +585,7 @@ fn postHitIonRifleShockChain(
     const origin_pos = proj.pos;
     const min_dist_sq = 100.0 * 100.0;
     var best_idx: usize = 0;
-    var best_dist_sq: f64 = 1e12;
+    var best_dist_sq: f32 = 1e12;
     for (creatures.entries, 0..) |creature, idx| {
         if (idx == hit_idx) continue;
         if (!creature.active) continue;
@@ -611,7 +610,7 @@ fn postHitIonRifleShockChain(
         angle,
         proj.type_id,
         owner_ref.OwnerRef.fromCreature(hit_idx),
-        proj.base_damage,
+        proj.travel_budget,
         false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
@@ -621,7 +620,7 @@ fn consumeIonHitEffectsRng(
     state: *state_mod.GameplayState,
     projectile_type_id: i32,
 ) void {
-    var burst_scale: f64 = 0.0;
+    var burst_scale: f32 = 0.0;
     switch (projectile_type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => burst_scale = 0.8,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => burst_scale = 1.2,
@@ -641,13 +640,13 @@ fn consumeIonHitEffectsRng(
     }
 }
 
-fn projectileMetaFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 45.0;
-    return weapon_data.weapon_stats.get(weapon_id).projectile_meta;
+fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id);
+    return weapon_data.weapon_stats.get(weapon_id).travel_budget;
 }
 
 fn damageScaleFromRawId(raw_id: i32) f32 {
-    const weapon_id = weapon_data.weaponIdFromInt(raw_id) orelse return 1.0;
+    const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 
@@ -739,7 +738,7 @@ test "pulse gun hit applies post-hit target push" {
 
     creatures.entries[0].pos = .{ .x = initial_creature_x, .y = initial_creature_y };
     creatures.entries[0].hp = 1000.0;
-    creatures.entries[0].lifecycle_stage = creature_lifecycle_stage_alive;
+    creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[0].active = true;
 
     var pulse_pool = ProjectilePool{};
@@ -951,7 +950,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         owner_ref.OwnerRef.fromLocalPlayer(0),
-        weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
+        weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
         false,
     );
     _ = base_pool.update(
@@ -975,7 +974,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         owner_ref.OwnerRef.fromLocalPlayer(0),
-        weapon_data.weapon_stats.get(WeaponId.pistol).projectile_meta,
+        weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
         false,
     );
     _ = greased_pool.update(
@@ -988,7 +987,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
     );
     const greased_x = greased_pool.entries[0].pos.x;
 
-    try expectFloatClose(18.239999771118164, base_x);
+    try expectFloatClose(18.240001678466797, base_x);
     try expectFloatClose(35.519996643066406, greased_x);
     try std.testing.expect(greased_x > base_x);
 }

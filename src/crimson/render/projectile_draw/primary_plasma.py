@@ -57,7 +57,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
 
     if float(ctx.life) >= 0.4:
         # Reconstruct the tail length heuristic used by the native render path.
-        seg_count = int(float(ctx.proj.base_damage))
+        seg_count = int(float(ctx.proj.travel_budget))
         if seg_count < 0:
             seg_count = 0
         seg_count //= 5

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import math
-from typing import Protocol
+from typing import Protocol, cast
 
 from grim.geom import Vec2
 
 from ..owner_ref import OwnerLike, OwnerRef, owner_ref
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_BY_ID
 
 
 class _HasPos(Protocol):
@@ -33,10 +33,8 @@ def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> 
     return owner_ref_for_player_projectiles(state, player_index).to_legacy()
 
 
-def projectile_meta_for_type_id(type_id: int) -> float:
-    entry = weapon_entry_for_projectile_type_id(int(type_id))
-    meta = entry.projectile_meta if entry is not None else None
-    return float(meta if meta is not None else 45.0)
+def travel_budget_for_type_id(type_id: int) -> float:
+    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
 
 
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
@@ -144,13 +142,13 @@ def projectile_spawn(
                 break
             type_id = int(ProjectileTypeId.FIRE_BULLETS)
 
-    meta = projectile_meta_for_type_id(type_id)
+    meta = travel_budget_for_type_id(type_id)
     return state.projectiles.spawn(
         pos=pos,
         angle=float(angle),
         type_id=int(type_id),
         owner_id=owner,
-        base_damage=float(meta),
+        travel_budget=float(meta),
         hits_players=bool(hits_players),
     )
 

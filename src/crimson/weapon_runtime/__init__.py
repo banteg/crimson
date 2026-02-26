@@ -14,9 +14,9 @@ from .spawn import (
     owner_id_for_player_projectiles,
     owner_ref_for_player,
     owner_ref_for_player_projectiles,
-    projectile_meta_for_type_id,
     projectile_spawn,
     spawn_projectile_ring,
+    travel_budget_for_type_id,
 )
 
 __all__ = [
@@ -28,7 +28,7 @@ __all__ = [
     "player_fire_weapon",
     "player_start_reload",
     "player_swap_alt_weapon",
-    "projectile_meta_for_type_id",
+    "travel_budget_for_type_id",
     "projectile_spawn",
     "spawn_projectile_ring",
     "weapon_assign_player",

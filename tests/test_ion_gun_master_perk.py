@@ -37,7 +37,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
             angle=0.0,
             type_id=ProjectileTypeId.ION_RIFLE,
             owner_id=-100,
-            base_damage=45.0,
+            travel_budget=45.0,
         )
         pool.entries[proj_idx].life_timer = 0.39
 

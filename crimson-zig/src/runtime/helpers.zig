@@ -24,8 +24,8 @@ pub fn directionFromAngle(angle: f32) state_mod.Vec2 {
 pub fn withinNativeFindRadius(
     origin: state_mod.Vec2,
     target: state_mod.Vec2,
-    radius: f64,
-    target_size: f64,
+    radius: f32,
+    target_size: f32,
 ) bool {
     const dx = target.x - origin.x;
     const dy = target.y - origin.y;
@@ -36,13 +36,13 @@ pub fn withinNativeFindRadius(
     return margin < 0.0;
 }
 
-pub fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+pub fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
 
-pub fn distanceSqRoundedF32(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+pub fn distanceSqRoundedF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return narrowF32(distanceSq(a, b));
 }
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, MutableSequence, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from grim.geom import Vec2
 
@@ -12,7 +12,7 @@ from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecyc
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerLike, OwnerRef, owner_ref
 from ...perks import PerkId
-from ...weapons import weapon_entry_for_projectile_type_id
+from ...weapons import WEAPON_BY_ID, weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -43,7 +43,6 @@ if TYPE_CHECKING:
 class ProjectileUpdateOptions:
     world_size: float
     damage_scale_by_type: dict[int, float] | None = None
-    damage_scale_default: float = 1.0
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
     rng: Callable[[], int] | None = None
@@ -74,7 +73,7 @@ class ProjectilePool:
         angle: float,
         type_id: int,
         owner_id: OwnerLike,
-        base_damage: float = 0.0,
+        travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
         index = None
@@ -95,10 +94,10 @@ class ProjectilePool:
         entry.life_timer = 0.4
         entry.reserved = 0.0
         entry.speed_scale = 1.0
-        entry.base_damage = float(base_damage)
+        entry.travel_budget = float(travel_budget)
         weapon_entry = weapon_entry_for_projectile_type_id(entry.type_id)
-        if weapon_entry is not None and weapon_entry.projectile_meta is not None:
-            entry.base_damage = float(weapon_entry.projectile_meta)
+        if weapon_entry is not None and weapon_entry.travel_budget is not None:
+            entry.travel_budget = float(weapon_entry.travel_budget)
         entry.owner = owner_ref(owner_id)
         entry.hits_players = bool(hits_players)
 
@@ -140,9 +139,9 @@ class ProjectilePool:
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        world_size = float(options.world_size)
+        dt = float(f32(float(dt)))
+        world_size = float(f32(float(options.world_size)))
         damage_scale_by_type = options.damage_scale_by_type
-        damage_scale_default = float(options.damage_scale_default)
         ion_aoe_scale = float(options.ion_aoe_scale)
         detail_preset = int(options.detail_preset)
         rng = options.rng
@@ -211,9 +210,9 @@ class ProjectilePool:
 
         def _damage_scale(type_id: int) -> float:
             value = damage_scale_by_type.get(type_id)
-            if value is None:
-                return float(damage_scale_default)
-            return float(value)
+            if value is not None:
+                return float(value)
+            return float(cast(float, WEAPON_BY_ID[type_id].damage_scale))
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)
@@ -265,9 +264,7 @@ class ProjectilePool:
                 proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 
-            steps = int(proj.base_damage)
-            if steps <= 0:
-                steps = 1
+            steps = int(proj.travel_budget)
             if barrel_greaser_active and proj.owner.is_player():
                 steps *= 2
 

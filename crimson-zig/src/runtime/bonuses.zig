@@ -19,16 +19,16 @@ pub const BonusRuntimeError = error{
 pub const bonus_pool_size: usize = 16;
 const weapon_drop_id_count: u32 = 0x21;
 
-const bonus_spawn_margin: f64 = 32.0;
-const bonus_spawn_min_distance: f64 = 32.0;
-const bonus_pickup_radius: f64 = 26.0;
-const bonus_pickup_decay_rate: f64 = 3.0;
-const bonus_pickup_linger: f64 = 0.5;
-const bonus_time_max: f64 = 10.0;
-const bonus_weapon_near_radius: f64 = 56.0;
-const bonus_aim_hover_radius: f64 = 24.0;
-const bonus_telekinetic_pickup_ms: f64 = 650.0;
-const reflex_timer_subtract_bias: f64 = 4e-9;
+const bonus_spawn_margin: f32 = 32.0;
+const bonus_spawn_min_distance: f32 = 32.0;
+const bonus_pickup_radius: f32 = 26.0;
+const bonus_pickup_decay_rate: f32 = 3.0;
+const bonus_pickup_linger: f32 = 0.5;
+const bonus_time_max: f32 = 10.0;
+const bonus_weapon_near_radius: f32 = 56.0;
+const bonus_aim_hover_radius: f32 = 24.0;
+const bonus_telekinetic_pickup_ms: f32 = 650.0;
+const reflex_timer_subtract_bias: f32 = 4e-9;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
     return @intCast(@intFromEnum(weapon_id));
@@ -37,8 +37,8 @@ inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
 pub const BonusEntry = struct {
     bonus_id: BonusId = .unused,
     picked: bool = false,
-    time_left: f64 = 0.0,
-    time_max: f64 = 0.0,
+    time_left: f32 = 0.0,
+    time_max: f32 = 0.0,
     pos: state_mod.Vec2 = .{},
     amount: i32 = 0,
 };
@@ -70,7 +70,7 @@ pub const BonusPool = struct {
         pos: state_mod.Vec2,
         state: *state_mod.GameplayState,
         players: []const state_mod.PlayerState,
-        world_size: f64,
+        world_size: f32,
     ) ?*BonusEntry {
         if (state.demo_mode_active) return null;
         if (state.game_mode == .rush or state.game_mode == .typo or state.game_mode == .tutorial) return null;
@@ -149,10 +149,7 @@ pub const BonusPool = struct {
         }
 
         if (entry.bonus_id == .weapon) {
-            const weapon_id = weapon_data.weaponIdFromInt(entry.amount) orelse {
-                clearEntry(self, entry);
-                return null;
-            };
+            const weapon_id = weapon_data.weaponIdFromInt(entry.amount);
             if (carriedWeaponId(players, weapon_id)) {
                 clearEntry(self, entry);
                 return null;
@@ -167,7 +164,7 @@ pub const BonusPool = struct {
         self: *BonusPool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        dt: f64,
+        dt: f32,
         pickup_bonus_ids: *[bonus_pool_size]BonusId,
         pickup_count: *usize,
     ) BonusRuntimeError!void {
@@ -178,8 +175,8 @@ pub const BonusPool = struct {
         for (&self.entries) |*entry| {
             if (isEmpty(entry.*)) continue;
 
-            const decay = narrowF32(dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0));
-            entry.time_left = narrowF32(entry.time_left - decay);
+            const decay = dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0);
+            entry.time_left -= decay;
             if (!entry.picked and state.game_mode == .tutorial) {
                 entry.time_left = 5.0;
             }
@@ -205,7 +202,7 @@ pub const BonusPool = struct {
                 state.debug_last_picked_bonus_amount = entry.amount;
                 appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
                 entry.picked = true;
-                entry.time_left = bonus_pickup_linger;
+                entry.time_left = narrowF32(bonus_pickup_linger);
                 picked_now = true;
                 break;
             }
@@ -219,15 +216,15 @@ pub const BonusPool = struct {
 
 pub fn updatePrePickupTimers(
     state: *state_mod.GameplayState,
-    dt: f64,
+    dt: f32,
 ) void {
     if (!(dt > 0.0)) return;
 
     if (state.bonuses.weapon_power_up > 0.0) {
-        state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up - dt);
+        state.bonuses.weapon_power_up -= dt;
     }
     if (state.bonuses.energizer > 0.0) {
-        state.bonuses.energizer = narrowF32(state.bonuses.energizer - dt);
+        state.bonuses.energizer -= dt;
     }
     if (state.bonuses.reflex_boost > 0.0) {
         const reflex_before = state.bonuses.reflex_boost;
@@ -235,7 +232,7 @@ pub fn updatePrePickupTimers(
         if (reflex_before > 0.0 and reflex_before < 1.0) {
             subtract += reflex_timer_subtract_bias;
         }
-        state.bonuses.reflex_boost = narrowF32(reflex_before - subtract);
+        state.bonuses.reflex_boost = reflex_before - subtract;
     }
 }
 
@@ -243,7 +240,7 @@ pub fn bonusUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) BonusRuntimeError!void {
     state.debug_last_picked_bonus_id = .unused;
     state.debug_last_picked_bonus_amount = 0;
@@ -258,13 +255,13 @@ pub fn bonusUpdate(
         if (state.bonuses.double_experience <= 0.0) {
             state.bonuses.double_experience = 0.0;
         } else {
-            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience - dt);
+            state.bonuses.double_experience -= dt;
         }
 
         if (state.bonuses.freeze <= 0.0) {
             state.bonuses.freeze = 0.0;
         } else {
-            state.bonuses.freeze = narrowF32(state.bonuses.freeze - dt);
+            state.bonuses.freeze -= dt;
         }
     }
 
@@ -277,7 +274,7 @@ fn bonusTelekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
     pickup_bonus_ids: *[bonus_pool_size]BonusId,
     pickup_count: *usize,
 ) BonusRuntimeError!void {
@@ -293,7 +290,7 @@ fn bonusTelekineticUpdate(
         };
 
         player.bonus_aim_hover_index = @intCast(hovered.index);
-        player.bonus_aim_hover_timer_ms = narrowF32(player.bonus_aim_hover_timer_ms + dt_ms);
+        player.bonus_aim_hover_timer_ms += dt_ms;
 
         if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
         if (!perkActive(player.*, PerkId.telekinetic)) continue;
@@ -304,7 +301,7 @@ fn bonusTelekineticUpdate(
         try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
         appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
         entry.picked = true;
-        entry.time_left = bonus_pickup_linger;
+        entry.time_left = narrowF32(bonus_pickup_linger);
         player.bonus_aim_hover_index = -1;
         player.bonus_aim_hover_timer_ms = 0.0;
         break;
@@ -341,7 +338,7 @@ fn applyBonus(
         effective_amount = defaultBonusAmount(bonus_id);
     }
 
-    const economist_multiplier: f64 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
+    const economist_multiplier: f32 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
 
     switch (bonus_id) {
         .points => {
@@ -354,7 +351,7 @@ fn applyBonus(
             state.bonuses.energizer = narrowF32(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .weapon_power_up => {
-            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.shot_cooldown = 0.0;
             player.reload_active = false;
@@ -366,7 +363,7 @@ fn applyBonus(
             state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
         },
         .reflex_boost => {
-            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
                 target.ammo = @floatFromInt(target.clip_size);
                 target.reload_active = false;
@@ -375,10 +372,10 @@ fn applyBonus(
             }
         },
         .shield => {
-            player.shield_timer = narrowF32(player.shield_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.shield_timer = narrowF32(player.shield_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .freeze => {
-            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .medikit => {
             if (player.health < 100.0) {
@@ -386,7 +383,7 @@ fn applyBonus(
             }
         },
         .speed => {
-            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f64, @floatFromInt(effective_amount)) * economist_multiplier);
+            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
         },
         .fire_bullets => {
             player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
@@ -407,7 +404,7 @@ fn applyBonus(
                 player.alt_shot_cooldown = player.shot_cooldown;
                 player.alt_reload_timer_max = player.reload_timer_max;
             }
-            const weapon_id = weapon_data.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
+            const weapon_id = weapon_data.weaponIdFromInt(effective_amount);
             player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
         },
         .nuke => {
@@ -431,16 +428,16 @@ fn applyBonus(
                 state.pending_fireblast_count += 1;
             }
         },
-        else => {},
+        .unused => {},
     }
 }
 
-fn bonusApplySeconds(bonus_id: BonusId, amount: i32) f64 {
+fn bonusApplySeconds(bonus_id: BonusId, amount: i32) f32 {
     return switch (bonus_id) {
         .energizer => 8.0,
         .double_experience => 6.0,
         .fire_bullets => 5.0,
-        else => @as(f64, @floatFromInt(amount)),
+        else => @as(f32, @floatFromInt(amount)),
     };
 }
 
@@ -498,26 +495,26 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
         return;
     }
 
-    state.weapon_available = [_]bool{false} ** state_mod.weapon_count_size;
-    state.weapon_available[weaponIdIndex(.pistol)] = true;
+    state.weapon_available = state_mod.WeaponAvailability.initFill(false);
+    state.weapon_available.set(.pistol, true);
 
     if (unlock_index > 0) {
         const limit: usize = @min(@as(usize, @intCast(unlock_index)), quest_unlock_weapon_by_index.len);
         for (quest_unlock_weapon_by_index[0..limit]) |weapon_id| {
-            if (weapon_id > 0 and weapon_id < state.weapon_available.len) {
-                state.weapon_available[@intCast(weapon_id)] = true;
+            if (weapon_id > 0 and weapon_id < state_mod.weapon_count_size) {
+                state.weapon_available.set(weapon_data.weaponIdFromInt(weapon_id), true);
             }
         }
     }
 
     if (game_mode == .survival) {
-        state.weapon_available[weaponIdIndex(.assault_rifle)] = true;
-        state.weapon_available[weaponIdIndex(.shotgun)] = true;
-        state.weapon_available[weaponIdIndex(.submachine_gun)] = true;
+        state.weapon_available.set(.assault_rifle, true);
+        state.weapon_available.set(.shotgun, true);
+        state.weapon_available.set(.submachine_gun, true);
     }
 
     if (!state.demo_mode_active and unlock_index_full >= 0x28) {
-        state.weapon_available[weaponIdIndex(.splitter_gun)] = true;
+        state.weapon_available.set(.splitter_gun, true);
     }
 
     state.weapon_available_game_mode = game_mode;
@@ -531,26 +528,26 @@ pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.Weapo
     for (0..1000) |_| {
         var base_rand = state.rng.rand();
         var weapon_id: i32 = @intCast(base_rand % weapon_drop_id_count + 1);
+        var weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
 
-        if (weapon_id >= 0 and weapon_id < state.status_weapon_usage_counts.len and
-            state.status_weapon_usage_counts[@intCast(weapon_id)] != 0 and
+        if (state.status_weapon_usage_counts.get(weapon_enum) != 0 and
             (state.rng.rand() & 1) == 0)
         {
             base_rand = state.rng.rand();
             weapon_id = @intCast(base_rand % weapon_drop_id_count + 1);
+            weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
         }
 
-        if (weapon_id < 0 or weapon_id >= state.weapon_available.len) continue;
-        if (!state.weapon_available[@intCast(weapon_id)]) continue;
+        if (!state.weapon_available.get(weapon_enum)) continue;
 
         if (state.game_mode == .quests and
             state.quest_stage_major == 5 and
             state.quest_stage_minor == 10 and
-            weapon_id == @intFromEnum(game_ids.WeaponId.ion_cannon))
+            weapon_enum == game_ids.WeaponId.ion_cannon)
         {
             continue;
         }
-        return @enumFromInt(weapon_id);
+        return weapon_enum;
     }
     return .pistol;
 }
@@ -647,7 +644,7 @@ fn isEmpty(entry: BonusEntry) bool {
     return entry.bonus_id == .unused and !entry.picked and entry.time_left <= 0.0 and entry.time_max <= 0.0 and entry.amount == 0;
 }
 
-fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
@@ -726,7 +723,7 @@ fn spawnAtPos(
     pos: state_mod.Vec2,
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
-    world_size: f64,
+    world_size: f32,
 ) AllocSlot {
     if (state.game_mode == .rush) return .sentinel;
     if (pos.x < bonus_spawn_margin or pos.y < bonus_spawn_margin or
@@ -751,8 +748,8 @@ fn spawnAtPos(
     entry.bonus_id = bonus_id;
     entry.picked = false;
     entry.pos = pos;
-    entry.time_left = bonus_time_max;
-    entry.time_max = bonus_time_max;
+    entry.time_left = narrowF32(bonus_time_max);
+    entry.time_max = narrowF32(bonus_time_max);
 
     if (bonus_id == .weapon) {
         entry.amount = weapon_data.weaponIdToInt(weaponPickRandomAvailable(state));
@@ -836,7 +833,7 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     state.game_mode = .survival;
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 50;
-    state.status_weapon_usage_counts[29] = 10;
+    state.status_weapon_usage_counts.set(.splitter_gun, 10);
 
     var pool = BonusPool{};
     var players = [_]state_mod.PlayerState{
@@ -998,11 +995,11 @@ test "weapon refresh available includes survival defaults" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.shotgun)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.submachine_gun)]);
-    try std.testing.expect(!state.weapon_available[weaponIdIndex(.flamethrower)]);
+    try std.testing.expect(state.weapon_available.get(.pistol));
+    try std.testing.expect(state.weapon_available.get(.assault_rifle));
+    try std.testing.expect(state.weapon_available.get(.shotgun));
+    try std.testing.expect(state.weapon_available.get(.submachine_gun));
+    try std.testing.expect(!state.weapon_available.get(.flamethrower));
 }
 
 test "weapon refresh available unlocks quest weapon ids by unlock index" {
@@ -1013,9 +1010,9 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
 
     weaponRefreshAvailable(&state);
 
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.pistol)]);
-    try std.testing.expect(state.weapon_available[weaponIdIndex(.assault_rifle)]);
-    try std.testing.expect(!state.weapon_available[weaponIdIndex(.shotgun)]);
+    try std.testing.expect(state.weapon_available.get(.pistol));
+    try std.testing.expect(state.weapon_available.get(.assault_rifle));
+    try std.testing.expect(!state.weapon_available.get(.shotgun));
 }
 
 test "weapon pick random available enforces unlock table in quests" {
@@ -1034,7 +1031,7 @@ test "weapon pick random available rerolls used weapons on even gate" {
     state.game_mode = .quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
-    state.status_weapon_usage_counts[weaponIdIndex(.pistol)] = 1;
+    state.status_weapon_usage_counts.set(.pistol, 1);
 
     const picked = weaponPickRandomAvailable(&state);
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, picked);
@@ -1062,8 +1059,8 @@ fn setTestBonusEntry(
     pool.entries[idx] = .{
         .bonus_id = bonus_id,
         .picked = false,
-        .time_left = bonus_time_max,
-        .time_max = bonus_time_max,
+        .time_left = narrowF32(bonus_time_max),
+        .time_max = narrowF32(bonus_time_max),
         .pos = pos,
         .amount = amount,
     };
@@ -1073,7 +1070,7 @@ fn runTelekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f64,
+    dt: f32,
 ) BonusRuntimeError!void {
     var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
     var pickup_count: usize = 0;

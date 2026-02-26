@@ -120,7 +120,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "pistol_near_hit",
             "type_id": int(ProjectileTypeId.PISTOL),
-            "base_damage": 15.0,
+            "travel_budget": 15.0,
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
             ],
@@ -129,7 +129,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "pistol_rng_jitter",
             "type_id": int(ProjectileTypeId.PISTOL),
-            "base_damage": 30.0,
+            "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
             ],
@@ -138,7 +138,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "rocket_no_splash_type_0x0b",
             "type_id": 0x0B,
-            "base_damage": 30.0,
+            "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
                 _creature(pos=Vec2(100.0, 0.0), hp=100.0),
@@ -149,7 +149,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         {
             "name": "ion_minigun_linger",
             "type_id": 0x16,
-            "base_damage": 20.0,
+            "travel_budget": 20.0,
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
             ],
@@ -166,7 +166,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             angle=math.pi / 2.0,
             type_id=int(case["type_id"]),
             owner_id=-100,
-            base_damage=float(case["base_damage"]),
+            travel_budget=float(case["travel_budget"]),
         )
         creatures = case["creatures"]
         damage_scale_by_type = case.get("damage_scale_by_type") or {int(case["type_id"]): 1.0}

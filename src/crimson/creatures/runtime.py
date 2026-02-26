@@ -13,7 +13,7 @@ See: `docs/creatures/update.md`.
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
-from typing import Protocol
+from typing import Protocol, cast
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -41,7 +41,7 @@ from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_BY_ID
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
 from .lifecycle import (
@@ -232,10 +232,8 @@ def _owner_to_player_index(owner: OwnerLike) -> int | None:
     return owner_ref(owner).player_index()
 
 
-def _projectile_meta_for_type_id(type_id: int) -> float:
-    entry = weapon_entry_for_projectile_type_id(int(type_id))
-    meta = entry.projectile_meta if entry is not None else None
-    return float(meta if meta is not None else 45.0)
+def _travel_budget_for_type_id(type_id: int) -> float:
+    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
 
 
 @dataclass(slots=True)
@@ -1218,7 +1216,7 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner_id=idx,
-                            base_damage=_projectile_meta_for_type_id(type_id),
+                            travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
                         sfx.append("sfx_shock_fire")
@@ -1231,7 +1229,7 @@ class CreaturePool:
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=idx,
-                            base_damage=_projectile_meta_for_type_id(projectile_type),
+                            travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
                         sfx.append("sfx_plasmaminigun_fire")

@@ -1,4 +1,3 @@
-pub const backend_python = @import("backend_python.zig");
 pub const cli = @import("cli.zig");
 pub const hash = @import("hash.zig");
 pub const quest_spawn_logic_full = @import("quest_spawn/logic_full.zig");
@@ -13,6 +12,5 @@ pub const state = @import("runtime/state.zig");
 pub const weapons = @import("runtime/weapons.zig");
 pub const projectiles = @import("runtime/projectiles.zig");
 pub const bonuses = @import("runtime/bonuses.zig");
-pub const verify_contract = @import("verify_contract.zig");
 
 pub const version = "0.1.0-dev";

@@ -1,6 +1,7 @@
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -9,7 +10,6 @@ const state_mod = @import("state.zig");
 const narrowF32 = native_math.roundF32;
 
 pub const secondary_projectile_pool_size: usize = 0x40;
-const creature_lifecycle_stage_alive: f64 = 16.0;
 
 pub const SecondaryProjectileTypeId = enum(i32) {
     none = 0,
@@ -45,10 +45,10 @@ pub const SecondaryProjectilePool = struct {
     pub fn spawn(
         self: *SecondaryProjectilePool,
         pos: state_mod.Vec2,
-        angle: f64,
+        angle: f32,
         type_id: SecondaryProjectileTypeId,
         owner: owner_ref.OwnerRef,
-        time_to_live: f64,
+        time_to_live: f32,
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
     ) usize {
@@ -63,8 +63,8 @@ pub const SecondaryProjectilePool = struct {
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
-            .angle = narrowF32(angle),
-            .speed = narrowF32(time_to_live),
+            .angle = angle,
+            .speed = time_to_live,
             .pos = .{
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
@@ -82,8 +82,8 @@ pub const SecondaryProjectilePool = struct {
 
         if (type_id == SecondaryProjectileTypeId.detonation) {
             entry.detonation_t = 0.0;
-            entry.detonation_scale = narrowF32(time_to_live);
-            entry.speed = narrowF32(time_to_live);
+            entry.detonation_scale = time_to_live;
+            entry.speed = time_to_live;
             return index;
         }
 
@@ -92,7 +92,7 @@ pub const SecondaryProjectilePool = struct {
             base_speed = 190.0;
         }
         entry.vel = runtime_helpers.directionFromHeading(entry.angle).mul(base_speed);
-        entry.speed = narrowF32(time_to_live);
+        entry.speed = time_to_live;
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             if (creatures) |pool| {
@@ -101,8 +101,8 @@ pub const SecondaryProjectilePool = struct {
             } else if (target_hint) |hint| {
                 entry.target_hint_active = true;
                 entry.target_hint = .{
-                    .x = narrowF32(hint.x),
-                    .y = narrowF32(hint.y),
+                    .x = hint.x,
+                    .y = hint.y,
                 };
             }
         }
@@ -116,12 +116,12 @@ pub const SecondaryProjectilePool = struct {
         players: []state_mod.PlayerState,
         creatures: *creatures_mod.CreaturePool,
         bonuses: *bonus_runtime.BonusPool,
-        dt: f64,
-        world_size: f64,
+        dt: f32,
+        world_size: f32,
         detail_preset: i32,
     ) void {
         if (!(dt > 0.0)) return;
-        const dt_f32 = narrowF32(dt);
+        const dt_f32 = dt;
         const freeze_active = state.bonuses.freeze > 0.0;
 
         for (&self.entries) |*entry| {
@@ -141,17 +141,17 @@ pub const SecondaryProjectilePool = struct {
                 const damage = narrowF32(dt_f32 * scale * 700.0);
                 var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
                 var candidate_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
-                var max_find_margin: f64 = 0.0;
+                var max_find_margin: f32 = 0.0;
                 for (creatures.entries, 0..) |creature, idx| {
                     collidable_snapshot[idx] = creature.active and
-                        creature.lifecycle_stage > 5.0;
+                        creature_lifecycle.isCollidable(creature.lifecycle_stage);
                     if (!collidable_snapshot[idx]) continue;
                     const find_margin = narrowF32(creature.size * 0.14285715 + 3.0);
                     if (find_margin > max_find_margin) {
                         max_find_margin = find_margin;
                     }
                 }
-                const bucket_size: f64 = 64.0;
+                const bucket_size: f32 = 64.0;
                 const proj_cell_x: i32 = @intFromFloat(@floor(entry.pos.x / bucket_size));
                 const proj_cell_y: i32 = @intFromFloat(@floor(entry.pos.y / bucket_size));
                 const max_axis_delta = narrowF32(radius + max_find_margin + 0.001);
@@ -169,7 +169,7 @@ pub const SecondaryProjectilePool = struct {
                     if (!candidate_snapshot[idx]) continue;
                     const target = creatures.entries[idx];
                     if (!target.active) continue;
-                    if (!(target.lifecycle_stage > 5.0)) continue;
+                    if (!creature_lifecycle.isCollidable(target.lifecycle_stage)) continue;
                     if (!(target.hp > 0.0)) continue;
                     const d_sq = runtime_helpers.distanceSqRoundedF32(entry.pos, target.pos);
                     if (!(d_sq < radius_sq)) continue;
@@ -279,21 +279,21 @@ pub const SecondaryProjectilePool = struct {
             var hit_idx: ?usize = null;
             for (creatures.entries, 0..) |creature, idx| {
                 if (!creature.active) continue;
-                if (!(creature.lifecycle_stage > 5.0)) continue;
+                if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
                 if (runtime_helpers.withinNativeFindRadius(entry.pos, creature.pos, 8.0, creature.size)) {
                     hit_idx = idx;
                     break;
                 }
             }
             if (hit_idx) |idx| {
-                if (creatures.entries[idx].lifecycle_stage == creature_lifecycle_stage_alive) {
+                if (creature_lifecycle.isAlive(creatures.entries[idx].lifecycle_stage)) {
                     if (entry.owner.playerIndexInBounds(state.shots_hit.len)) |player_idx| {
                         state.shots_hit[player_idx] += 1;
                     }
                 }
 
                 const hit_type = @intFromEnum(entry.type_id);
-                const det_scale: f64 = switch (entry.type_id) {
+                const det_scale: f32 = switch (entry.type_id) {
                     SecondaryProjectileTypeId.rocket => 1.0,
                     SecondaryProjectileTypeId.homing_rocket => 0.35,
                     SecondaryProjectileTypeId.rocket_minigun => 0.25,
@@ -317,7 +317,7 @@ pub const SecondaryProjectilePool = struct {
                     consumeExplosionBurstRng(state, detail_preset);
                 }
 
-                const damage: f64 = switch (entry.type_id) {
+                const damage: f32 = switch (entry.type_id) {
                     SecondaryProjectileTypeId.rocket => narrowF32(entry.speed * 50.0 + 500.0),
                     SecondaryProjectileTypeId.homing_rocket => narrowF32(entry.speed * 20.0 + 80.0),
                     SecondaryProjectileTypeId.rocket_minigun => narrowF32(entry.speed * 20.0 + 40.0),
@@ -416,11 +416,11 @@ fn creatureFindNearestAlive(
     origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;
-    var best_dist_sq: f64 = 1_000_000.0;
+    var best_dist_sq: f32 = 1_000_000.0;
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;
-        if (!(creature.lifecycle_stage == creature_lifecycle_stage_alive)) continue;
+        if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
         const dist_sq = runtime_helpers.distanceSqRoundedF32(origin, creature.pos);
         if (dist_sq < best_dist_sq) {
             best_dist_sq = dist_sq;

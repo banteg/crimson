@@ -321,7 +321,7 @@ def _sample_projectile(*, index: int = 7) -> CaptureProjectileSample:
     row.life_timer = 0.9
     row.damage_pool = 12.0
     row.hit_radius = 9.0
-    row.base_damage = 5.0
+    row.travel_budget = 5.0
     return row
 
 

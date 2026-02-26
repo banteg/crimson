@@ -29,14 +29,14 @@ pub fn player0Shots(state: GameplayState) PlayerShots {
 
 pub fn mostUsedWeaponIdForPlayer(
     state: GameplayState,
-    player_index: i32,
-    fallback_weapon_id: i32,
-) i32 {
-    if (player_index < 0 or player_index >= state.weapon_shots_fired.len) {
+    player_index: usize,
+    fallback_weapon_id: WeaponId,
+) WeaponId {
+    if (player_index >= state.weapon_shots_fired.len) {
         return fallback_weapon_id;
     }
 
-    const counts = state.weapon_shots_fired[@intCast(player_index)];
+    const counts = state.weapon_shots_fired[player_index];
     if (counts.len == 0) return fallback_weapon_id;
 
     const start: usize = if (counts.len > 1) 1 else 0;
@@ -50,7 +50,7 @@ pub fn mostUsedWeaponIdForPlayer(
         }
     }
 
-    if (best_count > 0) return @intCast(best);
+    if (best_count > 0) return @enumFromInt(best);
     return fallback_weapon_id;
 }
 
