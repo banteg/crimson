@@ -444,10 +444,10 @@ pub fn runReplayScaffoldWithTrace(
     var wave_spawn_count: usize = 0;
     var spawn_cooldown: f64 = 0.0;
     var spawn_stage: i32 = 0;
-    var quest_spawn_timeline_ms: f64 = 0.0;
-    var quest_no_creatures_timer_ms: f64 = 0.0;
+    var quest_spawn_timeline_ms: f32 = 0.0;
+    var quest_no_creatures_timer_ms: f32 = 0.0;
     var quest_creatures_none_active: bool = false;
-    var quest_completion_transition_ms: f64 = -1.0;
+    var quest_completion_transition_ms: f32 = -1.0;
     var quest_completed: bool = false;
     var quest_play_hit_sfx: bool = false;
     var quest_play_completion_music: bool = false;
@@ -823,7 +823,7 @@ pub fn runReplayScaffoldWithTrace(
             const quest_spawns = spawn_mod.tickQuestModeSpawns(
                 quest_spawn_entries,
                 quest_spawn_timeline_ms,
-                dt_frame_ms,
+                narrowF32(dt_frame_ms),
                 @as(f64, @floatFromInt(terrain_size)),
                 quest_creatures_none_active,
                 quest_no_creatures_timer_ms,
@@ -859,7 +859,7 @@ pub fn runReplayScaffoldWithTrace(
             if (any_alive_after) {
                 const quest_completion = spawn_mod.tickQuestCompletionTransition(
                     quest_completion_transition_ms,
-                    dt_frame_ms,
+                    narrowF32(dt_frame_ms),
                     quest_creatures_none_active,
                     spawn_table_empty_now,
                 );
@@ -2018,9 +2018,9 @@ fn applyReplayEvent(
     players: []state_mod.PlayerState,
     creatures: *creatures_mod.CreaturePool,
     dt_frame: f32,
-    quest_spawn_timeline_ms: *f64,
-    quest_no_creatures_timer_ms: *f64,
-    quest_completion_transition_ms: *f64,
+    quest_spawn_timeline_ms: *f32,
+    quest_no_creatures_timer_ms: *f32,
+    quest_completion_transition_ms: *f32,
     pending_capture_state_reset: *bool,
     game_mode: GameModeId,
     player_count: i32,
@@ -2210,9 +2210,9 @@ fn applyCaptureBootstrapEvent(
     bootstrap: replay_codec.CaptureBootstrapEvent,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    quest_spawn_timeline_ms: *f64,
-    quest_no_creatures_timer_ms: *f64,
-    quest_completion_transition_ms: *f64,
+    quest_spawn_timeline_ms: *f32,
+    quest_no_creatures_timer_ms: *f32,
+    quest_completion_transition_ms: *f32,
 ) ReplayRunnerError!void {
     const player_count = @min(players.len, bootstrap.player_count);
     for (0..player_count) |idx| {
@@ -2443,9 +2443,9 @@ fn applyCaptureStateReset(
     quest_spawn_entries_storage: []spawn_mod.QuestSpawnEntry,
     reset_quest_spawn_entries_len: usize,
     quest_spawn_entries: *[]spawn_mod.QuestSpawnEntry,
-    quest_spawn_timeline_ms: *f64,
-    quest_no_creatures_timer_ms: *f64,
-    quest_completion_transition_ms: *f64,
+    quest_spawn_timeline_ms: *f32,
+    quest_no_creatures_timer_ms: *f32,
+    quest_completion_transition_ms: *f32,
 ) void {
     const rng_state = state.rng.state;
     const status_quest_unlock_index = state.status_quest_unlock_index;
@@ -4742,9 +4742,9 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
     var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = &.{};
-    var quest_spawn_timeline_ms: f64 = 100.0;
-    var quest_no_creatures_timer_ms: f64 = 50.0;
-    var quest_completion_transition_ms: f64 = 42.0;
+    var quest_spawn_timeline_ms: f32 = 100.0;
+    var quest_no_creatures_timer_ms: f32 = 50.0;
+    var quest_completion_transition_ms: f32 = 42.0;
 
     applyCaptureStateReset(
         &state,

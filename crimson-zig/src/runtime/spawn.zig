@@ -213,7 +213,7 @@ const empty_spawn_template_call = SpawnTemplateCall{
 
 pub const QuestSpawnTimelineResult = struct {
     creatures_none_active: bool,
-    no_creatures_timer_ms: f64,
+    no_creatures_timer_ms: f32,
     spawn_count: usize = 0,
     spawns: [max_quest_spawn_batch]SpawnTemplateCall = [_]SpawnTemplateCall{empty_spawn_template_call} ** max_quest_spawn_batch,
 
@@ -223,9 +223,9 @@ pub const QuestSpawnTimelineResult = struct {
 };
 
 pub const QuestModeSpawnsResult = struct {
-    quest_spawn_timeline_ms: f64,
+    quest_spawn_timeline_ms: f32,
     creatures_none_active: bool,
-    no_creatures_timer_ms: f64,
+    no_creatures_timer_ms: f32,
     spawn_count: usize = 0,
     spawns: [max_quest_spawn_batch]SpawnTemplateCall = [_]SpawnTemplateCall{empty_spawn_template_call} ** max_quest_spawn_batch,
 
@@ -235,20 +235,20 @@ pub const QuestModeSpawnsResult = struct {
 };
 
 pub const QuestCompletionTransitionResult = struct {
-    completion_transition_ms: f64,
+    completion_transition_ms: f32,
     completed: bool,
     play_hit_sfx: bool,
     play_completion_music: bool,
 };
 
-pub const quest_completion_hit_sfx_start_ms: f64 = 800.0;
-pub const quest_completion_hit_sfx_end_ms: f64 = 0x353;
-pub const quest_completion_music_start_ms: f64 = 2000.0;
-pub const quest_completion_music_end_ms: f64 = 0x803;
-pub const quest_completion_transition_ms: f64 = 0x9C4;
+pub const quest_completion_hit_sfx_start_ms: f32 = 800.0;
+pub const quest_completion_hit_sfx_end_ms: f32 = 0x353;
+pub const quest_completion_music_start_ms: f32 = 2000.0;
+pub const quest_completion_music_end_ms: f32 = 0x803;
+pub const quest_completion_transition_ms: f32 = 0x9C4;
 
-pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f64) ?i32 {
-    const dt = narrowF32(frame_dt);
+pub fn tickSpawnSlot(slot: *SpawnSlotInit, frame_dt: f32) ?i32 {
+    const dt = frame_dt;
 
     slot.timer = narrowF32(slot.timer - dt);
     if (slot.timer < 0.0) {
@@ -282,11 +282,11 @@ pub fn applyHardcoreQuestSpawnTableAdjustment(entries: []QuestSpawnEntry) void {
 
 pub fn tickQuestSpawnTimeline(
     entries: []QuestSpawnEntry,
-    quest_spawn_timeline_ms: f64,
-    frame_dt_ms: f64,
+    quest_spawn_timeline_ms: f32,
+    frame_dt_ms: f32,
     terrain_width: f64,
     creatures_none_active: bool,
-    no_creatures_timer_ms: f64,
+    no_creatures_timer_ms: f32,
 ) QuestSpawnTimelineResult {
     var result = QuestSpawnTimelineResult{
         .creatures_none_active = creatures_none_active,
@@ -306,7 +306,7 @@ pub fn tickQuestSpawnTimeline(
     var start_idx: ?usize = null;
     for (entries, 0..) |entry, idx| {
         if (entry.count <= 0) continue;
-        if (@as(f64, @floatFromInt(entry.trigger_ms)) < quest_spawn_timeline_ms or force_spawn) {
+        if (@as(f32, @floatFromInt(entry.trigger_ms)) < quest_spawn_timeline_ms or force_spawn) {
             start_idx = idx;
             break;
         }
@@ -350,11 +350,11 @@ pub fn tickQuestSpawnTimeline(
 
 pub fn tickQuestModeSpawns(
     entries: []QuestSpawnEntry,
-    quest_spawn_timeline_ms: f64,
-    frame_dt_ms: f64,
+    quest_spawn_timeline_ms: f32,
+    frame_dt_ms: f32,
     terrain_width: f64,
     creatures_none_active: bool,
-    no_creatures_timer_ms: f64,
+    no_creatures_timer_ms: f32,
 ) QuestModeSpawnsResult {
     var timeline_ms = quest_spawn_timeline_ms;
     if (!creatures_none_active or !questSpawnTableEmpty(entries)) {
@@ -382,8 +382,8 @@ pub fn tickQuestModeSpawns(
 }
 
 pub fn tickQuestCompletionTransition(
-    completion_transition_ms_value: f64,
-    frame_dt_ms: f64,
+    completion_transition_ms_value: f32,
+    frame_dt_ms: f32,
     creatures_none_active: bool,
     spawn_table_empty: bool,
 ) QuestCompletionTransitionResult {
@@ -1082,9 +1082,9 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
 
 test "spawn slot tick behavior parity" {
     const cases = [_]struct {
-        timer: f64,
+        timer: f32,
         count: i32,
-        dt: f64,
+        dt: f32,
         expected_spawn: ?i32,
         expected_count: i32,
     }{
@@ -1272,7 +1272,7 @@ test "tick quest completion transition resets when not idle complete" {
 }
 
 test "tick quest completion transition completes after delay" {
-    var timer: f64 = -1.0;
+    var timer: f32 = -1.0;
     for (0..26) |_| {
         const result = tickQuestCompletionTransition(
             timer,
