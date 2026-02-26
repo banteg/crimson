@@ -193,8 +193,10 @@ fn runNativeVerify(
     defer stdout_buf.deinit(allocator);
     var writer = stdout_buf.writer(allocator);
 
-    if (request.json_out != null and request.output_format == .human) {
-        try writer.print("json_report={s}\n", .{request.json_out.?});
+    if (request.json_out) |json_out_path| {
+        if (request.output_format == .human) {
+            try writer.print("json_report={s}\n", .{json_out_path});
+        }
     }
 
     if (request.output_format == .json) {

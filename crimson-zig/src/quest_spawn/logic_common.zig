@@ -55,14 +55,14 @@ pub inline fn appendSpawn(
     len: *usize,
     pos: spawn_runtime.Vec2,
     heading: f64,
-    spawn_id: i32,
+    spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
     try appendEntry(out_entries, len, .{
         .pos = pos,
         .heading = heading,
-        .spawn_id = spawn_id,
+        .spawn_id = @intFromEnum(spawn_id),
         .trigger_ms = trigger_ms,
         .count = count,
     });
@@ -262,72 +262,72 @@ fn bitLength(value: u32) u32 {
     return bits;
 }
 
-pub const SpawnId = struct {
-    pub const zombie_boss_spawner_00: i32 = 0x00;
-    pub const spider_sp2_splitter_01: i32 = 0x01;
-    pub const spider_sp1_random_03: i32 = 0x03;
-    pub const lizard_random_04: i32 = 0x04;
-    pub const spider_sp2_random_05: i32 = 0x05;
-    pub const alien_random_06: i32 = 0x06;
-    pub const alien_spawner_child_1d_fast_07: i32 = 0x07;
-    pub const alien_spawner_child_1d_slow_08: i32 = 0x08;
-    pub const alien_spawner_child_1d_limited_09: i32 = 0x09;
-    pub const alien_spawner_child_32_slow_0a: i32 = 0x0A;
-    pub const alien_spawner_child_3c_slow_0b: i32 = 0x0B;
-    pub const alien_spawner_child_31_fast_0c: i32 = 0x0C;
-    pub const alien_spawner_child_31_slow_0d: i32 = 0x0D;
-    pub const alien_spawner_ring_24_0e: i32 = 0x0E;
-    pub const alien_const_brown_transparent_0f: i32 = 0x0F;
-    pub const alien_spawner_child_32_fast_10: i32 = 0x10;
-    pub const formation_chain_lizard_4_11: i32 = 0x11;
-    pub const formation_ring_alien_8_12: i32 = 0x12;
-    pub const formation_chain_alien_10_13: i32 = 0x13;
-    pub const formation_grid_alien_green_14: i32 = 0x14;
-    pub const formation_grid_alien_white_15: i32 = 0x15;
-    pub const formation_grid_lizard_white_16: i32 = 0x16;
-    pub const formation_grid_spider_sp1_white_17: i32 = 0x17;
-    pub const formation_grid_alien_bronze_18: i32 = 0x18;
-    pub const formation_ring_alien_5_19: i32 = 0x19;
-    pub const ai1_alien_blue_tint_1a: i32 = 0x1A;
-    pub const ai1_spider_sp1_blue_tint_1b: i32 = 0x1B;
-    pub const ai1_lizard_blue_tint_1c: i32 = 0x1C;
-    pub const alien_random_1d: i32 = 0x1D;
-    pub const alien_random_1e: i32 = 0x1E;
-    pub const alien_random_1f: i32 = 0x1F;
-    pub const alien_random_green_20: i32 = 0x20;
-    pub const alien_const_purple_ghost_21: i32 = 0x21;
-    pub const alien_const_green_ghost_22: i32 = 0x22;
-    pub const alien_const_green_ghost_small_23: i32 = 0x23;
-    pub const alien_const_green_24: i32 = 0x24;
-    pub const alien_const_green_small_25: i32 = 0x25;
-    pub const alien_const_pale_green_26: i32 = 0x26;
-    pub const alien_const_weapon_bonus_27: i32 = 0x27;
-    pub const alien_const_purple_28: i32 = 0x28;
-    pub const alien_const_grey_brute_29: i32 = 0x29;
-    pub const alien_const_grey_fast_2a: i32 = 0x2A;
-    pub const alien_const_red_fast_2b: i32 = 0x2B;
-    pub const alien_const_red_boss_2c: i32 = 0x2C;
-    pub const alien_const_cyan_ai2_2d: i32 = 0x2D;
-    pub const lizard_random_2e: i32 = 0x2E;
-    pub const lizard_const_grey_2f: i32 = 0x2F;
-    pub const lizard_const_yellow_boss_30: i32 = 0x30;
-    pub const lizard_random_31: i32 = 0x31;
-    pub const spider_sp1_random_32: i32 = 0x32;
-    pub const spider_sp1_random_red_33: i32 = 0x33;
-    pub const spider_sp1_random_green_34: i32 = 0x34;
-    pub const spider_sp2_random_35: i32 = 0x35;
-    pub const alien_ai7_orbiter_36: i32 = 0x36;
-    pub const spider_sp2_ranged_variant_37: i32 = 0x37;
-    pub const spider_sp1_ai7_timer_38: i32 = 0x38;
-    pub const spider_sp1_ai7_timer_weak_39: i32 = 0x39;
-    pub const spider_sp1_const_shock_boss_3a: i32 = 0x3A;
-    pub const spider_sp1_const_red_boss_3b: i32 = 0x3B;
-    pub const spider_sp1_const_ranged_variant_3c: i32 = 0x3C;
-    pub const spider_sp1_random_3d: i32 = 0x3D;
-    pub const spider_sp1_const_white_fast_3e: i32 = 0x3E;
-    pub const spider_sp1_const_brown_small_3f: i32 = 0x3F;
-    pub const spider_sp1_const_blue_40: i32 = 0x40;
-    pub const zombie_random_41: i32 = 0x41;
-    pub const zombie_const_grey_42: i32 = 0x42;
-    pub const zombie_const_green_brute_43: i32 = 0x43;
+pub const SpawnId = enum(i32) {
+    zombie_boss_spawner_00 = 0x00,
+    spider_sp2_splitter_01 = 0x01,
+    spider_sp1_random_03 = 0x03,
+    lizard_random_04 = 0x04,
+    spider_sp2_random_05 = 0x05,
+    alien_random_06 = 0x06,
+    alien_spawner_child_1d_fast_07 = 0x07,
+    alien_spawner_child_1d_slow_08 = 0x08,
+    alien_spawner_child_1d_limited_09 = 0x09,
+    alien_spawner_child_32_slow_0a = 0x0A,
+    alien_spawner_child_3c_slow_0b = 0x0B,
+    alien_spawner_child_31_fast_0c = 0x0C,
+    alien_spawner_child_31_slow_0d = 0x0D,
+    alien_spawner_ring_24_0e = 0x0E,
+    alien_const_brown_transparent_0f = 0x0F,
+    alien_spawner_child_32_fast_10 = 0x10,
+    formation_chain_lizard_4_11 = 0x11,
+    formation_ring_alien_8_12 = 0x12,
+    formation_chain_alien_10_13 = 0x13,
+    formation_grid_alien_green_14 = 0x14,
+    formation_grid_alien_white_15 = 0x15,
+    formation_grid_lizard_white_16 = 0x16,
+    formation_grid_spider_sp1_white_17 = 0x17,
+    formation_grid_alien_bronze_18 = 0x18,
+    formation_ring_alien_5_19 = 0x19,
+    ai1_alien_blue_tint_1a = 0x1A,
+    ai1_spider_sp1_blue_tint_1b = 0x1B,
+    ai1_lizard_blue_tint_1c = 0x1C,
+    alien_random_1d = 0x1D,
+    alien_random_1e = 0x1E,
+    alien_random_1f = 0x1F,
+    alien_random_green_20 = 0x20,
+    alien_const_purple_ghost_21 = 0x21,
+    alien_const_green_ghost_22 = 0x22,
+    alien_const_green_ghost_small_23 = 0x23,
+    alien_const_green_24 = 0x24,
+    alien_const_green_small_25 = 0x25,
+    alien_const_pale_green_26 = 0x26,
+    alien_const_weapon_bonus_27 = 0x27,
+    alien_const_purple_28 = 0x28,
+    alien_const_grey_brute_29 = 0x29,
+    alien_const_grey_fast_2a = 0x2A,
+    alien_const_red_fast_2b = 0x2B,
+    alien_const_red_boss_2c = 0x2C,
+    alien_const_cyan_ai2_2d = 0x2D,
+    lizard_random_2e = 0x2E,
+    lizard_const_grey_2f = 0x2F,
+    lizard_const_yellow_boss_30 = 0x30,
+    lizard_random_31 = 0x31,
+    spider_sp1_random_32 = 0x32,
+    spider_sp1_random_red_33 = 0x33,
+    spider_sp1_random_green_34 = 0x34,
+    spider_sp2_random_35 = 0x35,
+    alien_ai7_orbiter_36 = 0x36,
+    spider_sp2_ranged_variant_37 = 0x37,
+    spider_sp1_ai7_timer_38 = 0x38,
+    spider_sp1_ai7_timer_weak_39 = 0x39,
+    spider_sp1_const_shock_boss_3a = 0x3A,
+    spider_sp1_const_red_boss_3b = 0x3B,
+    spider_sp1_const_ranged_variant_3c = 0x3C,
+    spider_sp1_random_3d = 0x3D,
+    spider_sp1_const_white_fast_3e = 0x3E,
+    spider_sp1_const_brown_small_3f = 0x3F,
+    spider_sp1_const_blue_40 = 0x40,
+    zombie_random_41 = 0x41,
+    zombie_const_grey_42 = 0x42,
+    zombie_const_green_brute_43 = 0x43,
 };

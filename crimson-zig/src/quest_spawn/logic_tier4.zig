@@ -743,7 +743,7 @@ fn build_410_the_end_of_all(
     }
 }
 
-fn unblitzkrieg_spawn_id_for(toggle: bool) i32 {
+fn unblitzkrieg_spawn_id_for(toggle: bool) common.SpawnId {
     return if (toggle)
         common.SpawnId.alien_spawner_child_31_slow_0d
     else

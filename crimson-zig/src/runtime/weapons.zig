@@ -349,8 +349,7 @@ fn tryFireWeaponWithForce(
 
     if (is_fire_bullets) {
         const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets));
-        var i: i32 = 0;
-        while (i < shot_count) : (i += 1) {
+        for (0..@as(usize, @intCast(shot_count))) |_| {
             const jitter_roll = state.rng.rand();
             const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(jitter_roll % 200)) - 100)) * 0.0015;
             _ = projectiles.spawn(
@@ -374,8 +373,7 @@ fn tryFireWeaponWithForce(
         },
         .plasma_shotgun => {
             const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun));
-            var i: i32 = 0;
-            while (i < 14) : (i += 1) {
+            for (0..14) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() & 0xff)) - 0x80)) * 0.002;
                 const id = projectiles.spawn(
                     muzzle,
@@ -390,8 +388,7 @@ fn tryFireWeaponWithForce(
         },
         .gauss_shotgun => {
             const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.gauss_gun));
-            var i: i32 = 0;
-            while (i < 6) : (i += 1) {
+            for (0..6) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.002;
                 const id = projectiles.spawn(
                     muzzle,
@@ -406,8 +403,7 @@ fn tryFireWeaponWithForce(
         },
         .ion_shotgun => {
             const meta = state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.ion_minigun));
-            var i: i32 = 0;
-            while (i < 8) : (i += 1) {
+            for (0..8) |_| {
                 const jitter = @as(f64, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * 0.0026;
                 const id = projectiles.spawn(
                     muzzle,
@@ -487,8 +483,7 @@ fn tryFireWeaponWithForce(
             else
                 spread / @as(f64, @floatFromInt(rocket_count - 1));
             var angle = shot_angle - spread * 0.5;
-            var i: i32 = 0;
-            while (i < rocket_count) : (i += 1) {
+            for (0..@as(usize, @intCast(rocket_count))) |_| {
                 _ = secondary_projectiles.spawn(
                     muzzle,
                     angle,
@@ -516,8 +511,7 @@ fn tryFireWeaponWithForce(
             const type_id = state_mod.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const meta = state_mod.weaponProjectileMeta(type_id);
             const pellets = @max(1, state_mod.weaponPelletCount(player.weapon_id));
-            var i: i32 = 0;
-            while (i < pellets) : (i += 1) {
+            for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
                 if (pellets > 1) {
                     const jitter_step = pelletJitterStep(player.weapon_id);
@@ -918,12 +912,11 @@ fn findSeedForNthRandValue(
     target: u32,
     search_limit: u32,
 ) ?u32 {
-    var seed: u32 = 0;
-    while (seed < search_limit) : (seed += 1) {
+    for (0..search_limit) |seed_usize| {
+        const seed: u32 = @intCast(seed_usize);
         var rng = survival_spawn.Crand.init(seed);
         var value: u32 = 0;
-        var draw: usize = 0;
-        while (draw < draw_index) : (draw += 1) {
+        for (0..draw_index) |_| {
             value = rng.rand();
         }
         if (value == target) return seed;
@@ -1750,14 +1743,12 @@ test "shotgun family fires expected pellet counts and formulas" {
             30 => 2,
             else => 0,
         };
-        var muzzle_idx: usize = 0;
-        while (muzzle_idx < muzzle_rng_count) : (muzzle_idx += 1) {
+        for (0..muzzle_rng_count) |_| {
             _ = rng.rand();
         }
 
         const shot_angle = std.math.pi / 2.0;
-        var idx: usize = 0;
-        while (idx < case.expected_count) : (idx += 1) {
+        for (0..case.expected_count) |idx| {
             const jitter_draw = rng.rand();
             const expected_angle = shot_angle +
                 @as(f64, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
@@ -1825,8 +1816,7 @@ test "fire bullets overrides rocket family into primary projectile pool" {
         const expected_count: usize = @intCast(@max(0, state_mod.weaponPelletCount(weaponId(weapon_id))));
         try std.testing.expectEqual(expected_count, activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
-        var idx: usize = 0;
-        while (idx < expected_count) : (idx += 1) {
+        for (0..expected_count) |idx| {
             const proj = projectiles.entries[idx];
             try std.testing.expect(proj.active);
             try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets), proj.type_id);

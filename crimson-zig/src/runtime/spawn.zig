@@ -259,14 +259,11 @@ pub fn tickQuestSpawnTimeline(
     }
 
     const trigger_ms = entries[start_idx.?].trigger_ms;
-    var idx = start_idx.?;
-    while (idx < entries.len) : (idx += 1) {
-        const entry = entries[idx];
+    for (entries[start_idx.?..], start_idx.?..) |entry, idx| {
         if (entry.trigger_ms != trigger_ms) break;
 
         const offscreen_x = entry.pos.x < 0.0 or terrain_width < entry.pos.x;
-        var spawn_idx: i32 = 0;
-        while (spawn_idx < entry.count) : (spawn_idx += 1) {
+        for (0..@as(usize, @intCast(@max(entry.count, 0)))) |spawn_idx| {
             if (result.spawn_count >= result.spawns.len) break;
             const magnitude = @as(f64, @floatFromInt(spawn_idx * 0x28));
             const offset = if ((spawn_idx & 1) == 0) magnitude else -magnitude;
@@ -1074,10 +1071,9 @@ test "spawn slot tick uses float32 cadence at boundary" {
     var spawn_ticks = [_]i32{0} ** 8;
     var spawn_count: usize = 0;
 
-    var tick: i32 = 1;
-    while (tick <= 25) : (tick += 1) {
+    for (1..26) |tick| {
         if (tickSpawnSlot(&slot, 0.1) != null) {
-            spawn_ticks[spawn_count] = tick;
+            spawn_ticks[spawn_count] = @intCast(tick);
             spawn_count += 1;
         }
     }
@@ -1219,8 +1215,7 @@ test "tick quest completion transition resets when not idle complete" {
 
 test "tick quest completion transition completes after delay" {
     var timer: f64 = -1.0;
-    var frame: usize = 0;
-    while (frame < 26) : (frame += 1) {
+    for (0..26) |_| {
         const result = tickQuestCompletionTransition(
             timer,
             100.0,

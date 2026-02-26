@@ -29,10 +29,9 @@ fn appendRing(
     count: usize,
     step: f64,
     trigger_ms: i32,
-    spawn_id: i32,
+    spawn_id: common.SpawnId,
 ) common.QuestSpawnBuildError!void {
-    var idx: usize = 0;
-    while (idx < count) : (idx += 1) {
+    for (0..count) |idx| {
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const pos = common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
         try common.appendSpawn(out_entries, len, pos, angle, spawn_id, trigger_ms, 1);
@@ -695,9 +694,9 @@ fn build508MonsterBlues(
     );
 
     var trigger: i32 = 27_500;
-    var idx: i32 = 0;
-    while (idx < 0x40) : (idx += 1) {
-        const spawn_id: i32 = switch (@mod(idx, 4)) {
+    for (0..0x40) |idx_usize| {
+        const idx: i32 = @intCast(idx_usize);
+        const spawn_id = switch (@mod(idx, 4)) {
             0 => common.SpawnId.alien_random_06,
             1 => common.SpawnId.spider_sp1_random_03,
             else => common.SpawnId.spider_sp2_random_05,
