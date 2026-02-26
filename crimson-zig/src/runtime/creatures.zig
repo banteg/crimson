@@ -3296,14 +3296,16 @@ fn queueCreatureProjectile(
         state.pending_creature_projectile_count = 0;
     }
     const pending_count: usize = @intCast(state.pending_creature_projectile_count);
-    if (pending_count >= state.pending_creature_projectile_type_ids.len) return;
+    if (pending_count >= state.pending_creature_projectiles.len) return;
 
-    state.pending_creature_projectile_type_ids[pending_count] = type_id;
-    state.pending_creature_projectile_owner_ids[pending_count] = owner_id;
-    state.pending_creature_projectile_angles[pending_count] = narrowF32(angle);
-    state.pending_creature_projectile_positions[pending_count] = .{
-        .x = narrowF32(pos.x),
-        .y = narrowF32(pos.y),
+    state.pending_creature_projectiles[pending_count] = .{
+        .type_id = type_id,
+        .owner_id = owner_id,
+        .angle = narrowF32(angle),
+        .pos = .{
+            .x = narrowF32(pos.x),
+            .y = narrowF32(pos.y),
+        },
     };
     state.pending_creature_projectile_count += 1;
 }
@@ -5974,15 +5976,15 @@ test "ranged shock creature queues projectile along heading not direct aim" {
     pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
 
     try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
-    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), state.pending_creature_projectile_type_ids[0]);
-    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_owner_ids[0]);
-    try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectile_angles[0]);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), state.pending_creature_projectiles[0].type_id);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectiles[0].owner_id);
+    try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectiles[0].angle);
 
     const direct_aim = narrowF32(survival_math.atan2(
         players[0].pos.y - pool.entries[0].pos.y,
         players[0].pos.x - pool.entries[0].pos.x,
     ) + native_half_pi);
-    try std.testing.expect(@abs(wrapAngle(state.pending_creature_projectile_angles[0] - direct_aim)) > 0.1);
+    try std.testing.expect(@abs(wrapAngle(state.pending_creature_projectiles[0].angle - direct_aim)) > 0.1);
 }
 
 test "ranged shock creature does not fire when too close" {
@@ -6049,7 +6051,7 @@ test "ranged variant uses orbit radius as projectile type and random cooldown" {
 
     pool.update(&state, players[0..], 0.001, 1024.0, &bonuses);
     try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
-    try std.testing.expectEqual(@as(i32, 26), state.pending_creature_projectile_type_ids[0]);
+    try std.testing.expectEqual(@as(i32, 26), state.pending_creature_projectiles[0].type_id);
     try expectFloatClose(0.4, pool.entries[0].attack_cooldown);
 }
 

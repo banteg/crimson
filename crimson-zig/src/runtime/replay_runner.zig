@@ -1607,17 +1607,18 @@ fn applyPendingCreatureProjectiles(
 
     const pending_count_i32 = @min(
         state.pending_creature_projectile_count,
-        @as(i32, @intCast(state.pending_creature_projectile_type_ids.len)),
+        @as(i32, @intCast(state.pending_creature_projectiles.len)),
     );
 
     var idx_i32: i32 = 0;
     while (idx_i32 < pending_count_i32) : (idx_i32 += 1) {
         const idx: usize = @intCast(idx_i32);
-        const type_id = state.pending_creature_projectile_type_ids[idx];
+        const pending = state.pending_creature_projectiles[idx];
+        const type_id = pending.type_id;
         if (type_id <= 0) continue;
-        const angle = state.pending_creature_projectile_angles[idx];
-        const pos = state.pending_creature_projectile_positions[idx];
-        const owner_id = state.pending_creature_projectile_owner_ids[idx];
+        const angle = pending.angle;
+        const pos = pending.pos;
+        const owner_id = pending.owner_id;
         const meta = projectileMetaFromRawId(type_id);
         _ = projectiles.spawn(pos, angle, type_id, owner_id, meta, true);
     }
@@ -5506,10 +5507,12 @@ test "pending creature projectile queue materializes hostile shots before projec
     var projectiles = survival_projectiles.ProjectilePool{};
 
     state.pending_creature_projectile_count = 1;
-    state.pending_creature_projectile_type_ids[0] = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-    state.pending_creature_projectile_owner_ids[0] = 17;
-    state.pending_creature_projectile_angles[0] = native_half_pi;
-    state.pending_creature_projectile_positions[0] = .{ .x = 100.0, .y = 200.0 };
+    state.pending_creature_projectiles[0] = .{
+        .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
+        .owner_id = 17,
+        .angle = native_half_pi,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+    };
 
     applyPendingCreatureProjectiles(&state, &projectiles);
 

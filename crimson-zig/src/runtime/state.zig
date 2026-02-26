@@ -151,6 +151,13 @@ pub const BonusTimers = struct {
     freeze: f32 = 0.0,
 };
 
+pub const PendingCreatureProjectile = struct {
+    type_id: i32 = 0,
+    owner_id: i32 = 0,
+    angle: f32 = 0.0,
+    pos: Vec2 = .{},
+};
+
 pub const GameplayState = struct {
     rng: survival_spawn.Crand,
     fx_toggle: i32 = 0,
@@ -199,10 +206,7 @@ pub const GameplayState = struct {
     shock_chain_links_left: i32 = 0,
     shock_chain_projectile_id: i32 = -1,
     pending_creature_projectile_count: i32 = 0,
-    pending_creature_projectile_type_ids: [64]i32 = [_]i32{0} ** 64,
-    pending_creature_projectile_owner_ids: [64]i32 = [_]i32{0} ** 64,
-    pending_creature_projectile_angles: [64]f32 = [_]f32{0.0} ** 64,
-    pending_creature_projectile_positions: [64]Vec2 = [_]Vec2{.{}} ** 64,
+    pending_creature_projectiles: [64]PendingCreatureProjectile = [_]PendingCreatureProjectile{.{}} ** 64,
     pending_nuke_count: i32 = 0,
     pending_nuke_origins: [8]Vec2 = [_]Vec2{.{}} ** 8,
     pending_fireblast_count: i32 = 0,
