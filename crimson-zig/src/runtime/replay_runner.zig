@@ -67,16 +67,18 @@ pub const ReplayRunnerError = error{
 };
 
 fn parseCaptureCreatureAiMode(value: i32) ReplayRunnerError!survival_spawn.CreatureAiMode {
-    return switch (value) {
-        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player) => .orbit_player,
-        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player_tight) => .orbit_player_tight,
-        @intFromEnum(survival_spawn.CreatureAiMode.chase_player) => .chase_player,
-        @intFromEnum(survival_spawn.CreatureAiMode.follow_link) => .follow_link,
-        @intFromEnum(survival_spawn.CreatureAiMode.link_guard) => .link_guard,
-        @intFromEnum(survival_spawn.CreatureAiMode.follow_link_tethered) => .follow_link_tethered,
-        @intFromEnum(survival_spawn.CreatureAiMode.orbit_link) => .orbit_link,
-        @intFromEnum(survival_spawn.CreatureAiMode.hold_timer) => .hold_timer,
-        @intFromEnum(survival_spawn.CreatureAiMode.orbit_player_wide) => .orbit_player_wide,
+    const mode: survival_spawn.CreatureAiMode = @enumFromInt(value);
+    return switch (mode) {
+        .orbit_player,
+        .orbit_player_tight,
+        .chase_player,
+        .follow_link,
+        .link_guard,
+        .follow_link_tethered,
+        .orbit_link,
+        .hold_timer,
+        .orbit_player_wide,
+        => mode,
         else => error.InvalidCaptureEnumValue,
     };
 }
