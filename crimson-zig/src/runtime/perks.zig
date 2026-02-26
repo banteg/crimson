@@ -2,8 +2,8 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const survival_bonuses = @import("bonuses.zig");
-const survival_state = @import("state.zig");
+const bonus_runtime = @import("bonuses.zig");
+const state_mod = @import("state.zig");
 
 const asF32F64 = native_math.roundF32;
 
@@ -133,12 +133,12 @@ const perk_always_available = [_]PerkId{
 };
 
 pub fn perksRebuildAvailable(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     quest_unlock_index: i32,
 ) void {
     if (state.perk_available_unlock_index == quest_unlock_index) return;
 
-    state.perk_available = [_]bool{false} ** survival_state.perk_count_size;
+    state.perk_available = [_]bool{false} ** state_mod.perk_count_size;
 
     var perk_id: i32 = 1;
     while (perk_id <= perk_base_available_max_id) : (perk_id += 1) {
@@ -167,15 +167,15 @@ pub fn perksRebuildAvailable(
     state.perk_available_unlock_index = quest_unlock_index;
 }
 
-pub fn perkChoiceCount(player: *const survival_state.PlayerState) i32 {
+pub fn perkChoiceCount(player: *const state_mod.PlayerState) i32 {
     if (perkCountGet(player, PerkId.perk_master) > 0) return 7;
     if (perkCountGet(player, PerkId.perk_expert) > 0) return 6;
     return 5;
 }
 
 pub fn perkSelectionCurrentChoices(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
@@ -205,8 +205,8 @@ pub fn perkSelectionCurrentChoices(
 }
 
 pub fn perkSelectionPick(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     choice_index: i32,
     game_mode: GameModeId,
     player_count: i32,
@@ -243,8 +243,8 @@ pub fn perkSelectionPick(
 }
 
 pub fn applyPerk(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     perk_id: PerkId,
 ) PerkApplyError!void {
     if (players.len == 0) return;
@@ -271,7 +271,7 @@ pub fn applyPerk(
         },
         PerkId.ammo_maniac => {
             for (players) |*player| {
-                survival_state.weaponAssignPlayerWithState(player, player.weapon_id, state);
+                state_mod.weaponAssignPlayerWithState(player, player.weapon_id, state);
             }
         },
         PerkId.fatal_lottery => {
@@ -318,11 +318,11 @@ pub fn applyPerk(
             const current = players[0].weapon_id;
             var selected = current;
             for (0..100) |_| {
-                const candidate = survival_bonuses.weaponPickRandomAvailable(state);
+                const candidate = bonus_runtime.weaponPickRandomAvailable(state);
                 selected = candidate;
                 if (candidate != game_ids.WeaponId.pistol and candidate != current) break;
             }
-            survival_state.weaponAssignPlayerWithState(&players[0], selected, state);
+            state_mod.weaponAssignPlayerWithState(&players[0], selected, state);
         },
         PerkId.breathing_room => {
             for (players) |*player| {
@@ -350,7 +350,7 @@ pub fn applyPerk(
 }
 
 fn consumeSpawnBurstRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     count: usize,
 ) void {
     for (0..count) |_| {
@@ -362,8 +362,8 @@ fn consumeSpawnBurstRng(
 }
 
 pub fn updatePerkEffects(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     dt: f64,
 ) void {
     if (dt > 0.0) {
@@ -439,9 +439,9 @@ pub fn updatePerkEffects(
 }
 
 fn perkGenerateChoices(
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
-    player: *const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
+    player: *const state_mod.PlayerState,
     game_mode: GameModeId,
     player_count: i32,
     quest_unlock_index: i32,
@@ -512,9 +512,9 @@ fn perkGenerateChoices(
 }
 
 fn pyromaniacAllowed(
-    state: *const survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
-    player: *const survival_state.PlayerState,
+    state: *const state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
+    player: *const state_mod.PlayerState,
     player_count: i32,
 ) bool {
     if (player.weapon_id == game_ids.WeaponId.flamethrower) return true;
@@ -527,7 +527,7 @@ fn pyromaniacAllowed(
     return false;
 }
 
-fn selectRandomOffer(state: *survival_state.GameplayState, offerable: []const bool) PerkId {
+fn selectRandomOffer(state: *state_mod.GameplayState, offerable: []const bool) PerkId {
     var draws: i32 = 0;
     while (draws < 1000) : (draws += 1) {
         const candidate_raw: i32 = @intCast(state.rng.rand() % @as(u32, @intCast(perk_id_max)) + 1);
@@ -540,8 +540,8 @@ fn selectRandomOffer(state: *survival_state.GameplayState, offerable: []const bo
 }
 
 fn perkCanOffer(
-    state: *const survival_state.GameplayState,
-    player: *const survival_state.PlayerState,
+    state: *const state_mod.GameplayState,
+    player: *const state_mod.PlayerState,
     perk_id: PerkId,
     game_mode: GameModeId,
     player_count: i32,
@@ -560,7 +560,7 @@ fn perkCanOffer(
     return true;
 }
 
-fn prereqSatisfied(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
+fn prereqSatisfied(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return switch (perk_id) {
         PerkId.toxic_avenger => perkCountGet(player, PerkId.veins_of_poison) > 0,
         PerkId.ninja => perkCountGet(player, PerkId.dodger) > 0,
@@ -574,17 +574,17 @@ fn perkFlags(perk_id: PerkId) u32 {
     return perk_flags_by_id.get(perk_id);
 }
 
-fn perkCountGet(player: *const survival_state.PlayerState, perk_id: PerkId) i32 {
+fn perkCountGet(player: *const state_mod.PlayerState, perk_id: PerkId) i32 {
     return player.perk_counts[perkIdIndex(perk_id)];
 }
 
-fn adjustPerkCount(player: *survival_state.PlayerState, perk_id: PerkId, amount: i32) void {
+fn adjustPerkCount(player: *state_mod.PlayerState, perk_id: PerkId, amount: i32) void {
     const perk_index = perkIdIndex(perk_id);
     const current = player.perk_counts[perk_index];
     player.perk_counts[perk_index] = @max(0, current + amount);
 }
 
-fn perkActive(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
+fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return perkCountGet(player, perk_id) > 0;
 }
 
@@ -618,11 +618,11 @@ fn isDeathClockBlocked(perk_id: PerkId) bool {
 }
 
 fn setOnlyPerksAvailable(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     unlock_index: i32,
     perk_ids: []const PerkId,
 ) void {
-    state.perk_available = [_]bool{false} ** survival_state.perk_count_size;
+    state.perk_available = [_]bool{false} ** state_mod.perk_count_size;
     for (perk_ids) |perk_id| {
         state.perk_available[perkIdIndex(perk_id)] = true;
     }
@@ -630,8 +630,8 @@ fn setOnlyPerksAvailable(
 }
 
 test "perk menu open consumes rng and caches choices" {
-    var state = survival_state.GameplayState.init(0x1234);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     const before = state.rng.state;
@@ -648,8 +648,8 @@ test "perk menu open consumes rng and caches choices" {
 }
 
 test "antiperk is never offerable" {
-    var state = survival_state.GameplayState.init(1);
-    const player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    const player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
@@ -663,8 +663,8 @@ test "antiperk is never offerable" {
 }
 
 test "perk pick decrements pending and refreshes choices" {
-    var state = survival_state.GameplayState.init(0x1234);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     state.perk_selection.pending_count = 1;
@@ -691,10 +691,10 @@ test "perk pick decrements pending and refreshes choices" {
 }
 
 test "perk generate choices forces monster vision first on quest 3-4" {
-    var state = survival_state.GameplayState.init(0x1234);
+    var state = state_mod.GameplayState.init(0x1234);
     state.quest_stage_major = 3;
     state.quest_stage_minor = 4;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
 
@@ -710,8 +710,8 @@ test "perk generate choices forces monster vision first on quest 3-4" {
 }
 
 test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
-    var state = survival_state.GameplayState.init(0x1234);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
         .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.flamethrower },
     };
@@ -731,8 +731,8 @@ test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
 }
 
 test "perk generate choices rejects pyromaniac when no player has flamethrower" {
-    var state = survival_state.GameplayState.init(0x1234);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
     setOnlyPerksAvailable(&state, 0, &.{
@@ -759,8 +759,8 @@ test "perk generate choices rejects pyromaniac when no player has flamethrower" 
 }
 
 test "perk generate choices blocks jinxed when death clock is active" {
-    var state = survival_state.GameplayState.init(0x1234);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -791,8 +791,8 @@ test "perk generate choices blocks jinxed when death clock is active" {
 }
 
 test "death clock apply and update mirror runtime hooks" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -812,8 +812,8 @@ test "death clock apply and update mirror runtime hooks" {
 }
 
 test "regeneration heals when rng allows" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -827,8 +827,8 @@ test "regeneration heals when rng allows" {
 }
 
 test "regeneration skips when rng blocks" {
-    var state = survival_state.GameplayState.init(0);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -842,8 +842,8 @@ test "regeneration skips when rng blocks" {
 }
 
 test "greater regeneration doubles heal by default" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -858,9 +858,9 @@ test "greater regeneration doubles heal by default" {
 }
 
 test "greater regeneration remains no-op in preserve bugs mode" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.preserve_bugs = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -875,8 +875,8 @@ test "greater regeneration remains no-op in preserve bugs mode" {
 }
 
 test "regeneration multiplayer targets all alive players by default" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -896,9 +896,9 @@ test "regeneration multiplayer targets all alive players by default" {
 }
 
 test "regeneration preserve bugs repeats write to player zero only" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.preserve_bugs = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -918,8 +918,8 @@ test "regeneration preserve bugs repeats write to player zero only" {
 }
 
 test "bandage adds random amount and clamps in default mode" {
-    var state = survival_state.GameplayState.init(20_072);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(20_072);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -932,9 +932,9 @@ test "bandage adds random amount and clamps in default mode" {
 }
 
 test "bandage preserve bugs multiplies instead of adds" {
-    var state = survival_state.GameplayState.init(20_072);
+    var state = state_mod.GameplayState.init(20_072);
     state.preserve_bugs = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -947,8 +947,8 @@ test "bandage preserve bugs multiplies instead of adds" {
 }
 
 test "random weapon assigns non-pistol weapon from pistol baseline" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -961,8 +961,8 @@ test "random weapon assigns non-pistol weapon from pistol baseline" {
 }
 
 test "random weapon rerolls pistol when current weapon is not pistol" {
-    var state = survival_state.GameplayState.init(25);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(25);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -975,15 +975,15 @@ test "random weapon rerolls pistol when current weapon is not pistol" {
 }
 
 test "random weapon retry cap applies last roll after 100 attempts" {
-    var state = survival_state.GameplayState.init(1234);
+    var state = state_mod.GameplayState.init(1234);
     state.game_mode = 3;
 
     var expected = state;
     for (0..100) |_| {
-        _ = survival_bonuses.weaponPickRandomAvailable(&expected);
+        _ = bonus_runtime.weaponPickRandomAvailable(&expected);
     }
 
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -997,8 +997,8 @@ test "random weapon retry cap applies last roll after 100 attempts" {
 }
 
 test "fatal lottery grants xp when rng is even" {
-    var state = survival_state.GameplayState.init(0);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -1019,8 +1019,8 @@ test "fatal lottery grants xp when rng is even" {
 }
 
 test "fatal lottery kills owner only when rng is odd" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -1037,8 +1037,8 @@ test "fatal lottery kills owner only when rng is odd" {
 }
 
 test "grim deal kills owner and boosts experience" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -1061,8 +1061,8 @@ test "grim deal kills owner and boosts experience" {
 }
 
 test "instant winner grants xp to owner only" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .experience = 123 },
         .{ .index = 1, .pos = .{}, .experience = 456 },
     };
@@ -1073,8 +1073,8 @@ test "instant winner grants xp to owner only" {
 }
 
 test "infernal contract grants levels and forces low health" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .level = 5, .health = 100.0 },
         .{ .index = 1, .pos = .{}, .level = 1, .health = 80.0 },
     };
@@ -1088,13 +1088,13 @@ test "infernal contract grants levels and forces low health" {
 }
 
 test "ammo maniac reassigns weapons and boosts clip size for all players" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.assault_rifle },
         .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
-    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
-    survival_state.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
+    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    state_mod.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
 
     const base_clip0 = players[0].clip_size;
     const base_clip1 = players[1].clip_size;
@@ -1115,11 +1115,11 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
 }
 
 test "my favourite weapon increases clip size and keeps current ammo on apply" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
     };
-    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
 
     const base_clip = players[0].clip_size;
     players[0].ammo = 5.0;
@@ -1128,15 +1128,15 @@ test "my favourite weapon increases clip size and keeps current ammo on apply" {
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
     try std.testing.expectEqual(@as(f64, 5.0), players[0].ammo);
 
-    survival_state.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    state_mod.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
     try std.testing.expectEqual(@as(f64, @floatFromInt(base_clip + 2)), players[0].ammo);
 }
 
 test "breathing room reduces player health and clears bonus spawn guard" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 90.0 },
         .{ .index = 1, .pos = .{}, .health = 45.0 },
     };
@@ -1148,8 +1148,8 @@ test "breathing room reduces player health and clears bonus spawn guard" {
 }
 
 test "thick skinned clamps health floor at one" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 90.0 },
         .{ .index = 1, .pos = .{}, .health = 1.2 },
     };
@@ -1160,8 +1160,8 @@ test "thick skinned clamps health floor at one" {
 }
 
 test "plaguebearer apply marks all players active" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{} },
     };
@@ -1172,9 +1172,9 @@ test "plaguebearer apply marks all players active" {
 }
 
 test "lean mean exp machine ticks xp and ignores double experience multiplier" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -1191,9 +1191,9 @@ test "lean mean exp machine ticks xp and ignores double experience multiplier" {
 }
 
 test "lean mean exp machine tick awards player zero only in multiplayer" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.lean_mean_exp_timer = 0.05;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },

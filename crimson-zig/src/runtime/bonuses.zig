@@ -3,7 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const perks = @import("perks.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 
 const asF32F64 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -41,7 +41,7 @@ pub const BonusEntry = struct {
     picked: bool = false,
     time_left: f64 = 0.0,
     time_max: f64 = 0.0,
-    pos: survival_state.Vec2 = .{},
+    pos: state_mod.Vec2 = .{},
     amount: i32 = 0,
 };
 
@@ -69,9 +69,9 @@ pub const BonusPool = struct {
 
     pub fn trySpawnOnKill(
         self: *BonusPool,
-        pos: survival_state.Vec2,
-        state: *survival_state.GameplayState,
-        players: []const survival_state.PlayerState,
+        pos: state_mod.Vec2,
+        state: *state_mod.GameplayState,
+        players: []const state_mod.PlayerState,
         world_size: f64,
     ) ?*BonusEntry {
         if (state.demo_mode_active) return null;
@@ -93,10 +93,10 @@ pub const BonusPool = struct {
             entry.bonus_id = @intFromEnum(game_ids.BonusId.weapon);
 
             var weapon_id = weaponPickRandomAvailable(state);
-            entry.amount = survival_state.weaponIdToInt(weapon_id);
+            entry.amount = state_mod.weaponIdToInt(weapon_id);
             if (weapon_id == game_ids.WeaponId.pistol) {
                 weapon_id = weaponPickRandomAvailable(state);
-                entry.amount = survival_state.weaponIdToInt(weapon_id);
+                entry.amount = state_mod.weaponIdToInt(weapon_id);
             }
 
             if (countMatches(self, entry.bonus_id) > 1) {
@@ -104,7 +104,7 @@ pub const BonusPool = struct {
                 return null;
             }
 
-            if (entry.amount == survival_state.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
+            if (entry.amount == state_mod.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
                 clearEntry(self, entry);
                 return null;
             }
@@ -151,7 +151,7 @@ pub const BonusPool = struct {
         }
 
         if (entry.bonus_id == @intFromEnum(game_ids.BonusId.weapon)) {
-            const weapon_id = survival_state.weaponIdFromInt(entry.amount) orelse {
+            const weapon_id = state_mod.weaponIdFromInt(entry.amount) orelse {
                 clearEntry(self, entry);
                 return null;
             };
@@ -167,8 +167,8 @@ pub const BonusPool = struct {
 
     pub fn update(
         self: *BonusPool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
         dt: f64,
         pickup_bonus_ids: *[bonus_pool_size]i32,
         pickup_count: *usize,
@@ -220,7 +220,7 @@ pub const BonusPool = struct {
 };
 
 pub fn updatePrePickupTimers(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     dt: f64,
 ) void {
     if (!(dt > 0.0)) return;
@@ -243,8 +243,8 @@ pub fn updatePrePickupTimers(
 
 pub fn bonusUpdate(
     pool: *BonusPool,
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     dt: f64,
 ) BonusRuntimeError!void {
     state.debug_last_picked_bonus_id = 0;
@@ -277,8 +277,8 @@ pub fn bonusUpdate(
 
 fn bonusTelekineticUpdate(
     pool: *BonusPool,
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     dt: f64,
     pickup_bonus_ids: *[bonus_pool_size]i32,
     pickup_count: *usize,
@@ -314,7 +314,7 @@ fn bonusTelekineticUpdate(
 }
 
 fn bonusFindAimHoverEntry(
-    player: survival_state.PlayerState,
+    player: state_mod.PlayerState,
     pool: *const BonusPool,
 ) ?struct { index: usize } {
     const radius_sq = bonus_aim_hover_radius * bonus_aim_hover_radius;
@@ -328,12 +328,12 @@ fn bonusFindAimHoverEntry(
 }
 
 fn applyBonus(
-    state: *survival_state.GameplayState,
-    player: *survival_state.PlayerState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    players: []state_mod.PlayerState,
     bonus_id: i32,
     amount: i32,
-    origin_pos: ?survival_state.Vec2,
+    origin_pos: ?state_mod.Vec2,
 ) BonusRuntimeError!void {
     if (bonus_id == @intFromEnum(game_ids.BonusId.unused)) return;
 
@@ -409,8 +409,8 @@ fn applyBonus(
                 player.alt_shot_cooldown = player.shot_cooldown;
                 player.alt_reload_timer_max = player.reload_timer_max;
             }
-            const weapon_id = survival_state.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
-            survival_state.weaponAssignPlayerWithState(player, weapon_id, state);
+            const weapon_id = state_mod.weaponIdFromInt(effective_amount) orelse game_ids.WeaponId.pistol;
+            state_mod.weaponAssignPlayerWithState(player, weapon_id, state);
         },
         @intFromEnum(game_ids.BonusId.nuke) => {
             if (state.pending_nuke_count < state.pending_nuke_origins.len) {
@@ -467,18 +467,18 @@ fn defaultBonusAmount(bonus_id: i32) i32 {
     };
 }
 
-fn perkActive(player: survival_state.PlayerState, perk_id: PerkId) bool {
+fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
-fn anyPerkActive(players: []const survival_state.PlayerState, perk_id: PerkId) bool {
+fn anyPerkActive(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
     for (players) |player| {
         if (perkActive(player, perk_id)) return true;
     }
     return false;
 }
 
-fn carriedWeaponId(players: []const survival_state.PlayerState, weapon_id: game_ids.WeaponId) bool {
+fn carriedWeaponId(players: []const state_mod.PlayerState, weapon_id: game_ids.WeaponId) bool {
     for (players) |player| {
         if (player.weapon_id == weapon_id) return true;
         if (player.alt_weapon_id) |alt_id| {
@@ -488,7 +488,7 @@ fn carriedWeaponId(players: []const survival_state.PlayerState, weapon_id: game_
     return false;
 }
 
-fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
+fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
     const unlock_index = state.status_quest_unlock_index;
     const unlock_index_full = state.status_quest_unlock_index_full;
     const game_mode = state.game_mode;
@@ -500,7 +500,7 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
         return;
     }
 
-    state.weapon_available = [_]bool{false} ** survival_state.weapon_count_size;
+    state.weapon_available = [_]bool{false} ** state_mod.weapon_count_size;
     state.weapon_available[weaponIdIndex(.pistol)] = true;
 
     if (unlock_index > 0) {
@@ -527,7 +527,7 @@ fn weaponRefreshAvailable(state: *survival_state.GameplayState) void {
     state.weapon_available_unlock_index_full = unlock_index_full;
 }
 
-pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) game_ids.WeaponId {
+pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.WeaponId {
     weaponRefreshAvailable(state);
 
     for (0..1000) |_| {
@@ -559,8 +559,8 @@ pub fn weaponPickRandomAvailable(state: *survival_state.GameplayState) game_ids.
 
 fn bonusPickRandomType(
     pool: *const BonusPool,
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
 ) i32 {
     var has_fire_bullets_drop = false;
     for (pool.entries) |entry| {
@@ -582,8 +582,8 @@ fn bonusPickRandomType(
 }
 
 fn bonusPickSuppressed(
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
     bonus_id: i32,
     has_fire_bullets_drop: bool,
 ) bool {
@@ -610,7 +610,7 @@ fn bonusPickSuppressed(
     return false;
 }
 
-fn anyShieldActive(players: []const survival_state.PlayerState) bool {
+fn anyShieldActive(players: []const state_mod.PlayerState) bool {
     for (players) |player| {
         if (player.shield_timer > 0.0) return true;
     }
@@ -619,7 +619,7 @@ fn anyShieldActive(players: []const survival_state.PlayerState) bool {
 
 fn bonusIdFromRoll(
     roll: i32,
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
 ) i32 {
     if (roll < 1 or roll > 162) return 0;
     if (roll <= 13) return @intFromEnum(game_ids.BonusId.points);
@@ -642,7 +642,7 @@ fn isEmpty(entry: BonusEntry) bool {
     return entry.bonus_id == 0 and !entry.picked and entry.time_left <= 0.0 and entry.time_max <= 0.0 and entry.amount == 0;
 }
 
-fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
@@ -659,7 +659,7 @@ fn appendPickupBonusId(
 }
 
 fn consumeBonusPickupEffectsRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     bonus_id: i32,
 ) void {
     if (bonus_id != @intFromEnum(game_ids.BonusId.nuke)) {
@@ -718,9 +718,9 @@ fn countMatches(self: *const BonusPool, bonus_id: i32) usize {
 
 fn spawnAtPos(
     self: *BonusPool,
-    pos: survival_state.Vec2,
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    pos: state_mod.Vec2,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
     world_size: f64,
 ) AllocSlot {
     if (state.game_mode == game_mode_rush) return .sentinel;
@@ -750,7 +750,7 @@ fn spawnAtPos(
     entry.time_max = bonus_time_max;
 
     if (bonus_id == @intFromEnum(game_ids.BonusId.weapon)) {
-        entry.amount = survival_state.weaponIdToInt(weaponPickRandomAvailable(state));
+        entry.amount = state_mod.weaponIdToInt(weaponPickRandomAvailable(state));
     } else if (bonus_id == @intFromEnum(game_ids.BonusId.points)) {
         entry.amount = if ((state.rng.rand() & 7) < 3) 1000 else 500;
     } else {
@@ -761,16 +761,16 @@ fn spawnAtPos(
 }
 
 test "bonus pool spawn-on-kill can materialize weapon drop" {
-    var state = survival_state.GameplayState.init(1234);
+    var state = state_mod.GameplayState.init(1234);
     state.game_mode = game_mode_survival;
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 49;
 
     var pool = BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    survival_state.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
+    state_mod.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     var spawned = false;
     for (0..512) |_| {
@@ -783,7 +783,7 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
 }
 
 test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 256.0, .y = 256.0 } },
     };
 
@@ -798,7 +798,7 @@ test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
     };
 
     for (cases) |case| {
-        var state = survival_state.GameplayState.init(123);
+        var state = state_mod.GameplayState.init(123);
         state.game_mode = case.game_mode;
         state.demo_mode_active = case.demo_mode_active;
         var pool = BonusPool{};
@@ -813,7 +813,7 @@ test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
 }
 
 test "bonus update pre-pickup decrements timers" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonuses.weapon_power_up = 2.0;
     state.bonuses.energizer = 2.0;
     state.bonuses.reflex_boost = 0.5;
@@ -826,7 +826,7 @@ test "bonus update pre-pickup decrements timers" {
 }
 
 test "bonus spawn-on-kill rng cadence matches observed pistol path" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.rng.state = 3_857_056_479;
     state.game_mode = game_mode_survival;
     state.status_quest_unlock_index = 49;
@@ -834,10 +834,10 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     state.status_weapon_usage_counts[29] = 10;
 
     var pool = BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    survival_state.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
+    state_mod.weaponAssignPlayer(&players[0], game_ids.WeaponId.pistol);
 
     const spawned = pool.trySpawnOnKill(.{ .x = 420.0, .y = 420.0 }, &state, players[0..], 1024.0);
     try std.testing.expect(spawned != null);
@@ -847,12 +847,12 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
 }
 
 test "bonus economist extends double experience timer" {
-    var base_state = survival_state.GameplayState.init(1);
-    var base_player = survival_state.PlayerState{
+    var base_state = state_mod.GameplayState.init(1);
+    var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
-    var base_players = [_]survival_state.PlayerState{base_player};
+    var base_players = [_]state_mod.PlayerState{base_player};
     try applyBonus(
         &base_state,
         &base_player,
@@ -863,13 +863,13 @@ test "bonus economist extends double experience timer" {
     );
     try std.testing.expectApproxEqAbs(@as(f64, 6.0), base_state.bonuses.double_experience, 1e-6);
 
-    var perk_state = survival_state.GameplayState.init(1);
-    var perk_player = survival_state.PlayerState{
+    var perk_state = state_mod.GameplayState.init(1);
+    var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
     perk_player.perk_counts[@intCast(@intFromEnum(PerkId.bonus_economist))] = 1;
-    var perk_players = [_]survival_state.PlayerState{perk_player};
+    var perk_players = [_]state_mod.PlayerState{perk_player};
     try applyBonus(
         &perk_state,
         &perk_player,
@@ -882,13 +882,13 @@ test "bonus economist extends double experience timer" {
 }
 
 test "alternate weapon stashes previous weapon on first pickup" {
-    var state = survival_state.GameplayState.init(1);
-    var player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
-    var players = [_]survival_state.PlayerState{player};
-    survival_state.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
+    var players = [_]state_mod.PlayerState{player};
+    state_mod.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts[@intCast(@intFromEnum(PerkId.alternate_weapon))] = 1;
 
     try applyBonus(
@@ -907,10 +907,10 @@ test "alternate weapon stashes previous weapon on first pickup" {
 }
 
 test "bonus magnet allows spawn on secondary roll" {
-    var base_state = survival_state.GameplayState.init(7);
+    var base_state = state_mod.GameplayState.init(7);
     base_state.game_mode = game_mode_survival;
     var base_pool = BonusPool{};
-    var base_players = [_]survival_state.PlayerState{
+    var base_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -926,10 +926,10 @@ test "bonus magnet allows spawn on secondary roll" {
     );
     try std.testing.expect(base_spawned == null);
 
-    var perk_state = survival_state.GameplayState.init(7);
+    var perk_state = state_mod.GameplayState.init(7);
     perk_state.game_mode = game_mode_survival;
     var perk_pool = BonusPool{};
-    var perk_players = [_]survival_state.PlayerState{
+    var perk_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -988,7 +988,7 @@ test "bonus pick random type quest suppression parity" {
 }
 
 test "weapon refresh available includes survival defaults" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.game_mode = game_mode_survival;
 
     weaponRefreshAvailable(&state);
@@ -1001,7 +1001,7 @@ test "weapon refresh available includes survival defaults" {
 }
 
 test "weapon refresh available unlocks quest weapon ids by unlock index" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.game_mode = game_mode_quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
@@ -1014,7 +1014,7 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
 }
 
 test "weapon pick random available enforces unlock table in quests" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.game_mode = game_mode_quests;
     state.status_quest_unlock_index = 0;
     state.status_quest_unlock_index_full = 0;
@@ -1025,7 +1025,7 @@ test "weapon pick random available enforces unlock table in quests" {
 
 test "weapon pick random available rerolls used weapons on even gate" {
     const seed = findSeedForWeaponReroll(2_000_000) orelse unreachable;
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.game_mode = game_mode_quests;
     state.status_quest_unlock_index = 1;
     state.status_quest_unlock_index_full = 0;
@@ -1038,7 +1038,7 @@ test "weapon pick random available rerolls used weapons on even gate" {
 fn findSeedForWeaponReroll(max_seed: u32) ?u32 {
     var seed: u32 = 0;
     while (seed < max_seed) : (seed += 1) {
-        var state = survival_state.GameplayState.init(seed);
+        var state = state_mod.GameplayState.init(seed);
         if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.pistol))) continue;
         if ((state.rng.rand() & 1) != 0) continue;
         if ((state.rng.rand() % weapon_drop_id_count) != @as(u32, weaponIdIndex(.assault_rifle))) continue;
@@ -1051,7 +1051,7 @@ fn setTestBonusEntry(
     pool: *BonusPool,
     idx: usize,
     bonus_id: i32,
-    pos: survival_state.Vec2,
+    pos: state_mod.Vec2,
     amount: i32,
 ) void {
     pool.entries[idx] = .{
@@ -1066,8 +1066,8 @@ fn setTestBonusEntry(
 
 fn runTelekineticUpdate(
     pool: *BonusPool,
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     dt: f64,
 ) BonusRuntimeError!void {
     var pickup_bonus_ids = [_]i32{0} ** bonus_pool_size;
@@ -1083,7 +1083,7 @@ fn runTelekineticUpdate(
 }
 
 test "telekinetic picks up bonus after hover timer threshold" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var pool = BonusPool{};
     setTestBonusEntry(
         &pool,
@@ -1093,24 +1093,24 @@ test "telekinetic picks up bonus after hover timer threshold" {
         0,
     );
 
-    const base_player = survival_state.PlayerState{
+    const base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    var base_players = [_]survival_state.PlayerState{base_player};
+    var base_players = [_]state_mod.PlayerState{base_player};
     try runTelekineticUpdate(&pool, &state, base_players[0..], 0.7);
     try std.testing.expect(!pool.entries[0].picked);
 
-    var perk_player = survival_state.PlayerState{
+    var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
     perk_player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    var perk_players = [_]survival_state.PlayerState{perk_player};
+    var perk_players = [_]state_mod.PlayerState{perk_player};
     try runTelekineticUpdate(&pool, &state, perk_players[0..], 0.7);
 
     try std.testing.expect(pool.entries[0].picked);
@@ -1118,7 +1118,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
 }
 
 test "telekinetic nuke stores pending origin from bonus position" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var pool = BonusPool{};
     setTestBonusEntry(
         &pool,
@@ -1128,14 +1128,14 @@ test "telekinetic nuke stores pending origin from bonus position" {
         1,
     );
 
-    var player = survival_state.PlayerState{
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
     player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    var players = [_]survival_state.PlayerState{player};
+    var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expectEqual(@as(i32, 1), state.pending_nuke_count);
@@ -1144,7 +1144,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
 }
 
 test "telekinetic shock chain stores pending origin from bonus position" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var pool = BonusPool{};
     setTestBonusEntry(
         &pool,
@@ -1154,14 +1154,14 @@ test "telekinetic shock chain stores pending origin from bonus position" {
         1,
     );
 
-    var player = survival_state.PlayerState{
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
     player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    var players = [_]survival_state.PlayerState{player};
+    var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expectEqual(@as(i32, 1), state.pending_shock_chain_count);
@@ -1170,7 +1170,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
 }
 
 test "telekinetic picks only one bonus per frame across players" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var pool = BonusPool{};
     setTestBonusEntry(
         &pool,
@@ -1187,13 +1187,13 @@ test "telekinetic picks only one bonus per frame across players" {
         500,
     );
 
-    var player0 = survival_state.PlayerState{
+    var player0 = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    var player1 = survival_state.PlayerState{
+    var player1 = state_mod.PlayerState{
         .index = 1,
         .pos = .{},
         .health = 100.0,
@@ -1201,7 +1201,7 @@ test "telekinetic picks only one bonus per frame across players" {
     };
     player0.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
     player1.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    var players = [_]survival_state.PlayerState{ player0, player1 };
+    var players = [_]state_mod.PlayerState{ player0, player1 };
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expect(pool.entries[0].picked);
@@ -1211,7 +1211,7 @@ test "telekinetic picks only one bonus per frame across players" {
 }
 
 test "telekinetic hover timer carries across bonus switch" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var pool = BonusPool{};
     setTestBonusEntry(
         &pool,
@@ -1228,14 +1228,14 @@ test "telekinetic hover timer carries across bonus switch" {
         500,
     );
 
-    var player = survival_state.PlayerState{
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
     player.perk_counts[@intCast(@intFromEnum(PerkId.telekinetic))] = 1;
-    var players = [_]survival_state.PlayerState{player};
+    var players = [_]state_mod.PlayerState{player};
 
     try runTelekineticUpdate(&pool, &state, players[0..], 0.4);
     try std.testing.expect(!pool.entries[0].picked);
@@ -1257,14 +1257,14 @@ fn runQuestSuppressionCase(
     quest_stage_minor: i32,
     expected_bonus_id: i32,
 ) !void {
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.game_mode = game_mode_quests;
     state.hardcore = hardcore;
     state.quest_stage_major = quest_stage_major;
     state.quest_stage_minor = quest_stage_minor;
 
     var pool = BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
 

@@ -3,7 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
-const survival_bonuses = @import("bonuses.zig");
+const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
 const perks = @import("perks.zig");
 const survival_particles = @import("particles.zig");
@@ -11,7 +11,7 @@ const survival_projectiles = @import("projectiles.zig");
 const survival_secondary_projectiles = @import("secondary_projectiles.zig");
 const survival_spawn = @import("spawn.zig");
 const quest_spawn_logic = @import("../quest_spawn/logic_full.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 const survival_weapon_runtime = @import("weapons.zig");
 const survival_math = @import("math.zig");
 
@@ -369,7 +369,7 @@ pub fn runReplayScaffoldWithTrace(
     {
         return error.UnsupportedGameMode;
     }
-    if (header.player_count <= 0 or header.player_count > survival_state.max_players) {
+    if (header.player_count <= 0 or header.player_count > state_mod.max_players) {
         return error.UnsupportedPlayerCount;
     }
     if (header.preserve_bugs) return error.UnsupportedPreserveBugs;
@@ -411,10 +411,10 @@ pub fn runReplayScaffoldWithTrace(
     var reset_quest_spawn_entries_len: usize = 0;
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]survival_spawn.QuestSpawnEntry = undefined;
     var quest_spawn_entries: []survival_spawn.QuestSpawnEntry = &.{};
-    var state = survival_state.GameplayState.init(header.seed);
+    var state = state_mod.GameplayState.init(header.seed);
     state.fx_toggle = header.fx_toggle;
     state.game_mode = header.game_mode_id;
-    var players_storage: [survival_state.max_players]survival_state.PlayerState = undefined;
+    var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players_len: usize = @intCast(header.player_count);
     var players = players_storage[0..players_len];
     var creatures = survival_creatures.CreaturePool{};
@@ -422,8 +422,8 @@ pub fn runReplayScaffoldWithTrace(
     var particles = survival_particles.ParticlePool{};
     var projectiles = survival_projectiles.ProjectilePool{};
     var secondary_projectiles = survival_secondary_projectiles.SecondaryProjectilePool{};
-    var bonuses = survival_bonuses.BonusPool{};
-    survival_state.resetPlayers(players[0..], @floatCast(header.world_size), null);
+    var bonuses = bonus_runtime.BonusPool{};
+    state_mod.resetPlayers(players[0..], @floatCast(header.world_size), null);
     state.status_quest_unlock_index = header.status.quest_unlock_index;
     state.status_quest_unlock_index_full = header.status.quest_unlock_index_full;
     for (header.status.weapon_usage_counts, 0..) |count, idx| {
@@ -477,8 +477,8 @@ pub fn runReplayScaffoldWithTrace(
         const weapon_id = @max(1, quest_start_weapon_id);
         quest_start_weapon_id_for_reset = weapon_id;
         for (players) |*player| {
-            const start_weapon = survival_state.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
-            survival_state.weaponAssignPlayer(player, start_weapon);
+            const start_weapon = state_mod.weaponIdFromInt(weapon_id) orelse game_ids.WeaponId.pistol;
+            state_mod.weaponAssignPlayer(player, start_weapon);
         }
     }
 
@@ -553,7 +553,7 @@ pub fn runReplayScaffoldWithTrace(
             applyPerkWorldDtSteps(players[0..], dt_tick)
         else
             dt_tick;
-        const dt_sim = survival_state.timeScaleReflexBoostBonus(
+        const dt_sim = state_mod.timeScaleReflexBoostBonus(
             state.bonuses.reflex_boost,
             state.time_scale_active,
             asF32F64(dt_world),
@@ -566,7 +566,7 @@ pub fn runReplayScaffoldWithTrace(
         for (creatures.entries, 0..) |creature, idx| {
             freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
         }
-        var health_before_creatures: [survival_state.max_players]f64 = undefined;
+        var health_before_creatures: [state_mod.max_players]f64 = undefined;
         for (players, 0..) |player, player_idx| {
             health_before_creatures[player_idx] = player.health;
         }
@@ -639,7 +639,7 @@ pub fn runReplayScaffoldWithTrace(
         if (game_mode == game_mode_rush) {
             enforceRushLoadout(players[0..]);
         }
-        var player_preprocessed_alive = [_]bool{false} ** survival_state.max_players;
+        var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
         for (players, 0..) |*player, player_idx| {
             const should_tick_perks = survival_weapon_runtime.preprocessPlayerForPerkTicks(
                 &state,
@@ -707,7 +707,7 @@ pub fn runReplayScaffoldWithTrace(
         var rng_after_stage_spawns = state.rng.state;
         var rng_after_wave_spawns = state.rng.state;
         if (game_mode == game_mode_survival) {
-            survival_state.survivalUpdateWeaponHandouts(
+            state_mod.survivalUpdateWeaponHandouts(
                 &state,
                 players[0..],
                 asF32F64(elapsed_before_ms),
@@ -828,11 +828,11 @@ pub fn runReplayScaffoldWithTrace(
         );
         cameraShakeUpdate(&state, dt_after_player);
         if (game_mode != game_mode_rush) {
-            _ = survival_state.survivalProgressionUpdate(&state, players[0..]);
+            _ = state_mod.survivalProgressionUpdate(&state, players[0..]);
         }
         state.time_scale_active = state.bonuses.reflex_boost > 0.0;
-        survival_bonuses.updatePrePickupTimers(&state, dt_after_player);
-        survival_bonuses.bonusUpdate(
+        bonus_runtime.updatePrePickupTimers(&state, dt_after_player);
+        bonus_runtime.bonusUpdate(
             &bonuses,
             &state,
             players[0..],
@@ -859,7 +859,7 @@ pub fn runReplayScaffoldWithTrace(
         );
         const rng_after_bonus_update = state.rng.state;
         if (game_mode == game_mode_survival) {
-            survival_state.survivalEnforceRewardWeaponGuard(state, players[0..]);
+            state_mod.survivalEnforceRewardWeaponGuard(state, players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
         elapsed_ms_sim = elapsed_after_ms;
@@ -961,8 +961,8 @@ pub fn runReplayScaffoldWithTrace(
         @intFromFloat(quest_spawn_timeline_ms)
     else
         @intFromFloat(elapsed_ms_sim);
-    const shots = survival_state.player0Shots(state);
-    const most_used_weapon_id = survival_state.mostUsedWeaponIdForPlayer(
+    const shots = state_mod.player0Shots(state);
+    const most_used_weapon_id = state_mod.mostUsedWeaponIdForPlayer(
         state,
         0,
         @intFromEnum(players[0].weapon_id),
@@ -1003,10 +1003,10 @@ pub fn runReplayScaffoldWithTrace(
 fn buildTickTrace(
     tick_index: usize,
     elapsed_ms_sim: f64,
-    state: *const survival_state.GameplayState,
-    player: survival_state.PlayerState,
+    state: *const state_mod.GameplayState,
+    player: state_mod.PlayerState,
     creatures: *const survival_creatures.CreaturePool,
-    bonuses: *const survival_bonuses.BonusPool,
+    bonuses: *const bonus_runtime.BonusPool,
     projectiles: *const survival_projectiles.ProjectilePool,
     projectile_tick_stats: survival_projectiles.ProjectileTickStats,
     rng_after_perk_effects: u32,
@@ -1424,7 +1424,7 @@ fn hashMix(seed: u64, value: u64) u64 {
 }
 
 fn cameraShakeUpdate(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     dt: f64,
 ) void {
     if (state.camera_shake_timer <= 0.0) {
@@ -1470,11 +1470,11 @@ fn cameraShakeUpdate(
 }
 
 fn applyPendingBonusEffects(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     projectiles: *survival_projectiles.ProjectilePool,
     creatures: *survival_creatures.CreaturePool,
-    bonuses: *survival_bonuses.BonusPool,
+    bonuses: *bonus_runtime.BonusPool,
     dt: f64,
     world_size: f64,
     tick_index: usize,
@@ -1528,7 +1528,7 @@ fn applyPendingBonusEffects(
 }
 
 fn applyPendingCreatureProjectiles(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     projectiles: *survival_projectiles.ProjectilePool,
 ) void {
     if (state.pending_creature_projectile_count <= 0) {
@@ -1549,16 +1549,16 @@ fn applyPendingCreatureProjectiles(
         const angle = state.pending_creature_projectile_angles[idx];
         const pos = state.pending_creature_projectile_positions[idx];
         const owner_id = state.pending_creature_projectile_owner_ids[idx];
-        const meta = survival_state.weaponProjectileMeta(type_id);
+        const meta = state_mod.weaponProjectileMeta(type_id);
         _ = projectiles.spawn(pos, angle, type_id, owner_id, meta, true);
     }
     state.pending_creature_projectile_count = 0;
 }
 
 fn applyFireblastBonus(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     projectiles: *survival_projectiles.ProjectilePool,
-    origin: survival_state.Vec2,
+    origin: state_mod.Vec2,
 ) void {
     const projectile_owner_id: i32 = -100;
     const prev_spawn_guard = state.bonus_spawn_guard;
@@ -1570,16 +1570,16 @@ fn applyFireblastBonus(
     for (0..count) |idx| {
         const angle = @as(f64, @floatFromInt(idx)) * step;
         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-        const meta = survival_state.weaponProjectileMeta(type_id);
+        const meta = state_mod.weaponProjectileMeta(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
     }
 }
 
 fn applyShockChainBonus(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     projectiles: *survival_projectiles.ProjectilePool,
     creatures: *survival_creatures.CreaturePool,
-    origin: survival_state.Vec2,
+    origin: state_mod.Vec2,
 ) void {
     if (creatures.entries.len == 0) return;
 
@@ -1596,10 +1596,10 @@ fn applyShockChainBonus(
     }
 
     const target = creatures.entries[best_idx];
-    const angle = survival_state.Vec2.sub(target.pos, origin).toHeading();
+    const angle = state_mod.Vec2.sub(target.pos, origin).toHeading();
     const projectile_owner_id: i32 = -100;
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
-    const meta = survival_state.weaponProjectileMeta(type_id);
+    const meta = state_mod.weaponProjectileMeta(type_id);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
@@ -1610,15 +1610,15 @@ fn applyShockChainBonus(
     state.shock_chain_projectile_id = @intCast(proj_idx);
 }
 
-fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
 
 fn applyPyrokineticEffects(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
     particles: *survival_particles.ParticlePool,
     dt: f64,
@@ -1677,8 +1677,8 @@ fn applyPyrokineticEffects(
 }
 
 fn updateEvilEyesTargets(
-    state: *const survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *const state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: []const survival_creatures.CreatureState,
 ) void {
     if (players.len == 0) return;
@@ -1703,7 +1703,7 @@ fn updateEvilEyesTargets(
 
 fn creatureFindInRadius(
     creatures: []const survival_creatures.CreatureState,
-    pos: survival_state.Vec2,
+    pos: state_mod.Vec2,
     radius: f64,
     start_index: usize,
 ) i32 {
@@ -1713,7 +1713,7 @@ fn creatureFindInRadius(
         const creature = creatures[idx];
         if (!creature.active) continue;
         if (!(creature.lifecycle_stage > 5.0)) continue;
-        const dist = asF32F64(survival_state.Vec2.sub(creature.pos, pos).length() - radius);
+        const dist = asF32F64(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
         const threshold = asF32F64(creature.size * 0.14285715 + 3.0);
         if (threshold < dist) continue;
         return @intCast(idx);
@@ -1722,12 +1722,12 @@ fn creatureFindInRadius(
 }
 
 fn applyNukeBonus(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     projectiles: *survival_projectiles.ProjectilePool,
     creatures: *survival_creatures.CreaturePool,
-    bonuses: *survival_bonuses.BonusPool,
-    origin: survival_state.Vec2,
+    bonuses: *bonus_runtime.BonusPool,
+    origin: state_mod.Vec2,
     dt: f64,
     world_size: f64,
     tick_index: usize,
@@ -1747,7 +1747,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
-        const meta = survival_state.weaponProjectileMeta(type_id);
+        const meta = state_mod.weaponProjectileMeta(type_id);
         const proj_idx = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
         const speed_scale = @as(f64, @floatFromInt(state.rng.rand() % 0x32)) * 0.01 + 0.5;
         projectiles.entries[proj_idx].speed_scale *= asF32F64(speed_scale);
@@ -1757,7 +1757,7 @@ fn applyNukeBonus(
         const angle = @as(f64, @floatFromInt(state.rng.rand() % 0x274)) * 0.01;
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, &type_id);
-        const meta = survival_state.weaponProjectileMeta(type_id);
+        const meta = state_mod.weaponProjectileMeta(type_id);
         _ = projectiles.spawn(origin, angle, type_id, projectile_owner_id, meta, false);
     }
 
@@ -1797,12 +1797,12 @@ fn applyNukeBonus(
 }
 
 fn applyFinalRevengeOnDeathTransition(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     player_index: usize,
     health_before: f64,
     creatures: *survival_creatures.CreaturePool,
-    bonuses: *survival_bonuses.BonusPool,
+    bonuses: *bonus_runtime.BonusPool,
     dt: f64,
     world_size: f64,
     detail_preset: i32,
@@ -1843,8 +1843,8 @@ fn applyFinalRevengeOnDeathTransition(
 }
 
 fn applyPlayerProjectileSpawnRules(
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
     owner_id: i32,
     type_id: *i32,
 ) void {
@@ -1880,7 +1880,7 @@ fn applyPlayerProjectileSpawnRules(
 }
 
 fn consumeExplosionBurstRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     detail_preset: i32,
 ) void {
     if (detail_preset > 3) {
@@ -1912,7 +1912,7 @@ fn resolveDtFrame(
 }
 
 fn applyQuestStageFromHeader(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     header: replay_codec.ReplayHeader,
 ) void {
     if (resolveQuestLevelKey(header)) |level_key| {
@@ -1953,10 +1953,10 @@ fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
     return major * 100 + minor;
 }
 
-fn enforceRushLoadout(players: []survival_state.PlayerState) void {
+fn enforceRushLoadout(players: []state_mod.PlayerState) void {
     for (players) |*player| {
         if (player.weapon_id != game_ids.WeaponId.assault_rifle) {
-            survival_state.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
+            state_mod.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
         player.ammo = @floatFromInt(@max(0, player.clip_size));
     }
@@ -1964,8 +1964,8 @@ fn enforceRushLoadout(players: []survival_state.PlayerState) void {
 
 fn applyReplayEvent(
     event: replay_codec.ReplayEvent,
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
     dt_frame: f64,
     quest_spawn_timeline_ms: *f64,
@@ -2131,7 +2131,7 @@ fn classifyTickEvent(
 
 fn applyReplayPerkCreatureEffects(
     perk_id: PerkId,
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     creatures: *survival_creatures.CreaturePool,
     dt_frame: f64,
 ) void {
@@ -2162,8 +2162,8 @@ fn applyReplayPerkCreatureEffects(
 
 fn applyCaptureBootstrapEvent(
     bootstrap: replay_codec.CaptureBootstrapEvent,
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     quest_spawn_timeline_ms: *f64,
     quest_no_creatures_timer_ms: *f64,
     quest_completion_transition_ms: *f64,
@@ -2172,9 +2172,9 @@ fn applyCaptureBootstrapEvent(
     for (0..player_count) |idx| {
         const payload = bootstrap.players[idx];
         if (payload.weapon_id > 0) {
-            if (survival_state.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
+            if (state_mod.weaponIdFromInt(payload.weapon_id)) |weapon_id| {
                 if (players[idx].weapon_id != weapon_id) {
-                    survival_state.weaponAssignPlayer(&players[idx], weapon_id);
+                    state_mod.weaponAssignPlayer(&players[idx], weapon_id);
                 }
             }
         }
@@ -2212,10 +2212,10 @@ fn applyCaptureBootstrapEvent(
         }
         if (payload.aim_heading) |aim_heading| {
             players[idx].aim_heading = asF32F64(aim_heading);
-            players[idx].aim_dir = survival_state.Vec2.fromAngle(players[idx].aim_heading);
+            players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
-            players[idx].alt_weapon_id = if (alt_weapon_id > 0) survival_state.weaponIdFromInt(alt_weapon_id) else null;
+            players[idx].alt_weapon_id = if (alt_weapon_id > 0) state_mod.weaponIdFromInt(alt_weapon_id) else null;
         }
         if (payload.alt_clip_size) |alt_clip_size| {
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
@@ -2315,7 +2315,7 @@ fn applyCaptureBootstrapEvent(
 }
 
 fn applyCaptureCreatureSpawnEvent(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     creatures: *survival_creatures.CreaturePool,
     event: replay_codec.CaptureCreatureSpawnEvent,
 ) ReplayRunnerError!void {
@@ -2383,8 +2383,8 @@ fn applyCaptureCreatureSpawnEvent(
 }
 
 fn applyCaptureStateReset(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
     world_size: f64,
     quest_start_weapon_id: i32,
@@ -2414,7 +2414,7 @@ fn applyCaptureStateReset(
     const perk_interval_fire_cough = state.perk_interval_fire_cough;
     const perk_interval_hot_tempered = state.perk_interval_hot_tempered;
 
-    state.* = survival_state.GameplayState.init(rng_state);
+    state.* = state_mod.GameplayState.init(rng_state);
     state.status_quest_unlock_index = status_quest_unlock_index;
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;
@@ -2432,10 +2432,10 @@ fn applyCaptureStateReset(
     state.perk_interval_fire_cough = perk_interval_fire_cough;
     state.perk_interval_hot_tempered = perk_interval_hot_tempered;
 
-    survival_state.resetPlayers(players, asF32F64(world_size), null);
+    state_mod.resetPlayers(players, asF32F64(world_size), null);
     for (players) |*player| {
-        const quest_weapon = survival_state.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
-        survival_state.weaponAssignPlayer(player, quest_weapon);
+        const quest_weapon = state_mod.weaponIdFromInt(quest_start_weapon_id) orelse game_ids.WeaponId.pistol;
+        state_mod.weaponAssignPlayer(player, quest_weapon);
         if (quest_start_weapon_id == @intFromEnum(game_ids.WeaponId.pistol)) {
             player.clip_size = @max(12, player.clip_size);
             if (player.ammo < 12.0) {
@@ -2453,8 +2453,8 @@ fn applyCaptureStateReset(
 }
 
 fn applyJinxedEffects(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
     dt: f64,
 ) void {
@@ -2494,13 +2494,13 @@ fn applyJinxedEffects(
 }
 
 fn selectJinxedAccidentTarget(
-    state: *survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
 ) usize {
     if (players.len == 0) return 0;
     if (state.preserve_bugs) return 0;
 
-    var alive_indices = [_]usize{0} ** survival_state.max_players;
+    var alive_indices = [_]usize{0} ** state_mod.max_players;
     var alive_count: usize = 0;
     for (players, 0..) |player, idx| {
         if (player.health <= 0.0) continue;
@@ -2515,8 +2515,8 @@ fn selectJinxedAccidentTarget(
 }
 
 fn awardExperienceFromReward(
-    state: *survival_state.GameplayState,
-    player: *survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
     reward_value: f64,
 ) void {
     const first_gain = awardExperienceOnceFromReward(player, reward_value);
@@ -2527,7 +2527,7 @@ fn awardExperienceFromReward(
 }
 
 fn awardExperienceOnceFromReward(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     reward_value: f64,
 ) i32 {
     const reward_f32 = asF32F64(reward_value);
@@ -2542,7 +2542,7 @@ fn awardExperienceOnceFromReward(
 }
 
 fn consumeSpawnBurstRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     count: usize,
 ) void {
     for (0..count) |_| {
@@ -2554,7 +2554,7 @@ fn consumeSpawnBurstRng(
 }
 
 fn applyFreezePickupCorpseCleanupRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     creatures: *survival_creatures.CreaturePool,
     freeze_corpse_at_tick_start: []const bool,
 ) void {
@@ -2593,10 +2593,10 @@ fn applyFreezePickupCorpseCleanupRng(
 }
 
 fn updatePlayerFromReplayInput(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     input: replay_codec.ReplayPlayerInput,
     flags: replay_codec.InputFlags,
-    state: *const survival_state.GameplayState,
+    state: *const state_mod.GameplayState,
     dt: f64,
 ) void {
     const prev_pos = player.pos;
@@ -2616,7 +2616,7 @@ fn updatePlayerFromReplayInput(
     const move_mode = resolveMoveModeForUpdate(flags, state);
     const aim_scheme = resolveAimSchemeForUpdate(flags, state);
 
-    var raw_move = survival_state.Vec2{
+    var raw_move = state_mod.Vec2{
         .x = asF32F64(input.move_x),
         .y = asF32F64(input.move_y),
     };
@@ -2630,7 +2630,7 @@ fn updatePlayerFromReplayInput(
 
     var speed: f64 = 0.0;
     var phase_sign: f64 = 1.0;
-    var move_delta_override: ?survival_state.Vec2 = null;
+    var move_delta_override: ?state_mod.Vec2 = null;
     const player_controlled_movement =
         !state.demo_mode_active and
         move_mode != movement_control_computer and
@@ -2786,7 +2786,7 @@ fn updatePlayerFromReplayInput(
     var delta = if (move_delta_override) |override|
         override
     else
-        survival_state.Vec2{
+        state_mod.Vec2{
             .x = asF32F64(move.x * asF32F64(speed * movement_dt)),
             .y = asF32F64(move.y * asF32F64(speed * movement_dt)),
         };
@@ -2796,7 +2796,7 @@ fn updatePlayerFromReplayInput(
             .y = asF32F64(delta.y * 0.8),
         };
     }
-    const pos_after_move = survival_state.Vec2{
+    const pos_after_move = state_mod.Vec2{
         .x = asF32F64(player.pos.x + delta.x),
         .y = asF32F64(player.pos.y + delta.y),
     };
@@ -2805,7 +2805,7 @@ fn updatePlayerFromReplayInput(
         .y = asF32F64(pos_after_move.y),
     };
 
-    const move_delta = survival_state.Vec2.sub(player.pos, prev_pos);
+    const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
     const reload_stationary = @abs(move_delta.x) <= 1e-9 and @abs(move_delta.y) <= 1e-9;
     player.reload_stationary_latch = reload_stationary;
     if (!reload_stationary) {
@@ -2819,7 +2819,7 @@ fn updatePlayerFromReplayInput(
         .x = asF32F64(input.aim_x),
         .y = asF32F64(input.aim_y),
     };
-    var aim_dir = survival_state.Vec2.sub(player.aim, player.pos);
+    var aim_dir = state_mod.Vec2.sub(player.aim, player.pos);
     const aim_len_sq = aim_dir.lengthSq();
     if (aim_len_sq > 0.0) {
         aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
@@ -2829,7 +2829,7 @@ fn updatePlayerFromReplayInput(
 }
 
 fn finalizePlayerPostUpdate(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     world_size: f64,
 ) void {
     while (player.move_phase > 14.0) {
@@ -2857,7 +2857,7 @@ fn finalizePlayerPostUpdate(
 
 fn resolveMoveModeForUpdate(
     flags: replay_codec.InputFlags,
-    state: *const survival_state.GameplayState,
+    state: *const state_mod.GameplayState,
 ) i32 {
     if (flags.move_mode) |mode| return mode;
     if (state.demo_mode_active) return movement_control_computer;
@@ -2873,7 +2873,7 @@ fn resolveMoveModeForUpdate(
 
 fn resolveAimSchemeForUpdate(
     flags: replay_codec.InputFlags,
-    state: *const survival_state.GameplayState,
+    state: *const state_mod.GameplayState,
 ) i32 {
     if (flags.aim_scheme) |scheme| return scheme;
     if (state.demo_mode_active) return aim_scheme_computer;
@@ -2881,10 +2881,10 @@ fn resolveAimSchemeForUpdate(
 }
 
 fn playerMoveDeltaFromHeading(
-    player: *const survival_state.PlayerState,
+    player: *const state_mod.PlayerState,
     movement_dt: f64,
     speed_scale: f64,
-) survival_state.Vec2 {
+) state_mod.Vec2 {
     const move = directionFromHeadingNative(player.heading);
     const move_dx = asF32F64(move.x * player.move_speed * speed_scale);
     const move_dy = asF32F64(move.y * player.move_speed * speed_scale);
@@ -2894,7 +2894,7 @@ fn playerMoveDeltaFromHeading(
     };
 }
 
-fn directionFromHeadingNative(heading: f64) survival_state.Vec2 {
+fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
     const radians = asF32F64(heading - native_half_pi);
     return .{
         .x = asF32F64(survival_math.cos(radians)),
@@ -2903,7 +2903,7 @@ fn directionFromHeadingNative(heading: f64) survival_state.Vec2 {
 }
 
 fn playerAccelerateMoveSpeed(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     dt: f64,
 ) void {
     const dt_f32 = asF32F64(dt);
@@ -2920,7 +2920,7 @@ fn playerAccelerateMoveSpeed(
 }
 
 fn playerDecelerateMoveSpeed(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     dt: f64,
 ) void {
     const dt_f32 = asF32F64(dt);
@@ -2929,7 +2929,7 @@ fn playerDecelerateMoveSpeed(
 }
 
 fn playerApplyMoveSpeedCaps(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
 ) void {
     if (player.weapon_id == game_ids.WeaponId.mean_minigun and player.move_speed > 0.8) {
         player.move_speed = 0.8;
@@ -2942,7 +2942,7 @@ const HeadingApproachResult = struct {
 };
 
 fn playerHeadingApproachTargetWithDelta(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     target_heading: f64,
     dt: f64,
 ) HeadingApproachResult {
@@ -2984,7 +2984,7 @@ fn playerHeadingApproachTargetWithDelta(
 }
 
 fn playerHeadingApproachTarget(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     target_heading: f64,
     dt: f64,
 ) f64 {
@@ -2997,7 +2997,7 @@ fn normalizeHeading(value: f64) f64 {
 }
 
 fn applyPerkWorldDtSteps(
-    players: []const survival_state.PlayerState,
+    players: []const state_mod.PlayerState,
     dt: f64,
 ) f64 {
     const dt_f32 = asF32F64(dt);
@@ -3030,7 +3030,7 @@ fn playerFrameDtAfterRoundtrip(
     return asF32F64(time_scale_factor * movement_dt * 1.6666666);
 }
 
-fn perkActive(player: survival_state.PlayerState, perk_id: PerkId) bool {
+fn perkActive(player: state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
@@ -3887,8 +3887,8 @@ test "survival scaffold supports player counts 1 through 4" {
         const players_len: usize = @intCast(player_count);
         const fire_player: usize = players_len - 1;
 
-        const row0_storage = [_]u32{0} ** survival_state.max_players;
-        var row1_storage = [_]u32{0} ** survival_state.max_players;
+        const row0_storage = [_]u32{0} ** state_mod.max_players;
+        var row1_storage = [_]u32{0} ** state_mod.max_players;
         row1_storage[fire_player] = replay_codec.fire_down_flag;
 
         const rows = [_][]const u32{
@@ -3924,8 +3924,8 @@ test "rush scaffold supports player counts 1 through 4" {
     while (player_count <= 4) : (player_count += 1) {
         const players_len: usize = @intCast(player_count);
 
-        const row0_storage = [_]u32{0} ** survival_state.max_players;
-        const row1_storage = [_]u32{replay_codec.fire_down_flag} ** survival_state.max_players;
+        const row0_storage = [_]u32{0} ** state_mod.max_players;
+        const row1_storage = [_]u32{replay_codec.fire_down_flag} ** state_mod.max_players;
         const rows = [_][]const u32{
             row0_storage[0..players_len],
             row1_storage[0..players_len],
@@ -4160,7 +4160,7 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
         var player_count: i32 = 1;
         while (player_count <= 4) : (player_count += 1) {
             const players_len: usize = @intCast(player_count);
-            const row_storage = [_]u32{0} ** survival_state.max_players;
+            const row_storage = [_]u32{0} ** state_mod.max_players;
             const rows = [_][]const u32{row_storage[0..players_len]};
 
             const replay = try buildTestReplayMulti(allocator, .{
@@ -4348,7 +4348,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
 }
 
 test "capture creature spawn event applies added head overrides" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var creatures = survival_creatures.CreaturePool{};
     creatures.reset();
 
@@ -4408,7 +4408,7 @@ test "capture creature spawn event applies added head overrides" {
 }
 
 test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {
-    var base_state = survival_state.GameplayState.init(0x1234ABCD);
+    var base_state = state_mod.GameplayState.init(0x1234ABCD);
     var base_creatures = survival_creatures.CreaturePool{};
     base_creatures.reset();
     var base_event = replay_codec.CaptureCreatureSpawnEvent{
@@ -4424,7 +4424,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     try applyCaptureCreatureSpawnEvent(&base_state, &base_creatures, base_event);
     const rng_after_base = base_state.rng.state;
 
-    var rollover_state = survival_state.GameplayState.init(0x1234ABCD);
+    var rollover_state = state_mod.GameplayState.init(0x1234ABCD);
     var rollover_creatures = survival_creatures.CreaturePool{};
     rollover_creatures.reset();
     var rollover_event = base_event;
@@ -4446,7 +4446,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
 }
 
 test "capture creature spawn event applies added head rows without spawn rows" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var creatures = survival_creatures.CreaturePool{};
     creatures.reset();
 
@@ -4678,9 +4678,9 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
 }
 
 test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.preserve_bugs = false;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
             .index = 1,
@@ -4707,9 +4707,9 @@ test "evil eyes targeting defaults to alive player slot in non-preserve mode" {
 }
 
 test "evil eyes targeting preserve bugs keeps player zero ownership" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.preserve_bugs = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
             .index = 1,
@@ -4735,9 +4735,9 @@ test "evil eyes targeting preserve bugs keeps player zero ownership" {
 }
 
 test "evil eyes targeting assigns each alive owner in non-preserve mode" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.preserve_bugs = false;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -4785,8 +4785,8 @@ fn activeParticleCount(particles: *const survival_particles.ParticlePool) usize 
 }
 
 test "pyrokinetic spawns particle burst when collision timer wraps" {
-    var state = survival_state.GameplayState.init(0);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -4819,8 +4819,8 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
 }
 
 test "pyrokinetic uses f32 timer threshold before wrapping" {
-    var state = survival_state.GameplayState.init(0);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -4865,9 +4865,9 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
 }
 
 test "pyrokinetic defaults to first alive player slot in non-preserve mode" {
-    var state = survival_state.GameplayState.init(0);
+    var state = state_mod.GameplayState.init(0);
     state.preserve_bugs = false;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
             .index = 1,
@@ -4895,9 +4895,9 @@ test "pyrokinetic defaults to first alive player slot in non-preserve mode" {
 }
 
 test "pyrokinetic preserve bugs keeps player zero only targeting" {
-    var state = survival_state.GameplayState.init(0);
+    var state = state_mod.GameplayState.init(0);
     state.preserve_bugs = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
         .{
             .index = 1,
@@ -4925,9 +4925,9 @@ test "pyrokinetic preserve bugs keeps player zero only targeting" {
 }
 
 test "pyrokinetic targets all alive owners in default mode" {
-    var state = survival_state.GameplayState.init(0);
+    var state = state_mod.GameplayState.init(0);
     state.preserve_bugs = false;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -4972,16 +4972,16 @@ test "pyrokinetic targets all alive owners in default mode" {
 test "long distance runner ramps speed above base cap and coasts on release" {
     const dt = 0.1;
     const steps: usize = 12;
-    var state = survival_state.GameplayState.init(1);
-    var base_player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
+        .heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
     };
-    var perk_player = survival_state.PlayerState{
+    var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
+        .heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
     };
     perk_player.perk_counts[@intCast(@intFromEnum(PerkId.long_distance_runner))] = 1;
 
@@ -5034,15 +5034,15 @@ test "long distance runner ramps speed above base cap and coasts on release" {
 }
 
 test "alternate weapon slows movement by 20 percent" {
-    var state = survival_state.GameplayState.init(1);
-    const move_heading = (survival_state.Vec2{ .x = 1.0, .y = 0.0 }).toHeading();
-    var base_player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    const move_heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading();
+    var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .move_speed = 2.0,
         .heading = move_heading,
     };
-    var perk_player = survival_state.PlayerState{
+    var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .move_speed = 2.0,
@@ -5069,9 +5069,9 @@ test "alternate weapon slows movement by 20 percent" {
 }
 
 test "fire cough projectile uses pre-move player position for muzzle origin" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var projectiles = survival_projectiles.ProjectilePool{};
-    var player = survival_state.PlayerState{
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .aim = .{ .x = 200.0, .y = 100.0 },
@@ -5109,24 +5109,24 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
         const dir = directionFromHeadingNative(0.0);
         const cos_theta = survival_math.cos(-0.150915);
         const sin_theta = survival_math.sin(-0.150915);
-        break :blk survival_state.Vec2{
+        break :blk state_mod.Vec2{
             .x = dir.x * cos_theta - dir.y * sin_theta,
             .y = dir.x * sin_theta + dir.y * cos_theta,
         };
     };
-    const expected_pos = survival_state.Vec2.add(before_pos, muzzle_dir.mul(16.0));
+    const expected_pos = state_mod.Vec2.add(before_pos, muzzle_dir.mul(16.0));
     try std.testing.expectApproxEqAbs(expected_pos.x, proj.pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(expected_pos.y, proj.pos.y, 1e-6);
 }
 
 test "pending fireblast spawns sixteen plasma rifle projectiles" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
     state.pending_fireblast_count = 1;
@@ -5153,8 +5153,8 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
 }
 
 test "pending fireblast does not convert into fire bullets while guard is active" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 512.0, .y = 512.0 },
@@ -5163,7 +5163,7 @@ test "pending fireblast does not convert into fire bullets while guard is active
     };
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
     state.pending_fireblast_count = 1;
@@ -5191,13 +5191,13 @@ test "pending fireblast does not convert into fire bullets while guard is active
 }
 
 test "pending nuke damage is limited to radius" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -5246,15 +5246,15 @@ test "pending nuke damage is limited to radius" {
 }
 
 test "poison bullets does not trigger on pending nuke radius damage" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.rng.state = 1; // Mirrors poison-hit seed but nuke path must not set poison flags.
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -5289,13 +5289,13 @@ test "poison bullets does not trigger on pending nuke radius damage" {
 }
 
 test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     var projectiles = survival_projectiles.ProjectilePool{};
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     state.pending_nuke_origins[0] = players[0].pos;
     state.pending_nuke_count = 1;
@@ -5333,7 +5333,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
 }
 
 test "pending creature projectile queue materializes hostile shots before projectile step" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     var projectiles = survival_projectiles.ProjectilePool{};
 
     state.pending_creature_projectile_count = 1;
@@ -5354,7 +5354,7 @@ test "pending creature projectile queue materializes hostile shots before projec
 }
 
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     const before_rng = state.rng.state;
     var creatures = survival_creatures.CreaturePool{};
 
@@ -5415,9 +5415,9 @@ test "jinxed kills creature and awards base reward" {
     ) orelse unreachable;
     const dt = 0.2;
 
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.jinxed_timer = 0.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -5448,9 +5448,9 @@ test "jinxed reward uses float32 sum before truncation" {
     ) orelse unreachable;
     const dt = 0.2;
 
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.jinxed_timer = 0.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -5478,11 +5478,11 @@ test "jinxed accident can target another alive player outside preserve bugs mode
     ) orelse unreachable;
     const dt = 0.2;
 
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.jinxed_timer = 0.0;
     state.preserve_bugs = false;
     state.bonuses.freeze = 1.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -5512,11 +5512,11 @@ test "jinxed preserve bugs keeps accident damage on player zero" {
     ) orelse unreachable;
     const dt = 0.2;
 
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     state.jinxed_timer = 0.0;
     state.preserve_bugs = true;
     state.bonuses.freeze = 1.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -5540,10 +5540,10 @@ test "jinxed preserve bugs keeps accident damage on player zero" {
 
 test "jinxed timer uses f32 underflow threshold before proc" {
     const dt = 0.03400000184774399;
-    var state = survival_state.GameplayState.init(7);
+    var state = state_mod.GameplayState.init(7);
     state.jinxed_timer = 0.034000836312770844;
     const rng_before = state.rng.state;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 10.0, .y = 20.0 },
@@ -5568,10 +5568,10 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
     ) orelse unreachable;
     const dt = 0.2;
 
-    var default_state = survival_state.GameplayState.init(seed);
+    var default_state = state_mod.GameplayState.init(seed);
     default_state.jinxed_timer = 0.0;
     default_state.preserve_bugs = false;
-    var default_players = [_]survival_state.PlayerState{
+    var default_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5591,10 +5591,10 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
     try std.testing.expectApproxEqAbs(@as(f64, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
     try std.testing.expectEqual(@as(i32, 112), default_players[0].experience);
 
-    var bug_state = survival_state.GameplayState.init(seed);
+    var bug_state = state_mod.GameplayState.init(seed);
     bug_state.jinxed_timer = 0.0;
     bug_state.preserve_bugs = true;
-    var bug_players = [_]survival_state.PlayerState{
+    var bug_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5616,10 +5616,10 @@ test "jinxed preserve-bugs mode uses 383-slot pool while default uses 384-slot p
 }
 
 test "reflex boosted perk scales world dt by 0.9" {
-    const base_players = [_]survival_state.PlayerState{
+    const base_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
-    var perk_players = [_]survival_state.PlayerState{
+    var perk_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     perk_players[0].perk_counts[@intCast(@intFromEnum(PerkId.reflex_boosted))] = 1;
@@ -5630,8 +5630,8 @@ test "reflex boosted perk scales world dt by 0.9" {
 }
 
 test "final revenge explosion applies radial damage on death transition" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5640,7 +5640,7 @@ test "final revenge explosion applies radial damage on death transition" {
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.final_revenge))] = 1;
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -5673,8 +5673,8 @@ test "final revenge explosion applies radial damage on death transition" {
 }
 
 test "final revenge aoe includes active non-positive hp entries" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5683,7 +5683,7 @@ test "final revenge aoe includes active non-positive hp entries" {
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.final_revenge))] = 1;
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,

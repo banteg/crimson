@@ -2,11 +2,11 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const survival_bonuses = @import("bonuses.zig");
+const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
 const perks = @import("perks.zig");
 const survival_spawn = @import("spawn.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
@@ -19,9 +19,9 @@ const creature_lifecycle_stage_alive: f64 = 16.0;
 pub const Projectile = struct {
     active: bool = false,
     angle: f32 = 0.0,
-    pos: survival_state.Vec2 = .{},
-    origin: survival_state.Vec2 = .{},
-    vel: survival_state.Vec2 = .{},
+    pos: state_mod.Vec2 = .{},
+    origin: state_mod.Vec2 = .{},
+    vel: state_mod.Vec2 = .{},
     type_id: i32 = 0,
     life_timer: f32 = 0.0,
     reserved: f32 = 0.0,
@@ -38,8 +38,8 @@ pub const ProjectileTickStats = struct {
     first_hit_creature_index: i32 = -1,
     first_hit_projectile_index: i32 = -1,
     first_hit_type_id: i32 = 0,
-    first_hit_origin: survival_state.Vec2 = .{},
-    first_hit_pos: survival_state.Vec2 = .{},
+    first_hit_origin: state_mod.Vec2 = .{},
+    first_hit_pos: state_mod.Vec2 = .{},
     first_hit_target_size: f64 = 0.0,
     first_hit_target_x: f64 = 0.0,
     first_hit_target_y: f64 = 0.0,
@@ -54,7 +54,7 @@ pub const ProjectilePool = struct {
 
     pub fn spawn(
         self: *ProjectilePool,
-        pos: survival_state.Vec2,
+        pos: state_mod.Vec2,
         angle: f64,
         type_id: i32,
         owner_id: i32,
@@ -69,7 +69,7 @@ pub const ProjectilePool = struct {
             }
         }
 
-        const meta = if (base_damage > 0.0) base_damage else survival_state.weaponProjectileMeta(type_id);
+        const meta = if (base_damage > 0.0) base_damage else state_mod.weaponProjectileMeta(type_id);
         var entry = &self.entries[index];
         entry.* = .{
             .active = true,
@@ -118,10 +118,10 @@ pub const ProjectilePool = struct {
 
     pub fn update(
         self: *ProjectilePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
         creatures: *survival_creatures.CreaturePool,
-        bonuses: *survival_bonuses.BonusPool,
+        bonuses: *bonus_runtime.BonusPool,
         dt: f64,
         world_size: f64,
     ) ProjectileTickStats {
@@ -213,7 +213,7 @@ pub const ProjectilePool = struct {
                 steps *= 2;
             }
             const direction = directionFromHeading(proj.angle);
-            var acc = survival_state.Vec2{};
+            var acc = state_mod.Vec2{};
 
             var step: i32 = 0;
             while (step < steps) : (step += 3) {
@@ -376,12 +376,12 @@ pub const ProjectilePool = struct {
                 }
                 consumeIonHitEffectsRng(state, proj.type_id);
 
-                var dist = survival_state.Vec2.sub(proj.origin, proj.pos).length();
+                var dist = state_mod.Vec2.sub(proj.origin, proj.pos).length();
                 if (dist < 50.0) dist = 50.0;
-                const damage_scale = survival_state.weaponDamageScale(proj.type_id);
+                const damage_scale = state_mod.weaponDamageScale(proj.type_id);
                 const damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95;
                 const impulse_axis = asF32F64(survival_math.cos(proj.angle - native_half_pi) * proj.speed_scale);
-                const impulse = survival_state.Vec2{
+                const impulse = state_mod.Vec2{
                     .x = impulse_axis,
                     .y = impulse_axis,
                 };
@@ -489,8 +489,8 @@ pub const ProjectilePool = struct {
 };
 
 fn withinNativeFindRadius(
-    origin: survival_state.Vec2,
-    target: survival_state.Vec2,
+    origin: state_mod.Vec2,
+    target: state_mod.Vec2,
     radius: f64,
     target_size: f64,
 ) bool {
@@ -504,7 +504,7 @@ fn withinNativeFindRadius(
 }
 
 fn resetShockChainIfOwner(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     proj_index: usize,
 ) void {
     if (state.shock_chain_projectile_id != @as(i32, @intCast(proj_index))) return;
@@ -513,10 +513,10 @@ fn resetShockChainIfOwner(
 }
 
 fn applyIonLingerDamage(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
     creatures: *survival_creatures.CreaturePool,
-    bonus_pool: *survival_bonuses.BonusPool,
+    bonus_pool: *bonus_runtime.BonusPool,
     proj: *Projectile,
     dt: f64,
     ion_scale: f64,
@@ -561,7 +561,7 @@ fn applyIonLingerDamage(
     }
 }
 
-fn consumeFreezeHitShardRng(state: *survival_state.GameplayState) void {
+fn consumeFreezeHitShardRng(state: *state_mod.GameplayState) void {
     // `shard_angle` draw + `effect_spawn_freeze_shard` internal draws.
     _ = state.rng.rand() % 0x264;
     _ = state.rng.rand() & 0xF;
@@ -578,7 +578,7 @@ fn creatureHitRadius(size: f64) f64 {
     return radius;
 }
 
-fn directionFromHeading(heading: f32) survival_state.Vec2 {
+fn directionFromHeading(heading: f32) state_mod.Vec2 {
     const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
         .x = asF32F64(survival_math.cos(radians)),
@@ -587,7 +587,7 @@ fn directionFromHeading(heading: f32) survival_state.Vec2 {
 }
 
 fn postHitIonRifleShockChain(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     pool: *ProjectilePool,
     creatures: *survival_creatures.CreaturePool,
     proj_index: usize,
@@ -618,7 +618,7 @@ fn postHitIonRifleShockChain(
 
     const origin_creature = creatures.entries[hit_idx];
     const target = creatures.entries[best_idx];
-    const angle = survival_state.Vec2.sub(target.pos, origin_creature.pos).toHeading();
+    const angle = state_mod.Vec2.sub(target.pos, origin_creature.pos).toHeading();
 
     const prev_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
@@ -635,14 +635,14 @@ fn postHitIonRifleShockChain(
     state.shock_chain_projectile_id = @intCast(spawned_idx);
 }
 
-fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
 }
 
 fn consumeIonHitEffectsRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     projectile_type_id: i32,
 ) void {
     var burst_scale: f64 = 0.0;
@@ -679,7 +679,7 @@ fn ownerIdToPlayerIndex(owner_id: i32, player_len: usize) ?usize {
     return null;
 }
 
-fn perkActive(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
+fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
@@ -688,15 +688,15 @@ fn expectFloatClose(expected: f64, actual: f64) !void {
 }
 
 test "projectile hit consumes hit-presentation rng" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 102.0, .y = 100.0 },
@@ -726,17 +726,17 @@ test "projectile hit consumes hit-presentation rng" {
 }
 
 test "pulse gun hit applies post-hit target push" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     const initial_creature_x = 102.0;
     const initial_creature_y = 100.0;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = initial_creature_x, .y = initial_creature_y },
@@ -788,16 +788,16 @@ test "pulse gun hit applies post-hit target push" {
 }
 
 test "projectile hit pass does not retarget newly spawned split children in new slots" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
         },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -837,9 +837,9 @@ test "projectile hit pass does not retarget newly spawned split children in new 
 }
 
 test "poison bullets sets weak self-damage flag when rng roll hits" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.rng.state = 1; // First rand() == 41 => (41 & 7) == 1.
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -848,7 +848,7 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 102.0, .y = 100.0 },
@@ -880,9 +880,9 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
 }
 
 test "poison bullets does not set self-damage flag when rng roll misses" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.rng.state = 0; // First rand() == 38 => (38 & 7) != 1.
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -891,7 +891,7 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.poison_bullets))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 102.0, .y = 100.0 },
@@ -923,9 +923,9 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
 }
 
 test "poison bullets with toxic avenger still applies weak bullet poison only" {
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.rng.state = 1; // First rand() == 41 => (41 & 7) == 1.
-    var players = [_]survival_state.PlayerState{
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -935,7 +935,7 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.toxic_avenger))] = 1;
 
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 300.0, .y = 300.0 },
@@ -967,19 +967,19 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
 }
 
 test "barrel greaser doubles pistol projectile movement steps" {
-    var base_state = survival_state.GameplayState.init(1);
-    var base_players = [_]survival_state.PlayerState{
+    var base_state = state_mod.GameplayState.init(1);
+    var base_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     var base_pool = ProjectilePool{};
     _ = base_pool.spawn(
         .{},
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        survival_state.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
+        state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
         false,
     );
     _ = base_pool.update(
@@ -992,8 +992,8 @@ test "barrel greaser doubles pistol projectile movement steps" {
     );
     const base_x = base_pool.entries[0].pos.x;
 
-    var greased_state = survival_state.GameplayState.init(1);
-    var greased_players = [_]survival_state.PlayerState{
+    var greased_state = state_mod.GameplayState.init(1);
+    var greased_players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     greased_players[0].perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] = 1;
@@ -1003,7 +1003,7 @@ test "barrel greaser doubles pistol projectile movement steps" {
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         -100,
-        survival_state.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
+        state_mod.weaponProjectileMeta(@intFromEnum(game_ids.ProjectileTypeId.pistol)),
         false,
     );
     _ = greased_pool.update(
@@ -1022,12 +1022,12 @@ test "barrel greaser doubles pistol projectile movement steps" {
 }
 
 test "ion gun master increases ion rifle linger radius" {
-    var state_without = survival_state.GameplayState.init(1);
-    var players_without = [_]survival_state.PlayerState{
+    var state_without = state_mod.GameplayState.init(1);
+    var players_without = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     var creatures_without = survival_creatures.CreaturePool{};
-    var bonuses_without = survival_bonuses.BonusPool{};
+    var bonuses_without = bonus_runtime.BonusPool{};
     _ = creatures_without.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 105.0, .y = 0.0 },
@@ -1061,13 +1061,13 @@ test "ion gun master increases ion rifle linger radius" {
     );
     try expectFloatClose(10.0, creatures_without.entries[0].hp);
 
-    var state_with = survival_state.GameplayState.init(1);
-    var players_with = [_]survival_state.PlayerState{
+    var state_with = state_mod.GameplayState.init(1);
+    var players_with = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     players_with[0].perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] = 1;
     var creatures_with = survival_creatures.CreaturePool{};
-    var bonuses_with = survival_bonuses.BonusPool{};
+    var bonuses_with = bonus_runtime.BonusPool{};
     _ = creatures_with.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 105.0, .y = 0.0 },
@@ -1103,8 +1103,8 @@ test "ion gun master increases ion rifle linger radius" {
 }
 
 test "ranged projectile can damage player when no creature is hit" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 4.0, .y = 0.0 },
@@ -1112,7 +1112,7 @@ test "ranged projectile can damage player when no creature is hit" {
         },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     var pool = ProjectilePool{};
 
     _ = pool.spawn(
@@ -1137,8 +1137,8 @@ test "ranged projectile can damage player when no creature is hit" {
 }
 
 test "ranged projectile can damage creature before player collision" {
-    var state = survival_state.GameplayState.init(1);
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 4.0, .y = 0.0 },
@@ -1146,7 +1146,7 @@ test "ranged projectile can damage creature before player collision" {
         },
     };
     var creatures = survival_creatures.CreaturePool{};
-    var bonuses = survival_bonuses.BonusPool{};
+    var bonuses = bonus_runtime.BonusPool{};
     var pool = ProjectilePool{};
 
     _ = creatures.spawnInit(.{

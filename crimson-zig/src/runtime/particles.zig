@@ -1,9 +1,9 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
 
-const survival_bonuses = @import("bonuses.zig");
+const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
@@ -20,8 +20,8 @@ pub const ParticleStyleId = struct {
 pub const Particle = struct {
     active: bool = false,
     render_flag: bool = false,
-    pos: survival_state.Vec2 = .{},
-    vel: survival_state.Vec2 = .{},
+    pos: state_mod.Vec2 = .{},
+    vel: state_mod.Vec2 = .{},
     scale_x: f32 = 1.0,
     scale_y: f32 = 1.0,
     scale_z: f32 = 1.0,
@@ -43,8 +43,8 @@ pub const ParticlePool = struct {
 
     pub fn spawnParticle(
         self: *ParticlePool,
-        state: *survival_state.GameplayState,
-        pos: survival_state.Vec2,
+        state: *state_mod.GameplayState,
+        pos: state_mod.Vec2,
         angle: f64,
         intensity: f64,
         owner_id: i32,
@@ -75,8 +75,8 @@ pub const ParticlePool = struct {
 
     pub fn spawnParticleSlow(
         self: *ParticlePool,
-        state: *survival_state.GameplayState,
-        pos: survival_state.Vec2,
+        state: *state_mod.GameplayState,
+        pos: state_mod.Vec2,
         angle: f64,
         owner_id: i32,
     ) usize {
@@ -106,10 +106,10 @@ pub const ParticlePool = struct {
 
     pub fn update(
         self: *ParticlePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
         creatures: *survival_creatures.CreaturePool,
-        bonuses: *survival_bonuses.BonusPool,
+        bonuses: *bonus_runtime.BonusPool,
         dt: f64,
         world_size: f64,
     ) void {
@@ -219,7 +219,7 @@ pub const ParticlePool = struct {
                         entry.vel = .{};
                     } else {
                         entry.angle = wrapAngle(entry.angle);
-                        const hit_delta = survival_state.Vec2{
+                        const hit_delta = state_mod.Vec2{
                             .x = asF32F64((entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x),
                             .y = asF32F64((entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y),
                         };
@@ -264,7 +264,7 @@ pub const ParticlePool = struct {
         }
     }
 
-    fn allocSlot(self: *ParticlePool, state: *survival_state.GameplayState) usize {
+    fn allocSlot(self: *ParticlePool, state: *state_mod.GameplayState) usize {
         for (self.entries, 0..) |entry, idx| {
             if (!entry.active) return idx;
         }
@@ -274,7 +274,7 @@ pub const ParticlePool = struct {
 
 fn creatureFindInRadius(
     creatures: *survival_creatures.CreaturePool,
-    pos: survival_state.Vec2,
+    pos: state_mod.Vec2,
     radius: f32,
 ) ?usize {
     const limit: usize = @min(creatures.entries.len, 0x180);
@@ -294,7 +294,7 @@ fn creatureFindInRadius(
     return null;
 }
 
-fn directionFromAngle(angle: f32) survival_state.Vec2 {
+fn directionFromAngle(angle: f32) state_mod.Vec2 {
     return .{
         .x = asF32F64(survival_math.cos(angle)),
         .y = asF32F64(survival_math.sin(angle)),
@@ -305,7 +305,7 @@ fn wrapAngle(angle: f32) f32 {
     return native_math.wrapAngle0Tau(angle);
 }
 
-fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
+fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();

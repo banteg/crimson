@@ -1,9 +1,9 @@
 const std = @import("std");
 const native_math = @import("native_math.zig");
 
-const survival_bonuses = @import("bonuses.zig");
+const bonus_runtime = @import("bonuses.zig");
 const survival_creatures = @import("creatures.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
@@ -23,8 +23,8 @@ pub const SecondaryProjectile = struct {
     active: bool = false,
     angle: f32 = 0.0,
     speed: f32 = 0.0,
-    pos: survival_state.Vec2 = .{},
-    vel: survival_state.Vec2 = .{},
+    pos: state_mod.Vec2 = .{},
+    vel: state_mod.Vec2 = .{},
     detonation_t: f32 = 0.0,
     detonation_scale: f32 = 1.0,
     type_id: i32 = 0,
@@ -32,7 +32,7 @@ pub const SecondaryProjectile = struct {
     trail_timer: f32 = 0.0,
     target_id: i32 = -1,
     target_hint_active: bool = false,
-    target_hint: survival_state.Vec2 = .{},
+    target_hint: state_mod.Vec2 = .{},
 };
 
 pub const SecondaryProjectilePool = struct {
@@ -44,12 +44,12 @@ pub const SecondaryProjectilePool = struct {
 
     pub fn spawn(
         self: *SecondaryProjectilePool,
-        pos: survival_state.Vec2,
+        pos: state_mod.Vec2,
         angle: f64,
         type_id: i32,
         owner_id: i32,
         time_to_live: f64,
-        target_hint: ?survival_state.Vec2,
+        target_hint: ?state_mod.Vec2,
         creatures: ?*const survival_creatures.CreaturePool,
     ) usize {
         var index: usize = self.entries.len - 1;
@@ -112,10 +112,10 @@ pub const SecondaryProjectilePool = struct {
 
     pub fn updatePulseGun(
         self: *SecondaryProjectilePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
         creatures: *survival_creatures.CreaturePool,
-        bonuses: *survival_bonuses.BonusPool,
+        bonuses: *bonus_runtime.BonusPool,
         dt: f64,
         world_size: f64,
         detail_preset: i32,
@@ -250,14 +250,14 @@ pub const SecondaryProjectilePool = struct {
 
                 if (target_id >= 0 and target_id < creatures.entries.len) {
                     const target = creatures.entries[@intCast(target_id)];
-                    const to_target = survival_state.Vec2.sub(target.pos, entry.pos);
+                    const to_target = state_mod.Vec2.sub(target.pos, entry.pos);
                     const dist = to_target.length();
                     if (dist > 1e-6) {
                         entry.angle = asF32F64(to_target.toHeading());
                         const inv_dist = asF32F64(1.0 / dist);
                         const target_dir = to_target.mul(inv_dist);
                         const accel = target_dir.mul(asF32F64(dt_f32 * 800.0));
-                        const next_velocity = survival_state.Vec2.add(entry.vel, accel);
+                        const next_velocity = state_mod.Vec2.add(entry.vel, accel);
                         if (next_velocity.length() <= 350.0) {
                             entry.vel = .{
                                 .x = asF32F64(next_velocity.x),
@@ -404,7 +404,7 @@ pub const SecondaryProjectilePool = struct {
     }
 };
 
-fn directionFromHeading(heading: f32) survival_state.Vec2 {
+fn directionFromHeading(heading: f32) state_mod.Vec2 {
     const radians = asF32F64(heading - std.math.pi / 2.0);
     return .{
         .x = asF32F64(survival_math.cos(radians)),
@@ -412,8 +412,8 @@ fn directionFromHeading(heading: f32) survival_state.Vec2 {
     };
 }
 
-fn directionTo(origin: survival_state.Vec2, target: survival_state.Vec2) survival_state.Vec2 {
-    const delta = survival_state.Vec2.sub(target, origin);
+fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
+    const delta = state_mod.Vec2.sub(target, origin);
     const len = delta.length();
     if (!(len > 1e-6)) return .{};
     return .{
@@ -424,7 +424,7 @@ fn directionTo(origin: survival_state.Vec2, target: survival_state.Vec2) surviva
 
 fn creatureFindNearestAlive(
     creatures: *const survival_creatures.CreaturePool,
-    origin: survival_state.Vec2,
+    origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;
     var best_dist_sq: f64 = 1_000_000.0;
@@ -442,8 +442,8 @@ fn creatureFindNearestAlive(
 }
 
 fn withinNativeFindRadius(
-    origin: survival_state.Vec2,
-    target: survival_state.Vec2,
+    origin: state_mod.Vec2,
+    target: state_mod.Vec2,
     radius: f64,
     target_size: f64,
 ) bool {
@@ -456,20 +456,20 @@ fn withinNativeFindRadius(
     return margin < 0.0;
 }
 
-fn distanceSq(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return asF32F64(dx * dx + dy * dy);
 }
 
-fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
+fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();
 }
 
-fn consumeFreezeShardRng(state: *survival_state.GameplayState) void {
+fn consumeFreezeShardRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();
@@ -479,7 +479,7 @@ fn consumeFreezeShardRng(state: *survival_state.GameplayState) void {
 }
 
 fn consumeExplosionBurstRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     detail_preset: i32,
 ) void {
     if (detail_preset > 3) {

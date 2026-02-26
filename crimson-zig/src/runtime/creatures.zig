@@ -2,10 +2,10 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const survival_bonuses = @import("bonuses.zig");
+const bonus_runtime = @import("bonuses.zig");
 const perks = @import("perks.zig");
 const survival_spawn = @import("spawn.zig");
-const survival_state = @import("state.zig");
+const state_mod = @import("state.zig");
 const survival_math = @import("math.zig");
 
 const asF32F64 = native_math.roundF32;
@@ -30,13 +30,13 @@ pub const CreatureRuntimeError = error{
 pub const CreatureState = struct {
     active: bool = false,
     type_id: i32 = 0,
-    pos: survival_state.Vec2 = .{},
-    target: survival_state.Vec2 = .{},
-    target_offset: survival_state.Vec2 = .{},
+    pos: state_mod.Vec2 = .{},
+    target: state_mod.Vec2 = .{},
+    target_offset: state_mod.Vec2 = .{},
     heading: f64 = 0.0,
     target_heading: f64 = 0.0,
     phase_seed: f64 = 0.0,
-    vel: survival_state.Vec2 = .{},
+    vel: state_mod.Vec2 = .{},
     move_scale: f64 = 1.0,
     force_target: i32 = 0,
     ai_mode: i32 = survival_spawn.CreatureAiMode.orbit_player,
@@ -168,7 +168,7 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         call: survival_spawn.SpawnTemplateCall,
         rng: *survival_spawn.Crand,
-        state: ?*const survival_state.GameplayState,
+        state: ?*const state_mod.GameplayState,
         terrain_size: f64,
     ) CreatureRuntimeError!void {
         switch (call.template_id) {
@@ -196,7 +196,7 @@ pub const CreaturePool = struct {
                 var primary_child_idx: usize = parent_idx;
                 for (0..8) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
+                    const offset = state_mod.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -437,7 +437,7 @@ pub const CreaturePool = struct {
                 var primary_child_idx: usize = parent_idx;
                 for (0..24) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
+                    const offset = state_mod.Vec2.fromAngle(asF32F64(angle)).mul(100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -522,7 +522,7 @@ pub const CreaturePool = struct {
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
                     const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
-                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
+                    const offset = state_mod.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -638,7 +638,7 @@ pub const CreaturePool = struct {
                 var chain_prev = parent_idx;
                 for (0..10) |idx| {
                     const angle = @as(f64, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
-                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
+                    const offset = state_mod.Vec2.fromAngle(asF32F64(angle)).mul(256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1209,7 +1209,7 @@ pub const CreaturePool = struct {
                 const angle_step = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
                     const angle = @as(f64, @floatFromInt(idx)) * angle_step;
-                    const offset = survival_state.Vec2.fromAngle(asF32F64(angle)).mul(110.0);
+                    const offset = state_mod.Vec2.fromAngle(asF32F64(angle)).mul(110.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1800,11 +1800,11 @@ pub const CreaturePool = struct {
 
     pub fn update(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
         dt: f64,
         world_size: f64,
-        bonus_pool: *survival_bonuses.BonusPool,
+        bonus_pool: *bonus_runtime.BonusPool,
     ) void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
@@ -1838,7 +1838,7 @@ pub const CreaturePool = struct {
 
         const dt_ms = @max(@as(i32, 0), @as(i32, @intFromFloat(@round(dt * 1000.0))));
         const player = &players[0];
-        const single_player_dead_target_pos: ?survival_state.Vec2 =
+        const single_player_dead_target_pos: ?state_mod.Vec2 =
             if (players.len == 1 and players[0].health <= 0.0)
                 .{
                     .x = asF32F64(world_size * (27.0 / 64.0)),
@@ -1945,7 +1945,7 @@ pub const CreaturePool = struct {
             }
 
             if (perkActive(player, PerkId.radioactive)) {
-                const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
+                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt * 1.5;
                     if (creature.collision_timer < 0.0) {
@@ -1966,7 +1966,7 @@ pub const CreaturePool = struct {
             }
 
             if ((creature.flags & (survival_spawn.CreatureFlags.ranged_attack_shock | survival_spawn.CreatureFlags.ranged_attack_variant)) != 0) {
-                const dist = survival_state.Vec2.sub(creature.pos, player.pos).length();
+                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
                 if (dist > 64.0 and creature.attack_cooldown <= 0.0) {
                     if ((creature.flags & survival_spawn.CreatureFlags.ranged_attack_shock) != 0) {
                         queueCreatureProjectile(
@@ -1999,7 +1999,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const eat_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
+            const eat_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
             if (eat_sq < 20.0 * 20.0) {
                 var reverted_x = creature.pos.x - creature.vel.x;
                 var reverted_y = creature.pos.y - creature.vel.y;
@@ -2043,7 +2043,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const contact_sq = survival_state.Vec2.sub(player.pos, creature.pos).lengthSq();
+            const contact_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
             if (creature.lifecycle_stage == creature_lifecycle_stage_alive and
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and
@@ -2110,11 +2110,11 @@ pub const CreaturePool = struct {
 
     pub fn resolvePlayerShots(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         player_index: usize,
-        aim_target: survival_state.Vec2,
+        aim_target: state_mod.Vec2,
         shot_count: i32,
         weapon_id: i32,
         world_size: f64,
@@ -2124,7 +2124,7 @@ pub const CreaturePool = struct {
         if (shot_count <= 0) return .{};
 
         var player = &players[player_index];
-        var aim_dir = survival_state.Vec2.sub(aim_target, player.pos);
+        var aim_dir = state_mod.Vec2.sub(aim_target, player.pos);
         const aim_len_sq = aim_dir.lengthSq();
         if (aim_len_sq > 1e-9) {
             const inv_len = 1.0 / std.math.sqrt(aim_len_sq);
@@ -2138,9 +2138,9 @@ pub const CreaturePool = struct {
         }
 
         var result = ShotResolutionResult{};
-        const weapon_enum = survival_state.weaponIdFromInt(weapon_id) orelse .none;
-        const projectile_type_id = survival_state.projectileTypeIdFromWeaponId(weapon_enum) orelse weapon_id;
-        const damage_scale = survival_state.weaponDamageScale(weapon_id);
+        const weapon_enum = state_mod.weaponIdFromInt(weapon_id) orelse .none;
+        const projectile_type_id = state_mod.projectileTypeIdFromWeaponId(weapon_enum) orelse weapon_id;
+        const damage_scale = state_mod.weaponDamageScale(weapon_id);
         const owner_id: i32 = -1 - player.index;
         var hit_audio_game_tune_started = state.game_tune_started;
 
@@ -2188,12 +2188,12 @@ pub const CreaturePool = struct {
 
     pub fn applyProjectileDamage(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         damage: f64,
-        impulse: survival_state.Vec2,
+        impulse: state_mod.Vec2,
         owner_id: i32,
         dt: f64,
         world_size: f64,
@@ -2244,12 +2244,12 @@ pub const CreaturePool = struct {
 
     pub fn applyIonDamage(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         damage: f64,
-        impulse: survival_state.Vec2,
+        impulse: state_mod.Vec2,
         owner_id: i32,
         dt: f64,
         world_size: f64,
@@ -2273,12 +2273,12 @@ pub const CreaturePool = struct {
 
     pub fn applyFireDamage(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         damage: f64,
-        impulse: survival_state.Vec2,
+        impulse: state_mod.Vec2,
         owner_id: i32,
         dt: f64,
         world_size: f64,
@@ -2303,12 +2303,12 @@ pub const CreaturePool = struct {
 
     pub fn applyExplosionDamage(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         damage: f64,
-        impulse: survival_state.Vec2,
+        impulse: state_mod.Vec2,
         owner_id: i32,
         dt: f64,
         world_size: f64,
@@ -2390,9 +2390,9 @@ pub const CreaturePool = struct {
 
     pub fn handleSecondaryDetonationDeathFollowup(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         owner_id: i32,
         dt: f64,
@@ -2442,9 +2442,9 @@ pub const CreaturePool = struct {
 
     pub fn killNoCorpse(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         owner_id: i32,
         dt: f64,
@@ -2512,7 +2512,7 @@ pub const CreaturePool = struct {
     fn spawnFromStats(
         self: *CreaturePool,
         rng: *survival_spawn.Crand,
-        pos: survival_state.Vec2,
+        pos: state_mod.Vec2,
         heading: f64,
         stats: SpawnStats,
     ) usize {
@@ -2522,7 +2522,7 @@ pub const CreaturePool = struct {
     fn spawnFromStatsWithFlags(
         self: *CreaturePool,
         rng: *survival_spawn.Crand,
-        pos: survival_state.Vec2,
+        pos: state_mod.Vec2,
         heading: f64,
         stats: SpawnStats,
         flags: u32,
@@ -2620,8 +2620,8 @@ pub const CreaturePool = struct {
 
     fn findRayHitCreature(
         self: *CreaturePool,
-        origin: survival_state.Vec2,
-        dir: survival_state.Vec2,
+        origin: state_mod.Vec2,
+        dir: state_mod.Vec2,
     ) ?usize {
         var best_idx: ?usize = null;
         var best_along = std.math.inf(f32);
@@ -2631,13 +2631,13 @@ pub const CreaturePool = struct {
             if (!(creature.hp > 0.0)) continue;
             if (creature.lifecycle_stage <= 5.0) continue;
 
-            const to_creature = survival_state.Vec2.sub(creature.pos, origin);
+            const to_creature = state_mod.Vec2.sub(creature.pos, origin);
             const along = dot(to_creature, dir);
             if (!(along > 0.0)) continue;
             if (along >= best_along) continue;
 
             const proj = dir.mul(along);
-            const perp = survival_state.Vec2.sub(to_creature, proj);
+            const perp = state_mod.Vec2.sub(to_creature, proj);
             const radius = hitRadiusFor(creature);
             if (perp.lengthSq() <= radius * radius) {
                 best_idx = idx;
@@ -2650,12 +2650,12 @@ pub const CreaturePool = struct {
 
     fn applyDamage(
         self: *CreaturePool,
-        state: *survival_state.GameplayState,
-        players: []survival_state.PlayerState,
-        bonus_pool: *survival_bonuses.BonusPool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
         creature_index: usize,
         damage: f32,
-        impulse: survival_state.Vec2,
+        impulse: state_mod.Vec2,
         owner_id: i32,
         dt: f32,
         world_size: f32,
@@ -2729,7 +2729,7 @@ pub const CreaturePool = struct {
 
 fn creatureAiUpdateTarget(
     creature: *CreatureState,
-    player_pos: survival_state.Vec2,
+    player_pos: state_mod.Vec2,
     creatures: []const CreatureState,
     dt: f64,
 ) void {
@@ -2848,16 +2848,16 @@ fn resolveLiveLink(
 }
 
 fn linkTargetF32(
-    link_pos: survival_state.Vec2,
-    offset: survival_state.Vec2,
-) survival_state.Vec2 {
+    link_pos: state_mod.Vec2,
+    offset: state_mod.Vec2,
+) state_mod.Vec2 {
     return .{
         .x = asF32F64(link_pos.x + offset.x),
         .y = asF32F64(link_pos.y + offset.y),
     };
 }
 
-fn distanceF32(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
+fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f64 {
     const dx = asF32F64(b.x - a.x);
     const dy = asF32F64(b.y - a.y);
     const dist_sq = dx * dx + dy * dy;
@@ -2865,11 +2865,11 @@ fn distanceF32(a: survival_state.Vec2, b: survival_state.Vec2) f64 {
 }
 
 fn orbitTargetF32(
-    player_pos: survival_state.Vec2,
+    player_pos: state_mod.Vec2,
     orbit_phase: f64,
     dist: f64,
     scale: f64,
-) survival_state.Vec2 {
+) state_mod.Vec2 {
     const orbit_dist = asF32F64(asF32F64(dist) * asF32F64(scale));
     const phase = asF32F64(orbit_phase);
     const px = asF32F64(player_pos.x);
@@ -2927,7 +2927,7 @@ fn movementDeltaFromHeadingF32(
     dt: f64,
     move_scale: f64,
     move_speed: f64,
-) survival_state.Vec2 {
+) state_mod.Vec2 {
     const radians = asF32F64(heading) - native_half_pi;
 
     var vx = survival_math.cos(radians);
@@ -2949,9 +2949,9 @@ fn movementDeltaFromHeadingF32(
 }
 
 fn advancePosByDeltaF32(
-    pos: survival_state.Vec2,
-    delta: survival_state.Vec2,
-) survival_state.Vec2 {
+    pos: state_mod.Vec2,
+    delta: state_mod.Vec2,
+) state_mod.Vec2 {
     return .{
         .x = asF32F64(pos.x + delta.x),
         .y = asF32F64(pos.y + delta.y),
@@ -2997,18 +2997,18 @@ fn hitRadiusFor(creature: CreatureState) f64 {
     return @max(0.0, creature.size * 0.14285715 + 3.0);
 }
 
-fn projectileHitDamage(origin: survival_state.Vec2, hit: survival_state.Vec2, damage_scale: f64) f64 {
-    var dist = survival_state.Vec2.sub(hit, origin).length();
+fn projectileHitDamage(origin: state_mod.Vec2, hit: state_mod.Vec2, damage_scale: f64) f64 {
+    var dist = state_mod.Vec2.sub(hit, origin).length();
     if (dist < 50.0) dist = 50.0;
     const scaled = asF32F64((100.0 / dist) * damage_scale * 30.0 + 10.0);
     return asF32F64(scaled * 0.95);
 }
 
-fn perkActive(player: *const survival_state.PlayerState, perk_id: PerkId) bool {
+fn perkActive(player: *const state_mod.PlayerState, perk_id: PerkId) bool {
     return player.perk_counts[@intCast(@intFromEnum(perk_id))] > 0;
 }
 
-fn anyPlayerHasPerk(players: []const survival_state.PlayerState, perk_id: PerkId) bool {
+fn anyPlayerHasPerk(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
     for (players) |*player| {
         if (perkActive(player, perk_id)) return true;
     }
@@ -3016,8 +3016,8 @@ fn anyPlayerHasPerk(players: []const survival_state.PlayerState, perk_id: PerkId
 }
 
 fn creatureFrozenByEvilEyes(
-    state: *const survival_state.GameplayState,
-    players: []const survival_state.PlayerState,
+    state: *const state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
     creature_index: usize,
 ) bool {
     if (players.len == 0) return false;
@@ -3038,8 +3038,8 @@ fn creatureFrozenByEvilEyes(
 }
 
 pub fn consumeProjectileHitPresentationPreRng(
-    state: *survival_state.GameplayState,
-    player: *const survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *const state_mod.PlayerState,
     projectile_type_id: i32,
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
@@ -3082,7 +3082,7 @@ pub fn consumeProjectileHitPresentationPreRng(
 }
 
 pub fn consumeProjectileHitPresentationPostRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     projectile_type_id: i32,
 ) void {
     const freeze_active = state.bonuses.freeze > 0.0;
@@ -3108,7 +3108,7 @@ pub fn consumeProjectileHitPresentationPostRng(
 }
 
 fn consumeLargeHitStreakRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     freeze_active: bool,
 ) void {
     for (0..6) |_| {
@@ -3135,7 +3135,7 @@ fn consumeLargeHitStreakRng(
 }
 
 pub fn consumeHitSfxRng(
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     game_tune_started: *bool,
     projectile_type_id: i32,
 ) void {
@@ -3154,7 +3154,7 @@ pub fn consumeHitSfxRng(
     _ = state.rng.rand();
 }
 
-fn consumeSpawnBloodSplatterRng(state: *survival_state.GameplayState) void {
+fn consumeSpawnBloodSplatterRng(state: *state_mod.GameplayState) void {
     for (0..2) |_| {
         _ = state.rng.rand();
         _ = state.rng.rand();
@@ -3164,7 +3164,7 @@ fn consumeSpawnBloodSplatterRng(state: *survival_state.GameplayState) void {
     }
 }
 
-fn consumeAddRandomRng(state: *survival_state.GameplayState) void {
+fn consumeAddRandomRng(state: *state_mod.GameplayState) void {
     _ = state.rng.rand();
     _ = state.rng.rand();
     _ = state.rng.rand();
@@ -3177,7 +3177,7 @@ fn spreadPlagueInfection(
 ) void {
     for (creatures) |*target| {
         if (!target.active) continue;
-        const dist_sq = survival_state.Vec2.sub(target.pos, origin.pos).lengthSq();
+        const dist_sq = state_mod.Vec2.sub(target.pos, origin.pos).lengthSq();
         if (dist_sq >= 45.0 * 45.0) continue;
         if (target.plague_infected and origin.hp < 150.0) {
             origin.plague_infected = true;
@@ -3218,8 +3218,8 @@ fn ownerIdToPlayerIndex(owner_id: i32) ?i32 {
 }
 
 fn awardExperienceFromReward(
-    state: *survival_state.GameplayState,
-    player: *survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
     reward_value: f64,
 ) i32 {
     if (perkActive(player, PerkId.bloody_mess_quick_learner)) {
@@ -3236,8 +3236,8 @@ fn awardExperienceFromReward(
 }
 
 fn awardExperience(
-    state: *survival_state.GameplayState,
-    player: *survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
     amount: i32,
 ) i32 {
     var xp = amount;
@@ -3251,7 +3251,7 @@ fn awardExperience(
 }
 
 fn awardExperienceRaw(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     amount: i32,
 ) i32 {
     if (amount <= 0) return 0;
@@ -3276,8 +3276,8 @@ fn wrapAngle(value: f64) f64 {
 }
 
 fn queueCreatureProjectile(
-    state: *survival_state.GameplayState,
-    pos: survival_state.Vec2,
+    state: *state_mod.GameplayState,
+    pos: state_mod.Vec2,
     angle: f64,
     type_id: i32,
     owner_id: i32,
@@ -3301,7 +3301,7 @@ fn queueCreatureProjectile(
 
 fn spawnSplitChildrenOnDeath(
     self: *CreaturePool,
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
     creature: *const CreatureState,
 ) void {
     const source = creature.*;
@@ -3368,10 +3368,10 @@ fn consumeSpawnTemplateBurstRng(
 }
 
 fn consumeDeathSideEffectsRng(
-    state: *survival_state.GameplayState,
-    players: []survival_state.PlayerState,
-    bonus_pool: *survival_bonuses.BonusPool,
-    death_pos: survival_state.Vec2,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    bonus_pool: *bonus_runtime.BonusPool,
+    death_pos: state_mod.Vec2,
     world_size: f64,
     plan_death_sfx: bool,
 ) void {
@@ -3423,7 +3423,7 @@ fn tickDead(
     creature: *CreatureState,
     dt: f64,
     kill_count: *i32,
-    state: *survival_state.GameplayState,
+    state: *state_mod.GameplayState,
 ) void {
     if (!(dt > 0.0)) return;
     const hitbox = asF32F64(creature.lifecycle_stage);
@@ -3488,7 +3488,7 @@ fn applySelfDamageTickToDead(
     }
 }
 
-fn headingDirectionF32(heading: f64) survival_state.Vec2 {
+fn headingDirectionF32(heading: f64) state_mod.Vec2 {
     const radians = asF32F64(heading) - native_half_pi;
     return .{
         .x = asF32F64(survival_math.cos(radians)),
@@ -3497,7 +3497,7 @@ fn headingDirectionF32(heading: f64) survival_state.Vec2 {
 }
 
 fn awardExperienceOnceFromReward(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     reward_value: f64,
 ) i32 {
     const reward_f32 = asF32F64(reward_value);
@@ -3512,7 +3512,7 @@ fn awardExperienceOnceFromReward(
 }
 
 fn awardBaseExperienceFromReward(
-    player: *survival_state.PlayerState,
+    player: *state_mod.PlayerState,
     reward_value: f64,
 ) void {
     const reward_f32 = asF32F64(reward_value);
@@ -3522,7 +3522,7 @@ fn awardBaseExperienceFromReward(
     player.experience = @intFromFloat(total_f32);
 }
 
-fn dot(a: survival_state.Vec2, b: survival_state.Vec2) f32 {
+fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     return a.x * b.x + a.y * b.y;
 }
 
@@ -3537,14 +3537,14 @@ fn creatureTypeHasContactSfx(type_id: i32) bool {
         type_id == @intFromEnum(survival_spawn.CreatureTypeId.spider_sp2);
 }
 
-fn consumeContactSfxRng(state: *survival_state.GameplayState, creature_type_id: i32) void {
+fn consumeContactSfxRng(state: *state_mod.GameplayState, creature_type_id: i32) void {
     if (!creatureTypeHasContactSfx(creature_type_id)) return;
     _ = state.rng.rand() & 1;
 }
 
 pub fn applyPlayerContactDamage(
-    state: *survival_state.GameplayState,
-    player: *survival_state.PlayerState,
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
     damage: f64,
     dt: f64,
 ) void {
@@ -3654,9 +3654,9 @@ fn findSeedForFirstTwoRandMods(
 
 test "spawn init and shot resolution award xp on kill" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1234);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1234);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -3697,10 +3697,10 @@ test "spawn init and shot resolution award xp on kill" {
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -3769,7 +3769,7 @@ test "split-on-death children use original source when first child reuses source
         .contact_damage = 10.0,
     };
 
-    var state = survival_state.GameplayState.init(seed);
+    var state = state_mod.GameplayState.init(seed);
     spawnSplitChildrenOnDeath(&pool, &state, &pool.entries[0]);
 
     try expectFloatClose(32.0, pool.entries[0].size);
@@ -3809,9 +3809,9 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         .contact_damage = 10.0,
     };
 
-    var state = survival_state.GameplayState.init(seed);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(seed);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -3846,9 +3846,9 @@ test "applyDamage skips death side effects when lifecycle is already below alive
         .lifecycle_stage = 15.0,
     };
 
-    var state = survival_state.GameplayState.init(1234);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1234);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -3888,9 +3888,9 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
         .lifecycle_stage = 15.0,
     };
 
-    var state = survival_state.GameplayState.init(1234);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1234);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -3922,8 +3922,8 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
 }
 
 test "projectile pre-hit rng counts include bloody spread draw per splatter" {
-    var state = survival_state.GameplayState.init(1234);
-    var player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1234);
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
@@ -3939,9 +3939,9 @@ test "projectile pre-hit rng counts include bloody spread draw per splatter" {
 }
 
 test "projectile pre-hit rng counts include blade-gun angle draws under freeze" {
-    var state = survival_state.GameplayState.init(1234);
+    var state = state_mod.GameplayState.init(1234);
     state.bonuses.freeze = 1.0;
-    var player = survival_state.PlayerState{
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
     };
@@ -4926,9 +4926,9 @@ test "template spawn supports quest spawner templates and slot ticks" {
 
     {
         var pool = CreaturePool{};
-        var state = survival_state.GameplayState.init(1);
-        var bonuses = survival_bonuses.BonusPool{};
-        var players = [_]survival_state.PlayerState{
+        var state = state_mod.GameplayState.init(1);
+        var bonuses = bonus_runtime.BonusPool{};
+        var players = [_]state_mod.PlayerState{
             .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
         };
         try pool.spawnTemplateCall(
@@ -5024,9 +5024,9 @@ fn isKnownTemplateId(template_id: i32) bool {
 
 test "creature update applies contact damage and movement" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5055,9 +5055,9 @@ test "creature update applies contact damage and movement" {
 
 test "veins of poison sets self-damage flag on contact hit" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5088,9 +5088,9 @@ test "veins of poison sets self-damage flag on contact hit" {
 
 test "veins of poison skips self-damage flag when shielded" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5122,9 +5122,9 @@ test "veins of poison skips self-damage flag when shielded" {
 
 test "toxic avenger sets strong self-damage flags on contact hit" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5156,9 +5156,9 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
 
 test "toxic avenger strong self-damage tick overrides weak tick" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -5189,9 +5189,9 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
 
 test "toxic avenger skips strong self-damage flag when shielded" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5224,9 +5224,9 @@ test "toxic avenger skips strong self-damage flag when shielded" {
 test "radioactive tick deals damage and wraps collision timer" {
     const dt = 0.2;
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5253,7 +5253,7 @@ test "radioactive tick deals damage and wraps collision timer" {
 
     pool.update(&state, players[0..], dt, 1024.0, &bonuses);
 
-    const dist_after_move = survival_state.Vec2.sub(pool.entries[0].pos, players[0].pos).length();
+    const dist_after_move = state_mod.Vec2.sub(pool.entries[0].pos, players[0].pos).length();
     const expected_damage = asF32F64(asF32F64(100.0 - dist_after_move) * 0.3);
     try expectFloatClose(0.5, pool.entries[0].collision_timer);
     try expectFloatClose(asF32F64(50.0 - expected_damage), pool.entries[0].hp);
@@ -5262,10 +5262,10 @@ test "radioactive tick deals damage and wraps collision timer" {
 test "radioactive kill awards base xp without death multipliers" {
     const dt = 0.2;
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5302,9 +5302,9 @@ test "radioactive kill awards base xp without death multipliers" {
 test "radioactive sets hp to one for lizard type creatures" {
     const dt = 0.2;
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5340,9 +5340,9 @@ test "radioactive sets hp to one for lizard type creatures" {
 
 test "mr melee damages attacking creature on contact tick" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5372,9 +5372,9 @@ test "mr melee damages attacking creature on contact tick" {
 
 test "mr melee does not prevent player damage when attacker dies" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5404,9 +5404,9 @@ test "mr melee does not prevent player damage when attacker dies" {
 
 test "mr melee is inert when perk is not active" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -5435,9 +5435,9 @@ test "mr melee is inert when perk is not active" {
 
 test "evil eyes freezes targeted creature movement" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 300.0, .y = 100.0 },
@@ -5471,9 +5471,9 @@ test "evil eyes freezes targeted creature movement" {
 
 test "ai7 link timer consumes rng when timer crosses zero" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(99);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(99);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 512.0, .y = 512.0 },
@@ -5509,8 +5509,8 @@ test "ai7 link timer consumes rng when timer crosses zero" {
 }
 
 test "tough reloader halves damage while reloading" {
-    var state = survival_state.GameplayState.init(1);
-    var player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5532,8 +5532,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
     const safe_seed = findSeedForNthRandMod(1, 10, 1, 200_000) orelse unreachable;
     const lethal_seed = findSeedForNthRandMod(1, 10, 0, 200_000) orelse unreachable;
 
-    var safe_state = survival_state.GameplayState.init(safe_seed);
-    var safe_player = survival_state.PlayerState{
+    var safe_state = state_mod.GameplayState.init(safe_seed);
+    var safe_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5543,8 +5543,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
     applyPlayerContactDamage(&safe_state, &safe_player, 10.0, 0.1);
     try expectFloatClose(100.0, safe_player.health);
 
-    var lethal_state = survival_state.GameplayState.init(lethal_seed);
-    var lethal_player = survival_state.PlayerState{
+    var lethal_state = state_mod.GameplayState.init(lethal_seed);
+    var lethal_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5558,8 +5558,8 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
 test "unstoppable suppresses heading jitter and spread heat on damage" {
     const jitter_seed = findSeedForNthRandMod(2, 100, 0, 200_000) orelse unreachable;
 
-    var base_state = survival_state.GameplayState.init(jitter_seed);
-    var base_player = survival_state.PlayerState{
+    var base_state = state_mod.GameplayState.init(jitter_seed);
+    var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5571,8 +5571,8 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
     try expectFloatClose(-1.0, base_player.heading);
     try expectFloatClose(0.2, base_player.spread_heat);
 
-    var perk_state = survival_state.GameplayState.init(jitter_seed);
-    var perk_player = survival_state.PlayerState{
+    var perk_state = state_mod.GameplayState.init(jitter_seed);
+    var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5587,8 +5587,8 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
 }
 
 test "tough reloader spread heat uses post-reload damage before thick skinned" {
-    var state = survival_state.GameplayState.init(1);
-    var player = survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5610,9 +5610,9 @@ test "tough reloader spread heat uses post-reload damage before thick skinned" {
 
 test "doctor increases projectile damage by 20 percent" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.doctor))] = 1;
@@ -5647,9 +5647,9 @@ test "doctor increases projectile damage by 20 percent" {
 
 test "pyromaniac increases fire damage and consumes rng" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5690,9 +5690,9 @@ test "pyromaniac increases fire damage and consumes rng" {
 
 test "fire damage without pyromaniac keeps base damage and rng state" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{},
@@ -5732,9 +5732,9 @@ test "fire damage without pyromaniac keeps base damage and rng state" {
 
 test "living fortress scales projectile damage by alive player timers" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{} },
     };
@@ -5772,9 +5772,9 @@ test "living fortress scales projectile damage by alive player timers" {
 
 test "barrel greaser increases projectile damage by 40 percent" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.barrel_greaser))] = 1;
@@ -5809,9 +5809,9 @@ test "barrel greaser increases projectile damage by 40 percent" {
 
 test "ion gun master increases ion damage by 20 percent" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.ion_gun_master))] = 1;
@@ -5846,9 +5846,9 @@ test "ion gun master increases ion damage by 20 percent" {
 
 test "uranium filled bullets doubles projectile damage" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
     players[0].perk_counts[@intCast(@intFromEnum(PerkId.uranium_filled_bullets))] = 1;
@@ -5883,9 +5883,9 @@ test "uranium filled bullets doubles projectile damage" {
 
 test "split on death spawns two smaller children" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(0);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(0);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
 
@@ -5937,9 +5937,9 @@ test "split on death spawns two smaller children" {
 
 test "ranged shock creature queues projectile along heading not direct aim" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 0.0, .y = 200.0 },
@@ -5979,9 +5979,9 @@ test "ranged shock creature queues projectile along heading not direct aim" {
 
 test "ranged shock creature does not fire when too close" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 0.0, .y = 64.0 },
@@ -6011,9 +6011,9 @@ test "ranged shock creature does not fire when too close" {
 
 test "ranged variant uses orbit radius as projectile type and random cooldown" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(3);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(3);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 0.0, .y = 200.0 },
@@ -6047,9 +6047,9 @@ test "ranged variant uses orbit radius as projectile type and random cooldown" {
 
 test "freeze stops creature movement" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 512.0, .y = 512.0 },
@@ -6084,9 +6084,9 @@ test "freeze stops creature movement" {
 
 test "plaguebearer infects weak creatures near player" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
@@ -6115,9 +6115,9 @@ test "plaguebearer infects weak creatures near player" {
 
 test "plaguebearer infection timer wrap applies damage" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -6148,9 +6148,9 @@ test "plaguebearer infection timer wrap applies damage" {
 
 test "plaguebearer spreads between nearby creatures" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -6194,10 +6194,10 @@ test "plaguebearer spreads between nearby creatures" {
 
 test "plaguebearer infection kill increments global count" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -6228,10 +6228,10 @@ test "plaguebearer infection kill increments global count" {
 
 test "plague timer kill preserves split-on-death child spawn behavior" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -6279,10 +6279,10 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
 
 test "plaguebearer infection kill does not apply immediate dead decay" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
+    var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 500.0, .y = 500.0 },
@@ -6313,9 +6313,9 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
 
 test "single-player dead player uses dead-target AI position" {
     var pool = CreaturePool{};
-    var state = survival_state.GameplayState.init(1);
-    var bonuses = survival_bonuses.BonusPool{};
-    var players = [_]survival_state.PlayerState{
+    var state = state_mod.GameplayState.init(1);
+    var bonuses = bonus_runtime.BonusPool{};
+    var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
             .pos = .{ .x = 900.0, .y = 900.0 },
@@ -6341,13 +6341,13 @@ test "single-player dead player uses dead-target AI position" {
     const start_pos = pool.entries[0].pos;
     pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
 
-    const expected_dead_target = survival_state.Vec2{
+    const expected_dead_target = state_mod.Vec2{
         .x = 1024.0 * (27.0 / 64.0),
         .y = 1024.0 * (27.0 / 64.0),
     };
     const creature = pool.entries[0];
-    const dead_target_dist_sq = survival_state.Vec2.sub(creature.target, expected_dead_target).lengthSq();
-    const dead_player_dist_sq = survival_state.Vec2.sub(creature.target, players[0].pos).lengthSq();
+    const dead_target_dist_sq = state_mod.Vec2.sub(creature.target, expected_dead_target).lengthSq();
+    const dead_player_dist_sq = state_mod.Vec2.sub(creature.target, players[0].pos).lengthSq();
     try std.testing.expect(dead_target_dist_sq < dead_player_dist_sq);
     try std.testing.expect(creature.pos.y < start_pos.y);
     try expectFloatClose(0.0, players[0].health);
