@@ -54,7 +54,7 @@ def cmd_dbg_import_capture(
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    impl: str = typer.Option("python", "--impl", help="trace producer implementation id (v1 supports: python)"),
+    impl: str = typer.Option("python", "--impl", help="trace producer implementation id (supported: python, zig)"),
     profile: Literal["minimal", "standard", "full"] = typer.Option("standard", "--profile", help="minimal|standard|full"),
     max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
     strict_events: bool = typer.Option(
@@ -68,11 +68,6 @@ def cmd_dbg_record(
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
 
-    impl_name = impl.strip().lower()
-    if impl_name != "python":
-        typer.echo("dbg record currently supports --impl python only", err=True)
-        raise typer.Exit(code=2)
-
     profile_name = profile.strip().lower()
 
     try:
@@ -83,6 +78,7 @@ def cmd_dbg_record(
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
             chunk_ticks=chunk_ticks,
+            impl=impl,
         )
     except (TraceError, ValueError) as exc:
         typer.echo(f"dbg record failed: {exc}", err=True)

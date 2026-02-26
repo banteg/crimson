@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import stat
+import textwrap
 from pathlib import Path
 from typing import cast
 
@@ -138,6 +140,122 @@ def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Pat
         assert isinstance(micro_traces, list)
 
 
+def _write_fake_zig_bin(path: Path) -> Path:
+    script = textwrap.dedent(
+        """\
+        #!/usr/bin/env python3
+        import json
+        import pathlib
+        import sys
+
+        args = sys.argv[1:]
+        trace_path = None
+        idx = 0
+        while idx < len(args):
+            arg = args[idx]
+            if arg == "--debug-trace-jsonl":
+                idx += 1
+                trace_path = pathlib.Path(args[idx])
+            idx += 1
+
+        if trace_path is None:
+            raise SystemExit("missing --debug-trace-jsonl")
+
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        rows = [
+            {
+                "tick": 0,
+                "rng_state": 11,
+                "elapsed_ms": 0,
+                "score_xp": 10,
+                "kills": 0,
+                "creature_count": 2,
+                "perk_pending": 0,
+                "player_weapon_id": 14,
+                "player_ammo_q4": 80,
+                "player_health_q4": 240,
+                "player_pos_x_q4": 8192,
+                "player_pos_y_q4": 8192,
+                "player_experience": 10,
+                "player_level": 1,
+                "bonus_weapon_power_up_ms": 0,
+                "bonus_reflex_boost_ms": 0,
+                "bonus_energizer_ms": 0,
+                "bonus_double_experience_ms": 0,
+                "bonus_freeze_ms": 0,
+                "creature_state_hash": 1,
+                "projectile_state_hash": 2,
+                "rng_after_perk_effects": 100,
+                "rng_after_creatures": 101,
+            },
+            {
+                "tick": 1,
+                "rng_state": 12,
+                "elapsed_ms": 16,
+                "score_xp": 20,
+                "kills": 1,
+                "creature_count": 3,
+                "perk_pending": 1,
+                "player_weapon_id": 14,
+                "player_ammo_q4": 76,
+                "player_health_q4": 236,
+                "player_pos_x_q4": 8200,
+                "player_pos_y_q4": 8208,
+                "player_experience": 20,
+                "player_level": 1,
+                "bonus_weapon_power_up_ms": 0,
+                "bonus_reflex_boost_ms": 0,
+                "bonus_energizer_ms": 0,
+                "bonus_double_experience_ms": 0,
+                "bonus_freeze_ms": 0,
+                "creature_state_hash": 3,
+                "projectile_state_hash": 4,
+                "rng_after_perk_effects": 200,
+                "rng_after_creatures": 201,
+            },
+        ]
+        with trace_path.open("w", encoding="utf-8") as handle:
+            for row in rows:
+                handle.write(json.dumps(row))
+                handle.write("\\n")
+
+        payload = {
+            "producer": {"impl": "zig", "impl_version": "test"},
+            "run_result": {"ticks": 2},
+        }
+        sys.stdout.write(json.dumps(payload) + "\\n")
+        """,
+    )
+    path.write_text(script, encoding="utf-8")
+    path.chmod(path.stat().st_mode | stat.S_IXUSR)
+    return path
+
+
+def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
+    replay_path = _write_replay(tmp_path / "sample_zig.crd")
+    trace_path = tmp_path / "sample_zig.cdt"
+    fake_zig = _write_fake_zig_bin(tmp_path / "fake-zig")
+    monkeypatch.setenv("CRIMSON_DBG_ZIG_BIN", str(fake_zig))
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--impl", "zig", "--profile", "standard"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "channels=" in result.output
+    assert "checkpoint" in result.output
+    assert "zig_tick_trace" in result.output
+
+    with TraceReader(trace_path) as trace:
+        tick0 = trace.tick(0)
+        assert tick0 is not None
+        checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
+        assert checkpoint["score_xp"] == 10
+        assert checkpoint["state_hash"] == "zig:0000000000000001:0000000000000002"
+        assert "zig_tick_trace" in tick0.channels
+
+
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     golden_trace = tmp_path / "golden.cdt"
@@ -175,6 +293,121 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert "result=diverged" in bisect_result.output
     assert "first_bad_tick=1" in bisect_result.output
     assert repro_trace.exists()
+
+
+def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_hashes.crd")
+    golden_trace = tmp_path / "golden_hashes.cdt"
+    candidate_trace = tmp_path / "candidate_hashes.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick0 = next(row for row in ticks if int(row.tick_index) == 0)
+    checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
+    checkpoint["state_hash"] = "ffffffffffffffff"
+    checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    relaxed_result = runner.invoke(
+        app,
+        [
+            "dbg",
+            "diff",
+            str(golden_trace),
+            str(candidate_trace),
+            "--policy",
+            "original_vs_python_default",
+        ],
+    )
+    assert relaxed_result.exit_code == 0, relaxed_result.output
+    assert "result=ok" in relaxed_result.output
+
+    strict_result = runner.invoke(
+        app,
+        [
+            "dbg",
+            "diff",
+            str(golden_trace),
+            str(candidate_trace),
+            "--policy",
+            "python_vs_rust_strict",
+        ],
+    )
+    assert strict_result.exit_code == 1, strict_result.output
+    assert "result=diverged" in strict_result.output
+    assert ("command_hash_mismatch" in strict_result.output) or ("state_hash_mismatch" in strict_result.output)
+
+
+def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_core.crd")
+    golden_trace = tmp_path / "golden_core.cdt"
+    candidate_trace = tmp_path / "candidate_core.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick0 = next(row for row in ticks if int(row.tick_index) == 0)
+    tick0.channels.pop("entity_samples", None)
+    checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
+    checkpoint["state_hash"] = "ffffffffffffffff"
+    checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
+    checkpoint["players"] = [
+        {
+            "pos": {"x": 12345.0, "y": 67890.0},
+            "health": 1.0,
+            "weapon_id": 99,
+            "ammo": 2.0,
+            "experience": 3,
+            "level": 4,
+        },
+    ]
+    checkpoint["perk"] = {
+        "pending_count": 0,
+        "choices_dirty": False,
+        "choices": [1, 2, 3],
+        "player_nonzero_counts": [[[1, 2]]],
+    }
+    checkpoint["events"] = {
+        "hit_count": 999,
+        "pickup_count": 999,
+        "sfx_count": 999,
+        "sfx_head": ["x"],
+    }
+    checkpoint["deaths"] = [
+        {
+            "creature_index": 1,
+            "type_id": 2,
+            "reward_value": 3.0,
+            "xp_awarded": 4,
+            "owner_id": 5,
+        },
+    ]
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    default_result = runner.invoke(
+        app,
+        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
+    )
+    assert default_result.exit_code == 1, default_result.output
+    assert "result=diverged" in default_result.output
+
+    core_result = runner.invoke(
+        app,
+        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "python_vs_zig_core"],
+    )
+    assert core_result.exit_code == 0, core_result.output
+    assert "result=ok" in core_result.output
 
 
 def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
