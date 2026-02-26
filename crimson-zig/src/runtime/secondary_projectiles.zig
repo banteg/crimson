@@ -123,8 +123,7 @@ pub const SecondaryProjectilePool = struct {
         const dt_f32 = narrowF32(dt);
         const freeze_active = state.bonuses.freeze > 0.0;
 
-        for (&self.entries, 0..) |*entry, secondary_idx| {
-            _ = secondary_idx;
+        for (&self.entries) |*entry| {
             if (!entry.active) continue;
 
             if (entry.type_id == SecondaryProjectileTypeId.detonation) {
