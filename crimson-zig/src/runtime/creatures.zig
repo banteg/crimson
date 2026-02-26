@@ -39,7 +39,7 @@ pub const CreatureState = struct {
     vel: state_mod.Vec2 = .{},
     move_scale: f64 = 1.0,
     force_target: i32 = 0,
-    ai_mode: i32 = survival_spawn.CreatureAiMode.orbit_player,
+    ai_mode: survival_spawn.CreatureAiMode = .orbit_player,
     // Native keeps this stale across slot reuse for some spawn paths.
     link_index: i32 = -1,
     orbit_angle: f64 = 0.0,
@@ -172,7 +172,7 @@ pub const CreaturePool = struct {
         terrain_size: f64,
     ) CreatureRuntimeError!void {
         switch (call.template_id) {
-            survival_spawn.SpawnId.formation_ring_alien_8_12 => {
+            @intFromEnum(survival_spawn.SpawnId.formation_ring_alien_8_12) => {
                 // Parent.
                 const parent_idx = self.spawnFromStats(
                     rng,
@@ -1236,7 +1236,7 @@ pub const CreaturePool = struct {
                     self.entries[child_idx].target = self.entries[child_idx].pos;
                 }
             },
-            survival_spawn.SpawnId.alien_const_red_fast_2b => {
+            @intFromEnum(survival_spawn.SpawnId.alien_const_red_fast_2b) => {
                 _ = self.spawnFromStats(
                     rng,
                     .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1252,7 +1252,7 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.rand() % 314;
             },
-            survival_spawn.SpawnId.alien_const_red_boss_2c => {
+            @intFromEnum(survival_spawn.SpawnId.alien_const_red_boss_2c) => {
                 _ = self.spawnFromStats(
                     rng,
                     .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1285,7 +1285,7 @@ pub const CreaturePool = struct {
                 _ = rng.rand() % 314;
                 self.entries[idx].ai_mode = survival_spawn.CreatureAiMode.chase_player;
             },
-            survival_spawn.SpawnId.spider_sp2_random_35 => {
+            @intFromEnum(survival_spawn.SpawnId.spider_sp2_random_35) => {
                 // Match Python/native plan builder ordering:
                 // allocCreature phase seed, transient heading draw, then template randoms.
                 const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
@@ -1357,7 +1357,7 @@ pub const CreaturePool = struct {
                     .contact_damage = 10.0,
                 });
             },
-            survival_spawn.SpawnId.spider_sp1_ai7_timer_38 => {
+            @intFromEnum(survival_spawn.SpawnId.spider_sp1_ai7_timer_38) => {
                 const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
                 const size = @as(f64, @floatFromInt((rng.rand() & 3) + 41));
@@ -1403,7 +1403,7 @@ pub const CreaturePool = struct {
                 });
                 self.entries[idx].link_index = 0;
             },
-            survival_spawn.SpawnId.spider_sp2_splitter_01 => {
+            @intFromEnum(survival_spawn.SpawnId.spider_sp2_splitter_01) => {
                 _ = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1421,7 +1421,7 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.rand() % 314;
             },
-            survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a => {
+            @intFromEnum(survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a) => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -1458,7 +1458,7 @@ pub const CreaturePool = struct {
                 _ = rng.rand() % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
-            survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c => {
+            @intFromEnum(survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c) => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = asF32F64(call.pos.x), .y = asF32F64(call.pos.y) },
@@ -3078,7 +3078,6 @@ pub fn consumeProjectileHitPresentationPreRng(
             }
         }
     }
-
 }
 
 pub fn consumeProjectileHitPresentationPostRng(
@@ -3961,7 +3960,7 @@ test "template spawn supports survival early-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = survival_spawn.SpawnId.formation_ring_alien_8_12,
+            .template_id = @intFromEnum(survival_spawn.SpawnId.formation_ring_alien_8_12),
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = std.math.pi,
         },
@@ -3976,7 +3975,7 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = survival_spawn.SpawnId.spider_sp2_splitter_01,
+            .template_id = @intFromEnum(survival_spawn.SpawnId.spider_sp2_splitter_01),
             .pos = .{ .x = 10.0, .y = 20.0 },
             .heading = 1.23,
         },
@@ -3994,7 +3993,7 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a,
+            .template_id = @intFromEnum(survival_spawn.SpawnId.spider_sp1_const_shock_boss_3a),
             .pos = .{ .x = 30.0, .y = 40.0 },
             .heading = 2.34,
         },
@@ -4014,7 +4013,7 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c,
+            .template_id = @intFromEnum(survival_spawn.SpawnId.spider_sp1_const_ranged_variant_3c),
             .pos = .{ .x = 50.0, .y = 60.0 },
             .heading = 3.45,
         },
@@ -4627,7 +4626,7 @@ test "template spawn supports quest constant alien templates" {
     const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
     const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
     const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, survival_spawn.CreatureFlags.bonus_on_death, 0, 0, 0, 0 };
-    const expected_ai_mode = [_]i32{
+    const expected_ai_mode = [_]survival_spawn.CreatureAiMode{
         survival_spawn.CreatureAiMode.orbit_player,
         survival_spawn.CreatureAiMode.orbit_player,
         survival_spawn.CreatureAiMode.orbit_player,

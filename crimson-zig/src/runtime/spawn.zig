@@ -15,16 +15,17 @@ pub const CreatureTypeId = enum(i32) {
     trooper = 5,
 };
 
-pub const CreatureAiMode = struct {
-    pub const orbit_player: i32 = 0;
-    pub const orbit_player_tight: i32 = 1;
-    pub const chase_player: i32 = 2;
-    pub const follow_link: i32 = 3;
-    pub const link_guard: i32 = 4;
-    pub const follow_link_tethered: i32 = 5;
-    pub const orbit_link: i32 = 6;
-    pub const hold_timer: i32 = 7;
-    pub const orbit_player_wide: i32 = 8;
+pub const CreatureAiMode = enum(i32) {
+    orbit_player = 0,
+    orbit_player_tight = 1,
+    chase_player = 2,
+    follow_link = 3,
+    link_guard = 4,
+    follow_link_tethered = 5,
+    orbit_link = 6,
+    hold_timer = 7,
+    orbit_player_wide = 8,
+    _,
 };
 
 pub const CreatureFlags = struct {
@@ -39,15 +40,74 @@ pub const CreatureFlags = struct {
     pub const bonus_on_death: u32 = 0x400;
 };
 
-pub const SpawnId = struct {
-    pub const spider_sp2_splitter_01: i32 = 0x01;
-    pub const formation_ring_alien_8_12: i32 = 0x12;
-    pub const alien_const_red_fast_2b: i32 = 0x2B;
-    pub const alien_const_red_boss_2c: i32 = 0x2C;
-    pub const spider_sp2_random_35: i32 = 0x35;
-    pub const spider_sp1_ai7_timer_38: i32 = 0x38;
-    pub const spider_sp1_const_shock_boss_3a: i32 = 0x3A;
-    pub const spider_sp1_const_ranged_variant_3c: i32 = 0x3C;
+pub const SpawnId = enum(i32) {
+    zombie_boss_spawner_00 = 0x00,
+    spider_sp2_splitter_01 = 0x01,
+    spider_sp1_random_03 = 0x03,
+    lizard_random_04 = 0x04,
+    spider_sp2_random_05 = 0x05,
+    alien_random_06 = 0x06,
+    alien_spawner_child_1d_fast_07 = 0x07,
+    alien_spawner_child_1d_slow_08 = 0x08,
+    alien_spawner_child_1d_limited_09 = 0x09,
+    alien_spawner_child_32_slow_0a = 0x0A,
+    alien_spawner_child_3c_slow_0b = 0x0B,
+    alien_spawner_child_31_fast_0c = 0x0C,
+    alien_spawner_child_31_slow_0d = 0x0D,
+    alien_spawner_ring_24_0e = 0x0E,
+    alien_const_brown_transparent_0f = 0x0F,
+    alien_spawner_child_32_fast_10 = 0x10,
+    formation_chain_lizard_4_11 = 0x11,
+    formation_ring_alien_8_12 = 0x12,
+    formation_chain_alien_10_13 = 0x13,
+    formation_grid_alien_green_14 = 0x14,
+    formation_grid_alien_white_15 = 0x15,
+    formation_grid_lizard_white_16 = 0x16,
+    formation_grid_spider_sp1_white_17 = 0x17,
+    formation_grid_alien_bronze_18 = 0x18,
+    formation_ring_alien_5_19 = 0x19,
+    ai1_alien_blue_tint_1a = 0x1A,
+    ai1_spider_sp1_blue_tint_1b = 0x1B,
+    ai1_lizard_blue_tint_1c = 0x1C,
+    alien_random_1d = 0x1D,
+    alien_random_1e = 0x1E,
+    alien_random_1f = 0x1F,
+    alien_random_green_20 = 0x20,
+    alien_const_purple_ghost_21 = 0x21,
+    alien_const_green_ghost_22 = 0x22,
+    alien_const_green_ghost_small_23 = 0x23,
+    alien_const_green_24 = 0x24,
+    alien_const_green_small_25 = 0x25,
+    alien_const_pale_green_26 = 0x26,
+    alien_const_weapon_bonus_27 = 0x27,
+    alien_const_purple_28 = 0x28,
+    alien_const_grey_brute_29 = 0x29,
+    alien_const_grey_fast_2a = 0x2A,
+    alien_const_red_fast_2b = 0x2B,
+    alien_const_red_boss_2c = 0x2C,
+    alien_const_cyan_ai2_2d = 0x2D,
+    lizard_random_2e = 0x2E,
+    lizard_const_grey_2f = 0x2F,
+    lizard_const_yellow_boss_30 = 0x30,
+    lizard_random_31 = 0x31,
+    spider_sp1_random_32 = 0x32,
+    spider_sp1_random_red_33 = 0x33,
+    spider_sp1_random_green_34 = 0x34,
+    spider_sp2_random_35 = 0x35,
+    alien_ai7_orbiter_36 = 0x36,
+    spider_sp2_ranged_variant_37 = 0x37,
+    spider_sp1_ai7_timer_38 = 0x38,
+    spider_sp1_ai7_timer_weak_39 = 0x39,
+    spider_sp1_const_shock_boss_3a = 0x3A,
+    spider_sp1_const_red_boss_3b = 0x3B,
+    spider_sp1_const_ranged_variant_3c = 0x3C,
+    spider_sp1_random_3d = 0x3D,
+    spider_sp1_const_white_fast_3e = 0x3E,
+    spider_sp1_const_brown_small_3f = 0x3F,
+    spider_sp1_const_blue_40 = 0x40,
+    zombie_random_41 = 0x41,
+    zombie_const_grey_42 = 0x42,
+    zombie_const_green_brute_43 = 0x43,
 };
 
 pub const Vec2 = struct {
@@ -79,7 +139,7 @@ pub const CreatureInit = struct {
     set_heading: bool = true,
     phase_seed: f64 = 0.0,
     type_id: CreatureTypeId = .alien,
-    ai_mode: i32 = CreatureAiMode.orbit_player,
+    ai_mode: CreatureAiMode = .orbit_player,
     flags: u32 = 0,
     size: f64 = 0.0,
     move_speed: f64 = 0.0,
@@ -138,7 +198,7 @@ pub const SpawnSlotInit = struct {
 pub const QuestSpawnEntry = struct {
     pos: Vec2,
     heading: f64,
-    spawn_id: i32,
+    spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
 };
@@ -213,8 +273,8 @@ pub fn questSpawnTableEmpty(entries: []const QuestSpawnEntry) bool {
 pub fn applyHardcoreQuestSpawnTableAdjustment(entries: []QuestSpawnEntry) void {
     for (entries) |*entry| {
         if (entry.count <= 1) continue;
-        if (entry.spawn_id == 0x3C) continue;
-        if (entry.spawn_id == 0x2B) {
+        if (entry.spawn_id == .spider_sp1_const_ranged_variant_3c) continue;
+        if (entry.spawn_id == .alien_const_red_fast_2b) {
             entry.count += 2;
         } else {
             entry.count += 8;
@@ -274,7 +334,7 @@ pub fn tickQuestSpawnTimeline(
                 pos.x += offset;
             }
             result.spawns[result.spawn_count] = .{
-                .template_id = entry.spawn_id,
+                .template_id = @intFromEnum(entry.spawn_id),
                 .pos = pos,
                 .heading = entry.heading,
             };
@@ -1004,14 +1064,14 @@ fn applyTint(creature: *CreatureInit, tint: [4]f64) void {
 
 fn appendSpawnCall(
     result: *SpawnStageResult,
-    template_id: i32,
+    template_id: SpawnId,
     x: f64,
     y: f64,
     heading: f64,
 ) void {
     std.debug.assert(result.count < result.calls.len);
     result.calls[result.count] = .{
-        .template_id = template_id,
+        .template_id = @intFromEnum(template_id),
         .pos = .{ .x = x, .y = y },
         .heading = heading,
     };
@@ -1118,7 +1178,7 @@ test "hardcore quest spawn table adjustment parity" {
         .{
             .pos = .{ .x = 0.0, .y = 0.0 },
             .heading = 0.0,
-            .spawn_id = 0x26,
+            .spawn_id = .alien_const_pale_green_26,
             .trigger_ms = 0,
             .count = 1,
         },
@@ -1197,7 +1257,7 @@ test "tick quest mode spawns can fire entries after timeline advance" {
     try std.testing.expect(!result.creatures_none_active);
     try expectFloatClose(2.0, result.no_creatures_timer_ms);
     try std.testing.expectEqual(@as(usize, 1), result.spawn_count);
-    try std.testing.expectEqual(SpawnId.formation_ring_alien_8_12, result.spawns[0].template_id);
+    try std.testing.expectEqual(@intFromEnum(SpawnId.formation_ring_alien_8_12), result.spawns[0].template_id);
 }
 
 test "tick quest completion transition resets when not idle complete" {
@@ -1391,8 +1451,8 @@ test "tick quest spawn timeline fires only one trigger group per tick" {
     try std.testing.expectEqual(@as(i32, 0), entries[1].count);
     try std.testing.expectEqual(@as(i32, 1), entries[2].count);
     try std.testing.expectEqual(@as(usize, 2), result.spawn_count);
-    try std.testing.expectEqual(SpawnId.formation_ring_alien_8_12, result.spawns[0].template_id);
-    try std.testing.expectEqual(SpawnId.alien_const_red_fast_2b, result.spawns[1].template_id);
+    try std.testing.expectEqual(@intFromEnum(SpawnId.formation_ring_alien_8_12), result.spawns[0].template_id);
+    try std.testing.expectEqual(@intFromEnum(SpawnId.alien_const_red_fast_2b), result.spawns[1].template_id);
 }
 
 test "tick quest spawn timeline force fires after idle timeout" {
@@ -1615,7 +1675,7 @@ test "survival spawn baseline seed1 xp0" {
 
     try std.testing.expect(creature.type_id == .alien);
     try std.testing.expectEqual(@as(u32, 0), creature.flags);
-    try std.testing.expectEqual(@as(i32, 0), creature.ai_mode);
+    try std.testing.expectEqual(CreatureAiMode.orbit_player, creature.ai_mode);
     try expectFloatClose(44.0, creature.size);
     try expectFloatClose(@floatCast(@as(f32, @as(f32, 15.0) * @as(f32, 0.01))), creature.heading);
     try expectFloatClose(@floatCast(@as(f32, 0.9)), creature.move_speed);
@@ -1729,7 +1789,7 @@ test "survival spawn rare variants" {
         const creature = buildSurvivalSpawnCreature(.{ .x = 1.0, .y = 2.0 }, &rng, 0);
         try std.testing.expect(creature.type_id == .alien);
         try std.testing.expectEqual(@as(u32, 0), creature.flags);
-        try std.testing.expectEqual(@as(i32, 0), creature.ai_mode);
+        try std.testing.expectEqual(CreatureAiMode.orbit_player, creature.ai_mode);
         try expectFloatClose(case.expected_size, creature.size);
         try expectFloatClose(case.expected_contact_damage, creature.contact_damage);
         try expectFloatClose(case.expected_health, creature.health);
@@ -1780,7 +1840,7 @@ test "survival milestone stage2 grid positions" {
     try std.testing.expectEqual(@as(usize, 12), out.count);
 
     for (out.slice()) |spawn| {
-        try std.testing.expectEqual(SpawnId.spider_sp2_random_35, spawn.template_id);
+        try std.testing.expectEqual(@intFromEnum(SpawnId.spider_sp2_random_35), spawn.template_id);
         try expectFloatClose(std.math.pi, spawn.heading);
     }
     try expectFloatClose(1088.0, out.calls[0].pos.x);
@@ -1794,19 +1854,19 @@ test "survival milestone stage9 final wave layout" {
     try std.testing.expectEqual(@as(i32, 10), out.stage);
     try std.testing.expectEqual(@as(usize, 10), out.count);
 
-    try std.testing.expectEqual(SpawnId.spider_sp1_const_shock_boss_3a, out.calls[0].template_id);
-    try std.testing.expectEqual(SpawnId.spider_sp1_const_shock_boss_3a, out.calls[1].template_id);
+    try std.testing.expectEqual(@intFromEnum(SpawnId.spider_sp1_const_shock_boss_3a), out.calls[0].template_id);
+    try std.testing.expectEqual(@intFromEnum(SpawnId.spider_sp1_const_shock_boss_3a), out.calls[1].template_id);
     try expectFloatClose(1088.0, out.calls[0].pos.x);
     try expectFloatClose(512.0, out.calls[0].pos.y);
     try expectFloatClose(-64.0, out.calls[1].pos.x);
     try expectFloatClose(512.0, out.calls[1].pos.y);
 
     for (out.calls[2..6]) |spawn| {
-        try std.testing.expectEqual(SpawnId.spider_sp1_const_ranged_variant_3c, spawn.template_id);
+        try std.testing.expectEqual(@intFromEnum(SpawnId.spider_sp1_const_ranged_variant_3c), spawn.template_id);
         try expectFloatClose(-64.0, spawn.pos.y);
     }
     for (out.calls[6..10]) |spawn| {
-        try std.testing.expectEqual(SpawnId.spider_sp1_const_ranged_variant_3c, spawn.template_id);
+        try std.testing.expectEqual(@intFromEnum(SpawnId.spider_sp1_const_ranged_variant_3c), spawn.template_id);
         try expectFloatClose(1088.0, spawn.pos.y);
     }
 }

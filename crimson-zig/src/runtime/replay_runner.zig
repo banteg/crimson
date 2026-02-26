@@ -1145,7 +1145,7 @@ fn buildTickTrace(
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.y))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_scale))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.force_target)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.ai_mode)));
+        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, @intFromEnum(creature.ai_mode))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.link_index)));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.orbit_angle))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.orbit_radius))));
@@ -1363,14 +1363,14 @@ fn buildTickTrace(
         .creature18_type_id = creatures.entries[18].type_id,
         .creature18_flags = @bitCast(creatures.entries[18].flags),
         .creature18_link_index = creatures.entries[18].link_index,
-        .creature18_ai_mode = creatures.entries[18].ai_mode,
+        .creature18_ai_mode = @intFromEnum(creatures.entries[18].ai_mode),
         .creature26_active = creatures.entries[26].active,
         .creature26_hp_q4 = quantizeQ4(creatures.entries[26].hp),
         .creature26_lifecycle_stage_q4 = quantizeQ4(creatures.entries[26].lifecycle_stage),
         .creature26_type_id = creatures.entries[26].type_id,
         .creature26_flags = @bitCast(creatures.entries[26].flags),
         .creature26_link_index = creatures.entries[26].link_index,
-        .creature26_ai_mode = creatures.entries[26].ai_mode,
+        .creature26_ai_mode = @intFromEnum(creatures.entries[26].ai_mode),
         .creature31_active = creatures.entries[31].active,
         .creature31_hp_q4 = quantizeQ4(creatures.entries[31].hp),
         .creature31_lifecycle_stage_q4 = quantizeQ4(creatures.entries[31].lifecycle_stage),
@@ -1386,14 +1386,14 @@ fn buildTickTrace(
         .creature32_target_x_q4 = quantizeQ4(creatures.entries[32].target.x),
         .creature32_target_y_q4 = quantizeQ4(creatures.entries[32].target.y),
         .creature32_link_index = creatures.entries[32].link_index,
-        .creature32_ai_mode = creatures.entries[32].ai_mode,
+        .creature32_ai_mode = @intFromEnum(creatures.entries[32].ai_mode),
         .creature39_active = creatures.entries[39].active,
         .creature39_hp_q4 = quantizeQ4(creatures.entries[39].hp),
         .creature39_lifecycle_stage_q4 = quantizeQ4(creatures.entries[39].lifecycle_stage),
         .creature39_type_id = creatures.entries[39].type_id,
         .creature39_flags = @bitCast(creatures.entries[39].flags),
         .creature39_link_index = creatures.entries[39].link_index,
-        .creature39_ai_mode = creatures.entries[39].ai_mode,
+        .creature39_ai_mode = @intFromEnum(creatures.entries[39].ai_mode),
         .creature45_active = creatures.entries[45].active,
         .creature45_pos_x_q4 = quantizeQ4(creatures.entries[45].pos.x),
         .creature45_pos_y_q4 = quantizeQ4(creatures.entries[45].pos.y),
@@ -2350,7 +2350,7 @@ fn applyCaptureCreatureSpawnEvent(
         }
         if (row.has_heading) entry.heading = asF32F64(row.heading);
         if (row.has_target_heading) entry.target_heading = asF32F64(row.target_heading);
-        if (row.has_ai_mode) entry.ai_mode = row.ai_mode;
+        if (row.has_ai_mode) entry.ai_mode = @enumFromInt(row.ai_mode);
         if (row.has_link_index) entry.link_index = row.link_index;
         if (row.has_hp) entry.hp = asF32F64(row.hp);
         if (row.has_lifecycle_stage) entry.lifecycle_stage = asF32F64(row.lifecycle_stage);
@@ -4351,7 +4351,7 @@ test "capture creature spawn event applies added head overrides" {
         .has_target_heading = true,
         .target_heading = 0.621416449546814,
         .has_ai_mode = true,
-        .ai_mode = 3,
+        .ai_mode = @intFromEnum(survival_spawn.CreatureAiMode.follow_link),
         .has_link_index = true,
         .link_index = 0,
         .has_hp = true,
@@ -4376,7 +4376,7 @@ test "capture creature spawn event applies added head overrides" {
     try std.testing.expect(creature.active);
     try std.testing.expectApproxEqAbs(@as(f64, 1.1278764009475708), creature.heading, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 0.621416449546814), creature.target_heading, 1e-6);
-    try std.testing.expectEqual(@as(i32, 3), creature.ai_mode);
+    try std.testing.expectEqual(survival_spawn.CreatureAiMode.follow_link, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 0), creature.link_index);
     try std.testing.expectApproxEqAbs(@as(f64, 123.5), creature.hp, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 9.5), creature.lifecycle_stage, 1e-6);
@@ -4454,7 +4454,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
         .has_target_heading = true,
         .target_heading = 0.521416425704956,
         .has_ai_mode = true,
-        .ai_mode = 0,
+        .ai_mode = @intFromEnum(survival_spawn.CreatureAiMode.orbit_player),
         .has_link_index = true,
         .link_index = 1,
         .has_orbit_radius = true,
@@ -4468,7 +4468,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
     try std.testing.expect(creature.active);
     try std.testing.expectApproxEqAbs(@as(f64, 0.28999999165534973), creature.heading, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f64, 0.521416425704956), creature.target_heading, 1e-6);
-    try std.testing.expectEqual(@as(i32, 0), creature.ai_mode);
+    try std.testing.expectEqual(survival_spawn.CreatureAiMode.orbit_player, creature.ai_mode);
     try std.testing.expectEqual(@as(i32, 1), creature.link_index);
     try std.testing.expectApproxEqAbs(@as(f64, 1.25), creature.orbit_radius, 1e-6);
     try std.testing.expectEqual(@as(u32, 5), creature.flags);

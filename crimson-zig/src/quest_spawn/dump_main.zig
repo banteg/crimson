@@ -73,7 +73,7 @@ pub fn main() !void {
     var out_buffer: [8192]u8 = undefined;
     var writer = std.fs.File.stdout().writer(&out_buffer);
     const out = &writer.interface;
-    try out.print("{{\"start_weapon_id\":{d},\"entries\":[", .{result.start_weapon_id});
+    try out.print("{{\"start_weapon_id\":{d},\"entries\":[", .{@intFromEnum(result.start_weapon_id)});
     for (result.entries, 0..) |entry, idx| {
         if (idx > 0) try out.writeAll(",");
         try out.print(
@@ -82,7 +82,7 @@ pub fn main() !void {
                 entry.pos.x,
                 entry.pos.y,
                 entry.heading,
-                entry.spawn_id,
+                @intFromEnum(entry.spawn_id),
                 entry.trigger_ms,
                 entry.count,
             },
