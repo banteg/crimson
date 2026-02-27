@@ -13,6 +13,9 @@ from pathlib import Path
 from typing import Any
 
 import msgspec
+from deepdiff import DeepDiff
+from rich.console import Console
+from rich.text import Text
 
 from crimson.bonuses.ids import BonusId
 from crimson.replay import ReplayCodecError, load_replay
@@ -553,6 +556,72 @@ def _first_mismatch(
     return None
 
 
+def _deepdiff_path_to_dotted(path: str) -> str:
+    """Convert DeepDiff path like root['rng']['rng_state'] to rng.rng_state."""
+    return path.replace("root", "").replace("['", ".").replace("']", "").replace("[", "[").replace("]", "]").lstrip(".")
+
+
+def _print_state_diff(
+    python_row: ReplayTickTraceJsonRow,
+    zig_row: ReplayTickTraceJsonRow,
+) -> None:
+    python_obj = msgspec.to_builtins(python_row)
+    zig_obj = msgspec.to_builtins(zig_row)
+
+    diff = DeepDiff(
+        python_obj,
+        zig_obj,
+        exclude_paths=[f"root['{p.split('.')[0]}']['{p.split('.')[1]}']" for p in _UNSUPPORTED_COMPARE_PATHS if '.' in p],
+    )
+    if not diff:
+        return
+
+    console = Console()
+    console.print()
+    console.print("[bold]state diff (python → zig)[/bold]")
+
+    if "values_changed" in diff:
+        for path, change in diff["values_changed"].items():
+            dotted = _deepdiff_path_to_dotted(path)
+            old, new = change["old_value"], change["new_value"]
+            line = Text()
+            line.append(f"  {dotted}: ", style="bold")
+            line.append(f"{old}", style="red")
+            line.append(" → ")
+            line.append(f"{new}", style="green")
+            console.print(line)
+
+    if "type_changes" in diff:
+        for path, change in diff["type_changes"].items():
+            dotted = _deepdiff_path_to_dotted(path)
+            old, new = change["old_value"], change["new_value"]
+            line = Text()
+            line.append(f"  {dotted}: ", style="bold")
+            line.append(f"{old!r}", style="red")
+            line.append(" → ")
+            line.append(f"{new!r}", style="green")
+            console.print(line)
+
+    for key, label in [
+        ("dictionary_item_added", "added"),
+        ("dictionary_item_removed", "removed"),
+        ("iterable_item_added", "added"),
+        ("iterable_item_removed", "removed"),
+    ]:
+        if key in diff:
+            for path in diff[key]:
+                dotted = _deepdiff_path_to_dotted(path if isinstance(path, str) else str(path))
+                val = diff[key][path] if isinstance(diff[key], dict) else None
+                line = Text()
+                line.append(f"  {dotted}: ", style="bold")
+                line.append(f"{label}", style="yellow")
+                if val is not None:
+                    line.append(f" = {val}")
+                console.print(line)
+
+    console.print()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Compare Python and Zig survival replay verifier tick traces.",
@@ -657,6 +726,10 @@ def main() -> int:
     if zig_run.stderr.strip():
         print("zig stderr:")
         print(zig_run.stderr.strip())
+
+    if tick_index < len(python_trace_rows) and tick_index < len(zig_trace_rows):
+        _print_state_diff(python_trace_rows[tick_index], zig_trace_rows[tick_index])
+
     return 2
 
 
