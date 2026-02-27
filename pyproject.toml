@@ -38,6 +38,7 @@ module-name = ["crimson", "grim"]
 
 [dependency-groups]
 dev = [
+    "deepdiff>=8.6.1",
     "import-linter>=2.9",
     "mkdocstrings>=1.0.3",
     "numpy>=2.4.2",
