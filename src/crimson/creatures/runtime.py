@@ -875,6 +875,7 @@ class CreaturePool:
         - Death side effects should be initiated by damage call sites.
         - This is not a full port of `creature_update_all`; it targets the Survival subset.
         """
+        dt = float(f32(float(dt)))
         state = options.state
         players = options.players
         dt_ms_i32 = options.dt_ms_i32
@@ -1482,20 +1483,23 @@ class CreaturePool:
         if dt <= 0.0:
             return
 
+        dt_f32 = f32(float(dt))
         hitbox = f32(float(creature.lifecycle_stage))
         if hitbox <= 0.0:
-            creature.lifecycle_stage = f32(hitbox - f32(float(dt) * CREATURE_CORPSE_FADE_DECAY))
+            creature.lifecycle_stage = f32(hitbox - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY))
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
             creature.flags & CreatureFlags.ANIM_LONG_STRIP
         ) != 0
 
-        new_hitbox = f32(hitbox - f32(float(dt) * CREATURE_DEATH_TIMER_DECAY))
+        new_hitbox = f32(hitbox - f32(float(dt_f32) * CREATURE_DEATH_TIMER_DECAY))
         creature.lifecycle_stage = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
-                slide = f32(new_hitbox * f32(float(dt)) * f32(CREATURE_DEATH_SLIDE_SCALE))
+                # Match float-local multiply chain in `creature_update_all`:
+                # slide = (float)((float)(hitbox * dt) * 9.0f)
+                slide = f32(f32(float(new_hitbox) * float(dt_f32)) * f32(CREATURE_DEATH_SLIDE_SCALE))
                 direction = heading_to_direction_f32(float(creature.heading))
                 creature.vel = Vec2(
                     f32(float(direction.x) * float(slide)),
