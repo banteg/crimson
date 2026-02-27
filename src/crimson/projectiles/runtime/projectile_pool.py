@@ -60,20 +60,20 @@ _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
     initial_damage_pool=1.0,
 )
 
-_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[int, ProjectileCollisionProfile] = {
-    int(ProjectileTypeId.ION_MINIGUN): ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
-    int(ProjectileTypeId.ION_RIFLE): ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
-    int(ProjectileTypeId.ION_CANNON): ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    int(ProjectileTypeId.PLASMA_CANNON): ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    int(ProjectileTypeId.GAUSS_GUN): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
-    int(ProjectileTypeId.FIRE_BULLETS): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
-    int(ProjectileTypeId.BLADE_GUN): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
+_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTypeId, ProjectileCollisionProfile] = {
+    ProjectileTypeId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
+    ProjectileTypeId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
+    ProjectileTypeId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    ProjectileTypeId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    ProjectileTypeId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
+    ProjectileTypeId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
+    ProjectileTypeId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
 }
 
 
 def projectile_collision_profile(type_id: ProjectileTypeId) -> ProjectileCollisionProfile:
     return _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID.get(
-        int(type_id),
+        type_id,
         _DEFAULT_PROJECTILE_COLLISION_PROFILE,
     )
 
