@@ -17,14 +17,13 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
+    CaptureBootstrapEvent,
     Replay,
-    UnknownEvent,
     apply_replay_bootstrap,
     load_replay_file,
     unpack_tick_inputs,
@@ -318,7 +317,7 @@ class ReplayPlaybackMode:
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
         self._events_by_tick = events_by_tick
         self._defer_menu_open = any(
-            isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+            isinstance(event, CaptureBootstrapEvent)
             for event in replay.events
         )
 
@@ -454,7 +453,7 @@ class ReplayPlaybackMode:
             )
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
             if any(
-                not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND)
+                not isinstance(event, CaptureBootstrapEvent)
                 for event in replay.events
             ):
                 raise ValueError("rush replay does not support events")

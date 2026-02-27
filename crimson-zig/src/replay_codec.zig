@@ -1,7 +1,7 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
 
-pub const replay_format_version: i32 = 5;
+pub const replay_format_version: i32 = 6;
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
@@ -435,140 +435,145 @@ const ReplayInputWire = struct {
     }
 };
 
-const CaptureVec2Wire = struct {
-    x: f32,
-    y: f32,
+const PerkPickEventWire = struct {
+    tick_index: i32,
+    player_index: i32,
+    choice_index: i32,
 };
 
-fn StringMapWire(comptime Value: type) type {
-    return struct {
-        map: std.StringArrayHashMapUnmanaged(Value) = .{},
-
-        pub fn msgpackRead(unpacker: anytype) !@This() {
-            var value: @This() = .{};
-            const len = try unpacker.readMapHeader(usize);
-            try value.map.ensureTotalCapacity(unpacker.allocator, len);
-            for (0..len) |_| {
-                const key = try unpacker.read([]const u8);
-                const entry_value = try unpacker.read(Value);
-                value.map.putAssumeCapacity(key, entry_value);
-            }
-            return value;
-        }
-
-        pub fn get(self: @This(), key: []const u8) ?Value {
-            return self.map.get(key);
-        }
-    };
-}
-
-const StringI32Map = StringMapWire(i32);
-const StringF32Map = StringMapWire(f32);
-
-const CaptureBootstrapPerkWire = struct {
-    pending_count: i32 = 0,
-    choices_dirty: bool = false,
-    choices: []const i32 = &.{},
-    player_nonzero_counts: []const []const []const i32 = &.{},
+const PerkMenuOpenEventWire = struct {
+    tick_index: i32,
+    player_index: i32,
 };
 
-const CaptureBootstrapPlayerAimWire = struct {
-    x: f32,
-    y: f32,
-    heading: ?f32 = null,
-};
-
-const CaptureBootstrapPlayerAltWeaponWire = struct {
-    weapon_id: ?i32 = null,
-    clip_size: ?i32 = null,
-    ammo: ?f32 = null,
-    reload_active: ?bool = null,
-    reload_timer: ?f32 = null,
-    reload_timer_max: ?f32 = null,
-    shot_cooldown: ?f32 = null,
+const CaptureBootstrapQuestSessionWire = struct {
+    spawn_timeline_ms: ?f32,
+    no_creatures_timer_ms: ?f32,
+    completion_transition_ms: ?f32,
 };
 
 const CaptureBootstrapPlayerWire = struct {
     weapon_id: i32,
-    pos: CaptureVec2Wire,
+    pos_x: f32,
+    pos_y: f32,
     health: f32,
     ammo: f32,
     experience: i32,
     level: i32,
-    clip_size: ?i32 = null,
-    reload_active: ?bool = null,
-    reload_timer: ?f32 = null,
-    reload_timer_max: ?f32 = null,
-    shot_cooldown: ?f32 = null,
-    spread_heat: ?f32 = null,
-    aim: ?CaptureBootstrapPlayerAimWire = null,
-    alt_weapon: ?CaptureBootstrapPlayerAltWeaponWire = null,
-    bonus_timers_ms: StringI32Map = .{},
-    perk_timers: StringF32Map = .{},
+    clip_size: ?i32,
+    reload_active: ?bool,
+    reload_timer: ?f32,
+    reload_timer_max: ?f32,
+    shot_cooldown: ?f32,
+    spread_heat: ?f32,
+    aim_x: ?f32,
+    aim_y: ?f32,
+    aim_heading: ?f32,
+    alt_weapon_id: ?i32,
+    alt_clip_size: ?i32,
+    alt_ammo: ?f32,
+    alt_reload_active: ?bool,
+    alt_reload_timer: ?f32,
+    alt_reload_timer_max: ?f32,
+    alt_shot_cooldown: ?f32,
+    shield_ms: ?i32,
+    fire_bullets_ms: ?i32,
+    speed_bonus_ms: ?i32,
+    hot_tempered_timer: ?f32,
+    man_bomb_timer: ?f32,
+    living_fortress_timer: ?f32,
+    fire_cough_timer: ?f32,
 };
 
-const CaptureBootstrapQuestSessionWire = struct {
-    spawn_timeline_ms: f32,
-    no_creatures_timer_ms: f32,
-    completion_transition_ms: f32,
+const CaptureBootstrapEventWire = struct {
+    tick_index: i32,
+    elapsed_ms: i32,
+    score_xp: i32,
+    perk_pending: i32,
+    perk_pending_count: i32,
+    perk_choices_dirty: bool,
+    perk_choices: []const i32,
+    player_nonzero_counts: []const []const []const i32,
+    players: []const CaptureBootstrapPlayerWire,
+    digital_move_enabled_by_player: []const bool,
+    weapon_power_up_ms: i32,
+    reflex_boost_ms: i32,
+    energizer_ms: i32,
+    double_experience_ms: i32,
+    freeze_ms: i32,
+    perk_interval_man_bomb: ?f32,
+    perk_interval_fire_cough: ?f32,
+    perk_interval_hot_tempered: ?f32,
+    quest_session: ?CaptureBootstrapQuestSessionWire,
+};
+
+const CapturePerkApplyEventWire = struct {
+    tick_index: i32,
+    perk_id: i32,
+    outside_before: bool,
+    pending_before: ?i32,
+    pending_after: ?i32,
+};
+
+const CapturePerkPendingEventWire = struct {
+    tick_index: i32,
+    perk_pending: i32,
 };
 
 const CaptureCreatureSpawnRowWire = struct {
     template_id: i32,
-    pos: CaptureVec2Wire,
+    pos_x: f32,
+    pos_y: f32,
     heading: f32,
 };
 
 const CaptureCreatureSpawnAddedHeadRowWire = struct {
     index: i32,
-    heading: ?f32 = null,
-    target_heading: ?f32 = null,
-    ai_mode: ?i32 = null,
-    link_index: ?i32 = null,
-    hp: ?f32 = null,
-    lifecycle_stage: ?f32 = null,
-    orbit_angle: ?f32 = null,
-    orbit_radius: ?f32 = null,
-    flags: ?i32 = null,
-    type_id: ?i32 = null,
-    pos: ?CaptureVec2Wire = null,
+    heading: ?f32,
+    target_heading: ?f32,
+    ai_mode: ?i32,
+    link_index: ?i32,
+    hp: ?f32,
+    lifecycle_stage: ?f32,
+    orbit_angle: ?f32,
+    orbit_radius: ?f32,
+    flags: ?i32,
+    type_id: ?i32,
+    pos_x: ?f32,
+    pos_y: ?f32,
+};
+
+const CaptureCreatureSpawnEventWire = struct {
+    tick_index: i32,
+    spawns: []const CaptureCreatureSpawnRowWire,
+    added_head: []const CaptureCreatureSpawnAddedHeadRowWire,
 };
 
 const CaptureStateTransitionRowWire = struct {
     target_state: i32,
-    before_state: ?i32 = null,
-    after_state: ?i32 = null,
+    before_state: ?i32,
+    after_state: ?i32,
 };
 
-const ReplayEventPayloadWire = struct {
-    tick_index: ?i32 = null,
-    elapsed_ms: ?i32 = null,
-    score_xp: ?i32 = null,
-    perk_pending: ?i32 = null,
-    perk: ?CaptureBootstrapPerkWire = null,
-    bonus_timers_ms: StringI32Map = .{},
-    players: []const CaptureBootstrapPlayerWire = &.{},
-    digital_move_enabled_by_player: []const bool = &.{},
-    perk_intervals: StringF32Map = .{},
-    quest_session: ?CaptureBootstrapQuestSessionWire = null,
-    perk_id: ?i32 = null,
-    outside_before: bool = false,
-    pending_before: ?i32 = null,
-    pending_after: ?i32 = null,
-    spawns: []const CaptureCreatureSpawnRowWire = &.{},
-    added_head: []const CaptureCreatureSpawnAddedHeadRowWire = &.{},
-    transitions: []const CaptureStateTransitionRowWire = &.{},
-};
-
-const ReplayEventWire = struct {
+const CaptureStateTransitionEventWire = struct {
     tick_index: i32,
-    kind: []const u8,
-    player_index: i32 = -1,
-    choice_index: i32 = -1,
-    payload: []const ReplayEventPayloadWire = &.{},
+    transitions: []const CaptureStateTransitionRowWire,
+};
 
-    pub fn msgpackFormat() msgpack.StructFormat {
-        return .{ .as_array = .{} };
+const ReplayEventWire = union(enum) {
+    perk_pick: PerkPickEventWire,
+    perk_menu_open: PerkMenuOpenEventWire,
+    orig_capture_bootstrap: CaptureBootstrapEventWire,
+    orig_capture_perk_apply: CapturePerkApplyEventWire,
+    orig_capture_perk_pending: CapturePerkPendingEventWire,
+    orig_capture_creature_spawn: CaptureCreatureSpawnEventWire,
+    orig_capture_state_transition: CaptureStateTransitionEventWire,
+
+    pub fn msgpackFormat() msgpack.UnionFormat {
+        return .{ .as_tagged = .{
+            .tag_field = "kind",
+            .tag_value = .field_name,
+        } };
     }
 };
 
@@ -684,7 +689,7 @@ pub fn parseReplay(
 
     try validateInputShape(wire.inputs, header.player_count);
 
-    const inputs = try buildInputs(allocator, wire.inputs, header.input_quantization);
+    const inputs = try buildInputs(allocator, wire.inputs);
     errdefer freeInputs(allocator, inputs);
 
     const events = try buildEvents(allocator, wire.events, wire.inputs.len);
@@ -746,7 +751,6 @@ fn parseEventSummary(
 fn buildInputs(
     allocator: std.mem.Allocator,
     wire_inputs: []const []const ReplayInputWire,
-    input_quantization: []const u8,
 ) ReplayCodecError![]ReplayTickInputs {
     const out = allocator.alloc(ReplayTickInputs, wire_inputs.len) catch return error.OutOfMemory;
     var built: usize = 0;
@@ -760,10 +764,10 @@ fn buildInputs(
         errdefer allocator.free(tick_inputs);
         for (wire_tick, 0..) |wire_input, player_idx| {
             tick_inputs[player_idx] = .{
-                .move_x = try normalizeInputValue(wire_input.move_x, input_quantization),
-                .move_y = try normalizeInputValue(wire_input.move_y, input_quantization),
-                .aim_x = try normalizeInputValue(wire_input.aim_x, input_quantization),
-                .aim_y = try normalizeInputValue(wire_input.aim_y, input_quantization),
+                .move_x = normalizeInputValue(wire_input.move_x),
+                .move_y = normalizeInputValue(wire_input.move_y),
+                .aim_x = normalizeInputValue(wire_input.aim_x),
+                .aim_y = normalizeInputValue(wire_input.aim_y),
                 .flags = try parseInputFlagsValue(wire_input.flags),
             };
         }
@@ -796,140 +800,100 @@ fn parseReplayEvent(
     wire_event: ReplayEventWire,
     input_len: usize,
 ) ReplayCodecError!ReplayEvent {
-    if (wire_event.tick_index < 0) return error.UnsupportedEventShape;
+    const raw_tick_index = switch (wire_event) {
+        .perk_pick => |event| event.tick_index,
+        .perk_menu_open => |event| event.tick_index,
+        .orig_capture_bootstrap => |event| event.tick_index,
+        .orig_capture_perk_apply => |event| event.tick_index,
+        .orig_capture_perk_pending => |event| event.tick_index,
+        .orig_capture_creature_spawn => |event| event.tick_index,
+        .orig_capture_state_transition => |event| event.tick_index,
+    };
+    if (raw_tick_index < 0) return error.UnsupportedEventShape;
 
-    const tick_index: usize = @intCast(wire_event.tick_index);
+    const tick_index: usize = @intCast(raw_tick_index);
     if (tick_index > input_len) return error.UnsupportedEventShape;
 
-    if (std.mem.eql(u8, wire_event.kind, "perk_pick")) {
-        if (wire_event.player_index < 0 or wire_event.choice_index < 0) {
-            return error.UnsupportedEventShape;
-        }
-        if (wire_event.payload.len != 0) {
-            return error.UnsupportedEventShape;
-        }
-        return .{
-            .perk_pick = .{
-                .tick_index = tick_index,
-                .player_index = try parseEventI32(wire_event.player_index),
-                .choice_index = try parseEventI32(wire_event.choice_index),
-            },
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "perk_menu_open")) {
-        if (wire_event.player_index < 0) {
-            return error.UnsupportedEventShape;
-        }
-        if (wire_event.payload.len != 0) {
-            return error.UnsupportedEventShape;
-        }
-        return .{
-            .perk_menu_open = .{
-                .tick_index = tick_index,
-                .player_index = try parseEventI32(wire_event.player_index),
-            },
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "orig_capture_bootstrap")) {
-        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
-        return .{
-            .capture_bootstrap = try parseCaptureBootstrapEvent(
-                tick_index,
-                wire_event.payload[0],
-            ),
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "orig_capture_perk_apply")) {
-        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
-        return .{
-            .capture_perk_apply = try parseCapturePerkApplyEvent(
-                tick_index,
-                wire_event.payload[0],
-            ),
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "orig_capture_perk_pending")) {
-        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
-        return .{
-            .capture_perk_pending = try parseCapturePerkPendingEvent(
-                tick_index,
-                wire_event.payload[0],
-            ),
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "orig_capture_creature_spawn")) {
-        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
-        return .{
-            .capture_creature_spawn = try parseCaptureCreatureSpawnEvent(
-                tick_index,
-                wire_event.payload[0],
-            ),
-        };
-    }
-
-    if (std.mem.eql(u8, wire_event.kind, "orig_capture_state_transition")) {
-        if (wire_event.payload.len != 1) return error.UnsupportedEventShape;
-        return .{
-            .capture_state_transition = try parseCaptureStateTransitionEvent(
-                tick_index,
-                wire_event.payload[0],
-            ),
-        };
-    }
-
-    return error.UnsupportedEventKind;
+    return switch (wire_event) {
+        .perk_pick => |event| blk: {
+            if (event.player_index < 0 or event.choice_index < 0) {
+                return error.UnsupportedEventShape;
+            }
+            break :blk .{
+                .perk_pick = .{
+                    .tick_index = tick_index,
+                    .player_index = try parseEventI32(event.player_index),
+                    .choice_index = try parseEventI32(event.choice_index),
+                },
+            };
+        },
+        .perk_menu_open => |event| blk: {
+            if (event.player_index < 0) {
+                return error.UnsupportedEventShape;
+            }
+            break :blk .{
+                .perk_menu_open = .{
+                    .tick_index = tick_index,
+                    .player_index = try parseEventI32(event.player_index),
+                },
+            };
+        },
+        .orig_capture_bootstrap => |event| .{
+            .capture_bootstrap = try parseCaptureBootstrapEvent(tick_index, event),
+        },
+        .orig_capture_perk_apply => |event| .{
+            .capture_perk_apply = try parseCapturePerkApplyEvent(tick_index, event),
+        },
+        .orig_capture_perk_pending => |event| .{
+            .capture_perk_pending = try parseCapturePerkPendingEvent(tick_index, event),
+        },
+        .orig_capture_creature_spawn => |event| .{
+            .capture_creature_spawn = try parseCaptureCreatureSpawnEvent(tick_index, event),
+        },
+        .orig_capture_state_transition => |event| .{
+            .capture_state_transition = try parseCaptureStateTransitionEvent(tick_index, event),
+        },
+    };
 }
 
 fn parseCaptureBootstrapEvent(
     tick_index: usize,
-    payload: ReplayEventPayloadWire,
+    payload: CaptureBootstrapEventWire,
 ) ReplayCodecError!CaptureBootstrapEvent {
     var event = CaptureBootstrapEvent{
         .tick_index = tick_index,
     };
 
-    if (payload.elapsed_ms) |value| {
-        event.elapsed_ms = try parseEventI32(value);
+    event.elapsed_ms = try parseEventI32(payload.elapsed_ms);
+    event.score_xp = try parseEventI32(payload.score_xp);
+    event.perk_pending = try parseEventI32(payload.perk_pending);
+    event.perk_pending_count = try parseEventI32(payload.perk_pending_count);
+    event.perk_choices_dirty = payload.perk_choices_dirty;
+
+    if (payload.perk_choices.len > event.perk_choices.len) {
+        return error.UnsupportedEventShape;
     }
-    if (payload.score_xp) |value| {
-        event.score_xp = try parseEventI32(value);
-    }
-    if (payload.perk_pending) |value| {
-        event.perk_pending = try parseEventI32(value);
-        event.perk_pending_count = event.perk_pending;
+    event.perk_choice_count = payload.perk_choices.len;
+    for (payload.perk_choices, 0..) |choice_id, idx| {
+        event.perk_choices[idx] = try parseEventI32(choice_id);
     }
 
-    if (payload.perk) |perk| {
-        event.perk_pending_count = try parseEventI32(perk.pending_count);
-        event.perk_choices_dirty = perk.choices_dirty;
-        const choice_count = @min(perk.choices.len, event.perk_choices.len);
-        event.perk_choice_count = choice_count;
-        for (perk.choices[0..choice_count], 0..) |choice_id, idx| {
-            event.perk_choices[idx] = try parseEventI32(choice_id);
-        }
-
-        const player_count = perk.player_nonzero_counts.len;
-        if (player_count > max_players) {
+    const player_perk_count = payload.player_nonzero_counts.len;
+    if (player_perk_count > max_players) {
+        return error.UnsupportedEventShape;
+    }
+    for (0..player_perk_count) |player_idx| {
+        const raw_pairs = payload.player_nonzero_counts[player_idx];
+        if (raw_pairs.len > max_capture_bootstrap_perk_pairs_per_player) {
             return error.UnsupportedEventShape;
         }
-        for (0..player_count) |player_idx| {
-            const raw_pairs = perk.player_nonzero_counts[player_idx];
-            if (raw_pairs.len > max_capture_bootstrap_perk_pairs_per_player) {
-                return error.UnsupportedEventShape;
-            }
-            event.player_perk_counts[player_idx].pair_count = raw_pairs.len;
-            for (raw_pairs, 0..) |raw_pair, pair_idx| {
-                if (raw_pair.len != 2) return error.UnsupportedEventShape;
-                event.player_perk_counts[player_idx].pairs[pair_idx] = .{
-                    .perk_id = try parseEventI32(raw_pair[0]),
-                    .count = try parseEventI32(raw_pair[1]),
-                };
-            }
+        event.player_perk_counts[player_idx].pair_count = raw_pairs.len;
+        for (raw_pairs, 0..) |raw_pair, pair_idx| {
+            if (raw_pair.len != 2) return error.UnsupportedEventShape;
+            event.player_perk_counts[player_idx].pairs[pair_idx] = .{
+                .perk_id = try parseEventI32(raw_pair[0]),
+                .count = try parseEventI32(raw_pair[1]),
+            };
         }
     }
 
@@ -941,8 +905,8 @@ fn parseCaptureBootstrapEvent(
     for (payload.players, 0..) |player_wire, idx| {
         event.players[idx] = .{
             .weapon_id = try parseEventI32(player_wire.weapon_id),
-            .pos_x = player_wire.pos.x,
-            .pos_y = player_wire.pos.y,
+            .pos_x = player_wire.pos_x,
+            .pos_y = player_wire.pos_y,
             .health = player_wire.health,
             .ammo = player_wire.ammo,
             .experience = try parseEventI32(player_wire.experience),
@@ -953,28 +917,24 @@ fn parseCaptureBootstrapEvent(
             .reload_timer_max = player_wire.reload_timer_max,
             .shot_cooldown = player_wire.shot_cooldown,
             .spread_heat = player_wire.spread_heat,
-            .shield_ms = if (player_wire.bonus_timers_ms.get("shield")) |value| try parseEventI32(value) else null,
-            .fire_bullets_ms = if (player_wire.bonus_timers_ms.get("fire_bullets")) |value| try parseEventI32(value) else null,
-            .speed_bonus_ms = if (player_wire.bonus_timers_ms.get("speed_bonus")) |value| try parseEventI32(value) else null,
-            .hot_tempered_timer = parseMapF32(player_wire.perk_timers, "hot_tempered"),
-            .man_bomb_timer = parseMapF32(player_wire.perk_timers, "man_bomb"),
-            .living_fortress_timer = parseMapF32(player_wire.perk_timers, "living_fortress"),
-            .fire_cough_timer = parseMapF32(player_wire.perk_timers, "fire_cough"),
+            .aim_x = player_wire.aim_x,
+            .aim_y = player_wire.aim_y,
+            .aim_heading = player_wire.aim_heading,
+            .alt_weapon_id = if (player_wire.alt_weapon_id) |value| try parseEventI32(value) else null,
+            .alt_clip_size = if (player_wire.alt_clip_size) |value| try parseEventI32(value) else null,
+            .alt_ammo = player_wire.alt_ammo,
+            .alt_reload_active = player_wire.alt_reload_active,
+            .alt_reload_timer = player_wire.alt_reload_timer,
+            .alt_reload_timer_max = player_wire.alt_reload_timer_max,
+            .alt_shot_cooldown = player_wire.alt_shot_cooldown,
+            .shield_ms = if (player_wire.shield_ms) |value| try parseEventI32(value) else null,
+            .fire_bullets_ms = if (player_wire.fire_bullets_ms) |value| try parseEventI32(value) else null,
+            .speed_bonus_ms = if (player_wire.speed_bonus_ms) |value| try parseEventI32(value) else null,
+            .hot_tempered_timer = player_wire.hot_tempered_timer,
+            .man_bomb_timer = player_wire.man_bomb_timer,
+            .living_fortress_timer = player_wire.living_fortress_timer,
+            .fire_cough_timer = player_wire.fire_cough_timer,
         };
-        if (player_wire.aim) |aim| {
-            event.players[idx].aim_x = aim.x;
-            event.players[idx].aim_y = aim.y;
-            event.players[idx].aim_heading = aim.heading;
-        }
-        if (player_wire.alt_weapon) |alt_weapon| {
-            event.players[idx].alt_weapon_id = if (alt_weapon.weapon_id) |value| try parseEventI32(value) else null;
-            event.players[idx].alt_clip_size = if (alt_weapon.clip_size) |value| try parseEventI32(value) else null;
-            event.players[idx].alt_ammo = alt_weapon.ammo;
-            event.players[idx].alt_reload_active = alt_weapon.reload_active;
-            event.players[idx].alt_reload_timer = alt_weapon.reload_timer;
-            event.players[idx].alt_reload_timer_max = alt_weapon.reload_timer_max;
-            event.players[idx].alt_shot_cooldown = alt_weapon.shot_cooldown;
-        }
     }
 
     if (payload.digital_move_enabled_by_player.len > max_players) {
@@ -984,19 +944,22 @@ fn parseCaptureBootstrapEvent(
         event.digital_move_enabled_by_player[idx] = enabled;
     }
 
-    event.weapon_power_up_ms = try parseMapI32(payload.bonus_timers_ms, "4");
-    event.reflex_boost_ms = try parseMapI32(payload.bonus_timers_ms, "9");
-    event.energizer_ms = try parseMapI32(payload.bonus_timers_ms, "2");
-    event.double_experience_ms = try parseMapI32(payload.bonus_timers_ms, "6");
-    event.freeze_ms = try parseMapI32(payload.bonus_timers_ms, "11");
-    event.perk_interval_man_bomb = parseMapF32(payload.perk_intervals, "man_bomb");
-    event.perk_interval_fire_cough = parseMapF32(payload.perk_intervals, "fire_cough");
-    event.perk_interval_hot_tempered = parseMapF32(payload.perk_intervals, "hot_tempered");
+    event.weapon_power_up_ms = try parseEventI32(payload.weapon_power_up_ms);
+    event.reflex_boost_ms = try parseEventI32(payload.reflex_boost_ms);
+    event.energizer_ms = try parseEventI32(payload.energizer_ms);
+    event.double_experience_ms = try parseEventI32(payload.double_experience_ms);
+    event.freeze_ms = try parseEventI32(payload.freeze_ms);
+    event.perk_interval_man_bomb = payload.perk_interval_man_bomb;
+    event.perk_interval_fire_cough = payload.perk_interval_fire_cough;
+    event.perk_interval_hot_tempered = payload.perk_interval_hot_tempered;
     if (payload.quest_session) |quest_session| {
+        const spawn_timeline_ms = quest_session.spawn_timeline_ms orelse return error.UnsupportedEventShape;
+        const no_creatures_timer_ms = quest_session.no_creatures_timer_ms orelse return error.UnsupportedEventShape;
+        const completion_transition_ms = quest_session.completion_transition_ms orelse return error.UnsupportedEventShape;
         event.quest_session = .{
-            .spawn_timeline_ms = quest_session.spawn_timeline_ms,
-            .no_creatures_timer_ms = quest_session.no_creatures_timer_ms,
-            .completion_transition_ms = quest_session.completion_transition_ms,
+            .spawn_timeline_ms = spawn_timeline_ms,
+            .no_creatures_timer_ms = no_creatures_timer_ms,
+            .completion_transition_ms = completion_transition_ms,
         };
     }
 
@@ -1005,21 +968,26 @@ fn parseCaptureBootstrapEvent(
 
 fn parseCapturePerkApplyEvent(
     tick_index: usize,
-    payload: ReplayEventPayloadWire,
+    payload: CapturePerkApplyEventWire,
 ) ReplayCodecError!CapturePerkApplyEvent {
-    const perk_id_raw = payload.perk_id orelse return error.UnsupportedEventShape;
-    const perk_id = try parseEventI32(perk_id_raw);
+    const perk_id = try parseEventI32(payload.perk_id);
     if (perk_id <= 0) return error.UnsupportedEventShape;
+    if (payload.pending_before) |value| {
+        if (value < 0) return error.UnsupportedEventShape;
+    }
+    if (payload.pending_after) |value| {
+        if (value < 0) return error.UnsupportedEventShape;
+    }
     return .{
         .tick_index = tick_index,
         .perk_id = perk_id,
         .outside_before = payload.outside_before,
         .pending_before = if (payload.pending_before) |value|
-            (if (value >= 0) try parseEventI32(value) else null)
+            try parseEventI32(value)
         else
             null,
         .pending_after = if (payload.pending_after) |value|
-            (if (value >= 0) try parseEventI32(value) else null)
+            try parseEventI32(value)
         else
             null,
     };
@@ -1027,10 +995,9 @@ fn parseCapturePerkApplyEvent(
 
 fn parseCapturePerkPendingEvent(
     tick_index: usize,
-    payload: ReplayEventPayloadWire,
+    payload: CapturePerkPendingEventWire,
 ) ReplayCodecError!CapturePerkPendingEvent {
-    const pending_raw = payload.perk_pending orelse return error.UnsupportedEventShape;
-    const pending = try parseEventI32(pending_raw);
+    const pending = try parseEventI32(payload.perk_pending);
     if (pending < 0) return error.UnsupportedEventShape;
     return .{
         .tick_index = tick_index,
@@ -1040,7 +1007,7 @@ fn parseCapturePerkPendingEvent(
 
 fn parseCaptureCreatureSpawnEvent(
     tick_index: usize,
-    payload: ReplayEventPayloadWire,
+    payload: CaptureCreatureSpawnEventWire,
 ) ReplayCodecError!CaptureCreatureSpawnEvent {
     var event = CaptureCreatureSpawnEvent{
         .tick_index = tick_index,
@@ -1052,14 +1019,17 @@ fn parseCaptureCreatureSpawnEvent(
     for (payload.spawns, 0..) |spawn_row, idx| {
         event.spawns[idx] = .{
             .template_id = try parseEventI32(spawn_row.template_id),
-            .pos_x = spawn_row.pos.x,
-            .pos_y = spawn_row.pos.y,
+            .pos_x = spawn_row.pos_x,
+            .pos_y = spawn_row.pos_y,
             .heading = spawn_row.heading,
         };
     }
 
     event.added_head_count = payload.added_head.len;
     for (payload.added_head, 0..) |row, idx| {
+        const has_pos_x = row.pos_x != null;
+        const has_pos_y = row.pos_y != null;
+        if (has_pos_x != has_pos_y) return error.UnsupportedEventShape;
         event.added_head[idx] = .{
             .index = try parseEventI32(row.index),
             .has_heading = row.heading != null,
@@ -1082,9 +1052,9 @@ fn parseCaptureCreatureSpawnEvent(
             .flags = if (row.flags) |value| try parseEventI32(value) else 0,
             .has_type_id = row.type_id != null,
             .type_id = if (row.type_id) |value| try parseEventI32(value) else 0,
-            .has_pos = row.pos != null,
-            .pos_x = if (row.pos) |pos| pos.x else 0.0,
-            .pos_y = if (row.pos) |pos| pos.y else 0.0,
+            .has_pos = has_pos_x and has_pos_y,
+            .pos_x = row.pos_x orelse 0.0,
+            .pos_y = row.pos_y orelse 0.0,
         };
     }
 
@@ -1093,7 +1063,7 @@ fn parseCaptureCreatureSpawnEvent(
 
 fn parseCaptureStateTransitionEvent(
     tick_index: usize,
-    payload: ReplayEventPayloadWire,
+    payload: CaptureStateTransitionEventWire,
 ) ReplayCodecError!CaptureStateTransitionEvent {
     var event = CaptureStateTransitionEvent{
         .tick_index = tick_index,
@@ -1110,17 +1080,6 @@ fn parseCaptureStateTransitionEvent(
         };
     }
     return event;
-}
-
-fn parseMapI32(
-    map: anytype,
-    key: []const u8,
-) ReplayCodecError!?i32 {
-    return map.get(key);
-}
-
-fn parseMapF32(map: anytype, key: []const u8) ?f32 {
-    return map.get(key);
 }
 
 fn validateInputShape(
@@ -1223,11 +1182,8 @@ fn buildHeader(
     };
 }
 
-fn normalizeInputValue(value: f32, input_quantization: []const u8) ReplayCodecError!f32 {
-    if (std.mem.eql(u8, input_quantization, "f32")) {
-        return value;
-    }
-    return error.UnsupportedInputQuantization;
+fn normalizeInputValue(value: f32) f32 {
+    return value;
 }
 
 fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
@@ -1368,46 +1324,48 @@ test "bootstrap mismatch is rejected" {
 }
 
 test "parse replay event supports capture payload kinds" {
+    const empty_pairs = [_][]const i32{};
+    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
     const bootstrap_players = [_]CaptureBootstrapPlayerWire{
         .{
             .weapon_id = 1,
-            .pos = .{ .x = 512.0, .y = 512.0 },
+            .pos_x = 512.0,
+            .pos_y = 512.0,
             .health = 100.0,
             .ammo = 11.0,
             .experience = 0,
             .level = 1,
-        },
-    };
-    const bootstrap_payload = [_]ReplayEventPayloadWire{
-        .{
-            .elapsed_ms = 0,
-            .score_xp = 0,
-            .perk_pending = 0,
-            .players = bootstrap_players[0..],
-            .digital_move_enabled_by_player = &.{false},
-        },
-    };
-    const perk_apply_payload = [_]ReplayEventPayloadWire{
-        .{
-            .perk_id = 44,
-            .outside_before = true,
-        },
-    };
-    const perk_pending_payload = [_]ReplayEventPayloadWire{
-        .{
-            .perk_pending = 2,
+            .clip_size = null,
+            .reload_active = null,
+            .reload_timer = null,
+            .reload_timer_max = null,
+            .shot_cooldown = null,
+            .spread_heat = null,
+            .aim_x = null,
+            .aim_y = null,
+            .aim_heading = null,
+            .alt_weapon_id = null,
+            .alt_clip_size = null,
+            .alt_ammo = null,
+            .alt_reload_active = null,
+            .alt_reload_timer = null,
+            .alt_reload_timer_max = null,
+            .alt_shot_cooldown = null,
+            .shield_ms = null,
+            .fire_bullets_ms = null,
+            .speed_bonus_ms = null,
+            .hot_tempered_timer = null,
+            .man_bomb_timer = null,
+            .living_fortress_timer = null,
+            .fire_cough_timer = null,
         },
     };
     const spawn_rows = [_]CaptureCreatureSpawnRowWire{
         .{
             .template_id = 0x12,
-            .pos = .{ .x = 512.0, .y = 512.0 },
+            .pos_x = 512.0,
+            .pos_y = 512.0,
             .heading = 0.0,
-        },
-    };
-    const spawn_payload = [_]ReplayEventPayloadWire{
-        .{
-            .spawns = spawn_rows[0..],
         },
     };
     const transitions = [_]CaptureStateTransitionRowWire{
@@ -1417,38 +1375,49 @@ test "parse replay event supports capture payload kinds" {
             .after_state = 12,
         },
     };
-    const transition_payload = [_]ReplayEventPayloadWire{
-        .{
-            .transitions = transitions[0..],
-        },
-    };
 
     const wire_events = [_]ReplayEventWire{
-        .{
+        .{ .orig_capture_bootstrap = .{
             .tick_index = 0,
-            .kind = "orig_capture_bootstrap",
-            .payload = bootstrap_payload[0..],
-        },
-        .{
+            .elapsed_ms = 0,
+            .score_xp = 0,
+            .perk_pending = 0,
+            .perk_pending_count = 0,
+            .perk_choices_dirty = false,
+            .perk_choices = &.{},
+            .player_nonzero_counts = player_nonzero_counts[0..],
+            .players = bootstrap_players[0..],
+            .digital_move_enabled_by_player = &.{false},
+            .weapon_power_up_ms = 0,
+            .reflex_boost_ms = 0,
+            .energizer_ms = 0,
+            .double_experience_ms = 0,
+            .freeze_ms = 0,
+            .perk_interval_man_bomb = null,
+            .perk_interval_fire_cough = null,
+            .perk_interval_hot_tempered = null,
+            .quest_session = null,
+        } },
+        .{ .orig_capture_perk_apply = .{
             .tick_index = 0,
-            .kind = "orig_capture_perk_apply",
-            .payload = perk_apply_payload[0..],
-        },
-        .{
+            .perk_id = 44,
+            .outside_before = true,
+            .pending_before = null,
+            .pending_after = null,
+        } },
+        .{ .orig_capture_perk_pending = .{
             .tick_index = 0,
-            .kind = "orig_capture_perk_pending",
-            .payload = perk_pending_payload[0..],
-        },
-        .{
+            .perk_pending = 2,
+        } },
+        .{ .orig_capture_creature_spawn = .{
             .tick_index = 0,
-            .kind = "orig_capture_creature_spawn",
-            .payload = spawn_payload[0..],
-        },
-        .{
+            .spawns = spawn_rows[0..],
+            .added_head = &.{},
+        } },
+        .{ .orig_capture_state_transition = .{
             .tick_index = 0,
-            .kind = "orig_capture_state_transition",
-            .payload = transition_payload[0..],
-        },
+            .transitions = transitions[0..],
+        } },
     };
 
     const parsed0 = try parseReplayEvent(wire_events[0], 1);
@@ -1463,26 +1432,15 @@ test "parse replay event supports capture payload kinds" {
     try std.testing.expect(parsed4 == .capture_state_transition);
 }
 
-test "parse replay event rejects capture payload arrays that are not singleton" {
-    const payload = [_]ReplayEventPayloadWire{
-        .{},
-        .{},
-    };
-    const capture_kinds = [_][]const u8{
-        "orig_capture_bootstrap",
-        "orig_capture_perk_apply",
-        "orig_capture_perk_pending",
-        "orig_capture_creature_spawn",
-        "orig_capture_state_transition",
-    };
-    for (capture_kinds) |kind| {
-        const wire = ReplayEventWire{
+test "parse replay event rejects invalid perk pick indexes" {
+    const wire = ReplayEventWire{
+        .perk_pick = .{
             .tick_index = 0,
-            .kind = kind,
-            .payload = payload[0..],
-        };
-        try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
-    }
+            .player_index = -1,
+            .choice_index = 0,
+        },
+    };
+    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }
 
 test "build header rejects world_size above i32 range" {
@@ -1613,17 +1571,18 @@ test "build inputs frees tick allocations on parse error" {
         },
     };
     const wire_inputs = [_][]const ReplayInputWire{wire_tick[0..]};
-    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..], "f32"));
+    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..]));
 }
 
 test "build events frees allocation on parse error" {
     const wire_events = [_]ReplayEventWire{
-        .{
-            .tick_index = 0,
-            .kind = "unknown_event_kind",
-        },
+        .{ .perk_pick = .{
+            .tick_index = -1,
+            .player_index = 0,
+            .choice_index = 0,
+        } },
     };
-    try std.testing.expectError(error.UnsupportedEventKind, buildEvents(std.testing.allocator, wire_events[0..], 1));
+    try std.testing.expectError(error.UnsupportedEventShape, buildEvents(std.testing.allocator, wire_events[0..], 1));
 }
 
 test "parse replay decode errors preserve oom and map invalid msgpack" {
@@ -1645,56 +1604,120 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
 test "capture bootstrap rejects perk nonzero counts above max players" {
     const empty_pairs = [_][]const i32{};
     const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
-    const payload = [_]ReplayEventPayloadWire{
-        .{
-            .perk = .{
-                .player_nonzero_counts = player_nonzero_counts[0..],
-            },
-        },
-    };
     const wire = ReplayEventWire{
-        .tick_index = 0,
-        .kind = "orig_capture_bootstrap",
-        .payload = payload[0..],
+        .orig_capture_bootstrap = .{
+            .tick_index = 0,
+            .elapsed_ms = 0,
+            .score_xp = 0,
+            .perk_pending = 0,
+            .perk_pending_count = 0,
+            .perk_choices_dirty = false,
+            .perk_choices = &.{},
+            .player_nonzero_counts = player_nonzero_counts[0..],
+            .players = &.{},
+            .digital_move_enabled_by_player = &.{},
+            .weapon_power_up_ms = 0,
+            .reflex_boost_ms = 0,
+            .energizer_ms = 0,
+            .double_experience_ms = 0,
+            .freeze_ms = 0,
+            .perk_interval_man_bomb = null,
+            .perk_interval_fire_cough = null,
+            .perk_interval_hot_tempered = null,
+            .quest_session = null,
+        },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }
 
 test "capture bootstrap rejects players above max players" {
-    const players = [_]CaptureBootstrapPlayerWire{
-        .{
-            .weapon_id = 1,
-            .pos = .{ .x = 0.0, .y = 0.0 },
-            .health = 100.0,
-            .ammo = 0.0,
-            .experience = 0,
-            .level = 1,
-        },
-    } ** (max_players + 1);
-    const payload = [_]ReplayEventPayloadWire{
-        .{
-            .players = players[0..],
-        },
+    const player = CaptureBootstrapPlayerWire{
+        .weapon_id = 1,
+        .pos_x = 0.0,
+        .pos_y = 0.0,
+        .health = 100.0,
+        .ammo = 0.0,
+        .experience = 0,
+        .level = 1,
+        .clip_size = null,
+        .reload_active = null,
+        .reload_timer = null,
+        .reload_timer_max = null,
+        .shot_cooldown = null,
+        .spread_heat = null,
+        .aim_x = null,
+        .aim_y = null,
+        .aim_heading = null,
+        .alt_weapon_id = null,
+        .alt_clip_size = null,
+        .alt_ammo = null,
+        .alt_reload_active = null,
+        .alt_reload_timer = null,
+        .alt_reload_timer_max = null,
+        .alt_shot_cooldown = null,
+        .shield_ms = null,
+        .fire_bullets_ms = null,
+        .speed_bonus_ms = null,
+        .hot_tempered_timer = null,
+        .man_bomb_timer = null,
+        .living_fortress_timer = null,
+        .fire_cough_timer = null,
     };
+    const players = [_]CaptureBootstrapPlayerWire{player} ** (max_players + 1);
+    const empty_pairs = [_][]const i32{};
+    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
     const wire = ReplayEventWire{
-        .tick_index = 0,
-        .kind = "orig_capture_bootstrap",
-        .payload = payload[0..],
+        .orig_capture_bootstrap = .{
+            .tick_index = 0,
+            .elapsed_ms = 0,
+            .score_xp = 0,
+            .perk_pending = 0,
+            .perk_pending_count = 0,
+            .perk_choices_dirty = false,
+            .perk_choices = &.{},
+            .player_nonzero_counts = player_nonzero_counts[0..],
+            .players = players[0..],
+            .digital_move_enabled_by_player = &.{},
+            .weapon_power_up_ms = 0,
+            .reflex_boost_ms = 0,
+            .energizer_ms = 0,
+            .double_experience_ms = 0,
+            .freeze_ms = 0,
+            .perk_interval_man_bomb = null,
+            .perk_interval_fire_cough = null,
+            .perk_interval_hot_tempered = null,
+            .quest_session = null,
+        },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }
 
 test "capture bootstrap rejects digital move flags above max players" {
     const digital_move_enabled_by_player = [_]bool{false} ** (max_players + 1);
-    const payload = [_]ReplayEventPayloadWire{
-        .{
-            .digital_move_enabled_by_player = digital_move_enabled_by_player[0..],
-        },
-    };
+    const empty_pairs = [_][]const i32{};
+    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
     const wire = ReplayEventWire{
-        .tick_index = 0,
-        .kind = "orig_capture_bootstrap",
-        .payload = payload[0..],
+        .orig_capture_bootstrap = .{
+            .tick_index = 0,
+            .elapsed_ms = 0,
+            .score_xp = 0,
+            .perk_pending = 0,
+            .perk_pending_count = 0,
+            .perk_choices_dirty = false,
+            .perk_choices = &.{},
+            .player_nonzero_counts = player_nonzero_counts[0..],
+            .players = &.{},
+            .digital_move_enabled_by_player = digital_move_enabled_by_player[0..],
+            .weapon_power_up_ms = 0,
+            .reflex_boost_ms = 0,
+            .energizer_ms = 0,
+            .double_experience_ms = 0,
+            .freeze_ms = 0,
+            .perk_interval_man_bomb = null,
+            .perk_interval_fire_cough = null,
+            .perk_interval_hot_tempered = null,
+            .quest_session = null,
+        },
     };
     try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }

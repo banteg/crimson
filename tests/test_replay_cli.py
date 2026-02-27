@@ -13,15 +13,15 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.original.capture import CAPTURE_PERK_APPLY_EVENT_KIND
 from crimson.perks import PerkId
 from crimson.replay import (
+    CapturePerkApplyEvent,
     PerkMenuOpenEvent,
+    PerkPickEvent,
     Replay,
     ReplayClaimedStatsSnapshot,
     ReplayHeader,
     ReplayRecorder,
-    UnknownEvent,
     dump_replay,
 )
 from crimson.replay.checkpoints import (
@@ -410,19 +410,19 @@ def test_replay_verify_rejects_removed_submitted_score_option(tmp_path: Path) ->
 
 def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path)])
 
     assert result.exit_code == 1
-    assert "unsupported replay event kind" in result.output
+    assert "perk_pick failed" in result.output
 
 
 def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -552,19 +552,19 @@ def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
 
 def test_replay_info_is_strict_by_default(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "info", str(replay_path)])
 
     assert result.exit_code == 1
-    assert "unsupported replay event kind" in result.output
+    assert "perk_pick failed" in result.output
 
 
 def test_replay_info_can_run_lenient_event_mode(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -598,10 +598,12 @@ def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
 def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
     replay.events.append(
-        UnknownEvent(
+        CapturePerkApplyEvent(
             tick_index=0,
-            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-            payload=[{"perk_id": int(PerkId.BREATHING_ROOM)}],
+            perk_id=int(PerkId.BREATHING_ROOM),
+            outside_before=False,
+            pending_before=None,
+            pending_after=None,
         ),
     )
     replay_path = _write_replay(tmp_path, replay=replay, name="survival-2p.crd")
@@ -668,10 +670,12 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
 def test_replay_info_emits_net_health_damage_from_tick_delta(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(
-        UnknownEvent(
+        CapturePerkApplyEvent(
             tick_index=0,
-            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-            payload=[{"perk_id": int(PerkId.BREATHING_ROOM)}],
+            perk_id=int(PerkId.BREATHING_ROOM),
+            outside_before=False,
+            pending_before=None,
+            pending_after=None,
         ),
     )
     replay_path = _write_replay(tmp_path, replay=replay, name="survival-health.crd")
@@ -705,10 +709,12 @@ def test_replay_info_emits_net_health_damage_from_tick_delta(tmp_path: Path) -> 
 def test_replay_info_player_death_is_core_event(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(
-        UnknownEvent(
+        CapturePerkApplyEvent(
             tick_index=0,
-            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-            payload=[{"perk_id": int(PerkId.GRIM_DEAL)}],
+            perk_id=int(PerkId.GRIM_DEAL),
+            outside_before=False,
+            pending_before=None,
+            pending_after=None,
         ),
     )
     replay_path = _write_replay(tmp_path, replay=replay, name="survival-player-death.crd")
@@ -1543,7 +1549,7 @@ def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) ->
 
 def test_replay_benchmark_is_strict_by_default(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -1562,12 +1568,12 @@ def test_replay_benchmark_is_strict_by_default(tmp_path: Path) -> None:
 
     assert result.exit_code == 1
     assert "replay benchmark failed" in result.output
-    assert "unsupported replay event kind" in result.output
+    assert "perk_pick failed" in result.output
 
 
 def test_replay_benchmark_can_run_lenient_event_mode(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(UnknownEvent(tick_index=0, kind="unknown_event", payload=[]))
+    replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 

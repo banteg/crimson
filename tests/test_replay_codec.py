@@ -145,14 +145,14 @@ def test_replay_codec_rejects_invalid_claimed_stats() -> None:
 
 def test_replay_codec_validates_event_tick_index_bounds() -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [[2, "perk_menu_open", 0, -1, []]]
+    replay_obj["events"] = [{"kind": "perk_menu_open", "tick_index": 2, "player_index": 0}]
     with pytest.raises(ReplayCodecError, match="out of bounds"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 
 def test_replay_codec_rejects_negative_event_tick_index() -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [[-1, "perk_menu_open", 0, -1, []]]
+    replay_obj["events"] = [{"kind": "perk_menu_open", "tick_index": -1, "player_index": 0}]
     with pytest.raises(ReplayCodecError, match="non-negative"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 
@@ -231,18 +231,17 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
     packed = replay.inputs[0][0]
     move_x_loaded = packed[0]
     move_y_loaded = packed[1]
-    aim_loaded = packed[2]
+    aim_x_loaded = packed[2]
+    aim_y_loaded = packed[3]
     assert isinstance(move_x_loaded, int | float)
     assert isinstance(move_y_loaded, int | float)
-    assert isinstance(aim_loaded, list)
-    assert len(aim_loaded) >= 2
-    assert isinstance(aim_loaded[0], int | float)
-    assert isinstance(aim_loaded[1], int | float)
+    assert isinstance(aim_x_loaded, int | float)
+    assert isinstance(aim_y_loaded, int | float)
 
     assert float(move_x_loaded) == float(f32(move_x))
     assert float(move_y_loaded) == float(f32(move_y))
-    assert float(aim_loaded[0]) == float(f32(aim_x))
-    assert float(aim_loaded[1]) == float(f32(aim_y))
+    assert float(aim_x_loaded) == float(f32(aim_x))
+    assert float(aim_y_loaded) == float(f32(aim_y))
 
 
 def test_replay_recorder_validates_player_count() -> None:

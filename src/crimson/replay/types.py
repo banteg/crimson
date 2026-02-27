@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
-REPLAY_FORMAT_VERSION = 5
-ReplayFormatVersion: TypeAlias = Literal[5]
+REPLAY_FORMAT_VERSION = 6
+ReplayFormatVersion: TypeAlias = Literal[6]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -26,6 +26,12 @@ AIM_SCHEME_SHIFT = 13
 AIM_SCHEME_MASK = 0x7
 
 InputQuantization: TypeAlias = Literal["f32"]
+
+CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap"
+CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending"
+CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply"
+CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
+CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
 
 
 def _default_game_version() -> str:
@@ -112,45 +118,41 @@ def unpack_input_mode_flags(flags: int) -> tuple[int | None, int | None]:
     return move_mode, aim_scheme
 
 
-PackedPlayerInput: TypeAlias = list[float | int | list[float]]
+PackedPlayerInput: TypeAlias = list[float | int]
 PackedTickInputs: TypeAlias = list[PackedPlayerInput]
 
 
 def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float, float, float, int]:
     """Decode a compact replay input row into scalar values.
 
-    Stored shape is `[move_x, move_y, [aim_x, aim_y], flags]`.
-    Returns `(move_x, move_y, aim_x, aim_y, flags)` with tolerant numeric coercion.
+    Stored shape is `[move_x, move_y, aim_x, aim_y, flags]`.
+    Returns `(move_x, move_y, aim_x, aim_y, flags)`.
     """
 
-    def _num_f(value: object) -> float:
+    def _require_num_f(value: object, *, field: str) -> float:
+        if isinstance(value, bool):
+            raise TypeError(f"{field} must be numeric, got bool")
         if isinstance(value, (int, float)):
             return float(value)
-        return 0.0
+        raise TypeError(f"{field} must be numeric")
 
-    def _num_i(value: object) -> int:
+    def _require_num_i(value: object, *, field: str) -> int:
         if isinstance(value, bool):
-            return int(value)
+            raise TypeError(f"{field} must be numeric, got bool")
         if isinstance(value, int):
             return int(value)
         if isinstance(value, float):
             return int(value)
-        return 0
+        raise TypeError(f"{field} must be numeric")
 
-    if len(packed) < 4:
-        return 0.0, 0.0, 0.0, 0.0, 0
+    if len(packed) != 5:
+        raise ValueError(f"packed replay input must have 5 fields, got {len(packed)}")
 
-    mx = _num_f(packed[0])
-    my = _num_f(packed[1])
-    flags = _num_i(packed[3])
-
-    aim_raw = packed[2]
-    if isinstance(aim_raw, list) and len(aim_raw) >= 2:
-        ax = _num_f(aim_raw[0])
-        ay = _num_f(aim_raw[1])
-    else:
-        ax = 0.0
-        ay = 0.0
+    mx = _require_num_f(packed[0], field="move_x")
+    my = _require_num_f(packed[1], field="move_y")
+    ax = _require_num_f(packed[2], field="aim_x")
+    ay = _require_num_f(packed[3], field="aim_y")
+    flags = _require_num_i(packed[4], field="flags")
 
     return mx, my, ax, ay, flags
 
@@ -212,13 +214,138 @@ class PerkMenuOpenEvent:
 
 
 @dataclass(frozen=True, slots=True)
-class UnknownEvent:
+class CaptureBootstrapQuestSession:
+    spawn_timeline_ms: float | None
+    no_creatures_timer_ms: float | None
+    completion_transition_ms: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureBootstrapPlayer:
+    weapon_id: int
+    pos_x: float
+    pos_y: float
+    health: float
+    ammo: float
+    experience: int
+    level: int
+    clip_size: int | None
+    reload_active: bool | None
+    reload_timer: float | None
+    reload_timer_max: float | None
+    shot_cooldown: float | None
+    spread_heat: float | None
+    aim_x: float | None
+    aim_y: float | None
+    aim_heading: float | None
+    alt_weapon_id: int | None
+    alt_clip_size: int | None
+    alt_ammo: float | None
+    alt_reload_active: bool | None
+    alt_reload_timer: float | None
+    alt_reload_timer_max: float | None
+    alt_shot_cooldown: float | None
+    shield_ms: int | None
+    fire_bullets_ms: int | None
+    speed_bonus_ms: int | None
+    hot_tempered_timer: float | None
+    man_bomb_timer: float | None
+    living_fortress_timer: float | None
+    fire_cough_timer: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureBootstrapEvent:
     tick_index: int
-    kind: str
-    payload: list[object]
+    elapsed_ms: int
+    score_xp: int
+    perk_pending: int
+    perk_pending_count: int
+    perk_choices_dirty: bool
+    perk_choices: list[int]
+    player_nonzero_counts: list[list[list[int]]]
+    players: list[CaptureBootstrapPlayer]
+    digital_move_enabled_by_player: list[bool]
+    weapon_power_up_ms: int
+    reflex_boost_ms: int
+    energizer_ms: int
+    double_experience_ms: int
+    freeze_ms: int
+    perk_interval_man_bomb: float | None
+    perk_interval_fire_cough: float | None
+    perk_interval_hot_tempered: float | None
+    quest_session: CaptureBootstrapQuestSession | None
 
 
-ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent | UnknownEvent
+@dataclass(frozen=True, slots=True)
+class CapturePerkApplyEvent:
+    tick_index: int
+    perk_id: int
+    outside_before: bool
+    pending_before: int | None
+    pending_after: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class CapturePerkPendingEvent:
+    tick_index: int
+    perk_pending: int
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureCreatureSpawnRow:
+    template_id: int
+    pos_x: float
+    pos_y: float
+    heading: float
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureCreatureSpawnAddedHeadRow:
+    index: int
+    heading: float | None
+    target_heading: float | None
+    ai_mode: int | None
+    link_index: int | None
+    hp: float | None
+    lifecycle_stage: float | None
+    orbit_angle: float | None
+    orbit_radius: float | None
+    flags: int | None
+    type_id: int | None
+    pos_x: float | None
+    pos_y: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureCreatureSpawnEvent:
+    tick_index: int
+    spawns: list[CaptureCreatureSpawnRow]
+    added_head: list[CaptureCreatureSpawnAddedHeadRow]
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureStateTransitionRow:
+    target_state: int
+    before_state: int | None
+    after_state: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class CaptureStateTransitionEvent:
+    tick_index: int
+    transitions: list[CaptureStateTransitionRow]
+
+
+ReplayEvent: TypeAlias = (
+    PerkPickEvent
+    | PerkMenuOpenEvent
+    | CaptureBootstrapEvent
+    | CapturePerkApplyEvent
+    | CapturePerkPendingEvent
+    | CaptureCreatureSpawnEvent
+    | CaptureStateTransitionEvent
+)
 
 
 @dataclass(slots=True)

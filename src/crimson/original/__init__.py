@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from .capture import (
+from ..replay.types import (
     CAPTURE_BOOTSTRAP_EVENT_KIND,
     CAPTURE_PERK_APPLY_EVENT_KIND,
     CAPTURE_PERK_PENDING_EVENT_KIND,
+)
+from .capture import (
     CaptureError,
     apply_capture_bootstrap_payload,
     build_capture_dt_frame_ms_i32_overrides,

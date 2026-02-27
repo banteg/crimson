@@ -1,21 +1,24 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import cast
 
 import pytest
 
 from crimson.creatures.spawn import CreatureFlags, SpawnId
 from crimson.game_modes import GameMode
-from crimson.original.capture import (
-    CAPTURE_BOOTSTRAP_EVENT_KIND,
-    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-    CAPTURE_PERK_APPLY_EVENT_KIND,
-    CAPTURE_STATE_TRANSITION_EVENT_KIND,
-)
 from crimson.perks import PerkId
 from crimson.quests.types import SpawnEntry
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
+from crimson.replay import (
+    CaptureCreatureSpawnAddedHeadRow,
+    CaptureCreatureSpawnEvent,
+    CaptureCreatureSpawnRow,
+    CapturePerkApplyEvent,
+    CaptureStateTransitionEvent,
+    CaptureStateTransitionRow,
+    ReplayGameVersionWarning,
+    ReplayHeader,
+    ReplayRecorder,
+)
 from crimson.sim.driver.replay_events import apply_replay_tick_events
 from crimson.sim.driver.replay_runner import run_quest_replay
 from crimson.sim.driver.setup import reset_players
@@ -26,6 +29,7 @@ from tests.helpers import assert_float_close
 from tests.replay_runner_helpers import (
     _blank_quest_replay,
     _quest_spawn_entries,
+    _strict_bootstrap_event,
     _strict_bootstrap_payload,
     _strict_bootstrap_player_payload,
 )
@@ -81,13 +85,7 @@ def test_quest_runner_applies_original_capture_bootstrap_session_timers() -> Non
         "no_creatures_timer_ms": 3100.0,
         "completion_transition_ms": -1.0,
     }
-    replay_bootstrapped.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay_bootstrapped.events.append(_strict_bootstrap_event(bootstrap_payload))
     bootstrapped_checkpoints = []
     with pytest.warns(ReplayGameVersionWarning):
         run_quest_replay(
@@ -110,28 +108,19 @@ def test_quest_runner_uses_capture_creature_spawn_events_for_original_capture_re
         "no_creatures_timer_ms": 0.0,
         "completion_transition_ms": -1.0,
     }
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
     replay.events.append(
-        UnknownEvent(
+        CaptureCreatureSpawnEvent(
             tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-            payload=[
-                {
-                    "spawns": [
-                        {
-                            "template_id": int(SpawnId.ALIEN_AI7_ORBITER_36),
-                            "pos": {"x": 434.3393859863281, "y": 455.56573486328125},
-                            "heading": -4.083981990814209,
-                        },
-                    ],
-                },
+            spawns=[
+                CaptureCreatureSpawnRow(
+                    template_id=int(SpawnId.ALIEN_AI7_ORBITER_36),
+                    pos_x=434.3393859863281,
+                    pos_y=455.56573486328125,
+                    heading=-4.083981990814209,
+                ),
             ],
+            added_head=[],
         ),
     )
     spawn_entries = (
@@ -165,28 +154,19 @@ def test_quest_runner_disables_runtime_spawn_slot_ticks_when_capture_spawns_are_
         "no_creatures_timer_ms": 0.0,
         "completion_transition_ms": -1.0,
     }
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
     replay.events.append(
-        UnknownEvent(
+        CaptureCreatureSpawnEvent(
             tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-            payload=[
-                {
-                    "spawns": [
-                        {
-                            "template_id": int(SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A),
-                            "pos": {"x": 900.0, "y": 900.0},
-                            "heading": 0.0,
-                        },
-                    ],
-                },
+            spawns=[
+                CaptureCreatureSpawnRow(
+                    template_id=int(SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A),
+                    pos_x=900.0,
+                    pos_y=900.0,
+                    heading=0.0,
+                ),
             ],
+            added_head=[],
         ),
     )
     dt_overrides = {tick: 0.1 for tick in range(40)}
@@ -214,35 +194,32 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
         difficulty_level=1,
     )
     reset_players(world.players, world_size=1024.0, player_count=1)
-    event = UnknownEvent(
+    event = CaptureCreatureSpawnEvent(
         tick_index=0,
-        kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-        payload=[
-            {
-                "spawns": [
-                    {
-                        "template_id": int(SpawnId.FORMATION_GRID_ALIEN_BRONZE_18),
-                        "pos": {"x": -256.0, "y": 256.0},
-                        "heading": -4.083981990814209,
-                    },
-                ],
-                "added_head": [
-                    {
-                        "index": 1,
-                        "heading": 1.1278764009475708,
-                        "target_heading": 0.621416449546814,
-                        "ai_mode": 3,
-                        "link_index": 0,
-                        "hp": 123.5,
-                        "lifecycle_stage": 9.5,
-                        "orbit_angle": 0.25,
-                        "orbit_radius": 0.75,
-                        "flags": 17,
-                        "type_id": 7,
-                        "pos": {"x": 12.25, "y": 34.5},
-                    },
-                ],
-            },
+        spawns=[
+            CaptureCreatureSpawnRow(
+                template_id=int(SpawnId.FORMATION_GRID_ALIEN_BRONZE_18),
+                pos_x=-256.0,
+                pos_y=256.0,
+                heading=-4.083981990814209,
+            ),
+        ],
+        added_head=[
+            CaptureCreatureSpawnAddedHeadRow(
+                index=1,
+                heading=1.1278764009475708,
+                target_heading=0.621416449546814,
+                ai_mode=3,
+                link_index=0,
+                hp=123.5,
+                lifecycle_stage=9.5,
+                orbit_angle=0.25,
+                orbit_radius=0.75,
+                flags=17,
+                type_id=7,
+                pos_x=12.25,
+                pos_y=34.5,
+            ),
         ],
     )
     apply_replay_tick_events(
@@ -287,24 +264,25 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
     assert spawned
     idx = int(spawned[0])
 
-    event = UnknownEvent(
+    event = CaptureCreatureSpawnEvent(
         tick_index=0,
-        kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-        payload=[
-            {
-                "spawns": [],
-                "added_head": [
-                    {
-                        "index": idx,
-                        "heading": 0.28999999165534973,
-                        "target_heading": 0.521416425704956,
-                        "ai_mode": 0,
-                        "link_index": 1,
-                        "orbit_radius": 1.25,
-                        "flags": 5,
-                    },
-                ],
-            },
+        spawns=[],
+        added_head=[
+            CaptureCreatureSpawnAddedHeadRow(
+                index=idx,
+                heading=0.28999999165534973,
+                target_heading=0.521416425704956,
+                ai_mode=0,
+                link_index=1,
+                hp=None,
+                lifecycle_stage=None,
+                orbit_angle=None,
+                orbit_radius=1.25,
+                flags=5,
+                type_id=None,
+                pos_x=None,
+                pos_y=None,
+            ),
         ],
     )
     apply_replay_tick_events(
@@ -326,7 +304,7 @@ def test_capture_creature_spawn_event_applies_added_head_without_spawn_rows() ->
 
 
 def test_capture_creature_spawn_event_backfills_ai7_rollover_rng_draw_for_spawned_rows() -> None:
-    def _rng_state_after(payload: dict[str, object]) -> tuple[int, WorldState]:
+    def _rng_state_after(event: CaptureCreatureSpawnEvent) -> tuple[int, WorldState]:
         world = WorldState.build(
             world_size=1024.0,
             demo_mode_active=False,
@@ -335,11 +313,6 @@ def test_capture_creature_spawn_event_backfills_ai7_rollover_rng_draw_for_spawne
         )
         reset_players(world.players, world_size=1024.0, player_count=1)
         world.state.rng.srand(0x1234ABCD)
-        event = UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-            payload=[payload],
-        )
         apply_replay_tick_events(
             [event],
             tick_index=0,
@@ -350,28 +323,42 @@ def test_capture_creature_spawn_event_backfills_ai7_rollover_rng_draw_for_spawne
         )
         return int(world.state.rng.state), world
 
-    base_payload: dict[str, object] = {
-        "spawns": [
-            {
-                "template_id": int(SpawnId.SPIDER_SP1_RANDOM_32),
-                "pos": {"x": 256.0, "y": 256.0},
-                "heading": -100.0,
-            },
+    base_event = CaptureCreatureSpawnEvent(
+        tick_index=0,
+        spawns=[
+            CaptureCreatureSpawnRow(
+                template_id=int(SpawnId.SPIDER_SP1_RANDOM_32),
+                pos_x=256.0,
+                pos_y=256.0,
+                heading=-100.0,
+            ),
         ],
-    }
-    with_rollover_payload: dict[str, object] = {
-        "spawns": list(cast(list[dict[str, object]], base_payload["spawns"])),
-        "added_head": [
-            {
-                "index": 0,
-                "flags": int(CreatureFlags.AI7_LINK_TIMER),
-                "link_index": -975,
-            },
+        added_head=[],
+    )
+    with_rollover_event = CaptureCreatureSpawnEvent(
+        tick_index=0,
+        spawns=list(base_event.spawns),
+        added_head=[
+            CaptureCreatureSpawnAddedHeadRow(
+                index=0,
+                heading=None,
+                target_heading=None,
+                ai_mode=None,
+                link_index=-975,
+                hp=None,
+                lifecycle_stage=None,
+                orbit_angle=None,
+                orbit_radius=None,
+                flags=int(CreatureFlags.AI7_LINK_TIMER),
+                type_id=None,
+                pos_x=None,
+                pos_y=None,
+            ),
         ],
-    }
+    )
 
-    state_without_rollover, _ = _rng_state_after(base_payload)
-    state_with_rollover, world_with_rollover = _rng_state_after(with_rollover_payload)
+    state_without_rollover, _ = _rng_state_after(base_event)
+    state_with_rollover, world_with_rollover = _rng_state_after(with_rollover_event)
 
     probe = WorldState.build(
         world_size=1024.0,
@@ -398,19 +385,15 @@ def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides(
         rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(700.0, 512.0))])
         replay = rec.finish()
         bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
-        replay.events.append(
-            UnknownEvent(
-                tick_index=0,
-                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[bootstrap_payload],
-            ),
-        )
+        replay.events.append(_strict_bootstrap_event(bootstrap_payload))
         if include_reflex_boosted:
             replay.events.append(
-                UnknownEvent(
+                CapturePerkApplyEvent(
                     tick_index=0,
-                    kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                    payload=[{"perk_id": int(PerkId.REFLEX_BOOSTED), "outside_before": True}],
+                    perk_id=int(PerkId.REFLEX_BOOSTED),
+                    outside_before=True,
+                    pending_before=None,
+                    pending_after=None,
                 ),
             )
 
@@ -441,7 +424,7 @@ def test_quest_runner_disables_world_dt_steps_for_original_capture_dt_overrides(
 def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
     _header, rec = _blank_quest_replay(ticks=2, seed=101, game_version="0.0.0")
     replay = rec.finish()
-    replay.inputs[1][0] = [0.0, 0.0, [700.0, 512.0], 1]
+    replay.inputs[1][0] = [0.0, 0.0, 700.0, 512.0, 1]
     bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
     bootstrap_payload["players"] = [
         _strict_bootstrap_player_payload(
@@ -460,18 +443,13 @@ def test_quest_runner_resets_run_on_capture_state_transition_to_12() -> None:
         "choices": [],
         "player_nonzero_counts": [[[12, 1], [34, 1], [44, 1]]],
     }
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
     replay.events.append(
-        UnknownEvent(
+        CaptureStateTransitionEvent(
             tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_STATE_TRANSITION_EVENT_KIND,
-            payload=[{"transitions": [{"target_state": 12, "before_state": 9, "after_state": 12}]}],
+            transitions=[
+                CaptureStateTransitionRow(target_state=12, before_state=9, after_state=12),
+            ],
         ),
     )
 

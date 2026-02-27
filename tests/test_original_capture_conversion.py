@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import gzip
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -12,11 +13,6 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.original.capture import (
-    CAPTURE_BOOTSTRAP_EVENT_KIND,
-    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-    CAPTURE_PERK_APPLY_EVENT_KIND,
-    CAPTURE_PERK_PENDING_EVENT_KIND,
-    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     CaptureError,
     apply_capture_bootstrap_payload,
     build_capture_dt_frame_ms_i32_overrides,
@@ -71,7 +67,18 @@ from crimson.original.schema import (
     CaptureTimingDiagnostics,
     CaptureVec2,
 )
-from crimson.replay import PerkMenuOpenEvent, Replay, UnknownEvent, unpack_input_flags, unpack_input_move_key_flags
+from crimson.replay import (
+    CaptureBootstrapEvent,
+    CaptureBootstrapPlayer,
+    CaptureCreatureSpawnEvent,
+    CapturePerkApplyEvent,
+    CapturePerkPendingEvent,
+    CaptureStateTransitionEvent,
+    PerkMenuOpenEvent,
+    Replay,
+    unpack_input_flags,
+    unpack_input_move_key_flags,
+)
 from crimson.replay.checkpoints import dump_checkpoints, load_checkpoints
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
@@ -395,17 +402,14 @@ def _tick_player(tick: CaptureTick, player_index: int = 0) -> CapturePlayerCheck
 
 
 def _replay_input_flags(replay: Replay, tick_index: int, player_index: int = 0) -> int:
-    raw_flags = replay.inputs[tick_index][player_index][3]
+    raw_flags = replay.inputs[tick_index][player_index][4]
     assert isinstance(raw_flags, int | float)
     return int(raw_flags)
 
 
 def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0) -> tuple[float, float]:
-    aim = replay.inputs[tick_index][player_index][2]
-    assert isinstance(aim, list)
-    assert len(aim) >= 2
-    aim_x = aim[0]
-    aim_y = aim[1]
+    aim_x = replay.inputs[tick_index][player_index][2]
+    aim_y = replay.inputs[tick_index][player_index][3]
     assert isinstance(aim_x, int | float)
     assert isinstance(aim_y, int | float)
     return float(aim_x), float(aim_y)
@@ -425,32 +429,60 @@ def _assert_is_f32(value: float) -> None:
 
 def _minimal_strict_bootstrap_payload() -> Any:
     payload = capture_bootstrap_payload_from_event_payload(
-        [
-            {
-                "tick_index": 0,
-                "elapsed_ms": 0,
-                "score_xp": 0,
-                "perk_pending": 0,
-                "perk": {
-                    "pending_count": 0,
-                    "choices_dirty": False,
-                    "choices": [11, 22, 33, 44, 55, 66, 77],
-                    "player_nonzero_counts": [[]],
-                },
-                "bonus_timers_ms": {},
-                "players": [
-                    {
-                        "weapon_id": 1,
-                        "pos": {"x": 0.0, "y": 0.0},
-                        "health": 100.0,
-                        "ammo": 12.0,
-                        "experience": 0,
-                        "level": 1,
-                    },
-                ],
-                "digital_move_enabled_by_player": [False],
-            },
-        ],
+        CaptureBootstrapEvent(
+            tick_index=0,
+            elapsed_ms=0,
+            score_xp=0,
+            perk_pending=0,
+            perk_pending_count=0,
+            perk_choices_dirty=False,
+            perk_choices=[11, 22, 33, 44, 55, 66, 77],
+            player_nonzero_counts=[[]],
+            players=[
+                CaptureBootstrapPlayer(
+                    weapon_id=1,
+                    pos_x=0.0,
+                    pos_y=0.0,
+                    health=100.0,
+                    ammo=12.0,
+                    experience=0,
+                    level=1,
+                    clip_size=None,
+                    reload_active=None,
+                    reload_timer=None,
+                    reload_timer_max=None,
+                    shot_cooldown=None,
+                    spread_heat=None,
+                    aim_x=None,
+                    aim_y=None,
+                    aim_heading=None,
+                    alt_weapon_id=None,
+                    alt_clip_size=None,
+                    alt_ammo=None,
+                    alt_reload_active=None,
+                    alt_reload_timer=None,
+                    alt_reload_timer_max=None,
+                    alt_shot_cooldown=None,
+                    shield_ms=None,
+                    fire_bullets_ms=None,
+                    speed_bonus_ms=None,
+                    hot_tempered_timer=None,
+                    man_bomb_timer=None,
+                    living_fortress_timer=None,
+                    fire_cough_timer=None,
+                ),
+            ],
+            digital_move_enabled_by_player=[False],
+            weapon_power_up_ms=0,
+            reflex_boost_ms=0,
+            energizer_ms=0,
+            double_experience_ms=0,
+            freeze_ms=0,
+            perk_interval_man_bomb=None,
+            perk_interval_fire_cough=None,
+            perk_interval_hot_tempered=None,
+            quest_session=None,
+        ),
     )
     assert payload is not None
     return payload
@@ -875,11 +907,9 @@ def test_convert_capture_to_replay_infers_pending_drop_events(tmp_path: Path) ->
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    kinds = [
-        type(event).__name__ if not isinstance(event, UnknownEvent) else str(event.kind) for event in replay.events
-    ]
-    assert CAPTURE_BOOTSTRAP_EVENT_KIND in kinds
-    assert CAPTURE_PERK_PENDING_EVENT_KIND in kinds
+    kinds = [type(event).__name__ for event in replay.events]
+    assert "CaptureBootstrapEvent" in kinds
+    assert "CapturePerkPendingEvent" in kinds
     assert "PerkMenuOpenEvent" in kinds
 
 
@@ -908,14 +938,12 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
     pending_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND
+        if isinstance(event, CapturePerkPendingEvent)
     ]
     assert [event.tick_index for event in pending_events] == [0, 1]
-    assert [capture_perk_pending_from_event_payload(list(event.payload)) for event in pending_events] == [1, 0]
+    assert [capture_perk_pending_from_event_payload(event) for event in pending_events] == [1, 0]
 
-    kinds = [
-        type(event).__name__ if not isinstance(event, UnknownEvent) else str(event.kind) for event in replay.events
-    ]
+    kinds = [type(event).__name__ for event in replay.events]
     assert "PerkMenuOpenEvent" in kinds
 
 
@@ -940,10 +968,10 @@ def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_tra
     pending_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_PENDING_EVENT_KIND
+        if isinstance(event, CapturePerkPendingEvent)
     ]
     assert [event.tick_index for event in pending_events] == [0, 1]
-    assert [capture_perk_pending_from_event_payload(list(event.payload)) for event in pending_events] == [2, 0]
+    assert [capture_perk_pending_from_event_payload(event) for event in pending_events] == [2, 0]
     assert not any(isinstance(event, PerkMenuOpenEvent) for event in replay.events)
 
 
@@ -968,15 +996,15 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.perk_pending == 3
-    assert payload.perk.pending_count == 3
-    assert payload.perk.choices_dirty is False
-    assert payload.perk.choices == [11, 22, 33, 44, 55, 66, 77]
-    assert payload.perk.player_nonzero_counts == []
+    assert payload.perk_pending_count == 3
+    assert payload.perk_choices_dirty is False
+    assert payload.perk_choices == [11, 22, 33, 44, 55, 66, 77]
+    assert payload.player_nonzero_counts == []
 
 
 def test_apply_capture_bootstrap_payload_marks_perk_counts_unknown_when_nonzero_counts_are_missing() -> None:
@@ -1011,9 +1039,9 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.quest_session is not None
     assert_float_close(payload.quest_session.spawn_timeline_ms, 1718.0)
@@ -1043,9 +1071,9 @@ def test_convert_capture_to_replay_bootstrap_payload_quantizes_quest_session_tim
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.quest_session is not None
     assert payload.quest_session.spawn_timeline_ms == float(f32(16_777_217.0))
@@ -1119,15 +1147,15 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.elapsed_ms == 6951
     assert payload.perk_pending == 1
     assert payload.score_xp == 7
 
-    assert payload.bonus_timers_ms["4"] == 250
+    assert payload.weapon_power_up_ms == 250
 
     assert len(payload.players) == 1
     player = payload.players[0]
@@ -1140,25 +1168,34 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     assert_float_close(player.reload_timer_max, 1.0)
     assert_float_close(player.shot_cooldown, 0.25)
     assert_float_close(player.spread_heat, 0.0)
-    assert player.bonus_timers_ms == {"speed_bonus": 1200, "shield": 500, "fire_bullets": 0}
-    assert player.aim is not None
-    assert_float_close(player.aim.x, 300.0)
-    assert_float_close(player.aim.y, 320.0)
-    assert_float_close(player.aim.heading, float(f32(1.2)))
-    assert player.alt_weapon is not None
-    assert player.alt_weapon.weapon_id == 4
-    assert player.alt_weapon.clip_size == 10
-    assert_float_close(player.alt_weapon.ammo, 7.0)
-    assert player.alt_weapon.reload_active is True
-    assert_float_close(player.alt_weapon.reload_timer, float(f32(0.2)))
-    assert_float_close(player.alt_weapon.shot_cooldown, float(f32(0.1)))
-    assert_float_close(player.alt_weapon.reload_timer_max, float(f32(1.2)))
-    assert player.perk_timers is not None
-    assert set(player.perk_timers.keys()) == {"hot_tempered", "man_bomb", "living_fortress", "fire_cough"}
-    assert_float_close(player.perk_timers["hot_tempered"], float(f32(1.36)))
-    assert_float_close(player.perk_timers["man_bomb"], 0.0)
-    assert_float_close(player.perk_timers["living_fortress"], 0.0)
-    assert_float_close(player.perk_timers["fire_cough"], 0.0)
+    assert player.speed_bonus_ms == 1200
+    assert player.shield_ms == 500
+    assert player.fire_bullets_ms == 0
+    assert player.aim_x is not None
+    assert player.aim_y is not None
+    assert player.aim_heading is not None
+    assert_float_close(player.aim_x, 300.0)
+    assert_float_close(player.aim_y, 320.0)
+    assert_float_close(player.aim_heading, float(f32(1.2)))
+    assert player.alt_weapon_id == 4
+    assert player.alt_clip_size == 10
+    assert player.alt_ammo is not None
+    assert_float_close(player.alt_ammo, 7.0)
+    assert player.alt_reload_active is True
+    assert player.alt_reload_timer is not None
+    assert player.alt_shot_cooldown is not None
+    assert player.alt_reload_timer_max is not None
+    assert player.hot_tempered_timer is not None
+    assert player.man_bomb_timer is not None
+    assert player.living_fortress_timer is not None
+    assert player.fire_cough_timer is not None
+    assert_float_close(player.alt_reload_timer, float(f32(0.2)))
+    assert_float_close(player.alt_shot_cooldown, float(f32(0.1)))
+    assert_float_close(player.alt_reload_timer_max, float(f32(1.2)))
+    assert_float_close(player.hot_tempered_timer, float(f32(1.36)))
+    assert_float_close(player.man_bomb_timer, 0.0)
+    assert_float_close(player.living_fortress_timer, 0.0)
+    assert_float_close(player.fire_cough_timer, 0.0)
 
 
 def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_timer_wrap(
@@ -1266,15 +1303,14 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
-    assert payload.perk_intervals is not None
-    perk_intervals = payload.perk_intervals
-    assert_float_close(perk_intervals["hot_tempered"], float(f32(1.4)))
-    _assert_is_f32(perk_intervals["hot_tempered"])
+    assert payload.perk_interval_hot_tempered is not None
+    assert_float_close(float(payload.perk_interval_hot_tempered), float(f32(1.4)))
+    _assert_is_f32(float(payload.perk_interval_hot_tempered))
 
 
 def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_reset_interval_inference(
@@ -1382,13 +1418,12 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
-    if payload.perk_intervals is not None:
-        assert "hot_tempered" not in payload.perk_intervals
+    assert payload.perk_interval_hot_tempered is None
 
 
 def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_from_timer_drop(
@@ -1496,32 +1531,33 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
-    if payload.perk_intervals is not None:
-        assert "man_bomb" not in payload.perk_intervals
+    assert payload.perk_interval_man_bomb is None
 
 
 def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_timers() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     payload = _minimal_strict_bootstrap_payload()
-    payload.elapsed_ms = -1
+    payload = replace(payload, elapsed_ms=-1)
     assert payload.players
-    payload.players[0].perk_timers = {
-        "hot_tempered": 1.36,
-        "man_bomb": 0.5,
-        "living_fortress": 0.25,
-        "fire_cough": 0.75,
-    }
-    payload.perk_intervals = {
-        "hot_tempered": 1.4,
-        "man_bomb": 6.0,
-        "fire_cough": 3.0,
-    }
+    payload.players[0] = replace(
+        payload.players[0],
+        hot_tempered_timer=1.36,
+        man_bomb_timer=0.5,
+        living_fortress_timer=0.25,
+        fire_cough_timer=0.75,
+    )
+    payload = replace(
+        payload,
+        perk_interval_hot_tempered=1.4,
+        perk_interval_man_bomb=6.0,
+        perk_interval_fire_cough=3.0,
+    )
 
     elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
     assert elapsed is None
@@ -1553,7 +1589,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     perk_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND
+        if isinstance(event, CapturePerkApplyEvent)
     ]
     assert len(perk_events) == 1
     assert perk_events[0].tick_index == 0
@@ -1582,12 +1618,11 @@ def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_pat
     perk_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_PERK_APPLY_EVENT_KIND
+        if isinstance(event, CapturePerkApplyEvent)
     ]
     assert len(perk_events) == 1
-    payload = list(perk_events[0].payload)
-    assert capture_perk_apply_from_event_payload(payload) == (16, True)
-    assert capture_perk_apply_pending_bounds_from_event_payload(payload) == (1, 4)
+    assert capture_perk_apply_from_event_payload(perk_events[0]) == (16, True)
+    assert capture_perk_apply_pending_bounds_from_event_payload(perk_events[0]) == (1, 4)
 
 
 @pytest.mark.parametrize("caller_static", ["0x00434373", "0x00426d56"])
@@ -1631,17 +1666,17 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     spawn_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+        if isinstance(event, CaptureCreatureSpawnEvent)
     ]
     assert len(spawn_events) == 1
     assert spawn_events[0].tick_index == 0
-    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == (
+    assert capture_creature_spawns_from_event_payload(spawn_events[0]) == (
         (54, 434.3393859863281, 455.56573486328125, -4.083981990814209),
     )
-    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
+    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0]) == (
         (18, 1.1278764009475708, 0.621416449546814, 3, 0),
     )
-    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload)
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0])
     assert rows is not None
     assert len(rows) == 1
     row = rows[0]
@@ -1656,9 +1691,10 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     assert_float_close(row.orbit_radius, 0.5)
     assert row.flags == 12
     assert row.type_id == 2
-    assert row.pos is not None
-    assert_float_close(row.pos.x, -256.0)
-    assert_float_close(row.pos.y, 256.0)
+    assert row.pos_x is not None
+    assert row.pos_y is not None
+    assert_float_close(float(row.pos_x), -256.0)
+    assert_float_close(float(row.pos_y), 256.0)
 
 
 def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp_path: Path) -> None:
@@ -1685,11 +1721,11 @@ def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp
     spawn_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+        if isinstance(event, CaptureCreatureSpawnEvent)
     ]
     assert len(spawn_events) == 1
-    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == ()
-    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0].payload) == (
+    assert capture_creature_spawns_from_event_payload(spawn_events[0]) == ()
+    assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0]) == (
         (7, 0.28999999165534973, 0.521416425704956, 0, 1),
     )
 
@@ -1743,10 +1779,10 @@ def test_convert_capture_to_replay_quantizes_quest_spawn_event_float_payloads_to
     spawn_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+        if isinstance(event, CaptureCreatureSpawnEvent)
     ]
     assert len(spawn_events) == 1
-    assert capture_creature_spawns_from_event_payload(spawn_events[0].payload) == (
+    assert capture_creature_spawns_from_event_payload(spawn_events[0]) == (
         (
             54,
             float(f32(spawn_x)),
@@ -1755,7 +1791,7 @@ def test_convert_capture_to_replay_quantizes_quest_spawn_event_float_payloads_to
         ),
     )
 
-    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0].payload)
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(spawn_events[0])
     assert rows is not None
     assert len(rows) == 1
     row = rows[0]
@@ -1765,9 +1801,10 @@ def test_convert_capture_to_replay_quantizes_quest_spawn_event_float_payloads_to
     assert_float_close(row.lifecycle_stage, float(f32(lifecycle_stage)))
     assert_float_close(row.orbit_angle, float(f32(lifecycle_orbit_angle)))
     assert_float_close(row.orbit_radius, float(f32(lifecycle_orbit_radius)))
-    assert row.pos is not None
-    assert_float_close(row.pos.x, float(f32(lifecycle_pos_x)))
-    assert_float_close(row.pos.y, float(f32(lifecycle_pos_y)))
+    assert row.pos_x is not None
+    assert row.pos_y is not None
+    assert_float_close(float(row.pos_x), float(f32(lifecycle_pos_x)))
+    assert_float_close(float(row.pos_y), float(f32(lifecycle_pos_y)))
 
 
 def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path) -> None:
@@ -1789,11 +1826,11 @@ def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path)
     state_events = [
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND
+        if isinstance(event, CaptureStateTransitionEvent)
     ]
     assert len(state_events) == 1
     assert state_events[0].tick_index == 0
-    assert capture_state_transitions_from_event_payload(state_events[0].payload) == ((12, 9, 12),)
+    assert capture_state_transitions_from_event_payload(state_events[0]) == ((12, 9, 12),)
 
 
 def test_convert_capture_to_replay_emits_menu_open_on_state_6_transition(tmp_path: Path) -> None:
@@ -2123,7 +2160,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    move_x, move_y, _aim_x, _aim_y, _flags = replay.inputs[0][0]
     flags = _replay_input_flags(replay, 0, 0)
     assert move_x == -1.0
     assert move_y == -1.0
@@ -2140,9 +2177,9 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.digital_move_enabled_by_player == [True]
 
@@ -2173,7 +2210,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x, move_y, _aim, _flags = replay.inputs[0][0]
+    move_x, move_y, _aim_x, _aim_y, _flags = replay.inputs[0][0]
     flags = _replay_input_flags(replay, 0, 0)
     assert_float_close(move_x, 0.25)
     assert_float_close(move_y, 0.5)
@@ -2186,9 +2223,9 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     bootstrap = next(
         event
         for event in replay.events
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND
+        if isinstance(event, CaptureBootstrapEvent)
     )
-    payload = capture_bootstrap_payload_from_event_payload(bootstrap.payload)
+    payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.digital_move_enabled_by_player == [False]
 
@@ -2239,8 +2276,8 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0_x, _aim0_y, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1_x, _aim1_y, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
     assert_float_close(move_x0, 1.0)
@@ -2297,8 +2334,8 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0_x, _aim0_y, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1_x, _aim1_y, _flags1 = replay.inputs[1][0]
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
     assert_float_close(move_x0, 0.0)
@@ -2355,8 +2392,8 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    move_x0, move_y0, _aim0, _flags0 = replay.inputs[0][0]
-    move_x1, move_y1, _aim1, _flags1 = replay.inputs[1][0]
+    move_x0, move_y0, _aim0_x, _aim0_y, _flags0 = replay.inputs[0][0]
+    move_x1, move_y1, _aim1_x, _aim1_y, _flags1 = replay.inputs[1][0]
     assert_float_close(move_x0, 1.0)
     assert_float_close(move_y0, 0.0)
     assert_float_close(move_x1, 0.0)

@@ -8,7 +8,7 @@ from crimson.replay import Replay, ReplayHeader
 def _replay_with_ticks(tick_count: int) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=0, seed=0),
-        inputs=[[[0.0, 0.0, [0.0, 0.0], 0]] for _ in range(max(0, int(tick_count)))],
+        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]] for _ in range(max(0, int(tick_count)))],
     )
 
 

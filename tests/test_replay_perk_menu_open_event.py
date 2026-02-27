@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
-from crimson.original.capture import (
-    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-    CAPTURE_PERK_APPLY_EVENT_KIND,
-    CAPTURE_PERK_PENDING_EVENT_KIND,
-    CAPTURE_STATE_TRANSITION_EVENT_KIND,
-)
 from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.helpers import perk_count_get
-from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, UnknownEvent
+from crimson.replay import (
+    CaptureCreatureSpawnEvent,
+    CapturePerkApplyEvent,
+    CapturePerkPendingEvent,
+    CaptureStateTransitionEvent,
+    CaptureStateTransitionRow,
+    PerkMenuOpenEvent,
+    PerkPickEvent,
+)
 from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.world_state import WorldState
@@ -52,15 +54,16 @@ def test_partition_tick_events_orders_capture_spawn_before_deferred_menu_open() 
     pre_step, post_step = partition_tick_events(
         [
             PerkMenuOpenEvent(tick_index=0, player_index=0),
-            UnknownEvent(
+            CaptureCreatureSpawnEvent(
                 tick_index=0,
-                kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-                payload=[{"spawns": []}],
+                spawns=[],
+                added_head=[],
             ),
-            UnknownEvent(
+            CaptureStateTransitionEvent(
                 tick_index=0,
-                kind=CAPTURE_STATE_TRANSITION_EVENT_KIND,
-                payload=[{"transitions": [{"target_state": 6}]}],
+                transitions=[
+                    CaptureStateTransitionRow(target_state=6, before_state=None, after_state=None),
+                ],
             ),
         ],
         defer_menu_open=True,
@@ -68,10 +71,8 @@ def test_partition_tick_events_orders_capture_spawn_before_deferred_menu_open() 
 
     assert pre_step == []
     assert len(post_step) == 3
-    assert isinstance(post_step[0], UnknownEvent)
-    assert str(post_step[0].kind) == CAPTURE_STATE_TRANSITION_EVENT_KIND
-    assert isinstance(post_step[1], UnknownEvent)
-    assert str(post_step[1].kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND
+    assert isinstance(post_step[0], CaptureStateTransitionEvent)
+    assert isinstance(post_step[1], CaptureCreatureSpawnEvent)
     assert isinstance(post_step[2], PerkMenuOpenEvent)
 
 
@@ -185,10 +186,9 @@ def test_original_capture_pending_event_sets_pending_without_pick_side_effects()
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkPendingEvent(
                 tick_index=5,
-                kind=CAPTURE_PERK_PENDING_EVENT_KIND,
-                payload=[{"perk_pending": 0}],
+                perk_pending=0,
             ),
         ],
         tick_index=5,
@@ -221,10 +221,9 @@ def test_original_capture_pending_event_supported_in_quest_mode() -> None:
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkPendingEvent(
                 tick_index=5,
-                kind=CAPTURE_PERK_PENDING_EVENT_KIND,
-                payload=[{"perk_pending": 0}],
+                perk_pending=0,
             ),
         ],
         tick_index=5,
@@ -256,10 +255,12 @@ def test_original_capture_perk_apply_event_applies_perk_without_rng_for_non_rand
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=7,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[{"perk_id": int(PerkId.FASTSHOT)}],
+                perk_id=int(PerkId.FASTSHOT),
+                outside_before=False,
+                pending_before=None,
+                pending_after=None,
             ),
         ],
         tick_index=7,
@@ -291,10 +292,12 @@ def test_original_capture_perk_apply_event_supported_in_quest_mode() -> None:
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=7,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[{"perk_id": int(PerkId.FASTSHOT)}],
+                perk_id=int(PerkId.FASTSHOT),
+                outside_before=False,
+                pending_before=None,
+                pending_after=None,
             ),
         ],
         tick_index=7,
@@ -326,10 +329,12 @@ def test_original_capture_outside_before_bandage_does_not_shift_rng_state() -> N
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=9,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[{"perk_id": int(PerkId.BANDAGE), "outside_before": True}],
+                perk_id=int(PerkId.BANDAGE),
+                outside_before=True,
+                pending_before=None,
+                pending_after=None,
             ),
         ],
         tick_index=9,
@@ -362,10 +367,12 @@ def test_original_capture_outside_before_random_weapon_does_not_shift_rng_state(
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=9,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[{"perk_id": int(PerkId.RANDOM_WEAPON), "outside_before": True}],
+                perk_id=int(PerkId.RANDOM_WEAPON),
+                outside_before=True,
+                pending_before=None,
+                pending_after=None,
             ),
         ],
         tick_index=9,
@@ -399,17 +406,12 @@ def test_original_capture_outside_before_perk_apply_consumes_one_pending_after_p
 
     apply_replay_tick_events(
         [
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=9,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[
-                    {
-                        "perk_id": int(PerkId.RANDOM_WEAPON),
-                        "outside_before": True,
-                        "pending_before": 1,
-                        "pending_after": 4,
-                    },
-                ],
+                perk_id=int(PerkId.RANDOM_WEAPON),
+                outside_before=True,
+                pending_before=1,
+                pending_after=4,
             ),
         ],
         tick_index=9,

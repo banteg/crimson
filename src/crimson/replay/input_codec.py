@@ -44,7 +44,7 @@ def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "f32") -> 
         turn_left_pressed=inp.turn_left_pressed,
         turn_right_pressed=inp.turn_right_pressed,
     )
-    return [mx, my, [ax, ay], int(flags)]
+    return [mx, my, ax, ay, int(flags)]
 
 
 def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:

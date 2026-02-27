@@ -4,14 +4,30 @@ import gzip
 import io
 import os
 from pathlib import Path
+from typing import TypeAlias
 
 import msgspec
 
 from ..math_parity import f32
 from .types import (
+    CAPTURE_BOOTSTRAP_EVENT_KIND,
+    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+    CAPTURE_PERK_APPLY_EVENT_KIND,
+    CAPTURE_PERK_PENDING_EVENT_KIND,
+    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     REPLAY_FORMAT_VERSION,
     WEAPON_USAGE_COUNT,
     BootstrapKind,
+    CaptureBootstrapEvent,
+    CaptureBootstrapPlayer,
+    CaptureBootstrapQuestSession,
+    CaptureCreatureSpawnAddedHeadRow,
+    CaptureCreatureSpawnEvent,
+    CaptureCreatureSpawnRow,
+    CapturePerkApplyEvent,
+    CapturePerkPendingEvent,
+    CaptureStateTransitionEvent,
+    CaptureStateTransitionRow,
     InputQuantization,
     PackedPlayerInput,
     PackedTickInputs,
@@ -22,7 +38,6 @@ from .types import (
     ReplayEvent,
     ReplayHeader,
     ReplayStatusSnapshot,
-    UnknownEvent,
 )
 
 _GZIP_MAGIC = b"\x1f\x8b"
@@ -80,12 +95,165 @@ class _ReplayInputWire(msgspec.Struct, array_like=True, forbid_unknown_fields=Tr
     flags: int
 
 
-class _ReplayEventWire(msgspec.Struct, array_like=True, forbid_unknown_fields=True):
+class _PerkPickEventWire(msgspec.Struct, tag="perk_pick", tag_field="kind", forbid_unknown_fields=True):
     tick_index: int
-    kind: str
-    player_index: int = -1
-    choice_index: int = -1
-    payload: list[object] = msgspec.field(default_factory=list)
+    player_index: int
+    choice_index: int
+
+
+class _PerkMenuOpenEventWire(msgspec.Struct, tag="perk_menu_open", tag_field="kind", forbid_unknown_fields=True):
+    tick_index: int
+    player_index: int
+
+
+class _CaptureBootstrapQuestSessionWire(msgspec.Struct, forbid_unknown_fields=True):
+    spawn_timeline_ms: float | None
+    no_creatures_timer_ms: float | None
+    completion_transition_ms: float | None
+
+
+class _CaptureBootstrapPlayerWire(msgspec.Struct, forbid_unknown_fields=True):
+    weapon_id: int
+    pos_x: float
+    pos_y: float
+    health: float
+    ammo: float
+    experience: int
+    level: int
+    clip_size: int | None
+    reload_active: bool | None
+    reload_timer: float | None
+    reload_timer_max: float | None
+    shot_cooldown: float | None
+    spread_heat: float | None
+    aim_x: float | None
+    aim_y: float | None
+    aim_heading: float | None
+    alt_weapon_id: int | None
+    alt_clip_size: int | None
+    alt_ammo: float | None
+    alt_reload_active: bool | None
+    alt_reload_timer: float | None
+    alt_reload_timer_max: float | None
+    alt_shot_cooldown: float | None
+    shield_ms: int | None
+    fire_bullets_ms: int | None
+    speed_bonus_ms: int | None
+    hot_tempered_timer: float | None
+    man_bomb_timer: float | None
+    living_fortress_timer: float | None
+    fire_cough_timer: float | None
+
+
+class _CaptureBootstrapEventWire(
+    msgspec.Struct,
+    tag=CAPTURE_BOOTSTRAP_EVENT_KIND,
+    tag_field="kind",
+    forbid_unknown_fields=True,
+):
+    tick_index: int
+    elapsed_ms: int
+    score_xp: int
+    perk_pending: int
+    perk_pending_count: int
+    perk_choices_dirty: bool
+    perk_choices: list[int]
+    player_nonzero_counts: list[list[list[int]]]
+    players: list[_CaptureBootstrapPlayerWire]
+    digital_move_enabled_by_player: list[bool]
+    weapon_power_up_ms: int
+    reflex_boost_ms: int
+    energizer_ms: int
+    double_experience_ms: int
+    freeze_ms: int
+    perk_interval_man_bomb: float | None
+    perk_interval_fire_cough: float | None
+    perk_interval_hot_tempered: float | None
+    quest_session: _CaptureBootstrapQuestSessionWire | None
+
+
+class _CapturePerkApplyEventWire(
+    msgspec.Struct,
+    tag=CAPTURE_PERK_APPLY_EVENT_KIND,
+    tag_field="kind",
+    forbid_unknown_fields=True,
+):
+    tick_index: int
+    perk_id: int
+    outside_before: bool
+    pending_before: int | None
+    pending_after: int | None
+
+
+class _CapturePerkPendingEventWire(
+    msgspec.Struct,
+    tag=CAPTURE_PERK_PENDING_EVENT_KIND,
+    tag_field="kind",
+    forbid_unknown_fields=True,
+):
+    tick_index: int
+    perk_pending: int
+
+
+class _CaptureCreatureSpawnRowWire(msgspec.Struct, forbid_unknown_fields=True):
+    template_id: int
+    pos_x: float
+    pos_y: float
+    heading: float
+
+
+class _CaptureCreatureSpawnAddedHeadRowWire(msgspec.Struct, forbid_unknown_fields=True):
+    index: int
+    heading: float | None
+    target_heading: float | None
+    ai_mode: int | None
+    link_index: int | None
+    hp: float | None
+    lifecycle_stage: float | None
+    orbit_angle: float | None
+    orbit_radius: float | None
+    flags: int | None
+    type_id: int | None
+    pos_x: float | None
+    pos_y: float | None
+
+
+class _CaptureCreatureSpawnEventWire(
+    msgspec.Struct,
+    tag=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+    tag_field="kind",
+    forbid_unknown_fields=True,
+):
+    tick_index: int
+    spawns: list[_CaptureCreatureSpawnRowWire]
+    added_head: list[_CaptureCreatureSpawnAddedHeadRowWire]
+
+
+class _CaptureStateTransitionRowWire(msgspec.Struct, forbid_unknown_fields=True):
+    target_state: int
+    before_state: int | None
+    after_state: int | None
+
+
+class _CaptureStateTransitionEventWire(
+    msgspec.Struct,
+    tag=CAPTURE_STATE_TRANSITION_EVENT_KIND,
+    tag_field="kind",
+    forbid_unknown_fields=True,
+):
+    tick_index: int
+    transitions: list[_CaptureStateTransitionRowWire]
+
+
+_ReplayEventWire: TypeAlias = (
+    _PerkPickEventWire
+    | _PerkMenuOpenEventWire
+    | _CaptureBootstrapEventWire
+    | _CapturePerkApplyEventWire
+    | _CapturePerkPendingEventWire
+    | _CaptureCreatureSpawnEventWire
+    | _CaptureStateTransitionEventWire
+)
 
 
 class _ReplayWire(msgspec.Struct, forbid_unknown_fields=True):
@@ -279,85 +447,354 @@ def _packed_input_to_wire(
     tick_idx: int,
     player_idx: int,
 ) -> _ReplayInputWire:
-    if len(packed) < 4:
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must have 4 fields")
-    move_x_raw, move_y_raw, aim_vec_raw, flags_raw = packed[:4]
+    if len(packed) != 5:
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must have 5 fields")
+    move_x_raw, move_y_raw, aim_x_raw, aim_y_raw, flags_raw = packed
     if not isinstance(move_x_raw, (int, float)):
         raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_x must be numeric")
     if not isinstance(move_y_raw, (int, float)):
         raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} move_y must be numeric")
-    if not isinstance(aim_vec_raw, list) or len(aim_vec_raw) < 2:
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} must encode aim as [x, y]")
-    if not isinstance(aim_vec_raw[0], (int, float)) or not isinstance(aim_vec_raw[1], (int, float)):
-        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim must contain numeric values")
+    if not isinstance(aim_x_raw, (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim_x must be numeric")
+    if not isinstance(aim_y_raw, (int, float)):
+        raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} aim_y must be numeric")
     if not isinstance(flags_raw, (int, float)):
         raise ReplayCodecError(f"replay input tick {tick_idx} player {player_idx} flags must be numeric")
     return _ReplayInputWire(
         move_x=float(move_x_raw),
         move_y=float(move_y_raw),
-        aim_x=float(aim_vec_raw[0]),
-        aim_y=float(aim_vec_raw[1]),
+        aim_x=float(aim_x_raw),
+        aim_y=float(aim_y_raw),
         flags=int(flags_raw),
     )
 
 
 def _event_to_wire(event: ReplayEvent) -> _ReplayEventWire:
     if isinstance(event, PerkPickEvent):
-        return _ReplayEventWire(
+        return _PerkPickEventWire(
             tick_index=int(event.tick_index),
-            kind="perk_pick",
             player_index=int(event.player_index),
             choice_index=int(event.choice_index),
-            payload=[],
         )
     if isinstance(event, PerkMenuOpenEvent):
-        return _ReplayEventWire(
+        return _PerkMenuOpenEventWire(
             tick_index=int(event.tick_index),
-            kind="perk_menu_open",
             player_index=int(event.player_index),
-            choice_index=-1,
-            payload=[],
         )
-    if isinstance(event, UnknownEvent):
-        return _ReplayEventWire(
+    if isinstance(event, CaptureBootstrapEvent):
+        return _CaptureBootstrapEventWire(
             tick_index=int(event.tick_index),
-            kind=str(event.kind),
-            player_index=-1,
-            choice_index=-1,
-            payload=list(event.payload),
+            elapsed_ms=int(event.elapsed_ms),
+            score_xp=int(event.score_xp),
+            perk_pending=int(event.perk_pending),
+            perk_pending_count=int(event.perk_pending_count),
+            perk_choices_dirty=bool(event.perk_choices_dirty),
+            perk_choices=[int(value) for value in event.perk_choices],
+            player_nonzero_counts=[
+                [[int(perk_id), int(count)] for perk_id, count in player_counts]
+                for player_counts in event.player_nonzero_counts
+            ],
+            players=[
+                _CaptureBootstrapPlayerWire(
+                    weapon_id=int(player.weapon_id),
+                    pos_x=float(player.pos_x),
+                    pos_y=float(player.pos_y),
+                    health=float(player.health),
+                    ammo=float(player.ammo),
+                    experience=int(player.experience),
+                    level=int(player.level),
+                    clip_size=int(player.clip_size) if player.clip_size is not None else None,
+                    reload_active=bool(player.reload_active) if player.reload_active is not None else None,
+                    reload_timer=float(player.reload_timer) if player.reload_timer is not None else None,
+                    reload_timer_max=float(player.reload_timer_max) if player.reload_timer_max is not None else None,
+                    shot_cooldown=float(player.shot_cooldown) if player.shot_cooldown is not None else None,
+                    spread_heat=float(player.spread_heat) if player.spread_heat is not None else None,
+                    aim_x=float(player.aim_x) if player.aim_x is not None else None,
+                    aim_y=float(player.aim_y) if player.aim_y is not None else None,
+                    aim_heading=float(player.aim_heading) if player.aim_heading is not None else None,
+                    alt_weapon_id=int(player.alt_weapon_id) if player.alt_weapon_id is not None else None,
+                    alt_clip_size=int(player.alt_clip_size) if player.alt_clip_size is not None else None,
+                    alt_ammo=float(player.alt_ammo) if player.alt_ammo is not None else None,
+                    alt_reload_active=bool(player.alt_reload_active) if player.alt_reload_active is not None else None,
+                    alt_reload_timer=float(player.alt_reload_timer) if player.alt_reload_timer is not None else None,
+                    alt_reload_timer_max=float(player.alt_reload_timer_max)
+                    if player.alt_reload_timer_max is not None
+                    else None,
+                    alt_shot_cooldown=float(player.alt_shot_cooldown) if player.alt_shot_cooldown is not None else None,
+                    shield_ms=int(player.shield_ms) if player.shield_ms is not None else None,
+                    fire_bullets_ms=int(player.fire_bullets_ms) if player.fire_bullets_ms is not None else None,
+                    speed_bonus_ms=int(player.speed_bonus_ms) if player.speed_bonus_ms is not None else None,
+                    hot_tempered_timer=float(player.hot_tempered_timer)
+                    if player.hot_tempered_timer is not None
+                    else None,
+                    man_bomb_timer=float(player.man_bomb_timer) if player.man_bomb_timer is not None else None,
+                    living_fortress_timer=float(player.living_fortress_timer)
+                    if player.living_fortress_timer is not None
+                    else None,
+                    fire_cough_timer=float(player.fire_cough_timer) if player.fire_cough_timer is not None else None,
+                )
+                for player in event.players
+            ],
+            digital_move_enabled_by_player=[bool(value) for value in event.digital_move_enabled_by_player],
+            weapon_power_up_ms=int(event.weapon_power_up_ms),
+            reflex_boost_ms=int(event.reflex_boost_ms),
+            energizer_ms=int(event.energizer_ms),
+            double_experience_ms=int(event.double_experience_ms),
+            freeze_ms=int(event.freeze_ms),
+            perk_interval_man_bomb=(
+                float(event.perk_interval_man_bomb) if event.perk_interval_man_bomb is not None else None
+            ),
+            perk_interval_fire_cough=(
+                float(event.perk_interval_fire_cough) if event.perk_interval_fire_cough is not None else None
+            ),
+            perk_interval_hot_tempered=(
+                float(event.perk_interval_hot_tempered) if event.perk_interval_hot_tempered is not None else None
+            ),
+            quest_session=(
+                _CaptureBootstrapQuestSessionWire(
+                    spawn_timeline_ms=(
+                        float(event.quest_session.spawn_timeline_ms)
+                        if event.quest_session.spawn_timeline_ms is not None
+                        else None
+                    ),
+                    no_creatures_timer_ms=(
+                        float(event.quest_session.no_creatures_timer_ms)
+                        if event.quest_session.no_creatures_timer_ms is not None
+                        else None
+                    ),
+                    completion_transition_ms=(
+                        float(event.quest_session.completion_transition_ms)
+                        if event.quest_session.completion_transition_ms is not None
+                        else None
+                    ),
+                )
+                if event.quest_session is not None
+                else None
+            ),
+        )
+    if isinstance(event, CapturePerkApplyEvent):
+        return _CapturePerkApplyEventWire(
+            tick_index=int(event.tick_index),
+            perk_id=int(event.perk_id),
+            outside_before=bool(event.outside_before),
+            pending_before=int(event.pending_before) if event.pending_before is not None else None,
+            pending_after=int(event.pending_after) if event.pending_after is not None else None,
+        )
+    if isinstance(event, CapturePerkPendingEvent):
+        return _CapturePerkPendingEventWire(
+            tick_index=int(event.tick_index),
+            perk_pending=int(event.perk_pending),
+        )
+    if isinstance(event, CaptureCreatureSpawnEvent):
+        return _CaptureCreatureSpawnEventWire(
+            tick_index=int(event.tick_index),
+            spawns=[
+                _CaptureCreatureSpawnRowWire(
+                    template_id=int(row.template_id),
+                    pos_x=float(row.pos_x),
+                    pos_y=float(row.pos_y),
+                    heading=float(row.heading),
+                )
+                for row in event.spawns
+            ],
+            added_head=[
+                _CaptureCreatureSpawnAddedHeadRowWire(
+                    index=int(row.index),
+                    heading=float(row.heading) if row.heading is not None else None,
+                    target_heading=float(row.target_heading) if row.target_heading is not None else None,
+                    ai_mode=int(row.ai_mode) if row.ai_mode is not None else None,
+                    link_index=int(row.link_index) if row.link_index is not None else None,
+                    hp=float(row.hp) if row.hp is not None else None,
+                    lifecycle_stage=float(row.lifecycle_stage) if row.lifecycle_stage is not None else None,
+                    orbit_angle=float(row.orbit_angle) if row.orbit_angle is not None else None,
+                    orbit_radius=float(row.orbit_radius) if row.orbit_radius is not None else None,
+                    flags=int(row.flags) if row.flags is not None else None,
+                    type_id=int(row.type_id) if row.type_id is not None else None,
+                    pos_x=float(row.pos_x) if row.pos_x is not None else None,
+                    pos_y=float(row.pos_y) if row.pos_y is not None else None,
+                )
+                for row in event.added_head
+            ],
+        )
+    if isinstance(event, CaptureStateTransitionEvent):
+        return _CaptureStateTransitionEventWire(
+            tick_index=int(event.tick_index),
+            transitions=[
+                _CaptureStateTransitionRowWire(
+                    target_state=int(row.target_state),
+                    before_state=int(row.before_state) if row.before_state is not None else None,
+                    after_state=int(row.after_state) if row.after_state is not None else None,
+                )
+                for row in event.transitions
+            ],
         )
     raise ReplayCodecError(f"unsupported event type: {type(event).__name__}")  # pragma: no cover
 
 
 def _event_from_wire(event: _ReplayEventWire) -> ReplayEvent:
-    kind = str(event.kind)
-    tick_index = int(event.tick_index)
-    if kind == "perk_pick":
+    if isinstance(event, _PerkPickEventWire):
         if int(event.player_index) < 0 or int(event.choice_index) < 0:
-            raise ReplayCodecError(
-                f"perk_pick must have non-negative player/choice indexes: {event.player_index}, {event.choice_index}",
-            )
-        if event.payload:
-            raise ReplayCodecError("perk_pick payload must be empty")
+            raise ReplayCodecError("perk_pick must have non-negative player/choice indexes")
         return PerkPickEvent(
-            tick_index=tick_index,
+            tick_index=int(event.tick_index),
             player_index=int(event.player_index),
             choice_index=int(event.choice_index),
         )
-    if kind == "perk_menu_open":
+    if isinstance(event, _PerkMenuOpenEventWire):
         if int(event.player_index) < 0:
             raise ReplayCodecError(f"perk_menu_open must have non-negative player index: {event.player_index}")
-        if event.payload:
-            raise ReplayCodecError("perk_menu_open payload must be empty")
         return PerkMenuOpenEvent(
-            tick_index=tick_index,
+            tick_index=int(event.tick_index),
             player_index=int(event.player_index),
         )
-    return UnknownEvent(
-        tick_index=tick_index,
-        kind=kind,
-        payload=list(event.payload),
-    )
+    if isinstance(event, _CaptureBootstrapEventWire):
+        return CaptureBootstrapEvent(
+            tick_index=int(event.tick_index),
+            elapsed_ms=int(event.elapsed_ms),
+            score_xp=int(event.score_xp),
+            perk_pending=int(event.perk_pending),
+            perk_pending_count=int(event.perk_pending_count),
+            perk_choices_dirty=bool(event.perk_choices_dirty),
+            perk_choices=[int(value) for value in event.perk_choices],
+            player_nonzero_counts=[
+                [[int(perk_id), int(count)] for perk_id, count in player_counts]
+                for player_counts in event.player_nonzero_counts
+            ],
+            players=[
+                CaptureBootstrapPlayer(
+                    weapon_id=int(player.weapon_id),
+                    pos_x=float(player.pos_x),
+                    pos_y=float(player.pos_y),
+                    health=float(player.health),
+                    ammo=float(player.ammo),
+                    experience=int(player.experience),
+                    level=int(player.level),
+                    clip_size=int(player.clip_size) if player.clip_size is not None else None,
+                    reload_active=bool(player.reload_active) if player.reload_active is not None else None,
+                    reload_timer=float(player.reload_timer) if player.reload_timer is not None else None,
+                    reload_timer_max=float(player.reload_timer_max) if player.reload_timer_max is not None else None,
+                    shot_cooldown=float(player.shot_cooldown) if player.shot_cooldown is not None else None,
+                    spread_heat=float(player.spread_heat) if player.spread_heat is not None else None,
+                    aim_x=float(player.aim_x) if player.aim_x is not None else None,
+                    aim_y=float(player.aim_y) if player.aim_y is not None else None,
+                    aim_heading=float(player.aim_heading) if player.aim_heading is not None else None,
+                    alt_weapon_id=int(player.alt_weapon_id) if player.alt_weapon_id is not None else None,
+                    alt_clip_size=int(player.alt_clip_size) if player.alt_clip_size is not None else None,
+                    alt_ammo=float(player.alt_ammo) if player.alt_ammo is not None else None,
+                    alt_reload_active=bool(player.alt_reload_active) if player.alt_reload_active is not None else None,
+                    alt_reload_timer=float(player.alt_reload_timer) if player.alt_reload_timer is not None else None,
+                    alt_reload_timer_max=float(player.alt_reload_timer_max)
+                    if player.alt_reload_timer_max is not None
+                    else None,
+                    alt_shot_cooldown=float(player.alt_shot_cooldown) if player.alt_shot_cooldown is not None else None,
+                    shield_ms=int(player.shield_ms) if player.shield_ms is not None else None,
+                    fire_bullets_ms=int(player.fire_bullets_ms) if player.fire_bullets_ms is not None else None,
+                    speed_bonus_ms=int(player.speed_bonus_ms) if player.speed_bonus_ms is not None else None,
+                    hot_tempered_timer=float(player.hot_tempered_timer)
+                    if player.hot_tempered_timer is not None
+                    else None,
+                    man_bomb_timer=float(player.man_bomb_timer) if player.man_bomb_timer is not None else None,
+                    living_fortress_timer=float(player.living_fortress_timer)
+                    if player.living_fortress_timer is not None
+                    else None,
+                    fire_cough_timer=float(player.fire_cough_timer) if player.fire_cough_timer is not None else None,
+                )
+                for player in event.players
+            ],
+            digital_move_enabled_by_player=[bool(value) for value in event.digital_move_enabled_by_player],
+            weapon_power_up_ms=int(event.weapon_power_up_ms),
+            reflex_boost_ms=int(event.reflex_boost_ms),
+            energizer_ms=int(event.energizer_ms),
+            double_experience_ms=int(event.double_experience_ms),
+            freeze_ms=int(event.freeze_ms),
+            perk_interval_man_bomb=(
+                float(event.perk_interval_man_bomb) if event.perk_interval_man_bomb is not None else None
+            ),
+            perk_interval_fire_cough=(
+                float(event.perk_interval_fire_cough) if event.perk_interval_fire_cough is not None else None
+            ),
+            perk_interval_hot_tempered=(
+                float(event.perk_interval_hot_tempered) if event.perk_interval_hot_tempered is not None else None
+            ),
+            quest_session=(
+                CaptureBootstrapQuestSession(
+                    spawn_timeline_ms=(
+                        float(event.quest_session.spawn_timeline_ms)
+                        if event.quest_session.spawn_timeline_ms is not None
+                        else None
+                    ),
+                    no_creatures_timer_ms=(
+                        float(event.quest_session.no_creatures_timer_ms)
+                        if event.quest_session.no_creatures_timer_ms is not None
+                        else None
+                    ),
+                    completion_transition_ms=(
+                        float(event.quest_session.completion_transition_ms)
+                        if event.quest_session.completion_transition_ms is not None
+                        else None
+                    ),
+                )
+                if event.quest_session is not None
+                else None
+            ),
+        )
+    if isinstance(event, _CapturePerkApplyEventWire):
+        return CapturePerkApplyEvent(
+            tick_index=int(event.tick_index),
+            perk_id=int(event.perk_id),
+            outside_before=bool(event.outside_before),
+            pending_before=int(event.pending_before) if event.pending_before is not None else None,
+            pending_after=int(event.pending_after) if event.pending_after is not None else None,
+        )
+    if isinstance(event, _CapturePerkPendingEventWire):
+        return CapturePerkPendingEvent(
+            tick_index=int(event.tick_index),
+            perk_pending=int(event.perk_pending),
+        )
+    if isinstance(event, _CaptureCreatureSpawnEventWire):
+        return CaptureCreatureSpawnEvent(
+            tick_index=int(event.tick_index),
+            spawns=[
+                CaptureCreatureSpawnRow(
+                    template_id=int(row.template_id),
+                    pos_x=float(row.pos_x),
+                    pos_y=float(row.pos_y),
+                    heading=float(row.heading),
+                )
+                for row in event.spawns
+            ],
+            added_head=[
+                CaptureCreatureSpawnAddedHeadRow(
+                    index=int(row.index),
+                    heading=float(row.heading) if row.heading is not None else None,
+                    target_heading=float(row.target_heading) if row.target_heading is not None else None,
+                    ai_mode=int(row.ai_mode) if row.ai_mode is not None else None,
+                    link_index=int(row.link_index) if row.link_index is not None else None,
+                    hp=float(row.hp) if row.hp is not None else None,
+                    lifecycle_stage=float(row.lifecycle_stage) if row.lifecycle_stage is not None else None,
+                    orbit_angle=float(row.orbit_angle) if row.orbit_angle is not None else None,
+                    orbit_radius=float(row.orbit_radius) if row.orbit_radius is not None else None,
+                    flags=int(row.flags) if row.flags is not None else None,
+                    type_id=int(row.type_id) if row.type_id is not None else None,
+                    pos_x=float(row.pos_x) if row.pos_x is not None else None,
+                    pos_y=float(row.pos_y) if row.pos_y is not None else None,
+                )
+                for row in event.added_head
+            ],
+        )
+    if isinstance(event, _CaptureStateTransitionEventWire):
+        return CaptureStateTransitionEvent(
+            tick_index=int(event.tick_index),
+            transitions=[
+                CaptureStateTransitionRow(
+                    target_state=int(row.target_state),
+                    before_state=int(row.before_state) if row.before_state is not None else None,
+                    after_state=int(row.after_state) if row.after_state is not None else None,
+                )
+                for row in event.transitions
+            ],
+        )
+    raise ReplayCodecError(f"unsupported replay event wire type: {type(event).__name__}")
 
 
 def dump_replay(replay: Replay) -> bytes:
@@ -423,7 +860,7 @@ def load_replay(data: bytes) -> Replay:
             move_y = _quantize_f32(move_y)
             aim_x = _quantize_f32(aim_x)
             aim_y = _quantize_f32(aim_y)
-            packed_tick.append([move_x, move_y, [aim_x, aim_y], flags])
+            packed_tick.append([move_x, move_y, aim_x, aim_y, flags])
         inputs.append(packed_tick)
 
     events = [_event_from_wire(event) for event in wire.events]

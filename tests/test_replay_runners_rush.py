@@ -3,13 +3,17 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
+from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
 from crimson.sim.driver.replay_runner import run_rush_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
-from tests.replay_runner_helpers import _blank_rush_replay, _strict_bootstrap_payload, _strict_bootstrap_player_payload
+from tests.replay_runner_helpers import (
+    _blank_rush_replay,
+    _strict_bootstrap_event,
+    _strict_bootstrap_payload,
+    _strict_bootstrap_player_payload,
+)
 
 
 def test_rush_runner_is_deterministic() -> None:
@@ -86,13 +90,7 @@ def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
             level=3,
         ),
     ]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     with pytest.warns(ReplayGameVersionWarning):
         result = run_rush_replay(replay, max_ticks=1)
@@ -114,13 +112,7 @@ def test_rush_runner_original_capture_uses_packed_move_vector_for_turn_only_keys
     replay = recorder.finish()
     bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
     bootstrap_payload["digital_move_enabled_by_player"] = [True]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     checkpoints = []
     with pytest.warns(ReplayGameVersionWarning):

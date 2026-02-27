@@ -31,11 +31,21 @@ from ..replay.checkpoints import (
 )
 from ..replay.types import (
     WEAPON_USAGE_COUNT,
+    CaptureBootstrapEvent,
+    CaptureBootstrapPlayer,
+    CaptureBootstrapQuestSession,
+    CaptureCreatureSpawnAddedHeadRow,
+    CaptureCreatureSpawnEvent,
+    CaptureCreatureSpawnRow,
+    CapturePerkApplyEvent,
+    CapturePerkPendingEvent,
+    CaptureStateTransitionEvent,
+    CaptureStateTransitionRow,
     PerkMenuOpenEvent,
     Replay,
+    ReplayEvent,
     ReplayHeader,
     ReplayStatusSnapshot,
-    UnknownEvent,
     pack_input_flags,
 )
 from ..weapons import WeaponId, projectile_type_ids_from_weapon_id
@@ -67,11 +77,6 @@ from .schema import (
 )
 
 CAPTURE_UNKNOWN_INT = -1
-CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap"
-CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending"
-CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply"
-CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
-CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
 # Native quest state transition rows targeting state 12 trigger a full
 # run-state reset in replay/original verification paths.
 CAPTURE_STATE_RESET_TARGET = 12
@@ -1866,86 +1871,205 @@ def _capture_bootstrap_payload(
     return payload
 
 
-def _capture_bootstrap_payload_from_event_payload(payload: list[object]) -> _CaptureBootstrapPayload | None:
-    if not payload:
+def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> CaptureBootstrapEvent:
+    parsed = msgspec.convert(payload, type=_CaptureBootstrapPayload, strict=True)
+    bonus_timers = parsed.bonus_timers_ms
+    perk_intervals = parsed.perk_intervals or {}
+    players: list[CaptureBootstrapPlayer] = []
+    for raw_player in parsed.players:
+        player_bonus_timers = raw_player.bonus_timers_ms or {}
+        player_perk_timers = raw_player.perk_timers or {}
+        players.append(
+            CaptureBootstrapPlayer(
+                weapon_id=int(raw_player.weapon_id),
+                pos_x=_conversion_f32(float(raw_player.pos.x)),
+                pos_y=_conversion_f32(float(raw_player.pos.y)),
+                health=_conversion_f32(float(raw_player.health)),
+                ammo=_conversion_f32(float(raw_player.ammo)),
+                experience=int(raw_player.experience),
+                level=int(raw_player.level),
+                clip_size=int(raw_player.clip_size) if raw_player.clip_size is not None else None,
+                reload_active=bool(raw_player.reload_active) if raw_player.reload_active is not None else None,
+                reload_timer=(
+                    _conversion_f32(float(raw_player.reload_timer)) if raw_player.reload_timer is not None else None
+                ),
+                reload_timer_max=(
+                    _conversion_f32(float(raw_player.reload_timer_max))
+                    if raw_player.reload_timer_max is not None
+                    else None
+                ),
+                shot_cooldown=(
+                    _conversion_f32(float(raw_player.shot_cooldown)) if raw_player.shot_cooldown is not None else None
+                ),
+                spread_heat=(
+                    _conversion_f32(float(raw_player.spread_heat)) if raw_player.spread_heat is not None else None
+                ),
+                aim_x=_conversion_f32(float(raw_player.aim.x)) if raw_player.aim is not None else None,
+                aim_y=_conversion_f32(float(raw_player.aim.y)) if raw_player.aim is not None else None,
+                aim_heading=(
+                    _conversion_f32(float(raw_player.aim.heading))
+                    if raw_player.aim is not None and raw_player.aim.heading is not None
+                    else None
+                ),
+                alt_weapon_id=(
+                    int(raw_player.alt_weapon.weapon_id)
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.weapon_id is not None
+                    else None
+                ),
+                alt_clip_size=(
+                    int(raw_player.alt_weapon.clip_size)
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.clip_size is not None
+                    else None
+                ),
+                alt_ammo=(
+                    _conversion_f32(float(raw_player.alt_weapon.ammo))
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.ammo is not None
+                    else None
+                ),
+                alt_reload_active=(
+                    bool(raw_player.alt_weapon.reload_active)
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.reload_active is not None
+                    else None
+                ),
+                alt_reload_timer=(
+                    _conversion_f32(float(raw_player.alt_weapon.reload_timer))
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.reload_timer is not None
+                    else None
+                ),
+                alt_reload_timer_max=(
+                    _conversion_f32(float(raw_player.alt_weapon.reload_timer_max))
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.reload_timer_max is not None
+                    else None
+                ),
+                alt_shot_cooldown=(
+                    _conversion_f32(float(raw_player.alt_weapon.shot_cooldown))
+                    if raw_player.alt_weapon is not None and raw_player.alt_weapon.shot_cooldown is not None
+                    else None
+                ),
+                shield_ms=(
+                    int(player_bonus_timers["shield"]) if "shield" in player_bonus_timers else None
+                ),
+                fire_bullets_ms=(
+                    int(player_bonus_timers["fire_bullets"]) if "fire_bullets" in player_bonus_timers else None
+                ),
+                speed_bonus_ms=(
+                    int(player_bonus_timers["speed_bonus"]) if "speed_bonus" in player_bonus_timers else None
+                ),
+                hot_tempered_timer=(
+                    _conversion_f32(float(player_perk_timers["hot_tempered"]))
+                    if "hot_tempered" in player_perk_timers
+                    else None
+                ),
+                man_bomb_timer=(
+                    _conversion_f32(float(player_perk_timers["man_bomb"]))
+                    if "man_bomb" in player_perk_timers
+                    else None
+                ),
+                living_fortress_timer=(
+                    _conversion_f32(float(player_perk_timers["living_fortress"]))
+                    if "living_fortress" in player_perk_timers
+                    else None
+                ),
+                fire_cough_timer=(
+                    _conversion_f32(float(player_perk_timers["fire_cough"]))
+                    if "fire_cough" in player_perk_timers
+                    else None
+                ),
+            ),
+        )
+    return CaptureBootstrapEvent(
+        tick_index=int(parsed.tick_index),
+        elapsed_ms=int(parsed.elapsed_ms),
+        score_xp=int(parsed.score_xp),
+        perk_pending=int(parsed.perk_pending),
+        perk_pending_count=int(parsed.perk.pending_count),
+        perk_choices_dirty=bool(parsed.perk.choices_dirty),
+        perk_choices=[int(value) for value in parsed.perk.choices],
+        player_nonzero_counts=[
+            [[int(perk_id), int(count)] for perk_id, count in player_counts]
+            for player_counts in parsed.perk.player_nonzero_counts
+        ],
+        players=players,
+        digital_move_enabled_by_player=[bool(value) for value in parsed.digital_move_enabled_by_player],
+        weapon_power_up_ms=int(bonus_timers.get(str(int(BonusId.WEAPON_POWER_UP)), 0)),
+        reflex_boost_ms=int(bonus_timers.get(str(int(BonusId.REFLEX_BOOST)), 0)),
+        energizer_ms=int(bonus_timers.get(str(int(BonusId.ENERGIZER)), 0)),
+        double_experience_ms=int(bonus_timers.get(str(int(BonusId.DOUBLE_EXPERIENCE)), 0)),
+        freeze_ms=int(bonus_timers.get(str(int(BonusId.FREEZE)), 0)),
+        perk_interval_man_bomb=(
+            _conversion_f32(float(perk_intervals["man_bomb"])) if "man_bomb" in perk_intervals else None
+        ),
+        perk_interval_fire_cough=(
+            _conversion_f32(float(perk_intervals["fire_cough"])) if "fire_cough" in perk_intervals else None
+        ),
+        perk_interval_hot_tempered=(
+            _conversion_f32(float(perk_intervals["hot_tempered"])) if "hot_tempered" in perk_intervals else None
+        ),
+        quest_session=(
+            CaptureBootstrapQuestSession(
+                spawn_timeline_ms=_conversion_f32(float(parsed.quest_session.spawn_timeline_ms))
+                if parsed.quest_session.spawn_timeline_ms is not None
+                else None,
+                no_creatures_timer_ms=_conversion_f32(float(parsed.quest_session.no_creatures_timer_ms))
+                if parsed.quest_session.no_creatures_timer_ms is not None
+                else None,
+                completion_transition_ms=_conversion_f32(float(parsed.quest_session.completion_transition_ms))
+                if parsed.quest_session.completion_transition_ms is not None
+                else None,
+            )
+            if parsed.quest_session is not None
+            else None
+        ),
+    )
+
+
+def capture_bootstrap_payload_from_event_payload(event: ReplayEvent) -> CaptureBootstrapEvent | None:
+    if not isinstance(event, CaptureBootstrapEvent):
         return None
-    return msgspec.convert(payload[0], type=_CaptureBootstrapPayload, strict=True)
+    return event
 
 
-def _capture_perk_apply_payload_from_event_payload(payload: list[object]) -> _CapturePerkApplyPayload | None:
-    if not payload:
-        return None
-    return msgspec.convert(payload[0], type=_CapturePerkApplyPayload, strict=True)
-
-
-def _capture_perk_pending_payload_from_event_payload(payload: list[object]) -> _CapturePerkPendingPayload | None:
-    if not payload:
-        return None
-    return msgspec.convert(payload[0], type=_CapturePerkPendingPayload, strict=True)
-
-
-def _capture_creature_spawn_payload_from_event_payload(payload: list[object]) -> _CaptureCreatureSpawnPayload | None:
-    if not payload:
-        return None
-    return msgspec.convert(payload[0], type=_CaptureCreatureSpawnPayload, strict=True)
-
-
-def _capture_state_transition_payload_from_event_payload(payload: list[object]) -> _CaptureStateTransitionsPayload | None:
-    if not payload:
-        return None
-    return msgspec.convert(payload[0], type=_CaptureStateTransitionsPayload, strict=True)
-
-
-def capture_bootstrap_payload_from_event_payload(payload: list[object]) -> _CaptureBootstrapPayload | None:
-    return _capture_bootstrap_payload_from_event_payload(payload)
-
-
-def capture_perk_apply_id_from_event_payload(payload: list[object]) -> int | None:
-    parsed = capture_perk_apply_from_event_payload(payload)
+def capture_perk_apply_id_from_event_payload(event: ReplayEvent) -> int | None:
+    parsed = capture_perk_apply_from_event_payload(event)
     if parsed is None:
         return None
     perk_id, _ = parsed
     return int(perk_id)
 
 
-def capture_perk_apply_from_event_payload(payload: list[object]) -> tuple[int, bool] | None:
-    parsed = _capture_perk_apply_payload_from_event_payload(payload)
-    if parsed is None:
+def capture_perk_apply_from_event_payload(event: ReplayEvent) -> tuple[int, bool] | None:
+    if not isinstance(event, CapturePerkApplyEvent):
         return None
-    return int(parsed.perk_id), bool(parsed.outside_before)
+    return int(event.perk_id), bool(event.outside_before)
 
 
-def capture_perk_apply_pending_bounds_from_event_payload(payload: list[object]) -> tuple[int | None, int | None]:
-    parsed = _capture_perk_apply_payload_from_event_payload(payload)
-    if parsed is None:
+def capture_perk_apply_pending_bounds_from_event_payload(event: ReplayEvent) -> tuple[int | None, int | None]:
+    if not isinstance(event, CapturePerkApplyEvent):
         return (None, None)
     return (
-        int(parsed.pending_before) if parsed.pending_before is not None and int(parsed.pending_before) >= 0 else None,
-        int(parsed.pending_after) if parsed.pending_after is not None and int(parsed.pending_after) >= 0 else None,
+        int(event.pending_before) if event.pending_before is not None and int(event.pending_before) >= 0 else None,
+        int(event.pending_after) if event.pending_after is not None and int(event.pending_after) >= 0 else None,
     )
 
 
-def capture_perk_pending_from_event_payload(payload: list[object]) -> int | None:
-    parsed = _capture_perk_pending_payload_from_event_payload(payload)
-    if parsed is None:
+def capture_perk_pending_from_event_payload(event: ReplayEvent) -> int | None:
+    if not isinstance(event, CapturePerkPendingEvent):
         return None
-    return int(parsed.perk_pending)
+    return int(event.perk_pending)
 
 
 def capture_creature_spawns_from_event_payload(
-    payload: list[object],
+    event: ReplayEvent,
 ) -> tuple[tuple[int, float, float, float], ...] | None:
-    parsed = _capture_creature_spawn_payload_from_event_payload(payload)
-    if parsed is None:
+    if not isinstance(event, CaptureCreatureSpawnEvent):
         return None
-
     out: list[tuple[int, float, float, float]] = []
-    for row in parsed.spawns:
+    for row in event.spawns:
         out.append(
             (
                 int(row.template_id),
-                _conversion_f32(float(row.pos.x)),
-                _conversion_f32(float(row.pos.y)),
+                _conversion_f32(float(row.pos_x)),
+                _conversion_f32(float(row.pos_y)),
                 _conversion_f32(float(row.heading)),
             ),
         )
@@ -1953,9 +2077,9 @@ def capture_creature_spawns_from_event_payload(
 
 
 def capture_creature_spawn_added_head_from_event_payload(
-    payload: list[object],
+    event: ReplayEvent,
 ) -> tuple[tuple[int, float | None, float | None, int | None, int | None], ...] | None:
-    rows = capture_creature_spawn_added_head_rows_from_event_payload(payload)
+    rows = capture_creature_spawn_added_head_rows_from_event_payload(event)
     if rows is None:
         return None
 
@@ -1976,23 +2100,20 @@ def capture_creature_spawn_added_head_from_event_payload(
 
 
 def capture_creature_spawn_added_head_rows_from_event_payload(
-    payload: list[object],
-) -> tuple[_CaptureCreatureSpawnAddedHeadRow, ...] | None:
-    parsed = _capture_creature_spawn_payload_from_event_payload(payload)
-    if parsed is None:
+    event: ReplayEvent,
+) -> tuple[CaptureCreatureSpawnAddedHeadRow, ...] | None:
+    if not isinstance(event, CaptureCreatureSpawnEvent):
         return None
-    return tuple(parsed.added_head)
+    return tuple(event.added_head)
 
 
 def capture_state_transitions_from_event_payload(
-    payload: list[object],
+    event: ReplayEvent,
 ) -> tuple[tuple[int, int | None, int | None], ...] | None:
-    parsed = _capture_state_transition_payload_from_event_payload(payload)
-    if parsed is None:
+    if not isinstance(event, CaptureStateTransitionEvent):
         return None
-
     out: list[tuple[int, int | None, int | None]] = []
-    for row in parsed.transitions:
+    for row in event.transitions:
         out.append(
             (
                 int(row.target_state),
@@ -2004,7 +2125,7 @@ def capture_state_transitions_from_event_payload(
 
 
 def apply_capture_bootstrap_payload(
-    payload: _CaptureBootstrapPayload | dict[str, object],
+    payload: CaptureBootstrapEvent,
     *,
     state: object,
     players: list[object],
@@ -2012,16 +2133,10 @@ def apply_capture_bootstrap_payload(
     from ..weapon_runtime import weapon_assign_player
 
     state_obj = cast(_BootstrapState, state)
-    parsed = payload if isinstance(payload, _CaptureBootstrapPayload) else msgspec.convert(
-        payload,
-        type=_CaptureBootstrapPayload,
-        strict=True,
-    )
-
-    elapsed_ms_value = int(parsed.elapsed_ms)
+    elapsed_ms_value = int(payload.elapsed_ms)
     elapsed_ms: int | None = int(elapsed_ms_value) if int(elapsed_ms_value) >= 0 else None
 
-    for idx, raw_player in enumerate(parsed.players):
+    for idx, raw_player in enumerate(payload.players):
         if idx >= len(players):
             break
         player = cast(_BootstrapPlayer, players[idx])
@@ -2034,7 +2149,7 @@ def apply_capture_bootstrap_payload(
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
-        player.pos = Vec2(_conversion_f32(float(raw_player.pos.x)), _conversion_f32(float(raw_player.pos.y)))
+        player.pos = Vec2(_conversion_f32(float(raw_player.pos_x)), _conversion_f32(float(raw_player.pos_y)))
         player.health = _conversion_f32(float(raw_player.health))
         player.ammo = _conversion_f32(float(raw_player.ammo))
         player.experience = int(raw_player.experience)
@@ -2054,63 +2169,51 @@ def apply_capture_bootstrap_payload(
         if raw_player.spread_heat is not None:
             player.spread_heat = _conversion_f32(max(0.0, float(raw_player.spread_heat)))
 
-        if raw_player.aim is not None:
-            player.aim = Vec2(_conversion_f32(float(raw_player.aim.x)), _conversion_f32(float(raw_player.aim.y)))
-            if raw_player.aim.heading is not None:
-                player.aim_heading = _conversion_f32(float(raw_player.aim.heading))
-                player.aim_dir = Vec2.from_heading(_conversion_f32(float(raw_player.aim.heading)))
+        if raw_player.aim_x is not None and raw_player.aim_y is not None:
+            player.aim = Vec2(_conversion_f32(float(raw_player.aim_x)), _conversion_f32(float(raw_player.aim_y)))
+        if raw_player.aim_heading is not None:
+            player.aim_heading = _conversion_f32(float(raw_player.aim_heading))
+            player.aim_dir = Vec2.from_heading(_conversion_f32(float(raw_player.aim_heading)))
 
-        if raw_player.alt_weapon is not None:
-            alt_weapon = raw_player.alt_weapon
-            if alt_weapon.weapon_id is not None:
-                player.alt_weapon_id = int(alt_weapon.weapon_id) if int(alt_weapon.weapon_id) > 0 else None
-            if alt_weapon.clip_size is not None and int(alt_weapon.clip_size) >= 0:
-                player.alt_clip_size = int(alt_weapon.clip_size)
-            if alt_weapon.ammo is not None:
-                player.alt_ammo = _conversion_f32(float(alt_weapon.ammo))
-            if alt_weapon.reload_active is not None:
-                player.alt_reload_active = bool(alt_weapon.reload_active)
-            if alt_weapon.reload_timer is not None:
-                player.alt_reload_timer = _conversion_f32(max(0.0, float(alt_weapon.reload_timer)))
-            if alt_weapon.reload_timer_max is not None:
-                player.alt_reload_timer_max = _conversion_f32(max(0.0, float(alt_weapon.reload_timer_max)))
-            if alt_weapon.shot_cooldown is not None:
-                player.alt_shot_cooldown = _conversion_f32(max(0.0, float(alt_weapon.shot_cooldown)))
+        if raw_player.alt_weapon_id is not None:
+            player.alt_weapon_id = int(raw_player.alt_weapon_id) if int(raw_player.alt_weapon_id) > 0 else None
+        if raw_player.alt_clip_size is not None and int(raw_player.alt_clip_size) >= 0:
+            player.alt_clip_size = int(raw_player.alt_clip_size)
+        if raw_player.alt_ammo is not None:
+            player.alt_ammo = _conversion_f32(float(raw_player.alt_ammo))
+        if raw_player.alt_reload_active is not None:
+            player.alt_reload_active = bool(raw_player.alt_reload_active)
+        if raw_player.alt_reload_timer is not None:
+            player.alt_reload_timer = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer)))
+        if raw_player.alt_reload_timer_max is not None:
+            player.alt_reload_timer_max = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer_max)))
+        if raw_player.alt_shot_cooldown is not None:
+            player.alt_shot_cooldown = _conversion_f32(max(0.0, float(raw_player.alt_shot_cooldown)))
 
-        if raw_player.bonus_timers_ms is not None:
-            shield_ms = raw_player.bonus_timers_ms.get("shield")
-            fire_bullets_ms = raw_player.bonus_timers_ms.get("fire_bullets")
-            speed_bonus_ms = raw_player.bonus_timers_ms.get("speed_bonus")
-            if shield_ms is not None:
-                player.shield_timer = _conversion_f32(max(0.0, float(shield_ms) / 1000.0))
-            if fire_bullets_ms is not None:
-                player.fire_bullets_timer = _conversion_f32(max(0.0, float(fire_bullets_ms) / 1000.0))
-            if speed_bonus_ms is not None:
-                player.speed_bonus_timer = _conversion_f32(max(0.0, float(speed_bonus_ms) / 1000.0))
+        if raw_player.shield_ms is not None:
+            player.shield_timer = _conversion_f32(max(0.0, float(raw_player.shield_ms) / 1000.0))
+        if raw_player.fire_bullets_ms is not None:
+            player.fire_bullets_timer = _conversion_f32(max(0.0, float(raw_player.fire_bullets_ms) / 1000.0))
+        if raw_player.speed_bonus_ms is not None:
+            player.speed_bonus_timer = _conversion_f32(max(0.0, float(raw_player.speed_bonus_ms) / 1000.0))
 
-        if raw_player.perk_timers is not None:
-            hot_tempered_timer = raw_player.perk_timers.get("hot_tempered")
-            man_bomb_timer = raw_player.perk_timers.get("man_bomb")
-            living_fortress_timer = raw_player.perk_timers.get("living_fortress")
-            fire_cough_timer = raw_player.perk_timers.get("fire_cough")
-            if hot_tempered_timer is not None:
-                player.hot_tempered_timer = _conversion_f32(max(0.0, float(hot_tempered_timer)))
-            if man_bomb_timer is not None:
-                player.man_bomb_timer = _conversion_f32(max(0.0, float(man_bomb_timer)))
-            if living_fortress_timer is not None:
-                player.living_fortress_timer = _conversion_f32(max(0.0, float(living_fortress_timer)))
-            if fire_cough_timer is not None:
-                player.fire_cough_timer = _conversion_f32(max(0.0, float(fire_cough_timer)))
+        if raw_player.hot_tempered_timer is not None:
+            player.hot_tempered_timer = _conversion_f32(max(0.0, float(raw_player.hot_tempered_timer)))
+        if raw_player.man_bomb_timer is not None:
+            player.man_bomb_timer = _conversion_f32(max(0.0, float(raw_player.man_bomb_timer)))
+        if raw_player.living_fortress_timer is not None:
+            player.living_fortress_timer = _conversion_f32(max(0.0, float(raw_player.living_fortress_timer)))
+        if raw_player.fire_cough_timer is not None:
+            player.fire_cough_timer = _conversion_f32(max(0.0, float(raw_player.fire_cough_timer)))
 
-    pending = int(parsed.perk_pending)
-    perk_payload = parsed.perk
-    if int(perk_payload.pending_count) >= 0:
-        pending = int(perk_payload.pending_count)
-    perk_choices = [int(perk_id) for perk_id in perk_payload.choices]
-    perk_choices_dirty = bool(perk_payload.choices_dirty)
+    pending = int(payload.perk_pending)
+    if int(payload.perk_pending_count) >= 0:
+        pending = int(payload.perk_pending_count)
+    perk_choices = [int(perk_id) for perk_id in payload.perk_choices]
+    perk_choices_dirty = bool(payload.perk_choices_dirty)
 
     perk_player_nonzero_counts: list[list[tuple[int, int]]] = []
-    for raw_player_counts in perk_payload.player_nonzero_counts:
+    for raw_player_counts in payload.player_nonzero_counts:
         parsed_player_counts: list[tuple[int, int]] = []
         for raw_pair in raw_player_counts:
             if len(raw_pair) != 2:
@@ -2137,12 +2240,11 @@ def apply_capture_bootstrap_payload(
             if 0 <= perk_idx < len(perk_counts):
                 perk_counts[perk_idx] = int(count)
 
-    timers_raw = parsed.bonus_timers_ms
-    weapon_power_up_ms = timers_raw.get(str(int(BonusId.WEAPON_POWER_UP)))
-    reflex_boost_ms = timers_raw.get(str(int(BonusId.REFLEX_BOOST)))
-    energizer_ms = timers_raw.get(str(int(BonusId.ENERGIZER)))
-    double_xp_ms = timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE)))
-    freeze_ms = timers_raw.get(str(int(BonusId.FREEZE)))
+    weapon_power_up_ms = int(payload.weapon_power_up_ms)
+    reflex_boost_ms = int(payload.reflex_boost_ms)
+    energizer_ms = int(payload.energizer_ms)
+    double_xp_ms = int(payload.double_experience_ms)
+    freeze_ms = int(payload.freeze_ms)
     if weapon_power_up_ms is not None:
         state_obj.bonuses.weapon_power_up = _conversion_f32(max(0.0, float(weapon_power_up_ms) / 1000.0))
     if reflex_boost_ms is not None:
@@ -2155,16 +2257,12 @@ def apply_capture_bootstrap_payload(
         state_obj.bonuses.freeze = _conversion_f32(max(0.0, float(freeze_ms) / 1000.0))
     state_obj.time_scale_active = float(state_obj.bonuses.reflex_boost) > 0.0
 
-    if parsed.perk_intervals is not None:
-        man_bomb_interval = parsed.perk_intervals.get("man_bomb")
-        fire_cough_interval = parsed.perk_intervals.get("fire_cough")
-        hot_tempered_interval = parsed.perk_intervals.get("hot_tempered")
-        if man_bomb_interval is not None:
-            state_obj.perk_intervals.man_bomb = _conversion_f32(max(0.0, float(man_bomb_interval)))
-        if fire_cough_interval is not None:
-            state_obj.perk_intervals.fire_cough = _conversion_f32(max(0.0, float(fire_cough_interval)))
-        if hot_tempered_interval is not None:
-            state_obj.perk_intervals.hot_tempered = _conversion_f32(max(0.0, float(hot_tempered_interval)))
+    if payload.perk_interval_man_bomb is not None:
+        state_obj.perk_intervals.man_bomb = _conversion_f32(max(0.0, float(payload.perk_interval_man_bomb)))
+    if payload.perk_interval_fire_cough is not None:
+        state_obj.perk_intervals.fire_cough = _conversion_f32(max(0.0, float(payload.perk_interval_fire_cough)))
+    if payload.perk_interval_hot_tempered is not None:
+        state_obj.perk_intervals.hot_tempered = _conversion_f32(max(0.0, float(payload.perk_interval_hot_tempered)))
 
     return elapsed_ms
 
@@ -2389,8 +2487,8 @@ def convert_capture_to_replay(
     else:
         total_ticks = 0
 
-    inputs: list[list[list[float | int | list[float]]]] = [
-        [[0.0, 0.0, [0.0, 0.0], 0] for _ in range(int(resolved_player_count))] for _ in range(total_ticks)
+    inputs: list[list[list[float | int]]] = [
+        [[0.0, 0.0, 0.0, 0.0, 0] for _ in range(int(resolved_player_count))] for _ in range(total_ticks)
     ]
     previous_checkpoint_ammo: list[float | None] = [None for _ in range(int(resolved_player_count))]
     previous_checkpoint_weapon_id: list[int | None] = [None for _ in range(int(resolved_player_count))]
@@ -2630,7 +2728,8 @@ def convert_capture_to_replay(
             inputs[tick_index][player_index] = [
                 _conversion_f32(float(move_x)),
                 _conversion_f32(float(move_y)),
-                [_conversion_f32(float(aim_x)), _conversion_f32(float(aim_y))],
+                _conversion_f32(float(aim_x)),
+                _conversion_f32(float(aim_y)),
                 int(flags),
             ]
             if checkpoint_ammo is not None:
@@ -2638,22 +2737,41 @@ def convert_capture_to_replay(
             if checkpoint_weapon_id is not None:
                 previous_checkpoint_weapon_id[int(player_index)] = int(checkpoint_weapon_id)
 
-    events: list[object] = []
+    events: list[ReplayEvent] = []
     if capture.ticks:
         bootstrap_perk_intervals = _infer_bootstrap_perk_intervals(capture, tick_rate=max(1, int(tick_rate)))
         first_tick = min(capture.ticks, key=lambda item: int(item.tick_index))
         bootstrap_tick = max(0, int(first_tick.tick_index))
+        bootstrap_payload = _capture_bootstrap_payload(
+            first_tick,
+            digital_move_enabled_by_player=digital_move_enabled_by_player,
+            perk_intervals=bootstrap_perk_intervals,
+        )
+        bootstrap_event = _capture_bootstrap_event_from_payload(bootstrap_payload)
         events.append(
-            UnknownEvent(
+            CaptureBootstrapEvent(
                 tick_index=int(bootstrap_tick),
-                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[
-                    _capture_bootstrap_payload(
-                        first_tick,
-                        digital_move_enabled_by_player=digital_move_enabled_by_player,
-                        perk_intervals=bootstrap_perk_intervals,
-                    ),
+                elapsed_ms=int(bootstrap_event.elapsed_ms),
+                score_xp=int(bootstrap_event.score_xp),
+                perk_pending=int(bootstrap_event.perk_pending),
+                perk_pending_count=int(bootstrap_event.perk_pending_count),
+                perk_choices_dirty=bool(bootstrap_event.perk_choices_dirty),
+                perk_choices=list(bootstrap_event.perk_choices),
+                player_nonzero_counts=[
+                    [[int(perk_id), int(count)] for perk_id, count in rows]
+                    for rows in bootstrap_event.player_nonzero_counts
                 ],
+                players=list(bootstrap_event.players),
+                digital_move_enabled_by_player=list(bootstrap_event.digital_move_enabled_by_player),
+                weapon_power_up_ms=int(bootstrap_event.weapon_power_up_ms),
+                reflex_boost_ms=int(bootstrap_event.reflex_boost_ms),
+                energizer_ms=int(bootstrap_event.energizer_ms),
+                double_experience_ms=int(bootstrap_event.double_experience_ms),
+                freeze_ms=int(bootstrap_event.freeze_ms),
+                perk_interval_man_bomb=bootstrap_event.perk_interval_man_bomb,
+                perk_interval_fire_cough=bootstrap_event.perk_interval_fire_cough,
+                perk_interval_hot_tempered=bootstrap_event.perk_interval_hot_tempered,
+                quest_session=bootstrap_event.quest_session,
             ),
         )
 
@@ -2666,10 +2784,24 @@ def convert_capture_to_replay(
             transition_rows_by_tick[int(tick.tick_index)] = state_transition_rows
             if state_transition_rows:
                 events.append(
-                    UnknownEvent(
+                    CaptureStateTransitionEvent(
                         tick_index=int(tick.tick_index),
-                        kind=CAPTURE_STATE_TRANSITION_EVENT_KIND,
-                        payload=[{"transitions": list(state_transition_rows)}],
+                        transitions=[
+                            CaptureStateTransitionRow(
+                                target_state=int(row["target_state"]),
+                                before_state=(
+                                    int(row["before_state"])
+                                    if "before_state" in row and row["before_state"] >= 0
+                                    else None
+                                ),
+                                after_state=(
+                                    int(row["after_state"])
+                                    if "after_state" in row and row["after_state"] >= 0
+                                    else None
+                                ),
+                            )
+                            for row in state_transition_rows
+                        ],
                     ),
                 )
                 if int(resolved_mode_id) != int(GameMode.RUSH):
@@ -2686,11 +2818,63 @@ def convert_capture_to_replay(
                     spawn_payload: dict[str, object] = {"spawns": list(spawn_rows)}
                     if added_rows:
                         spawn_payload["added_head"] = list(added_rows)
+                    parsed_spawn = msgspec.convert(spawn_payload, type=_CaptureCreatureSpawnPayload, strict=True)
                     events.append(
-                        UnknownEvent(
+                        CaptureCreatureSpawnEvent(
                             tick_index=int(tick.tick_index),
-                            kind=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-                            payload=[spawn_payload],
+                            spawns=[
+                                CaptureCreatureSpawnRow(
+                                    template_id=int(row.template_id),
+                                    pos_x=_conversion_f32(float(row.pos.x)),
+                                    pos_y=_conversion_f32(float(row.pos.y)),
+                                    heading=_conversion_f32(float(row.heading)),
+                                )
+                                for row in parsed_spawn.spawns
+                            ],
+                            added_head=[
+                                CaptureCreatureSpawnAddedHeadRow(
+                                    index=int(row.index),
+                                    heading=(
+                                        _conversion_f32(float(row.heading)) if row.heading is not None else None
+                                    ),
+                                    target_heading=(
+                                        _conversion_f32(float(row.target_heading))
+                                        if row.target_heading is not None
+                                        else None
+                                    ),
+                                    ai_mode=int(row.ai_mode) if row.ai_mode is not None else None,
+                                    link_index=int(row.link_index) if row.link_index is not None else None,
+                                    hp=_conversion_f32(float(row.hp)) if row.hp is not None else None,
+                                    lifecycle_stage=(
+                                        _conversion_f32(float(row.lifecycle_stage))
+                                        if row.lifecycle_stage is not None
+                                        else None
+                                    ),
+                                    orbit_angle=(
+                                        _conversion_f32(float(row.orbit_angle))
+                                        if row.orbit_angle is not None
+                                        else None
+                                    ),
+                                    orbit_radius=(
+                                        _conversion_f32(float(row.orbit_radius))
+                                        if row.orbit_radius is not None
+                                        else None
+                                    ),
+                                    flags=int(row.flags) if row.flags is not None else None,
+                                    type_id=int(row.type_id) if row.type_id is not None else None,
+                                    pos_x=(
+                                        _conversion_f32(float(row.pos.x))
+                                        if row.pos is not None
+                                        else None
+                                    ),
+                                    pos_y=(
+                                        _conversion_f32(float(row.pos.y))
+                                        if row.pos is not None
+                                        else None
+                                    ),
+                                )
+                                for row in parsed_spawn.added_head
+                            ],
                         ),
                     )
 
@@ -2701,19 +2885,34 @@ def convert_capture_to_replay(
                     if int(perk_id) <= 0 or int(perk_id) in seen_perk_apply_ids:
                         continue
                     seen_perk_apply_ids.add(int(perk_id))
-                    payload: dict[str, object] = {
+                    perk_apply_payload: dict[str, object] = {
                         "perk_id": int(perk_id),
                         "outside_before": bool(outside_before),
                     }
                     if pending_before is not None:
-                        payload["pending_before"] = int(pending_before)
+                        perk_apply_payload["pending_before"] = int(pending_before)
                     if pending_after is not None:
-                        payload["pending_after"] = int(pending_after)
+                        perk_apply_payload["pending_after"] = int(pending_after)
+                    parsed_perk_apply = msgspec.convert(
+                        perk_apply_payload,
+                        type=_CapturePerkApplyPayload,
+                        strict=True,
+                    )
                     events.append(
-                        UnknownEvent(
+                        CapturePerkApplyEvent(
                             tick_index=int(tick.tick_index),
-                            kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                            payload=[payload],
+                            perk_id=int(parsed_perk_apply.perk_id),
+                            outside_before=bool(parsed_perk_apply.outside_before),
+                            pending_before=(
+                                int(parsed_perk_apply.pending_before)
+                                if parsed_perk_apply.pending_before is not None
+                                else None
+                            ),
+                            pending_after=(
+                                int(parsed_perk_apply.pending_after)
+                                if parsed_perk_apply.pending_after is not None
+                                else None
+                            ),
                         ),
                     )
 
@@ -2732,10 +2931,9 @@ def convert_capture_to_replay(
                     state_transition_rows,
                 )
                 events.append(
-                    UnknownEvent(
+                    CapturePerkPendingEvent(
                         tick_index=int(menu_tick),
-                        kind=CAPTURE_PERK_PENDING_EVENT_KIND,
-                        payload=[{"perk_pending": int(previous_pending)}],
+                        perk_pending=int(previous_pending),
                     ),
                 )
                 if not bool(suppress_menu_open):
@@ -2744,10 +2942,9 @@ def convert_capture_to_replay(
                         events.append(PerkMenuOpenEvent(tick_index=menu_tick_i, player_index=0))
                         menu_open_ticks.add(menu_tick_i)
                 events.append(
-                    UnknownEvent(
+                    CapturePerkPendingEvent(
                         tick_index=int(tick.tick_index),
-                        kind=CAPTURE_PERK_PENDING_EVENT_KIND,
-                        payload=[{"perk_pending": int(pending_i)}],
+                        perk_pending=int(pending_i),
                     ),
                 )
             previous_pending = int(pending_i)
@@ -2765,7 +2962,7 @@ def convert_capture_to_replay(
             input_quantization="f32",
         ),
         inputs=inputs,
-        events=list(events),  # ty:ignore[invalid-argument-type]
+        events=list(events),
     )
 
 
