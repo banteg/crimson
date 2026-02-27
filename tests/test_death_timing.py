@@ -41,7 +41,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=-1,
+        owner_id=OwnerRef.from_player(0),
     )
 
     assert player.experience == 0
@@ -89,7 +89,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
         angle=0.0,
         type_id=int(SecondaryProjectileTypeId.DETONATION),
         time_to_live=1.0,
-        owner_id=-1,
+        owner_id=OwnerRef.from_player(0),
     )
 
     def _fake_plan(

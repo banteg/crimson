@@ -35,7 +35,7 @@ from ..math_parity import (
     heading_add_pi_f32,
     heading_to_direction_f32,
 )
-from ..owner_ref import OwnerLike, OwnerRef, owner_ref
+from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
@@ -228,8 +228,8 @@ def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:
     )
 
 
-def _owner_to_player_index(owner: OwnerLike) -> int | None:
-    return owner_ref(owner).player_index()
+def _owner_to_player_index(owner: OwnerRef) -> int | None:
+    return owner.player_index()
 
 
 def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
@@ -293,8 +293,8 @@ class CreatureState:
         return self.last_hit_owner.to_legacy()
 
     @last_hit_owner_id.setter
-    def last_hit_owner_id(self, value: OwnerLike) -> None:
-        self.last_hit_owner = owner_ref(value)
+    def last_hit_owner_id(self, value: OwnerRef) -> None:
+        self.last_hit_owner = value
 
 
 @dataclass(frozen=True, slots=True)
@@ -1215,7 +1215,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
-                            owner_id=idx,
+                            owner_id=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
@@ -1228,7 +1228,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
-                            owner_id=idx,
+                            owner_id=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )

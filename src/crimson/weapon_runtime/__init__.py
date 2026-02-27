@@ -10,8 +10,6 @@ from .assign import (
 from .availability import weapon_pick_random_available, weapon_refresh_available
 from .fire import player_fire_weapon
 from .spawn import (
-    owner_id_for_player,
-    owner_id_for_player_projectiles,
     owner_ref_for_player,
     owner_ref_for_player_projectiles,
     projectile_spawn,
@@ -21,8 +19,6 @@ from .spawn import (
 
 __all__ = [
     "most_used_weapon_id_for_player",
-    "owner_id_for_player",
-    "owner_id_for_player_projectiles",
     "owner_ref_for_player",
     "owner_ref_for_player_projectiles",
     "player_fire_weapon",

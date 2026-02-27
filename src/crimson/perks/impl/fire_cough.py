@@ -21,7 +21,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     if ctx.player.fire_cough_timer <= ctx.state.perk_intervals.fire_cough:
         return
 
-    owner_id = ctx.owner_id_for_player_projectiles(ctx.state, ctx.player.index)
+    owner = ctx.owner_ref_for_player_projectiles(ctx.state, ctx.player.index)
     ctx.state.sfx_queue.append("sfx_autorifle_fire")
     ctx.state.sfx_queue.append("sfx_plasmaminigun_fire")
 
@@ -43,7 +43,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         pos=muzzle,
         angle=angle,
         type_id=ProjectileTypeId.FIRE_BULLETS,
-        owner_id=owner_id,
+        owner=owner,
         owner_player_index=ctx.player.index,
     )
 

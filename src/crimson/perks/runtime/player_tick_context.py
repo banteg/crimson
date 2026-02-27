@@ -5,11 +5,12 @@ from dataclasses import dataclass
 
 from grim.geom import Vec2
 
+from ...owner_ref import OwnerRef
 from ...sim.state_types import GameplayState, PlayerState
 
 ProjectileSpawnFn = Callable[..., int]
-OwnerIdForPlayerFn = Callable[[int], int]
-OwnerIdForPlayerProjectilesFn = Callable[[GameplayState, int], int]
+OwnerRefForPlayerFn = Callable[[int], OwnerRef]
+OwnerRefForPlayerProjectilesFn = Callable[[GameplayState, int], OwnerRef]
 
 
 @dataclass(slots=True)
@@ -20,6 +21,6 @@ class PlayerPerkTickCtx:
     players: list[PlayerState] | None
     dt: float
     stationary: bool
-    owner_id_for_player: OwnerIdForPlayerFn
-    owner_id_for_player_projectiles: OwnerIdForPlayerProjectilesFn
+    owner_ref_for_player: OwnerRefForPlayerFn
+    owner_ref_for_player_projectiles: OwnerRefForPlayerProjectilesFn
     projectile_spawn: ProjectileSpawnFn

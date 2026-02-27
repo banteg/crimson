@@ -5,6 +5,7 @@ import math
 from crimson.creatures.runtime import CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -114,7 +115,7 @@ def test_ranged_projectile_can_damage_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
-        owner_id=0,
+        owner_id=OwnerRef.from_creature(0),
         travel_budget=45.0,
         hits_players=True,
     )
@@ -157,7 +158,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
-        owner_id=0,
+        owner_id=OwnerRef.from_creature(0),
         travel_budget=45.0,
         hits_players=True,
     )

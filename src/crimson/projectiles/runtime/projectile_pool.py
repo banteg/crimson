@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...math_parity import NATIVE_HALF_PI, f32
-from ...owner_ref import OwnerLike, OwnerRef, owner_ref
+from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...weapons import WEAPON_BY_ID, weapon_entry_for_projectile_type_id
 from ..types import (
@@ -72,7 +72,7 @@ class ProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: ProjectileTypeId,
-        owner_id: OwnerLike,
+        owner_id: OwnerRef,
         travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
@@ -98,7 +98,7 @@ class ProjectilePool:
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
         if weapon_entry is not None and weapon_entry.travel_budget is not None:
             entry.travel_budget = float(weapon_entry.travel_budget)
-        entry.owner = owner_ref(owner_id)
+        entry.owner = owner_id
         entry.hits_players = bool(hits_players)
 
         if type_id == ProjectileTypeId.ION_MINIGUN:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from ...owner_ref import LOCAL_PLAYER_OWNER_ID
+from ...owner_ref import OwnerRef
 from ...projectiles import ProjectileTypeId
 from ..helpers import perk_active
 from ..ids import PerkId
@@ -19,8 +19,10 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     if ctx.player.hot_tempered_timer <= ctx.state.perk_intervals.hot_tempered:
         return
 
-    owner_id = (
-        ctx.owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else LOCAL_PLAYER_OWNER_ID
+    owner = (
+        ctx.owner_ref_for_player(ctx.player.index)
+        if ctx.state.friendly_fire_enabled
+        else OwnerRef.from_local_player(0)
     )
     for idx in range(8):
         type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
@@ -31,7 +33,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
             pos=ctx.player_pos_before_move,
             angle=angle,
             type_id=type_id,
-            owner_id=owner_id,
+            owner=owner,
             owner_player_index=ctx.player.index,
         )
     ctx.state.sfx_queue.append("sfx_explosion_small")

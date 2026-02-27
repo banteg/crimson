@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import SupportsInt
 
 LOCAL_PLAYER_OWNER_ID = -100
 
@@ -86,20 +85,8 @@ class OwnerRef:
             return int(idx)
         return None
 
-
-OwnerLike = OwnerRef | SupportsInt
-
-
-def owner_ref(owner: OwnerLike) -> OwnerRef:
-    if isinstance(owner, OwnerRef):
-        return owner
-    return OwnerRef.from_legacy(int(owner))
-
-
 __all__ = [
     "LOCAL_PLAYER_OWNER_ID",
     "OwnerKind",
-    "OwnerLike",
     "OwnerRef",
-    "owner_ref",
 ]

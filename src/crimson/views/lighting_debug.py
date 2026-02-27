@@ -17,7 +17,7 @@ from grim.view import View, ViewContext
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..owner_ref import LOCAL_PLAYER_OWNER_ID
+from ..owner_ref import OwnerRef
 from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
@@ -2105,7 +2105,7 @@ class LightingDebugView:
                 pos=impact,
                 angle=float(heading),
                 type_id=SecondaryProjectileTypeId.DETONATION,
-                owner_id=LOCAL_PLAYER_OWNER_ID,
+                owner_id=OwnerRef.from_local_player(0),
                 time_to_live=float(profile.secondary_ttl),
             )
             self._push_transient_light(
@@ -2130,14 +2130,14 @@ class LightingDebugView:
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
-                    owner_id=LOCAL_PLAYER_OWNER_ID,
+                    owner_id=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
                 self._world.state.secondary_projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.secondary_type_id,
-                    owner_id=LOCAL_PLAYER_OWNER_ID,
+                    owner_id=OwnerRef.from_local_player(0),
                     time_to_live=float(profile.secondary_ttl),
                     creatures=self._world.creatures.entries,
                     target_hint=player.aim,

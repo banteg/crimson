@@ -5,7 +5,7 @@ from typing import Protocol, cast
 
 from grim.geom import Vec2
 
-from ..owner_ref import OwnerLike, OwnerRef, owner_ref
+from ..owner_ref import OwnerRef
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_BY_ID
@@ -23,14 +23,6 @@ def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) ->
     if not state.friendly_fire_enabled:
         return OwnerRef.from_local_player(0)
     return owner_ref_for_player(player_index)
-
-
-def owner_id_for_player(player_index: int) -> int:
-    return owner_ref_for_player(player_index).to_legacy()
-
-
-def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> int:
-    return owner_ref_for_player_projectiles(state, player_index).to_legacy()
 
 
 def travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
@@ -113,12 +105,11 @@ def projectile_spawn(
     pos: Vec2,
     angle: float,
     type_id: ProjectileTypeId,
-    owner_id: OwnerLike,
+    owner: OwnerRef,
     owner_player_index: int | None = None,
     hits_players: bool = False,
 ) -> int:
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
-    owner = owner_ref(owner_id)
     if (not state.bonus_spawn_guard) and owner.is_player():
         while True:
             player_index = _shots_fired_player_index(
@@ -159,7 +150,7 @@ def spawn_projectile_ring(
     count: int,
     angle_offset: float,
     type_id: ProjectileTypeId,
-    owner_id: OwnerLike,
+    owner: OwnerRef,
     owner_player_index: int | None = None,
     players: list[PlayerState] | None = None,
 ) -> None:
@@ -173,6 +164,6 @@ def spawn_projectile_ring(
             pos=origin.pos,
             angle=float(idx) * step + float(angle_offset),
             type_id=type_id,
-            owner_id=owner_id,
+            owner=owner,
             owner_player_index=owner_player_index,
         )

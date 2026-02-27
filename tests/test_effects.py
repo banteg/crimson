@@ -6,6 +6,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32
+from crimson.owner_ref import OwnerRef
 from grim.color import RGBA
 from grim.geom import Vec2
 from tests.helpers import MockCrand, assert_float_close
@@ -112,7 +113,12 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     fx_queue = FxQueue(capacity=1, max_count=1)
     sprite_effects = SpriteEffectPool(size=1, rand=lambda: 0)
 
-    particle_id = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner_id=-1)
+    particle_id = pool.spawn_particle(
+        pos=Vec2(),
+        angle=0.0,
+        intensity=1.0,
+        owner_id=OwnerRef.from_player(0),
+    )
     particle = pool.entries[particle_id]
 
     creature = CreatureState()

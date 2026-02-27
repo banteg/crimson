@@ -11,7 +11,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects_atlas import EffectId
 from ...math_parity import f32
-from ...owner_ref import LOCAL_PLAYER_OWNER_ID, OwnerLike, OwnerRef, owner_ref
+from ...owner_ref import OwnerRef
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -49,7 +49,7 @@ class SecondaryProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: int,
-        owner_id: OwnerLike = LOCAL_PLAYER_OWNER_ID,
+        owner_id: OwnerRef = OwnerRef.from_local_player(0),
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
         creatures: Sequence[CreatureState] | None = None,
@@ -67,7 +67,7 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = int(type_id)
         entry.pos = pos
-        entry.owner = owner_ref(owner_id)
+        entry.owner = owner_id
         entry.target_id = -1
         entry.target_hint_active = False
         entry.target_hint = Vec2()

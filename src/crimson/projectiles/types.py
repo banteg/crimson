@@ -9,7 +9,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
-from ..owner_ref import OwnerLike, OwnerRef, owner_ref
+from ..owner_ref import OwnerRef
 
 
 class _RngLike(Protocol):
@@ -172,8 +172,8 @@ class Projectile:
         return self.owner.to_legacy()
 
     @owner_id.setter
-    def owner_id(self, value: OwnerLike) -> None:
-        self.owner = owner_ref(value)
+    def owner_id(self, value: OwnerRef) -> None:
+        self.owner = value
 
 
 @dataclass(slots=True)
@@ -198,8 +198,8 @@ class SecondaryProjectile:
         return self.owner.to_legacy()
 
     @owner_id.setter
-    def owner_id(self, value: OwnerLike) -> None:
-        self.owner = owner_ref(value)
+    def owner_id(self, value: OwnerRef) -> None:
+        self.owner = value
 
 
 __all__ = [

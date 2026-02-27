@@ -29,10 +29,10 @@ from .projectiles import (
 )
 from .sim.state_types import PERK_COUNT_SIZE
 from .weapon_runtime import (
-    owner_id_for_player as _owner_id_for_player,
+    owner_ref_for_player as _owner_ref_for_player,
 )
 from .weapon_runtime import (
-    owner_id_for_player_projectiles as _owner_id_for_player_projectiles,
+    owner_ref_for_player_projectiles as _owner_ref_for_player_projectiles,
 )
 from .weapon_runtime import (
     player_fire_weapon as _player_fire_weapon,
@@ -629,8 +629,8 @@ def player_update(
         state=state,
         players=players,
         stationary=perk_tick_stationary,
-        owner_id_for_player=_owner_id_for_player,
-        owner_id_for_player_projectiles=_owner_id_for_player_projectiles,
+        owner_ref_for_player=_owner_ref_for_player,
+        owner_ref_for_player_projectiles=_owner_ref_for_player_projectiles,
         projectile_spawn=_projectile_spawn,
     )
 
@@ -897,7 +897,7 @@ def player_update(
                     count=count,
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                    owner_id=_owner_id_for_player_projectiles(state, player.index),
+                    owner=_owner_ref_for_player_projectiles(state, player.index),
                     owner_player_index=player.index,
                     players=players,
                 )

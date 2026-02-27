@@ -41,7 +41,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=travel_budget,
     )
 

@@ -21,7 +21,7 @@ from ..gameplay import (
     survival_enforce_reward_weapon_guard,
     survival_progression_update,
 )
-from ..owner_ref import OwnerLike, owner_ref
+from ..owner_ref import OwnerRef
 from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..perks.state import CreatureForPerks
@@ -176,7 +176,7 @@ class WorldState:
         hit_sfx: list[str] = []
         hit_audio_game_tune_started = game_tune_started
         def _apply_projectile_damage_to_creature(
-            creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner_id: OwnerLike,
+            creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef,
         ) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
@@ -190,7 +190,7 @@ class WorldState:
                 damage_amount=float(damage),
                 damage_type=int(damage_type),
                 impulse=impulse,
-                owner=owner_ref(owner_id),
+                owner=owner,
                 dt=float(dt),
                 players=self.players,
                 rand=self.state.rng.rand,
@@ -288,7 +288,7 @@ class WorldState:
             fx_queue=fx_queue,
             deaths=deaths,
         )
-        def _kill_creature_no_corpse(creature_index: int, owner_id: int) -> None:
+        def _kill_creature_no_corpse(creature_index: int, owner: OwnerRef) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)):
                 return
@@ -297,7 +297,7 @@ class WorldState:
                 return
             if float(creature.hp) <= 0.0:
                 return
-            creature.last_hit_owner_id = int(owner_id)
+            creature.last_hit_owner = owner
             self._record_creature_death(
                 creature_index=idx,
                 dt=float(dt),

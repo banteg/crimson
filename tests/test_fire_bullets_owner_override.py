@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import GameplayState, player_update
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectileTypeId
 from crimson.sim.input import PlayerInput
@@ -15,7 +16,7 @@ def _spawn_type(
     state: GameplayState,
     *,
     players: list[PlayerState],
-    owner_id: int,
+    owner: OwnerRef,
     owner_player_index: int | None = None,
 ) -> int:
     proj_id = projectile_spawn(
@@ -24,7 +25,7 @@ def _spawn_type(
         pos=Vec2(100.0, 100.0),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=int(owner_id),
+        owner=owner,
         owner_player_index=owner_player_index,
     )
     assert proj_id >= 0
@@ -41,8 +42,8 @@ def test_projectile_spawn_fire_bullets_default_uses_owner_timer() -> None:
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner_id=-2)
-    player0_type = _spawn_type(state, players=players, owner_id=-1)
+    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1))
+    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(0))
 
     assert player1_type == int(ProjectileTypeId.PISTOL)
     assert player0_type == int(ProjectileTypeId.FIRE_BULLETS)
@@ -52,7 +53,7 @@ def test_projectile_spawn_fire_bullets_default_resolves_owner_index_in_player_sl
     state = GameplayState(preserve_bugs=False)
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=1.0)
 
-    player1_type = _spawn_type(state, players=[player1], owner_id=-100, owner_player_index=1)
+    player1_type = _spawn_type(state, players=[player1], owner=OwnerRef.from_local_player(0), owner_player_index=1)
 
     assert player1_type == int(ProjectileTypeId.FIRE_BULLETS)
 
@@ -63,8 +64,8 @@ def test_projectile_spawn_fire_bullets_default_uses_owner_player_index_with_owne
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner_id=-100, owner_player_index=1)
-    player0_type = _spawn_type(state, players=players, owner_id=-100, owner_player_index=0)
+    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_local_player(0), owner_player_index=1)
+    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_local_player(0), owner_player_index=0)
 
     assert player1_type == int(ProjectileTypeId.PISTOL)
     assert player0_type == int(ProjectileTypeId.FIRE_BULLETS)
@@ -76,7 +77,7 @@ def test_projectile_spawn_fire_bullets_preserve_bugs_keeps_global_gate() -> None
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner_id=-2)
+    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1))
 
     assert player1_type == int(ProjectileTypeId.FIRE_BULLETS)
 

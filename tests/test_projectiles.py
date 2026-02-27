@@ -166,7 +166,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             pos=Vec2(),
             angle=math.pi / 2.0,
             type_id=ProjectileTypeId(int(case["type_id"])),
-            owner_id=-100,
+            owner_id=OwnerRef.from_local_player(0),
             travel_budget=float(case["travel_budget"]),
         )
         creatures = case["creatures"]
@@ -197,7 +197,12 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
 
 def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = ProjectilePool(size=1)
-    idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=ProjectileTypeId.ASSAULT_RIFLE, owner_id=-100)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=ProjectileTypeId.ASSAULT_RIFLE,
+        owner_id=OwnerRef.from_local_player(0),
+    )
     pool.update_demo(
         0.1,
         [],
@@ -222,7 +227,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
     )
 
     entry = pool.entries[idx]
