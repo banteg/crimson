@@ -798,28 +798,30 @@ pub fn tickSurvivalWaveSpawns(
     var spawns: std.ArrayList(CreatureInit) = .empty;
     defer spawns.deinit(allocator);
 
-    if (cooldown > -1.0) {
+    if (cooldown >= 0.0) {
         return .{
             .cooldown = cooldown,
             .spawns = try spawns.toOwnedSlice(allocator),
         };
     }
 
-    var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
-    if (interval_ms < 0) {
-        const extra: i32 = @divTrunc(1 - interval_ms, 2);
-        interval_ms += extra * 2;
-        for (0..@as(usize, @intCast(extra))) |_| {
-            const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-            try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
+    while (cooldown < 0.0) {
+        var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
+        if (interval_ms < 0) {
+            const extra: i32 = @divTrunc(1 - interval_ms, 2);
+            interval_ms += extra * 2;
+            for (0..@as(usize, @intCast(extra))) |_| {
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
+            }
         }
+
+        if (interval_ms < 1) interval_ms = 1;
+        cooldown += @floatFromInt(interval_ms);
+
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
     }
-
-    if (interval_ms < 1) interval_ms = 1;
-    cooldown += @floatFromInt(interval_ms);
-
-    const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-    try spawns.append(allocator, buildSurvivalSpawnCreature(pos, rng, player_experience));
 
     return .{
         .cooldown = cooldown,
@@ -840,30 +842,32 @@ pub fn tickSurvivalWaveSpawnsCount(
     var cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms;
     var count: usize = 0;
 
-    if (cooldown > -1.0) {
+    if (cooldown >= 0.0) {
         return .{
             .cooldown = cooldown,
             .spawn_count = count,
         };
     }
 
-    var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
-    if (interval_ms < 0) {
-        const extra: i32 = @divTrunc(1 - interval_ms, 2);
-        interval_ms += extra * 2;
-        for (0..@as(usize, @intCast(extra))) |_| {
-            const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-            _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
-            count += 1;
+    while (cooldown < 0.0) {
+        var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
+        if (interval_ms < 0) {
+            const extra: i32 = @divTrunc(1 - interval_ms, 2);
+            interval_ms += extra * 2;
+            for (0..@as(usize, @intCast(extra))) |_| {
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
+                count += 1;
+            }
         }
+
+        if (interval_ms < 1) interval_ms = 1;
+        cooldown += @floatFromInt(interval_ms);
+
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
+        count += 1;
     }
-
-    if (interval_ms < 1) interval_ms = 1;
-    cooldown += @floatFromInt(interval_ms);
-
-    const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-    _ = buildSurvivalSpawnCreature(pos, rng, player_experience);
-    count += 1;
 
     return .{
         .cooldown = cooldown,
@@ -886,29 +890,34 @@ pub fn tickSurvivalWaveSpawnsBatch(
         .count = 0,
     };
 
-    if (result.cooldown > -1.0) {
+    if (result.cooldown >= 0.0) {
         return result;
     }
 
-    var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
-    if (interval_ms < 0) {
-        const extra: i32 = @divTrunc(1 - interval_ms, 2);
-        interval_ms += extra * 2;
-        for (0..@as(usize, @intCast(extra))) |_| {
-            if (result.count >= result.spawns.len) break;
-            const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-            result.spawns[result.count] = buildSurvivalSpawnCreature(pos, rng, player_experience);
+    while (result.cooldown < 0.0) {
+        var interval_ms: i32 = 500 - @divTrunc(@as(i32, @intFromFloat(survival_elapsed_ms)), 1800);
+        if (interval_ms < 0) {
+            const extra: i32 = @divTrunc(1 - interval_ms, 2);
+            interval_ms += extra * 2;
+            for (0..@as(usize, @intCast(extra))) |_| {
+                const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+                const spawn = buildSurvivalSpawnCreature(pos, rng, player_experience);
+                if (result.count < result.spawns.len) {
+                    result.spawns[result.count] = spawn;
+                    result.count += 1;
+                }
+            }
+        }
+
+        if (interval_ms < 1) interval_ms = 1;
+        result.cooldown += @floatFromInt(interval_ms);
+
+        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
+        const spawn = buildSurvivalSpawnCreature(pos, rng, player_experience);
+        if (result.count < result.spawns.len) {
+            result.spawns[result.count] = spawn;
             result.count += 1;
         }
-    }
-
-    if (interval_ms < 1) interval_ms = 1;
-    result.cooldown += @floatFromInt(interval_ms);
-
-    if (result.count < result.spawns.len) {
-        const pos = randSurvivalSpawnPos(rng, terrain_width, terrain_height);
-        result.spawns[result.count] = buildSurvivalSpawnCreature(pos, rng, player_experience);
-        result.count += 1;
     }
 
     return result;

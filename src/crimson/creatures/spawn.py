@@ -1271,7 +1271,7 @@ def tick_survival_wave_spawns(
 
     Modeled after `survival_update` (crimsonland.exe 0x00407cd0) wave spawns:
       spawn_cooldown -= player_count * frame_dt_ms
-      if spawn_cooldown <= -1:
+      while spawn_cooldown < 0:
         interval_ms = 500 - int(survival_elapsed_ms) / 1800
         if interval_ms < 0:
           extra = (1 - interval_ms) >> 1
@@ -1282,25 +1282,25 @@ def tick_survival_wave_spawns(
         spawn 1 creature at a random edge
     """
     cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
-    if cooldown > -1.0:
+    if cooldown >= 0.0:
         return float(cooldown), ()
 
-    interval_ms = 500 - int(f32(survival_elapsed_ms)) // 1800
-
     spawns: list[CreatureInit] = []
-    if interval_ms < 0:
-        extra = (1 - interval_ms) >> 1
-        interval_ms += int(extra) * 2
-        for _ in range(int(extra)):
-            pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
-            spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
+    while cooldown < 0.0:
+        interval_ms = 500 - int(f32(survival_elapsed_ms)) // 1800
+        if interval_ms < 0:
+            extra = (1 - interval_ms) >> 1
+            interval_ms += int(extra) * 2
+            for _ in range(int(extra)):
+                pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+                spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
-    if interval_ms < 1:
-        interval_ms = 1
-    cooldown = f32(cooldown + f32(float(interval_ms)))
+        if interval_ms < 1:
+            interval_ms = 1
+        cooldown = f32(cooldown + f32(float(interval_ms)))
 
-    pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
-    spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
+        pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+        spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
     return float(cooldown), tuple(spawns)
 

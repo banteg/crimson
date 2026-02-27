@@ -1,0 +1,10 @@
+.{
+    .paths = .{
+        "src",
+        "build.zig",
+    },
+
+    .rules = .{
+        .Z024 = .{ .enabled = false },
+    },
+}

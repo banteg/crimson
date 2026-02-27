@@ -72,3 +72,21 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
         CreatureTypeId.SPIDER_SP1,
     ]
     assert rng.state == 0xBB25E9C6
+
+
+def test_tick_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:
+    rng = Crand(1)
+    cooldown, spawns = tick_survival_wave_spawns(
+        -2.0,
+        0.0,
+        rng,
+        player_count=1,
+        survival_elapsed_ms=905400.0,  # interval branch resolves to 1ms after extras
+        player_experience=0,
+        terrain_width=1024,
+        terrain_height=1024,
+    )
+
+    # Native loops while cooldown < 0, so -2 with +1 interval runs two iterations.
+    assert_float_close(cooldown, 0.0)
+    assert len(spawns) == 6
