@@ -217,15 +217,26 @@ pub const ProjectilePool = struct {
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
-            const direction = runtime_helpers.directionFromHeading(proj.angle);
+            const heading_radians = proj.angle - native_half_pi;
+            const dir_x_ext = std.math.cos(@as(f64, @floatCast(heading_radians)));
+            const dir_y_ext = std.math.sin(@as(f64, @floatCast(heading_radians)));
             var acc = state_mod.Vec2{};
 
             var step: i32 = 0;
             while (step < steps) : (step += 3) {
-                const step_scale = narrowF32(dt * 20.0 * proj.speed_scale * 3.0);
+                const step_x = narrowF32(
+                    @as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(dt)) * 20.0)) *
+                        proj.speed_scale *
+                        3.0,
+                );
+                const step_y = narrowF32(
+                    @as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(dt)) * 20.0)) *
+                        proj.speed_scale *
+                        3.0,
+                );
                 acc = .{
-                    .x = narrowF32(acc.x + direction.x * step_scale),
-                    .y = narrowF32(acc.y + direction.y * step_scale),
+                    .x = narrowF32(acc.x + step_x),
+                    .y = narrowF32(acc.y + step_y),
                 };
 
                 if (!(acc.length() >= 4.0 or steps <= step + 3)) continue;
@@ -354,9 +365,11 @@ pub const ProjectilePool = struct {
                 {
                     proj.life_timer = 0.25;
                     const jitter = @as(f32, @floatFromInt(state.rng.rand() & 3));
+                    const jitter_dx = narrowF32(@as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(jitter)))));
+                    const jitter_dy = narrowF32(@as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(jitter)))));
                     proj.pos = .{
-                        .x = narrowF32(proj.pos.x + direction.x * jitter),
-                        .y = narrowF32(proj.pos.y + direction.y * jitter),
+                        .x = narrowF32(proj.pos.x + jitter_dx),
+                        .y = narrowF32(proj.pos.y + jitter_dy),
                     };
                 }
 

@@ -130,6 +130,39 @@ pub const ReplayScaffoldResult = struct {
     quest_play_completion_music: bool,
 };
 
+pub const ProjectileTraceEntry = struct {
+    index: usize,
+    type_id: i32,
+    pos_x_q4: i32,
+    pos_y_q4: i32,
+    origin_x_q4: i32,
+    origin_y_q4: i32,
+    life_timer_q4: i32,
+    damage_pool_q4: i32,
+    angle_q6: i32,
+    speed_scale_q4: i32,
+    owner_legacy: i32,
+    hits_players: bool,
+};
+
+pub const CreatureTraceEntry = struct {
+    index: usize,
+    type_id: i32,
+    flags: i32,
+    ai_mode: i32,
+    link_index: i32,
+    pos_x_q4: i32,
+    pos_y_q4: i32,
+    target_x_q4: i32,
+    target_y_q4: i32,
+    heading_q6: i32,
+    target_heading_q6: i32,
+    hp_q4: i32,
+    lifecycle_stage_q4: i32,
+    size_q4: i32,
+    attack_cooldown_q6: i32,
+};
+
 pub const ReplayTickTrace = struct {
     tick: usize,
     rng: struct {
@@ -205,63 +238,11 @@ pub const ReplayTickTrace = struct {
         projectile_active_index_sum: i32,
         projectile_active_index_xor: i32,
         projectile_type45_count: usize,
-        projectile0_pos_x_q4: i32,
-        projectile0_pos_y_q4: i32,
-        projectile0_origin_x_q4: i32,
-        projectile0_origin_y_q4: i32,
-        projectile0_life_timer_q4: i32,
-        projectile0_type_id: i32,
-        projectile0_angle_q6: i32,
-        projectile0_speed_scale_q4: i32,
-        projectile1_active: bool,
-        projectile1_pos_x_q4: i32,
-        projectile1_pos_y_q4: i32,
-        projectile1_origin_x_q4: i32,
-        projectile1_origin_y_q4: i32,
-        projectile1_life_timer_q4: i32,
-        projectile1_type_id: i32,
-        projectile1_angle_q6: i32,
-        projectile1_damage_pool_q4: i32,
-        projectile6_active: bool,
-        projectile6_type_id: i32,
-        projectile6_pos_x_q4: i32,
-        projectile6_pos_y_q4: i32,
-        projectile6_origin_x_q4: i32,
-        projectile6_origin_y_q4: i32,
-        projectile6_life_timer_q4: i32,
-        projectile6_damage_pool_q4: i32,
-        projectile6_angle_q6: i32,
         projectile_hit_count: i32,
         projectile_type1_count: usize,
         projectile_type6_count: usize,
-        projectile_type6_pos_x_q4: i32,
-        projectile_type6_pos_y_q4: i32,
-        projectile_type6_origin_x_q4: i32,
-        projectile_type6_origin_y_q4: i32,
-        projectile_type6_life_timer_q4: i32,
-        projectile_type6_damage_pool_q4: i32,
-        projectile_type6_b_pos_x_q4: i32,
-        projectile_type6_b_pos_y_q4: i32,
-        projectile_type6_b_life_timer_q4: i32,
-        projectile_type6_b_damage_pool_q4: i32,
         projectile_type11_count: usize,
-        projectile_type11_pos_x_q4: i32,
-        projectile_type11_pos_y_q4: i32,
-        projectile_type11_origin_x_q4: i32,
-        projectile_type11_origin_y_q4: i32,
-        projectile_type11_life_timer_q4: i32,
-        projectile_type11_closest_to_c2_dist_q4: i32,
-        projectile_type11_closest_to_c2_pos_x_q4: i32,
-        projectile_type11_closest_to_c2_pos_y_q4: i32,
-        projectile_type11_closest_to_c2_origin_x_q4: i32,
-        projectile_type11_closest_to_c2_origin_y_q4: i32,
         projectile_type21_count: usize,
-        projectile_type21_pos_x_q4: i32,
-        projectile_type21_pos_y_q4: i32,
-        projectile_type21_origin_x_q4: i32,
-        projectile_type21_origin_y_q4: i32,
-        projectile_type21_life_timer_q4: i32,
-        projectile_type21_angle_q6: i32,
         projectile_first_hit_creature_index: i32,
         projectile_first_hit_projectile_index: i32,
         projectile_first_hit_type_id: i32,
@@ -272,96 +253,12 @@ pub const ReplayTickTrace = struct {
         projectile_first_hit_target_size_q4: i32,
         projectile_first_hit_target_x_q4: i32,
         projectile_first_hit_target_y_q4: i32,
+        entries_len: usize,
+        entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry,
     },
     creatures: struct {
-        creature0_active: bool,
-        creature0_pos_x_q4: i32,
-        creature0_pos_y_q4: i32,
-        creature0_hp_q4: i32,
-        creature0_lifecycle_stage_q4: i32,
-        creature1_active: bool,
-        creature1_pos_x_q4: i32,
-        creature1_pos_y_q4: i32,
-        creature1_hp_q4: i32,
-        creature1_lifecycle_stage_q4: i32,
-        creature2_active: bool,
-        creature2_pos_x_q4: i32,
-        creature2_pos_y_q4: i32,
-        creature2_hp_q4: i32,
-        creature2_lifecycle_stage_q4: i32,
-        creature10_active: bool,
-        creature10_pos_x_q4: i32,
-        creature10_pos_y_q4: i32,
-        creature10_hp_q4: i32,
-        creature10_lifecycle_stage_q4: i32,
-        creature12_active: bool,
-        creature12_pos_x_q4: i32,
-        creature12_pos_y_q4: i32,
-        creature12_hp_q4: i32,
-        creature12_lifecycle_stage_q4: i32,
-        creature14_active: bool,
-        creature14_pos_x_q4: i32,
-        creature14_pos_y_q4: i32,
-        creature14_hp_q4: i32,
-        creature14_lifecycle_stage_q4: i32,
-        creature14_size_q4: i32,
-        creature14_target_x_q4: i32,
-        creature14_target_y_q4: i32,
-        creature14_heading_q6: i32,
-        creature14_target_heading_q6: i32,
-        creature15_active: bool,
-        creature15_pos_x_q4: i32,
-        creature15_pos_y_q4: i32,
-        creature15_hp_q4: i32,
-        creature15_lifecycle_stage_q4: i32,
-        creature18_active: bool,
-        creature18_pos_x_q4: i32,
-        creature18_pos_y_q4: i32,
-        creature18_hp_q4: i32,
-        creature18_lifecycle_stage_q4: i32,
-        creature18_target_x_q4: i32,
-        creature18_target_y_q4: i32,
-        creature18_heading_q6: i32,
-        creature18_target_heading_q6: i32,
-        creature18_type_id: i32,
-        creature18_flags: i32,
-        creature18_link_index: i32,
-        creature18_ai_mode: i32,
-        creature26_active: bool,
-        creature26_hp_q4: i32,
-        creature26_lifecycle_stage_q4: i32,
-        creature26_type_id: i32,
-        creature26_flags: i32,
-        creature26_link_index: i32,
-        creature26_ai_mode: i32,
-        creature31_active: bool,
-        creature31_hp_q4: i32,
-        creature31_lifecycle_stage_q4: i32,
-        creature32_active: bool,
-        creature32_pos_x_q4: i32,
-        creature32_pos_y_q4: i32,
-        creature32_hp_q4: i32,
-        creature32_lifecycle_stage_q4: i32,
-        creature32_type_id: i32,
-        creature32_flags: i32,
-        creature32_heading_q6: i32,
-        creature32_target_heading_q6: i32,
-        creature32_target_x_q4: i32,
-        creature32_target_y_q4: i32,
-        creature32_link_index: i32,
-        creature32_ai_mode: i32,
-        creature39_active: bool,
-        creature39_hp_q4: i32,
-        creature39_lifecycle_stage_q4: i32,
-        creature39_type_id: i32,
-        creature39_flags: i32,
-        creature39_link_index: i32,
-        creature39_ai_mode: i32,
-        creature45_active: bool,
-        creature45_pos_x_q4: i32,
-        creature45_pos_y_q4: i32,
-        creature45_hp_q4: i32,
-        creature45_lifecycle_stage_q4: i32,
+        entries_len: usize,
+        entries: [creatures_mod.max_creatures]CreatureTraceEntry,
     },
     debug: struct {
         debug_pending_nuke: i32,
@@ -748,6 +645,7 @@ pub fn runReplayScaffoldWithTrace(
                 input,
                 flags,
                 &state,
+                &creatures,
                 dt_sim,
             );
             weapons_runtime.stepPlayerForTick(
@@ -1114,29 +1012,15 @@ fn buildTickTrace(
 ) ReplayTickTrace {
     var projectile_count: usize = 0;
     var projectile_state_hash: u64 = 1469598103934665603;
-    var projectile0 = projectiles_mod.Projectile{};
-    var projectile0_found = false;
     var projectile_type1_count: usize = 0;
     var projectile_type6_count: usize = 0;
-    var projectile_type6 = projectiles_mod.Projectile{};
-    var projectile_type6_found = false;
-    var projectile_type6_b = projectiles_mod.Projectile{};
-    var projectile_type6_b_found = false;
     var projectile_type11_count: usize = 0;
-    var projectile_type11 = projectiles_mod.Projectile{};
-    var projectile_type11_found = false;
-    var projectile_type11_closest = projectiles_mod.Projectile{};
-    var projectile_type11_closest_found = false;
-    var projectile_type11_closest_dist = std.math.inf(f32);
-    const projectile1 = projectiles.entries[1];
     var projectile_type21_count: usize = 0;
-    var projectile_type21 = projectiles_mod.Projectile{};
-    var projectile_type21_found = false;
-    const projectile6 = projectiles.entries[6];
     var projectile_type45_count: usize = 0;
     var projectile_active_index_sum: i32 = 0;
     var projectile_active_index_xor: i32 = 0;
-    const creature2_pos = creatures.entries[2].pos;
+    var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry = undefined;
+    var projectile_entries_len: usize = 0;
     for (projectiles.entries, 0..) |entry, idx| {
         projectile_state_hash = hashMix(projectile_state_hash, @intCast(idx));
         projectile_state_hash = hashMix(projectile_state_hash, if (entry.active) 1 else 0);
@@ -1156,53 +1040,43 @@ fn buildTickTrace(
         projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner.toLegacy())));
         projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
         projectile_count += 1;
-        if (!projectile0_found) {
-            projectile0_found = true;
-            projectile0 = entry;
-        }
         if (entry.type_id == 1) {
             projectile_type1_count += 1;
         }
         if (entry.type_id == 6) {
             projectile_type6_count += 1;
-            if (!projectile_type6_found) {
-                projectile_type6_found = true;
-                projectile_type6 = entry;
-            } else if (!projectile_type6_b_found) {
-                projectile_type6_b_found = true;
-                projectile_type6_b = entry;
-            }
         }
         if (entry.type_id == 11) {
             projectile_type11_count += 1;
-            if (!projectile_type11_found) {
-                projectile_type11_found = true;
-                projectile_type11 = entry;
-            }
-            const dx = entry.pos.x - creature2_pos.x;
-            const dy = entry.pos.y - creature2_pos.y;
-            const dist = std.math.sqrt(dx * dx + dy * dy);
-            if (!projectile_type11_closest_found or dist < projectile_type11_closest_dist) {
-                projectile_type11_closest_found = true;
-                projectile_type11_closest_dist = dist;
-                projectile_type11_closest = entry;
-            }
         }
         if (entry.type_id == 21) {
             projectile_type21_count += 1;
-            if (!projectile_type21_found) {
-                projectile_type21_found = true;
-                projectile_type21 = entry;
-            }
         }
         if (entry.type_id == 45) {
             projectile_type45_count += 1;
         }
+        projectile_entries[projectile_entries_len] = .{
+            .index = idx,
+            .type_id = entry.type_id,
+            .pos_x_q4 = quantizeQ4(entry.pos.x),
+            .pos_y_q4 = quantizeQ4(entry.pos.y),
+            .origin_x_q4 = quantizeQ4(entry.origin.x),
+            .origin_y_q4 = quantizeQ4(entry.origin.y),
+            .life_timer_q4 = quantizeQ4(entry.life_timer),
+            .damage_pool_q4 = quantizeQ4(entry.damage_pool),
+            .angle_q6 = quantizeQ6(entry.angle),
+            .speed_scale_q4 = quantizeQ4(entry.speed_scale),
+            .owner_legacy = entry.owner.toLegacy(),
+            .hits_players = entry.hits_players,
+        };
+        projectile_entries_len += 1;
     }
 
     var creature_active_index_sum: i32 = 0;
     var creature_active_index_xor: i32 = 0;
     var creature_state_hash: u64 = 1469598103934665603;
+    var creature_entries: [creatures_mod.max_creatures]CreatureTraceEntry = undefined;
+    var creature_entries_len: usize = 0;
     for (creatures.entries, 0..) |creature, idx| {
         creature_state_hash = hashMix(creature_state_hash, @intCast(idx));
         creature_state_hash = hashMix(creature_state_hash, if (creature.active) 1 else 0);
@@ -1238,6 +1112,24 @@ fn buildTickTrace(
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.attack_cooldown))));
         creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner.toLegacy())));
         creature_state_hash = hashMix(creature_state_hash, creature.flags);
+        creature_entries[creature_entries_len] = .{
+            .index = idx,
+            .type_id = creature.type_id,
+            .flags = @bitCast(creature.flags),
+            .ai_mode = @intFromEnum(creature.ai_mode),
+            .link_index = creature.link_index,
+            .pos_x_q4 = quantizeQ4(creature.pos.x),
+            .pos_y_q4 = quantizeQ4(creature.pos.y),
+            .target_x_q4 = quantizeQ4(creature.target.x),
+            .target_y_q4 = quantizeQ4(creature.target.y),
+            .heading_q6 = quantizeQ6(creature.heading),
+            .target_heading_q6 = quantizeQ6(creature.target_heading),
+            .hp_q4 = quantizeQ4(creature.hp),
+            .lifecycle_stage_q4 = quantizeQ4(creature.lifecycle_stage),
+            .size_q4 = quantizeQ4(creature.size),
+            .attack_cooldown_q6 = quantizeQ6(creature.attack_cooldown),
+        };
+        creature_entries_len += 1;
     }
 
     var bonus_active_count: usize = 0;
@@ -1332,63 +1224,11 @@ fn buildTickTrace(
             .projectile_active_index_sum = projectile_active_index_sum,
             .projectile_active_index_xor = projectile_active_index_xor,
             .projectile_type45_count = projectile_type45_count,
-            .projectile0_pos_x_q4 = if (projectile0_found) quantizeQ4(projectile0.pos.x) else 0,
-            .projectile0_pos_y_q4 = if (projectile0_found) quantizeQ4(projectile0.pos.y) else 0,
-            .projectile0_origin_x_q4 = if (projectile0_found) quantizeQ4(projectile0.origin.x) else 0,
-            .projectile0_origin_y_q4 = if (projectile0_found) quantizeQ4(projectile0.origin.y) else 0,
-            .projectile0_life_timer_q4 = if (projectile0_found) quantizeQ4(projectile0.life_timer) else 0,
-            .projectile0_type_id = if (projectile0_found) projectile0.type_id else 0,
-            .projectile0_angle_q6 = if (projectile0_found) quantizeQ6(projectile0.angle) else 0,
-            .projectile0_speed_scale_q4 = if (projectile0_found) quantizeQ4(projectile0.speed_scale) else 0,
-            .projectile1_active = projectile1.active,
-            .projectile1_pos_x_q4 = quantizeQ4(projectile1.pos.x),
-            .projectile1_pos_y_q4 = quantizeQ4(projectile1.pos.y),
-            .projectile1_origin_x_q4 = quantizeQ4(projectile1.origin.x),
-            .projectile1_origin_y_q4 = quantizeQ4(projectile1.origin.y),
-            .projectile1_life_timer_q4 = quantizeQ4(projectile1.life_timer),
-            .projectile1_type_id = projectile1.type_id,
-            .projectile1_angle_q6 = quantizeQ6(projectile1.angle),
-            .projectile1_damage_pool_q4 = quantizeQ4(projectile1.damage_pool),
-            .projectile6_active = projectile6.active,
-            .projectile6_type_id = projectile6.type_id,
-            .projectile6_pos_x_q4 = quantizeQ4(projectile6.pos.x),
-            .projectile6_pos_y_q4 = quantizeQ4(projectile6.pos.y),
-            .projectile6_origin_x_q4 = quantizeQ4(projectile6.origin.x),
-            .projectile6_origin_y_q4 = quantizeQ4(projectile6.origin.y),
-            .projectile6_life_timer_q4 = quantizeQ4(projectile6.life_timer),
-            .projectile6_damage_pool_q4 = quantizeQ4(projectile6.damage_pool),
-            .projectile6_angle_q6 = quantizeQ6(projectile6.angle),
             .projectile_hit_count = projectile_tick_stats.hit_count,
             .projectile_type1_count = projectile_type1_count,
             .projectile_type6_count = projectile_type6_count,
-            .projectile_type6_pos_x_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.pos.x) else 0,
-            .projectile_type6_pos_y_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.pos.y) else 0,
-            .projectile_type6_origin_x_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.origin.x) else 0,
-            .projectile_type6_origin_y_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.origin.y) else 0,
-            .projectile_type6_life_timer_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.life_timer) else 0,
-            .projectile_type6_damage_pool_q4 = if (projectile_type6_found) quantizeQ4(projectile_type6.damage_pool) else 0,
-            .projectile_type6_b_pos_x_q4 = if (projectile_type6_b_found) quantizeQ4(projectile_type6_b.pos.x) else 0,
-            .projectile_type6_b_pos_y_q4 = if (projectile_type6_b_found) quantizeQ4(projectile_type6_b.pos.y) else 0,
-            .projectile_type6_b_life_timer_q4 = if (projectile_type6_b_found) quantizeQ4(projectile_type6_b.life_timer) else 0,
-            .projectile_type6_b_damage_pool_q4 = if (projectile_type6_b_found) quantizeQ4(projectile_type6_b.damage_pool) else 0,
             .projectile_type11_count = projectile_type11_count,
-            .projectile_type11_pos_x_q4 = if (projectile_type11_found) quantizeQ4(projectile_type11.pos.x) else 0,
-            .projectile_type11_pos_y_q4 = if (projectile_type11_found) quantizeQ4(projectile_type11.pos.y) else 0,
-            .projectile_type11_origin_x_q4 = if (projectile_type11_found) quantizeQ4(projectile_type11.origin.x) else 0,
-            .projectile_type11_origin_y_q4 = if (projectile_type11_found) quantizeQ4(projectile_type11.origin.y) else 0,
-            .projectile_type11_life_timer_q4 = if (projectile_type11_found) quantizeQ4(projectile_type11.life_timer) else 0,
-            .projectile_type11_closest_to_c2_dist_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest_dist) else 0,
-            .projectile_type11_closest_to_c2_pos_x_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.pos.x) else 0,
-            .projectile_type11_closest_to_c2_pos_y_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.pos.y) else 0,
-            .projectile_type11_closest_to_c2_origin_x_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.origin.x) else 0,
-            .projectile_type11_closest_to_c2_origin_y_q4 = if (projectile_type11_closest_found) quantizeQ4(projectile_type11_closest.origin.y) else 0,
             .projectile_type21_count = projectile_type21_count,
-            .projectile_type21_pos_x_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.pos.x) else 0,
-            .projectile_type21_pos_y_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.pos.y) else 0,
-            .projectile_type21_origin_x_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.origin.x) else 0,
-            .projectile_type21_origin_y_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.origin.y) else 0,
-            .projectile_type21_life_timer_q4 = if (projectile_type21_found) quantizeQ4(projectile_type21.life_timer) else 0,
-            .projectile_type21_angle_q6 = if (projectile_type21_found) quantizeQ6(projectile_type21.angle) else 0,
             .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
             .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
             .projectile_first_hit_type_id = projectile_tick_stats.first_hit_type_id,
@@ -1399,96 +1239,12 @@ fn buildTickTrace(
             .projectile_first_hit_target_size_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_size)),
             .projectile_first_hit_target_x_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_x)),
             .projectile_first_hit_target_y_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_y)),
+            .entries_len = projectile_entries_len,
+            .entries = projectile_entries,
         },
         .creatures = .{
-            .creature0_active = creatures.entries[0].active,
-            .creature0_pos_x_q4 = quantizeQ4(creatures.entries[0].pos.x),
-            .creature0_pos_y_q4 = quantizeQ4(creatures.entries[0].pos.y),
-            .creature0_hp_q4 = quantizeQ4(creatures.entries[0].hp),
-            .creature0_lifecycle_stage_q4 = quantizeQ4(creatures.entries[0].lifecycle_stage),
-            .creature1_active = creatures.entries[1].active,
-            .creature1_pos_x_q4 = quantizeQ4(creatures.entries[1].pos.x),
-            .creature1_pos_y_q4 = quantizeQ4(creatures.entries[1].pos.y),
-            .creature1_hp_q4 = quantizeQ4(creatures.entries[1].hp),
-            .creature1_lifecycle_stage_q4 = quantizeQ4(creatures.entries[1].lifecycle_stage),
-            .creature2_active = creatures.entries[2].active,
-            .creature2_pos_x_q4 = quantizeQ4(creatures.entries[2].pos.x),
-            .creature2_pos_y_q4 = quantizeQ4(creatures.entries[2].pos.y),
-            .creature2_hp_q4 = quantizeQ4(creatures.entries[2].hp),
-            .creature2_lifecycle_stage_q4 = quantizeQ4(creatures.entries[2].lifecycle_stage),
-            .creature10_active = creatures.entries[10].active,
-            .creature10_pos_x_q4 = quantizeQ4(creatures.entries[10].pos.x),
-            .creature10_pos_y_q4 = quantizeQ4(creatures.entries[10].pos.y),
-            .creature10_hp_q4 = quantizeQ4(creatures.entries[10].hp),
-            .creature10_lifecycle_stage_q4 = quantizeQ4(creatures.entries[10].lifecycle_stage),
-            .creature12_active = creatures.entries[12].active,
-            .creature12_pos_x_q4 = quantizeQ4(creatures.entries[12].pos.x),
-            .creature12_pos_y_q4 = quantizeQ4(creatures.entries[12].pos.y),
-            .creature12_hp_q4 = quantizeQ4(creatures.entries[12].hp),
-            .creature12_lifecycle_stage_q4 = quantizeQ4(creatures.entries[12].lifecycle_stage),
-            .creature14_active = creatures.entries[14].active,
-            .creature14_pos_x_q4 = quantizeQ4(creatures.entries[14].pos.x),
-            .creature14_pos_y_q4 = quantizeQ4(creatures.entries[14].pos.y),
-            .creature14_hp_q4 = quantizeQ4(creatures.entries[14].hp),
-            .creature14_lifecycle_stage_q4 = quantizeQ4(creatures.entries[14].lifecycle_stage),
-            .creature14_size_q4 = quantizeQ4(creatures.entries[14].size),
-            .creature14_target_x_q4 = quantizeQ4(creatures.entries[14].target.x),
-            .creature14_target_y_q4 = quantizeQ4(creatures.entries[14].target.y),
-            .creature14_heading_q6 = quantizeQ6(creatures.entries[14].heading),
-            .creature14_target_heading_q6 = quantizeQ6(creatures.entries[14].target_heading),
-            .creature15_active = creatures.entries[15].active,
-            .creature15_pos_x_q4 = quantizeQ4(creatures.entries[15].pos.x),
-            .creature15_pos_y_q4 = quantizeQ4(creatures.entries[15].pos.y),
-            .creature15_hp_q4 = quantizeQ4(creatures.entries[15].hp),
-            .creature15_lifecycle_stage_q4 = quantizeQ4(creatures.entries[15].lifecycle_stage),
-            .creature18_active = creatures.entries[18].active,
-            .creature18_pos_x_q4 = quantizeQ4(creatures.entries[18].pos.x),
-            .creature18_pos_y_q4 = quantizeQ4(creatures.entries[18].pos.y),
-            .creature18_hp_q4 = quantizeQ4(creatures.entries[18].hp),
-            .creature18_lifecycle_stage_q4 = quantizeQ4(creatures.entries[18].lifecycle_stage),
-            .creature18_target_x_q4 = quantizeQ4(creatures.entries[18].target.x),
-            .creature18_target_y_q4 = quantizeQ4(creatures.entries[18].target.y),
-            .creature18_heading_q6 = quantizeQ6(creatures.entries[18].heading),
-            .creature18_target_heading_q6 = quantizeQ6(creatures.entries[18].target_heading),
-            .creature18_type_id = creatures.entries[18].type_id,
-            .creature18_flags = @bitCast(creatures.entries[18].flags),
-            .creature18_link_index = creatures.entries[18].link_index,
-            .creature18_ai_mode = @intFromEnum(creatures.entries[18].ai_mode),
-            .creature26_active = creatures.entries[26].active,
-            .creature26_hp_q4 = quantizeQ4(creatures.entries[26].hp),
-            .creature26_lifecycle_stage_q4 = quantizeQ4(creatures.entries[26].lifecycle_stage),
-            .creature26_type_id = creatures.entries[26].type_id,
-            .creature26_flags = @bitCast(creatures.entries[26].flags),
-            .creature26_link_index = creatures.entries[26].link_index,
-            .creature26_ai_mode = @intFromEnum(creatures.entries[26].ai_mode),
-            .creature31_active = creatures.entries[31].active,
-            .creature31_hp_q4 = quantizeQ4(creatures.entries[31].hp),
-            .creature31_lifecycle_stage_q4 = quantizeQ4(creatures.entries[31].lifecycle_stage),
-            .creature32_active = creatures.entries[32].active,
-            .creature32_pos_x_q4 = quantizeQ4(creatures.entries[32].pos.x),
-            .creature32_pos_y_q4 = quantizeQ4(creatures.entries[32].pos.y),
-            .creature32_hp_q4 = quantizeQ4(creatures.entries[32].hp),
-            .creature32_lifecycle_stage_q4 = quantizeQ4(creatures.entries[32].lifecycle_stage),
-            .creature32_type_id = creatures.entries[32].type_id,
-            .creature32_flags = @bitCast(creatures.entries[32].flags),
-            .creature32_heading_q6 = quantizeQ6(creatures.entries[32].heading),
-            .creature32_target_heading_q6 = quantizeQ6(creatures.entries[32].target_heading),
-            .creature32_target_x_q4 = quantizeQ4(creatures.entries[32].target.x),
-            .creature32_target_y_q4 = quantizeQ4(creatures.entries[32].target.y),
-            .creature32_link_index = creatures.entries[32].link_index,
-            .creature32_ai_mode = @intFromEnum(creatures.entries[32].ai_mode),
-            .creature39_active = creatures.entries[39].active,
-            .creature39_hp_q4 = quantizeQ4(creatures.entries[39].hp),
-            .creature39_lifecycle_stage_q4 = quantizeQ4(creatures.entries[39].lifecycle_stage),
-            .creature39_type_id = creatures.entries[39].type_id,
-            .creature39_flags = @bitCast(creatures.entries[39].flags),
-            .creature39_link_index = creatures.entries[39].link_index,
-            .creature39_ai_mode = @intFromEnum(creatures.entries[39].ai_mode),
-            .creature45_active = creatures.entries[45].active,
-            .creature45_pos_x_q4 = quantizeQ4(creatures.entries[45].pos.x),
-            .creature45_pos_y_q4 = quantizeQ4(creatures.entries[45].pos.y),
-            .creature45_hp_q4 = quantizeQ4(creatures.entries[45].hp),
-            .creature45_lifecycle_stage_q4 = quantizeQ4(creatures.entries[45].lifecycle_stage),
+            .entries_len = creature_entries_len,
+            .entries = creature_entries,
         },
         .debug = .{
             .debug_pending_nuke = state.pending_nuke_count,
@@ -2678,6 +2434,7 @@ fn updatePlayerFromReplayInput(
     input: replay_codec.ReplayPlayerInput,
     flags: replay_codec.InputFlags,
     state: *const state_mod.GameplayState,
+    creatures: ?*const creatures_mod.CreaturePool,
     dt: f32,
 ) void {
     const prev_pos = player.pos;
@@ -2701,7 +2458,7 @@ fn updatePlayerFromReplayInput(
         .y = narrowF32(input.move_y),
     };
     const raw_mag = raw_move.length();
-    var move = directionFromHeadingNative(player.heading);
+    var move_ext = directionFromHeadingNativeExt(player.heading);
 
     var speed_multiplier = player.speed_multiplier;
     if (player.speed_bonus_timer > 0.0) {
@@ -2786,9 +2543,9 @@ fn updatePlayerFromReplayInput(
 
             if (!moving_backward and target_heading == relative_move_heading_none) {
                 playerDecelerateMoveSpeed(player, movement_dt);
-                move = directionFromHeadingNative(player.heading);
-                const move_dx = narrowF32(move.x * player.move_speed * speed_multiplier * 25.0);
-                const move_dy = narrowF32(move.y * player.move_speed * speed_multiplier * 25.0);
+                move_ext = directionFromHeadingNativeExt(player.heading);
+                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_multiplier * 25.0);
+                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_multiplier * 25.0);
                 move_delta_override = .{
                     .x = narrowF32(movement_dt * move_dx),
                     .y = narrowF32(movement_dt * move_dy),
@@ -2802,13 +2559,13 @@ fn updatePlayerFromReplayInput(
                 player.aim_heading = narrowF32(player.aim_heading + heading_result.turn_delta);
                 playerAccelerateMoveSpeed(player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
-                move = directionFromHeadingNative(player.heading);
+                move_ext = directionFromHeadingNativeExt(player.heading);
                 const turn_align =
                     (native_pi - heading_result.diff) *
                     speed_multiplier *
                     relative_move_turn_align_scale;
-                const move_dx = narrowF32(move.x * player.move_speed * turn_align);
-                const move_dy = narrowF32(move.y * player.move_speed * turn_align);
+                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * turn_align);
+                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * turn_align);
                 move_delta_override = .{
                     .x = narrowF32(movement_dt * move_dx),
                     .y = narrowF32(movement_dt * move_dy),
@@ -2822,12 +2579,12 @@ fn updatePlayerFromReplayInput(
                 raw_move = raw_move.mul(inv);
                 const target_heading = normalizeHeading(raw_move.toHeading());
                 const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
-                move = directionFromHeadingNative(player.heading);
+                move_ext = directionFromHeadingNativeExt(player.heading);
                 turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
                 playerAccelerateMoveSpeed(player, movement_dt);
             } else {
                 playerDecelerateMoveSpeed(player, movement_dt);
-                move = directionFromHeadingNative(player.heading);
+                move_ext = directionFromHeadingNativeExt(player.heading);
             }
 
             playerApplyMoveSpeedCaps(player);
@@ -2846,12 +2603,12 @@ fn updatePlayerFromReplayInput(
             raw_move = raw_move.mul(inv);
             const target_heading = normalizeHeading(raw_move.toHeading());
             const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
-            move = directionFromHeadingNative(player.heading);
+            move_ext = directionFromHeadingNativeExt(player.heading);
             turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
             playerAccelerateMoveSpeed(player, movement_dt);
         } else {
             playerDecelerateMoveSpeed(player, movement_dt);
-            move = directionFromHeadingNative(player.heading);
+            move_ext = directionFromHeadingNativeExt(player.heading);
         }
 
         playerApplyMoveSpeedCaps(player);
@@ -2862,27 +2619,14 @@ fn updatePlayerFromReplayInput(
         }
     }
 
-    var delta = if (move_delta_override) |override|
+    const delta = if (move_delta_override) |override|
         override
     else
         state_mod.Vec2{
-            .x = narrowF32(move.x * narrowF32(speed * movement_dt)),
-            .y = narrowF32(move.y * narrowF32(speed * movement_dt)),
+            .x = headingMulNarrow(move_ext.x, narrowF32(speed * movement_dt)),
+            .y = headingMulNarrow(move_ext.y, narrowF32(speed * movement_dt)),
         };
-    if (perks.perkActive(player, PerkId.alternate_weapon)) {
-        delta = .{
-            .x = narrowF32(delta.x * 0.8),
-            .y = narrowF32(delta.y * 0.8),
-        };
-    }
-    const pos_after_move = state_mod.Vec2{
-        .x = narrowF32(player.pos.x + delta.x),
-        .y = narrowF32(player.pos.y + delta.y),
-    };
-    player.pos = .{
-        .x = narrowF32(pos_after_move.x),
-        .y = narrowF32(pos_after_move.y),
-    };
+    playerApplyMoveWithSpawnAvoidance(player, delta, creatures);
 
     const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
     const reload_stationary = @abs(move_delta.x) <= 1e-9 and @abs(move_delta.y) <= 1e-9;
@@ -2960,20 +2704,104 @@ fn playerMoveDeltaFromHeading(
     movement_dt: f32,
     speed_scale: f32,
 ) state_mod.Vec2 {
-    const move = directionFromHeadingNative(player.heading);
-    const move_dx = narrowF32(move.x * player.move_speed * speed_scale);
-    const move_dy = narrowF32(move.y * player.move_speed * speed_scale);
+    const move_ext = directionFromHeadingNativeExt(player.heading);
+    const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_scale);
+    const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_scale);
     return .{
         .x = narrowF32(movement_dt * move_dx),
         .y = narrowF32(movement_dt * move_dy),
     };
 }
 
-fn directionFromHeadingNative(heading: f32) state_mod.Vec2 {
-    const radians = narrowF32(heading - native_half_pi);
+const HeadingDirectionExt = struct {
+    x: f64,
+    y: f64,
+};
+
+fn headingMulNarrow(component: f64, scalar: f32) f32 {
+    return narrowF32(@as(f32, @floatCast(component * @as(f64, @floatCast(scalar)))));
+}
+
+fn distanceF32XY(
+    ax: f32,
+    ay: f32,
+    bx: f32,
+    by: f32,
+) f32 {
+    const dx = narrowF32(ax - bx);
+    const dy = narrowF32(ay - by);
+    const dist_sq = narrowF32(narrowF32(dx * dx) + narrowF32(dy * dy));
+    return narrowF32(std.math.sqrt(dist_sq));
+}
+
+fn playerApplyMoveWithSpawnAvoidance(
+    player: *state_mod.PlayerState,
+    delta: state_mod.Vec2,
+    creatures: ?*const creatures_mod.CreaturePool,
+) void {
+    var dx = delta.x;
+    var dy = delta.y;
+    if (perks.perkActive(player, PerkId.alternate_weapon)) {
+        dx = narrowF32(dx * 0.8);
+        dy = narrowF32(dy * 0.8);
+    }
+
+    var pos_x = narrowF32(player.pos.x + dx);
+    var pos_y = narrowF32(player.pos.y + dy);
+
+    if (creatures) |creature_pool| {
+        const slot_count = @min(creature_pool.spawn_slot_count, creature_pool.spawn_slots.len);
+        for (creature_pool.spawn_slots[0..slot_count]) |slot| {
+            if (slot.owner_creature < 0) continue;
+            const owner_idx: usize = @intCast(slot.owner_creature);
+            if (owner_idx >= creature_pool.entries.len) continue;
+            const owner = creature_pool.entries[owner_idx];
+            const owner_pos = owner.pos;
+            const radius = narrowF32((owner.size + player.size) * 0.33333334);
+            if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) > radius) continue;
+
+            const old_x = narrowF32(pos_x - dx);
+            const old_y = narrowF32(pos_y - dy);
+            const old_dist = distanceF32XY(owner_pos.x, owner_pos.y, old_x, old_y);
+            const x_candidate = narrowF32(old_x + dx);
+            const y_candidate = narrowF32(old_y + dy);
+
+            if (radius < old_dist) {
+                pos_x = x_candidate;
+                pos_y = old_y;
+                if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
+                    pos_x = narrowF32(x_candidate - dx);
+                    pos_y = y_candidate;
+                    if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
+                        pos_y = narrowF32(y_candidate - dy);
+                    }
+                }
+            } else {
+                pos_x = x_candidate;
+                pos_y = y_candidate;
+            }
+        }
+    }
+
+    player.pos = .{
+        .x = narrowF32(pos_x),
+        .y = narrowF32(pos_y),
+    };
+}
+
+fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
+    const radians = @as(f64, @floatCast(heading - native_half_pi));
     return .{
-        .x = narrowF32(math.cos(radians)),
-        .y = narrowF32(math.sin(radians)),
+        .x = std.math.cos(radians),
+        .y = std.math.sin(radians),
+    };
+}
+
+fn directionFromHeadingNative(heading: f32) state_mod.Vec2 {
+    const ext = directionFromHeadingNativeExt(heading);
+    return .{
+        .x = @floatCast(ext.x),
+        .y = @floatCast(ext.y),
     };
 }
 
@@ -5245,9 +5073,9 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     const move_flags = replay_codec.unpackInputFlags(0);
 
     for (0..steps) |_| {
-        updatePlayerFromReplayInput(&base_player, move_input, move_flags, &state, dt);
+        updatePlayerFromReplayInput(&base_player, move_input, move_flags, &state, null, dt);
         finalizePlayerPostUpdate(&base_player, 1024.0);
-        updatePlayerFromReplayInput(&perk_player, move_input, move_flags, &state, dt);
+        updatePlayerFromReplayInput(&perk_player, move_input, move_flags, &state, null, dt);
         finalizePlayerPostUpdate(&perk_player, 1024.0);
     }
 
@@ -5275,7 +5103,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
         .aim_y = perk_player.pos.y,
         .flags = 0,
     };
-    updatePlayerFromReplayInput(&perk_player, coast_input, move_flags, &state, dt);
+    updatePlayerFromReplayInput(&perk_player, coast_input, move_flags, &state, null, dt);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
     const expected_coast_speed = narrowF32(expected_perk_speed - dt_f32 * 15.0);
@@ -5309,9 +5137,9 @@ test "alternate weapon slows movement by 20 percent" {
     };
     const flags = replay_codec.unpackInputFlags(0);
 
-    updatePlayerFromReplayInput(&base_player, input, flags, &state, 1.0);
+    updatePlayerFromReplayInput(&base_player, input, flags, &state, null, 1.0);
     finalizePlayerPostUpdate(&base_player, 1024.0);
-    updatePlayerFromReplayInput(&perk_player, input, flags, &state, 1.0);
+    updatePlayerFromReplayInput(&perk_player, input, flags, &state, null, 1.0);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
     try std.testing.expectApproxEqAbs(@as(f32, 100.0), base_player.pos.x, 1e-6);
@@ -5346,7 +5174,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
         .flags = 0,
     };
     const move_flags = replay_codec.unpackInputFlags(0);
-    updatePlayerFromReplayInput(&player, move_input, move_flags, &state, 0.1);
+    updatePlayerFromReplayInput(&player, move_input, move_flags, &state, null, 0.1);
     finalizePlayerPostUpdate(&player, 1024.0);
 
     try std.testing.expect(player.pos.x > before_pos.x);

@@ -298,336 +298,42 @@ fn writeReplayTickTraceJsonl(
     var writer = file.writer(&buffer);
     const out = &writer.interface;
     for (trace) |entry| {
-        try out.print(
-            "{{\"tick\":{d},\"rng_state\":{d},\"elapsed_ms\":{d},\"score_xp\":{d},\"kills\":{d},\"creature_count\":{d},\"creature_active_index_sum\":{d},\"creature_active_index_xor\":{d},\"perk_pending\":{d},\"player_weapon_id\":{d},\"player_ammo_q4\":{d},\"player_health_q4\":{d},\"player_pos_x_q4\":{d},\"player_pos_y_q4\":{d},\"player_aim_x_q4\":{d},\"player_aim_y_q4\":{d},\"player_level\":{d},\"player_experience\":{d},\"bonus_weapon_power_up_ms\":{d},\"bonus_reflex_boost_ms\":{d},\"bonus_energizer_ms\":{d},\"bonus_double_experience_ms\":{d},\"bonus_freeze_ms\":{d},\"projectile_count\":{d},\"projectile0_pos_x_q4\":{d},\"projectile0_pos_y_q4\":{d},\"projectile0_origin_x_q4\":{d},\"projectile0_origin_y_q4\":{d},\"projectile0_life_timer_q4\":{d},\"projectile0_type_id\":{d},\"projectile0_angle_q6\":{d},\"projectile0_speed_scale_q4\":{d}",
-            .{
-                entry.tick,
-                entry.rng.rng_state,
-                entry.summary.elapsed_ms,
-                entry.summary.score_xp,
-                entry.summary.kills,
-                entry.summary.creature_count,
-                entry.summary.creature_active_index_sum,
-                entry.summary.creature_active_index_xor,
-                entry.summary.perk_pending,
-                entry.player.player_weapon_id,
-                entry.player.player_ammo_q4,
-                entry.player.player_health_q4,
-                entry.player.player_pos_x_q4,
-                entry.player.player_pos_y_q4,
-                entry.player.player_aim_x_q4,
-                entry.player.player_aim_y_q4,
-                entry.player.player_level,
-                entry.player.player_experience,
-                entry.bonuses.bonus_weapon_power_up_ms,
-                entry.bonuses.bonus_reflex_boost_ms,
-                entry.bonuses.bonus_energizer_ms,
-                entry.bonuses.bonus_double_experience_ms,
-                entry.bonuses.bonus_freeze_ms,
-                entry.projectiles.projectile_count,
-                entry.projectiles.projectile0_pos_x_q4,
-                entry.projectiles.projectile0_pos_y_q4,
-                entry.projectiles.projectile0_origin_x_q4,
-                entry.projectiles.projectile0_origin_y_q4,
-                entry.projectiles.projectile0_life_timer_q4,
-                entry.projectiles.projectile0_type_id,
-                entry.projectiles.projectile0_angle_q6,
-                entry.projectiles.projectile0_speed_scale_q4,
+        const line = .{
+            .tick = entry.tick,
+            .rng = entry.rng,
+            .summary = entry.summary,
+            .player = entry.player,
+            .bonuses = entry.bonuses,
+            .projectiles = .{
+                .projectile_state_hash = entry.projectiles.projectile_state_hash,
+                .projectile_count = entry.projectiles.projectile_count,
+                .projectile_active_index_sum = entry.projectiles.projectile_active_index_sum,
+                .projectile_active_index_xor = entry.projectiles.projectile_active_index_xor,
+                .projectile_type45_count = entry.projectiles.projectile_type45_count,
+                .projectile_hit_count = entry.projectiles.projectile_hit_count,
+                .projectile_type1_count = entry.projectiles.projectile_type1_count,
+                .projectile_type6_count = entry.projectiles.projectile_type6_count,
+                .projectile_type11_count = entry.projectiles.projectile_type11_count,
+                .projectile_type21_count = entry.projectiles.projectile_type21_count,
+                .projectile_first_hit_creature_index = entry.projectiles.projectile_first_hit_creature_index,
+                .projectile_first_hit_projectile_index = entry.projectiles.projectile_first_hit_projectile_index,
+                .projectile_first_hit_type_id = entry.projectiles.projectile_first_hit_type_id,
+                .projectile_first_hit_origin_x_q4 = entry.projectiles.projectile_first_hit_origin_x_q4,
+                .projectile_first_hit_origin_y_q4 = entry.projectiles.projectile_first_hit_origin_y_q4,
+                .projectile_first_hit_pos_x_q4 = entry.projectiles.projectile_first_hit_pos_x_q4,
+                .projectile_first_hit_pos_y_q4 = entry.projectiles.projectile_first_hit_pos_y_q4,
+                .projectile_first_hit_target_size_q4 = entry.projectiles.projectile_first_hit_target_size_q4,
+                .projectile_first_hit_target_x_q4 = entry.projectiles.projectile_first_hit_target_x_q4,
+                .projectile_first_hit_target_y_q4 = entry.projectiles.projectile_first_hit_target_y_q4,
+                .entries = entry.projectiles.entries[0..entry.projectiles.entries_len],
             },
-        );
-        try out.print(
-            ",\"shots_fired_p0\":{d}",
-            .{entry.summary.shots_fired_p0},
-        );
-        try out.print(
-            ",\"bonus_active_count\":{d},\"bonus0_id\":{d},\"bonus0_amount\":{d},\"bonus1_id\":{d},\"bonus1_amount\":{d}",
-            .{
-                entry.bonuses.bonus_active_count,
-                entry.bonuses.bonus0_id,
-                entry.bonuses.bonus0_amount,
-                entry.bonuses.bonus1_id,
-                entry.bonuses.bonus1_amount,
+            .creatures = .{
+                .entries = entry.creatures.entries[0..entry.creatures.entries_len],
             },
-        );
-        try out.print(
-            ",\"projectile_state_hash\":{d}",
-            .{entry.projectiles.projectile_state_hash},
-        );
-        try out.print(
-            ",\"creature_state_hash\":{d}",
-            .{entry.summary.creature_state_hash},
-        );
-        try out.print(
-            ",\"projectile_active_index_sum\":{d},\"projectile_active_index_xor\":{d},\"projectile_type45_count\":{d}",
-            .{
-                entry.projectiles.projectile_active_index_sum,
-                entry.projectiles.projectile_active_index_xor,
-                entry.projectiles.projectile_type45_count,
-            },
-        );
-        try out.print(
-            ",\"rng_after_perk_effects\":{d},\"rng_after_creatures\":{d},\"rng_after_projectiles\":{d}",
-            .{
-                entry.rng.rng_after_perk_effects,
-                entry.rng.rng_after_creatures,
-                entry.rng.rng_after_projectiles,
-            },
-        );
-        try out.print(
-            ",\"rng_after_secondary_projectiles\":{d},\"rng_after_particles\":{d},\"rng_after_player_update\":{d},\"rng_after_stage_spawns\":{d},\"rng_after_wave_spawns\":{d},\"rng_after_spawns\":{d},\"rng_after_bonus_update\":{d}",
-            .{
-                entry.rng.rng_after_secondary_projectiles,
-                entry.rng.rng_after_particles,
-                entry.rng.rng_after_player_update,
-                entry.rng.rng_after_stage_spawns,
-                entry.rng.rng_after_wave_spawns,
-                entry.rng.rng_after_spawns,
-                entry.rng.rng_after_bonus_update,
-            },
-        );
-        try out.print(
-            ",\"projectile1_active\":{s},\"projectile1_pos_x_q4\":{d},\"projectile1_pos_y_q4\":{d},\"projectile1_origin_x_q4\":{d},\"projectile1_origin_y_q4\":{d},\"projectile1_life_timer_q4\":{d},\"projectile1_type_id\":{d},\"projectile1_angle_q6\":{d},\"projectile1_damage_pool_q4\":{d}",
-            .{
-                if (entry.projectiles.projectile1_active) "true" else "false",
-                entry.projectiles.projectile1_pos_x_q4,
-                entry.projectiles.projectile1_pos_y_q4,
-                entry.projectiles.projectile1_origin_x_q4,
-                entry.projectiles.projectile1_origin_y_q4,
-                entry.projectiles.projectile1_life_timer_q4,
-                entry.projectiles.projectile1_type_id,
-                entry.projectiles.projectile1_angle_q6,
-                entry.projectiles.projectile1_damage_pool_q4,
-            },
-        );
-        try out.print(
-            ",\"projectile6_active\":{s},\"projectile6_type_id\":{d},\"projectile6_pos_x_q4\":{d},\"projectile6_pos_y_q4\":{d},\"projectile6_origin_x_q4\":{d},\"projectile6_origin_y_q4\":{d},\"projectile6_life_timer_q4\":{d},\"projectile6_damage_pool_q4\":{d},\"projectile6_angle_q6\":{d}",
-            .{
-                if (entry.projectiles.projectile6_active) "true" else "false",
-                entry.projectiles.projectile6_type_id,
-                entry.projectiles.projectile6_pos_x_q4,
-                entry.projectiles.projectile6_pos_y_q4,
-                entry.projectiles.projectile6_origin_x_q4,
-                entry.projectiles.projectile6_origin_y_q4,
-                entry.projectiles.projectile6_life_timer_q4,
-                entry.projectiles.projectile6_damage_pool_q4,
-                entry.projectiles.projectile6_angle_q6,
-            },
-        );
-        try out.print(
-            ",\"player_heading_q6\":{d},\"player_aim_heading_q6\":{d},\"player_move_speed_q4\":{d},\"player_turn_speed_q4\":{d}",
-            .{
-                entry.player.player_heading_q6,
-                entry.player.player_aim_heading_q6,
-                entry.player.player_move_speed_q4,
-                entry.player.player_turn_speed_q4,
-            },
-        );
-        try out.print(
-            ",\"player_reload_active\":{s},\"player_reload_timer_q4\":{d},\"player_shot_cooldown_q4\":{d},\"player_shot_seq\":{d}",
-            .{
-                if (entry.player.player_reload_active) "true" else "false",
-                entry.player.player_reload_timer_q4,
-                entry.player.player_shot_cooldown_q4,
-                entry.player.player_shot_seq,
-            },
-        );
-        try out.print(
-            ",\"player_perk31_count\":{d},\"player_perk53_count\":{d},\"player_perk54_count\":{d},\"player_perk55_count\":{d},\"player_hot_tempered_timer_q6\":{d},\"player_shield_timer_q4\":{d},\"player_man_bomb_timer_q6\":{d},\"player_fire_cough_timer_q6\":{d},\"player_living_fortress_timer_q6\":{d},\"perk_interval_hot_tempered_q6\":{d},\"perk_interval_man_bomb_q6\":{d},\"perk_interval_fire_cough_q6\":{d}",
-            .{
-                entry.player.player_perk31_count,
-                entry.player.player_perk53_count,
-                entry.player.player_perk54_count,
-                entry.player.player_perk55_count,
-                entry.player.player_hot_tempered_timer_q6,
-                entry.player.player_shield_timer_q4,
-                entry.player.player_man_bomb_timer_q6,
-                entry.player.player_fire_cough_timer_q6,
-                entry.player.player_living_fortress_timer_q6,
-                entry.player.perk_interval_hot_tempered_q6,
-                entry.player.perk_interval_man_bomb_q6,
-                entry.player.perk_interval_fire_cough_q6,
-            },
-        );
-        try out.print(
-            ",\"projectile_hit_count\":{d},\"projectile_type1_count\":{d},\"projectile_type6_count\":{d},\"projectile_type6_pos_x_q4\":{d},\"projectile_type6_pos_y_q4\":{d},\"projectile_type6_origin_x_q4\":{d},\"projectile_type6_origin_y_q4\":{d},\"projectile_type6_life_timer_q4\":{d},\"projectile_type6_damage_pool_q4\":{d},\"projectile_type6_b_pos_x_q4\":{d},\"projectile_type6_b_pos_y_q4\":{d},\"projectile_type6_b_life_timer_q4\":{d},\"projectile_type6_b_damage_pool_q4\":{d},\"projectile_type11_count\":{d},\"projectile_type11_pos_x_q4\":{d},\"projectile_type11_pos_y_q4\":{d},\"projectile_type11_origin_x_q4\":{d},\"projectile_type11_origin_y_q4\":{d},\"projectile_type11_life_timer_q4\":{d},\"projectile_type11_closest_to_c2_dist_q4\":{d},\"projectile_type11_closest_to_c2_pos_x_q4\":{d},\"projectile_type11_closest_to_c2_pos_y_q4\":{d},\"projectile_type11_closest_to_c2_origin_x_q4\":{d},\"projectile_type11_closest_to_c2_origin_y_q4\":{d},\"projectile_first_hit_creature_index\":{d},\"projectile_first_hit_type_id\":{d},\"projectile_first_hit_pos_x_q4\":{d},\"projectile_first_hit_pos_y_q4\":{d}",
-            .{
-                entry.projectiles.projectile_hit_count,
-                entry.projectiles.projectile_type1_count,
-                entry.projectiles.projectile_type6_count,
-                entry.projectiles.projectile_type6_pos_x_q4,
-                entry.projectiles.projectile_type6_pos_y_q4,
-                entry.projectiles.projectile_type6_origin_x_q4,
-                entry.projectiles.projectile_type6_origin_y_q4,
-                entry.projectiles.projectile_type6_life_timer_q4,
-                entry.projectiles.projectile_type6_damage_pool_q4,
-                entry.projectiles.projectile_type6_b_pos_x_q4,
-                entry.projectiles.projectile_type6_b_pos_y_q4,
-                entry.projectiles.projectile_type6_b_life_timer_q4,
-                entry.projectiles.projectile_type6_b_damage_pool_q4,
-                entry.projectiles.projectile_type11_count,
-                entry.projectiles.projectile_type11_pos_x_q4,
-                entry.projectiles.projectile_type11_pos_y_q4,
-                entry.projectiles.projectile_type11_origin_x_q4,
-                entry.projectiles.projectile_type11_origin_y_q4,
-                entry.projectiles.projectile_type11_life_timer_q4,
-                entry.projectiles.projectile_type11_closest_to_c2_dist_q4,
-                entry.projectiles.projectile_type11_closest_to_c2_pos_x_q4,
-                entry.projectiles.projectile_type11_closest_to_c2_pos_y_q4,
-                entry.projectiles.projectile_type11_closest_to_c2_origin_x_q4,
-                entry.projectiles.projectile_type11_closest_to_c2_origin_y_q4,
-                entry.projectiles.projectile_first_hit_creature_index,
-                entry.projectiles.projectile_first_hit_type_id,
-                entry.projectiles.projectile_first_hit_pos_x_q4,
-                entry.projectiles.projectile_first_hit_pos_y_q4,
-            },
-        );
-        try out.print(
-            ",\"projectile_type21_count\":{d},\"projectile_type21_pos_x_q4\":{d},\"projectile_type21_pos_y_q4\":{d},\"projectile_type21_origin_x_q4\":{d},\"projectile_type21_origin_y_q4\":{d},\"projectile_type21_life_timer_q4\":{d},\"projectile_type21_angle_q6\":{d}",
-            .{
-                entry.projectiles.projectile_type21_count,
-                entry.projectiles.projectile_type21_pos_x_q4,
-                entry.projectiles.projectile_type21_pos_y_q4,
-                entry.projectiles.projectile_type21_origin_x_q4,
-                entry.projectiles.projectile_type21_origin_y_q4,
-                entry.projectiles.projectile_type21_life_timer_q4,
-                entry.projectiles.projectile_type21_angle_q6,
-            },
-        );
-        try out.print(
-            ",\"creature0_active\":{s},\"creature0_pos_x_q4\":{d},\"creature0_pos_y_q4\":{d},\"creature0_hp_q4\":{d},\"creature0_lifecycle_stage_q4\":{d},\"creature1_active\":{s},\"creature1_pos_x_q4\":{d},\"creature1_pos_y_q4\":{d},\"creature1_hp_q4\":{d},\"creature1_lifecycle_stage_q4\":{d}",
-            .{
-                if (entry.creatures.creature0_active) "true" else "false",
-                entry.creatures.creature0_pos_x_q4,
-                entry.creatures.creature0_pos_y_q4,
-                entry.creatures.creature0_hp_q4,
-                entry.creatures.creature0_lifecycle_stage_q4,
-                if (entry.creatures.creature1_active) "true" else "false",
-                entry.creatures.creature1_pos_x_q4,
-                entry.creatures.creature1_pos_y_q4,
-                entry.creatures.creature1_hp_q4,
-                entry.creatures.creature1_lifecycle_stage_q4,
-            },
-        );
-        try out.print(
-            ",\"projectile_first_hit_projectile_index\":{d},\"projectile_first_hit_origin_x_q4\":{d},\"projectile_first_hit_origin_y_q4\":{d},\"projectile_first_hit_target_size_q4\":{d},\"projectile_first_hit_target_x_q4\":{d},\"projectile_first_hit_target_y_q4\":{d}",
-            .{
-                entry.projectiles.projectile_first_hit_projectile_index,
-                entry.projectiles.projectile_first_hit_origin_x_q4,
-                entry.projectiles.projectile_first_hit_origin_y_q4,
-                entry.projectiles.projectile_first_hit_target_size_q4,
-                entry.projectiles.projectile_first_hit_target_x_q4,
-                entry.projectiles.projectile_first_hit_target_y_q4,
-            },
-        );
-        try out.print(
-            ",\"creature2_active\":{s},\"creature2_pos_x_q4\":{d},\"creature2_pos_y_q4\":{d},\"creature2_hp_q4\":{d},\"creature2_lifecycle_stage_q4\":{d},\"creature10_active\":{s},\"creature10_pos_x_q4\":{d},\"creature10_pos_y_q4\":{d},\"creature10_hp_q4\":{d},\"creature10_lifecycle_stage_q4\":{d},\"creature12_active\":{s},\"creature12_pos_x_q4\":{d},\"creature12_pos_y_q4\":{d},\"creature12_hp_q4\":{d},\"creature12_lifecycle_stage_q4\":{d},\"creature14_active\":{s},\"creature14_pos_x_q4\":{d},\"creature14_pos_y_q4\":{d},\"creature14_hp_q4\":{d},\"creature14_lifecycle_stage_q4\":{d},\"creature14_size_q4\":{d},\"creature14_target_x_q4\":{d},\"creature14_target_y_q4\":{d},\"creature14_heading_q6\":{d},\"creature14_target_heading_q6\":{d},\"creature18_active\":{s},\"creature18_pos_x_q4\":{d},\"creature18_pos_y_q4\":{d},\"creature18_hp_q4\":{d},\"creature18_lifecycle_stage_q4\":{d}",
-            .{
-                if (entry.creatures.creature2_active) "true" else "false",
-                entry.creatures.creature2_pos_x_q4,
-                entry.creatures.creature2_pos_y_q4,
-                entry.creatures.creature2_hp_q4,
-                entry.creatures.creature2_lifecycle_stage_q4,
-                if (entry.creatures.creature10_active) "true" else "false",
-                entry.creatures.creature10_pos_x_q4,
-                entry.creatures.creature10_pos_y_q4,
-                entry.creatures.creature10_hp_q4,
-                entry.creatures.creature10_lifecycle_stage_q4,
-                if (entry.creatures.creature12_active) "true" else "false",
-                entry.creatures.creature12_pos_x_q4,
-                entry.creatures.creature12_pos_y_q4,
-                entry.creatures.creature12_hp_q4,
-                entry.creatures.creature12_lifecycle_stage_q4,
-                if (entry.creatures.creature14_active) "true" else "false",
-                entry.creatures.creature14_pos_x_q4,
-                entry.creatures.creature14_pos_y_q4,
-                entry.creatures.creature14_hp_q4,
-                entry.creatures.creature14_lifecycle_stage_q4,
-                entry.creatures.creature14_size_q4,
-                entry.creatures.creature14_target_x_q4,
-                entry.creatures.creature14_target_y_q4,
-                entry.creatures.creature14_heading_q6,
-                entry.creatures.creature14_target_heading_q6,
-                if (entry.creatures.creature18_active) "true" else "false",
-                entry.creatures.creature18_pos_x_q4,
-                entry.creatures.creature18_pos_y_q4,
-                entry.creatures.creature18_hp_q4,
-                entry.creatures.creature18_lifecycle_stage_q4,
-            },
-        );
-        try out.print(
-            ",\"creature18_target_x_q4\":{d},\"creature18_target_y_q4\":{d},\"creature18_heading_q6\":{d},\"creature18_target_heading_q6\":{d},\"creature18_type_id\":{d},\"creature18_flags\":{d},\"creature18_link_index\":{d},\"creature18_ai_mode\":{d}",
-            .{
-                entry.creatures.creature18_target_x_q4,
-                entry.creatures.creature18_target_y_q4,
-                entry.creatures.creature18_heading_q6,
-                entry.creatures.creature18_target_heading_q6,
-                entry.creatures.creature18_type_id,
-                entry.creatures.creature18_flags,
-                entry.creatures.creature18_link_index,
-                entry.creatures.creature18_ai_mode,
-            },
-        );
-        try out.print(
-            ",\"creature15_active\":{s},\"creature15_pos_x_q4\":{d},\"creature15_pos_y_q4\":{d},\"creature15_hp_q4\":{d},\"creature15_lifecycle_stage_q4\":{d}",
-            .{
-                if (entry.creatures.creature15_active) "true" else "false",
-                entry.creatures.creature15_pos_x_q4,
-                entry.creatures.creature15_pos_y_q4,
-                entry.creatures.creature15_hp_q4,
-                entry.creatures.creature15_lifecycle_stage_q4,
-            },
-        );
-        try out.print(
-            ",\"creature26_active\":{s},\"creature26_hp_q4\":{d},\"creature26_lifecycle_stage_q4\":{d},\"creature26_type_id\":{d},\"creature26_flags\":{d},\"creature26_link_index\":{d},\"creature26_ai_mode\":{d},\"creature31_active\":{s},\"creature31_hp_q4\":{d},\"creature31_lifecycle_stage_q4\":{d},\"creature32_active\":{s},\"creature32_pos_x_q4\":{d},\"creature32_pos_y_q4\":{d},\"creature32_hp_q4\":{d},\"creature32_lifecycle_stage_q4\":{d},\"creature32_type_id\":{d},\"creature32_flags\":{d},\"creature32_heading_q6\":{d},\"creature32_target_heading_q6\":{d},\"creature32_target_x_q4\":{d},\"creature32_target_y_q4\":{d},\"creature32_link_index\":{d},\"creature32_ai_mode\":{d}",
-            .{
-                if (entry.creatures.creature26_active) "true" else "false",
-                entry.creatures.creature26_hp_q4,
-                entry.creatures.creature26_lifecycle_stage_q4,
-                entry.creatures.creature26_type_id,
-                entry.creatures.creature26_flags,
-                entry.creatures.creature26_link_index,
-                entry.creatures.creature26_ai_mode,
-                if (entry.creatures.creature31_active) "true" else "false",
-                entry.creatures.creature31_hp_q4,
-                entry.creatures.creature31_lifecycle_stage_q4,
-                if (entry.creatures.creature32_active) "true" else "false",
-                entry.creatures.creature32_pos_x_q4,
-                entry.creatures.creature32_pos_y_q4,
-                entry.creatures.creature32_hp_q4,
-                entry.creatures.creature32_lifecycle_stage_q4,
-                entry.creatures.creature32_type_id,
-                entry.creatures.creature32_flags,
-                entry.creatures.creature32_heading_q6,
-                entry.creatures.creature32_target_heading_q6,
-                entry.creatures.creature32_target_x_q4,
-                entry.creatures.creature32_target_y_q4,
-                entry.creatures.creature32_link_index,
-                entry.creatures.creature32_ai_mode,
-            },
-        );
-        try out.print(
-            ",\"creature39_active\":{s},\"creature39_hp_q4\":{d},\"creature39_lifecycle_stage_q4\":{d},\"creature39_type_id\":{d},\"creature39_flags\":{d},\"creature39_link_index\":{d},\"creature39_ai_mode\":{d},\"creature45_active\":{s},\"creature45_pos_x_q4\":{d},\"creature45_pos_y_q4\":{d},\"creature45_hp_q4\":{d},\"creature45_lifecycle_stage_q4\":{d},\"debug_pending_nuke\":{d},\"debug_nuke_kills_last\":{d},\"debug_nuke_tick_last\":{d},\"debug_nuke_kill_index_sum\":{d},\"debug_last_picked_bonus_id\":{d},\"debug_last_picked_bonus_amount\":{d}}}\n",
-            .{
-                if (entry.creatures.creature39_active) "true" else "false",
-                entry.creatures.creature39_hp_q4,
-                entry.creatures.creature39_lifecycle_stage_q4,
-                entry.creatures.creature39_type_id,
-                entry.creatures.creature39_flags,
-                entry.creatures.creature39_link_index,
-                entry.creatures.creature39_ai_mode,
-                if (entry.creatures.creature45_active) "true" else "false",
-                entry.creatures.creature45_pos_x_q4,
-                entry.creatures.creature45_pos_y_q4,
-                entry.creatures.creature45_hp_q4,
-                entry.creatures.creature45_lifecycle_stage_q4,
-                entry.debug.debug_pending_nuke,
-                entry.debug.debug_nuke_kills_last,
-                entry.debug.debug_nuke_tick_last,
-                entry.debug.debug_nuke_kill_index_sum,
-                entry.debug.debug_last_picked_bonus_id,
-                entry.debug.debug_last_picked_bonus_amount,
-            },
-        );
+            .debug = entry.debug,
+        };
+        try std.json.Stringify.value(line, .{}, out);
+        try out.writeByte('\n');
     }
     try out.flush();
 }

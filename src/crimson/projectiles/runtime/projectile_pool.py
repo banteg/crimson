@@ -273,14 +273,37 @@ class ProjectilePool:
             if barrel_greaser_active and proj.owner.is_player():
                 steps *= 2
 
-            direction = Vec2.from_heading(float(proj.angle))
+            # Decompile parity (`projectile_update`, 0x00420b90):
+            #   local_cc += (float)(cos(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
+            #   local_c8 += (float)(sin(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
+            # Keep the float32 cast before `* speed_scale * 3.0`.
+            heading_radians = float(proj.angle) - NATIVE_HALF_PI
+            dir_x = math.cos(heading_radians)
+            dir_y = math.sin(heading_radians)
             acc = Vec2()
             step = 0
             while step < steps:
-                step_scale = float(f32(float(dt) * 20.0 * float(proj.speed_scale) * 3.0))
                 acc = Vec2(
-                    float(f32(float(acc.x) + float(direction.x) * float(step_scale))),
-                    float(f32(float(acc.y) + float(direction.y) * float(step_scale))),
+                    float(
+                        f32(
+                            float(acc.x)
+                            + float(
+                                f32(float(dir_x) * float(dt) * 20.0)
+                                * float(proj.speed_scale)
+                                * 3.0,
+                            ),
+                        ),
+                    ),
+                    float(
+                        f32(
+                            float(acc.y)
+                            + float(
+                                f32(float(dir_y) * float(dt) * 20.0)
+                                * float(proj.speed_scale)
+                                * 3.0,
+                            ),
+                        ),
+                    ),
                 )
 
                 if acc.length() >= 4.0 or steps <= step + 3:
@@ -400,9 +423,11 @@ class ProjectilePool:
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
+                        jitter_dx = float(f32(float(dir_x) * float(jitter)))
+                        jitter_dy = float(f32(float(dir_y) * float(jitter)))
                         proj.pos = Vec2(
-                            float(f32(float(proj.pos.x) + float(direction.x) * float(jitter))),
-                            float(f32(float(proj.pos.y) + float(direction.y) * float(jitter))),
+                            float(f32(float(proj.pos.x) + float(jitter_dx))),
+                            float(f32(float(proj.pos.y) + float(jitter_dy))),
                         )
 
                     dist = proj.origin.distance_to(proj.pos)

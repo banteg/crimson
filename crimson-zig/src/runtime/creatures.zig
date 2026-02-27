@@ -2031,9 +2031,15 @@ pub const CreaturePool = struct {
                 }
             }
 
+            // Decompile parity (`creature_update_all`, 0x00426220): compute
+            // creature->target-player distance once and reuse it for ranged,
+            // eat, and contact checks inside this creature tick.
+            const to_player = state_mod.Vec2.sub(creature.pos, player.pos);
+            const target_dist_sq = to_player.lengthSq();
+            const target_dist = std.math.sqrt(target_dist_sq);
+
             if ((creature.flags & (spawn_mod.CreatureFlags.ranged_attack_shock | spawn_mod.CreatureFlags.ranged_attack_variant)) != 0) {
-                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
-                if (dist > 64.0 and creature.attack_cooldown <= 0.0) {
+                if (target_dist > 64.0 and creature.attack_cooldown <= 0.0) {
                     if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_shock) != 0) {
                         queueCreatureProjectile(
                             state,
@@ -2065,8 +2071,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const eat_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
-            if (eat_sq < 20.0 * 20.0) {
+            if (target_dist_sq < 20.0 * 20.0) {
                 var reverted_x = creature.pos.x - creature.vel.x;
                 var reverted_y = creature.pos.y - creature.vel.y;
                 if (reverted_x < 0.0) {
@@ -2109,7 +2114,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const contact_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
+            const contact_sq = target_dist_sq;
             if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and

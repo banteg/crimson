@@ -617,6 +617,7 @@ def _run_zig_verify_trace(
 
 
 def _zig_rng_marks(row: dict[str, object]) -> dict[str, int]:
+    rng = _require_object_dict(row.get("rng"), field="zig trace row.rng")
     marks: dict[str, int] = {}
     for key in (
         "rng_after_perk_effects",
@@ -630,7 +631,7 @@ def _zig_rng_marks(row: dict[str, object]) -> dict[str, int]:
         "rng_after_spawns",
         "rng_after_bonus_update",
     ):
-        value = row.get(key)
+        value = rng.get(key)
         if isinstance(value, bool):
             continue
         if isinstance(value, int):
@@ -640,53 +641,62 @@ def _zig_rng_marks(row: dict[str, object]) -> dict[str, int]:
 
 def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> ReplayCheckpoint:
     tick_index = _require_int(row.get("tick"), field="zig trace row.tick")
-    player_pos_x_q4 = _require_int(row.get("player_pos_x_q4"), field="zig trace row.player_pos_x_q4")
-    player_pos_y_q4 = _require_int(row.get("player_pos_y_q4"), field="zig trace row.player_pos_y_q4")
-    player_health_q4 = _require_int(row.get("player_health_q4"), field="zig trace row.player_health_q4")
-    player_ammo_q4 = _require_int(row.get("player_ammo_q4"), field="zig trace row.player_ammo_q4")
-    player_weapon_id = _require_int(row.get("player_weapon_id"), field="zig trace row.player_weapon_id")
-    player_experience = _require_int(row.get("player_experience"), field="zig trace row.player_experience")
-    player_level = _require_int(row.get("player_level"), field="zig trace row.player_level")
+    rng = _require_object_dict(row.get("rng"), field="zig trace row.rng")
+    summary = _require_object_dict(row.get("summary"), field="zig trace row.summary")
+    player = _require_object_dict(row.get("player"), field="zig trace row.player")
+    bonuses = _require_object_dict(row.get("bonuses"), field="zig trace row.bonuses")
+    projectiles = _require_object_dict(row.get("projectiles"), field="zig trace row.projectiles")
+
+    player_pos_x_q4 = _require_int(player.get("player_pos_x_q4"), field="zig trace row.player.player_pos_x_q4")
+    player_pos_y_q4 = _require_int(player.get("player_pos_y_q4"), field="zig trace row.player.player_pos_y_q4")
+    player_health_q4 = _require_int(player.get("player_health_q4"), field="zig trace row.player.player_health_q4")
+    player_ammo_q4 = _require_int(player.get("player_ammo_q4"), field="zig trace row.player.player_ammo_q4")
+    player_weapon_id = _require_int(player.get("player_weapon_id"), field="zig trace row.player.player_weapon_id")
+    player_experience = _require_int(
+        player.get("player_experience"),
+        field="zig trace row.player.player_experience",
+    )
+    player_level = _require_int(player.get("player_level"), field="zig trace row.player.player_level")
 
     bonus_weapon_power_up_ms = _require_int(
-        row.get("bonus_weapon_power_up_ms", 0),
-        field="zig trace row.bonus_weapon_power_up_ms",
+        bonuses.get("bonus_weapon_power_up_ms", 0),
+        field="zig trace row.bonuses.bonus_weapon_power_up_ms",
     )
     bonus_reflex_boost_ms = _require_int(
-        row.get("bonus_reflex_boost_ms", 0),
-        field="zig trace row.bonus_reflex_boost_ms",
+        bonuses.get("bonus_reflex_boost_ms", 0),
+        field="zig trace row.bonuses.bonus_reflex_boost_ms",
     )
     bonus_energizer_ms = _require_int(
-        row.get("bonus_energizer_ms", 0),
-        field="zig trace row.bonus_energizer_ms",
+        bonuses.get("bonus_energizer_ms", 0),
+        field="zig trace row.bonuses.bonus_energizer_ms",
     )
     bonus_double_experience_ms = _require_int(
-        row.get("bonus_double_experience_ms", 0),
-        field="zig trace row.bonus_double_experience_ms",
+        bonuses.get("bonus_double_experience_ms", 0),
+        field="zig trace row.bonuses.bonus_double_experience_ms",
     )
     bonus_freeze_ms = _require_int(
-        row.get("bonus_freeze_ms", 0),
-        field="zig trace row.bonus_freeze_ms",
+        bonuses.get("bonus_freeze_ms", 0),
+        field="zig trace row.bonuses.bonus_freeze_ms",
     )
     creature_state_hash = _require_int(
-        row.get("creature_state_hash", 0),
-        field="zig trace row.creature_state_hash",
+        summary.get("creature_state_hash", 0),
+        field="zig trace row.summary.creature_state_hash",
     )
     projectile_state_hash = _require_int(
-        row.get("projectile_state_hash", 0),
-        field="zig trace row.projectile_state_hash",
+        projectiles.get("projectile_state_hash", 0),
+        field="zig trace row.projectiles.projectile_state_hash",
     )
 
-    perk_pending = _require_int(row.get("perk_pending"), field="zig trace row.perk_pending")
+    perk_pending = _require_int(summary.get("perk_pending"), field="zig trace row.summary.perk_pending")
     player_slots = max(1, int(player_count))
 
     return ReplayCheckpoint(
         tick_index=tick_index,
-        rng_state=_require_int(row.get("rng_state"), field="zig trace row.rng_state"),
-        elapsed_ms=_require_int(row.get("elapsed_ms"), field="zig trace row.elapsed_ms"),
-        score_xp=_require_int(row.get("score_xp"), field="zig trace row.score_xp"),
-        kills=_require_int(row.get("kills"), field="zig trace row.kills"),
-        creature_count=_require_int(row.get("creature_count"), field="zig trace row.creature_count"),
+        rng_state=_require_int(rng.get("rng_state"), field="zig trace row.rng.rng_state"),
+        elapsed_ms=_require_int(summary.get("elapsed_ms"), field="zig trace row.summary.elapsed_ms"),
+        score_xp=_require_int(summary.get("score_xp"), field="zig trace row.summary.score_xp"),
+        kills=_require_int(summary.get("kills"), field="zig trace row.summary.kills"),
+        creature_count=_require_int(summary.get("creature_count"), field="zig trace row.summary.creature_count"),
         perk_pending=perk_pending,
         players=[
             ReplayPlayerCheckpoint(
