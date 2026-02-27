@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+import re
+import shutil
+import subprocess
 from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
 from typing import Literal, TypeAlias
 
 REPLAY_FORMAT_VERSION = 6
@@ -13,6 +18,7 @@ WEAPON_USAGE_COUNT = 53
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
 RELOAD_PRESSED_FLAG = 1 << 2
+RELOAD_DOWN_FLAG = 1 << 16
 MOVE_KEYS_PRESENT_FLAG = 1 << 3
 MOVE_FORWARD_FLAG = 1 << 4
 MOVE_BACKWARD_FLAG = 1 << 5
@@ -34,10 +40,60 @@ CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
 CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
 
 
-def _default_game_version() -> str:
+_RELEASE_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _head_points_at_release_tag(*, version: str, repo_root: Path, git_exe: str) -> bool:
+    """Return True when HEAD is tagged as the release version."""
+
+    if _RELEASE_VERSION_RE.fullmatch(str(version)) is None:
+        return False
+
+    tags_out = subprocess.check_output(
+        [git_exe, "tag", "--points-at", "HEAD"],
+        cwd=repo_root,
+        stderr=subprocess.DEVNULL,
+    )
+    tags = {line.strip() for line in tags_out.decode("utf-8", errors="replace").splitlines() if line.strip()}
+    return str(version) in tags or f"v{version}" in tags
+
+
+@lru_cache(maxsize=1)
+def current_replay_game_version() -> str:
+    """Return replay header `game_version`.
+
+    - Release-tagged HEAD: "<version>"
+    - Git checkout non-release: "<version>+g<short_sha>"
+    - No git metadata: "<version>"
+    """
+
     from .. import __version__
 
-    return str(__version__)
+    version = str(__version__)
+    try:
+        git_exe = shutil.which("git")
+        if git_exe is None:
+            return version
+        repo_root = Path(__file__).resolve().parents[3]
+        out = subprocess.check_output(
+            [git_exe, "rev-parse", "--short=12", "HEAD"],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+        )
+        build = out.decode("utf-8", errors="replace").strip()
+        if not build:
+            return version
+        if _head_points_at_release_tag(version=version, repo_root=repo_root, git_exe=git_exe):
+            return version
+        if "+" in version:
+            return f"{version}.g{build}"
+        return f"{version}+g{build}"
+    except (OSError, subprocess.CalledProcessError):
+        return version
+
+
+def _default_game_version() -> str:
+    return current_replay_game_version()
 
 
 def pack_input_flags(
@@ -45,6 +101,7 @@ def pack_input_flags(
     fire_down: bool,
     fire_pressed: bool,
     reload_pressed: bool,
+    reload_down: bool = False,
     move_mode: int | None = None,
     aim_scheme: int | None = None,
     move_forward_pressed: bool | None = None,
@@ -59,6 +116,8 @@ def pack_input_flags(
         flags |= FIRE_PRESSED_FLAG
     if reload_pressed:
         flags |= RELOAD_PRESSED_FLAG
+    if reload_down:
+        flags |= RELOAD_DOWN_FLAG
     key_fields = (
         move_forward_pressed,
         move_backward_pressed,
@@ -84,12 +143,13 @@ def pack_input_flags(
     return int(flags)
 
 
-def unpack_input_flags(flags: int) -> tuple[bool, bool, bool]:
+def unpack_input_flags(flags: int) -> tuple[bool, bool, bool, bool]:
     flags = int(flags)
     return (
         bool(flags & FIRE_DOWN_FLAG),
         bool(flags & FIRE_PRESSED_FLAG),
         bool(flags & RELOAD_PRESSED_FLAG),
+        bool(flags & RELOAD_DOWN_FLAG),
     )
 
 

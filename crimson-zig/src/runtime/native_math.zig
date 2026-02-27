@@ -40,7 +40,12 @@ pub inline fn wrapAngle0Tau(value: f32) f32 {
 }
 
 pub inline fn headingFromDeltaNative(dx: f32, dy: f32) f32 {
-    var heading = roundF32(atan2Native(dy, dx) + native_half_pi);
+    // Match decompiled fpatan path: keep atan2 + half_pi wide and narrow once.
+    const heading_wide = std.math.atan2(
+        @as(f64, @floatCast(dy)),
+        @as(f64, @floatCast(dx)),
+    ) + @as(f64, @floatCast(native_half_pi));
+    var heading = roundF32(heading_wide);
     if (dx < 0.0 and
         @abs(heading - native_left_axis_heading_pos) <= native_left_axis_heading_eps and
         @abs(dy) <= native_left_axis_dy_eps)
@@ -66,4 +71,11 @@ test "wrap angle 0..tau returns non-finite unchanged" {
     try std.testing.expect(std.math.isPositiveInf(wrapAngle0Tau(pos_inf)));
     try std.testing.expect(std.math.isNegativeInf(wrapAngle0Tau(neg_inf)));
     try std.testing.expect(std.math.isNan(wrapAngle0Tau(nan)));
+}
+
+test "heading from delta keeps atan2+half_pi wide until final narrow" {
+    const dx: f32 = 81.96824645996094;
+    const dy: f32 = -21.1148681640625;
+    const heading = headingFromDeltaNative(dx, dy);
+    try std.testing.expectEqual(@as(u32, 0x3fa8ca7d), @as(u32, @bitCast(heading)));
 }

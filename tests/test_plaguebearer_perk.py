@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
@@ -56,7 +57,8 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
     pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
 
-    assert_float_close(creature.collision_timer, 0.4)
+    expected_timer = 0.1 - float(f32(float(dt))) + 0.5
+    assert_float_close(creature.collision_timer, expected_timer)
     assert_float_close(creature.hp, 85.0)
 
 
@@ -133,4 +135,4 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     assert len(result.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the
     # live branch without an immediate `_tick_dead` pass.
-    assert creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE - dt
+    assert creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE - float(f32(float(dt)))

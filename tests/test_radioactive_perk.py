@@ -4,6 +4,7 @@ from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, Cr
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -63,7 +64,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     assert player.experience == 112
     assert not result.deaths
     assert creature.hp < 0.0
-    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - dt)
+    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - float(f32(float(dt))))
     assert fx_queue.count == 1
 
 

@@ -110,10 +110,17 @@ class ProjectilePool:
         entry = self._entries[index]
 
         entry.active = True
-        entry.angle = angle
-        entry.pos = pos
-        entry.origin = pos
-        entry.vel = Vec2(math.cos(float(angle)) * 1.5, math.sin(float(angle)) * 1.5)
+        # Native projectile spawn writes angle/pos as float32 fields; keep those
+        # stores narrowed so next-tick movement uses the same precision.
+        angle_f32 = float(f32(float(angle)))
+        pos_f32 = Vec2(float(f32(float(pos.x))), float(f32(float(pos.y))))
+        entry.angle = angle_f32
+        entry.pos = pos_f32
+        entry.origin = pos_f32
+        entry.vel = Vec2(
+            float(f32(math.cos(float(angle_f32)) * 1.5)),
+            float(f32(math.sin(float(angle_f32)) * 1.5)),
+        )
         entry.type_id = type_id
         entry.life_timer = 0.4
         entry.reserved = 0.0
@@ -218,6 +225,21 @@ class ProjectilePool:
             if value is not None:
                 return float(value)
             return float(cast(float, WEAPON_BY_ID[type_id].damage_scale))
+
+        def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:
+            dx = float(f32(float(origin.x) - float(pos.x)))
+            dy = float(f32(float(origin.y) - float(pos.y)))
+            dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
+            return float(f32(math.sqrt(float(dist_sq))))
+
+        def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
+            # `projectile_update` computes this from float locals (`fVar11/fVar23`),
+            # so keep the damage path rounded through float32.
+            dist_f32 = float(f32(float(dist)))
+            if dist_f32 < 50.0:
+                dist_f32 = 50.0
+            damage_scale_f32 = float(f32(float(damage_scale)))
+            return float(f32(((100.0 / float(dist_f32)) * float(damage_scale_f32) * 30.0 + 10.0) * 0.95))
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)
@@ -430,9 +452,7 @@ class ProjectilePool:
                             float(f32(float(proj.pos.y) + float(jitter_dy))),
                         )
 
-                    dist = proj.origin.distance_to(proj.pos)
-                    if dist < 50.0:
-                        dist = 50.0
+                    dist = _damage_distance_f32(proj.origin, proj.pos)
 
                     if behavior.post_hit_creature is not None:
                         behavior.post_hit_creature(
@@ -447,7 +467,7 @@ class ProjectilePool:
                         )
 
                     damage_scale = _damage_scale(type_id)
-                    damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
+                    damage_amount = _projectile_damage_amount_f32(dist, damage_scale)
 
                     if damage_amount > 0.0 and creature.hp > 0.0:
                         remaining = proj.damage_pool - 1.0

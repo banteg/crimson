@@ -118,8 +118,13 @@ pub fn stepPlayerForTick(
     }
 
     const cooldown_scale: f32 = if (state.bonuses.weapon_power_up > 0.0) 1.5 else 1.0;
-    const cooldown_decay = narrowF32(dt * cooldown_scale);
-    player.shot_cooldown = @max(0.0, narrowF32(player.shot_cooldown - cooldown_decay));
+    const cooldown_decay = narrowF32(
+        @as(f64, @floatCast(dt)) * @as(f64, @floatCast(cooldown_scale)),
+    );
+    const next_shot_cooldown = narrowF32(
+        @as(f64, @floatCast(player.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
+    );
+    player.shot_cooldown = @max(0.0, next_shot_cooldown);
     if (player.shot_cooldown > 0.0 and player.shot_cooldown < 1e-6) {
         player.shot_cooldown = 0.0;
     }

@@ -493,6 +493,14 @@ def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radiu
     )
 
 
+def _aim_heading_from_aim_point_native(player_pos: Vec2, aim_pos: Vec2) -> float:
+    # `player_update` (0x004136b0): aim_heading = (float)(fpatan(pos_y-aim_y, pos_x-aim_x) - 1.5707964)
+    # Keep atan2 wide and narrow once at store to mirror x87-style rounding.
+    dy = float(player_pos.y) - float(aim_pos.y)
+    dx = float(player_pos.x) - float(aim_pos.x)
+    return float(f32(math.atan2(float(dy), float(dx)) - float(NATIVE_HALF_PI)))
+
+
 def _player_update_aim_by_scheme(
     *,
     player: PlayerState,
@@ -525,7 +533,7 @@ def _player_update_aim_by_scheme(
     aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
         player.aim_dir = aim_dir
-        player.aim_heading = aim_dir.to_heading()
+        player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
 
 
 def player_update(

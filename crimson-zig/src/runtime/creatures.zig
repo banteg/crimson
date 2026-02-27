@@ -2945,7 +2945,11 @@ fn linkTargetF32(
 fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = narrowF32(b.x - a.x);
     const dy = narrowF32(b.y - a.y);
-    const dist_sq = dx * dx + dy * dy;
+    // Native stores dx/dy into float locals, then computes dx*dx + dy*dy in x87
+    // precision and narrows only after sqrt.
+    const dx_f64 = @as(f64, @floatCast(dx));
+    const dy_f64 = @as(f64, @floatCast(dy));
+    const dist_sq = dx_f64 * dx_f64 + dy_f64 * dy_f64;
     return narrowF32(std.math.sqrt(dist_sq));
 }
 
@@ -2955,15 +2959,17 @@ fn orbitTargetF32(
     dist: f32,
     scale: f32,
 ) state_mod.Vec2 {
-    const orbit_dist = dist * scale;
-    const phase = orbit_phase;
-    const px = player_pos.x;
-    const py = player_pos.y;
-    const orbit_x = math.cos(phase);
-    const orbit_y = math.sin(phase);
+    const orbit_dist = narrowF32(narrowF32(dist) * narrowF32(scale));
+    const phase = narrowF32(orbit_phase);
+    const px = narrowF32(player_pos.x);
+    const py = narrowF32(player_pos.y);
+    const orbit_x = narrowF32(math.cos(phase));
+    const orbit_y = narrowF32(math.sin(phase));
+    const orbit_x_dist = narrowF32(@as(f64, @floatCast(orbit_x)) * @as(f64, @floatCast(orbit_dist)));
+    const orbit_y_dist = narrowF32(@as(f64, @floatCast(orbit_y)) * @as(f64, @floatCast(orbit_dist)));
     return .{
-        .x = orbit_x * orbit_dist + px,
-        .y = orbit_y * orbit_dist + py,
+        .x = narrowF32(@as(f64, @floatCast(orbit_x_dist)) + @as(f64, @floatCast(px))),
+        .y = narrowF32(@as(f64, @floatCast(orbit_y_dist)) + @as(f64, @floatCast(py))),
     };
 }
 
@@ -3012,19 +3018,21 @@ fn movementDeltaFromHeadingF32(
     move_scale: f32,
     move_speed: f32,
 ) state_mod.Vec2 {
-    const radians = narrowF32(heading) - native_half_pi;
+    // Native computes trig/multiply chain in x87 precision and narrows only
+    // when writing the final velocity components.
+    const radians = @as(f64, @floatCast(narrowF32(heading))) - @as(f64, @floatCast(native_half_pi));
 
-    var vx = math.cos(radians);
-    vx *= dt;
-    vx *= move_scale;
-    vx *= move_speed;
-    vx *= creature_speed_scale;
+    var vx = std.math.cos(radians);
+    vx *= @as(f64, @floatCast(dt));
+    vx *= @as(f64, @floatCast(move_scale));
+    vx *= @as(f64, @floatCast(move_speed));
+    vx *= @as(f64, @floatCast(creature_speed_scale));
 
-    var vy = math.sin(radians);
-    vy *= dt;
-    vy *= move_scale;
-    vy *= move_speed;
-    vy *= creature_speed_scale;
+    var vy = std.math.sin(radians);
+    vy *= @as(f64, @floatCast(dt));
+    vy *= @as(f64, @floatCast(move_scale));
+    vy *= @as(f64, @floatCast(move_speed));
+    vy *= @as(f64, @floatCast(creature_speed_scale));
 
     return .{
         .x = narrowF32(vx),

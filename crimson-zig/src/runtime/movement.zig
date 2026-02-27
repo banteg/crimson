@@ -145,12 +145,13 @@ pub fn updatePlayerFromGameInput(
             if (!moving_backward and target_heading == relative_move_heading_none) {
                 playerDecelerateMoveSpeed(player, movement_dt);
                 move_ext = directionFromHeadingNativeExt(player.heading);
-                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_multiplier * 25.0);
-                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_multiplier * 25.0);
-                move_delta_override = .{
-                    .x = narrowF32(movement_dt * move_dx),
-                    .y = narrowF32(movement_dt * move_dy),
-                };
+                const speed_scale_wide =
+                    @as(f64, @floatCast(player.move_speed)) *
+                    @as(f64, @floatCast(speed_multiplier)) *
+                    @as(f64, @floatCast(@as(f32, 25.0)));
+                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
             } else {
                 const heading_result = playerHeadingApproachTargetWithDelta(
                     player,
@@ -161,16 +162,14 @@ pub fn updatePlayerFromGameInput(
                 playerAccelerateMoveSpeed(player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move_ext = directionFromHeadingNativeExt(player.heading);
-                const turn_align =
-                    (native_pi - heading_result.diff) *
-                    speed_multiplier *
-                    relative_move_turn_align_scale;
-                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * turn_align);
-                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * turn_align);
-                move_delta_override = .{
-                    .x = narrowF32(movement_dt * move_dx),
-                    .y = narrowF32(movement_dt * move_dy),
-                };
+                const turn_align_wide =
+                    (@as(f64, @floatCast(native_pi)) - @as(f64, @floatCast(heading_result.diff))) *
+                    @as(f64, @floatCast(speed_multiplier)) *
+                    @as(f64, @floatCast(relative_move_turn_align_scale));
+                const speed_scale_wide = @as(f64, @floatCast(player.move_speed)) * turn_align_wide;
+                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
             }
         } else {
             const moving_input = raw_mag > 0.2;
@@ -248,7 +247,7 @@ pub fn updatePlayerFromGameInput(
     if (aim_len_sq > 0.0) {
         aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
         player.aim_dir = aim_dir;
-        player.aim_heading = player.aim_dir.toHeading();
+        player.aim_heading = aimHeadingFromAimPointNative(player.pos, player.aim);
     }
 }
 
@@ -306,12 +305,12 @@ fn playerMoveDeltaFromHeading(
     speed_scale: f32,
 ) state_mod.Vec2 {
     const move_ext = directionFromHeadingNativeExt(player.heading);
-    const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_scale);
-    const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_scale);
-    return .{
-        .x = narrowF32(movement_dt * move_dx),
-        .y = narrowF32(movement_dt * move_dy),
-    };
+    const speed_scale_wide =
+        @as(f64, @floatCast(player.move_speed)) *
+        @as(f64, @floatCast(speed_scale));
+    const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+    const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+    return movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
 }
 
 const HeadingDirectionExt = struct {
@@ -320,7 +319,22 @@ const HeadingDirectionExt = struct {
 };
 
 fn headingMulNarrow(component: f64, scalar: f32) f32 {
-    return narrowF32(@as(f32, @floatCast(component * @as(f64, @floatCast(scalar)))));
+    return headingMulWideNarrow(component, @as(f64, @floatCast(scalar)));
+}
+
+fn headingMulWideNarrow(component: f64, scale_wide: f64) f32 {
+    // `player_update` (0x004136b0) computes fcos/fsin movement products in x87
+    // and spills once to float move_dx/move_dy.
+    return narrowF32(component * scale_wide);
+}
+
+fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32) state_mod.Vec2 {
+    // Decompile stores `local_10/local_c = frame_dt * move_d{xy}` after x87 math.
+    const dt_wide = @as(f64, @floatCast(movement_dt));
+    return .{
+        .x = narrowF32(dt_wide * @as(f64, @floatCast(move_dx))),
+        .y = narrowF32(dt_wide * @as(f64, @floatCast(move_dy))),
+    };
 }
 
 fn distanceF32XY(
@@ -391,11 +405,22 @@ fn playerApplyMoveWithSpawnAvoidance(
 }
 
 fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
-    const radians = @as(f64, @floatCast(heading - native_half_pi));
+    // Keep `heading - half_pi` wide before trig to mirror x87-style precision.
+    const radians = @as(f64, @floatCast(heading)) - @as(f64, @floatCast(native_half_pi));
     return .{
         .x = std.math.cos(radians),
         .y = std.math.sin(radians),
     };
+}
+
+fn aimHeadingFromAimPointNative(player_pos: state_mod.Vec2, aim_pos: state_mod.Vec2) f32 {
+    // player_update (0x004136b0) computes:
+    // aim_heading = (float)(fpatan(pos_y - aim_y, pos_x - aim_x) - 1.5707964).
+    // Keep atan2 wide and narrow once on store to match x87-style rounding.
+    const dy = @as(f64, @floatCast(player_pos.y)) - @as(f64, @floatCast(aim_pos.y));
+    const dx = @as(f64, @floatCast(player_pos.x)) - @as(f64, @floatCast(aim_pos.x));
+    const half_pi = @as(f64, @floatCast(native_half_pi));
+    return narrowF32(std.math.atan2(dy, dx) - half_pi);
 }
 
 fn playerAccelerateMoveSpeed(
@@ -640,4 +665,11 @@ test "reflex boosted perk scales world dt by 0.9" {
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), applyPerkWorldDtSteps(perk_players[0..], 0.0), 1e-6);
+}
+
+test "aim heading from aim point matches native fpatan rounding path" {
+    const player_pos = state_mod.Vec2{ .x = 512.0, .y = 512.0 };
+    const aim_pos = state_mod.Vec2{ .x = 333.0390625, .y = 391.1640625 };
+    const heading = aimHeadingFromAimPointNative(player_pos, aim_pos);
+    try std.testing.expectEqual(@as(u32, 0xbf7a1659), @as(u32, @bitCast(heading)));
 }

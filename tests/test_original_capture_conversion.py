@@ -406,7 +406,6 @@ def _replay_input_flags(replay: Replay, tick_index: int, player_index: int = 0) 
     assert isinstance(raw_flags, int | float)
     return int(raw_flags)
 
-
 def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0) -> tuple[float, float]:
     aim_x = replay.inputs[tick_index][player_index][2]
     aim_y = replay.inputs[tick_index][player_index][3]
@@ -805,7 +804,7 @@ def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     assert replay.header.input_quantization == "f32"
     assert len(replay.inputs) == 1
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, _reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, _reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
 
@@ -889,7 +888,7 @@ def test_convert_capture_to_replay_does_not_fallback_to_primary_query_stats(tmp_
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2164,7 +2163,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     flags = _replay_input_flags(replay, 0, 0)
     assert move_x == -1.0
     assert move_y == -1.0
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2421,7 +2420,7 @@ def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: P
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is True
     assert reload_pressed is True
@@ -2491,8 +2490,8 @@ def test_convert_capture_to_replay_synthesizes_reload_for_alt_weapon_swap_from_b
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    _fire_down0, _fire_pressed0, reload_pressed0 = unpack_input_flags(_replay_input_flags(replay, 0, 0))
-    _fire_down1, _fire_pressed1, reload_pressed1 = unpack_input_flags(_replay_input_flags(replay, 1, 0))
+    _fire_down0, _fire_pressed0, reload_pressed0, _reload_down = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    _fire_down1, _fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(_replay_input_flags(replay, 1, 0))
     assert reload_pressed0 is True
     assert reload_pressed1 is False
 
@@ -2536,7 +2535,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_player_fire_event_
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2583,7 +2582,7 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2632,7 +2631,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_co
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2680,7 +2679,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(_replay_input_flags(replay, 0, 0))
     assert fire_down is True
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2730,7 +2729,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(_replay_input_flags(replay, 0, 0))
     assert fire_down is True
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2782,7 +2781,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(_replay_input_flags(replay, 0, 0))
     assert fire_down is True
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2826,7 +2825,7 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(_replay_input_flags(replay, 0, 0))
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(_replay_input_flags(replay, 0, 0))
     assert fire_down is False
     assert fire_pressed is True
     assert reload_pressed is False
@@ -2861,7 +2860,7 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is True
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2904,7 +2903,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2939,7 +2938,7 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -2976,8 +2975,8 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_mode_missing_b
 
     flags0 = _replay_input_flags(replay, 0, 0)
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down0, fire_pressed0, _reload_pressed0 = unpack_input_flags(flags0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down0, fire_pressed0, _reload_pressed0, _reload_down = unpack_input_flags(flags0)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down0 is False
     assert fire_pressed0 is False
     assert fire_down1 is True
@@ -3015,7 +3014,7 @@ def test_convert_capture_to_replay_synthesizes_computer_fire_when_reload_complet
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
     assert reload_pressed1 is False
@@ -3053,7 +3052,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_fire_bullet
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
     assert reload_pressed1 is False
@@ -3090,7 +3089,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_secondary_p
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
     assert reload_pressed1 is False
@@ -3127,7 +3126,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_bonus_p
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -3173,7 +3172,7 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_nuke_fi
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags = _replay_input_flags(replay, 0, 0)
-    fire_down, fire_pressed, reload_pressed = unpack_input_flags(flags)
+    fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(flags)
     assert fire_down is False
     assert fire_pressed is False
     assert reload_pressed is False
@@ -3219,8 +3218,8 @@ def test_convert_capture_to_replay_does_not_synthesize_secondary_spawn_without_o
 
     flags10 = _replay_input_flags(replay, 1, 0)
     flags11 = _replay_input_flags(replay, 1, 1)
-    fire_down10, fire_pressed10, reload_pressed10 = unpack_input_flags(flags10)
-    fire_down11, fire_pressed11, reload_pressed11 = unpack_input_flags(flags11)
+    fire_down10, fire_pressed10, reload_pressed10, _reload_down = unpack_input_flags(flags10)
+    fire_down11, fire_pressed11, reload_pressed11, _reload_down = unpack_input_flags(flags11)
     assert fire_down10 is False
     assert fire_pressed10 is False
     assert reload_pressed10 is False
@@ -3247,8 +3246,8 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_on
 
     flags_default = _replay_input_flags(replay_default, 0, 0)
     flags_override = _replay_input_flags(replay_override, 0, 0)
-    fire_down_default, _fire_pressed_default, _reload_pressed_default = unpack_input_flags(flags_default)
-    fire_down_override, _fire_pressed_override, _reload_pressed_override = unpack_input_flags(flags_override)
+    fire_down_default, _fire_pressed_default, _reload_pressed_default, _reload_down = unpack_input_flags(flags_default)
+    fire_down_override, _fire_pressed_override, _reload_pressed_override, _reload_down = unpack_input_flags(flags_override)
     assert fire_down_default is False
     assert fire_down_override is False
 
@@ -3293,7 +3292,7 @@ def test_convert_capture_to_replay_does_not_synthesize_unknown_mode_without_weap
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is False
     assert fire_pressed1 is False
     assert reload_pressed1 is False
@@ -3333,7 +3332,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_for_mapped_weap
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
     assert reload_pressed1 is False
@@ -3384,7 +3383,7 @@ def test_convert_capture_to_replay_synthesizes_unknown_mode_fire_when_weapon_swi
     replay = convert_capture_to_replay(capture, seed=0)
 
     flags1 = _replay_input_flags(replay, 1, 0)
-    fire_down1, fire_pressed1, reload_pressed1 = unpack_input_flags(flags1)
+    fire_down1, fire_pressed1, reload_pressed1, _reload_down = unpack_input_flags(flags1)
     assert fire_down1 is True
     assert fire_pressed1 is False
     assert reload_pressed1 is False

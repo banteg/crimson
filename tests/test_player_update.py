@@ -14,7 +14,7 @@ from crimson.gameplay import (
     _player_heading_approach_target_with_delta,
     player_update,
 )
-from crimson.math_parity import f32
+from crimson.math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
@@ -482,8 +482,8 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     assert int(entry.type_id) == int(ProjectileTypeId.FIRE_BULLETS)
 
     expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
-    assert_float_close(float(entry.pos.x), float(expected.x))
-    assert_float_close(float(entry.pos.y), float(expected.y))
+    assert_float_close(float(entry.pos.x), float(f32(float(expected.x))))
+    assert_float_close(float(entry.pos.y), float(f32(float(expected.y))))
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
@@ -767,7 +767,7 @@ def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.heading > 0.0
-    assert player.aim_heading > 0.0
+    assert (float(player.aim_heading) % math.tau) > 0.0
     assert_float_close(player.turn_speed, 1.0)
     assert player.move_speed > 0.0
     assert player.pos.x > 100.0
@@ -789,7 +789,10 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
     player_update(player, input_state, 0.1, state)
 
     assert player.heading < 0.0
-    assert_float_close(player.aim_heading, (player.aim - player.pos).to_heading())
+    assert_float_close(
+        float(f32(float(player.aim_heading) % math.tau)),
+        float(f32((player.aim - player.pos).to_heading() % math.tau)),
+    )
     assert_float_close(player.turn_speed, 1.0)
     assert player.move_speed > 0.0
     assert player.pos.x < 100.0
@@ -811,7 +814,7 @@ def test_player_update_digital_turn_conflict_prefers_right() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.heading > 0.0
-    assert player.aim_heading > math.pi / 2.0
+    assert (float(player.aim_heading) % math.tau) > math.pi / 2.0
     assert_float_close(player.turn_speed, 1.0)
     assert player.pos.x > 100.0
     assert player.pos.y < 100.0
@@ -854,9 +857,10 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     player_update(player, input_state, 0.1, state)
 
     assert player.aim != Vec2(500.0, 500.0)
-    expected_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-    assert player.aim == expected_aim
-    assert_float_close((player.aim - player.pos).length(), (expected_aim - player.pos).length())
+    assert_float_close(
+        float(f32((player.aim - player.pos).to_heading() % math.tau)),
+        float(f32(float(player.aim_heading) % math.tau)),
+    )
 
 
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
@@ -924,16 +928,21 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     rand_dir = expected_rng.rand()
     rand_mag = expected_rng.rand()
 
-    dx = aim_x - player.pos.x
-    dy = aim_y - player.pos.y
-    dist = math.hypot(dx, dy)
-    max_offset = dist * player.spread_heat * 0.5
-    dir_angle = float(rand_dir & 0x1FF) * (math.tau / 512.0)
-    mag = float(rand_mag & 0x1FF) * (1.0 / 512.0)
-    offset = max_offset * mag
-    jitter_x = aim_x + math.cos(dir_angle) * offset
-    jitter_y = aim_y + math.sin(dir_angle) * offset
-    expected_angle = math.atan2(jitter_y - player.pos.y, jitter_x - player.pos.x) + math.pi / 2.0
+    dx = float(f32(float(aim_x) - float(player.pos.x)))
+    dy = float(f32(float(aim_y) - float(player.pos.y)))
+    dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
+    dist = float(f32(math.sqrt(float(dist_sq))))
+    max_offset = float(f32(float(f32(float(dist) * float(player.spread_heat))) * 0.5))
+    dir_angle = float(f32(float(rand_dir & 0x1FF) * (float(NATIVE_TAU) / 512.0)))
+    mag = float(f32(float(rand_mag & 0x1FF) * (1.0 / 512.0)))
+    offset = float(f32(float(max_offset) * float(mag)))
+    dir_x = float(f32(math.cos(float(dir_angle))))
+    dir_y = float(f32(math.sin(float(dir_angle))))
+    jitter_x = float(f32(float(aim_x) + float(f32(float(dir_x) * float(offset)))))
+    jitter_y = float(f32(float(aim_y) + float(f32(float(dir_y) * float(offset)))))
+    shot_dx = float(f32(float(jitter_x) - float(player.pos.x)))
+    shot_dy = float(f32(float(jitter_y) - float(player.pos.y)))
+    expected_angle = float(heading_from_delta_f32(dx=float(shot_dx), dy=float(shot_dy)))
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.0, state)
 
@@ -1057,5 +1066,5 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_projectile_id != first_proj
     assert sum(1 for entry in pool.entries if entry.active) >= 2
     chained = pool.entries[int(state.shock_chain_projectile_id)]
-    expected_angle = math.atan2(far_y, 50.0) + math.pi / 2.0
+    expected_angle = float(f32(math.atan2(far_y, 50.0) + math.pi / 2.0))
     assert_float_close(chained.angle, expected_angle)

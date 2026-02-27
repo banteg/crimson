@@ -9,6 +9,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..effects_atlas import EffectId
+from ..math_parity import f32
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -212,7 +213,9 @@ def creature_apply_damage(
 
     if creature.hp <= 0.0:
         if dt > 0.0:
-            creature.lifecycle_stage -= float(dt) * 15.0
+            creature.lifecycle_stage = float(
+                f32(float(creature.lifecycle_stage) - float(f32(float(dt) * 15.0))),
+            )
         return True
 
     for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
@@ -223,9 +226,11 @@ def creature_apply_damage(
 
     if creature.hp <= 0.0:
         if dt > 0.0:
-            creature.lifecycle_stage = float(creature.lifecycle_stage) - float(dt)
+            creature.lifecycle_stage = float(
+                f32(float(creature.lifecycle_stage) - float(f32(float(dt)))),
+            )
         else:
-            creature.lifecycle_stage = float(creature.lifecycle_stage) - 0.001
+            creature.lifecycle_stage = float(f32(float(creature.lifecycle_stage) - 0.001))
         creature.vel = creature.vel - impulse * 2.0
         _damage_lethal_ranged_shock_burst(
             creature=creature,
