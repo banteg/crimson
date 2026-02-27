@@ -165,7 +165,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
         def f32_bits(value: float) -> int:
             return struct.unpack("<I", struct.pack("<f", float(value)))[0]
 
-        def build_row(*, tick_index: int, elapsed_ms: int, rng_state: int, rng_base: int, score_xp: int, kills: int, creature_state_hash: int, projectile_state_hash: int, player_ammo: float, player_health: float, player_pos_x: float, player_pos_y: float, player_experience: int, player_shot_seq: int, perk_pending: int, debug_pending_nuke: int) -> dict[str, object]:
+        def build_row(*, tick_index: int, elapsed_ms: int, rng_state: int, rng_base: int, score_xp: int, kills: int, player_ammo: float, player_health: float, player_pos_x: float, player_pos_y: float, player_experience: int, player_shot_seq: int, perk_pending: int, debug_pending_nuke: int) -> dict[str, object]:
             return {
                 "schema_version": 3,
                 "tick_index": tick_index,
@@ -190,9 +190,6 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "kills": kills,
                     "shots_fired_p0": player_shot_seq,
                     "creature_count": 0,
-                    "creature_active_index_sum": 0,
-                    "creature_active_index_xor": 0,
-                    "creature_state_hash": creature_state_hash,
                     "perk_pending": perk_pending,
                 },
                 "player": {
@@ -229,10 +226,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "active_entries": [],
                 },
                 "projectiles": {
-                    "projectile_state_hash": projectile_state_hash,
                     "projectile_count": 0,
-                    "projectile_active_index_sum": 0,
-                    "projectile_active_index_xor": 0,
                     "projectile_hit_count": 0,
                     "projectile_first_hit_creature_index": -1,
                     "projectile_first_hit_projectile_index": -1,
@@ -269,8 +263,6 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 rng_base=100,
                 score_xp=10,
                 kills=0,
-                creature_state_hash=1,
-                projectile_state_hash=2,
                 player_ammo=0.008,
                 player_health=0.024,
                 player_pos_x=0.8192,
@@ -287,8 +279,6 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 rng_base=200,
                 score_xp=20,
                 kills=1,
-                creature_state_hash=3,
-                projectile_state_hash=4,
                 player_ammo=0.0076,
                 player_health=0.0236,
                 player_pos_x=0.82,
@@ -337,7 +327,6 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
         assert tick0 is not None
         checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
         assert checkpoint["score_xp"] == 10
-        assert checkpoint["state_hash"] == "zig:0000000000000001:0000000000000002"
         assert "zig_tick_trace" in tick0.channels
 
 

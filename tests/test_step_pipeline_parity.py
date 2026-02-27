@@ -57,7 +57,7 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
     inputs: list[PlayerInput] = []
     for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
-        fire_down, fire_pressed, reload_pressed = unpack_input_flags(int(flags))
+        fire_down, fire_pressed, reload_pressed, _reload_down = unpack_input_flags(int(flags))
         inputs.append(
             PlayerInput(
                 move=Vec2(float(mx), float(my)),

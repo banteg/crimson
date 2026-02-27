@@ -668,9 +668,6 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
     bonus_energizer_ms = int(bonus_timers[int(BonusId.ENERGIZER)])
     bonus_double_experience_ms = int(bonus_timers[int(BonusId.DOUBLE_EXPERIENCE)])
     bonus_freeze_ms = int(bonus_timers[int(BonusId.FREEZE)])
-    creature_state_hash = int(summary.creature_state_hash)
-    projectile_state_hash = int(projectiles.projectile_state_hash)
-
     perk_pending = int(summary.perk_pending)
     player_slots = max(1, int(player_count))
 
@@ -706,7 +703,6 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
             str(BonusId.DOUBLE_EXPERIENCE): int(max(0, bonus_double_experience_ms)),
             str(BonusId.FREEZE): int(max(0, bonus_freeze_ms)),
         },
-        state_hash=f"zig:{int(creature_state_hash):016x}:{int(projectile_state_hash):016x}",
         command_hash="",
         rng_marks=_zig_rng_marks(rng),
         deaths=[],

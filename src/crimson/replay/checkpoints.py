@@ -62,7 +62,7 @@ class ReplayCheckpoint:
     perk_pending: int
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
-    state_hash: str
+    state_hash: str = ""
     command_hash: str = ""
     rng_marks: dict[str, int] = field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = field(default_factory=list)
