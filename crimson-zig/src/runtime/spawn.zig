@@ -1096,14 +1096,14 @@ fn appendSpawnCall(
     y: anytype,
     heading: anytype,
 ) void {
-    const x_f64: f64 = @floatCast(x);
-    const y_f64: f64 = @floatCast(y);
-    const heading_f64: f64 = @floatCast(heading);
     std.debug.assert(result.count < result.calls.len);
     result.calls[result.count] = .{
         .template_id = @intFromEnum(template_id),
-        .pos = .{ .x = x_f64, .y = y_f64 },
-        .heading = heading_f64,
+        .pos = .{
+            .x = @floatCast(x),
+            .y = @floatCast(y),
+        },
+        .heading = @floatCast(heading),
     };
     result.count += 1;
 }
