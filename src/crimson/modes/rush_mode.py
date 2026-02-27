@@ -384,7 +384,7 @@ class RushMode(BaseGameplayMode):
             return
 
         def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
-            self._rush.elapsed_ms = float(session.elapsed_ms)
+            self._rush.elapsed_ms = float(tick.elapsed_ms)
             self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
             world_events = tick.step.events
 
@@ -482,7 +482,7 @@ class RushMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -502,7 +502,7 @@ class RushMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -512,13 +512,13 @@ class RushMode(BaseGameplayMode):
                     apply_audio=True,
                     update_camera=True,
                 )
-                self._rush.elapsed_ms = float(session.elapsed_ms)
+                self._rush.elapsed_ms = float(tick.elapsed_ms)
                 self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
                 self._store_net_runtime_snapshot(
                     mode_name="rush",
                     tick_index=int(frame.tick_index),
                     session_state={
-                        "elapsed_ms": float(session.elapsed_ms),
+                        "elapsed_ms": float(tick.elapsed_ms),
                         "spawn_cooldown_ms": float(session.spawn_cooldown_ms),
                     },
                     mode_state={
