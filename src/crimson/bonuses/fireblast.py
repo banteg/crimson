@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..owner_ref import LOCAL_PLAYER_OWNER_ID
 from ..projectiles import ProjectileTypeId
 from ..weapon_runtime.spawn import owner_id_for_player, spawn_projectile_ring
 from .apply_context import BonusApplyCtx
@@ -7,7 +8,9 @@ from .apply_context import BonusApplyCtx
 
 def apply_fireblast(ctx: BonusApplyCtx) -> None:
     origin_pos = ctx.origin_pos()
-    owner_id = owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
+    owner_id = (
+        owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else LOCAL_PLAYER_OWNER_ID
+    )
     ctx.state.bonus_spawn_guard = True
     spawn_projectile_ring(
         ctx.state,

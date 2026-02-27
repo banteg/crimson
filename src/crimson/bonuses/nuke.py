@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
+from ..owner_ref import LOCAL_PLAYER_OWNER_ID
 from ..projectiles import ProjectileTypeId
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
@@ -28,7 +29,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             pos=origin,
             angle=float(angle),
             type_id=ProjectileTypeId.PISTOL,
-            owner_id=-100,
+            owner_id=LOCAL_PLAYER_OWNER_ID,
             owner_player_index=ctx.player.index,
         )
         if proj_id != -1:
@@ -43,7 +44,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             pos=origin,
             angle=float(angle),
             type_id=ProjectileTypeId.GAUSS_GUN,
-            owner_id=-100,
+            owner_id=LOCAL_PLAYER_OWNER_ID,
             owner_player_index=ctx.player.index,
         )
 

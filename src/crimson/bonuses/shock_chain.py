@@ -3,6 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from ..creatures.lifecycle import creature_lifecycle_is_alive
+from ..owner_ref import LOCAL_PLAYER_OWNER_ID
 from ..projectiles import ProjectileTypeId
 from ..weapon_runtime.spawn import owner_id_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
@@ -34,7 +35,9 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
 
     target = creatures[best_idx]
     angle = (target.pos - origin).to_heading()
-    owner_id = owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else -100
+    owner_id = (
+        owner_id_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else LOCAL_PLAYER_OWNER_ID
+    )
 
     ctx.state.bonus_spawn_guard = True
     ctx.state.shock_chain_links_left = 0x20
