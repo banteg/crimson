@@ -26,9 +26,22 @@ This gives immediate CLI/ABI parity scaffolding while deeper gameplay porting pr
 ```bash
 zig build
 zig build run -- replay verify survival_20260224_041009_score76661.crd --format json
+zig build run-window
+zig build web-window
 zig build test
 zig build wasm
 ```
+
+## Raylib bootstrap
+
+- `zig build run-window` opens an empty placeholder window using `raylib-zig`.
+- `zig build window` compiles that target without running it.
+- `zig build web-window` builds an HTML+WASM placeholder window for browser use.
+- `zig build run-web-window` serves the web build through `emrun` (`--no_browser`).
+- This keeps the existing CLI entrypoint (`zig build run -- ...`) unchanged while
+  we incrementally move rendering/runtime work into Zig.
+- `zig build wasm` remains the verifier ABI module (`wasm32-freestanding`) and is
+  intentionally separate from the raylib web target (`wasm32-emscripten`).
 
 ## WASM exports
 

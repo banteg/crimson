@@ -1784,13 +1784,13 @@ test "shotgun family fires expected pellet counts and formulas" {
             _ = rng.rand();
         }
 
-            const shot_angle = std.math.pi / 2.0;
-            for (0..case.expected_count) |idx| {
-                const jitter_draw = rng.rand();
-                const expected_angle = shot_angle +
-                    @as(f32, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
-                const speed_draw = rng.rand();
-                const expected_speed = case.speed_base + @as(f32, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
+        const shot_angle = std.math.pi / 2.0;
+        for (0..case.expected_count) |idx| {
+            const jitter_draw = rng.rand();
+            const expected_angle = shot_angle +
+                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_draw % 200)) - 100)) * case.jitter_scale;
+            const speed_draw = rng.rand();
+            const expected_speed = case.speed_base + @as(f32, @floatFromInt(speed_draw % case.speed_mod)) * 0.01;
 
             const proj = projectiles.entries[idx];
             try std.testing.expect(proj.active);
