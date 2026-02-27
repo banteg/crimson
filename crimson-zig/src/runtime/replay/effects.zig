@@ -171,48 +171,6 @@ fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).travel_budget;
 }
 
-pub fn applyPyrokineticEffects(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    creatures: *creatures_mod.CreaturePool,
-    particles: *particles_mod.ParticlePool,
-    dt: f32,
-) void {
-    if (!(dt > 0.0)) return;
-    if (players.len == 0) return;
-
-    const burn_intensities = [_]f32{ 0.8, 0.6, 0.4, 0.3, 0.2 };
-
-    for (players) |*player| {
-        if (player.health <= 0.0) continue;
-        if (!perks.perkActive(player, PerkId.pyrokinetic)) continue;
-
-        const target_idx = creatureFindInRadius(creatures.entries[0..], player.aim, 12.0, 0);
-        if (target_idx == -1) continue;
-
-        var creature = &creatures.entries[@intCast(target_idx)];
-        creature.collision_timer = narrowF32(creature.collision_timer - dt);
-        if (creature.collision_timer >= 0.0) continue;
-
-        creature.collision_timer = 0.5;
-        for (burn_intensities) |intensity| {
-            const angle = narrowF32(@as(f32, @floatFromInt(state.rng.rand() % 0x274)) * 0.01);
-            _ = particles.spawnParticle(
-                state,
-                creature.pos,
-                angle,
-                intensity,
-                owner_ref.OwnerRef.fromLocalPlayer(0),
-            );
-        }
-        // Consume native fx_queue_add_random RNG even though verifier does not render decals.
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-    }
-}
-
 pub fn updateEvilEyesTargets(
     _: *const state_mod.GameplayState,
     players: []state_mod.PlayerState,
@@ -224,28 +182,8 @@ pub fn updateEvilEyesTargets(
             player.evil_eyes_target_creature = -1;
             continue;
         }
-        player.evil_eyes_target_creature = creatureFindInRadius(creatures, player.aim, 12.0, 0);
+        player.evil_eyes_target_creature = perks.creatureFindInRadius(creatures, player.aim, 12.0, 0);
     }
-}
-
-pub fn creatureFindInRadius(
-    creatures: []const creatures_mod.CreatureState,
-    pos: state_mod.Vec2,
-    radius: f32,
-    start_index: usize,
-) i32 {
-    var idx = start_index;
-    const max_index = @min(creatures.len, creatures_mod.max_creatures);
-    while (idx < max_index) : (idx += 1) {
-        const creature = creatures[idx];
-        if (!creature.active) continue;
-        if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
-        const dist = narrowF32(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
-        const threshold = narrowF32(creature.size * 0.14285715 + 3.0);
-        if (threshold < dist) continue;
-        return @intCast(idx);
-    }
-    return -1;
 }
 
 pub fn applyNukeBonus(
@@ -288,7 +226,7 @@ pub fn applyNukeBonus(
         _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
 
-    consumeExplosionBurstRng(state, 5);
+    perks.consumeExplosionBurstRng(state, 5);
 
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
@@ -323,52 +261,6 @@ pub fn applyNukeBonus(
     state.debug_nuke_tick_last = @intCast(tick_index);
 }
 
-pub fn applyFinalRevengeOnDeathTransition(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    player_index: usize,
-    health_before: f32,
-    creatures: *creatures_mod.CreaturePool,
-    bonuses: *bonus_runtime.BonusPool,
-    dt: f32,
-    world_size: f32,
-    detail_preset: i32,
-) void {
-    if (player_index >= players.len) return;
-    const player = &players[player_index];
-    if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
-    if (!perks.perkActive(player, PerkId.final_revenge)) return;
-
-    consumeExplosionBurstRng(state, detail_preset);
-    const prev_spawn_guard = state.bonus_spawn_guard;
-    state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_spawn_guard;
-
-    const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
-    for (creatures.entries, 0..) |creature, idx| {
-        if (!creature.active) continue;
-        const dx = narrowF32(creature.pos.x - player.pos.x);
-        const dy = narrowF32(creature.pos.y - player.pos.y);
-        if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
-        const distance = narrowF32(std.math.sqrt(narrowF32(dx * dx + dy * dy)));
-        const remaining = narrowF32(512.0 - distance);
-        if (!(remaining > 0.0)) continue;
-        const damage = narrowF32(remaining * 5.0);
-        _ = creatures.applyExplosionDamage(
-            state,
-            players,
-            bonuses,
-            idx,
-            damage,
-            .{},
-            owner,
-            dt,
-            world_size,
-            null,
-        );
-    }
-}
-
 fn applyPlayerProjectileSpawnRules(
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
@@ -400,112 +292,6 @@ fn applyPlayerProjectileSpawnRules(
         }
     }
     state.shots_fired_total += shot_credit;
-}
-
-pub fn consumeExplosionBurstRng(
-    state: *state_mod.GameplayState,
-    detail_preset: i32,
-) void {
-    if (detail_preset > 3) {
-        for (0..2) |_| {
-            _ = state.rng.rand() % 0x266;
-        }
-    }
-    const count: usize = if (detail_preset < 2) 1 else 3 + (if (detail_preset > 3) @as(usize, 1) else 0);
-    for (0..count) |_| {
-        _ = state.rng.rand() % 0x13A;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand() & 0x3F;
-        _ = state.rng.rand();
-        _ = state.rng.rand();
-    }
-}
-
-pub fn applyJinxedEffects(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    creatures: *creatures_mod.CreaturePool,
-    dt: f32,
-) void {
-    if (state.jinxed_timer >= 0.0) {
-        state.jinxed_timer = narrowF32(state.jinxed_timer - dt);
-    }
-    if (state.jinxed_timer >= 0.0) return;
-    if (players.len == 0) return;
-    if (!perks.perkActive(&players[0], PerkId.jinxed)) return;
-
-    if ((state.rng.rand() % 10) == 3) {
-        const target_idx = selectJinxedAccidentTarget(state, players);
-        players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
-    }
-
-    const timer_roll = @as(f32, @floatFromInt(state.rng.rand() % 0x14));
-    state.jinxed_timer = narrowF32(narrowF32(timer_roll * 0.1) + state.jinxed_timer + 2.0);
-
-    if (state.bonuses.freeze > 0.0) return;
-
-    const pool_limit: usize = 0x180;
-    const pool_mod = @min(pool_limit, creatures.entries.len);
-    if (pool_mod == 0) return;
-
-    var idx: usize = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
-    var attempts: usize = 0;
-    while (attempts < 10 and !creatures.entries[idx].active) : (attempts += 1) {
-        idx = @intCast(state.rng.rand() % @as(u32, @intCast(pool_mod)));
-    }
-    if (!creatures.entries[idx].active) return;
-
-    creatures.entries[idx].hp = -1.0;
-    creatures.entries[idx].lifecycle_stage = narrowF32(
-        creatures.entries[idx].lifecycle_stage - dt * 20.0,
-    );
-    awardExperienceFromReward(state, &players[0], creatures.entries[idx].reward_value);
-}
-
-fn selectJinxedAccidentTarget(
-    state: *state_mod.GameplayState,
-    players: []const state_mod.PlayerState,
-) usize {
-    if (players.len == 0) return 0;
-
-    var alive_indices = [_]usize{0} ** state_mod.max_players;
-    var alive_count: usize = 0;
-    for (players, 0..) |player, idx| {
-        if (player.health <= 0.0) continue;
-        if (alive_count >= alive_indices.len) break;
-        alive_indices[alive_count] = idx;
-        alive_count += 1;
-    }
-    if (alive_count == 0) return 0;
-    if (alive_count == 1) return alive_indices[0];
-    const pick = state.rng.rand() % @as(u32, @intCast(alive_count));
-    return alive_indices[@intCast(pick)];
-}
-
-fn awardExperienceFromReward(
-    state: *state_mod.GameplayState,
-    player: *state_mod.PlayerState,
-    reward_value: f32,
-) void {
-    const first_gain = awardExperienceOnceFromReward(player, reward_value);
-    if (first_gain <= 0) return;
-    if (state.bonuses.double_experience > 0.0) {
-        _ = awardExperienceOnceFromReward(player, reward_value);
-    }
-}
-
-fn awardExperienceOnceFromReward(
-    player: *state_mod.PlayerState,
-    reward_value: f32,
-) i32 {
-    if (reward_value <= 0.0) return 0;
-
-    const before = player.experience;
-    const before_f32 = narrowF32(@as(f32, @floatFromInt(before)));
-    const total_f32 = narrowF32(before_f32 + reward_value);
-    const after: i32 = @intFromFloat(total_f32);
-    player.experience = after;
-    return after - before;
 }
 
 pub fn consumeSpawnBurstRng(
@@ -679,7 +465,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
 
     var particles = particles_mod.ParticlePool{};
 
-    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 
@@ -713,7 +499,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
 
     var particles = particles_mod.ParticlePool{};
 
-    applyPyrokineticEffects(
+    perks.applyPyrokineticEffects(
         &state,
         players[0..],
         &creatures,
@@ -724,7 +510,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
     try std.testing.expect(creatures.entries[0].collision_timer < 1e-6);
     try std.testing.expectEqual(@as(usize, 0), activeParticleCount(&particles));
 
-    applyPyrokineticEffects(
+    perks.applyPyrokineticEffects(
         &state,
         players[0..],
         &creatures,
@@ -759,7 +545,7 @@ test "pyrokinetic defaults to first alive player slot" {
     };
     var particles = particles_mod.ParticlePool{};
 
-    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 5), activeParticleCount(&particles));
 }
@@ -802,7 +588,7 @@ test "pyrokinetic targets all alive owners in default mode" {
     };
     var particles = particles_mod.ParticlePool{};
 
-    applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
+    perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[1].collision_timer, 1e-6);
     try std.testing.expectEqual(@as(usize, 10), activeParticleCount(&particles));
@@ -1092,7 +878,7 @@ test "jinxed kills creature and awards base reward" {
     creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[2].reward_value = 12.7;
 
-    applyJinxedEffects(&state, players[0..], &creatures, dt);
+    perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
     try std.testing.expectApproxEqAbs(@as(f32, 1.8), state.jinxed_timer, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, -1.0), creatures.entries[2].hp, 1e-6);
@@ -1125,7 +911,7 @@ test "jinxed reward uses float32 sum before truncation" {
     creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
     creatures.entries[2].reward_value = 97.99636190476191;
 
-    applyJinxedEffects(&state, players[0..], &creatures, dt);
+    perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
     try std.testing.expectEqual(@as(i32, 139_549), players[0].experience);
 }
@@ -1156,7 +942,7 @@ test "jinxed accident can target another alive player" {
     players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = creatures_mod.CreaturePool{};
 
-    applyJinxedEffects(&state, players[0..], &creatures, dt);
+    perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
     try std.testing.expectApproxEqAbs(@as(f32, 1.8), state.jinxed_timer, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 50.0), players[0].health, 1e-6);
@@ -1178,7 +964,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
     players[0].perk_counts.set(PerkId.jinxed, 1);
     var creatures = creatures_mod.CreaturePool{};
 
-    applyJinxedEffects(&state, players[0..], &creatures, dt);
+    perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
     try std.testing.expectApproxEqAbs(@as(f32, 8.344650268554688e-07), state.jinxed_timer, 1e-12);
     try std.testing.expectApproxEqAbs(@as(f32, 50.0), players[0].health, 1e-6);
@@ -1210,7 +996,7 @@ test "jinxed pool uses full 384-slot upper bound" {
     default_creatures.entries[0x17F].lifecycle_stage = creature_lifecycle.alive;
     default_creatures.entries[0x17F].reward_value = 12.7;
 
-    applyJinxedEffects(&default_state, default_players[0..], &default_creatures, dt);
+    perks.applyJinxedEffects(&default_state, default_players[0..], &default_creatures, dt);
 
     try std.testing.expectApproxEqAbs(@as(f32, -1.0), default_creatures.entries[0x17F].hp, 1e-6);
     try std.testing.expectEqual(@as(i32, 112), default_players[0].experience);
@@ -1244,7 +1030,7 @@ test "final revenge explosion applies radial damage on death transition" {
         .contact_damage = 0.0,
     });
 
-    applyFinalRevengeOnDeathTransition(
+    perks.applyFinalRevengeOnDeathTransition(
         &state,
         players[0..],
         0,
@@ -1318,7 +1104,7 @@ test "final revenge aoe includes active non-positive hp entries" {
         .contact_damage = 0.0,
     });
 
-    applyFinalRevengeOnDeathTransition(
+    perks.applyFinalRevengeOnDeathTransition(
         &state,
         players[0..],
         0,

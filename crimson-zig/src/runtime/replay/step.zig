@@ -5,7 +5,7 @@ const replay_codec = @import("../../replay_codec.zig");
 
 const effects = @import("effects.zig");
 const events = @import("events.zig");
-const movement = @import("movement.zig");
+const movement = @import("../movement.zig");
 const capture_state = @import("capture_state.zig");
 const context_mod = @import("context.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
@@ -13,6 +13,7 @@ const diagnostic_trace_mod = @import("diagnostic_trace.zig");
 const bonus_runtime = @import("../bonuses.zig");
 const creatures_mod = @import("../creatures.zig");
 const perks = @import("../perks.zig");
+const player_runtime = @import("../player.zig");
 const projectiles_mod = @import("../projectiles.zig");
 const spawn_mod = @import("../spawn.zig");
 const state_mod = @import("../state.zig");
@@ -146,7 +147,7 @@ pub const diagnostic_trace = struct {
 pub fn stepTick(
     context: *SimulationContext,
     tick_index: usize,
-    tick_inputs: []const replay_codec.ReplayPlayerInput,
+    tick_inputs: []const player_runtime.GameInput,
     tick_events: []const replay_codec.ReplayEvent,
     dt_tick: f32,
     options: StepOptions,
@@ -199,7 +200,7 @@ pub fn stepTick(
     var players = context.players();
     const players_for_inputs = @min(players.len, tick_inputs.len);
     for (tick_inputs[0..players_for_inputs]) |input| {
-        const flags = replay_codec.unpackInputFlags(input.flags);
+        const flags = input.flags;
         if (flags.fire_down) {
             context.state.survival_reward_fire_seen = true;
         }
@@ -252,8 +253,8 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
     effects.updateEvilEyesTargets(&context.state, players, context.creatures.entries[0..]);
     perks.updatePerkEffects(&context.state, players, frame.dt_sim);
-    effects.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
-    effects.applyPyrokineticEffects(
+    perks.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
+    perks.applyPyrokineticEffects(
         &context.state,
         players,
         &context.creatures,
@@ -276,7 +277,7 @@ pub fn stepTick(
     frame.rng_after_creatures = context.state.rng.state;
 
     for (players, 0..) |_, player_idx| {
-        effects.applyFinalRevengeOnDeathTransition(
+        perks.applyFinalRevengeOnDeathTransition(
             &context.state,
             players,
             player_idx,
@@ -346,13 +347,12 @@ pub fn stepTick(
             continue;
         }
         const health_before_player_step = player.health;
-        const flags = replay_codec.unpackInputFlags(input.flags);
+        const flags = input.flags;
         const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
 
-        movement.updatePlayerFromReplayInput(
+        movement.updatePlayerFromGameInput(
             player,
             input,
-            flags,
             &context.state,
             &context.creatures,
             frame.dt_sim,
@@ -375,7 +375,7 @@ pub fn stepTick(
             },
             frame.dt_sim,
         );
-        effects.applyFinalRevengeOnDeathTransition(
+        perks.applyFinalRevengeOnDeathTransition(
             &context.state,
             players,
             player_idx,
@@ -807,12 +807,16 @@ test "step tick applies counters and emits trace snapshot" {
 
     const before_speed = context.players()[0].move_speed;
 
-    const input = replay_codec.ReplayPlayerInput{
+    const input = player_runtime.GameInput{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 700.0,
         .aim_y = 512.0,
-        .flags = replay_codec.fire_pressed_flag | replay_codec.reload_pressed_flag,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = true,
+            .reload_pressed = true,
+        },
     };
 
     const TraceCapture = struct {
@@ -829,7 +833,7 @@ test "step tick applies counters and emits trace snapshot" {
     const result = try stepTick(
         &context,
         0,
-        &[_]replay_codec.ReplayPlayerInput{input},
+        &[_]player_runtime.GameInput{input},
         &.{},
         context.dt_nominal,
         .{
