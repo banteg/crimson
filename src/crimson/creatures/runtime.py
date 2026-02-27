@@ -1210,7 +1210,7 @@ class CreaturePool:
                 dist = (creature.pos - player.pos).length()
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                        type_id = int(ProjectileTypeId.PLASMA_RIFLE)
+                        type_id = ProjectileTypeId.PLASMA_RIFLE
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),

@@ -120,7 +120,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
     cases: list[dict[str, Any]] = [
         {
             "name": "pistol_near_hit",
-            "type_id": int(ProjectileTypeId.PISTOL),
+            "type_id": ProjectileTypeId.PISTOL,
             "travel_budget": 15.0,
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
@@ -129,7 +129,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "pistol_rng_jitter",
-            "type_id": int(ProjectileTypeId.PISTOL),
+            "type_id": ProjectileTypeId.PISTOL,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -221,7 +221,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
     idx = pool.spawn(
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
     )
 

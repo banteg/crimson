@@ -20,6 +20,7 @@ from ..types import (
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
+    ProjectileTypeLike,
     _EffectsLike,
     _rng_zero,
 )
@@ -71,7 +72,7 @@ class ProjectilePool:
         *,
         pos: Vec2,
         angle: float,
-        type_id: int,
+        type_id: ProjectileTypeLike,
         owner_id: OwnerLike,
         travel_budget: float = 0.0,
         hits_players: bool = False,
@@ -90,7 +91,8 @@ class ProjectilePool:
         entry.pos = pos
         entry.origin = pos
         entry.vel = Vec2(math.cos(float(angle)) * 1.5, math.sin(float(angle)) * 1.5)
-        entry.type_id = int(type_id)
+        type_id_i = int(type_id)
+        entry.type_id = type_id_i
         entry.life_timer = 0.4
         entry.reserved = 0.0
         entry.speed_scale = 1.0
@@ -101,25 +103,25 @@ class ProjectilePool:
         entry.owner = owner_ref(owner_id)
         entry.hits_players = bool(hits_players)
 
-        if type_id == ProjectileTypeId.ION_MINIGUN:
+        if type_id_i == ProjectileTypeId.ION_MINIGUN:
             entry.hit_radius = 3.0
             entry.damage_pool = 1.0
             return index
-        if type_id == ProjectileTypeId.ION_RIFLE:
+        if type_id_i == ProjectileTypeId.ION_RIFLE:
             entry.hit_radius = 5.0
             entry.damage_pool = 1.0
             return index
-        if type_id in (ProjectileTypeId.ION_CANNON, ProjectileTypeId.PLASMA_CANNON):
+        if type_id_i in (ProjectileTypeId.ION_CANNON, ProjectileTypeId.PLASMA_CANNON):
             entry.hit_radius = 10.0
         else:
             entry.hit_radius = 1.0
-            if type_id == ProjectileTypeId.GAUSS_GUN:
+            if type_id_i == ProjectileTypeId.GAUSS_GUN:
                 entry.damage_pool = 300.0
                 return index
-            if type_id == ProjectileTypeId.FIRE_BULLETS:
+            if type_id_i == ProjectileTypeId.FIRE_BULLETS:
                 entry.damage_pool = 240.0
                 return index
-            if type_id == ProjectileTypeId.BLADE_GUN:
+            if type_id_i == ProjectileTypeId.BLADE_GUN:
                 entry.damage_pool = 50.0
                 return index
         entry.damage_pool = 1.0
@@ -250,7 +252,7 @@ class ProjectilePool:
                 # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
-                if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
+                if proj.type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
                     _reset_shock_chain_if_owner(proj_index)
                 behavior.linger(ctx, proj)
                 continue

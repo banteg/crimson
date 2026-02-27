@@ -27,7 +27,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             players=ctx.players,
             pos=origin,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.PISTOL),
+            type_id=ProjectileTypeId.PISTOL,
             owner_id=-100,
             owner_player_index=ctx.player.index,
         )
@@ -42,7 +42,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             players=ctx.players,
             pos=origin,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.GAUSS_GUN),
+            type_id=ProjectileTypeId.GAUSS_GUN,
             owner_id=-100,
             owner_player_index=ctx.player.index,
         )
