@@ -29,10 +29,6 @@ from crimson.replay.diagnostic_trace_schema import (
 )
 from crimson.sim.driver.replay_runner import ReplayRunnerError, run_survival_replay
 
-_HASH64_MASK = (1 << 64) - 1
-_HASH64_PRIME = 1099511628211
-_HASH64_SEED = 1469598103934665603
-
 # Python currently cannot observe these natively in replay_runner world callbacks.
 _UNSUPPORTED_COMPARE_PATHS: set[str] = {
     "debug.debug_pending_nuke",
@@ -84,18 +80,6 @@ def _f32_bits(value: float) -> int:
     return int(struct.unpack("<I", struct.pack("<f", float(value)))[0])
 
 
-def _hash_mix(seed: int, value: int) -> int:
-    return int(((int(seed) ^ (int(value) & _HASH64_MASK)) * _HASH64_PRIME) & _HASH64_MASK)
-
-
-def _hash_mix_i32(seed: int, value: int) -> int:
-    return _hash_mix(seed, int(value) & _HASH64_MASK)
-
-
-def _hash_mix_f32(seed: int, value: float) -> int:
-    return _hash_mix(seed, _f32_bits(float(value)))
-
-
 def _add_projectile_type_count(entries: list[dict[str, int]], type_id: int) -> None:
     idx = 0
     while idx < len(entries) and int(entries[idx]["type_id"]) < int(type_id):
@@ -140,36 +124,17 @@ def _build_python_row(
     player = players[0] if players else None
 
     projectile_count = 0
-    projectile_state_hash = int(_HASH64_SEED)
-    projectile_active_index_sum = 0
-    projectile_active_index_xor = 0
     projectile_type_counts: list[dict[str, int]] = []
     projectile_entries: list[dict[str, object]] = []
 
     for idx, entry in enumerate(projectiles_entries):
-        projectile_state_hash = _hash_mix(projectile_state_hash, idx)
-        is_active = bool(getattr(entry, "active"))
-        projectile_state_hash = _hash_mix(projectile_state_hash, 1 if is_active else 0)
-        if not is_active:
+        if not bool(getattr(entry, "active")):
             continue
 
         projectile_count += 1
-        projectile_active_index_sum += int(idx)
-        projectile_active_index_xor ^= int(idx)
 
         type_id = int(getattr(entry, "type_id"))
-        projectile_state_hash = _hash_mix_i32(projectile_state_hash, type_id)
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry.pos, "x")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry.pos, "y")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry.origin, "x")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry.origin, "y")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry, "life_timer")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry, "damage_pool")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry, "angle")))
-        projectile_state_hash = _hash_mix_f32(projectile_state_hash, float(getattr(entry, "speed_scale")))
         owner_legacy = int(entry.owner.to_legacy())
-        projectile_state_hash = _hash_mix_i32(projectile_state_hash, owner_legacy)
-        projectile_state_hash = _hash_mix(projectile_state_hash, 1 if bool(getattr(entry, "hits_players")) else 0)
 
         _add_projectile_type_count(projectile_type_counts, type_id)
 
@@ -190,49 +155,14 @@ def _build_python_row(
             },
         )
 
-    creature_active_index_sum = 0
-    creature_active_index_xor = 0
-    creature_state_hash = int(_HASH64_SEED)
     creature_entries: list[dict[str, object]] = []
 
     for idx, creature in enumerate(creatures_entries):
-        creature_state_hash = _hash_mix(creature_state_hash, idx)
-        is_active = bool(getattr(creature, "active"))
-        creature_state_hash = _hash_mix(creature_state_hash, 1 if is_active else 0)
-        if not is_active:
+        if not bool(getattr(creature, "active")):
             continue
 
-        creature_active_index_sum += int(idx)
-        creature_active_index_xor ^= int(idx)
-
         type_id = int(getattr(creature, "type_id"))
-        creature_state_hash = _hash_mix_i32(creature_state_hash, type_id)
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.pos, "x")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.pos, "y")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.target, "x")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.target, "y")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "heading")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "target_heading")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "phase_seed")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.vel, "x")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature.vel, "y")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "move_scale")))
-        creature_state_hash = _hash_mix_i32(creature_state_hash, int(getattr(creature, "force_target")))
-        creature_state_hash = _hash_mix_i32(creature_state_hash, int(getattr(creature, "ai_mode")))
-        creature_state_hash = _hash_mix_i32(creature_state_hash, int(getattr(creature, "link_index")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "orbit_angle")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "orbit_radius")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "hp")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "max_hp")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "move_speed")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "reward_value")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "size")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "contact_damage")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "lifecycle_stage")))
-        creature_state_hash = _hash_mix_f32(creature_state_hash, float(getattr(creature, "attack_cooldown")))
-        creature_state_hash = _hash_mix_i32(creature_state_hash, int(creature.last_hit_owner.to_legacy()))
         creature_flags = int(getattr(creature, "flags"))
-        creature_state_hash = _hash_mix(creature_state_hash, creature_flags)
 
         creature_entries.append(
             {
@@ -389,9 +319,6 @@ def _build_python_row(
             "kills": int(creatures_pool.kill_count),
             "shots_fired_p0": int(state.shots_fired[0] if len(state.shots_fired) > 0 else 0),
             "creature_count": int(sum(1 for creature in creatures_entries if bool(getattr(creature, "active")))),
-            "creature_active_index_sum": int(creature_active_index_sum),
-            "creature_active_index_xor": int(creature_active_index_xor),
-            "creature_state_hash": int(creature_state_hash),
             "perk_pending": int(state.perk_selection.pending_count),
         },
         "player": player_payload,
@@ -401,10 +328,7 @@ def _build_python_row(
             "active_entries": bonus_active_entries,
         },
         "projectiles": {
-            "projectile_state_hash": int(projectile_state_hash),
             "projectile_count": int(projectile_count),
-            "projectile_active_index_sum": int(projectile_active_index_sum),
-            "projectile_active_index_xor": int(projectile_active_index_xor),
             "projectile_hit_count": int(len(hits)),
             "projectile_first_hit_creature_index": int(first_hit_creature_index),
             "projectile_first_hit_projectile_index": int(first_hit_projectile_index),

@@ -82,9 +82,6 @@ pub const ReplayTickSummary = struct {
     kills: i32,
     shots_fired_p0: i32,
     creature_count: usize,
-    creature_active_index_sum: i32,
-    creature_active_index_xor: i32,
-    creature_state_hash: u64,
     perk_pending: i32,
 };
 
@@ -93,9 +90,6 @@ pub const ReplayTickSummaryJson = struct {
     kills: i32,
     shots_fired_p0: i32,
     creature_count: usize,
-    creature_active_index_sum: i32,
-    creature_active_index_xor: i32,
-    creature_state_hash: u64,
     perk_pending: i32,
 };
 
@@ -136,10 +130,7 @@ pub const ReplayTickBonuses = struct {
 };
 
 pub const ReplayTickProjectiles = struct {
-    projectile_state_hash: u64,
     projectile_count: usize,
-    projectile_active_index_sum: i32,
-    projectile_active_index_xor: i32,
     projectile_hit_count: i32,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
@@ -191,10 +182,7 @@ pub const ReplayTickBonusesJson = struct {
 };
 
 pub const ReplayTickProjectilesJson = struct {
-    projectile_state_hash: u64,
     projectile_count: usize,
-    projectile_active_index_sum: i32,
-    projectile_active_index_xor: i32,
     projectile_hit_count: i32,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
@@ -256,9 +244,6 @@ pub fn toJsonRow(trace: anytype) ReplayTickTraceJsonRow {
             .kills = trace.summary.kills,
             .shots_fired_p0 = trace.summary.shots_fired_p0,
             .creature_count = trace.summary.creature_count,
-            .creature_active_index_sum = trace.summary.creature_active_index_sum,
-            .creature_active_index_xor = trace.summary.creature_active_index_xor,
-            .creature_state_hash = trace.summary.creature_state_hash,
             .perk_pending = trace.summary.perk_pending,
         },
         .player = trace.player,
@@ -268,10 +253,7 @@ pub fn toJsonRow(trace: anytype) ReplayTickTraceJsonRow {
             .active_entries = @ptrCast(bonus_active_entries),
         },
         .projectiles = .{
-            .projectile_state_hash = trace.projectiles.projectile_state_hash,
             .projectile_count = trace.projectiles.projectile_count,
-            .projectile_active_index_sum = trace.projectiles.projectile_active_index_sum,
-            .projectile_active_index_xor = trace.projectiles.projectile_active_index_xor,
             .projectile_hit_count = trace.projectiles.projectile_hit_count,
             .projectile_first_hit_creature_index = trace.projectiles.projectile_first_hit_creature_index,
             .projectile_first_hit_projectile_index = trace.projectiles.projectile_first_hit_projectile_index,
@@ -341,32 +323,13 @@ pub fn buildReplayTickTrace(
     rng_after_bonus_update: u32,
 ) ReplayTickTrace {
     var projectile_count: usize = 0;
-    var projectile_state_hash: u64 = 1469598103934665603;
-    var projectile_active_index_sum: i32 = 0;
-    var projectile_active_index_xor: i32 = 0;
     var projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry = undefined;
     var projectile_type_counts_len: usize = 0;
     var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry = undefined;
     var projectile_entries_len: usize = 0;
     for (projectiles.entries, 0..) |entry, idx| {
-        projectile_state_hash = hashMix(projectile_state_hash, @intCast(idx));
-        projectile_state_hash = hashMix(projectile_state_hash, if (entry.active) 1 else 0);
         if (!entry.active) continue;
 
-        const idx_i32: i32 = @intCast(idx);
-        projectile_active_index_sum += idx_i32;
-        projectile_active_index_xor ^= idx_i32;
-        projectile_state_hash = hashMixI32(projectile_state_hash, entry.type_id);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.pos.x);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.pos.y);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.origin.x);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.origin.y);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.life_timer);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.damage_pool);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.angle);
-        projectile_state_hash = hashMixF32(projectile_state_hash, entry.speed_scale);
-        projectile_state_hash = hashMixI32(projectile_state_hash, entry.owner.toLegacy());
-        projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
         projectile_count += 1;
 
         addProjectileTypeCount(&projectile_type_counts, &projectile_type_counts_len, entry.type_id);
@@ -388,46 +351,10 @@ pub fn buildReplayTickTrace(
         projectile_entries_len += 1;
     }
 
-    var creature_active_index_sum: i32 = 0;
-    var creature_active_index_xor: i32 = 0;
-    var creature_state_hash: u64 = 1469598103934665603;
     var creature_entries: [creatures_mod.max_creatures]CreatureTraceEntry = undefined;
     var creature_entries_len: usize = 0;
     for (creatures.entries, 0..) |creature, idx| {
-        creature_state_hash = hashMix(creature_state_hash, @intCast(idx));
-        creature_state_hash = hashMix(creature_state_hash, if (creature.active) 1 else 0);
         if (!creature.active) continue;
-
-        const idx_i32: i32 = @intCast(idx);
-        creature_active_index_sum += idx_i32;
-        creature_active_index_xor ^= idx_i32;
-
-        creature_state_hash = hashMixI32(creature_state_hash, creature.type_id);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.pos.x);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.pos.y);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.target.x);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.target.y);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.heading);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.target_heading);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.phase_seed);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.vel.x);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.vel.y);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.move_scale);
-        creature_state_hash = hashMixI32(creature_state_hash, creature.force_target);
-        creature_state_hash = hashMixI32(creature_state_hash, @intFromEnum(creature.ai_mode));
-        creature_state_hash = hashMixI32(creature_state_hash, creature.link_index);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.orbit_angle);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.orbit_radius);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.hp);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.max_hp);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.move_speed);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.reward_value);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.size);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.contact_damage);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.lifecycle_stage);
-        creature_state_hash = hashMixF32(creature_state_hash, creature.attack_cooldown);
-        creature_state_hash = hashMixI32(creature_state_hash, creature.last_hit_owner.toLegacy());
-        creature_state_hash = hashMix(creature_state_hash, creature.flags);
 
         creature_entries[creature_entries_len] = .{
             .index = idx,
@@ -503,9 +430,6 @@ pub fn buildReplayTickTrace(
             .kills = creatures.kill_count,
             .shots_fired_p0 = if (state.shots_fired.len > 0) state.shots_fired[0] else 0,
             .creature_count = creatures.activeCount(),
-            .creature_active_index_sum = creature_active_index_sum,
-            .creature_active_index_xor = creature_active_index_xor,
-            .creature_state_hash = creature_state_hash,
             .perk_pending = state.perk_selection.pending_count,
         },
         .player = .{
@@ -543,10 +467,7 @@ pub fn buildReplayTickTrace(
             .active_entries = bonus_active_entries,
         },
         .projectiles = .{
-            .projectile_state_hash = projectile_state_hash,
             .projectile_count = projectile_count,
-            .projectile_active_index_sum = projectile_active_index_sum,
-            .projectile_active_index_xor = projectile_active_index_xor,
             .projectile_hit_count = projectile_tick_stats.hit_count,
             .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
             .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
@@ -621,14 +542,6 @@ fn f32Bits(value: f32) u32 {
     return @bitCast(value);
 }
 
-fn hashMixI32(seed: u64, value: i32) u64 {
-    return hashMix(seed, @as(u64, @bitCast(@as(i64, value))));
-}
-
-fn hashMixF32(seed: u64, value: f32) u64 {
-    return hashMix(seed, @as(u64, f32Bits(value)));
-}
-
 fn bonusTimerMs(seconds: f32) i32 {
     if (!(seconds > 0.0)) return 0;
     const ms = @round(seconds * 1000.0);
@@ -637,8 +550,3 @@ fn bonusTimerMs(seconds: f32) i32 {
     return @intFromFloat(ms);
 }
 
-fn hashMix(seed: u64, value: u64) u64 {
-    var h = seed ^ value;
-    h *%= 1099511628211;
-    return h;
-}

@@ -78,9 +78,6 @@ class ReplayTickSummaryJson(msgspec.Struct, forbid_unknown_fields=True):
     kills: int
     shots_fired_p0: int
     creature_count: int
-    creature_active_index_sum: int
-    creature_active_index_xor: int
-    creature_state_hash: int
     perk_pending: int
 
 
@@ -120,10 +117,7 @@ class ReplayTickBonusesJson(msgspec.Struct, forbid_unknown_fields=True):
 
 
 class ReplayTickProjectilesJson(msgspec.Struct, forbid_unknown_fields=True):
-    projectile_state_hash: int
     projectile_count: int
-    projectile_active_index_sum: int
-    projectile_active_index_xor: int
     projectile_hit_count: int
     projectile_first_hit_creature_index: int
     projectile_first_hit_projectile_index: int
