@@ -19,14 +19,6 @@ from .capture import (
     load_capture,
     parse_player_int_overrides,
 )
-from .diff import (
-    DEFAULT_RNG_MARK_ORDER,
-    ReplayDiffFailure,
-    ReplayDiffResult,
-    ReplayFieldDiff,
-    checkpoint_field_diffs,
-    compare_checkpoints,
-)
 from .schema import (
     CaptureConfig,
     CaptureEventHead,
@@ -48,12 +40,8 @@ __all__ = [
     "CaptureFile",
     "CapturePhaseMarker",
     "CaptureTick",
-    "DEFAULT_RNG_MARK_ORDER",
     "ModuleInfo",
     "ProcessInfo",
-    "ReplayDiffFailure",
-    "ReplayDiffResult",
-    "ReplayFieldDiff",
     "SessionFingerprint",
     "apply_capture_bootstrap_payload",
     "build_capture_dt_frame_ms_i32_overrides",
@@ -61,8 +49,6 @@ __all__ = [
     "capture_bootstrap_payload_from_event_payload",
     "capture_perk_apply_id_from_event_payload",
     "capture_perk_pending_from_event_payload",
-    "checkpoint_field_diffs",
-    "compare_checkpoints",
     "convert_capture_to_checkpoints",
     "convert_capture_to_replay",
     "default_capture_replay_path",
