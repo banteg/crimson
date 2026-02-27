@@ -22,7 +22,7 @@ pub fn buildQuestSpawnTable(
     level_key: i32,
     player_count: i32,
     seed: u32,
-    world_size: f64,
+    world_size: f32,
     out_entries: []spawn_runtime.QuestSpawnEntry,
 ) QuestSpawnBuildError!QuestSpawnBuildResult {
     if (player_count < 1 or player_count > 4) return error.UnsupportedQuestSpawnTable;
@@ -59,8 +59,8 @@ fn summarizeQuestEntries(entries: []const spawn_runtime.QuestSpawnEntry) u64 {
     for (entries, 0..) |entry, idx| {
         hash = summaryHashMix(hash, @as(u64, @intCast(idx)));
         hash = summaryHashMix(hash, @as(u64, @intCast(@intFromEnum(entry.spawn_id))));
-        hash = summaryHashMix(hash, @as(u64, @bitCast(entry.pos.x)));
-        hash = summaryHashMix(hash, @as(u64, @bitCast(entry.pos.y)));
+        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.pos.x))));
+        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.pos.y))));
         hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.heading))));
         hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.trigger_ms))));
         hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.count))));
@@ -87,8 +87,8 @@ test "level 1-10 rectangular spawn summary stays stable" {
 
     const entries = out_entries[0..len];
     try std.testing.expectEqual(@as(usize, 57), entries.len);
-    try std.testing.expectEqual(@as(f64, 450.0), entries[0].pos.y);
-    try std.testing.expectEqual(@as(u64, 1409422335643109472), summarizeQuestEntries(entries));
+    try std.testing.expectEqual(@as(f32, 450.0), entries[0].pos.y);
+    try std.testing.expectEqual(@as(u64, 13539363879224084576), summarizeQuestEntries(entries));
 }
 
 test "level 5-1 rectangular spawn summary stays stable" {
@@ -110,9 +110,9 @@ test "level 5-1 rectangular spawn summary stays stable" {
 
     const entries = out_entries[0..len];
     try std.testing.expectEqual(@as(usize, 31), entries.len);
-    try std.testing.expectEqual(@as(f64, 944.0), entries[25].pos.y);
-    try std.testing.expectEqual(@as(f64, 1104.0), entries[30].pos.y);
-    try std.testing.expectEqual(@as(u64, 5508488500531934324), summarizeQuestEntries(entries));
+    try std.testing.expectEqual(@as(f32, 944.0), entries[25].pos.y);
+    try std.testing.expectEqual(@as(f32, 1104.0), entries[30].pos.y);
+    try std.testing.expectEqual(@as(u64, 5293558049980200052), summarizeQuestEntries(entries));
 }
 
 test "append radial spawns rejects non-positive radius step" {

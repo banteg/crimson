@@ -111,8 +111,8 @@ pub const SpawnId = enum(i32) {
 };
 
 pub const Vec2 = struct {
-    x: f64,
-    y: f64,
+    x: f32,
+    y: f32,
 };
 
 pub const Crand = struct {
@@ -324,7 +324,7 @@ pub fn tickQuestSpawnTimeline(
         const offscreen_x = entry_x < 0.0 or terrain_width < entry_x;
         for (0..@as(usize, @intCast(@max(entry.count, 0)))) |spawn_idx| {
             if (result.spawn_count >= result.spawns.len) break;
-            const magnitude = @as(f64, @floatFromInt(spawn_idx * 0x28));
+            const magnitude = @as(f32, @floatFromInt(spawn_idx * 0x28));
             const offset = if ((spawn_idx & 1) == 0) magnitude else -magnitude;
             var pos = entry.pos;
             if (offscreen_x) {

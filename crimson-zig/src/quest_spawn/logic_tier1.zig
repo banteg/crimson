@@ -2,7 +2,7 @@ const common = @import("logic_common.zig");
 const game_ids = @import("../game_ids.zig");
 const spawn_runtime = @import("../runtime/spawn.zig");
 
-const default_edge_offset: f64 = 64.0;
+const default_edge_offset: f32 = 64.0;
 
 pub const tier1_builders = [_]common.LevelBuilder{
     .{ .level_key = 101, .start_weapon_id = game_ids.WeaponId.pistol, .build = build_1_1_land_hostile },
@@ -110,7 +110,7 @@ fn build_1_3_target_practice(
 
     while (true) {
         const angle = common.randomAngle(rng);
-        const radius = @as(f64, @floatFromInt(rng.randBelow(8) + 2)) * 32.0;
+        const radius = @as(f32, @floatFromInt(rng.randBelow(8) + 2)) * 32.0;
         const point = common.addVec(center, common.mulVec(common.vecFromAngle(angle), radius));
         const heading = common.headingFromCenter(point, center);
 

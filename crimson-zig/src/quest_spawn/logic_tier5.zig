@@ -17,7 +17,7 @@ pub const tier5_builders = [_]common.LevelBuilder{
     .{ .level_key = 510, .start_weapon_id = game_ids.WeaponId.pistol, .build = build510TheGathering },
 };
 
-fn halfFloor(value: f64) f64 {
+fn halfFloor(value: f32) f32 {
     return @floor(value * 0.5);
 }
 
@@ -59,7 +59,7 @@ fn build501TheBeating(
             out_entries,
             len,
             .{
-                .x = ctx.width + @as(f64, @floatFromInt(x_offset)),
+                .x = ctx.width + @as(f32, @floatFromInt(x_offset)),
                 .y = half_height,
             },
             0.0,
@@ -88,7 +88,7 @@ fn build501TheBeating(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = @as(f64, @floatFromInt(x)), .y = half_height },
+            .{ .x = @as(f32, @floatFromInt(x)), .y = half_height },
             0.0,
             common.SpawnId.alien_const_green_small_25,
             trigger,
@@ -105,7 +105,7 @@ fn build501TheBeating(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = half_width, .y = @as(f64, @floatFromInt(y)) },
+            .{ .x = half_width, .y = @as(f32, @floatFromInt(y)) },
             0.0,
             common.SpawnId.alien_const_brown_transparent_0f,
             trigger,
@@ -116,7 +116,7 @@ fn build501TheBeating(
     }
 
     trigger = 40_000;
-    var y2: f64 = ctx.height + 44.0;
+    var y2: f32 = ctx.height + 44.0;
     wave_idx = 0;
     while (wave_idx < 6) : (wave_idx += 1) {
         try common.appendSpawn(
@@ -164,8 +164,8 @@ fn build502TheSpankingOfTheDead(
     var trigger: i32 = 5000;
     var step_index: i32 = 0;
     while (trigger < 0xA988) {
-        const angle = @as(f64, @floatFromInt(step_index)) * 0.33333334;
-        const radius = 512.0 - (@as(f64, @floatFromInt(step_index)) * 3.8);
+        const angle = @as(f32, @floatFromInt(step_index)) * 0.33333334;
+        const radius = 512.0 - (@as(f32, @floatFromInt(step_index)) * 3.8);
         const pos = common.addVec(
             .{ .x = 512.0, .y = 512.0 },
             common.mulVec(common.vecFromAngle(angle), radius),
@@ -227,7 +227,7 @@ fn build503TheFortress(
     var trigger: i32 = 1100;
     var y_seed: i32 = 0x200;
     while (trigger < 0x14B4) {
-        const y = (@as(f64, @floatFromInt(y_seed)) * 0.125) + 256.0;
+        const y = (@as(f32, @floatFromInt(y_seed)) * 0.125) + 256.0;
         try common.appendSpawn(
             out_entries,
             len,
@@ -249,8 +249,8 @@ fn build503TheFortress(
         var row: i32 = 1;
         while (row < 7) : (row += 1) {
             if (row != 1 or (x_seed != 0x480 and x_seed != 0x600)) {
-                const x = (@as(f64, @floatFromInt(x_seed)) * 0.16666667) + 256.0;
-                const y = 512.0 - (@as(f64, @floatFromInt(row * 0x180)) * 0.16666667);
+                const x = (@as(f32, @floatFromInt(x_seed)) * 0.16666667) + 256.0;
+                const y = 512.0 - (@as(f32, @floatFromInt(row * 0x180)) * 0.16666667);
                 try common.appendSpawn(
                     out_entries,
                     len,

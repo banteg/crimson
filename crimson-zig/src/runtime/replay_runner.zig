@@ -2379,8 +2379,8 @@ fn applyCaptureCreatureSpawnEvent(
             .{
                 .template_id = spawn_row.template_id,
                 .pos = .{
-                    .x = spawn_row.pos_x,
-                    .y = spawn_row.pos_y,
+                    .x = narrowF32(spawn_row.pos_x),
+                    .y = narrowF32(spawn_row.pos_y),
                 },
                 .heading = narrowF32(spawn_row.heading),
             },
