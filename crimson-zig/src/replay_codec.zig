@@ -1,7 +1,7 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
 
-pub const replay_format_version: i32 = 4;
+pub const replay_format_version: i32 = 5;
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
@@ -53,6 +53,17 @@ pub const ReplayStatus = struct {
     weapon_usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count,
 };
 
+pub const ReplayClaimedStats = struct {
+    complete: bool = false,
+    ticks: i32 = 0,
+    elapsed_ms: i64 = 0,
+    score_xp: i64 = 0,
+    kills: i32 = 0,
+    most_used_weapon_id: i32 = 0,
+    shots_fired: i32 = 0,
+    shots_hit: i32 = 0,
+};
+
 pub const ReplayHeader = struct {
     game_mode_id: i32,
     seed: u32,
@@ -70,6 +81,7 @@ pub const ReplayHeader = struct {
     world_size: f32,
     player_count: i32,
     status: ReplayStatus,
+    claimed_stats: ?ReplayClaimedStats = null,
     input_quantization: []u8,
 
     pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
@@ -379,6 +391,17 @@ const ReplayStatusWire = struct {
     weapon_usage_counts: []const u32 = &.{},
 };
 
+const ReplayClaimedStatsWire = struct {
+    complete: bool = false,
+    ticks: i32 = 0,
+    elapsed_ms: i64 = 0,
+    score_xp: i64 = 0,
+    kills: i32 = 0,
+    most_used_weapon_id: i32 = 0,
+    shots_fired: i32 = 0,
+    shots_hit: i32 = 0,
+};
+
 const ReplayHeaderWire = struct {
     game_mode_id: i32,
     seed: u32,
@@ -396,6 +419,7 @@ const ReplayHeaderWire = struct {
     world_size: f32 = 1024.0,
     player_count: i32 = 1,
     status: ReplayStatusWire = .{},
+    claimed_stats: ?ReplayClaimedStatsWire = null,
     input_quantization: []const u8 = "raw",
 };
 
@@ -1152,6 +1176,31 @@ fn buildHeader(
         usage_counts[idx] = try parseU32(value);
     }
 
+    var claimed_stats: ?ReplayClaimedStats = null;
+    if (wire.claimed_stats) |claimed_wire| {
+        const parsed = ReplayClaimedStats{
+            .complete = claimed_wire.complete,
+            .ticks = try parseI32(claimed_wire.ticks),
+            .elapsed_ms = try parseI64(claimed_wire.elapsed_ms),
+            .score_xp = try parseI64(claimed_wire.score_xp),
+            .kills = try parseI32(claimed_wire.kills),
+            .most_used_weapon_id = try parseI32(claimed_wire.most_used_weapon_id),
+            .shots_fired = try parseI32(claimed_wire.shots_fired),
+            .shots_hit = try parseI32(claimed_wire.shots_hit),
+        };
+        if (parsed.ticks < 0 or
+            parsed.elapsed_ms < 0 or
+            parsed.score_xp < 0 or
+            parsed.kills < 0 or
+            parsed.shots_fired < 0 or
+            parsed.shots_hit < 0 or
+            parsed.shots_hit > parsed.shots_fired)
+        {
+            return error.InvalidHeaderValue;
+        }
+        claimed_stats = parsed;
+    }
+
     return .{
         .game_mode_id = game_mode_id,
         .seed = seed,
@@ -1173,6 +1222,7 @@ fn buildHeader(
             .quest_unlock_index_full = quest_unlock_index_full,
             .weapon_usage_counts = usage_counts,
         },
+        .claimed_stats = claimed_stats,
         .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
     };
 }
@@ -1234,6 +1284,10 @@ fn parseI32(value: i32) ReplayCodecError!i32 {
 }
 
 fn parseU32(value: u32) ReplayCodecError!u32 {
+    return value;
+}
+
+fn parseI64(value: i64) ReplayCodecError!i64 {
     return value;
 }
 
@@ -1461,6 +1515,94 @@ test "build header rejects world_size above i32 range" {
             .quest_unlock_index = 0,
             .quest_unlock_index_full = 0,
             .weapon_usage_counts = usage_counts[0..],
+        },
+        .input_quantization = "raw",
+    };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
+}
+
+test "build header parses claimed stats snapshot" {
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const wire = ReplayHeaderWire{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = "",
+        .bootstrap_kind = "none",
+        .bootstrap_seed = 0,
+        .game_version = "0.7.0",
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = usage_counts[0..],
+        },
+        .claimed_stats = .{
+            .complete = true,
+            .ticks = 12,
+            .elapsed_ms = 200,
+            .score_xp = 1234,
+            .kills = 56,
+            .most_used_weapon_id = 7,
+            .shots_fired = 10,
+            .shots_hit = 8,
+        },
+        .input_quantization = "raw",
+    };
+    const header = try buildHeader(std.testing.allocator, wire);
+    defer header.deinit(std.testing.allocator);
+
+    try std.testing.expect(header.claimed_stats != null);
+    const claimed = header.claimed_stats.?;
+    try std.testing.expect(claimed.complete);
+    try std.testing.expectEqual(@as(i32, 12), claimed.ticks);
+    try std.testing.expectEqual(@as(i64, 200), claimed.elapsed_ms);
+    try std.testing.expectEqual(@as(i64, 1234), claimed.score_xp);
+    try std.testing.expectEqual(@as(i32, 56), claimed.kills);
+    try std.testing.expectEqual(@as(i32, 7), claimed.most_used_weapon_id);
+    try std.testing.expectEqual(@as(i32, 10), claimed.shots_fired);
+    try std.testing.expectEqual(@as(i32, 8), claimed.shots_hit);
+}
+
+test "build header rejects invalid claimed stats snapshot" {
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const wire = ReplayHeaderWire{
+        .game_mode_id = 1,
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = "",
+        .bootstrap_kind = "none",
+        .bootstrap_seed = 0,
+        .game_version = "0.7.0",
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{
+            .quest_unlock_index = 0,
+            .quest_unlock_index_full = 0,
+            .weapon_usage_counts = usage_counts[0..],
+        },
+        .claimed_stats = .{
+            .complete = false,
+            .ticks = 1,
+            .elapsed_ms = 16,
+            .score_xp = 0,
+            .kills = 0,
+            .most_used_weapon_id = 1,
+            .shots_fired = 1,
+            .shots_hit = 2,
         },
         .input_quantization = "raw",
     };

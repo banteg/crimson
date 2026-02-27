@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import gzip
+from typing import cast
 
 import msgspec
 import pytest
@@ -9,6 +10,7 @@ from crimson.math_parity import f32
 from crimson.replay import (
     PerkMenuOpenEvent,
     PerkPickEvent,
+    ReplayClaimedStatsSnapshot,
     ReplayCodecError,
     ReplayGameVersionWarning,
     ReplayHeader,
@@ -87,6 +89,48 @@ def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
 
     decoded = load_replay(dump_replay(replay))
     assert decoded.events == [PerkMenuOpenEvent(tick_index=1, player_index=0)]
+
+
+def test_replay_codec_roundtrip_claimed_stats() -> None:
+    header = ReplayHeader(
+        game_mode_id=1,
+        seed=0x1234,
+        tick_rate=60,
+        player_count=1,
+        claimed_stats=ReplayClaimedStatsSnapshot(
+            complete=True,
+            ticks=1,
+            elapsed_ms=16,
+            score_xp=200,
+            kills=3,
+            most_used_weapon_id=7,
+            shots_fired=9,
+            shots_hit=8,
+        ),
+    )
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput()])
+    replay = rec.finish()
+
+    decoded = load_replay(dump_replay(replay))
+    assert decoded.header.claimed_stats == header.claimed_stats
+
+
+def test_replay_codec_rejects_invalid_claimed_stats() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["claimed_stats"] = {
+        "complete": True,
+        "ticks": 1,
+        "elapsed_ms": 16,
+        "score_xp": 0,
+        "kills": 0,
+        "most_used_weapon_id": 1,
+        "shots_fired": 1,
+        "shots_hit": 2,
+    }
+    with pytest.raises(ReplayCodecError, match="claimed_stats.shots_hit must be <= claimed_stats.shots_fired"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
 
 
 def test_replay_codec_validates_event_tick_index_bounds() -> None:

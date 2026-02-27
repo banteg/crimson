@@ -18,6 +18,7 @@ from .types import (
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
+    ReplayClaimedStatsSnapshot,
     ReplayEvent,
     ReplayHeader,
     ReplayStatusSnapshot,
@@ -39,6 +40,17 @@ class _ReplayStatusWire(msgspec.Struct, forbid_unknown_fields=True):
     weapon_usage_counts: list[int] = msgspec.field(default_factory=list)
 
 
+class _ReplayClaimedStatsWire(msgspec.Struct, forbid_unknown_fields=True):
+    complete: bool = False
+    ticks: int = 0
+    elapsed_ms: int = 0
+    score_xp: int = 0
+    kills: int = 0
+    most_used_weapon_id: int = 0
+    shots_fired: int = 0
+    shots_hit: int = 0
+
+
 class _ReplayHeaderWire(msgspec.Struct, forbid_unknown_fields=True):
     game_mode_id: int
     seed: int
@@ -56,6 +68,7 @@ class _ReplayHeaderWire(msgspec.Struct, forbid_unknown_fields=True):
     world_size: float = 1024.0
     player_count: int = 1
     status: _ReplayStatusWire = msgspec.field(default_factory=_ReplayStatusWire)
+    claimed_stats: _ReplayClaimedStatsWire | None = None
     input_quantization: str = "raw"
 
 
@@ -126,6 +139,33 @@ def _validate_usage_counts(counts: tuple[int, ...] | list[int]) -> None:
         )
 
 
+def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
+    if int(stats.ticks) < 0:
+        raise ReplayCodecError(f"replay header claimed_stats.ticks must be non-negative, got {int(stats.ticks)}")
+    if int(stats.elapsed_ms) < 0:
+        raise ReplayCodecError(
+            f"replay header claimed_stats.elapsed_ms must be non-negative, got {int(stats.elapsed_ms)}",
+        )
+    if int(stats.score_xp) < 0:
+        raise ReplayCodecError(
+            f"replay header claimed_stats.score_xp must be non-negative, got {int(stats.score_xp)}",
+        )
+    if int(stats.kills) < 0:
+        raise ReplayCodecError(f"replay header claimed_stats.kills must be non-negative, got {int(stats.kills)}")
+    if int(stats.shots_fired) < 0:
+        raise ReplayCodecError(
+            f"replay header claimed_stats.shots_fired must be non-negative, got {int(stats.shots_fired)}",
+        )
+    if int(stats.shots_hit) < 0:
+        raise ReplayCodecError(
+            f"replay header claimed_stats.shots_hit must be non-negative, got {int(stats.shots_hit)}",
+        )
+    if int(stats.shots_hit) > int(stats.shots_fired):
+        raise ReplayCodecError(
+            "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
+        )
+
+
 def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
     if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
         raise ReplayCodecError(
@@ -138,6 +178,19 @@ def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
         raise ReplayCodecError(f"unknown input_quantization: {header.input_quantization!r}")
     if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
         raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
+    claimed_stats_wire: _ReplayClaimedStatsWire | None = None
+    if header.claimed_stats is not None:
+        _validate_claimed_stats(header.claimed_stats)
+        claimed_stats_wire = _ReplayClaimedStatsWire(
+            complete=bool(header.claimed_stats.complete),
+            ticks=int(header.claimed_stats.ticks),
+            elapsed_ms=int(header.claimed_stats.elapsed_ms),
+            score_xp=int(header.claimed_stats.score_xp),
+            kills=int(header.claimed_stats.kills),
+            most_used_weapon_id=int(header.claimed_stats.most_used_weapon_id),
+            shots_fired=int(header.claimed_stats.shots_fired),
+            shots_hit=int(header.claimed_stats.shots_hit),
+        )
 
     return _ReplayHeaderWire(
         game_mode_id=int(header.game_mode_id),
@@ -160,6 +213,7 @@ def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
             quest_unlock_index_full=int(header.status.quest_unlock_index_full),
             weapon_usage_counts=[int(value) for value in header.status.weapon_usage_counts],
         ),
+        claimed_stats=claimed_stats_wire,
         input_quantization=str(header.input_quantization),
     )
 
@@ -187,6 +241,19 @@ def _header_from_wire(data: _ReplayHeaderWire) -> ReplayHeader:
         quest_unlock_index_full=int(data.status.quest_unlock_index_full),
         weapon_usage_counts=weapon_usage_counts,
     )
+    claimed_stats: ReplayClaimedStatsSnapshot | None = None
+    if data.claimed_stats is not None:
+        claimed_stats = ReplayClaimedStatsSnapshot(
+            complete=bool(data.claimed_stats.complete),
+            ticks=int(data.claimed_stats.ticks),
+            elapsed_ms=int(data.claimed_stats.elapsed_ms),
+            score_xp=int(data.claimed_stats.score_xp),
+            kills=int(data.claimed_stats.kills),
+            most_used_weapon_id=int(data.claimed_stats.most_used_weapon_id),
+            shots_fired=int(data.claimed_stats.shots_fired),
+            shots_hit=int(data.claimed_stats.shots_hit),
+        )
+        _validate_claimed_stats(claimed_stats)
 
     return ReplayHeader(
         game_mode_id=int(data.game_mode_id),
@@ -205,6 +272,7 @@ def _header_from_wire(data: _ReplayHeaderWire) -> ReplayHeader:
         world_size=float(data.world_size),
         player_count=int(data.player_count),
         status=status,
+        claimed_stats=claimed_stats,
         input_quantization=input_quant,
     )
 

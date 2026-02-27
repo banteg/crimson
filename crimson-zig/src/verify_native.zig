@@ -1,7 +1,6 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
-const game_ids = @import("game_ids.zig");
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
@@ -19,31 +18,6 @@ pub const CommandOutput = struct {
     }
 };
 
-const ScoreMetric = enum {
-    auto,
-    score_xp,
-    elapsed_ms,
-};
-
-fn scoreMetricFromString(raw: []const u8) ?ScoreMetric {
-    return std.meta.stringToEnum(ScoreMetric, raw);
-}
-
-fn resolveScoreMetric(metric: ScoreMetric, game_mode_id: i32) ScoreMetric {
-    return switch (metric) {
-        .score_xp => .score_xp,
-        .elapsed_ms => .elapsed_ms,
-        .auto => switch (std.meta.intToEnum(game_ids.GameModeId, game_mode_id) catch @panic("invalid game mode id")) {
-            .rush, .quests => .elapsed_ms,
-            else => .score_xp,
-        },
-    };
-}
-
-fn scoreMetricLabel(metric: ScoreMetric) []const u8 {
-    return @tagName(metric);
-}
-
 const OutputFormat = enum {
     human,
     json,
@@ -53,8 +27,6 @@ const VerifyRequest = struct {
     replay_file: []const u8,
     output_format: OutputFormat = .human,
     json_out: ?[]const u8 = null,
-    submitted_score: ?i64 = null,
-    score_metric: ScoreMetric = .auto,
     base_dir: ?[]const u8 = null,
     debug_trace_jsonl: ?[]const u8 = null,
 };
@@ -91,11 +63,22 @@ const RunResult = struct {
     rng_state: u64,
 };
 
-const ScoreClaimPayload = struct {
-    metric: []const u8,
-    submitted_score: i64,
-    simulated_value: i64,
+const ClaimedStatsPayload = struct {
+    complete: bool,
+    ticks: i32,
+    elapsed_ms: i64,
+    score_xp: i64,
+    kills: i32,
+    most_used_weapon_id: i32,
+    shots_fired: i32,
+    shots_hit: i32,
+};
+
+const HeaderClaimPayload = struct {
+    expected: ClaimedStatsPayload,
+    simulated: ClaimedStatsPayload,
     match: bool,
+    mismatched_fields: []const []const u8,
 };
 
 const VerifyPayload = struct {
@@ -104,7 +87,8 @@ const VerifyPayload = struct {
     replay: []const u8,
     replay_sha256: []const u8,
     run_result: RunResult,
-    score_claim: ?ScoreClaimPayload,
+    header_claim: ?HeaderClaimPayload,
+    score_claim: ?struct {},
 };
 
 pub fn runReplayVerify(
@@ -224,14 +208,24 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    const resolved_metric: ScoreMetric = resolveScoreMetric(request.score_metric, run_result.game_mode_id);
+    var header_claim_payload: ?HeaderClaimPayload = null;
+    defer if (header_claim_payload) |claim| allocator.free(claim.mismatched_fields);
+    if (header.claimed_stats) |claimed| {
+        header_claim_payload = try buildHeaderClaimPayload(allocator, claimed, run_result);
+    }
+
+    const status: []const u8 = if (header_claim_payload) |claim|
+        if (claim.match) "ok" else "header_stats_mismatch"
+    else
+        "ok";
+
     const payload = try buildVerifyPayload(
         allocator,
         resolution.resolved_path,
         replay_sha256[0..],
         run_result,
-        resolved_metric,
-        request.submitted_score,
+        status,
+        header_claim_payload,
     );
     defer allocator.free(payload);
 
@@ -240,16 +234,6 @@ fn runNativeVerify(
             return buildVerifyFailedOutput(allocator, @errorName(err));
         };
     }
-
-    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
-        run_result.elapsed_ms
-    else
-        run_result.score_xp;
-    const claim_matches = if (request.submitted_score) |submitted|
-        submitted == simulated_value
-    else
-        true;
-    const status = if (claim_matches) "ok" else "score_mismatch";
 
     var stdout_buf: std.ArrayList(u8) = .empty;
     defer stdout_buf.deinit(allocator);
@@ -279,16 +263,22 @@ fn runNativeVerify(
                 run_result.rng_state,
             },
         );
-        if (request.submitted_score) |submitted| {
+        if (header_claim_payload) |claim| {
             try writer.print(
-                "; score_claim metric={s} submitted={d} simulated={d} match={s}",
+                "; header_claim complete={s} match={s} mismatches=",
                 .{
-                    scoreMetricLabel(resolved_metric),
-                    submitted,
-                    simulated_value,
-                    if (claim_matches) "true" else "false",
+                    if (claim.expected.complete) "true" else "false",
+                    if (claim.match) "true" else "false",
                 },
             );
+            if (claim.mismatched_fields.len == 0) {
+                try writer.writeAll("-");
+            } else {
+                for (claim.mismatched_fields, 0..) |field, idx| {
+                    if (idx != 0) try writer.writeByte(',');
+                    try writer.writeAll(field);
+                }
+            }
         }
         try writer.writeByte('\n');
     }
@@ -296,7 +286,7 @@ fn runNativeVerify(
     return .{
         .stdout = try stdout_buf.toOwnedSlice(allocator),
         .stderr = try allocator.dupe(u8, ""),
-        .exit_code = if (claim_matches) 0 else 3,
+        .exit_code = if (std.mem.eql(u8, status, "ok")) 0 else 3,
     };
 }
 
@@ -650,35 +640,92 @@ fn writeReplayTickTraceJsonl(
     try out.flush();
 }
 
+fn buildHeaderClaimPayload(
+    allocator: std.mem.Allocator,
+    claimed: replay_codec.ReplayClaimedStats,
+    run_result: RunResult,
+) !HeaderClaimPayload {
+    const expected = ClaimedStatsPayload{
+        .complete = claimed.complete,
+        .ticks = claimed.ticks,
+        .elapsed_ms = claimed.elapsed_ms,
+        .score_xp = claimed.score_xp,
+        .kills = claimed.kills,
+        .most_used_weapon_id = claimed.most_used_weapon_id,
+        .shots_fired = claimed.shots_fired,
+        .shots_hit = claimed.shots_hit,
+    };
+    const simulated = ClaimedStatsPayload{
+        .complete = claimed.complete,
+        .ticks = run_result.ticks,
+        .elapsed_ms = run_result.elapsed_ms,
+        .score_xp = run_result.score_xp,
+        .kills = run_result.creature_kill_count,
+        .most_used_weapon_id = run_result.most_used_weapon_id,
+        .shots_fired = run_result.shots_fired,
+        .shots_hit = run_result.shots_hit,
+    };
+
+    var mismatch_buffer: [7][]const u8 = undefined;
+    var mismatch_count: usize = 0;
+    if (expected.ticks != simulated.ticks) {
+        mismatch_buffer[mismatch_count] = "ticks";
+        mismatch_count += 1;
+    }
+    if (expected.elapsed_ms != simulated.elapsed_ms) {
+        mismatch_buffer[mismatch_count] = "elapsed_ms";
+        mismatch_count += 1;
+    }
+    if (expected.score_xp != simulated.score_xp) {
+        mismatch_buffer[mismatch_count] = "score_xp";
+        mismatch_count += 1;
+    }
+    if (expected.kills != simulated.kills) {
+        mismatch_buffer[mismatch_count] = "kills";
+        mismatch_count += 1;
+    }
+    if (expected.most_used_weapon_id != simulated.most_used_weapon_id) {
+        mismatch_buffer[mismatch_count] = "most_used_weapon_id";
+        mismatch_count += 1;
+    }
+    if (expected.shots_fired != simulated.shots_fired) {
+        mismatch_buffer[mismatch_count] = "shots_fired";
+        mismatch_count += 1;
+    }
+    if (expected.shots_hit != simulated.shots_hit) {
+        mismatch_buffer[mismatch_count] = "shots_hit";
+        mismatch_count += 1;
+    }
+
+    const mismatched_fields = try allocator.alloc([]const u8, mismatch_count);
+    for (mismatch_buffer[0..mismatch_count], 0..) |field, idx| {
+        mismatched_fields[idx] = field;
+    }
+
+    return .{
+        .expected = expected,
+        .simulated = simulated,
+        .match = mismatch_count == 0,
+        .mismatched_fields = mismatched_fields,
+    };
+}
+
 fn buildVerifyPayload(
     allocator: std.mem.Allocator,
     replay_path: []const u8,
     replay_sha256: []const u8,
     run_result: RunResult,
-    resolved_metric: ScoreMetric,
-    submitted_score: ?i64,
+    status: []const u8,
+    header_claim: ?HeaderClaimPayload,
 ) ![]u8 {
-    const simulated_value: i64 = if (resolved_metric == .elapsed_ms)
-        run_result.elapsed_ms
-    else
-        run_result.score_xp;
-    const claim_matches = if (submitted_score) |submitted|
-        submitted == simulated_value
-    else
-        true;
-    const score_claim: ?ScoreClaimPayload = if (submitted_score) |submitted| .{
-        .metric = scoreMetricLabel(resolved_metric),
-        .submitted_score = submitted,
-        .simulated_value = simulated_value,
-        .match = claim_matches,
-    } else null;
     const report: VerifyPayload = .{
         .schema_version = replay_schema_version,
-        .status = if (claim_matches) "ok" else "score_mismatch",
+        .status = status,
         .replay = replay_path,
         .replay_sha256 = replay_sha256,
         .run_result = run_result,
-        .score_claim = score_claim,
+        .header_claim = header_claim,
+        .score_claim = null,
     };
 
     var payload_writer: std.Io.Writer.Allocating = .init(allocator);
@@ -934,28 +981,11 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
             continue;
         }
 
-        if (std.mem.eql(u8, arg, "--submitted-score")) {
-            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --submitted-score" };
-            idx += 1;
-            request.submitted_score = std.fmt.parseInt(i64, args[idx], 10) catch return .{ .invalid = "invalid --submitted-score value" };
-            continue;
+        if (std.mem.eql(u8, arg, "--submitted-score") or std.mem.startsWith(u8, arg, "--submitted-score=")) {
+            return .{ .unsupported = "--submitted-score" };
         }
-        if (std.mem.startsWith(u8, arg, "--submitted-score=")) {
-            const value = arg["--submitted-score=".len..];
-            request.submitted_score = std.fmt.parseInt(i64, value, 10) catch return .{ .invalid = "invalid --submitted-score value" };
-            continue;
-        }
-
-        if (std.mem.eql(u8, arg, "--score-metric")) {
-            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --score-metric" };
-            idx += 1;
-            request.score_metric = scoreMetricFromString(args[idx]) orelse return .{ .invalid = "invalid --score-metric value" };
-            continue;
-        }
-        if (std.mem.startsWith(u8, arg, "--score-metric=")) {
-            const value = arg["--score-metric=".len..];
-            request.score_metric = scoreMetricFromString(value) orelse return .{ .invalid = "invalid --score-metric value" };
-            continue;
+        if (std.mem.eql(u8, arg, "--score-metric") or std.mem.startsWith(u8, arg, "--score-metric=")) {
+            return .{ .unsupported = "--score-metric" };
         }
 
         if (std.mem.eql(u8, arg, "--base-dir") or std.mem.eql(u8, arg, "--runtime-dir")) {
@@ -1113,10 +1143,8 @@ test "parse native subset for reference verify options" {
         "survival_20260224_041009_score76661.crd",
         "--format",
         "json",
-        "--submitted-score",
-        "76661",
-        "--score-metric",
-        "score_xp",
+        "--json-out",
+        "verify.json",
     });
     const req = switch (parsed) {
         .ok => |request| request,
@@ -1125,9 +1153,8 @@ test "parse native subset for reference verify options" {
 
     try std.testing.expectEqualStrings("survival_20260224_041009_score76661.crd", req.replay_file);
     try std.testing.expect(req.output_format == .json);
-    try std.testing.expect(req.submitted_score != null);
-    try std.testing.expectEqual(@as(i64, 76661), req.submitted_score.?);
-    try std.testing.expect(req.score_metric == .score_xp);
+    try std.testing.expect(req.json_out != null);
+    try std.testing.expectEqualStrings("verify.json", req.json_out.?);
 }
 
 test "parse native subset reports unsupported options" {
@@ -1174,8 +1201,44 @@ test "parse native subset reports unsupported max ticks option" {
     }
 }
 
-test "build verify payload score mismatch" {
+test "parse native subset reports removed submitted score option as unsupported" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--submitted-score=76661",
+    });
+    switch (parsed) {
+        .unsupported => |detail| try std.testing.expectEqualStrings("--submitted-score", detail),
+        else => return error.TestExpectedUnsupportedOption,
+    }
+}
+
+test "build verify payload header mismatch" {
     const allocator = std.testing.allocator;
+    const mismatched = [_][]const u8{"score_xp"};
+    const header_claim = HeaderClaimPayload{
+        .expected = .{
+            .complete = true,
+            .ticks = 100,
+            .elapsed_ms = 2000,
+            .score_xp = 1000,
+            .kills = 15,
+            .most_used_weapon_id = 14,
+            .shots_fired = 123,
+            .shots_hit = 45,
+        },
+        .simulated = .{
+            .complete = true,
+            .ticks = 100,
+            .elapsed_ms = 2000,
+            .score_xp = 999,
+            .kills = 15,
+            .most_used_weapon_id = 14,
+            .shots_fired = 123,
+            .shots_hit = 45,
+        },
+        .match = false,
+        .mismatched_fields = mismatched[0..],
+    };
     const payload = try buildVerifyPayload(
         allocator,
         "/tmp/replay.crd",
@@ -1192,13 +1255,13 @@ test "build verify payload score mismatch" {
             .shots_hit = 45,
             .rng_state = 1234,
         },
-        .score_xp,
-        1,
+        "header_stats_mismatch",
+        header_claim,
     );
     defer allocator.free(payload);
 
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"score_mismatch\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, payload, "\"simulated_value\":999") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"status\":\"header_stats_mismatch\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, payload, "\"mismatched_fields\":[\"score_xp\"]") != null);
 }
 
 test "build verify payload escapes replay path via json stringify" {
@@ -1219,7 +1282,7 @@ test "build verify payload escapes replay path via json stringify" {
             .shots_hit = 45,
             .rng_state = 1234,
         },
-        .score_xp,
+        "ok",
         null,
     );
     defer allocator.free(payload);

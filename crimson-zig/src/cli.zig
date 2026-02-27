@@ -8,7 +8,7 @@ const usage =
     \\
     \\Examples:
     \\  crimson-zig replay verify survival_20260224_041009_score76661.crd
-    \\  crimson-zig replay verify replay.crd --format json --submitted-score 76661
+    \\  crimson-zig replay verify replay.crd --format json
     \\
 ;
 
