@@ -491,6 +491,7 @@ pub fn runReplayScaffoldWithTrace(
     }
 
     var elapsed_ms_sim: f32 = 0.0;
+    var elapsed_ms_sim_rush: i64 = 0;
     const terrain_size_floor = @floor(header.world_size);
     if (terrain_size_floor > @as(f32, @floatFromInt(std.math.maxInt(i32)))) {
         return error.InvalidHeaderValue;
@@ -629,9 +630,19 @@ pub fn runReplayScaffoldWithTrace(
             dt_world,
         );
         const dt_frame_ms = dt_tick * 1000.0;
+        var dt_frame_ms_i32: i32 = @intFromFloat(@round(dt_frame_ms));
+        if (dt_frame_ms_i32 < 1) dt_frame_ms_i32 = 1;
         const dt_sim_ms = dt_sim * 1000.0;
-        const elapsed_before_ms = elapsed_ms_sim;
-        const elapsed_after_ms = elapsed_before_ms + (if (game_mode == .survival) dt_sim_ms else dt_frame_ms);
+        const elapsed_before_ms: f32 = if (game_mode == .rush)
+            @floatFromInt(elapsed_ms_sim_rush)
+        else
+            elapsed_ms_sim;
+        const elapsed_after_ms = if (game_mode == .survival)
+            elapsed_before_ms + dt_sim_ms
+        else if (game_mode == .rush)
+            @as(f32, @floatFromInt(elapsed_ms_sim_rush + @as(i64, dt_frame_ms_i32)))
+        else
+            elapsed_before_ms + dt_frame_ms;
         var freeze_corpse_at_tick_start = [_]bool{false} ** creatures_mod.max_creatures;
         for (creatures.entries, 0..) |creature, idx| {
             freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
@@ -818,10 +829,10 @@ pub fn runReplayScaffoldWithTrace(
         } else if (game_mode == .rush) {
             const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 spawn_cooldown,
-                dt_frame_ms,
+                @floatFromInt(dt_frame_ms_i32),
                 &state.rng,
                 player_count,
-                elapsed_after_ms,
+                elapsed_before_ms,
                 terrain_size,
                 terrain_size,
             );
@@ -932,7 +943,12 @@ pub fn runReplayScaffoldWithTrace(
             survival_progression.survivalEnforceRewardWeaponGuard(state, players[0..]);
         }
         creatures.finalizePostRenderLifecycle();
-        elapsed_ms_sim = elapsed_after_ms;
+        if (game_mode == .rush) {
+            elapsed_ms_sim_rush += @as(i64, dt_frame_ms_i32);
+            elapsed_ms_sim = @floatFromInt(elapsed_ms_sim_rush);
+        } else {
+            elapsed_ms_sim = elapsed_after_ms;
+        }
 
         if (defer_menu_open_events and tick_event_start < tick_event_end) {
             for ([_]TickEventPhase{
@@ -969,6 +985,8 @@ pub fn runReplayScaffoldWithTrace(
         if (trace_out) |trace| {
             const trace_elapsed_ms = if (game_mode == .quests)
                 quest_spawn_timeline_ms
+            else if (game_mode == .rush)
+                @as(f32, @floatFromInt(elapsed_ms_sim_rush))
             else
                 elapsed_ms_sim;
             try trace.append(
@@ -1031,6 +1049,8 @@ pub fn runReplayScaffoldWithTrace(
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f32 * (1000.0 / tick_rate_f32)));
     const elapsed_ms_sim_i64: i64 = if (game_mode == .quests)
         @intFromFloat(quest_spawn_timeline_ms)
+    else if (game_mode == .rush)
+        elapsed_ms_sim_rush
     else
         @intFromFloat(elapsed_ms_sim);
     const shots = survival_progression.player0Shots(state);
