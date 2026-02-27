@@ -1,13 +1,15 @@
 const std = @import("std");
 const game_ids = @import("../../game_ids.zig");
 const native_math = @import("../native_math.zig");
-const replay_codec = @import("../../replay_codec.zig");
 const creatures_mod = @import("../creatures.zig");
 const perks = @import("../perks.zig");
+const player_runtime = @import("../player.zig");
 const state_mod = @import("../state.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
+const GameInput = player_runtime.GameInput;
+const GameInputFlags = player_runtime.GameInputFlags;
 const native_half_pi: f32 = native_math.native_half_pi;
 const native_pi: f32 = native_math.native_pi;
 const native_tau: f32 = native_math.native_tau;
@@ -28,10 +30,9 @@ const movement_control_computer: i32 = 5;
 const aim_scheme_mouse: i32 = 0;
 const aim_scheme_computer: i32 = 5;
 
-pub fn updatePlayerFromReplayInput(
+pub fn updatePlayerFromGameInput(
     player: *state_mod.PlayerState,
-    input: replay_codec.ReplayPlayerInput,
-    flags: replay_codec.InputFlags,
+    input: GameInput,
     state: *const state_mod.GameplayState,
     creatures: ?*const creatures_mod.CreaturePool,
     dt: f32,
@@ -49,6 +50,7 @@ pub fn updatePlayerFromReplayInput(
         }
     }
 
+    const flags = input.flags;
     const move_mode = resolveMoveModeForUpdate(flags);
     const aim_scheme = resolveAimSchemeForUpdate(flags);
 
@@ -278,7 +280,7 @@ pub fn finalizePlayerPostUpdate(
 }
 
 pub fn resolveMoveModeForUpdate(
-    flags: replay_codec.InputFlags,
+    flags: GameInputFlags,
 ) i32 {
     if (flags.move_mode) |mode| return mode;
     if (flags.move_forward_pressed != null and
@@ -292,7 +294,7 @@ pub fn resolveMoveModeForUpdate(
 }
 
 pub fn resolveAimSchemeForUpdate(
-    flags: replay_codec.InputFlags,
+    flags: GameInputFlags,
 ) i32 {
     if (flags.aim_scheme) |scheme| return scheme;
     return aim_scheme_mouse;
@@ -533,19 +535,22 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     };
     perk_player.perk_counts.set(PerkId.long_distance_runner, 1);
 
-    const move_input = replay_codec.ReplayPlayerInput{
+    const move_input = GameInput{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 101.0,
         .aim_y = 100.0,
-        .flags = 0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+        },
     };
-    const move_flags = replay_codec.unpackInputFlags(0);
 
     for (0..steps) |_| {
-        updatePlayerFromReplayInput(&base_player, move_input, move_flags, &state, null, dt);
+        updatePlayerFromGameInput(&base_player, move_input, &state, null, dt);
         finalizePlayerPostUpdate(&base_player, 1024.0);
-        updatePlayerFromReplayInput(&perk_player, move_input, move_flags, &state, null, dt);
+        updatePlayerFromGameInput(&perk_player, move_input, &state, null, dt);
         finalizePlayerPostUpdate(&perk_player, 1024.0);
     }
 
@@ -566,14 +571,18 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     try std.testing.expect(perk_player.pos.x > base_player.pos.x);
 
     const prev_x = perk_player.pos.x;
-    const coast_input = replay_codec.ReplayPlayerInput{
+    const coast_input = GameInput{
         .move_x = 0.0,
         .move_y = 0.0,
         .aim_x = perk_player.pos.x + 1.0,
         .aim_y = perk_player.pos.y,
-        .flags = 0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+        },
     };
-    updatePlayerFromReplayInput(&perk_player, coast_input, move_flags, &state, null, dt);
+    updatePlayerFromGameInput(&perk_player, coast_input, &state, null, dt);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
     const expected_coast_speed = narrowF32(expected_perk_speed - dt_f32 * 15.0);
@@ -598,18 +607,21 @@ test "alternate weapon slows movement by 20 percent" {
     };
     perk_player.perk_counts.set(PerkId.alternate_weapon, 1);
 
-    const input = replay_codec.ReplayPlayerInput{
+    const input = GameInput{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 0.0,
         .aim_y = 0.0,
-        .flags = 0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+        },
     };
-    const flags = replay_codec.unpackInputFlags(0);
 
-    updatePlayerFromReplayInput(&base_player, input, flags, &state, null, 1.0);
+    updatePlayerFromGameInput(&base_player, input, &state, null, 1.0);
     finalizePlayerPostUpdate(&base_player, 1024.0);
-    updatePlayerFromReplayInput(&perk_player, input, flags, &state, null, 1.0);
+    updatePlayerFromGameInput(&perk_player, input, &state, null, 1.0);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
     try std.testing.expectApproxEqAbs(@as(f32, 100.0), base_player.pos.x, 1e-6);
