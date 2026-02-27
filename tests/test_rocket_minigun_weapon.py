@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import NATIVE_HALF_PI
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -32,9 +33,10 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
 
     assert state.weapon_shots_fired[0][int(WeaponId.MINI_ROCKET_SWARMERS)] == player.clip_size
 
-    shot_angle = math.pi / 2.0
+    shot_angle = float(NATIVE_HALF_PI)
     spread = math.pi * (2.0 / 3.0)
     step = spread / float(player.clip_size - 1)
-    expected0 = shot_angle - spread * 0.5
+    expected0 = float(shot_angle) - spread * 0.5
+    expected1 = float(shot_angle) - spread * 0.5 + step
     assert_float_close(spawned[0].angle, expected0)
-    assert_float_close(spawned[1].angle - spawned[0].angle, step)
+    assert_float_close(spawned[1].angle, expected1)

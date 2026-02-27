@@ -9,6 +9,7 @@ from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles import (
     ProjectileCollisionProfile,
@@ -279,8 +280,9 @@ def test_primary_spawn_persists_velocity_vector() -> None:
     )
 
     entry = pool.entries[idx]
-    assert_float_close(float(entry.vel.x), math.cos(math.pi / 3.0) * 1.5)
-    assert_float_close(float(entry.vel.y), math.sin(math.pi / 3.0) * 1.5)
+    angle = float(f32(math.pi / 3.0))
+    assert_float_close(float(entry.vel.x), float(f32(math.cos(float(angle)) * 1.5)))
+    assert_float_close(float(entry.vel.y), float(f32(math.sin(float(angle)) * 1.5)))
 
 
 def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None:

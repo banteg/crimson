@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -24,4 +25,4 @@ def test_fastshot_scales_shot_cooldown() -> None:
     perk_player.perk_counts[int(PerkId.FASTSHOT)] = 1
     perk_cd = _fire_once(perk_state, perk_player)
 
-    assert_float_close(perk_cd, base_cd * 0.88)
+    assert_float_close(perk_cd, float(f32(float(base_cd) * 0.88)))

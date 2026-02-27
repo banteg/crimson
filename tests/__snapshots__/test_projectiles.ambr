@@ -2,13 +2,13 @@
 # name: test_primary_projectile_update_snapshot[ion_minigun_linger]
   dict({
     'creature_hp': list([
-      106.7,
+      106.700005,
     ]),
     'hits': list([
       dict({
         'hit': list([
           30.0,
-          -1e-06,
+          0.0,
         ]),
         'origin': list([
           0.0,
@@ -28,7 +28,7 @@
       'owner_id': -100,
       'pos': list([
         30.0,
-        -1e-06,
+        0.0,
       ]),
       'type_id': 22,
     }),
@@ -42,8 +42,8 @@
     'hits': list([
       dict({
         'hit': list([
-          36.0,
-          -2e-06,
+          30.0,
+          0.0,
         ]),
         'origin': list([
           0.0,
@@ -62,8 +62,8 @@
       'life_timer': 0.25,
       'owner_id': -100,
       'pos': list([
-        36.0,
-        -2e-06,
+        30.0,
+        0.0,
       ]),
       'type_id': 1,
     }),
@@ -72,13 +72,13 @@
 # name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
   dict({
     'creature_hp': list([
-      44.532258,
+      44.532257,
     ]),
     'hits': list([
       dict({
         'hit': list([
           60.0,
-          -3e-06,
+          0.0,
         ]),
         'origin': list([
           0.0,
@@ -98,7 +98,7 @@
       'owner_id': -100,
       'pos': list([
         62.0,
-        -3e-06,
+        0.0,
       ]),
       'type_id': 1,
     }),
@@ -115,7 +115,7 @@
       dict({
         'hit': list([
           60.0,
-          -3e-06,
+          0.0,
         ]),
         'origin': list([
           0.0,
@@ -135,7 +135,7 @@
       'owner_id': -100,
       'pos': list([
         60.0,
-        -3e-06,
+        0.0,
       ]),
       'type_id': 11,
     }),
