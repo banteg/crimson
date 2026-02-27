@@ -50,22 +50,13 @@ pub fn lookupLevelBuilder(level_key: i32) ?LevelBuilder {
     return null;
 }
 
-fn summaryHashMix(seed: u64, value: u64) u64 {
-    return (seed ^ value) *% 1099511628211;
-}
-
-fn summarizeQuestEntries(entries: []const spawn_runtime.QuestSpawnEntry) u64 {
-    var hash: u64 = 1469598103934665603;
-    for (entries, 0..) |entry, idx| {
-        hash = summaryHashMix(hash, @as(u64, @intCast(idx)));
-        hash = summaryHashMix(hash, @as(u64, @intCast(@intFromEnum(entry.spawn_id))));
-        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.pos.x))));
-        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.pos.y))));
-        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.heading))));
-        hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.trigger_ms))));
-        hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.count))));
-    }
-    return hash;
+fn expectQuestEntryEqual(expected: spawn_runtime.QuestSpawnEntry, actual: spawn_runtime.QuestSpawnEntry) !void {
+    try std.testing.expectApproxEqAbs(expected.pos.x, actual.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(expected.pos.y, actual.pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(expected.heading, actual.heading, 1e-6);
+    try std.testing.expectEqual(expected.spawn_id, actual.spawn_id);
+    try std.testing.expectEqual(expected.trigger_ms, actual.trigger_ms);
+    try std.testing.expectEqual(expected.count, actual.count);
 }
 
 test "level 1-10 rectangular spawn summary stays stable" {
@@ -86,9 +77,57 @@ test "level 1-10 rectangular spawn summary stays stable" {
     );
 
     const entries = out_entries[0..len];
-    try std.testing.expectEqual(@as(usize, 57), entries.len);
-    try std.testing.expectEqual(@as(f32, 450.0), entries[0].pos.y);
-    try std.testing.expectEqual(@as(u64, 13539363879224084576), summarizeQuestEntries(entries));
+    var expected: [57]spawn_runtime.QuestSpawnEntry = undefined;
+    var expected_len: usize = 0;
+    expected[expected_len] = .{
+        .pos = .{ .x = 1344.0, .y = 450.0 },
+        .heading = 0.0,
+        .spawn_id = @enumFromInt(58),
+        .trigger_ms = 1000,
+        .count = 1,
+    };
+    expected_len += 1;
+
+    var trigger: i32 = 6000;
+    while (trigger <= 34_600) : (trigger += 2200) {
+        const edge_spawns = [_]spawn_runtime.QuestSpawnEntry{
+            .{
+                .pos = .{ .x = -25.0, .y = -25.0 },
+                .heading = 0.0,
+                .spawn_id = @enumFromInt(61),
+                .trigger_ms = trigger,
+                .count = 3,
+            },
+            .{
+                .pos = .{ .x = 1625.0, .y = -25.0 },
+                .heading = 0.0,
+                .spawn_id = @enumFromInt(61),
+                .trigger_ms = trigger,
+                .count = 1,
+            },
+            .{
+                .pos = .{ .x = -25.0, .y = 925.0 },
+                .heading = 0.0,
+                .spawn_id = @enumFromInt(61),
+                .trigger_ms = trigger,
+                .count = 3,
+            },
+            .{
+                .pos = .{ .x = 1625.0, .y = 925.0 },
+                .heading = 0.0,
+                .spawn_id = @enumFromInt(61),
+                .trigger_ms = trigger,
+                .count = 1,
+            },
+        };
+        @memcpy(expected[expected_len .. expected_len + edge_spawns.len], &edge_spawns);
+        expected_len += edge_spawns.len;
+    }
+
+    try std.testing.expectEqual(expected_len, entries.len);
+    for (expected[0..expected_len], entries) |want, got| {
+        try expectQuestEntryEqual(want, got);
+    }
 }
 
 test "level 5-1 rectangular spawn summary stays stable" {
@@ -109,10 +148,81 @@ test "level 5-1 rectangular spawn summary stays stable" {
     );
 
     const entries = out_entries[0..len];
-    try std.testing.expectEqual(@as(usize, 31), entries.len);
-    try std.testing.expectEqual(@as(f32, 944.0), entries[25].pos.y);
-    try std.testing.expectEqual(@as(f32, 1104.0), entries[30].pos.y);
-    try std.testing.expectEqual(@as(u64, 5293558049980200052), summarizeQuestEntries(entries));
+    var expected: [31]spawn_runtime.QuestSpawnEntry = undefined;
+    var expected_len: usize = 0;
+    expected[expected_len] = .{
+        .pos = .{ .x = 256.0, .y = 256.0 },
+        .heading = 0.0,
+        .spawn_id = @enumFromInt(39),
+        .trigger_ms = 500,
+        .count = 1,
+    };
+    expected_len += 1;
+    expected[expected_len] = .{
+        .pos = .{ .x = 1632.0, .y = 450.0 },
+        .heading = 0.0,
+        .spawn_id = @enumFromInt(41),
+        .trigger_ms = 8000,
+        .count = 3,
+    };
+    expected_len += 1;
+
+    for (0..8) |i| {
+        expected[expected_len] = .{
+            .pos = .{ .x = @as(f32, @floatFromInt(@as(i32, @intCast(i)) * 32 + 1664)), .y = 450.0 },
+            .heading = 0.0,
+            .spawn_id = @enumFromInt(37),
+            .trigger_ms = @as(i32, @intCast(i * 100)) + 10_000,
+            .count = 8,
+        };
+        expected_len += 1;
+    }
+
+    expected[expected_len] = .{
+        .pos = .{ .x = -32.0, .y = 450.0 },
+        .heading = 0.0,
+        .spawn_id = @enumFromInt(41),
+        .trigger_ms = 18_000,
+        .count = 3,
+    };
+    expected_len += 1;
+
+    for (0..8) |i| {
+        expected[expected_len] = .{
+            .pos = .{ .x = -@as(f32, @floatFromInt(@as(i32, @intCast(i)) * 32 + 64)), .y = 450.0 },
+            .heading = 0.0,
+            .spawn_id = @enumFromInt(37),
+            .trigger_ms = @as(i32, @intCast(i * 100)) + 20_000,
+            .count = 8,
+        };
+        expected_len += 1;
+    }
+
+    for (0..6) |i| {
+        expected[expected_len] = .{
+            .pos = .{ .x = 800.0, .y = -(@as(f32, @floatFromInt(@as(i32, @intCast(i)) * 42 + 64))) },
+            .heading = 0.0,
+            .spawn_id = @enumFromInt(15),
+            .trigger_ms = @as(i32, @intCast(i * 100)) + 40_000,
+            .count = 4,
+        };
+        expected_len += 1;
+    }
+    for (0..6) |i| {
+        expected[expected_len] = .{
+            .pos = .{ .x = 800.0, .y = @as(f32, @floatFromInt(@as(i32, @intCast(i)) * 32 + 944)) },
+            .heading = 0.0,
+            .spawn_id = @enumFromInt(18),
+            .trigger_ms = @as(i32, @intCast(i * 100)) + 40_000,
+            .count = 2,
+        };
+        expected_len += 1;
+    }
+
+    try std.testing.expectEqual(expected_len, entries.len);
+    for (expected[0..expected_len], entries) |want, got| {
+        try expectQuestEntryEqual(want, got);
+    }
 }
 
 test "append radial spawns rejects non-positive radius step" {
