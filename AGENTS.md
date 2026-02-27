@@ -1,64 +1,139 @@
-# Crimson Agent Notes
+We are decompiling and porting an old game. The goal is **deterministic, evidence-backed behavioral parity** with the original.
 
-We are decompiling and porting an old game. We aim for high fidelity to the original.
+## repo map
 
-- Project docs: [`docs/`](docs/)
-- Rewrite overview: [`docs/rewrite/index.md`](docs/rewrite/index.md)
-- Rewrite status / parity snapshot: [`docs/rewrite/status.md`](docs/rewrite/status.md)
-- Authoritative decompiles and analysis artifacts: [`analysis/`](analysis/)
-- Rewrite implementation under development: [`src/`](src/)
+- Project docs and notes: `docs/`
+- Authoritative decompiles: `analysis/`
+- More mature Python rewrite: `src/`
+- Newly started Zig rewrite: `crimson-zig/`
 
-For deterministic gameplay code, prefer native float32 fidelity over readability:
-- Keep decompiled float32 constants/rounding behavior when they affect simulation.
-- Do not normalize values like `0.6000000238418579 -> 0.6` in parity-critical paths unless captures/tests prove no behavioral change.
+If you are doing **capture-driven** parity work, start with: `docs/frida/differential-playbook.md`
 
-For capture-driven parity investigations (when you are handed only a fresh capture file), start with:
-- [`docs/frida/differential-playbook.md`](docs/frida/differential-playbook.md)
+## core priorities
 
-# Pre-commit
+1. **Deterministic parity + evidence-backed correctness** If rules conflict, preserve native-faithful behavior and prove it with captures/replays/deterministic tests.
+2. **Structural simplicity** Prefer deleting complexity over adding layers.
+3. **UX polish** Only after parity is preserved (unless explicitly required and proven not to change parity-critical behavior).
 
-- Zig-only changes (files under `crimson-zig/`): run `just check-zig`.
-- Python/docs/tooling changes (anything under `src/`, `tests/`, `docs/`, `tools/`, etc.): run `just check`.
-- Mixed Zig + Python/docs/tooling changes: run both `just check-zig` and `just check`.
+### prove it works
+- Do **not** rush to claim parity from “it compiles,” lint success, or summaries.
+- Verification must use **real artifacts and real pathways** (capture verification, replay verification, deterministic tests).
 
-# Ast-grep
+### f32 fidelity over readability
+- Keep decompiled `float32` constants and rounding behavior exactly as-is **when it affects simulation**.
+- Do **not** normalize constants like `0.6000000238418579 -> 0.6` unless tests/captures prove no behavioral change.
+- Be suspicious of any “cleanup” that changes: float constants, operation ordering. RNG consumption, branch conditions.
 
-For structural search / codemods, prefer ast-grep over regex-only edits:
-- Project config: [`sgconfig.yml`](sgconfig.yml)
-- For Zig files, use [`sgconfig.local.yml`](sgconfig.local.yml) so ast-grep loads the custom `zig` language parser.
-- Zig metavariables use `_VAR` syntax (for example `_EXPR`) with this config.
-- Rules/tests location: [`tools/ast-grep/`](tools/ast-grep/)
-- Run checks with `just check`
+### validate at edges, trust inside
+- **Validate/parse at boundaries** (IO/CLI/JSON/msgpack/network messages).
+- **Inside the domain**, assume validated typed objects are correct: Fail fast on impossible states. Do not hide errors with defaults/fallbacks.
+- Keep objects **typed during computation**. Convert to dict/builtins **only at edges** (serialization/logging/tests/interop) via standard serializers/helpers.
 
-# Pull Requests
+### types are design
+- If `ty`/typing complains, **fix the schema/boundary/model**.
+- Avoid casting to `Any` or duct-taping with `.get()`/`getattr()` to dodge typing.
 
-When creating pull requests with `gh`:
-- Do not pass multiline bodies via `--body` with escaped `\n` inside shell quotes.
-- Write the PR description to a markdown file (or heredoc) and use `gh pr create --body-file <file>` / `gh pr edit --body-file <file>`.
-- After creating/updating a PR, verify formatting with `gh pr view`.
+### fix root causes
+- Do not add “just in case” guards to silence crashes/divergences (extra `None` checks, broad tolerances, fallback defaults, epsilons, off-by-one guards).
+- Trace mismatches to bedrock: float rounding/order, misread decompile, wrong table/enum mapping
 
-# Coding Guidelines (Typed, Fail-Fast, Validate at Edges)
+## preferred refactor style
 
-Principles > rules. Don’t make code longer/uglier just to satisfy a guideline.
+### migrate callers, then delete legacy APIs
+- Default posture: **cutover refactors**.
+- Update all internal callers in one wave; delete old APIs/schemas/tests for deprecated behavior.
+- Do **not** add long-lived compatibility wrappers. If compatibility is absolutely required: keep it **small, local, temporary**, mark it clearly for removal (with a removal note)
 
-## Model
-- Validate/parse at **boundaries** (IO/CLI/JSON/msgpack). Inside domain, assume validated objects are correct.
-- Types are design: if ty complains, **fix schema/boundary**, not with casts/`Any`.
-- Fail fast internally; don’t hide impossible states with defaults.
+### subtract before you add
+- Before introducing a new abstraction or subsystem, remove dead code, obsolete wrappers, and duplicate paths in the target area.
 
-## Do
-- Use values directly (no redundant `int(x)` when `x: int`).
-- Use explicit types for optional data (`T | None`) and handle it intentionally.
-- Keep typed objects typed during computation.
-- Convert to dict/builtins **only at edges** (serialization/logging/tests/interop) using standard helpers/serializers.
+### outcome-oriented execution
+- It’s OK for intermediate steps to break **if** the breakage is scoped and planned.
+- Final state must be coherent, verified, and free of permanent temporary scaffolding.
 
-## Avoid (smells)
-- Defensive runtime checks in domain (`isinstance/hasattr`, “just in case” `try/except ValueError`).
-- `getattr()` / `.get()` on typed models to dodge typing (ok for real dynamic dicts, or narrow tooling).
-- Hand-written field-by-field converters/mappers to comply with style—use serializers or small DTOs.
-- Thin duck typing protocols
-- Do not add legacy wrappers, do all changes cutover style.
+### redesign from first principles
+- For major architectural or schema changes:
+  - define the ideal target state as if this requirement existed from day one
+  - land incrementally toward that target
+  - do not bolt on special cases that preserve avoidable complexity
 
-## Schema changes
-Update callers directly. Keep schemas versioned, only support the latest version.
-If a compat layer is needed, keep it small, local, and temporary (with removal note).
+### exhaust the design space
+Only when **not dictated by the original binary** and there are multiple viable options:
+- sketch 2–3 concrete alternatives
+- pick based on parity risk, maintainability, and testability
+Skip this for mechanical ports and obvious root-cause fixes.
+
+## avoid these smells (especially in gameplay/domain code)
+
+- Defensive runtime checks deep in the domain:
+  - `isinstance`, `hasattr`, “just in case” `try/except ValueError`
+- `.get()` / `getattr()` on typed models to dodge typing (OK for truly dynamic dicts or narrow tooling)
+- Thin duck typing protocols that blur invariants
+- Hand-written field-by-field mappers just to satisfy style (prefer serializers/DTOs)
+- Long-lived “compat” layers when internal callers can be migrated
+
+## encode lessons in structure
+
+If a mistake or review comment repeats, convert it into enforcement: tests / snapshots / invariants,`ast-grep` rules, import-linter contracts, typed schemas and decoders, scripts/automation.
+
+Text rules are forgettable; structural rules enforce themselves.
+
+## verification commands
+
+### required pre-commit checks
+- Zig-only changes (`crimson-zig/`):  just check-zig`
+- Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.):  `just check`
+- Mixed Zig + Python/docs/tooling changes:  run **both** `just check-zig` and `just check`
+
+## quick playbooks
+
+### parity bug investigation
+1. Reproduce using the canonical capture/replay.
+2. Generate divergence report and/or verify-capture.
+3. Isolate the **first sustained mismatch** and identify the subsystem.
+4. Fix the **root cause** (not the symptom).
+5. Re-run the **same** capture/replay and confirm the mismatch moves/disappears for the right reason.
+6. Add a regression test that locks the discovered behavior.
+
+### API/schema refactor (cutover wave)
+1. Define target API and invariants (ordering, ownership, serialization boundaries).
+2. Migrate all internal callers in one wave.
+3. Delete legacy APIs/re-exports/tests in the same wave.
+4. Search for remaining references to old surfaces and remove them.
+5. Verify with `just check` / `just check-zig` and parity tests/artifacts.
+
+### capture-only triage
+1. Follow `docs/frida/differential-playbook.md`.
+2. Record capture SHA and keep notes tied to that artifact.
+3. Use divergence + bisect/focus traces **before** touching runtime code.
+4. If telemetry is insufficient, improve instrumentation and re-capture.
+
+### docs/tooling changes
+1. Keep guidance aligned with parity-first + typed-boundary policy.
+2. When guidance repeats, encode it structurally (rules/tests) where possible.
+3. Run `just check`.
+
+## structural search / codemods: prefer ast-grep
+
+- Prefer `ast-grep` over regex-only edits for structural transformations.
+- For Zig: use `sgconfig.local.yml` to load the custom Zig parser
+- Zig metavariables use `_VAR` syntax (e.g. `_EXPR`)
+
+## pull requests (gh cli hygiene)
+
+When using `gh`:
+
+- PR title must be in the form of a conventional commit
+- When ask to merge, use `gh pr merge --squash <pr>`
+
+- To avoid escaping issues, write the PR description to a file and use:
+  - `gh pr create --body-file <file>`
+  - `gh pr edit --body-file <file>`
+
+---
+
+## reminder: when in doubt
+- Choose fidelity and determinism over cleanliness.
+- Prove behavior with decompile/captures/replays/tests, not intuition.
+- Fix schemas/types/contracts at boundaries rather than weakening the domain.
+- Delete old paths rather than supporting two worlds.
