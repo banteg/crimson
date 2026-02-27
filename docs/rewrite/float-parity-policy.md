@@ -30,6 +30,27 @@ gameplay state is still mostly float32.
 
 ### Evidence in decompile artifacts
 
+- CRT startup explicitly sets x87 precision-control to 53-bit (`PC_53`):
+  - `_start` calls `crt_run_initializers`:
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83734](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83734),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83777](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83777).
+  - `crt_run_initializers` invokes `FUN_00460cb8` via `data_47b160`:
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83626](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83626),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:104544](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L104544).
+  - `FUN_00460cb8` calls `sub_4636e7`, which returns
+    `sub_469e81(0x10000, 0x30000)`:
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81032](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L81032),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81036](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L81036),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:84238](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L84238).
+  - In the CRT mapping helper, `arg1 & 0x30000 == 0x10000` sets CW precision
+    bits to `0x200` (53-bit mode):
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91988](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91988),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91992](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91992),
+    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91993](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91993).
+  - IDA function names align with this path:
+    `__setdefaultprecision -> __controlfp`:
+    `analysis/ida/raw/crimsonland.exe/functions.json` lines around `13692`,
+    `13687`.
 - Trig and atan paths are emitted as x87 transcendental ops with `float10`
   temporaries:
   - `angle_approach` callsites in creature movement:
@@ -51,6 +72,8 @@ gameplay state is still mostly float32.
 ### What this means (non-handwavy)
 
 - The game is **not** “everything in 80-bit all the way down”.
+  - Startup default precision is `PC_53`, so “x87 intermediate” is not
+    equivalent to “always full 80-bit precision.”
   - Intermediates in many arithmetic/trig expressions are x87-extended.
   - Authoritative long-lived state slots (player/creature/projectile fields)
     are float32 stores.

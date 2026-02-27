@@ -21,6 +21,15 @@ Use this with [float parity policy](float-parity-policy.md).
 - `F64_BOUNDARY_ONLY`: f64/double is acceptable at formatting/IO boundaries,
   but should not drive gameplay state evolution.
 
+Runtime assumption for this map:
+- CRT startup sets x87 precision-control to 53-bit (`__controlfp(_PC_53,
+  _MCW_PC)` equivalent path), so “x87 intermediate” here means x87-shaped
+  evaluation under `PC_53` unless a function locally overrides CW.
+  Evidence:
+  [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:84238](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L84238),
+  [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91988](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91988),
+  [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91992](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91992).
+
 ## Decompile-wide signal counts (for confidence)
 
 From `analysis/ghidra/raw/crimsonland.exe_decompiled.c`:
