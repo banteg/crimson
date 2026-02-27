@@ -3,6 +3,7 @@ const std = @import("std");
 
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
+const diagnostic_trace = @import("runtime/replay/diagnostic_trace.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 
 const replay_schema_version: i32 = 1;
@@ -298,41 +299,8 @@ fn writeReplayTickTraceJsonl(
     var writer = file.writer(&buffer);
     const out = &writer.interface;
     for (trace) |entry| {
-        const line = .{
-            .tick = entry.tick,
-            .rng = entry.rng,
-            .summary = entry.summary,
-            .player = entry.player,
-            .bonuses = entry.bonuses,
-            .projectiles = .{
-                .projectile_state_hash = entry.projectiles.projectile_state_hash,
-                .projectile_count = entry.projectiles.projectile_count,
-                .projectile_active_index_sum = entry.projectiles.projectile_active_index_sum,
-                .projectile_active_index_xor = entry.projectiles.projectile_active_index_xor,
-                .projectile_type45_count = entry.projectiles.projectile_type45_count,
-                .projectile_hit_count = entry.projectiles.projectile_hit_count,
-                .projectile_type1_count = entry.projectiles.projectile_type1_count,
-                .projectile_type6_count = entry.projectiles.projectile_type6_count,
-                .projectile_type11_count = entry.projectiles.projectile_type11_count,
-                .projectile_type21_count = entry.projectiles.projectile_type21_count,
-                .projectile_first_hit_creature_index = entry.projectiles.projectile_first_hit_creature_index,
-                .projectile_first_hit_projectile_index = entry.projectiles.projectile_first_hit_projectile_index,
-                .projectile_first_hit_type_id = entry.projectiles.projectile_first_hit_type_id,
-                .projectile_first_hit_origin_x_q4 = entry.projectiles.projectile_first_hit_origin_x_q4,
-                .projectile_first_hit_origin_y_q4 = entry.projectiles.projectile_first_hit_origin_y_q4,
-                .projectile_first_hit_pos_x_q4 = entry.projectiles.projectile_first_hit_pos_x_q4,
-                .projectile_first_hit_pos_y_q4 = entry.projectiles.projectile_first_hit_pos_y_q4,
-                .projectile_first_hit_target_size_q4 = entry.projectiles.projectile_first_hit_target_size_q4,
-                .projectile_first_hit_target_x_q4 = entry.projectiles.projectile_first_hit_target_x_q4,
-                .projectile_first_hit_target_y_q4 = entry.projectiles.projectile_first_hit_target_y_q4,
-                .entries = entry.projectiles.entries[0..entry.projectiles.entries_len],
-            },
-            .creatures = .{
-                .entries = entry.creatures.entries[0..entry.creatures.entries_len],
-            },
-            .debug = entry.debug,
-        };
-        try std.json.Stringify.value(line, .{}, out);
+        const row = diagnostic_trace.toJsonRowV2(&entry);
+        try std.json.Stringify.value(row, .{}, out);
         try out.writeByte('\n');
     }
     try out.flush();

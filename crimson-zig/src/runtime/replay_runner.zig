@@ -19,6 +19,11 @@ const survival_progression = @import("survival_progression.zig");
 const weapon_data = @import("weapon_data.zig");
 const weapons_runtime = @import("weapons.zig");
 const math = @import("math.zig");
+const replay_capture_state = @import("replay/capture_state.zig");
+const replay_context_mod = @import("replay/context.zig");
+const replay_diagnostic_trace = @import("replay/diagnostic_trace.zig");
+const replay_events = @import("replay/events.zig");
+const replay_step = @import("replay/step.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -130,145 +135,9 @@ pub const ReplayScaffoldResult = struct {
     quest_play_completion_music: bool,
 };
 
-pub const ProjectileTraceEntry = struct {
-    index: usize,
-    type_id: i32,
-    pos_x_q4: i32,
-    pos_y_q4: i32,
-    origin_x_q4: i32,
-    origin_y_q4: i32,
-    life_timer_q4: i32,
-    damage_pool_q4: i32,
-    angle_q6: i32,
-    speed_scale_q4: i32,
-    owner_legacy: i32,
-    hits_players: bool,
-};
-
-pub const CreatureTraceEntry = struct {
-    index: usize,
-    type_id: i32,
-    flags: i32,
-    ai_mode: i32,
-    link_index: i32,
-    pos_x_q4: i32,
-    pos_y_q4: i32,
-    target_x_q4: i32,
-    target_y_q4: i32,
-    heading_q6: i32,
-    target_heading_q6: i32,
-    hp_q4: i32,
-    lifecycle_stage_q4: i32,
-    size_q4: i32,
-    attack_cooldown_q6: i32,
-};
-
-pub const ReplayTickTrace = struct {
-    tick: usize,
-    rng: struct {
-        rng_state: u32,
-        rng_after_perk_effects: u32,
-        rng_after_creatures: u32,
-        rng_after_projectiles: u32,
-        rng_after_secondary_projectiles: u32,
-        rng_after_particles: u32,
-        rng_after_player_update: u32,
-        rng_after_stage_spawns: u32,
-        rng_after_wave_spawns: u32,
-        rng_after_spawns: u32,
-        rng_after_bonus_update: u32,
-    },
-    summary: struct {
-        elapsed_ms: i64,
-        score_xp: i32,
-        kills: i32,
-        shots_fired_p0: i32,
-        creature_count: usize,
-        creature_active_index_sum: i32,
-        creature_active_index_xor: i32,
-        creature_state_hash: u64,
-        perk_pending: i32,
-    },
-    player: struct {
-        player_weapon_id: i32,
-        player_ammo_q4: i32,
-        player_health_q4: i32,
-        player_pos_x_q4: i32,
-        player_pos_y_q4: i32,
-        player_aim_x_q4: i32,
-        player_aim_y_q4: i32,
-        player_heading_q6: i32,
-        player_aim_heading_q6: i32,
-        player_move_speed_q4: i32,
-        player_turn_speed_q4: i32,
-        player_level: i32,
-        player_experience: i32,
-        player_reload_active: bool,
-        player_reload_timer_q4: i32,
-        player_shot_cooldown_q4: i32,
-        player_shot_seq: i32,
-        player_perk31_count: i32,
-        player_perk53_count: i32,
-        player_perk54_count: i32,
-        player_perk55_count: i32,
-        player_hot_tempered_timer_q6: i32,
-        player_shield_timer_q4: i32,
-        player_man_bomb_timer_q6: i32,
-        player_fire_cough_timer_q6: i32,
-        player_living_fortress_timer_q6: i32,
-        perk_interval_hot_tempered_q6: i32,
-        perk_interval_man_bomb_q6: i32,
-        perk_interval_fire_cough_q6: i32,
-    },
-    bonuses: struct {
-        bonus_weapon_power_up_ms: i32,
-        bonus_reflex_boost_ms: i32,
-        bonus_energizer_ms: i32,
-        bonus_double_experience_ms: i32,
-        bonus_freeze_ms: i32,
-        bonus_active_count: usize,
-        bonus0_id: i32,
-        bonus0_amount: i32,
-        bonus1_id: i32,
-        bonus1_amount: i32,
-    },
-    projectiles: struct {
-        projectile_state_hash: u64,
-        projectile_count: usize,
-        projectile_active_index_sum: i32,
-        projectile_active_index_xor: i32,
-        projectile_type45_count: usize,
-        projectile_hit_count: i32,
-        projectile_type1_count: usize,
-        projectile_type6_count: usize,
-        projectile_type11_count: usize,
-        projectile_type21_count: usize,
-        projectile_first_hit_creature_index: i32,
-        projectile_first_hit_projectile_index: i32,
-        projectile_first_hit_type_id: i32,
-        projectile_first_hit_origin_x_q4: i32,
-        projectile_first_hit_origin_y_q4: i32,
-        projectile_first_hit_pos_x_q4: i32,
-        projectile_first_hit_pos_y_q4: i32,
-        projectile_first_hit_target_size_q4: i32,
-        projectile_first_hit_target_x_q4: i32,
-        projectile_first_hit_target_y_q4: i32,
-        entries_len: usize,
-        entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry,
-    },
-    creatures: struct {
-        entries_len: usize,
-        entries: [creatures_mod.max_creatures]CreatureTraceEntry,
-    },
-    debug: struct {
-        debug_pending_nuke: i32,
-        debug_nuke_kills_last: i32,
-        debug_nuke_tick_last: i32,
-        debug_nuke_kill_index_sum: i32,
-        debug_last_picked_bonus_id: i32,
-        debug_last_picked_bonus_amount: i32,
-    },
-};
+pub const ProjectileTraceEntry = replay_diagnostic_trace.ProjectileTraceEntry;
+pub const CreatureTraceEntry = replay_diagnostic_trace.CreatureTraceEntry;
+pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTraceV2;
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
@@ -343,65 +212,13 @@ pub fn runReplayScaffoldWithTrace(
     }
     const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
     const apply_world_dt_steps = !(original_capture_replay and options.dt_frame_overrides != null);
+    const defer_menu_open_events = original_capture_replay;
 
-    var event_index: usize = 0;
-    var perk_menu_open_count: usize = 0;
-    var perk_pick_count: usize = 0;
-    var fire_pressed_count: usize = 0;
-    var reload_pressed_count: usize = 0;
-    var stage_spawn_count: usize = 0;
-    var wave_spawn_count: usize = 0;
-    var spawn_cooldown: f32 = 0.0;
-    var spawn_stage: i32 = 0;
-    var quest_spawn_timeline_ms: f32 = 0.0;
-    var quest_no_creatures_timer_ms: f32 = 0.0;
-    var quest_creatures_none_active: bool = false;
-    var quest_completion_transition_ms: f32 = -1.0;
-    var quest_completed: bool = false;
-    var quest_play_hit_sfx: bool = false;
-    var quest_play_completion_music: bool = false;
-    var pending_capture_state_reset = false;
-    var quest_start_weapon_id_for_reset: i32 = @intFromEnum(game_ids.WeaponId.pistol);
-    var reset_quest_spawn_entries_len: usize = 0;
+    var quest_start_weapon_id_for_reset: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
     var quest_spawn_entries_storage: [max_test_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
-    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = &.{};
-    var state = state_mod.GameplayState.init(header.seed);
-    state.fx_toggle = header.fx_toggle;
-    state.game_mode = game_mode;
-    try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
-    var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
-    const players_len: usize = @intCast(header.player_count);
-    var players = players_storage[0..players_len];
-    var creatures = creatures_mod.CreaturePool{};
-    creatures.capture_spawn_events_authoritative = capture_spawn_events_authoritative;
-    var particles = particles_mod.ParticlePool{};
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
-    var bonuses = bonus_runtime.BonusPool{};
-    player_runtime.resetPlayers(players[0..], @floatCast(header.world_size), null);
-    state.status_quest_unlock_index = header.status.quest_unlock_index;
-    state.status_quest_unlock_index_full = header.status.quest_unlock_index_full;
-    for (header.status.weapon_usage_counts, 0..) |count, idx| {
-        if (idx >= state_mod.weapon_count_size) break;
-        const weapon_id: game_ids.WeaponId = @enumFromInt(idx);
-        state.status_weapon_usage_counts.set(weapon_id, count);
-    }
+    var quest_spawn_entries: []spawn_mod.QuestSpawnEntry = quest_spawn_entries_storage[0..0];
 
-    var elapsed_ms_sim: f32 = 0.0;
-    var elapsed_ms_sim_rush: i64 = 0;
-    const terrain_size_floor = @floor(header.world_size);
-    if (terrain_size_floor > @as(f32, @floatFromInt(std.math.maxInt(i32)))) {
-        return error.InvalidHeaderValue;
-    }
-    const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor)));
-    const dt_nominal: f32 = 1.0 / @as(f32, @floatFromInt(header.tick_rate));
-    const quest_unlock_index = header.status.quest_unlock_index;
-    const player_count = header.player_count;
-    if (game_mode == .rush) {
-        enforceRushLoadout(players[0..]);
-    } else if (game_mode == .quests) {
-        var quest_start_weapon_id = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
-        applyQuestStageFromHeader(&state, header);
+    if (game_mode == .quests) {
         if (options.quest_spawn_entries) |entries| {
             if (entries.len > quest_spawn_entries_storage.len) {
                 return error.UnsupportedQuestSpawnTable;
@@ -422,571 +239,184 @@ pub fn runReplayScaffoldWithTrace(
             };
             quest_spawn_entries = quest_spawn_entries_storage[0..built.entries.len];
             if (options.quest_start_weapon_id == null) {
-                quest_start_weapon_id = @intFromEnum(built.start_weapon_id);
+                quest_start_weapon_id_for_reset = @intFromEnum(built.start_weapon_id);
             }
             if (quest_spawn_entries.len == 0) {
                 return error.UnsupportedQuestSpawnTable;
             }
         }
-        reset_quest_spawn_entries_len = quest_spawn_entries.len;
         if (header.hardcore) {
             spawn_mod.applyHardcoreQuestSpawnTableAdjustment(quest_spawn_entries);
         }
         if (capture_spawn_events_authoritative) {
-            quest_spawn_entries = &.{};
-            reset_quest_spawn_entries_len = 0;
+            quest_spawn_entries = quest_spawn_entries_storage[0..0];
         }
-        const weapon_id = @max(1, quest_start_weapon_id);
-        quest_start_weapon_id_for_reset = weapon_id;
-        for (players) |*player| {
+    }
+
+    var context = replay_context_mod.SimulationContext.initFromReplayHeader(
+        header,
+        .{
+            .strict_events = options.strict_events,
+            .inter_tick_rand_draws = options.inter_tick_rand_draws,
+            .defer_menu_open_events = defer_menu_open_events,
+            .apply_world_dt_steps = apply_world_dt_steps,
+            .capture_spawn_events_authoritative = capture_spawn_events_authoritative,
+            .quest_start_weapon_id_for_reset = quest_start_weapon_id_for_reset,
+            .quest_spawn_entries = if (game_mode == .quests and !capture_spawn_events_authoritative)
+                quest_spawn_entries
+            else
+                null,
+        },
+    ) catch |err| switch (err) {
+        error.InvalidPlayerCount => return error.UnsupportedPlayerCount,
+        error.InvalidWorldSize => return error.InvalidHeaderValue,
+        error.InvalidTickRate => return error.InvalidHeaderValue,
+        error.UnsupportedGameMode => return error.UnsupportedGameMode,
+        error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
+    };
+
+    if (game_mode == .quests) {
+        const weapon_id = @max(1, quest_start_weapon_id_for_reset);
+        for (context.players()) |*player| {
             const start_weapon = weapon_data.weaponIdFromInt(weapon_id);
             player_runtime.weaponAssignPlayer(player, start_weapon);
         }
     }
 
-    const defer_menu_open_events = original_capture_replay;
     for (0..replay.tickCount()) |tick_index| {
-        if (pending_capture_state_reset) {
-            applyCaptureStateReset(
-                &state,
-                players[0..],
-                &creatures,
-                &particles,
-                &projectiles,
-                &secondary_projectiles,
-                &bonuses,
-                @floatCast(header.world_size),
-                quest_start_weapon_id_for_reset,
-                header.fx_toggle,
-                capture_spawn_events_authoritative,
-                quest_spawn_entries_storage[0..],
-                reset_quest_spawn_entries_len,
-                &quest_spawn_entries,
-                &quest_spawn_timeline_ms,
-                &quest_no_creatures_timer_ms,
-                &quest_completion_transition_ms,
-            );
-            pending_capture_state_reset = false;
-        }
-        state.game_mode = game_mode;
-        for (0..@as(usize, @intCast(@max(options.inter_tick_rand_draws, 0)))) |_| {
-            _ = state.rng.rand();
-        }
-        if (event_index < events.len and events[event_index].tickIndex() < tick_index) {
+        if (context.event_index < events.len and events[context.event_index].tickIndex() < tick_index) {
             return error.UnsupportedEventOrdering;
         }
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, tick_index, dt_nominal);
-        const tick_event_start = event_index;
-        while (event_index < events.len and events[event_index].tickIndex() == tick_index) : (event_index += 1) {}
-        const tick_event_end = event_index;
-        var menu_open_seen_this_tick = false;
 
-        var tick_event_idx = tick_event_start;
-        while (tick_event_idx < tick_event_end) : (tick_event_idx += 1) {
-            if (classifyTickEvent(events[tick_event_idx], defer_menu_open_events) != .pre_step) continue;
-            try applyReplayEvent(
-                events[tick_event_idx],
-                &state,
-                players[0..],
-                &creatures,
-                narrowF32(dt_tick),
-                &quest_spawn_timeline_ms,
-                &quest_no_creatures_timer_ms,
-                &quest_completion_transition_ms,
-                &pending_capture_state_reset,
-                game_mode,
-                player_count,
-                quest_unlock_index,
-                options.strict_events,
-                &perk_menu_open_count,
-                &perk_pick_count,
-                &menu_open_seen_this_tick,
-            );
-        }
-        try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
+        const dt_tick = resolveDtFrame(options.dt_frame_overrides, tick_index, context.dt_nominal);
+        const tick_event_start = context.event_index;
+        var tick_event_end = tick_event_start;
+        while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
 
-        const tick_inputs = replay.inputs[tick_index];
-        var reload_active_any = false;
-        for (tick_inputs[0..players.len]) |input| {
-            const flags = replay_codec.unpackInputFlags(input.flags);
-            if (flags.fire_down) {
-                state.survival_reward_fire_seen = true;
-            }
-            if (flags.fire_pressed) fire_pressed_count += 1;
-            if (flags.reload_pressed) reload_pressed_count += 1;
-            if (flags.reload_pressed) reload_active_any = true;
-        }
-
-        const dt_world = if (apply_world_dt_steps)
-            applyPerkWorldDtSteps(players[0..], narrowF32(dt_tick))
-        else
-            narrowF32(dt_tick);
-        const dt_sim = survival_progression.timeScaleReflexBoostBonus(
-            state.bonuses.reflex_boost,
-            state.time_scale_active,
-            dt_world,
-        );
-        const dt_frame_ms = dt_tick * 1000.0;
-        var dt_frame_ms_i32: i32 = @intFromFloat(@round(dt_frame_ms));
-        if (dt_frame_ms_i32 < 1) dt_frame_ms_i32 = 1;
-        const dt_sim_ms = dt_sim * 1000.0;
-        const elapsed_before_ms: f32 = if (game_mode == .rush)
-            @floatFromInt(elapsed_ms_sim_rush)
-        else
-            elapsed_ms_sim;
-        const elapsed_after_ms = if (game_mode == .survival)
-            elapsed_before_ms + dt_sim_ms
-        else if (game_mode == .rush)
-            @as(f32, @floatFromInt(elapsed_ms_sim_rush + @as(i64, dt_frame_ms_i32)))
-        else
-            elapsed_before_ms + dt_frame_ms;
-        var freeze_corpse_at_tick_start = [_]bool{false} ** creatures_mod.max_creatures;
-        for (creatures.entries, 0..) |creature, idx| {
-            freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
-        }
-        var health_before_creatures: [state_mod.max_players]f32 = undefined;
-        for (players, 0..) |player, player_idx| {
-            health_before_creatures[player_idx] = player.health;
-        }
-        updateEvilEyesTargets(&state, players[0..], creatures.entries[0..]);
-        perks.updatePerkEffects(&state, players[0..], narrowF32(dt_sim));
-        applyJinxedEffects(&state, players[0..], &creatures, narrowF32(dt_sim));
-        applyPyrokineticEffects(
-            &state,
-            players[0..],
-            &creatures,
-            &particles,
-            narrowF32(dt_sim),
-        );
-        const rng_after_perk_effects = state.rng.state;
-
-        try creatures.update(
-            &state,
-            players[0..],
-            narrowF32(dt_sim),
-            narrowF32(header.world_size),
-            &bonuses,
-        );
-        applyPendingCreatureProjectiles(&state, &projectiles);
-        const rng_after_creatures = state.rng.state;
-        for (players, 0..) |_, player_idx| {
-            applyFinalRevengeOnDeathTransition(
-                &state,
-                players[0..],
-                player_idx,
-                health_before_creatures[player_idx],
-                &creatures,
-                &bonuses,
-                narrowF32(dt_sim),
-                narrowF32(header.world_size),
-                header.detail_preset,
-            );
-        }
-
-        const projectile_tick_stats = projectiles.update(
-            &state,
-            players[0..],
-            &creatures,
-            &bonuses,
-            narrowF32(dt_sim),
-            narrowF32(header.world_size),
-        );
-        const rng_after_projectiles = state.rng.state;
-
-        secondary_projectiles.updatePulseGun(
-            &state,
-            players[0..],
-            &creatures,
-            &bonuses,
-            narrowF32(dt_sim),
-            narrowF32(header.world_size),
-            header.detail_preset,
-        );
-        const rng_after_secondary_projectiles = state.rng.state;
-
-        particles.update(
-            &state,
-            players[0..],
-            &creatures,
-            &bonuses,
-            narrowF32(dt_sim),
-            narrowF32(header.world_size),
-        );
-        const rng_after_particles = state.rng.state;
-
-        if (game_mode == .rush) {
-            enforceRushLoadout(players[0..]);
-        }
-        var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
-        for (players, 0..) |*player, player_idx| {
-            const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicks(
-                &state,
-                player,
-                narrowF32(dt_sim),
-            );
-            player_preprocessed_alive[player_idx] = should_tick_perks;
-            if (!should_tick_perks) continue;
-            weapons_runtime.applyPlayerPerkTicks(
-                &state,
-                player,
-                &projectiles,
-                narrowF32(dt_sim),
-            );
-        }
-        for (tick_inputs[0..players.len], players, 0..) |input, *player, player_idx| {
-            if (!player_preprocessed_alive[player_idx]) {
-                continue;
-            }
-            const health_before_player_step = player.health;
-            const flags = replay_codec.unpackInputFlags(input.flags);
-            const move_mode_for_tick = resolveMoveModeForUpdate(flags);
-            updatePlayerFromReplayInput(
-                player,
-                input,
-                flags,
-                &state,
-                &creatures,
-                dt_sim,
-            );
-            weapons_runtime.stepPlayerForTick(
-                &state,
-                player,
-                &projectiles,
-                &secondary_projectiles,
-                &creatures,
-                &particles,
-                .{
-                    .fire_down = flags.fire_down,
-                    .fire_pressed = flags.fire_pressed,
-                    .reload_pressed = flags.reload_pressed,
-                    .reload_active_any = reload_active_any,
-                    .move_mode = move_mode_for_tick,
-                    .single_player_mode = players.len == 1,
-                    .preprocessed_player_tick = true,
-                },
-                narrowF32(dt_sim),
-            ) catch |err| switch (err) {
-                error.UnsupportedWeaponFirePath => return error.UnsupportedWeaponFirePath,
-            };
-            applyFinalRevengeOnDeathTransition(
-                &state,
-                players[0..],
-                player_idx,
-                health_before_player_step,
-                &creatures,
-                &bonuses,
-                narrowF32(dt_sim),
-                narrowF32(header.world_size),
-                header.detail_preset,
-            );
-            finalizePlayerPostUpdate(player, narrowF32(header.world_size));
-        }
-        const rng_after_player_update = state.rng.state;
-
-        var rng_after_stage_spawns = state.rng.state;
-        var rng_after_wave_spawns = state.rng.state;
-        if (game_mode == .survival) {
-            survival_progression.survivalUpdateWeaponHandouts(
-                &state,
-                players[0..],
-                narrowF32(elapsed_before_ms),
-            );
-
-            const stage_result = spawn_mod.advanceSurvivalSpawnStage(
-                spawn_stage,
-                players[0].level,
-            );
-            spawn_stage = stage_result.stage;
-            stage_spawn_count += stage_result.count;
-            for (stage_result.slice()) |spawn_call| {
-                creatures.spawnTemplateCallWithRuntimeContext(
-                    spawn_call,
-                    &state.rng,
-                    &state,
-                    @floatCast(header.world_size),
-                ) catch |err| switch (err) {
-                    error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
-                };
-            }
-            rng_after_stage_spawns = state.rng.state;
-
-            const wave_result = spawn_mod.tickSurvivalWaveSpawnsBatch(
-                spawn_cooldown,
-                dt_sim_ms,
-                &state.rng,
-                player_count,
-                elapsed_before_ms,
-                players[0].experience,
-                terrain_size,
-                terrain_size,
-            );
-            spawn_cooldown = wave_result.cooldown;
-            wave_spawn_count += wave_result.count;
-            creatures.spawnInits(wave_result.slice());
-            rng_after_wave_spawns = state.rng.state;
-        } else if (game_mode == .rush) {
-            const wave_result = spawn_mod.tickRushModeSpawnsBatch(
-                spawn_cooldown,
-                @floatFromInt(dt_frame_ms_i32),
-                &state.rng,
-                player_count,
-                elapsed_before_ms,
-                terrain_size,
-                terrain_size,
-            );
-            spawn_cooldown = wave_result.cooldown;
-            wave_spawn_count += wave_result.count;
-            creatures.spawnInits(wave_result.slice());
-            rng_after_stage_spawns = state.rng.state;
-            rng_after_wave_spawns = state.rng.state;
-        } else {
-            quest_creatures_none_active = creatures.activeCount() == 0;
-            const quest_spawns = spawn_mod.tickQuestModeSpawns(
-                quest_spawn_entries,
-                quest_spawn_timeline_ms,
-                narrowF32(dt_frame_ms),
-                @floatFromInt(terrain_size),
-                quest_creatures_none_active,
-                quest_no_creatures_timer_ms,
-            );
-            quest_spawn_timeline_ms = quest_spawns.quest_spawn_timeline_ms;
-            quest_creatures_none_active = quest_spawns.creatures_none_active;
-            quest_no_creatures_timer_ms = quest_spawns.no_creatures_timer_ms;
-            wave_spawn_count += quest_spawns.spawn_count;
-            for (quest_spawns.slice()) |spawn_call| {
-                creatures.spawnTemplateCallWithRuntimeContext(
-                    spawn_call,
-                    &state.rng,
-                    &state,
-                    @floatCast(header.world_size),
-                ) catch |err| switch (err) {
-                    error.UnsupportedSpawnTemplate => return error.UnsupportedSpawnTemplate,
-                };
-            }
-
-            const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(quest_spawn_entries);
-            if (quest_creatures_none_active and spawn_table_empty_now) {
-                state.bonuses.reflex_boost = 0.0;
-                state.time_scale_active = false;
-            }
-
-            var any_alive_after = false;
-            for (players) |player| {
-                if (player.health > 0.0) {
-                    any_alive_after = true;
-                    break;
-                }
-            }
-            if (any_alive_after) {
-                const quest_completion = spawn_mod.tickQuestCompletionTransition(
-                    quest_completion_transition_ms,
-                    narrowF32(dt_frame_ms),
-                    quest_creatures_none_active,
-                    spawn_table_empty_now,
-                );
-                quest_completion_transition_ms = quest_completion.completion_transition_ms;
-                quest_completed = quest_completion.completed;
-                quest_play_hit_sfx = quest_completion.play_hit_sfx;
-                quest_play_completion_music = quest_completion.play_completion_music;
-            } else {
-                quest_completion_transition_ms = -1.0;
-                quest_completed = false;
-                quest_play_hit_sfx = false;
-                quest_play_completion_music = false;
-            }
-
-            rng_after_stage_spawns = state.rng.state;
-            rng_after_wave_spawns = state.rng.state;
-        }
-        const rng_after_spawns = state.rng.state;
-
-        const dt_after_player = playerFrameDtAfterRoundtrip(
-            narrowF32(dt_sim),
-            state.time_scale_active,
-            state.bonuses.reflex_boost,
-        );
-        cameraShakeUpdate(&state, dt_after_player);
-        if (game_mode != .rush) {
-            _ = survival_progression.survivalProgressionUpdate(&state, players[0..]);
-        }
-        state.time_scale_active = state.bonuses.reflex_boost > 0.0;
-        bonus_runtime.updatePrePickupTimers(&state, dt_after_player);
-        bonus_runtime.bonusUpdate(
-            &bonuses,
-            &state,
-            players[0..],
-            dt_after_player,
-        ) catch |err| switch (err) {
-            error.UnsupportedBonusApplyPath => return error.UnsupportedBonusApplyPath,
-        };
-        if (state.debug_last_picked_bonus_id == .freeze) {
-            applyFreezePickupCorpseCleanupRng(
-                &state,
-                &creatures,
-                freeze_corpse_at_tick_start[0..],
-            );
-        }
-        applyPendingBonusEffects(
-            &state,
-            players[0..],
-            &projectiles,
-            &creatures,
-            &bonuses,
-            dt_after_player,
-            narrowF32(header.world_size),
+        const step_result = try replay_step.stepTick(
+            &context,
             tick_index,
+            replay.inputs[tick_index],
+            events[tick_event_start..tick_event_end],
+            dt_tick,
+            .{},
         );
-        const rng_after_bonus_update = state.rng.state;
-        if (game_mode == .survival) {
-            survival_progression.survivalEnforceRewardWeaponGuard(state, players[0..]);
-        }
-        creatures.finalizePostRenderLifecycle();
-        if (game_mode == .rush) {
-            elapsed_ms_sim_rush += @as(i64, dt_frame_ms_i32);
-            elapsed_ms_sim = @floatFromInt(elapsed_ms_sim_rush);
-        } else {
-            elapsed_ms_sim = elapsed_after_ms;
-        }
-
-        if (defer_menu_open_events and tick_event_start < tick_event_end) {
-            for ([_]TickEventPhase{
-                .post_state_transition,
-                .post_spawn_hook,
-                .post_menu_open,
-            }) |post_phase| {
-                var post_idx = tick_event_start;
-                while (post_idx < tick_event_end) : (post_idx += 1) {
-                    if (classifyTickEvent(events[post_idx], defer_menu_open_events) != post_phase) continue;
-                    try applyReplayEvent(
-                        events[post_idx],
-                        &state,
-                        players[0..],
-                        &creatures,
-                        narrowF32(dt_tick),
-                        &quest_spawn_timeline_ms,
-                        &quest_no_creatures_timer_ms,
-                        &quest_completion_transition_ms,
-                        &pending_capture_state_reset,
-                        game_mode,
-                        player_count,
-                        quest_unlock_index,
-                        options.strict_events,
-                        &perk_menu_open_count,
-                        &perk_pick_count,
-                        &menu_open_seen_this_tick,
-                    );
-                }
-                try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
-            }
-        }
 
         if (trace_out) |trace| {
-            const trace_elapsed_ms = if (game_mode == .quests)
-                quest_spawn_timeline_ms
-            else if (game_mode == .rush)
-                @as(f32, @floatFromInt(elapsed_ms_sim_rush))
-            else
-                elapsed_ms_sim;
+            const trace_elapsed_ms = switch (game_mode) {
+                .quests => context.quest_spawn_timeline_ms,
+                .rush => @as(f32, @floatFromInt(context.elapsed_ms_sim_rush)),
+                else => context.elapsed_ms_sim,
+            };
+            const players = context.playersConst();
+            const player0 = players[0];
             try trace.append(
                 trace_allocator,
                 buildTickTrace(
                     tick_index,
                     narrowF32(trace_elapsed_ms),
-                    &state,
-                    players[0],
-                    &creatures,
-                    &bonuses,
-                    &projectiles,
-                    projectile_tick_stats,
-                    rng_after_perk_effects,
-                    rng_after_creatures,
-                    rng_after_projectiles,
-                    rng_after_secondary_projectiles,
-                    rng_after_particles,
-                    rng_after_player_update,
-                    rng_after_stage_spawns,
-                    rng_after_wave_spawns,
-                    rng_after_spawns,
-                    rng_after_bonus_update,
+                    &context.state,
+                    player0,
+                    &context.creatures,
+                    &context.bonuses,
+                    &context.projectiles,
+                    step_result.projectile_tick_stats,
+                    step_result.rng_after_perk_effects,
+                    step_result.rng_after_creatures,
+                    step_result.rng_after_projectiles,
+                    step_result.rng_after_secondary_projectiles,
+                    step_result.rng_after_particles,
+                    step_result.rng_after_player_update,
+                    step_result.rng_after_stage_spawns,
+                    step_result.rng_after_wave_spawns,
+                    step_result.rng_after_spawns,
+                    step_result.rng_after_bonus_update,
                 ),
             );
         }
     }
 
     const terminal_tick = replay.tickCount();
-    if (event_index < events.len and events[event_index].tickIndex() < terminal_tick) {
+    if (context.event_index < events.len and events[context.event_index].tickIndex() < terminal_tick) {
         return error.UnsupportedEventOrdering;
     }
     var terminal_menu_open_seen = false;
-    while (event_index < events.len and events[event_index].tickIndex() == terminal_tick) : (event_index += 1) {
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, terminal_tick, dt_nominal);
-        try applyReplayEvent(
-            events[event_index],
-            &state,
-            players[0..],
-            &creatures,
+    while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
+        const dt_tick = resolveDtFrame(options.dt_frame_overrides, terminal_tick, context.dt_nominal);
+        const outcome = try replay_events.applyReplayEvent(
+            events[context.event_index],
+            &context.state,
+            context.players(),
+            &context.creatures,
             narrowF32(dt_tick),
-            &quest_spawn_timeline_ms,
-            &quest_no_creatures_timer_ms,
-            &quest_completion_transition_ms,
-            &pending_capture_state_reset,
-            game_mode,
-            player_count,
-            quest_unlock_index,
-            options.strict_events,
-            &perk_menu_open_count,
-            &perk_pick_count,
-            &terminal_menu_open_seen,
+            &context.quest_spawn_timeline_ms,
+            &context.quest_no_creatures_timer_ms,
+            &context.quest_completion_transition_ms,
+            .{
+                .game_mode = context.game_mode,
+                .player_count = context.player_count,
+                .quest_unlock_index = context.quest_unlock_index,
+                .strict_events = context.strict_events,
+                .menu_open_seen_this_tick = terminal_menu_open_seen,
+            },
         );
-        try ensureSupportedReplayFeatureFlags(state.demo_mode_active, state.preserve_bugs);
+        terminal_menu_open_seen = terminal_menu_open_seen or outcome.menu_open_seen_this_tick;
+        context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
+        context.perk_pick_count += outcome.perk_pick_count_delta;
+        if (outcome.signal == .request_capture_state_reset) {
+            context.pending_capture_state_reset = true;
+        }
+        try ensureSupportedReplayFeatureFlags(context.state.demo_mode_active, context.state.preserve_bugs);
     }
-    if (event_index != events.len) return error.UnsupportedEventOrdering;
+    if (context.event_index != events.len) return error.UnsupportedEventOrdering;
 
     const tick_rate_f32: f32 = @floatFromInt(header.tick_rate);
     const ticks_f32: f32 = @floatFromInt(replay.tickCount());
     const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f32 * (1000.0 / tick_rate_f32)));
-    const elapsed_ms_sim_i64: i64 = if (game_mode == .quests)
-        @intFromFloat(quest_spawn_timeline_ms)
-    else if (game_mode == .rush)
-        elapsed_ms_sim_rush
-    else
-        @intFromFloat(elapsed_ms_sim);
-    const shots = survival_progression.player0Shots(state);
+    const elapsed_ms_sim_i64: i64 = switch (game_mode) {
+        .quests => @intFromFloat(context.quest_spawn_timeline_ms),
+        .rush => context.elapsed_ms_sim_rush,
+        else => @intFromFloat(context.elapsed_ms_sim),
+    };
+
+    const players = context.playersConst();
+    const player0 = players[0];
+    const shots = survival_progression.player0Shots(context.state);
     const most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(
-        state,
+        context.state,
         0,
-        players[0].weapon_id,
+        player0.weapon_id,
     );
 
     return .{
         .ticks = replay.tickCount(),
         .elapsed_ms_nominal = elapsed_ms_nominal,
         .elapsed_ms_sim = elapsed_ms_sim_i64,
-        .perk_menu_open_count = perk_menu_open_count,
-        .perk_pick_count = perk_pick_count,
-        .fire_pressed_count = fire_pressed_count,
-        .reload_pressed_count = reload_pressed_count,
-        .stage_spawn_count = stage_spawn_count,
-        .wave_spawn_count = wave_spawn_count,
-        .wave_spawn_rng_state = state.rng.state,
-        .player_level = players[0].level,
-        .player_experience = players[0].experience,
-        .player_weapon_id = @intFromEnum(players[0].weapon_id),
+        .perk_menu_open_count = context.perk_menu_open_count,
+        .perk_pick_count = context.perk_pick_count,
+        .fire_pressed_count = context.fire_pressed_count,
+        .reload_pressed_count = context.reload_pressed_count,
+        .stage_spawn_count = context.stage_spawn_count,
+        .wave_spawn_count = context.wave_spawn_count,
+        .wave_spawn_rng_state = context.state.rng.state,
+        .player_level = player0.level,
+        .player_experience = player0.experience,
+        .player_weapon_id = @intFromEnum(player0.weapon_id),
         .most_used_weapon_id = @intFromEnum(most_used_weapon_id),
         .shots_fired = shots.fired,
         .shots_hit = shots.hit,
-        .creature_kill_count = creatures.kill_count,
-        .creature_active_count = creatures.activeCount(),
-        .perk_pending_count = state.perk_selection.pending_count,
-        .survival_reward_handout_enabled = state.survival_reward_handout_enabled,
-        .survival_reward_fire_seen = state.survival_reward_fire_seen,
-        .survival_reward_damage_seen = state.survival_reward_damage_seen,
-        .spawn_stage = spawn_stage,
-        .spawn_cooldown_ms = spawn_cooldown,
-        .quest_completion_transition_ms = @floatCast(quest_completion_transition_ms),
-        .quest_completed = quest_completed,
-        .quest_play_hit_sfx = quest_play_hit_sfx,
-        .quest_play_completion_music = quest_play_completion_music,
+        .creature_kill_count = context.creatures.kill_count,
+        .creature_active_count = context.creatures.activeCount(),
+        .perk_pending_count = context.state.perk_selection.pending_count,
+        .survival_reward_handout_enabled = context.state.survival_reward_handout_enabled,
+        .survival_reward_fire_seen = context.state.survival_reward_fire_seen,
+        .survival_reward_damage_seen = context.state.survival_reward_damage_seen,
+        .spawn_stage = context.spawn_stage,
+        .spawn_cooldown_ms = context.spawn_cooldown,
+        .quest_completion_transition_ms = @floatCast(context.quest_completion_transition_ms),
+        .quest_completed = context.quest_completed,
+        .quest_play_hit_sfx = context.quest_play_hit_sfx,
+        .quest_play_completion_music = context.quest_play_completion_music,
     };
 }
 
@@ -1010,251 +440,26 @@ fn buildTickTrace(
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
 ) ReplayTickTrace {
-    var projectile_count: usize = 0;
-    var projectile_state_hash: u64 = 1469598103934665603;
-    var projectile_type1_count: usize = 0;
-    var projectile_type6_count: usize = 0;
-    var projectile_type11_count: usize = 0;
-    var projectile_type21_count: usize = 0;
-    var projectile_type45_count: usize = 0;
-    var projectile_active_index_sum: i32 = 0;
-    var projectile_active_index_xor: i32 = 0;
-    var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry = undefined;
-    var projectile_entries_len: usize = 0;
-    for (projectiles.entries, 0..) |entry, idx| {
-        projectile_state_hash = hashMix(projectile_state_hash, @intCast(idx));
-        projectile_state_hash = hashMix(projectile_state_hash, if (entry.active) 1 else 0);
-        if (!entry.active) continue;
-        const idx_i32: i32 = @intCast(idx);
-        projectile_active_index_sum += idx_i32;
-        projectile_active_index_xor ^= idx_i32;
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.type_id)));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.x))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.y))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.x))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.y))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.life_timer))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.damage_pool))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ6(entry.angle))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.speed_scale))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner.toLegacy())));
-        projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
-        projectile_count += 1;
-        if (entry.type_id == 1) {
-            projectile_type1_count += 1;
-        }
-        if (entry.type_id == 6) {
-            projectile_type6_count += 1;
-        }
-        if (entry.type_id == 11) {
-            projectile_type11_count += 1;
-        }
-        if (entry.type_id == 21) {
-            projectile_type21_count += 1;
-        }
-        if (entry.type_id == 45) {
-            projectile_type45_count += 1;
-        }
-        projectile_entries[projectile_entries_len] = .{
-            .index = idx,
-            .type_id = entry.type_id,
-            .pos_x_q4 = quantizeQ4(entry.pos.x),
-            .pos_y_q4 = quantizeQ4(entry.pos.y),
-            .origin_x_q4 = quantizeQ4(entry.origin.x),
-            .origin_y_q4 = quantizeQ4(entry.origin.y),
-            .life_timer_q4 = quantizeQ4(entry.life_timer),
-            .damage_pool_q4 = quantizeQ4(entry.damage_pool),
-            .angle_q6 = quantizeQ6(entry.angle),
-            .speed_scale_q4 = quantizeQ4(entry.speed_scale),
-            .owner_legacy = entry.owner.toLegacy(),
-            .hits_players = entry.hits_players,
-        };
-        projectile_entries_len += 1;
-    }
-
-    var creature_active_index_sum: i32 = 0;
-    var creature_active_index_xor: i32 = 0;
-    var creature_state_hash: u64 = 1469598103934665603;
-    var creature_entries: [creatures_mod.max_creatures]CreatureTraceEntry = undefined;
-    var creature_entries_len: usize = 0;
-    for (creatures.entries, 0..) |creature, idx| {
-        creature_state_hash = hashMix(creature_state_hash, @intCast(idx));
-        creature_state_hash = hashMix(creature_state_hash, if (creature.active) 1 else 0);
-        if (!creature.active) continue;
-
-        const idx_i32: i32 = @intCast(idx);
-        creature_active_index_sum += idx_i32;
-        creature_active_index_xor ^= idx_i32;
-
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.type_id)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.heading))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.target_heading))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.phase_seed))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_scale))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.force_target)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, @intFromEnum(creature.ai_mode))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.link_index)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.orbit_angle))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.orbit_radius))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.hp))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.max_hp))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_speed))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.reward_value))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.size))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.contact_damage))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.lifecycle_stage))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.attack_cooldown))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner.toLegacy())));
-        creature_state_hash = hashMix(creature_state_hash, creature.flags);
-        creature_entries[creature_entries_len] = .{
-            .index = idx,
-            .type_id = creature.type_id,
-            .flags = @bitCast(creature.flags),
-            .ai_mode = @intFromEnum(creature.ai_mode),
-            .link_index = creature.link_index,
-            .pos_x_q4 = quantizeQ4(creature.pos.x),
-            .pos_y_q4 = quantizeQ4(creature.pos.y),
-            .target_x_q4 = quantizeQ4(creature.target.x),
-            .target_y_q4 = quantizeQ4(creature.target.y),
-            .heading_q6 = quantizeQ6(creature.heading),
-            .target_heading_q6 = quantizeQ6(creature.target_heading),
-            .hp_q4 = quantizeQ4(creature.hp),
-            .lifecycle_stage_q4 = quantizeQ4(creature.lifecycle_stage),
-            .size_q4 = quantizeQ4(creature.size),
-            .attack_cooldown_q6 = quantizeQ6(creature.attack_cooldown),
-        };
-        creature_entries_len += 1;
-    }
-
-    var bonus_active_count: usize = 0;
-    var bonus0_id: i32 = 0;
-    var bonus0_amount: i32 = 0;
-    var bonus1_id: i32 = 0;
-    var bonus1_amount: i32 = 0;
-    for (bonuses.entries) |entry| {
-        if (entry.bonus_id == .unused) continue;
-        if (bonus_active_count == 0) {
-            bonus0_id = @intFromEnum(entry.bonus_id);
-            bonus0_amount = entry.amount;
-        } else if (bonus_active_count == 1) {
-            bonus1_id = @intFromEnum(entry.bonus_id);
-            bonus1_amount = entry.amount;
-        }
-        bonus_active_count += 1;
-    }
-
-    return .{
-        .tick = tick_index,
-        .rng = .{
-            .rng_state = state.rng.state,
-            .rng_after_perk_effects = rng_after_perk_effects,
-            .rng_after_creatures = rng_after_creatures,
-            .rng_after_projectiles = rng_after_projectiles,
-            .rng_after_secondary_projectiles = rng_after_secondary_projectiles,
-            .rng_after_particles = rng_after_particles,
-            .rng_after_player_update = rng_after_player_update,
-            .rng_after_stage_spawns = rng_after_stage_spawns,
-            .rng_after_wave_spawns = rng_after_wave_spawns,
-            .rng_after_spawns = rng_after_spawns,
-            .rng_after_bonus_update = rng_after_bonus_update,
-        },
-        .summary = .{
-            .elapsed_ms = @intFromFloat(@round(elapsed_ms_sim)),
-            .score_xp = player.experience,
-            .kills = creatures.kill_count,
-            .shots_fired_p0 = if (state.shots_fired.len > 0) state.shots_fired[0] else 0,
-            .creature_count = creatures.activeCount(),
-            .creature_active_index_sum = creature_active_index_sum,
-            .creature_active_index_xor = creature_active_index_xor,
-            .creature_state_hash = creature_state_hash,
-            .perk_pending = state.perk_selection.pending_count,
-        },
-        .player = .{
-            .player_weapon_id = @intFromEnum(player.weapon_id),
-            .player_ammo_q4 = quantizeQ4(player.ammo),
-            .player_health_q4 = quantizeQ4(player.health),
-            .player_pos_x_q4 = quantizeQ4(player.pos.x),
-            .player_pos_y_q4 = quantizeQ4(player.pos.y),
-            .player_aim_x_q4 = quantizeQ4(player.aim.x),
-            .player_aim_y_q4 = quantizeQ4(player.aim.y),
-            .player_heading_q6 = quantizeQ6(player.heading),
-            .player_aim_heading_q6 = quantizeQ6(player.aim_heading),
-            .player_move_speed_q4 = quantizeQ4(player.move_speed),
-            .player_turn_speed_q4 = quantizeQ4(player.turn_speed),
-            .player_level = player.level,
-            .player_experience = player.experience,
-            .player_reload_active = player.reload_active,
-            .player_reload_timer_q4 = quantizeQ4(player.reload_timer),
-            .player_shot_cooldown_q4 = quantizeQ4(player.shot_cooldown),
-            .player_shot_seq = player.shot_seq,
-            .player_perk31_count = player.perk_counts.get(PerkId.hot_tempered),
-            .player_perk53_count = player.perk_counts.get(PerkId.man_bomb),
-            .player_perk54_count = player.perk_counts.get(PerkId.fire_caugh),
-            .player_perk55_count = player.perk_counts.get(PerkId.living_fortress),
-            .player_hot_tempered_timer_q6 = quantizeQ6(player.hot_tempered_timer),
-            .player_shield_timer_q4 = quantizeQ4(player.shield_timer),
-            .player_man_bomb_timer_q6 = quantizeQ6(player.man_bomb_timer),
-            .player_fire_cough_timer_q6 = quantizeQ6(player.fire_cough_timer),
-            .player_living_fortress_timer_q6 = quantizeQ6(player.living_fortress_timer),
-            .perk_interval_hot_tempered_q6 = quantizeQ6(state.perk_interval_hot_tempered),
-            .perk_interval_man_bomb_q6 = quantizeQ6(state.perk_interval_man_bomb),
-            .perk_interval_fire_cough_q6 = quantizeQ6(state.perk_interval_fire_cough),
-        },
-        .bonuses = .{
-            .bonus_weapon_power_up_ms = bonusTimerMs(state.bonuses.weapon_power_up),
-            .bonus_reflex_boost_ms = bonusTimerMs(state.bonuses.reflex_boost),
-            .bonus_energizer_ms = bonusTimerMs(state.bonuses.energizer),
-            .bonus_double_experience_ms = bonusTimerMs(state.bonuses.double_experience),
-            .bonus_freeze_ms = bonusTimerMs(state.bonuses.freeze),
-            .bonus_active_count = bonus_active_count,
-            .bonus0_id = bonus0_id,
-            .bonus0_amount = bonus0_amount,
-            .bonus1_id = bonus1_id,
-            .bonus1_amount = bonus1_amount,
-        },
-        .projectiles = .{
-            .projectile_state_hash = projectile_state_hash,
-            .projectile_count = projectile_count,
-            .projectile_active_index_sum = projectile_active_index_sum,
-            .projectile_active_index_xor = projectile_active_index_xor,
-            .projectile_type45_count = projectile_type45_count,
-            .projectile_hit_count = projectile_tick_stats.hit_count,
-            .projectile_type1_count = projectile_type1_count,
-            .projectile_type6_count = projectile_type6_count,
-            .projectile_type11_count = projectile_type11_count,
-            .projectile_type21_count = projectile_type21_count,
-            .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
-            .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
-            .projectile_first_hit_type_id = projectile_tick_stats.first_hit_type_id,
-            .projectile_first_hit_origin_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_origin.x),
-            .projectile_first_hit_origin_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_origin.y),
-            .projectile_first_hit_pos_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.x),
-            .projectile_first_hit_pos_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.y),
-            .projectile_first_hit_target_size_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_size)),
-            .projectile_first_hit_target_x_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_x)),
-            .projectile_first_hit_target_y_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_y)),
-            .entries_len = projectile_entries_len,
-            .entries = projectile_entries,
-        },
-        .creatures = .{
-            .entries_len = creature_entries_len,
-            .entries = creature_entries,
-        },
-        .debug = .{
-            .debug_pending_nuke = state.pending_nuke_count,
-            .debug_nuke_kills_last = state.debug_nuke_kills_last,
-            .debug_nuke_tick_last = state.debug_nuke_tick_last,
-            .debug_nuke_kill_index_sum = state.debug_nuke_kill_index_sum,
-            .debug_last_picked_bonus_id = @intFromEnum(state.debug_last_picked_bonus_id),
-            .debug_last_picked_bonus_amount = state.debug_last_picked_bonus_amount,
-        },
-    };
+    return replay_diagnostic_trace.buildReplayTickTraceV2(
+        tick_index,
+        elapsed_ms_sim,
+        state,
+        player,
+        creatures,
+        bonuses,
+        projectiles,
+        projectile_tick_stats,
+        rng_after_perk_effects,
+        rng_after_creatures,
+        rng_after_projectiles,
+        rng_after_secondary_projectiles,
+        rng_after_particles,
+        rng_after_player_update,
+        rng_after_stage_spawns,
+        rng_after_wave_spawns,
+        rng_after_spawns,
+        rng_after_bonus_update,
+    );
 }
 
 fn quantizeQ4(value: f32) i32 {

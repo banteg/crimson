@@ -164,19 +164,29 @@ def _write_fake_zig_bin(path: Path) -> Path:
         trace_path.parent.mkdir(parents=True, exist_ok=True)
         rows = [
             {
+                "schema_version": 2,
                 "tick": 0,
+                "timing": {
+                    "elapsed_ms": 0,
+                },
                 "rng": {
                     "rng_state": 11,
                     "rng_after_perk_effects": 100,
                     "rng_after_creatures": 101,
+                    "rng_after_projectiles": 102,
+                    "rng_after_secondary_projectiles": 103,
+                    "rng_after_particles": 104,
+                    "rng_after_player_update": 105,
+                    "rng_after_stage_spawns": 106,
+                    "rng_after_wave_spawns": 107,
+                    "rng_after_spawns": 108,
+                    "rng_after_bonus_update": 109,
                 },
                 "summary": {
-                    "elapsed_ms": 0,
                     "score_xp": 10,
                     "kills": 0,
                     "creature_count": 2,
                     "perk_pending": 0,
-                    "creature_state_hash": 1,
                 },
                 "player": {
                     "player_weapon_id": 14,
@@ -197,21 +207,42 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 "projectiles": {
                     "projectile_state_hash": 2,
                 },
+                "creatures": {
+                    "creature_state_hash": 1,
+                },
+                "debug": {
+                    "debug_pending_nuke": 0,
+                    "debug_nuke_kills_last": 0,
+                    "debug_nuke_tick_last": -1,
+                    "debug_nuke_kill_index_sum": 0,
+                    "debug_last_picked_bonus_id": 0,
+                    "debug_last_picked_bonus_amount": 0,
+                },
             },
             {
+                "schema_version": 2,
                 "tick": 1,
+                "timing": {
+                    "elapsed_ms": 16,
+                },
                 "rng": {
                     "rng_state": 12,
                     "rng_after_perk_effects": 200,
                     "rng_after_creatures": 201,
+                    "rng_after_projectiles": 202,
+                    "rng_after_secondary_projectiles": 203,
+                    "rng_after_particles": 204,
+                    "rng_after_player_update": 205,
+                    "rng_after_stage_spawns": 206,
+                    "rng_after_wave_spawns": 207,
+                    "rng_after_spawns": 208,
+                    "rng_after_bonus_update": 209,
                 },
                 "summary": {
-                    "elapsed_ms": 16,
                     "score_xp": 20,
                     "kills": 1,
                     "creature_count": 3,
                     "perk_pending": 1,
-                    "creature_state_hash": 3,
                 },
                 "player": {
                     "player_weapon_id": 14,
@@ -231,6 +262,17 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 },
                 "projectiles": {
                     "projectile_state_hash": 4,
+                },
+                "creatures": {
+                    "creature_state_hash": 3,
+                },
+                "debug": {
+                    "debug_pending_nuke": 1,
+                    "debug_nuke_kills_last": 0,
+                    "debug_nuke_tick_last": -1,
+                    "debug_nuke_kill_index_sum": 0,
+                    "debug_last_picked_bonus_id": 0,
+                    "debug_last_picked_bonus_amount": 0,
                 },
             },
         ]
