@@ -370,7 +370,9 @@ def test_replay_verify_rejects_removed_submitted_score_option(tmp_path: Path) ->
     )
 
     assert result.exit_code == 2
-    assert "No such option: --submitted-score" in result.output
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--submitted-score" in output
 
 
 def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
