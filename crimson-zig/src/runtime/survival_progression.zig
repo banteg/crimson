@@ -66,9 +66,13 @@ pub fn timeScaleReflexBoostBonus(
     const reflex_f32 = narrowF32(reflex_boost_timer);
     var time_scale_factor = narrowF32(0.3);
     if (reflex_f32 < 1.0) {
-        time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
+        time_scale_factor = narrowF32(
+            (@as(f64, 1.0) - @as(f64, @floatCast(reflex_f32))) * 0.7 + 0.3,
+        );
     }
-    return narrowF32(dt_f32 * time_scale_factor);
+    return narrowF32(
+        @as(f64, @floatCast(dt_f32)) * @as(f64, @floatCast(time_scale_factor)),
+    );
 }
 
 pub fn survivalLevelThreshold(level_in: i32) i32 {

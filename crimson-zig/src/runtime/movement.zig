@@ -145,12 +145,13 @@ pub fn updatePlayerFromGameInput(
             if (!moving_backward and target_heading == relative_move_heading_none) {
                 playerDecelerateMoveSpeed(player, movement_dt);
                 move_ext = directionFromHeadingNativeExt(player.heading);
-                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_multiplier * 25.0);
-                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_multiplier * 25.0);
-                move_delta_override = .{
-                    .x = narrowF32(movement_dt * move_dx),
-                    .y = narrowF32(movement_dt * move_dy),
-                };
+                const speed_scale_wide =
+                    @as(f64, @floatCast(player.move_speed)) *
+                    @as(f64, @floatCast(speed_multiplier)) *
+                    @as(f64, @floatCast(@as(f32, 25.0)));
+                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
             } else {
                 const heading_result = playerHeadingApproachTargetWithDelta(
                     player,
@@ -161,16 +162,14 @@ pub fn updatePlayerFromGameInput(
                 playerAccelerateMoveSpeed(player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move_ext = directionFromHeadingNativeExt(player.heading);
-                const turn_align =
-                    (native_pi - heading_result.diff) *
-                    speed_multiplier *
-                    relative_move_turn_align_scale;
-                const move_dx = headingMulNarrow(move_ext.x, player.move_speed * turn_align);
-                const move_dy = headingMulNarrow(move_ext.y, player.move_speed * turn_align);
-                move_delta_override = .{
-                    .x = narrowF32(movement_dt * move_dx),
-                    .y = narrowF32(movement_dt * move_dy),
-                };
+                const turn_align_wide =
+                    (@as(f64, @floatCast(native_pi)) - @as(f64, @floatCast(heading_result.diff))) *
+                    @as(f64, @floatCast(speed_multiplier)) *
+                    @as(f64, @floatCast(relative_move_turn_align_scale));
+                const speed_scale_wide = @as(f64, @floatCast(player.move_speed)) * turn_align_wide;
+                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
             }
         } else {
             const moving_input = raw_mag > 0.2;
@@ -306,12 +305,12 @@ fn playerMoveDeltaFromHeading(
     speed_scale: f32,
 ) state_mod.Vec2 {
     const move_ext = directionFromHeadingNativeExt(player.heading);
-    const move_dx = headingMulNarrow(move_ext.x, player.move_speed * speed_scale);
-    const move_dy = headingMulNarrow(move_ext.y, player.move_speed * speed_scale);
-    return .{
-        .x = narrowF32(movement_dt * move_dx),
-        .y = narrowF32(movement_dt * move_dy),
-    };
+    const speed_scale_wide =
+        @as(f64, @floatCast(player.move_speed)) *
+        @as(f64, @floatCast(speed_scale));
+    const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
+    const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
+    return movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
 }
 
 const HeadingDirectionExt = struct {
@@ -320,7 +319,22 @@ const HeadingDirectionExt = struct {
 };
 
 fn headingMulNarrow(component: f64, scalar: f32) f32 {
-    return narrowF32(@as(f32, @floatCast(component * @as(f64, @floatCast(scalar)))));
+    return headingMulWideNarrow(component, @as(f64, @floatCast(scalar)));
+}
+
+fn headingMulWideNarrow(component: f64, scale_wide: f64) f32 {
+    // `player_update` (0x004136b0) computes fcos/fsin movement products in x87
+    // and spills once to float move_dx/move_dy.
+    return narrowF32(component * scale_wide);
+}
+
+fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32) state_mod.Vec2 {
+    // Decompile stores `local_10/local_c = frame_dt * move_d{xy}` after x87 math.
+    const dt_wide = @as(f64, @floatCast(movement_dt));
+    return .{
+        .x = narrowF32(dt_wide * @as(f64, @floatCast(move_dx))),
+        .y = narrowF32(dt_wide * @as(f64, @floatCast(move_dy))),
+    };
 }
 
 fn distanceF32XY(
