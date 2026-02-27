@@ -25,7 +25,7 @@ AIM_SCHEME_PRESENT_FLAG = 1 << 12
 AIM_SCHEME_SHIFT = 13
 AIM_SCHEME_MASK = 0x7
 
-InputQuantization: TypeAlias = Literal["raw", "f32"]
+InputQuantization: TypeAlias = Literal["f32"]
 
 
 def _default_game_version() -> str:
@@ -195,7 +195,7 @@ class ReplayHeader:
     player_count: int = 1
     status: ReplayStatusSnapshot = field(default_factory=ReplayStatusSnapshot)
     claimed_stats: ReplayClaimedStatsSnapshot = field(default_factory=ReplayClaimedStatsSnapshot)
-    input_quantization: InputQuantization = "raw"
+    input_quantization: InputQuantization = "f32"
 
 
 @dataclass(frozen=True, slots=True)

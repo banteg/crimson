@@ -22,16 +22,17 @@ def _quantize_f32(value: float) -> float:
     return float(f32(float(value)))
 
 
-def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "raw") -> PackedPlayerInput:
+def pack_player_input(inp: PlayerInput, *, quant: InputQuantization = "f32") -> PackedPlayerInput:
+    if str(quant) != "f32":
+        raise ValueError(f"unsupported replay input quantization: {quant!r}")
     mx = float(inp.move.x)
     my = float(inp.move.y)
     ax = float(inp.aim.x)
     ay = float(inp.aim.y)
-    if str(quant) == "f32":
-        mx = _quantize_f32(mx)
-        my = _quantize_f32(my)
-        ax = _quantize_f32(ax)
-        ay = _quantize_f32(ay)
+    mx = _quantize_f32(mx)
+    my = _quantize_f32(my)
+    ax = _quantize_f32(ax)
+    ay = _quantize_f32(ay)
     flags = pack_input_flags(
         fire_down=bool(inp.fire_down),
         fire_pressed=bool(inp.fire_pressed),
@@ -75,6 +76,6 @@ def unpack_tick_inputs(packed_tick: PackedTickInputs) -> list[PlayerInput]:
 def pack_tick_inputs(
     inputs: Sequence[PlayerInput],
     *,
-    quant: InputQuantization = "raw",
+    quant: InputQuantization = "f32",
 ) -> PackedTickInputs:
     return [pack_player_input(inp, quant=quant) for inp in inputs]

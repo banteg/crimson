@@ -193,7 +193,7 @@ pub fn runReplayScaffoldWithTrace(
         return error.UnsupportedPlayerCount;
     }
     try ensureSupportedReplayFeatureFlags(false, header.preserve_bugs);
-    if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
+    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
     const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
@@ -2538,7 +2538,7 @@ fn buildTestReplay(
                 .quest_unlock_index_full = 0,
                 .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
             },
-            .input_quantization = try allocator.dupe(u8, "raw"),
+            .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
         .events = events,
@@ -2595,7 +2595,7 @@ fn buildTestReplayMulti(
                 .quest_unlock_index_full = 0,
                 .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
             },
-            .input_quantization = try allocator.dupe(u8, "raw"),
+            .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
         .events = events,

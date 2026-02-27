@@ -646,10 +646,7 @@ def _zig_rng_marks(rng: dict[str, object]) -> dict[str, int]:
 
 
 def _zig_row_tick_index(row: dict[str, object]) -> int:
-    if "tick_index" in row:
-        return _require_int(row.get("tick_index"), field="zig trace row.tick_index")
-    # Legacy rows used `tick`; canonical Zig v2 rows use `tick_index`.
-    return _require_int(row.get("tick"), field="zig trace row.tick")
+    return _require_int(row.get("tick_index"), field="zig trace row.tick_index")
 
 
 def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> ReplayCheckpoint:
@@ -661,7 +658,7 @@ def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> Re
     player = _require_object_dict(row.get("player"), field="zig trace row.player")
     bonuses = _require_object_dict(row.get("bonuses"), field="zig trace row.bonuses")
     projectiles = _require_object_dict(row.get("projectiles"), field="zig trace row.projectiles")
-    creatures = _require_object_dict(row.get("creatures"), field="zig trace row.creatures")
+    _require_object_dict(row.get("creatures"), field="zig trace row.creatures")
     debug = _require_object_dict(row.get("debug"), field="zig trace row.debug")
 
     player_pos_x_q4 = _require_int(player.get("player_pos_x_q4"), field="zig trace row.player.player_pos_x_q4")
@@ -695,17 +692,10 @@ def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> Re
         bonuses.get("bonus_freeze_ms"),
         field="zig trace row.bonuses.bonus_freeze_ms",
     )
-    if "creature_state_hash" in summary:
-        creature_state_hash = _require_int(
-            summary.get("creature_state_hash"),
-            field="zig trace row.summary.creature_state_hash",
-        )
-    else:
-        # Legacy rows stored this under creatures; canonical Zig v2 uses summary.
-        creature_state_hash = _require_int(
-            creatures.get("creature_state_hash"),
-            field="zig trace row.creatures.creature_state_hash",
-        )
+    creature_state_hash = _require_int(
+        summary.get("creature_state_hash"),
+        field="zig trace row.summary.creature_state_hash",
+    )
     projectile_state_hash = _require_int(
         projectiles.get("projectile_state_hash"),
         field="zig trace row.projectiles.projectile_state_hash",

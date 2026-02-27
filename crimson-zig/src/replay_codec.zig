@@ -420,7 +420,7 @@ const ReplayHeaderWire = struct {
     player_count: i32 = 1,
     status: ReplayStatusWire = .{},
     claimed_stats: ReplayClaimedStatsWire,
-    input_quantization: []const u8 = "raw",
+    input_quantization: []const u8 = "f32",
 };
 
 const ReplayInputWire = struct {
@@ -1145,7 +1145,7 @@ fn buildHeader(
     if (!std.mem.eql(u8, wire.bootstrap_kind, "none") and !std.mem.eql(u8, wire.bootstrap_kind, "terrain_v1")) {
         return error.UnsupportedBootstrapKind;
     }
-    if (!std.mem.eql(u8, wire.input_quantization, "raw") and !std.mem.eql(u8, wire.input_quantization, "f32")) {
+    if (!std.mem.eql(u8, wire.input_quantization, "f32")) {
         return error.UnsupportedInputQuantization;
     }
 
@@ -1224,9 +1224,6 @@ fn buildHeader(
 }
 
 fn normalizeInputValue(value: f32, input_quantization: []const u8) ReplayCodecError!f32 {
-    if (std.mem.eql(u8, input_quantization, "raw")) {
-        return value;
-    }
     if (std.mem.eql(u8, input_quantization, "f32")) {
         return value;
     }
@@ -1333,7 +1330,7 @@ test "validate terrain bootstrap matches known latest survival header" {
             .quest_unlock_index_full = 0,
             .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
         },
-        .input_quantization = try allocator.dupe(u8, "raw"),
+        .input_quantization = try allocator.dupe(u8, "f32"),
     };
     defer header.deinit(allocator);
 
@@ -1363,7 +1360,7 @@ test "bootstrap mismatch is rejected" {
             .quest_unlock_index_full = 0,
             .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
         },
-        .input_quantization = try allocator.dupe(u8, "raw"),
+        .input_quantization = try allocator.dupe(u8, "f32"),
     };
     defer header.deinit(allocator);
 
@@ -1513,7 +1510,7 @@ test "build header rejects world_size above i32 range" {
             .weapon_usage_counts = usage_counts[0..],
         },
         .claimed_stats = .{},
-        .input_quantization = "raw",
+        .input_quantization = "f32",
     };
     try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
 }
@@ -1551,7 +1548,7 @@ test "build header parses claimed stats snapshot" {
             .shots_fired = 10,
             .shots_hit = 8,
         },
-        .input_quantization = "raw",
+        .input_quantization = "f32",
     };
     const header = try buildHeader(std.testing.allocator, wire);
     defer header.deinit(std.testing.allocator);
@@ -1600,7 +1597,7 @@ test "build header rejects invalid claimed stats snapshot" {
             .shots_fired = 1,
             .shots_hit = 2,
         },
-        .input_quantization = "raw",
+        .input_quantization = "f32",
     };
     try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
 }
@@ -1616,7 +1613,7 @@ test "build inputs frees tick allocations on parse error" {
         },
     };
     const wire_inputs = [_][]const ReplayInputWire{wire_tick[0..]};
-    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..], "raw"));
+    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..], "f32"));
 }
 
 test "build events frees allocation on parse error" {

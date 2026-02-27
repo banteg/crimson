@@ -259,7 +259,7 @@ fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
         .player_count = 1,
         .status = .{},
         .claimed_stats = .{},
-        .input_quantization = @constCast("raw"),
+        .input_quantization = @constCast("f32"),
     };
 }
 

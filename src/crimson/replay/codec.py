@@ -69,7 +69,7 @@ class _ReplayHeaderWire(msgspec.Struct, forbid_unknown_fields=True):
     world_size: float = 1024.0
     player_count: int = 1
     status: _ReplayStatusWire = msgspec.field(default_factory=_ReplayStatusWire)
-    input_quantization: str = "raw"
+    input_quantization: str = "f32"
 
 
 class _ReplayInputWire(msgspec.Struct, array_like=True, forbid_unknown_fields=True):
@@ -174,8 +174,8 @@ def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
     if int(header.player_count) <= 0:
         raise ReplayCodecError(f"replay header player_count must be positive, got {int(header.player_count)}")
     _validate_usage_counts(header.status.weapon_usage_counts)
-    if str(header.input_quantization) not in ("raw", "f32"):
-        raise ReplayCodecError(f"unknown input_quantization: {header.input_quantization!r}")
+    if str(header.input_quantization) != "f32":
+        raise ReplayCodecError(f"unsupported input_quantization: {header.input_quantization!r}; expected 'f32'")
     if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
         raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
     _validate_claimed_stats(header.claimed_stats)
@@ -223,9 +223,9 @@ def _header_from_wire(data: _ReplayHeaderWire) -> ReplayHeader:
         raise ReplayCodecError(f"replay header player_count must be positive, got {int(data.player_count)}")
 
     input_quant_raw = str(data.input_quantization)
-    if input_quant_raw not in ("raw", "f32"):
-        raise ReplayCodecError(f"unknown input_quantization: {input_quant_raw!r}")
-    input_quant: InputQuantization = "f32" if input_quant_raw == "f32" else "raw"
+    if input_quant_raw != "f32":
+        raise ReplayCodecError(f"unsupported input_quantization: {input_quant_raw!r}; expected 'f32'")
+    input_quant: InputQuantization = "f32"
 
     bootstrap_kind_raw = str(data.bootstrap_kind)
     if bootstrap_kind_raw not in ("none", "terrain_v1"):
@@ -419,11 +419,10 @@ def load_replay(data: bytes) -> Replay:
             aim_x = float(packed.aim_x)
             aim_y = float(packed.aim_y)
             flags = int(packed.flags)
-            if header.input_quantization == "f32":
-                move_x = _quantize_f32(move_x)
-                move_y = _quantize_f32(move_y)
-                aim_x = _quantize_f32(aim_x)
-                aim_y = _quantize_f32(aim_y)
+            move_x = _quantize_f32(move_x)
+            move_y = _quantize_f32(move_y)
+            aim_x = _quantize_f32(aim_x)
+            aim_y = _quantize_f32(aim_y)
             packed_tick.append([move_x, move_y, [aim_x, aim_y], flags])
         inputs.append(packed_tick)
 

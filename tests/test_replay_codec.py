@@ -62,7 +62,7 @@ def test_replay_codec_roundtrip() -> None:
         world_size=1024.0,
         player_count=2,
         status=ReplayStatusSnapshot(quest_unlock_index=7, quest_unlock_index_full=40),
-        input_quantization="raw",
+        input_quantization="f32",
     )
     rec = ReplayRecorder(header)
     rec.record_tick(

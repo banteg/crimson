@@ -177,7 +177,7 @@ def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
         _require_field(payload, "projectiles", field="projectiles"),
         field="projectiles",
     )
-    creatures = _require_object_dict(
+    _require_object_dict(
         _require_field(payload, "creatures", field="creatures"),
         field="creatures",
     )
@@ -187,17 +187,10 @@ def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
         _require_field(projectiles, "projectile_state_hash", field="projectiles.projectile_state_hash"),
         field="projectiles.projectile_state_hash",
     )
-    if "creature_state_hash" not in summary:
-        # Legacy cache rows stored this under creatures; canonical Zig v2 uses summary.
-        _require_int(
-            _require_field(creatures, "creature_state_hash", field="creatures.creature_state_hash"),
-            field="creatures.creature_state_hash",
-        )
-    else:
-        _require_int(
-            _require_field(summary, "creature_state_hash", field="summary.creature_state_hash"),
-            field="summary.creature_state_hash",
-        )
+    _require_int(
+        _require_field(summary, "creature_state_hash", field="summary.creature_state_hash"),
+        field="summary.creature_state_hash",
+    )
     _require_int(
         _require_field(debug, "debug_pending_nuke", field="debug.debug_pending_nuke"),
         field="debug.debug_pending_nuke",
@@ -224,10 +217,7 @@ def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
     )
 
     return TickTrace(
-        tick_index=_require_int(
-            payload["tick_index"] if "tick_index" in payload else _require_field(payload, "tick", field="tick"),
-            field="tick_index" if "tick_index" in payload else "tick",
-        ),
+        tick_index=_require_int(_require_field(payload, "tick_index", field="tick_index"), field="tick_index"),
         rng_state=_require_int(_require_field(rng, "rng_state", field="rng.rng_state"), field="rng.rng_state"),
         elapsed_ms=_require_int(
             _require_field(timing, "elapsed_ms", field="timing.elapsed_ms"),

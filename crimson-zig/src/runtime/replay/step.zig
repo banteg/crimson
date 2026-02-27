@@ -797,7 +797,7 @@ fn testHeader() replay_codec.ReplayHeader {
         .player_count = 1,
         .status = .{},
         .claimed_stats = .{},
-        .input_quantization = @constCast("raw"),
+        .input_quantization = @constCast("f32"),
     };
 }
 
