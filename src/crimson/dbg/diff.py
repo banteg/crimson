@@ -5,10 +5,10 @@ from pathlib import Path
 
 import msgspec
 
-from ..original.diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from ..replay.checkpoints import ReplayCheckpoint
 from .channel_helpers import as_object_dict, channel_dict, channel_list, rng_row_key
 from .checkpoint_codec import channel_to_checkpoint
+from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from .policy import ParityPolicy
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
 from .trace import TraceReader, write_trace

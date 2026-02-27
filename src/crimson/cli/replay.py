@@ -1566,7 +1566,7 @@ def cmd_replay_verify_checkpoints(
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
     import hashlib
 
-    from ..original.diff import compare_checkpoints
+    from ..dbg.checkpoint_diff import compare_checkpoints
     from ..replay import ReplayCodecError, load_replay
     from ..replay.checkpoints import (
         ReplayCheckpointsError,
@@ -1654,7 +1654,7 @@ def cmd_replay_diff_checkpoints(
     actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.crd.chk)"),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
-    from ..original.diff import compare_checkpoints
+    from ..dbg.checkpoint_diff import compare_checkpoints
     from ..replay.checkpoints import load_checkpoints_file
 
     expected = load_checkpoints_file(Path(expected_file))
@@ -1667,3 +1667,91 @@ def cmd_replay_diff_checkpoints(
     if diff.first_rng_only_tick is not None:
         message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
     typer.echo(message)
+
+
+@replay_app.command("convert-capture")
+def cmd_replay_convert_capture(
+    capture_file: Path = typer.Argument(
+        ...,
+        help="capture file (.json/.json.gz/.msgpack.zst)",
+    ),
+    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.crd.chk)"),
+    replay_file: Path | None = typer.Option(
+        None,
+        "--replay",
+        help="output replay path (.crd); default: derive from checkpoints path",
+    ),
+    replay_sha256: str = typer.Option(
+        "",
+        help="optional replay sha256 to store in the converted sidecar",
+    ),
+    seed: int | None = typer.Option(
+        None,
+        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
+    ),
+    player_count: int | None = typer.Option(
+        None,
+        help="player count override for replay reconstruction (default: infer from capture telemetry)",
+    ),
+    game_mode_id: int | None = typer.Option(
+        None,
+        help="game mode override for replay reconstruction (default: infer from capture telemetry)",
+    ),
+    aim_scheme_player: list[str] = typer.Option(
+        [],
+        "--aim-scheme-player",
+        help=(
+            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
+            "use for captures missing config_aim_scheme telemetry"
+        ),
+    ),
+) -> None:
+    """Convert capture data into replay + checkpoint artifacts."""
+    import hashlib
+
+    from ..original.capture import (
+        convert_capture_to_checkpoints,
+        convert_capture_to_replay,
+        default_capture_replay_path,
+        load_capture,
+        parse_player_int_overrides,
+    )
+    from ..replay import dump_replay
+    from ..replay.checkpoints import dump_checkpoints_file
+
+    capture = load_capture(Path(capture_file))
+    try:
+        aim_scheme_overrides = parse_player_int_overrides(
+            aim_scheme_player,
+            option_name="--aim-scheme-player",
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+    try:
+        replay = convert_capture_to_replay(
+            capture,
+            seed=seed,
+            player_count=player_count,
+            game_mode_id=game_mode_id,
+            aim_scheme_overrides_by_player=aim_scheme_overrides,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+    replay_path = (
+        Path(replay_file) if replay_file is not None else default_capture_replay_path(Path(output_file))
+    )
+    replay_blob = dump_replay(replay)
+    replay_path.write_bytes(replay_blob)
+    digest = hashlib.sha256(replay_blob).hexdigest()
+
+    checkpoints = convert_capture_to_checkpoints(
+        capture,
+        replay_sha256=str(replay_sha256 or digest),
+    )
+    dump_checkpoints_file(Path(output_file), checkpoints)
+    typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
+    typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
+    typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
+

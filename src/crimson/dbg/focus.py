@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..original.diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
 from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list, rng_row_key
 from .checkpoint_codec import channel_to_checkpoint
+from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
