@@ -165,7 +165,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
         rows = [
             {
                 "schema_version": 2,
-                "tick": 0,
+                "tick_index": 0,
                 "timing": {
                     "elapsed_ms": 0,
                 },
@@ -186,6 +186,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "score_xp": 10,
                     "kills": 0,
                     "creature_count": 2,
+                    "creature_state_hash": 1,
                     "perk_pending": 0,
                 },
                 "player": {
@@ -208,7 +209,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "projectile_state_hash": 2,
                 },
                 "creatures": {
-                    "creature_state_hash": 1,
+                    "entries": [],
                 },
                 "debug": {
                     "debug_pending_nuke": 0,
@@ -221,7 +222,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
             },
             {
                 "schema_version": 2,
-                "tick": 1,
+                "tick_index": 1,
                 "timing": {
                     "elapsed_ms": 16,
                 },
@@ -242,6 +243,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "score_xp": 20,
                     "kills": 1,
                     "creature_count": 3,
+                    "creature_state_hash": 3,
                     "perk_pending": 1,
                 },
                 "player": {
@@ -264,7 +266,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "projectile_state_hash": 4,
                 },
                 "creatures": {
-                    "creature_state_hash": 3,
+                    "entries": [],
                 },
                 "debug": {
                     "debug_pending_nuke": 1,

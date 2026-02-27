@@ -645,9 +645,16 @@ def _zig_rng_marks(rng: dict[str, object]) -> dict[str, int]:
     return marks
 
 
+def _zig_row_tick_index(row: dict[str, object]) -> int:
+    if "tick_index" in row:
+        return _require_int(row.get("tick_index"), field="zig trace row.tick_index")
+    # Legacy rows used `tick`; canonical Zig v2 rows use `tick_index`.
+    return _require_int(row.get("tick"), field="zig trace row.tick")
+
+
 def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> ReplayCheckpoint:
     _require_schema_version_v2(row)
-    tick_index = _require_int(row.get("tick"), field="zig trace row.tick")
+    tick_index = _zig_row_tick_index(row)
     timing = _require_object_dict(row.get("timing"), field="zig trace row.timing")
     rng = _require_object_dict(row.get("rng"), field="zig trace row.rng")
     summary = _require_object_dict(row.get("summary"), field="zig trace row.summary")
@@ -688,10 +695,17 @@ def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> Re
         bonuses.get("bonus_freeze_ms"),
         field="zig trace row.bonuses.bonus_freeze_ms",
     )
-    creature_state_hash = _require_int(
-        creatures.get("creature_state_hash"),
-        field="zig trace row.creatures.creature_state_hash",
-    )
+    if "creature_state_hash" in summary:
+        creature_state_hash = _require_int(
+            summary.get("creature_state_hash"),
+            field="zig trace row.summary.creature_state_hash",
+        )
+    else:
+        # Legacy rows stored this under creatures; canonical Zig v2 uses summary.
+        creature_state_hash = _require_int(
+            creatures.get("creature_state_hash"),
+            field="zig trace row.creatures.creature_state_hash",
+        )
     projectile_state_hash = _require_int(
         projectiles.get("projectile_state_hash"),
         field="zig trace row.projectiles.projectile_state_hash",
@@ -772,7 +786,7 @@ def _record_replay_to_trace_zig(
     else:
         tick_limit = None
 
-    sorted_rows = sorted(zig_rows, key=lambda row: _require_int(row.get("tick"), field="zig trace row.tick"))
+    sorted_rows = sorted(zig_rows, key=_zig_row_tick_index)
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
     include_rng = profile in {"standard", "full"}

@@ -19,7 +19,7 @@ from crimson.sim.driver.replay_runner import ReplayRunnerError, run_survival_rep
 
 
 class TickTrace(TypedDict):
-    tick: int
+    tick_index: int
     rng_state: int
     elapsed_ms: int
     score_xp: int
@@ -138,7 +138,7 @@ def _checkpoint_to_trace(checkpoint: ReplayCheckpoint) -> TickTrace:
     player = checkpoint.players[0]
     bonus_timers = checkpoint.bonus_timers
     return TickTrace(
-        tick=int(checkpoint.tick_index),
+        tick_index=int(checkpoint.tick_index),
         rng_state=int(checkpoint.rng_state),
         elapsed_ms=int(checkpoint.elapsed_ms),
         score_xp=int(checkpoint.score_xp),
@@ -187,10 +187,17 @@ def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
         _require_field(projectiles, "projectile_state_hash", field="projectiles.projectile_state_hash"),
         field="projectiles.projectile_state_hash",
     )
-    _require_int(
-        _require_field(creatures, "creature_state_hash", field="creatures.creature_state_hash"),
-        field="creatures.creature_state_hash",
-    )
+    if "creature_state_hash" not in summary:
+        # Legacy cache rows stored this under creatures; canonical Zig v2 uses summary.
+        _require_int(
+            _require_field(creatures, "creature_state_hash", field="creatures.creature_state_hash"),
+            field="creatures.creature_state_hash",
+        )
+    else:
+        _require_int(
+            _require_field(summary, "creature_state_hash", field="summary.creature_state_hash"),
+            field="summary.creature_state_hash",
+        )
     _require_int(
         _require_field(debug, "debug_pending_nuke", field="debug.debug_pending_nuke"),
         field="debug.debug_pending_nuke",
@@ -217,7 +224,10 @@ def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
     )
 
     return TickTrace(
-        tick=_require_int(_require_field(payload, "tick", field="tick"), field="tick"),
+        tick_index=_require_int(
+            payload["tick_index"] if "tick_index" in payload else _require_field(payload, "tick", field="tick"),
+            field="tick_index" if "tick_index" in payload else "tick",
+        ),
         rng_state=_require_int(_require_field(rng, "rng_state", field="rng.rng_state"), field="rng.rng_state"),
         elapsed_ms=_require_int(
             _require_field(timing, "elapsed_ms", field="timing.elapsed_ms"),
@@ -318,7 +328,7 @@ def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
         for row in trace_rows:
             line = {
                 "schema_version": TRACE_SCHEMA_VERSION,
-                "tick": int(row["tick"]),
+                "tick_index": int(row["tick_index"]),
                 "timing": {
                     "elapsed_ms": int(row["elapsed_ms"]),
                 },
@@ -329,6 +339,7 @@ def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
                     "score_xp": int(row["score_xp"]),
                     "kills": int(row["kills"]),
                     "creature_count": int(row["creature_count"]),
+                    "creature_state_hash": 0,
                     "perk_pending": int(row["perk_pending"]),
                 },
                 "player": {
@@ -349,7 +360,7 @@ def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
                     "projectile_state_hash": 0,
                 },
                 "creatures": {
-                    "creature_state_hash": 0,
+                    "entries": [],
                 },
                 "debug": {
                     "debug_pending_nuke": 0,
@@ -396,8 +407,8 @@ def _first_mismatch(
     for index in range(limit):
         expected_row = expected[index]
         actual_row = actual[index]
-        if int(expected_row["tick"]) != int(actual_row["tick"]):
-            return index, "tick", int(expected_row["tick"]), int(actual_row["tick"])
+        if int(expected_row["tick_index"]) != int(actual_row["tick_index"]):
+            return index, "tick_index", int(expected_row["tick_index"]), int(actual_row["tick_index"])
         for key, path in TRACE_FIELDS:
             expected_value = int(expected_row[key])
             actual_value = int(actual_row[key])
