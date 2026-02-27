@@ -320,7 +320,7 @@ fn writeReplayTickTraceJsonl(
     var writer = file.writer(&buffer);
     const out = &writer.interface;
     for (trace) |entry| {
-        const row = diagnostic_trace.toJsonRowV2(&entry);
+        const row = diagnostic_trace.toJsonRow(&entry);
         try std.json.Stringify.value(row, .{}, out);
         try out.writeByte('\n');
     }

@@ -4,20 +4,25 @@ from pathlib import Path
 
 import msgspec
 
-REPLAY_TICK_TRACE_SCHEMA_VERSION = 2
+from ..bonuses.ids import BonusId
+from ..perks.ids import PerkId
+
+REPLAY_TICK_TRACE_SCHEMA_VERSION = 3
+PERK_COUNT_SIZE = len(PerkId)
+BONUS_ID_COUNT = len(BonusId)
 
 
 class ProjectileTraceEntry(msgspec.Struct, forbid_unknown_fields=True):
     index: int
     type_id: int
-    pos_x_q4: int
-    pos_y_q4: int
-    origin_x_q4: int
-    origin_y_q4: int
-    life_timer_q4: int
-    damage_pool_q4: int
-    angle_q6: int
-    speed_scale_q4: int
+    pos_x_bits: int
+    pos_y_bits: int
+    origin_x_bits: int
+    origin_y_bits: int
+    life_timer_bits: int
+    damage_pool_bits: int
+    angle_bits: int
+    speed_scale_bits: int
     owner_legacy: int
     hits_players: bool
 
@@ -28,23 +33,33 @@ class CreatureTraceEntry(msgspec.Struct, forbid_unknown_fields=True):
     flags: int
     ai_mode: int
     link_index: int
-    pos_x_q4: int
-    pos_y_q4: int
-    target_x_q4: int
-    target_y_q4: int
-    heading_q6: int
-    target_heading_q6: int
-    hp_q4: int
-    lifecycle_stage_q4: int
-    size_q4: int
-    attack_cooldown_q6: int
+    pos_x_bits: int
+    pos_y_bits: int
+    target_x_bits: int
+    target_y_bits: int
+    heading_bits: int
+    target_heading_bits: int
+    hp_bits: int
+    lifecycle_stage_bits: int
+    size_bits: int
+    attack_cooldown_bits: int
 
 
-class ReplayTickTimingJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class BonusActiveEntry(msgspec.Struct, forbid_unknown_fields=True):
+    bonus_id: int
+    amount: int
+
+
+class ProjectileTypeCountEntry(msgspec.Struct, forbid_unknown_fields=True):
+    type_id: int
+    count: int
+
+
+class ReplayTickTimingJson(msgspec.Struct, forbid_unknown_fields=True):
     elapsed_ms: int
 
 
-class ReplayTickRngJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickRngJson(msgspec.Struct, forbid_unknown_fields=True):
     rng_state: int
     rng_after_perk_effects: int
     rng_after_creatures: int
@@ -58,7 +73,7 @@ class ReplayTickRngJsonV2(msgspec.Struct, forbid_unknown_fields=True):
     rng_after_bonus_update: int
 
 
-class ReplayTickSummaryJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickSummaryJson(msgspec.Struct, forbid_unknown_fields=True):
     score_xp: int
     kills: int
     shots_fired_p0: int
@@ -69,80 +84,66 @@ class ReplayTickSummaryJsonV2(msgspec.Struct, forbid_unknown_fields=True):
     perk_pending: int
 
 
-class ReplayTickPlayerJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickPlayerJson(msgspec.Struct, forbid_unknown_fields=True):
     player_weapon_id: int
-    player_ammo_q4: int
-    player_health_q4: int
-    player_pos_x_q4: int
-    player_pos_y_q4: int
-    player_aim_x_q4: int
-    player_aim_y_q4: int
-    player_heading_q6: int
-    player_aim_heading_q6: int
-    player_move_speed_q4: int
-    player_turn_speed_q4: int
+    player_ammo_bits: int
+    player_health_bits: int
+    player_pos_x_bits: int
+    player_pos_y_bits: int
+    player_aim_x_bits: int
+    player_aim_y_bits: int
+    player_heading_bits: int
+    player_aim_heading_bits: int
+    player_move_speed_bits: int
+    player_turn_speed_bits: int
     player_level: int
     player_experience: int
     player_reload_active: bool
-    player_reload_timer_q4: int
-    player_shot_cooldown_q4: int
+    player_reload_timer_bits: int
+    player_shot_cooldown_bits: int
     player_shot_seq: int
-    player_perk31_count: int
-    player_perk53_count: int
-    player_perk54_count: int
-    player_perk55_count: int
-    player_hot_tempered_timer_q6: int
-    player_shield_timer_q4: int
-    player_man_bomb_timer_q6: int
-    player_fire_cough_timer_q6: int
-    player_living_fortress_timer_q6: int
-    perk_interval_hot_tempered_q6: int
-    perk_interval_man_bomb_q6: int
-    perk_interval_fire_cough_q6: int
+    player_perk_counts: list[int]
+    player_hot_tempered_timer_bits: int
+    player_shield_timer_bits: int
+    player_man_bomb_timer_bits: int
+    player_fire_cough_timer_bits: int
+    player_living_fortress_timer_bits: int
+    perk_interval_hot_tempered_bits: int
+    perk_interval_man_bomb_bits: int
+    perk_interval_fire_cough_bits: int
 
 
-class ReplayTickBonusesJsonV2(msgspec.Struct, forbid_unknown_fields=True):
-    bonus_weapon_power_up_ms: int
-    bonus_reflex_boost_ms: int
-    bonus_energizer_ms: int
-    bonus_double_experience_ms: int
-    bonus_freeze_ms: int
+class ReplayTickBonusesJson(msgspec.Struct, forbid_unknown_fields=True):
+    bonus_timer_ms_by_id: list[int]
     bonus_active_count: int
-    bonus0_id: int
-    bonus0_amount: int
-    bonus1_id: int
-    bonus1_amount: int
+    active_entries: list[BonusActiveEntry]
 
 
-class ReplayTickProjectilesJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickProjectilesJson(msgspec.Struct, forbid_unknown_fields=True):
     projectile_state_hash: int
     projectile_count: int
     projectile_active_index_sum: int
     projectile_active_index_xor: int
-    projectile_type45_count: int
     projectile_hit_count: int
-    projectile_type1_count: int
-    projectile_type6_count: int
-    projectile_type11_count: int
-    projectile_type21_count: int
     projectile_first_hit_creature_index: int
     projectile_first_hit_projectile_index: int
     projectile_first_hit_type_id: int
-    projectile_first_hit_origin_x_q4: int
-    projectile_first_hit_origin_y_q4: int
-    projectile_first_hit_pos_x_q4: int
-    projectile_first_hit_pos_y_q4: int
-    projectile_first_hit_target_size_q4: int
-    projectile_first_hit_target_x_q4: int
-    projectile_first_hit_target_y_q4: int
+    projectile_first_hit_origin_x_bits: int
+    projectile_first_hit_origin_y_bits: int
+    projectile_first_hit_pos_x_bits: int
+    projectile_first_hit_pos_y_bits: int
+    projectile_first_hit_target_size_bits: int
+    projectile_first_hit_target_x_bits: int
+    projectile_first_hit_target_y_bits: int
+    projectile_type_counts: list[ProjectileTypeCountEntry]
     entries: list[ProjectileTraceEntry]
 
 
-class ReplayTickCreaturesJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickCreaturesJson(msgspec.Struct, forbid_unknown_fields=True):
     entries: list[CreatureTraceEntry]
 
 
-class ReplayTickDebugJsonV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickDebugJson(msgspec.Struct, forbid_unknown_fields=True):
     debug_pending_nuke: int
     debug_nuke_kills_last: int
     debug_nuke_tick_last: int
@@ -151,36 +152,76 @@ class ReplayTickDebugJsonV2(msgspec.Struct, forbid_unknown_fields=True):
     debug_last_picked_bonus_amount: int
 
 
-class ReplayTickTraceJsonRowV2(msgspec.Struct, forbid_unknown_fields=True):
+class ReplayTickTraceJsonRow(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     tick_index: int
-    timing: ReplayTickTimingJsonV2
-    rng: ReplayTickRngJsonV2
-    summary: ReplayTickSummaryJsonV2
-    player: ReplayTickPlayerJsonV2
-    bonuses: ReplayTickBonusesJsonV2
-    projectiles: ReplayTickProjectilesJsonV2
-    creatures: ReplayTickCreaturesJsonV2
-    debug: ReplayTickDebugJsonV2
+    timing: ReplayTickTimingJson
+    rng: ReplayTickRngJson
+    summary: ReplayTickSummaryJson
+    player: ReplayTickPlayerJson
+    bonuses: ReplayTickBonusesJson
+    projectiles: ReplayTickProjectilesJson
+    creatures: ReplayTickCreaturesJson
+    debug: ReplayTickDebugJson
 
 
-_ROW_DECODER = msgspec.json.Decoder(type=ReplayTickTraceJsonRowV2)
+_ROW_DECODER = msgspec.json.Decoder(type=ReplayTickTraceJsonRow)
 
 
-def decode_replay_tick_trace_json_row(payload: bytes, *, field: str) -> ReplayTickTraceJsonRowV2:
+def _validate_trace_row(row: ReplayTickTraceJsonRow, *, field: str) -> None:
+    if len(row.player.player_perk_counts) != int(PERK_COUNT_SIZE):
+        raise ValueError(
+            f"{field}.player.player_perk_counts must have {int(PERK_COUNT_SIZE)} entries, "
+            f"got {len(row.player.player_perk_counts)}",
+        )
+    if len(row.bonuses.bonus_timer_ms_by_id) != int(BONUS_ID_COUNT):
+        raise ValueError(
+            f"{field}.bonuses.bonus_timer_ms_by_id must have {int(BONUS_ID_COUNT)} entries, "
+            f"got {len(row.bonuses.bonus_timer_ms_by_id)}",
+        )
+    if int(row.bonuses.bonus_active_count) != len(row.bonuses.active_entries):
+        raise ValueError(
+            f"{field}.bonuses.bonus_active_count must equal len(active_entries), "
+            f"got {int(row.bonuses.bonus_active_count)} and {len(row.bonuses.active_entries)}",
+        )
+    if int(row.projectiles.projectile_count) != len(row.projectiles.entries):
+        raise ValueError(
+            f"{field}.projectiles.projectile_count must equal len(entries), "
+            f"got {int(row.projectiles.projectile_count)} and {len(row.projectiles.entries)}",
+        )
+    if int(row.summary.creature_count) != len(row.creatures.entries):
+        raise ValueError(
+            f"{field}.summary.creature_count must equal len(creatures.entries), "
+            f"got {int(row.summary.creature_count)} and {len(row.creatures.entries)}",
+        )
+
+    last_type_id: int | None = None
+    for idx, entry in enumerate(row.projectiles.projectile_type_counts):
+        if int(entry.count) <= 0:
+            raise ValueError(f"{field}.projectiles.projectile_type_counts[{idx}].count must be > 0")
+        type_id = int(entry.type_id)
+        if last_type_id is not None and type_id <= last_type_id:
+            raise ValueError(
+                f"{field}.projectiles.projectile_type_counts must be strictly sorted by type_id",
+            )
+        last_type_id = type_id
+
+
+def decode_replay_tick_trace_json_row(payload: bytes, *, field: str) -> ReplayTickTraceJsonRow:
     try:
         row = _ROW_DECODER.decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ValueError(f"{field} must be a valid replay tick trace v2 json row") from exc
+        raise ValueError(f"{field} must be a valid replay tick trace v3 json row") from exc
     if int(row.schema_version) != int(REPLAY_TICK_TRACE_SCHEMA_VERSION):
         raise ValueError(
             f"{field}.schema_version must be {int(REPLAY_TICK_TRACE_SCHEMA_VERSION)}, got {int(row.schema_version)}",
         )
+    _validate_trace_row(row, field=field)
     return row
 
 
-def decode_replay_tick_trace_jsonl(path: Path) -> list[ReplayTickTraceJsonRowV2]:
-    rows: list[ReplayTickTraceJsonRowV2] = []
+def decode_replay_tick_trace_jsonl(path: Path) -> list[ReplayTickTraceJsonRow]:
+    rows: list[ReplayTickTraceJsonRow] = []
     for line_number, raw_line in enumerate(Path(path).read_bytes().splitlines(), start=1):
         line = raw_line.strip()
         if not line:

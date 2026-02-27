@@ -138,7 +138,7 @@ pub const ReplayScaffoldResult = struct {
 
 pub const ProjectileTraceEntry = replay_diagnostic_trace.ProjectileTraceEntry;
 pub const CreatureTraceEntry = replay_diagnostic_trace.CreatureTraceEntry;
-pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTraceV2;
+pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTrace;
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
@@ -447,7 +447,7 @@ fn buildTickTrace(
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
 ) ReplayTickTrace {
-    return replay_diagnostic_trace.buildReplayTickTraceV2(
+    return replay_diagnostic_trace.buildReplayTickTrace(
         tick_index,
         elapsed_ms_sim,
         state,
@@ -469,11 +469,8 @@ fn buildTickTrace(
     );
 }
 
-fn quantizeQ4(value: f32) i32 {
-    const scaled = @round(value * 10000.0);
-    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
-    return @intFromFloat(scaled);
+fn f32Bits(value: f32) u32 {
+    return @bitCast(value);
 }
 
 fn mapReplayInputToGameInput(input: replay_codec.ReplayPlayerInput) player_runtime.GameInput {
@@ -1054,7 +1051,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
         fn runCase(
             allocator_inner: std.mem.Allocator,
             include_shot_cooldown: bool,
-        ) !struct { shots_fired: i32, ammo_q4: i32 } {
+        ) !struct { shots_fired: i32, ammo_bits: u32 } {
             var bootstrap = replay_codec.CaptureBootstrapEvent{
                 .tick_index = 0,
             };
@@ -1094,7 +1091,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
                 .shots_fired = result.shots_fired,
-                .ammo_q4 = trace.items[0].player.player_ammo_q4,
+                .ammo_bits = trace.items[0].player.player_ammo_bits,
             };
         }
     }.runCase;
@@ -1103,8 +1100,8 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
     const with_cooldown = try run(allocator, true);
     try std.testing.expect(without_cooldown.shots_fired > with_cooldown.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), with_cooldown.shots_fired);
-    try std.testing.expect(without_cooldown.ammo_q4 < with_cooldown.ammo_q4);
-    try std.testing.expectEqual(quantizeQ4(12.0), with_cooldown.ammo_q4);
+    try std.testing.expect(without_cooldown.ammo_bits < with_cooldown.ammo_bits);
+    try std.testing.expectEqual(f32Bits(12.0), with_cooldown.ammo_bits);
 }
 
 test "survival scaffold bootstrap perk counts enable alternate weapon swap" {
@@ -1500,7 +1497,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
         .{},
     );
     try std.testing.expectEqual(@as(usize, 1), trace.items.len);
-    try std.testing.expect(trace.items[0].player.player_pos_x_q4 > quantizeQ4(512.0));
+    try std.testing.expect(trace.items[0].player.player_pos_x_bits > f32Bits(512.0));
 }
 
 test "rush scaffold supports multiplayer replays" {
@@ -2243,8 +2240,14 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
     try std.testing.expectEqual(@as(usize, 0), result.creature_active_count);
     try std.testing.expectEqual(@as(usize, 2), trace.items.len);
-    try std.testing.expectEqual(@as(i32, 0), trace.items[1].bonuses.bonus_reflex_boost_ms);
-    try std.testing.expectEqual(@as(i32, 0), trace.items[1].player.player_perk54_count);
+    try std.testing.expectEqual(
+        @as(i32, 0),
+        trace.items[1].bonuses.bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.reflex_boost)],
+    );
+    try std.testing.expectEqual(
+        @as(i32, 0),
+        trace.items[1].player.player_perk_counts[@intFromEnum(PerkId.fire_caugh)],
+    );
 }
 
 test "resolve quest level key ignores seed fallback outside i32 range" {
@@ -2344,7 +2347,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             reflex_apply: replay_codec.ReplayEvent,
             include_reflex_boosted: bool,
             dt_overrides: ?[]const DtFrameOverride,
-        ) !struct { x_q4: i32, y_q4: i32 } {
+        ) !struct { x_bits: u32, y_bits: u32 } {
             const events = [_]replay_codec.ReplayEvent{ bootstrap, reflex_apply };
             var replay = try buildTestReplay(allocator_inner, .{
                 .game_mode_id = @intFromEnum(GameModeId.quests),
@@ -2373,8 +2376,8 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             );
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
-                .x_q4 = trace.items[0].player.player_pos_x_q4,
-                .y_q4 = trace.items[0].player.player_pos_y_q4,
+                .x_bits = trace.items[0].player.player_pos_x_bits,
+                .y_bits = trace.items[0].player.player_pos_y_bits,
             };
         }
     }.runCase;
@@ -2393,7 +2396,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
         true,
         null,
     );
-    try std.testing.expect(no_override_with_perk.x_q4 != no_override_without_perk.x_q4);
+    try std.testing.expect(no_override_with_perk.x_bits != no_override_without_perk.x_bits);
 
     const dt_override_rows = [_]DtFrameOverride{
         .{ .tick_index = 0, .dt_frame = 0.1 },
@@ -2412,8 +2415,8 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
         true,
         dt_override_rows[0..],
     );
-    try std.testing.expectEqual(override_without_perk.x_q4, override_with_perk.x_q4);
-    try std.testing.expectEqual(override_without_perk.y_q4, override_with_perk.y_q4);
+    try std.testing.expectEqual(override_without_perk.x_bits, override_with_perk.x_bits);
+    try std.testing.expectEqual(override_without_perk.y_bits, override_with_perk.y_bits);
 }
 
 test "fire cough projectile uses pre-move player position for muzzle origin" {

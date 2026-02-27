@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 import platform
+import struct
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
@@ -18,8 +19,8 @@ from ..bonuses import BonusId
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint, ReplayEventSummary, ReplayPerkSnapshot, ReplayPlayerCheckpoint
 from ..replay.diagnostic_trace_schema import (
-    ReplayTickRngJsonV2,
-    ReplayTickTraceJsonRowV2,
+    ReplayTickRngJson,
+    ReplayTickTraceJsonRow,
     decode_replay_tick_trace_json_row,
 )
 from ..replay.types import Replay
@@ -44,7 +45,6 @@ _CRT_RAND_INC = 2531011
 _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 4096
 _DEFAULT_ZIG_BIN = Path("crimson-zig/zig-out/bin/crimson-zig")
-_Q4_SCALE = 10000.0
 _ZIG_RNG_MARK_KEYS: tuple[str, ...] = (
     "rng_after_perk_effects",
     "rng_after_creatures",
@@ -121,6 +121,10 @@ def _require_int(value: object, *, field: str) -> int:
     if isinstance(value, int):
         return value
     raise TypeError(f"{field} must be int, got {type(value).__name__}")
+
+
+def _f32_from_bits(value: int) -> float:
+    return struct.unpack("<f", struct.pack("<I", int(value) & 0xFFFFFFFF))[0]
 
 
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
@@ -579,7 +583,7 @@ def _run_zig_verify_trace(
     *,
     replay_path: Path,
     strict_events: bool,
-) -> tuple[list[ReplayTickTraceJsonRowV2], dict[str, object]]:
+) -> tuple[list[ReplayTickTraceJsonRow], dict[str, object]]:
     if not strict_events:
         raise ValueError("dbg record --impl zig requires --strict-events")
 
@@ -623,7 +627,7 @@ def _run_zig_verify_trace(
         if not trace_jsonl.is_file():
             raise ValueError("zig replay verify did not emit --debug-trace-jsonl output")
 
-        rows: list[ReplayTickTraceJsonRowV2] = []
+        rows: list[ReplayTickTraceJsonRow] = []
         for line_number, raw_line in enumerate(trace_jsonl.read_bytes().splitlines(), start=1):
             line = raw_line.strip()
             if not line:
@@ -633,14 +637,14 @@ def _run_zig_verify_trace(
         return rows, verify_payload
 
 
-def _zig_rng_marks(rng: ReplayTickRngJsonV2) -> dict[str, int]:
+def _zig_rng_marks(rng: ReplayTickRngJson) -> dict[str, int]:
     marks: dict[str, int] = {}
     for key in _ZIG_RNG_MARK_KEYS:
         marks[key] = int(getattr(rng, key))
     return marks
 
 
-def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRowV2, *, player_count: int) -> ReplayCheckpoint:
+def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) -> ReplayCheckpoint:
     tick_index = int(row.tick_index)
     timing = row.timing
     rng = row.rng
@@ -650,19 +654,20 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRowV2, *, player_count: int
     projectiles = row.projectiles
     debug = row.debug
 
-    player_pos_x_q4 = int(player.player_pos_x_q4)
-    player_pos_y_q4 = int(player.player_pos_y_q4)
-    player_health_q4 = int(player.player_health_q4)
-    player_ammo_q4 = int(player.player_ammo_q4)
+    player_pos_x = _f32_from_bits(int(player.player_pos_x_bits))
+    player_pos_y = _f32_from_bits(int(player.player_pos_y_bits))
+    player_health = _f32_from_bits(int(player.player_health_bits))
+    player_ammo = _f32_from_bits(int(player.player_ammo_bits))
     player_weapon_id = int(player.player_weapon_id)
     player_experience = int(player.player_experience)
     player_level = int(player.player_level)
 
-    bonus_weapon_power_up_ms = int(bonuses.bonus_weapon_power_up_ms)
-    bonus_reflex_boost_ms = int(bonuses.bonus_reflex_boost_ms)
-    bonus_energizer_ms = int(bonuses.bonus_energizer_ms)
-    bonus_double_experience_ms = int(bonuses.bonus_double_experience_ms)
-    bonus_freeze_ms = int(bonuses.bonus_freeze_ms)
+    bonus_timers = bonuses.bonus_timer_ms_by_id
+    bonus_weapon_power_up_ms = int(bonus_timers[int(BonusId.WEAPON_POWER_UP)])
+    bonus_reflex_boost_ms = int(bonus_timers[int(BonusId.REFLEX_BOOST)])
+    bonus_energizer_ms = int(bonus_timers[int(BonusId.ENERGIZER)])
+    bonus_double_experience_ms = int(bonus_timers[int(BonusId.DOUBLE_EXPERIENCE)])
+    bonus_freeze_ms = int(bonus_timers[int(BonusId.FREEZE)])
     creature_state_hash = int(summary.creature_state_hash)
     projectile_state_hash = int(projectiles.projectile_state_hash)
 
@@ -686,10 +691,10 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRowV2, *, player_count: int
         perk_pending=perk_pending,
         players=[
             ReplayPlayerCheckpoint(
-                pos=Vec2(float(player_pos_x_q4) / _Q4_SCALE, float(player_pos_y_q4) / _Q4_SCALE),
-                health=float(player_health_q4) / _Q4_SCALE,
+                pos=Vec2(float(player_pos_x), float(player_pos_y)),
+                health=float(player_health),
                 weapon_id=int(player_weapon_id),
-                ammo=float(player_ammo_q4) / _Q4_SCALE,
+                ammo=float(player_ammo),
                 experience=int(player_experience),
                 level=int(player_level),
             ),
