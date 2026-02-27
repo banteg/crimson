@@ -248,7 +248,7 @@ pub fn updatePlayerFromGameInput(
     if (aim_len_sq > 0.0) {
         aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
         player.aim_dir = aim_dir;
-        player.aim_heading = player.aim_dir.toHeading();
+        player.aim_heading = aimHeadingFromAimPointNative(player.pos, player.aim);
     }
 }
 
@@ -396,6 +396,16 @@ fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
         .x = std.math.cos(radians),
         .y = std.math.sin(radians),
     };
+}
+
+fn aimHeadingFromAimPointNative(player_pos: state_mod.Vec2, aim_pos: state_mod.Vec2) f32 {
+    // player_update (0x004136b0) computes:
+    // aim_heading = (float)(fpatan(pos_y - aim_y, pos_x - aim_x) - 1.5707964).
+    // Keep atan2 wide and narrow once on store to match x87-style rounding.
+    const dy = @as(f64, @floatCast(player_pos.y)) - @as(f64, @floatCast(aim_pos.y));
+    const dx = @as(f64, @floatCast(player_pos.x)) - @as(f64, @floatCast(aim_pos.x));
+    const half_pi = @as(f64, @floatCast(native_half_pi));
+    return narrowF32(std.math.atan2(dy, dx) - half_pi);
 }
 
 fn playerAccelerateMoveSpeed(
@@ -640,4 +650,11 @@ test "reflex boosted perk scales world dt by 0.9" {
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), applyPerkWorldDtSteps(base_players[0..], 1.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.9), applyPerkWorldDtSteps(perk_players[0..], 1.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), applyPerkWorldDtSteps(perk_players[0..], 0.0), 1e-6);
+}
+
+test "aim heading from aim point matches native fpatan rounding path" {
+    const player_pos = state_mod.Vec2{ .x = 512.0, .y = 512.0 };
+    const aim_pos = state_mod.Vec2{ .x = 333.0390625, .y = 391.1640625 };
+    const heading = aimHeadingFromAimPointNative(player_pos, aim_pos);
+    try std.testing.expectEqual(@as(u32, 0xbf7a1659), @as(u32, @bitCast(heading)));
 }
