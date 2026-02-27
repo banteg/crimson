@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+import re
+import shutil
+import subprocess
 from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
 from typing import Literal, TypeAlias
 
 REPLAY_FORMAT_VERSION = 6
@@ -35,10 +40,60 @@ CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
 CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
 
 
-def _default_game_version() -> str:
+_RELEASE_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _head_points_at_release_tag(*, version: str, repo_root: Path, git_exe: str) -> bool:
+    """Return True when HEAD is tagged as the release version."""
+
+    if _RELEASE_VERSION_RE.fullmatch(str(version)) is None:
+        return False
+
+    tags_out = subprocess.check_output(
+        [git_exe, "tag", "--points-at", "HEAD"],
+        cwd=repo_root,
+        stderr=subprocess.DEVNULL,
+    )
+    tags = {line.strip() for line in tags_out.decode("utf-8", errors="replace").splitlines() if line.strip()}
+    return str(version) in tags or f"v{version}" in tags
+
+
+@lru_cache(maxsize=1)
+def current_replay_game_version() -> str:
+    """Return replay header `game_version`.
+
+    - Release-tagged HEAD: "<version>"
+    - Git checkout non-release: "<version>+g<short_sha>"
+    - No git metadata: "<version>"
+    """
+
     from .. import __version__
 
-    return str(__version__)
+    version = str(__version__)
+    try:
+        git_exe = shutil.which("git")
+        if git_exe is None:
+            return version
+        repo_root = Path(__file__).resolve().parents[3]
+        out = subprocess.check_output(
+            [git_exe, "rev-parse", "--short=12", "HEAD"],
+            cwd=repo_root,
+            stderr=subprocess.DEVNULL,
+        )
+        build = out.decode("utf-8", errors="replace").strip()
+        if not build:
+            return version
+        if _head_points_at_release_tag(version=version, repo_root=repo_root, git_exe=git_exe):
+            return version
+        if "+" in version:
+            return f"{version}.g{build}"
+        return f"{version}+g{build}"
+    except (OSError, subprocess.CalledProcessError):
+        return version
+
+
+def _default_game_version() -> str:
+    return current_replay_game_version()
 
 
 def pack_input_flags(

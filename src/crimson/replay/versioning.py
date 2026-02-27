@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import warnings
 
-from .. import __version__ as _CURRENT_GAME_VERSION
-from .types import Replay
+from .types import Replay, current_replay_game_version
 
 
 class ReplayGameVersionWarning(UserWarning):
@@ -25,7 +24,7 @@ def warn_on_game_version_mismatch(
       - replay verification / server-side validation
     """
 
-    expected = str(current_version) if current_version is not None else str(_CURRENT_GAME_VERSION)
+    expected = str(current_version) if current_version is not None else str(current_replay_game_version())
     got = str(replay.header.game_version)
 
     if not got:
@@ -45,4 +44,3 @@ def warn_on_game_version_mismatch(
         return True
 
     return False
-

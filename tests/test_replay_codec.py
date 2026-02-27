@@ -6,6 +6,7 @@ from typing import cast
 import msgspec
 import pytest
 
+import crimson
 from crimson.math_parity import f32
 from crimson.replay import (
     PerkMenuOpenEvent,
@@ -20,7 +21,8 @@ from crimson.replay import (
     load_replay,
     warn_on_game_version_mismatch,
 )
-from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT
+from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
+from crimson.replay import types as replay_types
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
@@ -259,3 +261,39 @@ def test_replay_version_mismatch_warns() -> None:
 
     with pytest.warns(ReplayGameVersionWarning, match="mismatch"):
         assert warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
+
+
+def test_current_replay_game_version_appends_git_sha_for_non_release_head(monkeypatch: pytest.MonkeyPatch) -> None:
+    current_replay_game_version.cache_clear()
+    monkeypatch.setattr(crimson, "__version__", "1.2.3")
+    monkeypatch.setattr(replay_types.shutil, "which", lambda _name: "/usr/bin/git")
+
+    def _check_output(args: list[str], **_kwargs: object) -> bytes:
+        if len(args) >= 3 and args[1] == "rev-parse":
+            return b"abcdef123456\n"
+        if len(args) >= 2 and args[1] == "tag":
+            return b""
+        raise AssertionError(f"unexpected git args: {args!r}")
+
+    monkeypatch.setattr(replay_types.subprocess, "check_output", _check_output)
+
+    assert current_replay_game_version() == "1.2.3+gabcdef123456"
+    current_replay_game_version.cache_clear()
+
+
+def test_current_replay_game_version_keeps_plain_version_on_release_tag(monkeypatch: pytest.MonkeyPatch) -> None:
+    current_replay_game_version.cache_clear()
+    monkeypatch.setattr(crimson, "__version__", "1.2.3")
+    monkeypatch.setattr(replay_types.shutil, "which", lambda _name: "/usr/bin/git")
+
+    def _check_output(args: list[str], **_kwargs: object) -> bytes:
+        if len(args) >= 3 and args[1] == "rev-parse":
+            return b"abcdef123456\n"
+        if len(args) >= 2 and args[1] == "tag":
+            return b"v1.2.3\n"
+        raise AssertionError(f"unexpected git args: {args!r}")
+
+    monkeypatch.setattr(replay_types.subprocess, "check_output", _check_output)
+
+    assert current_replay_game_version() == "1.2.3"
+    current_replay_game_version.cache_clear()
