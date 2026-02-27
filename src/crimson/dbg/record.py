@@ -590,7 +590,15 @@ def _run_zig_verify_trace(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        if run.returncode != 0:
+        stdout_lines = [line.strip() for line in run.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
+            stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
+            stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
+            detail = stderr_text if stderr_text else stdout_text
+            raise ValueError(f"zig replay verify failed: {detail or f'exit={run.returncode}'}")
+        verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
+        status = verify_payload.get("status")
+        if run.returncode != 0 and not (isinstance(status, str) and status.endswith("_mismatch")):
             stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
             stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
             detail = stderr_text if stderr_text else stdout_text
@@ -605,11 +613,6 @@ def _run_zig_verify_trace(
                 continue
             row = _decode_json_object(line, field=f"zig trace row {line_number}")
             rows.append(row)
-
-        stdout_lines = [line.strip() for line in run.stdout.splitlines() if line.strip()]
-        if not stdout_lines:
-            raise ValueError("zig replay verify did not emit json payload on stdout")
-        verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
         return rows, verify_payload
 
 
