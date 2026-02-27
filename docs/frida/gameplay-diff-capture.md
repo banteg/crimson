@@ -133,82 +133,15 @@ Notes:
 - Quest tick rows include `quest_stage_major` / `quest_stage_minor` so tooling
   can map each file/tick back to a specific quest.
 
-## Convert to checkpoints + replay
+## Tooling has Migrated
 
-```text
-uv run crimson original convert-capture \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  analysis/frida/gameplay_diff_capture.crd.chk
-```
+The legacy `original` online tooling (like `divergence-report` and `focus-trace`) has been superseded by the `dbg` trace snapshot suite.
 
-This also writes `analysis/frida/gameplay_diff_capture.crd` by default
-(override with `--replay`).
-
-Conversion output cutover:
-
-- converted replay headers now carry `input_quantization="f32"`,
-- converted replay input vectors and capture-derived float payload fields are
-  canonicalized to float32 during conversion.
-
-After this cutover, replay/checkpoint hashes change when artifacts are
-regenerated. Always regenerate and version `.crd` and `.crd.chk` sidecar pairs
-together.
-
-## Verify capture directly against rewrite sim
-
-```text
-uv run crimson original verify-capture \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst
-```
-
-## Capture telemetry health
-
-```text
-uv run crimson original capture-health \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst
-```
-
-## Divergence report
-
-```text
-uv run crimson original divergence-report \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  --float-abs-tol 2e-3 \
-  --window 24 \
-  --lead-lookback 1024 \
-  --run-summary
-```
-
-Use `--run-summary-short` for a shorter narrative.
-
-## First-divergence bisect
-
-```text
-uv run crimson original bisect-divergence \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  --window-before 12 \
-  --window-after 6 \
-  --json-out
-```
-
-## Focus tick trace
-
-```text
-uv run crimson original focus-trace \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  --tick 3453 \
-  --near-miss-threshold 0.35 \
-  --json-out
-```
-
-## Creature trajectory trace
-
-```text
-uv run crimson original creature-trajectory \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  --creature-index 120 \
-  --json-out
-```
+Refer to `docs/frida/differential-playbook.md` for the current canonical workflow using:
+- `dbg import-capture` and `dbg health`
+- `replay convert-capture`
+- `dbg record`
+- `dbg diff`, `dbg bisect`, `dbg focus`, and `dbg viz`
 
 ## Defaults
 

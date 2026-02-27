@@ -29,14 +29,14 @@ Last reviewed: **2026-02-24**
   - `uv run crimson replay render <replay.crd>` (ffmpeg-backed 60fps MP4 export, quality via `--crf/--preset`)
   - `uv run crimson replay verify-checkpoints <replay.crd>`
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
-- Original/capture differential tooling:
-  - `uv run crimson original verify-capture <capture.msgpack.zst>`
-  - `uv run crimson original convert-capture <capture.msgpack.zst> <expected.crd.chk>`
-  - `uv run crimson original divergence-report <capture.msgpack.zst>`
-  - `uv run crimson original bisect-divergence <capture.msgpack.zst>`
-  - `uv run crimson original focus-trace <capture.msgpack.zst> --tick <n>`
-  - `uv run crimson original creature-trajectory <capture.msgpack.zst>`
-  - `uv run crimson original visualize-capture <capture.msgpack.zst>`
+- Original/capture differential tooling (via structural traces):
+  - `uv run crimson dbg import-capture <capture.msgpack.zst> --out <trace.cdt>`
+  - `uv run crimson dbg record <replay.crd> --out <trace.cdt> --impl <python|zig>`
+  - `uv run crimson dbg health <trace.cdt>`
+  - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
+  - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`
+  - `uv run crimson dbg focus <expected.cdt> <actual.cdt> --tick <n>`
+  - `uv run crimson dbg viz <expected.cdt> <actual.cdt>`
 
 ## Zig replay verifier status
 
@@ -117,16 +117,15 @@ Last reviewed: **2026-02-24**
 - Network protocol/runtime behavior is covered by unit and wiring tests.
   - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus legacy suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
-  - Code: `src/crimson/original/diff.py`
+  - Code: `src/crimson/dbg/checkpoint_diff.py`
   - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Replay timeline extraction now has a versioned JSON surface for analytics/web infographics.
   - Code: `src/crimson/sim/driver/replay_info.py`, `src/crimson/cli/replay.py`
   - Command: `uv run crimson replay info <replay.crd> --format json --json-out <path>`
-- Original-capture conversion and capture-native verification are implemented.
-  - Code: `src/crimson/original/capture.py`, `src/crimson/original/verify.py`
-  - Tests: `tests/test_original_capture_conversion.py`, `tests/test_original_capture_verify.py`
-- Divergence triage tooling (report, bisect, focus trace, visualizer) is in-tree and wired through `crimson original`.
-  - Code: `src/crimson/original/divergence_report.py`, `src/crimson/original/divergence_bisect.py`, `src/crimson/original/focus_trace.py`, `src/crimson/original/capture_visualizer.py`
+- Capture import and trace diagnostics are managed via the decoupled `dbg` trace suite.
+  - Code: `src/crimson/dbg/*`
+  - Documentation: [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
+  - Tooling includes health, structural diffs across implementations, bisection, focus trace, and visualizer.
 - Capture-only triage workflow is documented here:
   - [`docs/frida/differential-playbook.md`](../frida/differential-playbook.md)
 
