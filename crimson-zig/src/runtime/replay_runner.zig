@@ -23,7 +23,7 @@ const replay_capture_state = @import("replay/capture_state.zig");
 const replay_context_mod = @import("replay/context.zig");
 const replay_diagnostic_trace = @import("replay/diagnostic_trace.zig");
 const replay_events = @import("replay/events.zig");
-const replay_movement = @import("replay/movement.zig");
+const replay_movement = @import("movement.zig");
 const replay_step = @import("replay/step.zig");
 
 const narrowF32 = native_math.roundF32;

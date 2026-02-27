@@ -1,10 +1,10 @@
 const std = @import("std");
-const game_ids = @import("../../game_ids.zig");
-const native_math = @import("../native_math.zig");
-const creatures_mod = @import("../creatures.zig");
-const perks = @import("../perks.zig");
-const player_runtime = @import("../player.zig");
-const state_mod = @import("../state.zig");
+const game_ids = @import("../game_ids.zig");
+const native_math = @import("native_math.zig");
+const creatures_mod = @import("creatures.zig");
+const perks = @import("perks.zig");
+const player_runtime = @import("player.zig");
+const state_mod = @import("state.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;

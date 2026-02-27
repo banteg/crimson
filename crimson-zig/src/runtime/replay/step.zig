@@ -5,7 +5,7 @@ const replay_codec = @import("../../replay_codec.zig");
 
 const effects = @import("effects.zig");
 const events = @import("events.zig");
-const movement = @import("movement.zig");
+const movement = @import("../movement.zig");
 const capture_state = @import("capture_state.zig");
 const context_mod = @import("context.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
