@@ -1354,12 +1354,12 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level < 11:
                 break
             stage = 3
-            step = 128.0 / 3.0
+            step = float(f32(42.666668))
             for i in range(12):
                 spawns.append(
                     SpawnTemplateCall(
                         template_id=SpawnId.SPIDER_SP2_RANDOM_35,
-                        pos=Vec2(1088.0, float(i) * step + 256.0),
+                        pos=Vec2(1088.0, float(f32(f32(float(i)) * f32(step) + f32(256.0)))),
                         heading=heading,
                     ),
                 )
