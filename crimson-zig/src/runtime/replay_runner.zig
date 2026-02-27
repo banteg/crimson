@@ -2228,10 +2228,10 @@ fn applyCaptureBootstrapEvent(
                 player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
             }
         }
-        players[idx].pos.x = narrowF32(payload.pos_x);
-        players[idx].pos.y = narrowF32(payload.pos_y);
-        players[idx].health = narrowF32(payload.health);
-        players[idx].ammo = narrowF32(payload.ammo);
+        players[idx].pos.x = payload.pos_x;
+        players[idx].pos.y = payload.pos_y;
+        players[idx].health = payload.health;
+        players[idx].ammo = payload.ammo;
         players[idx].experience = payload.experience;
         if (payload.level > 0) {
             players[idx].level = payload.level;
@@ -2243,25 +2243,25 @@ fn applyCaptureBootstrapEvent(
             players[idx].reload_active = reload_active;
         }
         if (payload.reload_timer) |reload_timer| {
-            players[idx].reload_timer = @max(0.0, narrowF32(reload_timer));
+            players[idx].reload_timer = @max(0.0, reload_timer);
         }
         if (payload.reload_timer_max) |reload_timer_max| {
-            players[idx].reload_timer_max = @max(0.0, narrowF32(reload_timer_max));
+            players[idx].reload_timer_max = @max(0.0, reload_timer_max);
         }
         if (payload.shot_cooldown) |shot_cooldown| {
-            players[idx].shot_cooldown = @max(0.0, narrowF32(shot_cooldown));
+            players[idx].shot_cooldown = @max(0.0, shot_cooldown);
         }
         if (payload.spread_heat) |spread_heat| {
-            players[idx].spread_heat = @max(0.0, narrowF32(spread_heat));
+            players[idx].spread_heat = @max(0.0, spread_heat);
         }
         if (payload.aim_x) |aim_x| {
-            players[idx].aim.x = narrowF32(aim_x);
+            players[idx].aim.x = aim_x;
         }
         if (payload.aim_y) |aim_y| {
-            players[idx].aim.y = narrowF32(aim_y);
+            players[idx].aim.y = aim_y;
         }
         if (payload.aim_heading) |aim_heading| {
-            players[idx].aim_heading = narrowF32(aim_heading);
+            players[idx].aim_heading = aim_heading;
             players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
@@ -2271,40 +2271,40 @@ fn applyCaptureBootstrapEvent(
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
         }
         if (payload.alt_ammo) |alt_ammo| {
-            players[idx].alt_ammo = narrowF32(alt_ammo);
+            players[idx].alt_ammo = alt_ammo;
         }
         if (payload.alt_reload_active) |alt_reload_active| {
             players[idx].alt_reload_active = alt_reload_active;
         }
         if (payload.alt_reload_timer) |alt_reload_timer| {
-            players[idx].alt_reload_timer = @max(0.0, narrowF32(alt_reload_timer));
+            players[idx].alt_reload_timer = @max(0.0, alt_reload_timer);
         }
         if (payload.alt_reload_timer_max) |alt_reload_timer_max| {
-            players[idx].alt_reload_timer_max = @max(0.0, narrowF32(alt_reload_timer_max));
+            players[idx].alt_reload_timer_max = @max(0.0, alt_reload_timer_max);
         }
         if (payload.alt_shot_cooldown) |alt_shot_cooldown| {
-            players[idx].alt_shot_cooldown = @max(0.0, narrowF32(alt_shot_cooldown));
+            players[idx].alt_shot_cooldown = @max(0.0, alt_shot_cooldown);
         }
         if (payload.shield_ms) |shield_ms| {
-            players[idx].shield_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(shield_ms)) / 1000.0));
+            players[idx].shield_timer = @max(0.0, @as(f32, @floatFromInt(shield_ms)) / 1000.0);
         }
         if (payload.fire_bullets_ms) |fire_bullets_ms| {
-            players[idx].fire_bullets_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0));
+            players[idx].fire_bullets_timer = @max(0.0, @as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0);
         }
         if (payload.speed_bonus_ms) |speed_bonus_ms| {
-            players[idx].speed_bonus_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0));
+            players[idx].speed_bonus_timer = @max(0.0, @as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0);
         }
         if (payload.hot_tempered_timer) |hot_tempered_timer| {
-            players[idx].hot_tempered_timer = @max(0.0, narrowF32(hot_tempered_timer));
+            players[idx].hot_tempered_timer = @max(0.0, hot_tempered_timer);
         }
         if (payload.man_bomb_timer) |man_bomb_timer| {
-            players[idx].man_bomb_timer = @max(0.0, narrowF32(man_bomb_timer));
+            players[idx].man_bomb_timer = @max(0.0, man_bomb_timer);
         }
         if (payload.living_fortress_timer) |living_fortress_timer| {
-            players[idx].living_fortress_timer = @max(0.0, narrowF32(living_fortress_timer));
+            players[idx].living_fortress_timer = @max(0.0, living_fortress_timer);
         }
         if (payload.fire_cough_timer) |fire_cough_timer| {
-            players[idx].fire_cough_timer = @max(0.0, narrowF32(fire_cough_timer));
+            players[idx].fire_cough_timer = @max(0.0, fire_cough_timer);
         }
     }
 
@@ -2343,22 +2343,22 @@ fn applyCaptureBootstrapEvent(
     state.time_scale_active = state.bonuses.reflex_boost > 0.0;
 
     if (bootstrap.perk_interval_man_bomb) |value| {
-        state.perk_interval_man_bomb = @max(0.0, narrowF32(value));
+        state.perk_interval_man_bomb = @max(0.0, value);
     }
     if (bootstrap.perk_interval_fire_cough) |value| {
-        state.perk_interval_fire_cough = @max(0.0, narrowF32(value));
+        state.perk_interval_fire_cough = @max(0.0, value);
     }
     if (bootstrap.perk_interval_hot_tempered) |value| {
-        state.perk_interval_hot_tempered = @max(0.0, narrowF32(value));
+        state.perk_interval_hot_tempered = @max(0.0, value);
     }
 
     if (bootstrap.quest_session) |quest_session| {
-        quest_spawn_timeline_ms.* = @max(0.0, narrowF32(quest_session.spawn_timeline_ms));
-        quest_no_creatures_timer_ms.* = @max(0.0, narrowF32(quest_session.no_creatures_timer_ms));
+        quest_spawn_timeline_ms.* = @max(0.0, quest_session.spawn_timeline_ms);
+        quest_no_creatures_timer_ms.* = @max(0.0, quest_session.no_creatures_timer_ms);
         if (quest_session.completion_transition_ms < 0.0) {
             quest_completion_transition_ms.* = -1.0;
         } else {
-            quest_completion_transition_ms.* = @max(0.0, narrowF32(quest_session.completion_transition_ms));
+            quest_completion_transition_ms.* = @max(0.0, quest_session.completion_transition_ms);
         }
     }
 }
@@ -2379,10 +2379,10 @@ fn applyCaptureCreatureSpawnEvent(
             .{
                 .template_id = spawn_row.template_id,
                 .pos = .{
-                    .x = narrowF32(spawn_row.pos_x),
-                    .y = narrowF32(spawn_row.pos_y),
+                    .x = spawn_row.pos_x,
+                    .y = spawn_row.pos_y,
                 },
-                .heading = narrowF32(spawn_row.heading),
+                .heading = spawn_row.heading,
             },
             &state.rng,
         ) catch |err| switch (err) {
@@ -2416,18 +2416,18 @@ fn applyCaptureCreatureSpawnEvent(
 
         if (row.has_pos) {
             entry.pos = .{
-                .x = narrowF32(row.pos_x),
-                .y = narrowF32(row.pos_y),
+                .x = row.pos_x,
+                .y = row.pos_y,
             };
         }
-        if (row.has_heading) entry.heading = narrowF32(row.heading);
-        if (row.has_target_heading) entry.target_heading = narrowF32(row.target_heading);
+        if (row.has_heading) entry.heading = row.heading;
+        if (row.has_target_heading) entry.target_heading = row.target_heading;
         if (ai_mode) |mode| entry.ai_mode = mode;
         if (row.has_link_index) entry.link_index = row.link_index;
-        if (row.has_hp) entry.hp = narrowF32(row.hp);
-        if (row.has_lifecycle_stage) entry.lifecycle_stage = narrowF32(row.lifecycle_stage);
-        if (row.has_orbit_angle) entry.orbit_angle = narrowF32(row.orbit_angle);
-        if (row.has_orbit_radius) entry.orbit_radius = narrowF32(row.orbit_radius);
+        if (row.has_hp) entry.hp = row.hp;
+        if (row.has_lifecycle_stage) entry.lifecycle_stage = row.lifecycle_stage;
+        if (row.has_orbit_angle) entry.orbit_angle = row.orbit_angle;
+        if (row.has_orbit_radius) entry.orbit_radius = row.orbit_radius;
         if (row.has_flags) entry.flags = @intCast(@max(0, flags_i32));
         if (row.has_type_id) entry.type_id = row.type_id;
     }
