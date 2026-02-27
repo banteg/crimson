@@ -4,6 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -149,8 +150,8 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
 
     killed: list[tuple[int, int]] = []
 
-    def _kill(creature_index: int, owner_id: int) -> None:
-        killed.append((int(creature_index), int(owner_id)))
+    def _kill(creature_index: int, owner: OwnerRef) -> None:
+        killed.append((int(creature_index), owner.to_legacy()))
 
     state.particles.update(0.016, creatures=[creature], kill_creature=_kill)
     state.particles.update(2.0, creatures=[creature], kill_creature=_kill)

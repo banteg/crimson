@@ -4,6 +4,7 @@ import math
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.state_types import PlayerState
@@ -22,7 +23,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
         damage_amount=10.0,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=-100,
+        owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
         rand=lambda: 0,
@@ -40,7 +41,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=travel_budget,
     )
 

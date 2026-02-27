@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...math_parity import NATIVE_HALF_PI, f32
-from ...owner_ref import OwnerLike, OwnerRef, owner_ref
+from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...weapons import WEAPON_BY_ID, weapon_entry_for_projectile_type_id
 from ..types import (
@@ -71,8 +71,8 @@ class ProjectilePool:
         *,
         pos: Vec2,
         angle: float,
-        type_id: int,
-        owner_id: OwnerLike,
+        type_id: ProjectileTypeId,
+        owner_id: OwnerRef,
         travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
@@ -90,15 +90,15 @@ class ProjectilePool:
         entry.pos = pos
         entry.origin = pos
         entry.vel = Vec2(math.cos(float(angle)) * 1.5, math.sin(float(angle)) * 1.5)
-        entry.type_id = int(type_id)
+        entry.type_id = type_id
         entry.life_timer = 0.4
         entry.reserved = 0.0
         entry.speed_scale = 1.0
         entry.travel_budget = float(travel_budget)
-        weapon_entry = weapon_entry_for_projectile_type_id(entry.type_id)
+        weapon_entry = weapon_entry_for_projectile_type_id(type_id)
         if weapon_entry is not None and weapon_entry.travel_budget is not None:
             entry.travel_budget = float(weapon_entry.travel_budget)
-        entry.owner = owner_ref(owner_id)
+        entry.owner = owner_id
         entry.hits_players = bool(hits_players)
 
         if type_id == ProjectileTypeId.ION_MINIGUN:
@@ -250,7 +250,7 @@ class ProjectilePool:
                 # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
-                if int(proj.type_id) in (int(ProjectileTypeId.ION_RIFLE), int(ProjectileTypeId.ION_MINIGUN)):
+                if proj.type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
                     _reset_shock_chain_if_owner(proj_index)
                 behavior.linger(ctx, proj)
                 continue
@@ -434,7 +434,7 @@ class ProjectilePool:
                                 float(damage_amount),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner,
+                                owner=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))
@@ -447,7 +447,7 @@ class ProjectilePool:
                                 float(remaining),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner,
+                                owner=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))

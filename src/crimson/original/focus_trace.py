@@ -25,6 +25,7 @@ from crimson.original.capture import (
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     convert_capture_to_replay,
+    is_capture_state_reset_target,
     load_capture,
     parse_player_int_overrides,
 )
@@ -1011,7 +1012,7 @@ def trace_focus_tick(
             _after_state: int | None,
         ) -> None:
             nonlocal pending_capture_state_reset
-            if int(target_state) != 12:
+            if not is_capture_state_reset_target(int(target_state)):
                 return
             pending_capture_state_reset = True
 

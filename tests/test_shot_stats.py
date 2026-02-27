@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import ProjectileTypeId, ProjectileUpdateOptions, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -85,7 +86,7 @@ def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets(
         pos=Vec2(),
         angle=0.0,
         type_id=int(SecondaryProjectileTypeId.ROCKET),
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
 
@@ -100,7 +101,7 @@ def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit(
         pos=Vec2(),
         angle=0.0,
         type_id=int(SecondaryProjectileTypeId.ROCKET),
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]
 
@@ -119,8 +120,8 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
-        owner_id=-100,
+        type_id=ProjectileTypeId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
         owner_player_index=1,
     )
 
@@ -139,8 +140,8 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
-        owner_id=-2,
+        type_id=ProjectileTypeId.PISTOL,
+        owner=OwnerRef.from_player(1),
     )
 
     assert state.shots_fired[0] == 0
@@ -157,8 +158,8 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
-        owner_id=-100,
+        type_id=ProjectileTypeId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
         owner_player_index=0,
     )
 
@@ -178,8 +179,8 @@ def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on(
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
-        owner_id=-100,
+        type_id=ProjectileTypeId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
         owner_player_index=0,
     )
 

@@ -17,6 +17,7 @@ from grim.view import View, ViewContext
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
+from ..owner_ref import OwnerRef
 from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
@@ -145,8 +146,8 @@ class EmissiveProfile:
     name: str
     auto_interval: float
     rate_weapon_id: int | None = None
-    primary_type_id: int | None = None
-    secondary_type_id: int | None = None
+    primary_type_id: ProjectileTypeId | None = None
+    secondary_type_id: SecondaryProjectileTypeId | None = None
     burst_count: int = 1
     spread_rad: float = 0.0
     spawn_distance: float = 28.0
@@ -289,7 +290,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Muzzle",
         auto_interval=0.11,
         rate_weapon_id=int(WeaponId.PISTOL),
-        primary_type_id=int(ProjectileTypeId.PISTOL),
+        primary_type_id=ProjectileTypeId.PISTOL,
         flash_radius=95.0,
         flash_ttl=0.11,
         flash_strength=1.0,
@@ -298,7 +299,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Ion Rifle",
         auto_interval=0.16,
         rate_weapon_id=int(WeaponId.ION_RIFLE),
-        primary_type_id=int(ProjectileTypeId.ION_RIFLE),
+        primary_type_id=ProjectileTypeId.ION_RIFLE,
         flash_radius=140.0,
         flash_ttl=0.17,
         flash_strength=1.0,
@@ -307,7 +308,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Ion Minigun",
         auto_interval=0.06,
         rate_weapon_id=int(WeaponId.ION_MINIGUN),
-        primary_type_id=int(ProjectileTypeId.ION_MINIGUN),
+        primary_type_id=ProjectileTypeId.ION_MINIGUN,
         burst_count=2,
         spread_rad=0.03,
         flash_radius=135.0,
@@ -318,7 +319,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Plasma Rifle",
         auto_interval=0.13,
         rate_weapon_id=int(WeaponId.PLASMA_RIFLE),
-        primary_type_id=int(ProjectileTypeId.PLASMA_RIFLE),
+        primary_type_id=ProjectileTypeId.PLASMA_RIFLE,
         flash_radius=150.0,
         flash_ttl=0.19,
         flash_strength=1.0,
@@ -327,7 +328,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Plasma Cannon",
         auto_interval=0.27,
         rate_weapon_id=int(WeaponId.PLASMA_CANNON),
-        primary_type_id=int(ProjectileTypeId.PLASMA_CANNON),
+        primary_type_id=ProjectileTypeId.PLASMA_CANNON,
         flash_radius=210.0,
         flash_ttl=0.24,
         flash_strength=1.0,
@@ -336,7 +337,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Fire/Flame",
         auto_interval=0.08,
         rate_weapon_id=int(WeaponId.HR_FLAMER),
-        primary_type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        primary_type_id=ProjectileTypeId.FIRE_BULLETS,
         burst_count=4,
         spread_rad=0.16,
         flash_radius=125.0,
@@ -347,7 +348,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Explosion",
         auto_interval=0.45,
         rate_weapon_id=int(WeaponId.ROCKET_LAUNCHER),
-        secondary_type_id=int(SecondaryProjectileTypeId.DETONATION),
+        secondary_type_id=SecondaryProjectileTypeId.DETONATION,
         secondary_ttl=0.95,
         flash_radius=280.0,
         flash_ttl=0.3,
@@ -2096,15 +2097,15 @@ class LightingDebugView:
             8.0, 8.0, WORLD_SIZE - 8.0, WORLD_SIZE - 8.0,
         )
 
-        if profile.secondary_type_id == int(SecondaryProjectileTypeId.DETONATION):
+        if profile.secondary_type_id == SecondaryProjectileTypeId.DETONATION:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
                 16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
             )
             self._world.state.secondary_projectiles.spawn(
                 pos=impact,
                 angle=float(heading),
-                type_id=int(SecondaryProjectileTypeId.DETONATION),
-                owner_id=-100,
+                type_id=SecondaryProjectileTypeId.DETONATION,
+                owner_id=OwnerRef.from_local_player(0),
                 time_to_live=float(profile.secondary_ttl),
             )
             self._push_transient_light(
@@ -2128,15 +2129,15 @@ class LightingDebugView:
                 self._world.state.projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
-                    type_id=int(profile.primary_type_id),
-                    owner_id=-100,
+                    type_id=profile.primary_type_id,
+                    owner_id=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
                 self._world.state.secondary_projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
-                    type_id=int(profile.secondary_type_id),
-                    owner_id=-100,
+                    type_id=profile.secondary_type_id,
+                    owner_id=OwnerRef.from_local_player(0),
                     time_to_live=float(profile.secondary_ttl),
                     creatures=self._world.creatures.entries,
                     target_hint=player.aim,

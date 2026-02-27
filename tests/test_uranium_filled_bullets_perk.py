@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -18,7 +19,7 @@ def test_uranium_filled_bullets_doubles_bullet_damage() -> None:
         damage_amount=10.0,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=-100,
+        owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
         rand=lambda: 0,

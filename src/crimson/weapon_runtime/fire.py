@@ -15,7 +15,7 @@ from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
-from .spawn import owner_id_for_player, owner_id_for_player_projectiles, travel_budget_for_type_id
+from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
@@ -126,7 +126,7 @@ def player_fire_weapon(
             return
 
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
     shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
     weapon_spread_heat = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
@@ -177,8 +177,8 @@ def player_fire_weapon(
     if not is_fire_bullets:
         state.rng.rand()
 
-    owner_id = owner_id_for_player(player.index)
-    projectile_owner_id = owner_id_for_player_projectiles(state, player.index)
+    owner = owner_ref_for_player(player.index)
+    projectile_owner = owner_ref_for_player_projectiles(state, player.index)
     shot_count = 1
     spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
     if not spawn_muzzle_after_projectile:
@@ -212,7 +212,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=meta,
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
@@ -221,7 +221,7 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET,
-            owner_id=owner_id,
+            owner_id=owner,
         )
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
@@ -229,7 +229,7 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-            owner_id=owner_id,
+            owner_id=owner,
             target_hint=aim,
             creatures=creatures,
         )
@@ -251,7 +251,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-                owner_id=owner_id,
+                owner_id=owner,
                 target_hint=aim,
                 creatures=creatures,
             )
@@ -264,20 +264,20 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
-            owner_id=owner_id,
+            owner_id=owner,
         )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
         state.particles.entries[particle_id].style_id = ParticleStyleId.BLOW_TORCH
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner_id)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
         state.particles.entries[particle_id].style_id = ParticleStyleId.HR_FLAMER
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
@@ -285,7 +285,7 @@ def player_fire_weapon(
         state.particles.spawn_particle_slow(
             pos=muzzle,
             angle=Vec2.from_heading(shot_angle).to_angle(),
-            owner_id=owner_id,
+            owner_id=owner,
         )
         ammo_cost = 0.15
     elif weapon_id == WeaponId.MULTI_PLASMA:
@@ -307,21 +307,21 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=travel_budget_for_type_id(type_id),
             )
     elif weapon_id == WeaponId.PLASMA_SHOTGUN:
         # Plasma Shotgun: 14 plasma-minigun pellets with wide jitter and random speed_scale.
         # (`player_update` weapon_id==0x0e in crimsonland.exe)
         shot_count = 14
-        meta = travel_budget_for_type_id(int(ProjectileTypeId.PLASMA_MINIGUN))
+        meta = travel_budget_for_type_id(ProjectileTypeId.PLASMA_MINIGUN)
         for _ in range(14):
             jitter = float((int(state.rng.rand()) & 0xFF) - 0x80) * 0.002
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
@@ -329,14 +329,14 @@ def player_fire_weapon(
         # Gauss Shotgun: 6 gauss pellets, jitter 0.002 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1e in crimsonland.exe)
         shot_count = 6
-        meta = travel_budget_for_type_id(int(ProjectileTypeId.GAUSS_GUN))
+        meta = travel_budget_for_type_id(ProjectileTypeId.GAUSS_GUN)
         for _ in range(6):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.002
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -344,23 +344,24 @@ def player_fire_weapon(
         # Ion Shotgun: 8 ion-minigun pellets, jitter 0.0026 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1f in crimsonland.exe)
         shot_count = 8
-        meta = travel_budget_for_type_id(int(ProjectileTypeId.ION_MINIGUN))
+        meta = travel_budget_for_type_id(ProjectileTypeId.ION_MINIGUN)
         for _ in range(8):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.0026
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
-        type_id = projectile_type_id_from_weapon_id(weapon_id)
-        if type_id is None:
+        type_id_raw = projectile_type_id_from_weapon_id(weapon_id)
+        if type_id_raw is None:
             return
+        type_id = ProjectileTypeId(type_id_raw)
         meta = travel_budget_for_type_id(type_id)
         jitter_step = _pellet_jitter_step(weapon_id)
         for _ in range(pellets):
@@ -371,7 +372,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner_id=projectile_owner_id,
+                owner_id=projectile_owner,
                 travel_budget=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).

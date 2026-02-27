@@ -54,6 +54,7 @@ from .capture import (
     build_capture_inter_tick_rand_draws_overrides,
     capture_bootstrap_payload_from_event_payload,
     convert_capture_to_replay,
+    is_capture_state_reset_target,
     load_capture,
 )
 from .focus_trace import (
@@ -435,7 +436,7 @@ class _FocusRuntime:
         _before_state: int | None,
         _after_state: int | None,
     ) -> None:
-        if int(target_state) != 12:
+        if not is_capture_state_reset_target(int(target_state)):
             return
         self.pending_capture_state_reset = True
 

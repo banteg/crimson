@@ -5,6 +5,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -23,7 +24,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
         damage_amount=10.0,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=38,
+        owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
         rand=rng,
@@ -59,7 +60,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         damage_amount=10.0,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=38,
+        owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
         rand=rng,
@@ -88,7 +89,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
         damage_amount=73.5593,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=10,
+        owner=OwnerRef.from_creature(10),
         dt=0.016,
         players=[player],
         rand=lambda: 0,
@@ -106,7 +107,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
         damage_amount=10.0,
         damage_type=3,
         impulse=Vec2(),
-        owner_id=0,
+        owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
         rand=lambda: 0,
@@ -134,7 +135,7 @@ def test_lethal_shock_damage_spawns_armored_debris_in_damage_path() -> None:
         damage_amount=10.0,
         damage_type=3,
         impulse=Vec2(),
-        owner_id=0,
+        owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
         rand=rng,

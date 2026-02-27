@@ -16,6 +16,7 @@ from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..game_modes import GameMode
 from ..math_parity import f32
+from ..owner_ref import LOCAL_PLAYER_OWNER_ID
 from ..perks.ids import PerkId
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -71,6 +72,9 @@ CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending"
 CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply"
 CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
 CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
+# Native quest state transition rows targeting state 12 trigger a full
+# run-state reset in replay/original verification paths.
+CAPTURE_STATE_RESET_TARGET = 12
 _CAPTURE_MSGPACK_STREAM_MAGIC = b"crimson_capture_msgpack_v1\n"
 _CAPTURE_MSGPACK_LEN_BYTES = 4
 
@@ -79,7 +83,6 @@ _CRT_RAND_INC = 2531011
 _CRT_RAND_MOD_MASK = 0xFFFFFFFF
 _CRT_RAND_INV_MULT = pow(_CRT_RAND_MULT, -1, 1 << 32)
 _AIM_SCHEME_COMPUTER = 5
-_PLAYER_PROJECTILE_OWNER_SENTINEL = -100
 _PROJECTILE_TYPE_FIRE_BULLETS = 45
 _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS = frozenset(
     {
@@ -129,6 +132,10 @@ class _BootstrapBonuses(Protocol):
     energizer: float
     double_experience: float
     freeze: float
+
+
+def is_capture_state_reset_target(target_state: int) -> bool:
+    return int(target_state) == int(CAPTURE_STATE_RESET_TARGET)
 
 
 class _BootstrapPerkIntervals(Protocol):
@@ -863,7 +870,7 @@ def _owner_id_to_player_index(owner_id: int, *, player_count: int) -> int | None
         player_index = -1 - int(owner)
         if 0 <= int(player_index) < int(player_count):
             return int(player_index)
-    if int(owner) == _PLAYER_PROJECTILE_OWNER_SENTINEL and int(player_count) == 1:
+    if int(owner) == int(LOCAL_PLAYER_OWNER_ID) and int(player_count) == 1:
         return 0
     return None
 
@@ -2299,7 +2306,7 @@ def _tick_state_transition_rows(tick: CaptureTick) -> tuple[dict[str, int], ...]
 
 def _has_terminal_state_transition(rows: tuple[dict[str, int], ...]) -> bool:
     for row in rows:
-        if "target_state" in row and int(row["target_state"]) == 12:
+        if "target_state" in row and is_capture_state_reset_target(int(row["target_state"])):
             return True
     return False
 

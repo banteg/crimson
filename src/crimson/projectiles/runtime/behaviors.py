@@ -118,7 +118,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -141,7 +141,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -164,7 +164,7 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -176,10 +176,9 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
-    # Native player-hit checks in `projectile_update` key off `owner_id != -100`.
-    # Splitter children are spawned with `owner_id = hit creature index`, so they
-    # can hit players even when the parent projectile owner was `-100`.
-    split_hits_players = OwnerRef.from_creature(int(hit_idx)).to_legacy() != -100
+    # Native player-hit checks key off `owner_id != -100`; creature-owned splitters
+    # always satisfy this, so they can hit players even when the parent was local-owned.
+    split_hits_players = True
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
@@ -202,7 +201,7 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
     _spawn_ion_hit_effects(
         ctx.effects,
         ctx.sfx_queue,
-        type_id=int(hit.proj.type_id),
+        type_id=ProjectileTypeId(hit.proj.type_id),
         pos=hit.proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
@@ -249,7 +248,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                 proj_id = ctx.pool.spawn(
                     pos=origin_pos,
                     angle=angle,
-                    type_id=int(hit.proj.type_id),
+                    type_id=ProjectileTypeId(hit.proj.type_id),
                     owner_id=OwnerRef.from_creature(hit_creature),
                     travel_budget=hit.proj.travel_budget,
                 )
@@ -264,7 +263,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     size = float(creature.size)
     ring_radius = size * 0.5 + 1.0
 
-    plasma_entry = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.PLASMA_RIFLE))
+    plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTypeId.PLASMA_RIFLE)
     plasma_meta = (
         float(plasma_entry.travel_budget)
         if plasma_entry and plasma_entry.travel_budget is not None
@@ -317,7 +316,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
             float(creature.hp) + 1.0,
             damage_type=CreatureDamageType.BULLET,
             impulse=Vec2(),
-            owner_id=hit.proj.owner,
+            owner=hit.proj.owner,
             apply_creature_damage=ctx.apply_creature_damage,
         )
     hit.proj.life_timer = 0.25
@@ -337,35 +336,35 @@ _DEFAULT_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
 
 # Public: used by tests to ensure handler coverage.
 PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
-    int(ProjectileTypeId.PISTOL): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.ASSAULT_RIFLE): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.SHOTGUN): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.SUBMACHINE_GUN): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.GAUSS_GUN): ProjectileBehavior(linger=_linger_gauss_gun),
-    int(ProjectileTypeId.PLASMA_RIFLE): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.PLASMA_MINIGUN): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.PULSE_GUN): ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
-    int(ProjectileTypeId.ION_RIFLE): ProjectileBehavior(
+    ProjectileTypeId.PISTOL: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.ASSAULT_RIFLE: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.SHOTGUN: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.SUBMACHINE_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.GAUSS_GUN: ProjectileBehavior(linger=_linger_gauss_gun),
+    ProjectileTypeId.PLASMA_RIFLE: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.PLASMA_MINIGUN: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.PULSE_GUN: ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
+    ProjectileTypeId.ION_RIFLE: ProjectileBehavior(
         linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle,
     ),
-    int(ProjectileTypeId.ION_MINIGUN): ProjectileBehavior(
+    ProjectileTypeId.ION_MINIGUN: ProjectileBehavior(
         linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common,
     ),
-    int(ProjectileTypeId.ION_CANNON): ProjectileBehavior(
+    ProjectileTypeId.ION_CANNON: ProjectileBehavior(
         linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common,
     ),
-    int(ProjectileTypeId.SHRINKIFIER): ProjectileBehavior(
+    ProjectileTypeId.SHRINKIFIER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_shrinkifier,
     ),
-    int(ProjectileTypeId.BLADE_GUN): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.SPIDER_PLASMA): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.PLASMA_CANNON): ProjectileBehavior(
+    ProjectileTypeId.BLADE_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.SPIDER_PLASMA: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.PLASMA_CANNON: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon,
     ),
-    int(ProjectileTypeId.SPLITTER_GUN): ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
-    int(ProjectileTypeId.PLAGUE_SPREADER): ProjectileBehavior(
+    ProjectileTypeId.SPLITTER_GUN: ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
+    ProjectileTypeId.PLAGUE_SPREADER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plague_spreader,
     ),
-    int(ProjectileTypeId.RAINBOW_GUN): _DEFAULT_BEHAVIOR,
-    int(ProjectileTypeId.FIRE_BULLETS): _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.RAINBOW_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTypeId.FIRE_BULLETS: _DEFAULT_BEHAVIOR,
 }

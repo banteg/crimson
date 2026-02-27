@@ -5,8 +5,8 @@ from grim.geom import Vec2
 from ...sim.state_types import GameplayState, PlayerState
 from .manifest import PLAYER_PERK_TICK_STEPS
 from .player_tick_context import (
-    OwnerIdForPlayerFn,
-    OwnerIdForPlayerProjectilesFn,
+    OwnerRefForPlayerFn,
+    OwnerRefForPlayerProjectilesFn,
     PlayerPerkTickCtx,
     ProjectileSpawnFn,
 )
@@ -22,8 +22,8 @@ def apply_player_perk_ticks(
     state: GameplayState,
     players: list[PlayerState] | None,
     stationary: bool,
-    owner_id_for_player: OwnerIdForPlayerFn,
-    owner_id_for_player_projectiles: OwnerIdForPlayerProjectilesFn,
+    owner_ref_for_player: OwnerRefForPlayerFn,
+    owner_ref_for_player_projectiles: OwnerRefForPlayerProjectilesFn,
     projectile_spawn: ProjectileSpawnFn,
 ) -> None:
     ctx = PlayerPerkTickCtx(
@@ -33,8 +33,8 @@ def apply_player_perk_ticks(
         players=players,
         dt=dt,
         stationary=stationary,
-        owner_id_for_player=owner_id_for_player,
-        owner_id_for_player_projectiles=owner_id_for_player_projectiles,
+        owner_ref_for_player=owner_ref_for_player,
+        owner_ref_for_player_projectiles=owner_ref_for_player_projectiles,
         projectile_spawn=projectile_spawn,
     )
     for step in _PLAYER_PERK_TICK_STEPS:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -19,7 +20,7 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
         damage_amount=10.0,
         damage_type=4,
         impulse=Vec2(),
-        owner_id=-100,
+        owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
         rand=rand,

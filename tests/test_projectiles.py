@@ -8,6 +8,7 @@ from syrupy import SnapshotAssertion
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import (
     ProjectileHit,
     ProjectilePool,
@@ -119,7 +120,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
     cases: list[dict[str, Any]] = [
         {
             "name": "pistol_near_hit",
-            "type_id": int(ProjectileTypeId.PISTOL),
+            "type_id": ProjectileTypeId.PISTOL,
             "travel_budget": 15.0,
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
@@ -128,7 +129,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "pistol_rng_jitter",
-            "type_id": int(ProjectileTypeId.PISTOL),
+            "type_id": ProjectileTypeId.PISTOL,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -137,7 +138,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "rocket_no_splash_type_0x0b",
-            "type_id": 0x0B,
+            "type_id": ProjectileTypeId.PLASMA_MINIGUN,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -148,7 +149,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "ion_minigun_linger",
-            "type_id": 0x16,
+            "type_id": ProjectileTypeId.ION_MINIGUN,
             "travel_budget": 20.0,
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
@@ -164,8 +165,8 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         idx = pool.spawn(
             pos=Vec2(),
             angle=math.pi / 2.0,
-            type_id=int(case["type_id"]),
-            owner_id=-100,
+            type_id=ProjectileTypeId(int(case["type_id"])),
+            owner_id=OwnerRef.from_local_player(0),
             travel_budget=float(case["travel_budget"]),
         )
         creatures = case["creatures"]
@@ -196,12 +197,17 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
 
 def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = ProjectilePool(size=1)
-    idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=4, owner_id=-100)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=math.pi / 2.0,
+        type_id=ProjectileTypeId.ASSAULT_RIFLE,
+        owner_id=OwnerRef.from_local_player(0),
+    )
     pool.update_demo(
         0.1,
         [],
         world_size=1024.0,
-        speed_by_type={4: 100.0},
+        speed_by_type={int(ProjectileTypeId.ASSAULT_RIFLE): 100.0},
         damage_by_type={},
     )
 
@@ -220,8 +226,8 @@ def test_primary_spawn_persists_velocity_vector() -> None:
     idx = pool.spawn(
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
-        type_id=int(ProjectileTypeId.PISTOL),
-        owner_id=-100,
+        type_id=ProjectileTypeId.PISTOL,
+        owner_id=OwnerRef.from_local_player(0),
     )
 
     entry = pool.entries[idx]
@@ -279,7 +285,7 @@ def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAsser
                 "damage": round(float(call.args[1]), 6),
                 "damage_type": int(call.args[2]),
                 "impulse": _normalize_vec2(call.args[3]),
-                "owner_id": int(call.args[4]),
+                "owner_id": int(call.args[4].to_legacy()),
             }
             for call in apply_damage.call_args_list
         ],
@@ -292,8 +298,8 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, 0.0), hp=20.0)]
     fx_queue = FxQueue()
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
-        _ = (damage_type, impulse, owner_id)
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef) -> None:
+        _ = (damage_type, impulse, owner)
         creatures[int(idx)].hp -= float(damage)
 
     on_kill = mocker.Mock()

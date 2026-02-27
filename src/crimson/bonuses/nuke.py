@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
+from ..owner_ref import OwnerRef
 from ..projectiles import ProjectileTypeId
-from ..weapon_runtime.spawn import owner_id_for_player, projectile_spawn
+from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 
 
@@ -27,8 +28,8 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             players=ctx.players,
             pos=origin,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.PISTOL),
-            owner_id=-100,
+            type_id=ProjectileTypeId.PISTOL,
+            owner=OwnerRef.from_local_player(0),
             owner_player_index=ctx.player.index,
         )
         if proj_id != -1:
@@ -42,8 +43,8 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             players=ctx.players,
             pos=origin,
             angle=float(angle),
-            type_id=int(ProjectileTypeId.GAUSS_GUN),
-            owner_id=-100,
+            type_id=ProjectileTypeId.GAUSS_GUN,
+            owner=OwnerRef.from_local_player(0),
             owner_player_index=ctx.player.index,
         )
 
@@ -76,7 +77,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                         float(damage),
                         3,
                         Vec2(),
-                        owner_id_for_player(ctx.player.index),
+                        owner_ref_for_player(ctx.player.index),
                     )
                 else:
                     creature.hp -= float(damage)

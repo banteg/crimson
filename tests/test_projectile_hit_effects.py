@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -17,7 +18,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.PLASMA_CANNON,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 
@@ -52,7 +53,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
 
@@ -85,7 +86,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
 
@@ -112,7 +113,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SHRINKIFIER,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 
@@ -157,7 +158,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=-100,
+        owner_id=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 

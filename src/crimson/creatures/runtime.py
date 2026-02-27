@@ -35,7 +35,7 @@ from ..math_parity import (
     heading_add_pi_f32,
     heading_to_direction_f32,
 )
-from ..owner_ref import OwnerLike, OwnerRef, owner_ref
+from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
@@ -228,12 +228,12 @@ def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:
     )
 
 
-def _owner_to_player_index(owner: OwnerLike) -> int | None:
-    return owner_ref(owner).player_index()
+def _owner_to_player_index(owner: OwnerRef) -> int | None:
+    return owner.player_index()
 
 
-def _travel_budget_for_type_id(type_id: int) -> float:
-    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
+def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
+    return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
 
 
 @dataclass(slots=True)
@@ -293,8 +293,8 @@ class CreatureState:
         return self.last_hit_owner.to_legacy()
 
     @last_hit_owner_id.setter
-    def last_hit_owner_id(self, value: OwnerLike) -> None:
-        self.last_hit_owner = owner_ref(value)
+    def last_hit_owner_id(self, value: OwnerRef) -> None:
+        self.last_hit_owner = value
 
 
 @dataclass(frozen=True, slots=True)
@@ -484,7 +484,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             damage_amount=25.0,
             damage_type=CreatureDamageType.MELEE,
             impulse=Vec2(),
-            owner_id=-1 - int(ctx.player.index),
+            owner=OwnerRef.from_player(int(ctx.player.index)),
             dt=ctx.dt,
             players=ctx.players,
             rand=ctx.rand,
@@ -946,7 +946,7 @@ class CreaturePool:
                 damage_amount=float(damage_amount),
                 damage_type=CreatureDamageType.SELF_TICK,
                 impulse=Vec2(),
-                owner_id=creature.last_hit_owner,
+                owner=creature.last_hit_owner,
                 dt=dt,
                 players=players,
                 rand=rand,
@@ -1210,12 +1210,12 @@ class CreaturePool:
                 dist = (creature.pos - player.pos).length()
                 if dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                        type_id = int(ProjectileTypeId.PLASMA_RIFLE)
+                        type_id = ProjectileTypeId.PLASMA_RIFLE
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
-                            owner_id=idx,
+                            owner_id=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
@@ -1223,12 +1223,12 @@ class CreaturePool:
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
-                        projectile_type = int(creature.orbit_radius)
+                        projectile_type = ProjectileTypeId(int(creature.orbit_radius))
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
-                            owner_id=idx,
+                            owner_id=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
