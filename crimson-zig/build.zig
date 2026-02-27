@@ -1,4 +1,5 @@
 const std = @import("std");
+const zemscripten = @import("zemscripten");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -7,6 +8,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const raylib_dep = b.dependency("raylib_zig", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const raylib_module = raylib_dep.module("raylib");
+    const raylib_artifact = raylib_dep.artifact("raylib");
 
     const mod = b.addModule("crimson_zig", .{
         .root_source_file = b.path("src/root.zig"),
@@ -29,6 +36,21 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(exe);
 
+    const window_exe = b.addExecutable(.{
+        .name = "crimson-zig-window",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/window_main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "raylib", .module = raylib_module },
+            },
+        }),
+    });
+    window_exe.linkLibrary(raylib_artifact);
+    const window_step = b.step("window", "Build placeholder raylib window");
+    window_step.dependOn(&window_exe.step);
+
     const quest_dump_exe = b.addExecutable(.{
         .name = "crimson-zig-quest-spawn-dump",
         .root_module = b.createModule(.{
@@ -49,6 +71,77 @@ pub fn build(b: *std.Build) void {
     if (b.args) |args| {
         run_cmd.addArgs(args);
     }
+
+    const run_window_step = b.step("run-window", "Run placeholder raylib window");
+    const run_window_cmd = b.addRunArtifact(window_exe);
+    run_window_step.dependOn(&run_window_cmd.step);
+
+    const web_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .emscripten,
+    });
+
+    const web_raylib_dep = b.dependency("raylib_zig", .{
+        .target = web_target,
+        .optimize = optimize,
+    });
+    const web_raylib_module = web_raylib_dep.module("raylib");
+    const web_raylib_artifact = web_raylib_dep.artifact("raylib");
+
+    const web_window_lib = b.addLibrary(.{
+        .name = "crimson-zig-window-web",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/window_main.zig"),
+            .target = web_target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "raylib", .module = web_raylib_module },
+            },
+        }),
+    });
+    web_window_lib.linkLibrary(web_raylib_artifact);
+
+    const emsdk_dep = b.dependency("emsdk", .{});
+    const emscripten_sysroot_include = emsdk_dep.path("upstream/emscripten/cache/sysroot/include");
+    web_raylib_artifact.root_module.addIncludePath(emscripten_sysroot_include);
+    web_window_lib.root_module.addIncludePath(emscripten_sysroot_include);
+
+    var web_emcc_flags = zemscripten.emccDefaultFlags(b.allocator, .{
+        .optimize = optimize,
+        .fsanitize = true,
+    });
+    web_emcc_flags.put("-sASYNCIFY", {}) catch unreachable;
+
+    var web_emcc_settings = zemscripten.emccDefaultSettings(b.allocator, .{
+        .optimize = optimize,
+        .emsdk_allocator = .emmalloc,
+    });
+    web_emcc_settings.put("FULL_ES3", "1") catch unreachable;
+    web_emcc_settings.put("USE_GLFW", "3") catch unreachable;
+
+    const activate_emsdk_step = zemscripten.activateEmsdkStep(b);
+    const web_install_dir: std.Build.InstallDir = .{ .custom = "web" };
+    const web_emcc_step = zemscripten.emccStep(b, web_window_lib, .{
+        .optimize = optimize,
+        .flags = web_emcc_flags,
+        .settings = web_emcc_settings,
+        .shell_file_path = emsdk_dep.path("upstream/emscripten/src/shell.html"),
+        .out_file_name = "crimson-zig-window.html",
+        .install_dir = web_install_dir,
+    });
+    web_emcc_step.dependOn(activate_emsdk_step);
+
+    const web_window_step = b.step("web-window", "Build placeholder raylib window for wasm32-emscripten");
+    web_window_step.dependOn(web_emcc_step);
+
+    const run_web_window_step = b.step("run-web-window", "Serve placeholder raylib web window with emrun");
+    const run_web_window_cmd = zemscripten.emrunStep(
+        b,
+        b.getInstallPath(web_install_dir, "crimson-zig-window.html"),
+        &.{"--no_browser"},
+    );
+    run_web_window_cmd.dependOn(web_emcc_step);
+    run_web_window_step.dependOn(run_web_window_cmd);
 
     const run_quest_dump_step = b.step("quest-spawn-dump", "Run quest spawn dump tool");
     const run_quest_dump_cmd = b.addRunArtifact(quest_dump_exe);

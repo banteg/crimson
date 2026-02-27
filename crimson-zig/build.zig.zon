@@ -36,6 +36,18 @@
             .url = "git+https://github.com/lalinsky/msgpack.zig?ref=v0.6.0#ca0f1533bb260490c6b69399e089bf4fabaa672a",
             .hash = "msgpack-0.6.0-ZOu9PJHnAQBHstHnnktRxFW3MUlRkSFdaUuLrecSuYOe",
         },
+        .raylib_zig = .{
+            .url = "git+https://github.com/raylib-zig/raylib-zig?ref=devel#cd71c85d571027ac8033357f83b124ee051825b3",
+            .hash = "raylib_zig-5.6.0-dev-KE8REENOBQC-m5nK7M2b5aKSIubJPbPLUYcRhT7aT3RN",
+        },
+        .emsdk = .{
+            .url = "git+https://github.com/emscripten-core/emsdk#4.0.9",
+            .hash = "N-V-__8AAJl1DwBezhYo_VE6f53mPVm00R-Fk28NPW7P14EQ",
+        },
+        .zemscripten = .{
+            .url = "git+https://github.com/zig-gamedev/zemscripten?ref=main#00da03b188220374a57cb34cda6230b8d53737ea",
+            .hash = "zemscripten-0.2.0-dev-sRlDqFJSAAB8hgnRt5DDMKP3zLlDtMnUDwYRJVCa5lGY",
+        },
     },
     .paths = .{
         "build.zig",
