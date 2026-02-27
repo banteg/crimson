@@ -67,6 +67,11 @@ pub const ShotResolutionResult = struct {
     xp_awarded: i32 = 0,
 };
 
+const CreatureAiUpdate = struct {
+    move_scale: f32,
+    self_damage: ?f32 = null,
+};
+
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
@@ -1880,12 +1885,32 @@ pub const CreaturePool = struct {
                 creature.force_target = 0;
                 continue;
             }
-            creatureAiUpdateTarget(
+            const ai_update = creatureAiUpdateTarget(
                 creature,
                 if (single_player_dead_target_pos) |dead_target| dead_target else player.pos,
                 self.entries[0..],
                 dt_f32,
             );
+            creature.move_scale = ai_update.move_scale;
+            if (ai_update.self_damage) |self_damage| {
+                _ = self.applyDamage(
+                    state,
+                    players,
+                    bonus_pool,
+                    idx,
+                    self_damage,
+                    .{},
+                    creature.last_hit_owner,
+                    dt_f32,
+                    world_size,
+                );
+                if (!(creature.hp > 0.0)) {
+                    if (creature.active) {
+                        tickDead(creature, dt_f32, &self.kill_count, state);
+                    }
+                    continue;
+                }
+            }
             if (creature.plague_infected) {
                 creature.collision_timer = narrowF32(creature.collision_timer - dt_f32);
                 if (creature.collision_timer < 0.0) {
@@ -1912,21 +1937,68 @@ pub const CreaturePool = struct {
                 creature.target_heading = narrowF32(creature.target_heading + native_pi);
             }
             const turn_rate = narrowF32(creature.move_speed * creature_turn_rate_scale);
-            if (creature.ai_mode != spawn_mod.CreatureAiMode.hold_timer) {
-                creature.heading = angleApproach(
-                    creature.heading,
-                    creature.target_heading,
-                    turn_rate,
-                    dt_f32,
-                );
-                const move_delta = movementDeltaFromHeadingF32(
-                    creature.heading,
-                    dt_f32,
-                    creature.move_scale,
-                    creature.move_speed,
-                );
-                creature.vel = move_delta;
-                creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
+            if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
+                if (creature.ai_mode != spawn_mod.CreatureAiMode.hold_timer) {
+                    creature.heading = angleApproach(
+                        creature.heading,
+                        creature.target_heading,
+                        turn_rate,
+                        dt_f32,
+                    );
+                    const move_delta = movementDeltaFromHeadingF32(
+                        creature.heading,
+                        dt_f32,
+                        creature.move_scale,
+                        creature.move_speed,
+                    );
+                    creature.vel = move_delta;
+                    creature.pos = advancePosByDeltaF32(creature.pos, move_delta);
+                }
+            } else {
+                const radius = @max(@as(f32, 0.0), creature.size);
+                const max_bound_raw = narrowF32(world_size - radius);
+                const max_bound = if (max_bound_raw > radius) max_bound_raw else radius;
+
+                var clamped_x = creature.pos.x;
+                var clamped_y = creature.pos.y;
+                if (clamped_x < radius) clamped_x = radius;
+                if (clamped_y < radius) clamped_y = radius;
+                if (max_bound < clamped_x) clamped_x = max_bound;
+                if (max_bound < clamped_y) clamped_y = max_bound;
+                creature.pos = .{
+                    .x = clamped_x,
+                    .y = clamped_y,
+                };
+
+                if ((creature.flags & spawn_mod.CreatureFlags.anim_long_strip) == 0) {
+                    creature.vel = .{};
+                } else {
+                    creature.heading = angleApproach(
+                        creature.heading,
+                        creature.target_heading,
+                        turn_rate,
+                        dt_f32,
+                    );
+                    const move_delta = movementDeltaFromHeadingF32(
+                        creature.heading,
+                        dt_f32,
+                        creature.move_scale,
+                        creature.move_speed,
+                    );
+                    creature.vel = move_delta;
+
+                    const moved_pos = advancePosByDeltaF32(creature.pos, move_delta);
+                    var moved_x = moved_pos.x;
+                    var moved_y = moved_pos.y;
+                    if (moved_x < radius) moved_x = radius;
+                    if (moved_y < radius) moved_y = radius;
+                    if (max_bound < moved_x) moved_x = max_bound;
+                    if (max_bound < moved_y) moved_y = max_bound;
+                    creature.pos = .{
+                        .x = moved_x,
+                        .y = moved_y,
+                    };
+                }
             }
             if (perkActive(player, PerkId.plaguebearer) and state.plaguebearer_infection_count < 0x3c) {
                 spreadPlagueInfection(self.entries[0..], creature);
@@ -1959,9 +2031,15 @@ pub const CreaturePool = struct {
                 }
             }
 
+            // Decompile parity (`creature_update_all`, 0x00426220): compute
+            // creature->target-player distance once and reuse it for ranged,
+            // eat, and contact checks inside this creature tick.
+            const to_player = state_mod.Vec2.sub(creature.pos, player.pos);
+            const target_dist_sq = to_player.lengthSq();
+            const target_dist = std.math.sqrt(target_dist_sq);
+
             if ((creature.flags & (spawn_mod.CreatureFlags.ranged_attack_shock | spawn_mod.CreatureFlags.ranged_attack_variant)) != 0) {
-                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
-                if (dist > 64.0 and creature.attack_cooldown <= 0.0) {
+                if (target_dist > 64.0 and creature.attack_cooldown <= 0.0) {
                     if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_shock) != 0) {
                         queueCreatureProjectile(
                             state,
@@ -1993,8 +2071,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const eat_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
-            if (eat_sq < 20.0 * 20.0) {
+            if (target_dist_sq < 20.0 * 20.0) {
                 var reverted_x = creature.pos.x - creature.vel.x;
                 var reverted_y = creature.pos.y - creature.vel.y;
                 if (reverted_x < 0.0) {
@@ -2037,7 +2114,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const contact_sq = state_mod.Vec2.sub(player.pos, creature.pos).lengthSq();
+            const contact_sq = target_dist_sq;
             if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and
@@ -2734,7 +2811,7 @@ fn creatureAiUpdateTarget(
     player_pos: state_mod.Vec2,
     creatures: []const CreatureState,
     dt: f32,
-) void {
+) CreatureAiUpdate {
     const dist_to_player = distanceF32(creature.pos, player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale: f32 = 3.7;
@@ -2742,6 +2819,7 @@ fn creatureAiUpdateTarget(
 
     creature.force_target = 0;
     var move_scale: f32 = 1.0;
+    var self_damage: ?f32 = null;
     const ai_mode = creature.ai_mode;
 
     if (ai_mode == spawn_mod.CreatureAiMode.orbit_player) {
@@ -2779,6 +2857,7 @@ fn creatureAiUpdateTarget(
             }
         } else {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
+            self_damage = 1000.0;
         }
     }
 
@@ -2786,6 +2865,7 @@ fn creatureAiUpdateTarget(
     if (ai_mode_after_primary == spawn_mod.CreatureAiMode.link_guard) {
         if (resolveLiveLink(creatures, creature.link_index) == null) {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
+            self_damage = 1000.0;
         } else if (dist_to_player > 800.0) {
             creature.target = .{
                 .x = narrowF32(player_pos.x),
@@ -2836,7 +2916,10 @@ fn creatureAiUpdateTarget(
     const dx = narrowF32(creature.target.x - creature.pos.x);
     const dy = narrowF32(creature.target.y - creature.pos.y);
     creature.target_heading = headingFromDeltaF32(dx, dy);
-    creature.move_scale = narrowF32(move_scale);
+    return .{
+        .move_scale = narrowF32(move_scale),
+        .self_damage = self_damage,
+    };
 }
 
 fn resolveLiveLink(

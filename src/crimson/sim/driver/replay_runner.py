@@ -284,6 +284,7 @@ def run_rush_replay(
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
     dt_frame_overrides: dict[int, float] | None = None,
+    dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
@@ -369,6 +370,11 @@ def run_rush_replay(
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=dt_frame_overrides,
         )
+        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
+            tick_index=int(tick_index),
+            dt_frame=float(dt_tick),
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
+        )
 
         rng_before_events = int(state.rng.state)
         apply_replay_tick_events(
@@ -385,6 +391,7 @@ def run_rush_replay(
 
         tick = session.step_tick(
             dt_frame=float(dt_tick),
+            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
             inputs=player_inputs,
             trace_rng=bool(trace_rng),
         )

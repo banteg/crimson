@@ -38,23 +38,24 @@ class TickTrace(TypedDict):
     bonus_freeze_ms: int
 
 
-TRACE_KEYS: tuple[str, ...] = (
-    "rng_state",
-    "elapsed_ms",
-    "score_xp",
-    "kills",
-    "creature_count",
-    "perk_pending",
-    "player_weapon_id",
-    "player_ammo_q4",
-    "player_health_q4",
-    "player_level",
-    "player_experience",
-    "bonus_weapon_power_up_ms",
-    "bonus_reflex_boost_ms",
-    "bonus_energizer_ms",
-    "bonus_double_experience_ms",
-    "bonus_freeze_ms",
+TRACE_SCHEMA_VERSION = 2
+TRACE_FIELDS: tuple[tuple[str, str], ...] = (
+    ("rng_state", "rng.rng_state"),
+    ("elapsed_ms", "timing.elapsed_ms"),
+    ("score_xp", "summary.score_xp"),
+    ("kills", "summary.kills"),
+    ("creature_count", "summary.creature_count"),
+    ("perk_pending", "summary.perk_pending"),
+    ("player_weapon_id", "player.player_weapon_id"),
+    ("player_ammo_q4", "player.player_ammo_q4"),
+    ("player_health_q4", "player.player_health_q4"),
+    ("player_level", "player.player_level"),
+    ("player_experience", "player.player_experience"),
+    ("bonus_weapon_power_up_ms", "bonuses.bonus_weapon_power_up_ms"),
+    ("bonus_reflex_boost_ms", "bonuses.bonus_reflex_boost_ms"),
+    ("bonus_energizer_ms", "bonuses.bonus_energizer_ms"),
+    ("bonus_double_experience_ms", "bonuses.bonus_double_experience_ms"),
+    ("bonus_freeze_ms", "bonuses.bonus_freeze_ms"),
 )
 
 BONUS_KEY_WEAPON_POWER_UP = str(BonusId.WEAPON_POWER_UP)
@@ -62,6 +63,31 @@ BONUS_KEY_REFLEX_BOOST = str(BonusId.REFLEX_BOOST)
 BONUS_KEY_ENERGIZER = str(BonusId.ENERGIZER)
 BONUS_KEY_DOUBLE_EXPERIENCE = str(BonusId.DOUBLE_EXPERIENCE)
 BONUS_KEY_FREEZE = str(BonusId.FREEZE)
+
+
+def _require_field(payload: dict[str, object], key: str, *, field: str) -> object:
+    if key not in payload:
+        raise ValueError(f"trace row missing required key: {field}")
+    return payload[key]
+
+
+def _require_int(value: object, *, field: str) -> int:
+    if isinstance(value, bool):
+        raise TypeError(f"trace row field {field} must be int, got bool")
+    if isinstance(value, int):
+        return int(value)
+    raise TypeError(f"trace row field {field} must be int, got {type(value).__name__}")
+
+
+def _require_object_dict(value: object, *, field: str) -> dict[str, object]:
+    if not isinstance(value, dict):
+        raise TypeError(f"trace row field {field} must be an object")
+    out: dict[str, object] = {}
+    for key, item in value.items():
+        if not isinstance(key, str):
+            raise TypeError(f"trace row field {field} contains non-string key")
+        out[key] = item
+    return out
 
 
 def _default_runtime_dir() -> Path:
@@ -133,28 +159,128 @@ def _checkpoint_to_trace(checkpoint: ReplayCheckpoint) -> TickTrace:
 
 
 def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
-    try:
-        return TickTrace(
-            tick=int(payload["tick"]),
-            rng_state=int(payload["rng_state"]),
-            elapsed_ms=int(payload["elapsed_ms"]),
-            score_xp=int(payload["score_xp"]),
-            kills=int(payload["kills"]),
-            creature_count=int(payload["creature_count"]),
-            perk_pending=int(payload["perk_pending"]),
-            player_weapon_id=int(payload["player_weapon_id"]),
-            player_ammo_q4=int(payload["player_ammo_q4"]),
-            player_health_q4=int(payload["player_health_q4"]),
-            player_level=int(payload["player_level"]),
-            player_experience=int(payload["player_experience"]),
-            bonus_weapon_power_up_ms=int(payload["bonus_weapon_power_up_ms"]),
-            bonus_reflex_boost_ms=int(payload["bonus_reflex_boost_ms"]),
-            bonus_energizer_ms=int(payload["bonus_energizer_ms"]),
-            bonus_double_experience_ms=int(payload["bonus_double_experience_ms"]),
-            bonus_freeze_ms=int(payload["bonus_freeze_ms"]),
+    schema_version = _require_int(
+        _require_field(payload, "schema_version", field="schema_version"),
+        field="schema_version",
+    )
+    if schema_version != TRACE_SCHEMA_VERSION:
+        raise ValueError(
+            f"trace row schema_version must be {TRACE_SCHEMA_VERSION}, got {schema_version}",
         )
-    except KeyError as exc:
-        raise ValueError(f"trace row missing required key: {exc.args[0]}") from exc
+
+    timing = _require_object_dict(_require_field(payload, "timing", field="timing"), field="timing")
+    rng = _require_object_dict(_require_field(payload, "rng", field="rng"), field="rng")
+    summary = _require_object_dict(_require_field(payload, "summary", field="summary"), field="summary")
+    player = _require_object_dict(_require_field(payload, "player", field="player"), field="player")
+    bonuses = _require_object_dict(_require_field(payload, "bonuses", field="bonuses"), field="bonuses")
+    projectiles = _require_object_dict(
+        _require_field(payload, "projectiles", field="projectiles"),
+        field="projectiles",
+    )
+    creatures = _require_object_dict(
+        _require_field(payload, "creatures", field="creatures"),
+        field="creatures",
+    )
+    debug = _require_object_dict(_require_field(payload, "debug", field="debug"), field="debug")
+
+    _require_int(
+        _require_field(projectiles, "projectile_state_hash", field="projectiles.projectile_state_hash"),
+        field="projectiles.projectile_state_hash",
+    )
+    _require_int(
+        _require_field(creatures, "creature_state_hash", field="creatures.creature_state_hash"),
+        field="creatures.creature_state_hash",
+    )
+    _require_int(
+        _require_field(debug, "debug_pending_nuke", field="debug.debug_pending_nuke"),
+        field="debug.debug_pending_nuke",
+    )
+    _require_int(
+        _require_field(debug, "debug_nuke_kills_last", field="debug.debug_nuke_kills_last"),
+        field="debug.debug_nuke_kills_last",
+    )
+    _require_int(
+        _require_field(debug, "debug_nuke_tick_last", field="debug.debug_nuke_tick_last"),
+        field="debug.debug_nuke_tick_last",
+    )
+    _require_int(
+        _require_field(debug, "debug_nuke_kill_index_sum", field="debug.debug_nuke_kill_index_sum"),
+        field="debug.debug_nuke_kill_index_sum",
+    )
+    _require_int(
+        _require_field(debug, "debug_last_picked_bonus_id", field="debug.debug_last_picked_bonus_id"),
+        field="debug.debug_last_picked_bonus_id",
+    )
+    _require_int(
+        _require_field(debug, "debug_last_picked_bonus_amount", field="debug.debug_last_picked_bonus_amount"),
+        field="debug.debug_last_picked_bonus_amount",
+    )
+
+    return TickTrace(
+        tick=_require_int(_require_field(payload, "tick", field="tick"), field="tick"),
+        rng_state=_require_int(_require_field(rng, "rng_state", field="rng.rng_state"), field="rng.rng_state"),
+        elapsed_ms=_require_int(
+            _require_field(timing, "elapsed_ms", field="timing.elapsed_ms"),
+            field="timing.elapsed_ms",
+        ),
+        score_xp=_require_int(
+            _require_field(summary, "score_xp", field="summary.score_xp"),
+            field="summary.score_xp",
+        ),
+        kills=_require_int(_require_field(summary, "kills", field="summary.kills"), field="summary.kills"),
+        creature_count=_require_int(
+            _require_field(summary, "creature_count", field="summary.creature_count"),
+            field="summary.creature_count",
+        ),
+        perk_pending=_require_int(
+            _require_field(summary, "perk_pending", field="summary.perk_pending"),
+            field="summary.perk_pending",
+        ),
+        player_weapon_id=_require_int(
+            _require_field(player, "player_weapon_id", field="player.player_weapon_id"),
+            field="player.player_weapon_id",
+        ),
+        player_ammo_q4=_require_int(
+            _require_field(player, "player_ammo_q4", field="player.player_ammo_q4"),
+            field="player.player_ammo_q4",
+        ),
+        player_health_q4=_require_int(
+            _require_field(player, "player_health_q4", field="player.player_health_q4"),
+            field="player.player_health_q4",
+        ),
+        player_level=_require_int(
+            _require_field(player, "player_level", field="player.player_level"),
+            field="player.player_level",
+        ),
+        player_experience=_require_int(
+            _require_field(player, "player_experience", field="player.player_experience"),
+            field="player.player_experience",
+        ),
+        bonus_weapon_power_up_ms=_require_int(
+            _require_field(bonuses, "bonus_weapon_power_up_ms", field="bonuses.bonus_weapon_power_up_ms"),
+            field="bonuses.bonus_weapon_power_up_ms",
+        ),
+        bonus_reflex_boost_ms=_require_int(
+            _require_field(bonuses, "bonus_reflex_boost_ms", field="bonuses.bonus_reflex_boost_ms"),
+            field="bonuses.bonus_reflex_boost_ms",
+        ),
+        bonus_energizer_ms=_require_int(
+            _require_field(bonuses, "bonus_energizer_ms", field="bonuses.bonus_energizer_ms"),
+            field="bonuses.bonus_energizer_ms",
+        ),
+        bonus_double_experience_ms=_require_int(
+            _require_field(
+                bonuses,
+                "bonus_double_experience_ms",
+                field="bonuses.bonus_double_experience_ms",
+            ),
+            field="bonuses.bonus_double_experience_ms",
+        ),
+        bonus_freeze_ms=_require_int(
+            _require_field(bonuses, "bonus_freeze_ms", field="bonuses.bonus_freeze_ms"),
+            field="bonuses.bonus_freeze_ms",
+        ),
+    )
 
 
 def _build_python_trace(replay_path: Path) -> list[TickTrace]:
@@ -190,7 +316,51 @@ def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
     trace_path.parent.mkdir(parents=True, exist_ok=True)
     with trace_path.open("w", encoding="utf-8") as handle:
         for row in trace_rows:
-            handle.write(json.dumps(row, separators=(",", ":")))
+            line = {
+                "schema_version": TRACE_SCHEMA_VERSION,
+                "tick": int(row["tick"]),
+                "timing": {
+                    "elapsed_ms": int(row["elapsed_ms"]),
+                },
+                "rng": {
+                    "rng_state": int(row["rng_state"]),
+                },
+                "summary": {
+                    "score_xp": int(row["score_xp"]),
+                    "kills": int(row["kills"]),
+                    "creature_count": int(row["creature_count"]),
+                    "perk_pending": int(row["perk_pending"]),
+                },
+                "player": {
+                    "player_weapon_id": int(row["player_weapon_id"]),
+                    "player_ammo_q4": int(row["player_ammo_q4"]),
+                    "player_health_q4": int(row["player_health_q4"]),
+                    "player_level": int(row["player_level"]),
+                    "player_experience": int(row["player_experience"]),
+                },
+                "bonuses": {
+                    "bonus_weapon_power_up_ms": int(row["bonus_weapon_power_up_ms"]),
+                    "bonus_reflex_boost_ms": int(row["bonus_reflex_boost_ms"]),
+                    "bonus_energizer_ms": int(row["bonus_energizer_ms"]),
+                    "bonus_double_experience_ms": int(row["bonus_double_experience_ms"]),
+                    "bonus_freeze_ms": int(row["bonus_freeze_ms"]),
+                },
+                "projectiles": {
+                    "projectile_state_hash": 0,
+                },
+                "creatures": {
+                    "creature_state_hash": 0,
+                },
+                "debug": {
+                    "debug_pending_nuke": 0,
+                    "debug_nuke_kills_last": 0,
+                    "debug_nuke_tick_last": -1,
+                    "debug_nuke_kill_index_sum": 0,
+                    "debug_last_picked_bonus_id": 0,
+                    "debug_last_picked_bonus_amount": 0,
+                },
+            }
+            handle.write(json.dumps(line, separators=(",", ":")))
             handle.write("\n")
 
 
@@ -228,11 +398,11 @@ def _first_mismatch(
         actual_row = actual[index]
         if int(expected_row["tick"]) != int(actual_row["tick"]):
             return index, "tick", int(expected_row["tick"]), int(actual_row["tick"])
-        for key in TRACE_KEYS:
+        for key, path in TRACE_FIELDS:
             expected_value = int(expected_row[key])
             actual_value = int(actual_row[key])
             if expected_value != actual_value:
-                return index, str(key), expected_value, actual_value
+                return index, path, expected_value, actual_value
     if len(expected) != len(actual):
         return limit, "trace_length", len(expected), len(actual)
     return None

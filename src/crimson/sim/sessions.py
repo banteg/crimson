@@ -173,19 +173,25 @@ class RushDeterministicSession:
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
-    elapsed_ms: float = 0.0
+    elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
 
     def step_tick(
         self,
         *,
         dt_frame: float,
+        dt_frame_ms_i32: int | None = None,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
         dt_frame = float(dt_frame)
-        dt_frame_ms = float(dt_frame) * 1000.0
-        self.elapsed_ms += float(dt_frame_ms)
+        dt_ms_i32 = int(round(float(dt_frame) * 1000.0))
+        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
+            dt_ms_i32 = int(dt_frame_ms_i32)
+        if dt_ms_i32 < 1:
+            dt_ms_i32 = 1
+        dt_frame_ms = float(dt_ms_i32)
+        elapsed_before_ms = int(self.elapsed_ms)
 
         if self.enforce_loadout is not None:
             self.enforce_loadout()
@@ -194,12 +200,14 @@ class RushDeterministicSession:
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
 
         def _mid_step_spawns() -> None:
+            # Native rush mode (`rush_mode_update`) consumes integer millisecond counters.
+            # It reads survival_elapsed_ms before the frame-loop increments it.
             cooldown, spawns = tick_rush_mode_spawns(
                 self.spawn_cooldown_ms,
                 dt_frame_ms,
                 state.rng,
                 player_count=len(self.world.players),
-                survival_elapsed_ms=int(self.elapsed_ms),
+                survival_elapsed_ms=int(elapsed_before_ms),
                 terrain_width=float(self.world_size),
                 terrain_height=float(self.world_size),
             )
@@ -242,6 +250,7 @@ class RushDeterministicSession:
         rng_marks["after_world_step"] = int(state.rng.state)
         rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
         self.world.creatures.finalize_post_render_lifecycle()
+        self.elapsed_ms = int(self.elapsed_ms) + int(dt_ms_i32)
 
         return DeterministicSessionTick(
             step=step,

@@ -1,0 +1,848 @@
+const std = @import("std");
+const game_ids = @import("../../game_ids.zig");
+const native_math = @import("../native_math.zig");
+const replay_codec = @import("../../replay_codec.zig");
+
+const effects = @import("effects.zig");
+const events = @import("events.zig");
+const movement = @import("movement.zig");
+const capture_state = @import("capture_state.zig");
+const context_mod = @import("context.zig");
+const diagnostic_trace_mod = @import("diagnostic_trace.zig");
+
+const bonus_runtime = @import("../bonuses.zig");
+const creatures_mod = @import("../creatures.zig");
+const perks = @import("../perks.zig");
+const projectiles_mod = @import("../projectiles.zig");
+const spawn_mod = @import("../spawn.zig");
+const state_mod = @import("../state.zig");
+const survival_progression = @import("../survival_progression.zig");
+const weapons_runtime = @import("../weapons.zig");
+
+const narrowF32 = native_math.roundF32;
+const SimulationContext = context_mod.SimulationContext;
+
+pub const StepError = events.EventError ||
+    creatures_mod.CreatureRuntimeError ||
+    bonus_runtime.BonusRuntimeError ||
+    weapons_runtime.WeaponRuntimeError ||
+    error{
+        UnsupportedDemoMode,
+        UnsupportedPreserveBugs,
+    };
+
+pub const TickPhase = enum {
+    pre_reset,
+    pre_events,
+    post_pre_events,
+    pre_effects,
+    post_effects,
+    pre_core_simulation,
+    post_core_simulation,
+    pre_player_movement,
+    post_player_movement,
+    pre_bonus_effects,
+    post_bonus_effects,
+    pre_post_events,
+    post_post_events,
+    finalize,
+};
+
+pub const StepFrame = struct {
+    tick_index: usize,
+    dt_tick: f32,
+    dt_world: f32 = 0.0,
+    dt_sim: f32 = 0.0,
+    dt_frame_ms: f32 = 0.0,
+    dt_frame_ms_i32: i32 = 0,
+    menu_open_seen_this_tick: bool = false,
+    reload_active_any: bool = false,
+    pre_events_applied: usize = 0,
+    post_events_applied: usize = 0,
+    rng_after_effects: u32 = 0,
+    rng_after_perk_effects: u32 = 0,
+    rng_after_creatures: u32 = 0,
+    rng_after_projectiles: u32 = 0,
+    rng_after_secondary_projectiles: u32 = 0,
+    rng_after_particles: u32 = 0,
+    rng_after_player_update: u32 = 0,
+    rng_after_stage_spawns: u32 = 0,
+    rng_after_wave_spawns: u32 = 0,
+    rng_after_spawns: u32 = 0,
+    rng_after_bonus_update: u32 = 0,
+    projectile_tick_stats: projectiles_mod.ProjectileTickStats = .{},
+};
+
+pub const StepResult = struct {
+    tick_index: usize,
+    pre_events_applied: usize,
+    post_events_applied: usize,
+    reload_active_any: bool,
+    dt_world: f32,
+    dt_sim: f32,
+    rng_after_effects: u32,
+    rng_after_perk_effects: u32,
+    rng_after_creatures: u32,
+    rng_after_projectiles: u32,
+    rng_after_secondary_projectiles: u32,
+    rng_after_particles: u32,
+    rng_after_player_update: u32,
+    rng_after_stage_spawns: u32,
+    rng_after_wave_spawns: u32,
+    rng_after_spawns: u32,
+    rng_after_bonus_update: u32,
+    projectile_tick_stats: projectiles_mod.ProjectileTickStats,
+    rng_end: u32,
+    pending_capture_state_reset: bool,
+};
+
+pub const PhaseHook = *const fn (
+    context: *SimulationContext,
+    phase: TickPhase,
+    frame: *const StepFrame,
+) void;
+
+pub const CoreSimulationHook = *const fn (
+    context: *SimulationContext,
+    frame: *const StepFrame,
+) void;
+
+pub const StepHooks = struct {
+    on_phase: ?PhaseHook = null,
+    run_core_simulation: ?CoreSimulationHook = null,
+};
+
+pub const StepOptions = struct {
+    hooks: StepHooks = .{},
+    trace_sink: ?diagnostic_trace.Sink = null,
+    diagnostic_trace_sink: ?DiagnosticTraceSink = null,
+};
+
+pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTickTraceV2) void;
+
+pub const diagnostic_trace = struct {
+    pub const TickSnapshot = struct {
+        tick_index: usize,
+        dt_tick: f32,
+        dt_world: f32,
+        dt_sim: f32,
+        pre_events_applied: usize,
+        post_events_applied: usize,
+        rng_state: u32,
+        rng_after_effects: u32,
+        creature_active_count: usize,
+        pending_capture_state_reset: bool,
+    };
+
+    pub const Sink = *const fn (snapshot: TickSnapshot) void;
+
+    pub fn emit(sink: ?Sink, snapshot: TickSnapshot) void {
+        if (sink) |trace_sink| {
+            trace_sink(snapshot);
+        }
+    }
+};
+
+pub fn stepTick(
+    context: *SimulationContext,
+    tick_index: usize,
+    tick_inputs: []const replay_codec.ReplayPlayerInput,
+    tick_events: []const replay_codec.ReplayEvent,
+    dt_tick: f32,
+    options: StepOptions,
+) StepError!StepResult {
+    var frame = StepFrame{
+        .tick_index = tick_index,
+        .dt_tick = narrowF32(dt_tick),
+    };
+
+    callPhaseHook(options.hooks, context, .pre_reset, &frame);
+    if (context.pending_capture_state_reset) {
+        capture_state.applyCaptureStateReset(
+            &context.state,
+            context.players(),
+            &context.creatures,
+            &context.particles,
+            &context.projectiles,
+            &context.secondary_projectiles,
+            &context.bonuses,
+            context.world_size,
+            context.quest_start_weapon_id_for_reset,
+            context.fx_toggle,
+            context.capture_spawn_events_authoritative,
+            context.quest_spawn_entries_storage[0..],
+            context.reset_quest_spawn_entries_len,
+            &context.quest_spawn_entries,
+            &context.quest_spawn_timeline_ms,
+            &context.quest_no_creatures_timer_ms,
+            &context.quest_completion_transition_ms,
+        );
+        context.pending_capture_state_reset = false;
+    }
+
+    context.state.game_mode = context.game_mode;
+    for (0..@as(usize, @intCast(@max(context.inter_tick_rand_draws, 0)))) |_| {
+        _ = context.state.rng.rand();
+    }
+
+    callPhaseHook(options.hooks, context, .pre_events, &frame);
+    frame.pre_events_applied = try applyEventsForPhase(
+        context,
+        tick_events,
+        .pre_step,
+        frame.dt_tick,
+        &frame.menu_open_seen_this_tick,
+    );
+    try ensureSupportedReplayFeatureFlags(&context.state);
+    callPhaseHook(options.hooks, context, .post_pre_events, &frame);
+
+    var players = context.players();
+    const players_for_inputs = @min(players.len, tick_inputs.len);
+    for (tick_inputs[0..players_for_inputs]) |input| {
+        const flags = replay_codec.unpackInputFlags(input.flags);
+        if (flags.fire_down) {
+            context.state.survival_reward_fire_seen = true;
+        }
+        if (flags.fire_pressed) {
+            context.fire_pressed_count += 1;
+        }
+        if (flags.reload_pressed) {
+            context.reload_pressed_count += 1;
+            frame.reload_active_any = true;
+        }
+    }
+
+    frame.dt_world = if (context.apply_world_dt_steps)
+        movement.applyPerkWorldDtSteps(players, frame.dt_tick)
+    else
+        frame.dt_tick;
+
+    frame.dt_sim = survival_progression.timeScaleReflexBoostBonus(
+        context.state.bonuses.reflex_boost,
+        context.state.time_scale_active,
+        frame.dt_world,
+    );
+
+    frame.dt_frame_ms = frame.dt_tick * 1000.0;
+    frame.dt_frame_ms_i32 = @intFromFloat(@round(frame.dt_frame_ms));
+    if (frame.dt_frame_ms_i32 < 1) {
+        frame.dt_frame_ms_i32 = 1;
+    }
+    const dt_sim_ms = frame.dt_sim * 1000.0;
+    const elapsed_before_ms: f32 = if (context.game_mode == .rush)
+        @floatFromInt(context.elapsed_ms_sim_rush)
+    else
+        context.elapsed_ms_sim;
+    const elapsed_after_ms = if (context.game_mode == .survival)
+        elapsed_before_ms + dt_sim_ms
+    else if (context.game_mode == .rush)
+        @as(f32, @floatFromInt(context.elapsed_ms_sim_rush + @as(i64, frame.dt_frame_ms_i32)))
+    else
+        elapsed_before_ms + frame.dt_frame_ms;
+
+    var freeze_corpse_at_tick_start = [_]bool{false} ** context.creatures.entries.len;
+    for (context.creatures.entries, 0..) |creature, idx| {
+        freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
+    }
+    var health_before_creatures: [state_mod.max_players]f32 = undefined;
+    for (players, 0..) |player, player_idx| {
+        health_before_creatures[player_idx] = player.health;
+    }
+
+    callPhaseHook(options.hooks, context, .pre_effects, &frame);
+    effects.updateEvilEyesTargets(&context.state, players, context.creatures.entries[0..]);
+    perks.updatePerkEffects(&context.state, players, frame.dt_sim);
+    effects.applyJinxedEffects(&context.state, players, &context.creatures, frame.dt_sim);
+    effects.applyPyrokineticEffects(
+        &context.state,
+        players,
+        &context.creatures,
+        &context.particles,
+        frame.dt_sim,
+    );
+    frame.rng_after_perk_effects = context.state.rng.state;
+    frame.rng_after_effects = frame.rng_after_perk_effects;
+    callPhaseHook(options.hooks, context, .post_effects, &frame);
+
+    callPhaseHook(options.hooks, context, .pre_core_simulation, &frame);
+    try context.creatures.update(
+        &context.state,
+        players,
+        frame.dt_sim,
+        context.world_size,
+        &context.bonuses,
+    );
+    effects.applyPendingCreatureProjectiles(&context.state, &context.projectiles);
+    frame.rng_after_creatures = context.state.rng.state;
+
+    for (players, 0..) |_, player_idx| {
+        effects.applyFinalRevengeOnDeathTransition(
+            &context.state,
+            players,
+            player_idx,
+            health_before_creatures[player_idx],
+            &context.creatures,
+            &context.bonuses,
+            frame.dt_sim,
+            context.world_size,
+            context.detail_preset,
+        );
+    }
+
+    frame.projectile_tick_stats = context.projectiles.update(
+        &context.state,
+        players,
+        &context.creatures,
+        &context.bonuses,
+        frame.dt_sim,
+        context.world_size,
+    );
+    frame.rng_after_projectiles = context.state.rng.state;
+
+    context.secondary_projectiles.updatePulseGun(
+        &context.state,
+        players,
+        &context.creatures,
+        &context.bonuses,
+        frame.dt_sim,
+        context.world_size,
+        context.detail_preset,
+    );
+    frame.rng_after_secondary_projectiles = context.state.rng.state;
+
+    context.particles.update(
+        &context.state,
+        players,
+        &context.creatures,
+        &context.bonuses,
+        frame.dt_sim,
+        context.world_size,
+    );
+    frame.rng_after_particles = context.state.rng.state;
+    callPhaseHook(options.hooks, context, .post_core_simulation, &frame);
+
+    callPhaseHook(options.hooks, context, .pre_player_movement, &frame);
+    if (context.game_mode == .rush) {
+        capture_state.enforceRushLoadout(players);
+    }
+    var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
+    for (players, 0..) |*player, player_idx| {
+        const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicks(
+            &context.state,
+            player,
+            frame.dt_sim,
+        );
+        player_preprocessed_alive[player_idx] = should_tick_perks;
+        if (!should_tick_perks) continue;
+        weapons_runtime.applyPlayerPerkTicks(
+            &context.state,
+            player,
+            &context.projectiles,
+            frame.dt_sim,
+        );
+    }
+    for (tick_inputs[0..players_for_inputs], players[0..players_for_inputs], 0..) |input, *player, player_idx| {
+        if (!player_preprocessed_alive[player_idx]) {
+            continue;
+        }
+        const health_before_player_step = player.health;
+        const flags = replay_codec.unpackInputFlags(input.flags);
+        const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
+
+        movement.updatePlayerFromReplayInput(
+            player,
+            input,
+            flags,
+            &context.state,
+            &context.creatures,
+            frame.dt_sim,
+        );
+        try weapons_runtime.stepPlayerForTick(
+            &context.state,
+            player,
+            &context.projectiles,
+            &context.secondary_projectiles,
+            &context.creatures,
+            &context.particles,
+            .{
+                .fire_down = flags.fire_down,
+                .fire_pressed = flags.fire_pressed,
+                .reload_pressed = flags.reload_pressed,
+                .reload_active_any = frame.reload_active_any,
+                .move_mode = move_mode_for_tick,
+                .single_player_mode = players.len == 1,
+                .preprocessed_player_tick = true,
+            },
+            frame.dt_sim,
+        );
+        effects.applyFinalRevengeOnDeathTransition(
+            &context.state,
+            players,
+            player_idx,
+            health_before_player_step,
+            &context.creatures,
+            &context.bonuses,
+            frame.dt_sim,
+            context.world_size,
+            context.detail_preset,
+        );
+        movement.finalizePlayerPostUpdate(player, context.world_size);
+    }
+    frame.rng_after_player_update = context.state.rng.state;
+    callPhaseHook(options.hooks, context, .post_player_movement, &frame);
+
+    frame.rng_after_stage_spawns = context.state.rng.state;
+    frame.rng_after_wave_spawns = context.state.rng.state;
+    switch (context.game_mode) {
+        .survival => {
+            survival_progression.survivalUpdateWeaponHandouts(
+                &context.state,
+                players,
+                narrowF32(elapsed_before_ms),
+            );
+
+            if (players.len > 0) {
+                const stage_result = spawn_mod.advanceSurvivalSpawnStage(
+                    context.spawn_stage,
+                    players[0].level,
+                );
+                context.spawn_stage = stage_result.stage;
+                context.stage_spawn_count += stage_result.count;
+                for (stage_result.slice()) |spawn_call| {
+                    try context.creatures.spawnTemplateCallWithRuntimeContext(
+                        spawn_call,
+                        &context.state.rng,
+                        &context.state,
+                        context.world_size,
+                    );
+                }
+                frame.rng_after_stage_spawns = context.state.rng.state;
+
+                const wave_result = spawn_mod.tickSurvivalWaveSpawnsBatch(
+                    context.spawn_cooldown,
+                    dt_sim_ms,
+                    &context.state.rng,
+                    context.player_count,
+                    elapsed_before_ms,
+                    players[0].experience,
+                    context.terrain_size,
+                    context.terrain_size,
+                );
+                context.spawn_cooldown = wave_result.cooldown;
+                context.wave_spawn_count += wave_result.count;
+                context.creatures.spawnInits(wave_result.slice());
+                frame.rng_after_wave_spawns = context.state.rng.state;
+            }
+        },
+        .rush => {
+            const wave_result = spawn_mod.tickRushModeSpawnsBatch(
+                context.spawn_cooldown,
+                @floatFromInt(frame.dt_frame_ms_i32),
+                &context.state.rng,
+                context.player_count,
+                elapsed_before_ms,
+                context.terrain_size,
+                context.terrain_size,
+            );
+            context.spawn_cooldown = wave_result.cooldown;
+            context.wave_spawn_count += wave_result.count;
+            context.creatures.spawnInits(wave_result.slice());
+            frame.rng_after_stage_spawns = context.state.rng.state;
+            frame.rng_after_wave_spawns = context.state.rng.state;
+        },
+        .quests => {
+            context.quest_creatures_none_active = context.creatures.activeCount() == 0;
+            const quest_spawns = spawn_mod.tickQuestModeSpawns(
+                context.quest_spawn_entries,
+                context.quest_spawn_timeline_ms,
+                narrowF32(frame.dt_frame_ms),
+                @floatFromInt(context.terrain_size),
+                context.quest_creatures_none_active,
+                context.quest_no_creatures_timer_ms,
+            );
+            context.quest_spawn_timeline_ms = quest_spawns.quest_spawn_timeline_ms;
+            context.quest_creatures_none_active = quest_spawns.creatures_none_active;
+            context.quest_no_creatures_timer_ms = quest_spawns.no_creatures_timer_ms;
+            context.wave_spawn_count += quest_spawns.spawn_count;
+            for (quest_spawns.slice()) |spawn_call| {
+                try context.creatures.spawnTemplateCallWithRuntimeContext(
+                    spawn_call,
+                    &context.state.rng,
+                    &context.state,
+                    context.world_size,
+                );
+            }
+
+            const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(context.quest_spawn_entries);
+            if (context.quest_creatures_none_active and spawn_table_empty_now) {
+                context.state.bonuses.reflex_boost = 0.0;
+                context.state.time_scale_active = false;
+            }
+
+            var any_alive_after = false;
+            for (players) |player| {
+                if (player.health > 0.0) {
+                    any_alive_after = true;
+                    break;
+                }
+            }
+
+            if (any_alive_after) {
+                const quest_completion = spawn_mod.tickQuestCompletionTransition(
+                    context.quest_completion_transition_ms,
+                    narrowF32(frame.dt_frame_ms),
+                    context.quest_creatures_none_active,
+                    spawn_table_empty_now,
+                );
+                context.quest_completion_transition_ms = quest_completion.completion_transition_ms;
+                context.quest_completed = quest_completion.completed;
+                context.quest_play_hit_sfx = quest_completion.play_hit_sfx;
+                context.quest_play_completion_music = quest_completion.play_completion_music;
+            } else {
+                context.quest_completion_transition_ms = -1.0;
+                context.quest_completed = false;
+                context.quest_play_hit_sfx = false;
+                context.quest_play_completion_music = false;
+            }
+
+            frame.rng_after_stage_spawns = context.state.rng.state;
+            frame.rng_after_wave_spawns = context.state.rng.state;
+        },
+        else => {},
+    }
+    frame.rng_after_spawns = context.state.rng.state;
+
+    callPhaseHook(options.hooks, context, .pre_bonus_effects, &frame);
+    const dt_after_player = movement.playerFrameDtAfterRoundtrip(
+        narrowF32(frame.dt_sim),
+        context.state.time_scale_active,
+        context.state.bonuses.reflex_boost,
+    );
+    cameraShakeUpdate(&context.state, dt_after_player);
+    if (context.game_mode != .rush) {
+        _ = survival_progression.survivalProgressionUpdate(&context.state, players);
+    }
+    context.state.time_scale_active = context.state.bonuses.reflex_boost > 0.0;
+    bonus_runtime.updatePrePickupTimers(&context.state, dt_after_player);
+    try bonus_runtime.bonusUpdate(
+        &context.bonuses,
+        &context.state,
+        players,
+        dt_after_player,
+    );
+    if (context.state.debug_last_picked_bonus_id == game_ids.BonusId.freeze) {
+        effects.applyFreezePickupCorpseCleanupRng(
+            &context.state,
+            &context.creatures,
+            freeze_corpse_at_tick_start[0..],
+        );
+    }
+    effects.applyPendingBonusEffects(
+        &context.state,
+        players,
+        &context.projectiles,
+        &context.creatures,
+        &context.bonuses,
+        dt_after_player,
+        context.world_size,
+        tick_index,
+    );
+    frame.rng_after_bonus_update = context.state.rng.state;
+    if (context.game_mode == .survival) {
+        survival_progression.survivalEnforceRewardWeaponGuard(context.state, players);
+    }
+    callPhaseHook(options.hooks, context, .post_bonus_effects, &frame);
+
+    context.creatures.finalizePostRenderLifecycle();
+    if (context.game_mode == .rush) {
+        context.elapsed_ms_sim_rush += @as(i64, frame.dt_frame_ms_i32);
+        context.elapsed_ms_sim = @floatFromInt(context.elapsed_ms_sim_rush);
+    } else {
+        context.elapsed_ms_sim = elapsed_after_ms;
+    }
+
+    if (context.defer_menu_open_events and tick_events.len > 0) {
+        callPhaseHook(options.hooks, context, .pre_post_events, &frame);
+        for ([_]events.TickEventPhase{
+            .post_state_transition,
+            .post_spawn_hook,
+            .post_menu_open,
+        }) |post_phase| {
+            frame.post_events_applied += try applyEventsForPhase(
+                context,
+                tick_events,
+                post_phase,
+                frame.dt_tick,
+                &frame.menu_open_seen_this_tick,
+            );
+            try ensureSupportedReplayFeatureFlags(&context.state);
+        }
+        callPhaseHook(options.hooks, context, .post_post_events, &frame);
+    }
+
+    context.event_index += tick_events.len;
+
+    const result = StepResult{
+        .tick_index = tick_index,
+        .pre_events_applied = frame.pre_events_applied,
+        .post_events_applied = frame.post_events_applied,
+        .reload_active_any = frame.reload_active_any,
+        .dt_world = frame.dt_world,
+        .dt_sim = frame.dt_sim,
+        .rng_after_effects = frame.rng_after_effects,
+        .rng_after_perk_effects = frame.rng_after_perk_effects,
+        .rng_after_creatures = frame.rng_after_creatures,
+        .rng_after_projectiles = frame.rng_after_projectiles,
+        .rng_after_secondary_projectiles = frame.rng_after_secondary_projectiles,
+        .rng_after_particles = frame.rng_after_particles,
+        .rng_after_player_update = frame.rng_after_player_update,
+        .rng_after_stage_spawns = frame.rng_after_stage_spawns,
+        .rng_after_wave_spawns = frame.rng_after_wave_spawns,
+        .rng_after_spawns = frame.rng_after_spawns,
+        .rng_after_bonus_update = frame.rng_after_bonus_update,
+        .projectile_tick_stats = frame.projectile_tick_stats,
+        .rng_end = context.state.rng.state,
+        .pending_capture_state_reset = context.pending_capture_state_reset,
+    };
+
+    diagnostic_trace.emit(options.trace_sink, .{
+        .tick_index = tick_index,
+        .dt_tick = frame.dt_tick,
+        .dt_world = frame.dt_world,
+        .dt_sim = frame.dt_sim,
+        .pre_events_applied = frame.pre_events_applied,
+        .post_events_applied = frame.post_events_applied,
+        .rng_state = context.state.rng.state,
+        .rng_after_effects = frame.rng_after_effects,
+        .creature_active_count = context.creatures.activeCount(),
+        .pending_capture_state_reset = context.pending_capture_state_reset,
+    });
+    if (options.diagnostic_trace_sink) |diagnostic_trace_sink| {
+        diagnostic_trace_sink(buildDiagnosticTrace(context, tick_index, &frame));
+    }
+
+    context.tick_index = tick_index + 1;
+    callPhaseHook(options.hooks, context, .finalize, &frame);
+    return result;
+}
+
+fn ensureSupportedReplayFeatureFlags(
+    state: *const state_mod.GameplayState,
+) StepError!void {
+    if (state.demo_mode_active) {
+        return error.UnsupportedDemoMode;
+    }
+    if (state.preserve_bugs) {
+        return error.UnsupportedPreserveBugs;
+    }
+}
+
+fn callPhaseHook(
+    hooks: StepHooks,
+    context: *SimulationContext,
+    phase: TickPhase,
+    frame: *const StepFrame,
+) void {
+    if (hooks.on_phase) |on_phase| {
+        on_phase(context, phase, frame);
+    }
+}
+
+fn cameraShakeUpdate(
+    state: *state_mod.GameplayState,
+    dt: f32,
+) void {
+    if (state.camera_shake_timer <= 0.0) {
+        state.camera_shake_offset = .{};
+        return;
+    }
+
+    state.camera_shake_timer = narrowF32(state.camera_shake_timer - dt * 3.0);
+    if (state.camera_shake_timer >= 0.0) return;
+
+    state.camera_shake_pulses -= 1;
+    if (state.camera_shake_pulses < 1) {
+        state.camera_shake_timer = 0.0;
+        return;
+    }
+
+    state.camera_shake_timer = if (state.bonuses.reflex_boost > 0.0) 0.06 else 0.1;
+    const max_amp = state.camera_shake_pulses * 3;
+    if (max_amp <= 0) {
+        state.camera_shake_offset = .{};
+        state.camera_shake_timer = 0.0;
+        state.camera_shake_pulses = 0;
+        return;
+    }
+
+    const max_amp_u32: u32 = @intCast(max_amp);
+    var mag_x: i32 = @intCast(state.rng.rand() % max_amp_u32);
+    mag_x += @intCast(state.rng.rand() % 10);
+    if ((state.rng.rand() & 1) == 0) {
+        mag_x = -mag_x;
+    }
+
+    var mag_y: i32 = @intCast(state.rng.rand() % max_amp_u32);
+    mag_y += @intCast(state.rng.rand() % 10);
+    if ((state.rng.rand() & 1) == 0) {
+        mag_y = -mag_y;
+    }
+
+    state.camera_shake_offset = .{
+        .x = narrowF32(@as(f32, @floatFromInt(mag_x))),
+        .y = narrowF32(@as(f32, @floatFromInt(mag_y))),
+    };
+}
+
+fn applyEventsForPhase(
+    context: *SimulationContext,
+    tick_events: []const replay_codec.ReplayEvent,
+    phase: events.TickEventPhase,
+    dt_tick: f32,
+    menu_open_seen_this_tick: *bool,
+) StepError!usize {
+    var applied: usize = 0;
+    const players = context.players();
+
+    for (tick_events) |event| {
+        if (events.classifyTickEvent(event, context.defer_menu_open_events) != phase) {
+            continue;
+        }
+        const outcome = try events.applyReplayEvent(
+            event,
+            &context.state,
+            players,
+            &context.creatures,
+            dt_tick,
+            &context.quest_spawn_timeline_ms,
+            &context.quest_no_creatures_timer_ms,
+            &context.quest_completion_transition_ms,
+            .{
+                .game_mode = context.game_mode,
+                .player_count = context.player_count,
+                .quest_unlock_index = context.quest_unlock_index,
+                .strict_events = context.strict_events,
+                .menu_open_seen_this_tick = menu_open_seen_this_tick.*,
+            },
+        );
+        menu_open_seen_this_tick.* = menu_open_seen_this_tick.* or outcome.menu_open_seen_this_tick;
+        context.perk_menu_open_count += outcome.perk_menu_open_count_delta;
+        context.perk_pick_count += outcome.perk_pick_count_delta;
+        if (outcome.signal == .request_capture_state_reset) {
+            context.pending_capture_state_reset = true;
+        }
+        applied += 1;
+    }
+
+    return applied;
+}
+
+fn buildDiagnosticTrace(
+    context: *SimulationContext,
+    tick_index: usize,
+    frame: *const StepFrame,
+) diagnostic_trace_mod.ReplayTickTraceV2 {
+    const players = context.players();
+    var player0 = state_mod.PlayerState{
+        .index = 0,
+        .pos = .{},
+    };
+    if (players.len > 0) {
+        player0 = players[0];
+    }
+
+    const trace_elapsed_ms = switch (context.game_mode) {
+        .quests => context.quest_spawn_timeline_ms,
+        .rush => @as(f32, @floatFromInt(context.elapsed_ms_sim_rush)),
+        else => context.elapsed_ms_sim,
+    };
+    return diagnostic_trace_mod.buildReplayTickTraceV2(
+        tick_index,
+        narrowF32(trace_elapsed_ms),
+        &context.state,
+        player0,
+        &context.creatures,
+        &context.bonuses,
+        &context.projectiles,
+        frame.projectile_tick_stats,
+        frame.rng_after_perk_effects,
+        frame.rng_after_creatures,
+        frame.rng_after_projectiles,
+        frame.rng_after_secondary_projectiles,
+        frame.rng_after_particles,
+        frame.rng_after_player_update,
+        frame.rng_after_stage_spawns,
+        frame.rng_after_wave_spawns,
+        frame.rng_after_spawns,
+        frame.rng_after_bonus_update,
+    );
+}
+
+fn testHeader() replay_codec.ReplayHeader {
+    return .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .seed = 0xD00D,
+        .replay_format_version = replay_codec.replay_format_version,
+        .quest_level = @constCast("1.1"),
+        .bootstrap_kind = @constCast("none"),
+        .bootstrap_seed = 0,
+        .game_version = @constCast("test"),
+        .tick_rate = 60,
+        .difficulty_level = 0,
+        .hardcore = false,
+        .preserve_bugs = false,
+        .detail_preset = 5,
+        .fx_toggle = 0,
+        .world_size = 1024.0,
+        .player_count = 1,
+        .status = .{},
+        .claimed_stats = .{},
+        .input_quantization = @constCast("raw"),
+    };
+}
+
+test "step tick applies counters and emits trace snapshot" {
+    const header = testHeader();
+    var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
+
+    const before_speed = context.players()[0].move_speed;
+
+    const input = replay_codec.ReplayPlayerInput{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 700.0,
+        .aim_y = 512.0,
+        .flags = replay_codec.fire_pressed_flag | replay_codec.reload_pressed_flag,
+    };
+
+    const TraceCapture = struct {
+        var calls: usize = 0;
+        var last_tick_index: usize = 0;
+
+        fn sink(snapshot: diagnostic_trace.TickSnapshot) void {
+            calls += 1;
+            last_tick_index = snapshot.tick_index;
+        }
+    };
+
+    TraceCapture.calls = 0;
+    const result = try stepTick(
+        &context,
+        0,
+        &[_]replay_codec.ReplayPlayerInput{input},
+        &.{},
+        context.dt_nominal,
+        .{
+            .trace_sink = TraceCapture.sink,
+        },
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), context.tick_index);
+    try std.testing.expectEqual(@as(usize, 1), context.fire_pressed_count);
+    try std.testing.expectEqual(@as(usize, 1), context.reload_pressed_count);
+    try std.testing.expect(result.reload_active_any);
+    try std.testing.expect(context.players()[0].move_speed > before_speed);
+
+    try std.testing.expectEqual(@as(usize, 1), TraceCapture.calls);
+    try std.testing.expectEqual(@as(usize, 0), TraceCapture.last_tick_index);
+}

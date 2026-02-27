@@ -40,6 +40,19 @@ _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 4096
 _DEFAULT_ZIG_BIN = Path("crimson-zig/zig-out/bin/crimson-zig")
 _Q4_SCALE = 10000.0
+_ZIG_DEBUG_TRACE_SCHEMA_VERSION = 2
+_ZIG_RNG_MARK_KEYS: tuple[str, ...] = (
+    "rng_after_perk_effects",
+    "rng_after_creatures",
+    "rng_after_projectiles",
+    "rng_after_secondary_projectiles",
+    "rng_after_particles",
+    "rng_after_player_update",
+    "rng_after_stage_spawns",
+    "rng_after_wave_spawns",
+    "rng_after_spawns",
+    "rng_after_bonus_update",
+)
 
 
 @dataclass(slots=True)
@@ -590,7 +603,15 @@ def _run_zig_verify_trace(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        if run.returncode != 0:
+        stdout_lines = [line.strip() for line in run.stdout.splitlines() if line.strip()]
+        if not stdout_lines:
+            stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
+            stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
+            detail = stderr_text if stderr_text else stdout_text
+            raise ValueError(f"zig replay verify failed: {detail or f'exit={run.returncode}'}")
+        verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
+        status = verify_payload.get("status")
+        if run.returncode != 0 and not (isinstance(status, str) and status.endswith("_mismatch")):
             stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
             stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
             detail = stderr_text if stderr_text else stdout_text
@@ -605,85 +626,100 @@ def _run_zig_verify_trace(
                 continue
             row = _decode_json_object(line, field=f"zig trace row {line_number}")
             rows.append(row)
-
-        stdout_lines = [line.strip() for line in run.stdout.splitlines() if line.strip()]
-        if not stdout_lines:
-            raise ValueError("zig replay verify did not emit json payload on stdout")
-        verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
         return rows, verify_payload
 
 
-def _zig_rng_marks(row: dict[str, object]) -> dict[str, int]:
+def _require_schema_version_v2(row: dict[str, object]) -> None:
+    schema_version = _require_int(row.get("schema_version"), field="zig trace row.schema_version")
+    if schema_version != _ZIG_DEBUG_TRACE_SCHEMA_VERSION:
+        raise ValueError(
+            "zig trace row.schema_version must be "
+            f"{_ZIG_DEBUG_TRACE_SCHEMA_VERSION}, got {schema_version}",
+        )
+
+
+def _zig_rng_marks(rng: dict[str, object]) -> dict[str, int]:
     marks: dict[str, int] = {}
-    for key in (
-        "rng_after_perk_effects",
-        "rng_after_creatures",
-        "rng_after_projectiles",
-        "rng_after_secondary_projectiles",
-        "rng_after_particles",
-        "rng_after_player_update",
-        "rng_after_stage_spawns",
-        "rng_after_wave_spawns",
-        "rng_after_spawns",
-        "rng_after_bonus_update",
-    ):
-        value = row.get(key)
-        if isinstance(value, bool):
-            continue
-        if isinstance(value, int):
-            marks[key] = int(value)
+    for key in _ZIG_RNG_MARK_KEYS:
+        marks[key] = _require_int(rng.get(key), field=f"zig trace row.rng.{key}")
     return marks
 
 
 def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> ReplayCheckpoint:
+    _require_schema_version_v2(row)
     tick_index = _require_int(row.get("tick"), field="zig trace row.tick")
-    player_pos_x_q4 = _require_int(row.get("player_pos_x_q4"), field="zig trace row.player_pos_x_q4")
-    player_pos_y_q4 = _require_int(row.get("player_pos_y_q4"), field="zig trace row.player_pos_y_q4")
-    player_health_q4 = _require_int(row.get("player_health_q4"), field="zig trace row.player_health_q4")
-    player_ammo_q4 = _require_int(row.get("player_ammo_q4"), field="zig trace row.player_ammo_q4")
-    player_weapon_id = _require_int(row.get("player_weapon_id"), field="zig trace row.player_weapon_id")
-    player_experience = _require_int(row.get("player_experience"), field="zig trace row.player_experience")
-    player_level = _require_int(row.get("player_level"), field="zig trace row.player_level")
+    timing = _require_object_dict(row.get("timing"), field="zig trace row.timing")
+    rng = _require_object_dict(row.get("rng"), field="zig trace row.rng")
+    summary = _require_object_dict(row.get("summary"), field="zig trace row.summary")
+    player = _require_object_dict(row.get("player"), field="zig trace row.player")
+    bonuses = _require_object_dict(row.get("bonuses"), field="zig trace row.bonuses")
+    projectiles = _require_object_dict(row.get("projectiles"), field="zig trace row.projectiles")
+    creatures = _require_object_dict(row.get("creatures"), field="zig trace row.creatures")
+    debug = _require_object_dict(row.get("debug"), field="zig trace row.debug")
+
+    player_pos_x_q4 = _require_int(player.get("player_pos_x_q4"), field="zig trace row.player.player_pos_x_q4")
+    player_pos_y_q4 = _require_int(player.get("player_pos_y_q4"), field="zig trace row.player.player_pos_y_q4")
+    player_health_q4 = _require_int(player.get("player_health_q4"), field="zig trace row.player.player_health_q4")
+    player_ammo_q4 = _require_int(player.get("player_ammo_q4"), field="zig trace row.player.player_ammo_q4")
+    player_weapon_id = _require_int(player.get("player_weapon_id"), field="zig trace row.player.player_weapon_id")
+    player_experience = _require_int(
+        player.get("player_experience"),
+        field="zig trace row.player.player_experience",
+    )
+    player_level = _require_int(player.get("player_level"), field="zig trace row.player.player_level")
 
     bonus_weapon_power_up_ms = _require_int(
-        row.get("bonus_weapon_power_up_ms", 0),
-        field="zig trace row.bonus_weapon_power_up_ms",
+        bonuses.get("bonus_weapon_power_up_ms"),
+        field="zig trace row.bonuses.bonus_weapon_power_up_ms",
     )
     bonus_reflex_boost_ms = _require_int(
-        row.get("bonus_reflex_boost_ms", 0),
-        field="zig trace row.bonus_reflex_boost_ms",
+        bonuses.get("bonus_reflex_boost_ms"),
+        field="zig trace row.bonuses.bonus_reflex_boost_ms",
     )
     bonus_energizer_ms = _require_int(
-        row.get("bonus_energizer_ms", 0),
-        field="zig trace row.bonus_energizer_ms",
+        bonuses.get("bonus_energizer_ms"),
+        field="zig trace row.bonuses.bonus_energizer_ms",
     )
     bonus_double_experience_ms = _require_int(
-        row.get("bonus_double_experience_ms", 0),
-        field="zig trace row.bonus_double_experience_ms",
+        bonuses.get("bonus_double_experience_ms"),
+        field="zig trace row.bonuses.bonus_double_experience_ms",
     )
     bonus_freeze_ms = _require_int(
-        row.get("bonus_freeze_ms", 0),
-        field="zig trace row.bonus_freeze_ms",
+        bonuses.get("bonus_freeze_ms"),
+        field="zig trace row.bonuses.bonus_freeze_ms",
     )
     creature_state_hash = _require_int(
-        row.get("creature_state_hash", 0),
-        field="zig trace row.creature_state_hash",
+        creatures.get("creature_state_hash"),
+        field="zig trace row.creatures.creature_state_hash",
     )
     projectile_state_hash = _require_int(
-        row.get("projectile_state_hash", 0),
-        field="zig trace row.projectile_state_hash",
+        projectiles.get("projectile_state_hash"),
+        field="zig trace row.projectiles.projectile_state_hash",
     )
 
-    perk_pending = _require_int(row.get("perk_pending"), field="zig trace row.perk_pending")
+    perk_pending = _require_int(summary.get("perk_pending"), field="zig trace row.summary.perk_pending")
     player_slots = max(1, int(player_count))
+
+    _require_int(debug.get("debug_pending_nuke"), field="zig trace row.debug.debug_pending_nuke")
+    _require_int(debug.get("debug_nuke_kills_last"), field="zig trace row.debug.debug_nuke_kills_last")
+    _require_int(debug.get("debug_nuke_tick_last"), field="zig trace row.debug.debug_nuke_tick_last")
+    _require_int(debug.get("debug_nuke_kill_index_sum"), field="zig trace row.debug.debug_nuke_kill_index_sum")
+    _require_int(
+        debug.get("debug_last_picked_bonus_id"),
+        field="zig trace row.debug.debug_last_picked_bonus_id",
+    )
+    _require_int(
+        debug.get("debug_last_picked_bonus_amount"),
+        field="zig trace row.debug.debug_last_picked_bonus_amount",
+    )
 
     return ReplayCheckpoint(
         tick_index=tick_index,
-        rng_state=_require_int(row.get("rng_state"), field="zig trace row.rng_state"),
-        elapsed_ms=_require_int(row.get("elapsed_ms"), field="zig trace row.elapsed_ms"),
-        score_xp=_require_int(row.get("score_xp"), field="zig trace row.score_xp"),
-        kills=_require_int(row.get("kills"), field="zig trace row.kills"),
-        creature_count=_require_int(row.get("creature_count"), field="zig trace row.creature_count"),
+        rng_state=_require_int(rng.get("rng_state"), field="zig trace row.rng.rng_state"),
+        elapsed_ms=_require_int(timing.get("elapsed_ms"), field="zig trace row.timing.elapsed_ms"),
+        score_xp=_require_int(summary.get("score_xp"), field="zig trace row.summary.score_xp"),
+        kills=_require_int(summary.get("kills"), field="zig trace row.summary.kills"),
+        creature_count=_require_int(summary.get("creature_count"), field="zig trace row.summary.creature_count"),
         perk_pending=perk_pending,
         players=[
             ReplayPlayerCheckpoint(
@@ -704,7 +740,7 @@ def _zig_checkpoint_from_row(row: dict[str, object], *, player_count: int) -> Re
         },
         state_hash=f"zig:{int(creature_state_hash):016x}:{int(projectile_state_hash):016x}",
         command_hash="",
-        rng_marks=_zig_rng_marks(row),
+        rng_marks=_zig_rng_marks(rng),
         deaths=[],
         perk=ReplayPerkSnapshot(
             pending_count=perk_pending,

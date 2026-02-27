@@ -371,9 +371,9 @@ def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> N
 
 def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
-    creature_pos = creature.pos
-    eat_dist_sq = Vec2.distance_sq(creature_pos, ctx.player.pos)
-    if eat_dist_sq >= 20.0 * 20.0:
+    # Decompile parity (`creature_update_all`, 0x00426220): reuse the same
+    # creature->target-player distance scalar for eat/contact branches.
+    if ctx.contact_dist_sq >= 20.0 * 20.0:
         return
 
     # Native stores `vel` as per-tick delta (not per-second). It applies movement
@@ -423,7 +423,6 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
-    ctx.contact_dist_sq = Vec2.distance_sq(creature.pos, ctx.player.pos)
     if not creature_lifecycle_is_alive(creature.lifecycle_stage):
         return
     if float(creature.size) <= 16.0:
@@ -1209,13 +1208,18 @@ class CreaturePool:
                                 )
                                 creature.lifecycle_stage -= float(dt)
 
+            # Decompile parity (`creature_update_all`, 0x00426220): compute
+            # creature->target-player distance once, then reuse that value for
+            # ranged attacks and all contact/eat checks in this creature tick.
+            target_dist_sq = Vec2.distance_sq(creature.pos, player.pos)
+            target_dist = math.sqrt(float(target_dist_sq))
+
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
             ):
                 # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
                 # around the 0x004276xx ranged-fire branch).
-                dist = (creature.pos - player.pos).length()
-                if dist > 64.0 and creature.attack_cooldown <= 0.0:
+                if target_dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = ProjectileTypeId.PLASMA_RIFLE
                         state.projectiles.spawn(
@@ -1261,6 +1265,7 @@ class CreaturePool:
                 fx_queue_rotated=fx_queue_rotated,
                 deaths=deaths,
                 sfx=sfx,
+                contact_dist_sq=float(target_dist_sq),
             )
             for step in _CREATURE_INTERACTION_STEPS:
                 step(interaction_ctx)

@@ -14,6 +14,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
@@ -384,7 +385,7 @@ class RushMode(BaseGameplayMode):
             return
 
         def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
-            self._rush.elapsed_ms = float(session.elapsed_ms)
+            self._rush.elapsed_ms = float(tick.elapsed_ms)
             self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
             world_events = tick.step.events
 
@@ -482,7 +483,7 @@ class RushMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -502,7 +503,7 @@ class RushMode(BaseGameplayMode):
                             build_checkpoint(
                                 tick_index=int(frame.tick_index),
                                 world=self.world.world_state,
-                                elapsed_ms=float(session.elapsed_ms),
+                                elapsed_ms=float(tick.elapsed_ms),
                                 creature_count_override=int(tick.creature_count_world_step),
                             ).state_hash,
                         )
@@ -512,13 +513,13 @@ class RushMode(BaseGameplayMode):
                     apply_audio=True,
                     update_camera=True,
                 )
-                self._rush.elapsed_ms = float(session.elapsed_ms)
+                self._rush.elapsed_ms = float(tick.elapsed_ms)
                 self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
                 self._store_net_runtime_snapshot(
                     mode_name="rush",
                     tick_index=int(frame.tick_index),
                     session_state={
-                        "elapsed_ms": float(session.elapsed_ms),
+                        "elapsed_ms": float(tick.elapsed_ms),
                         "spawn_cooldown_ms": float(session.spawn_cooldown_ms),
                     },
                     mode_state={
@@ -615,7 +616,7 @@ class RushMode(BaseGameplayMode):
                 frame_dt_ms=self._last_dt_ms,
             )
 
-        if not self._game_over_active:
+        if debug_enabled() and (not self._game_over_active):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
