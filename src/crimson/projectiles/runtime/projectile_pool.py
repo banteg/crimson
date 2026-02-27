@@ -17,6 +17,7 @@ from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
     Projectile,
+    ProjectileCollisionProfile,
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
@@ -52,6 +53,29 @@ class ProjectileUpdateOptions:
     apply_creature_damage: CreatureDamageApplier | None = None
     on_hit: Callable[[ProjectileHit], object | None] | None = None
     on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None
+
+
+_DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
+    hit_radius=1.0,
+    initial_damage_pool=1.0,
+)
+
+_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[int, ProjectileCollisionProfile] = {
+    int(ProjectileTypeId.ION_MINIGUN): ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
+    int(ProjectileTypeId.ION_RIFLE): ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
+    int(ProjectileTypeId.ION_CANNON): ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    int(ProjectileTypeId.PLASMA_CANNON): ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    int(ProjectileTypeId.GAUSS_GUN): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
+    int(ProjectileTypeId.FIRE_BULLETS): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
+    int(ProjectileTypeId.BLADE_GUN): ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
+}
+
+
+def projectile_collision_profile(type_id: ProjectileTypeId) -> ProjectileCollisionProfile:
+    return _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID.get(
+        int(type_id),
+        _DEFAULT_PROJECTILE_COLLISION_PROFILE,
+    )
 
 
 class ProjectilePool:
@@ -101,28 +125,9 @@ class ProjectilePool:
         entry.owner = owner_id
         entry.hits_players = bool(hits_players)
 
-        if type_id == ProjectileTypeId.ION_MINIGUN:
-            entry.hit_radius = 3.0
-            entry.damage_pool = 1.0
-            return index
-        if type_id == ProjectileTypeId.ION_RIFLE:
-            entry.hit_radius = 5.0
-            entry.damage_pool = 1.0
-            return index
-        if type_id in (ProjectileTypeId.ION_CANNON, ProjectileTypeId.PLASMA_CANNON):
-            entry.hit_radius = 10.0
-        else:
-            entry.hit_radius = 1.0
-            if type_id == ProjectileTypeId.GAUSS_GUN:
-                entry.damage_pool = 300.0
-                return index
-            if type_id == ProjectileTypeId.FIRE_BULLETS:
-                entry.damage_pool = 240.0
-                return index
-            if type_id == ProjectileTypeId.BLADE_GUN:
-                entry.damage_pool = 50.0
-                return index
-        entry.damage_pool = 1.0
+        collision_profile = projectile_collision_profile(type_id)
+        entry.hit_radius = float(collision_profile.hit_radius)
+        entry.damage_pool = float(collision_profile.initial_damage_pool)
         return index
 
     def iter_active(self) -> list[Projectile]:

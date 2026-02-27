@@ -143,6 +143,12 @@ SecondaryDetonationKillHandler = Callable[[int], None]
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectileCollisionProfile:
+    hit_radius: float
+    initial_damage_pool: float
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectileHit:
     type_id: int
     origin: Vec2
@@ -207,6 +213,7 @@ __all__ = [
     "FxQueueLike",
     "MAIN_PROJECTILE_POOL_SIZE",
     "Projectile",
+    "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectileRuntimeState",
     "ProjectileTypeId",

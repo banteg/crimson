@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
+from ...collision_math import native_find_size_margin
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...owner_ref import OwnerRef
 from ..types import CreatureDamageApplier
@@ -23,8 +24,7 @@ def _hit_radius_for(creature: CreatureState) -> float:
     The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
     """
 
-    size = float(creature.size)
-    return max(0.0, size * 0.14285715 + 3.0)
+    return max(0.0, native_find_size_margin(float(creature.size)))
 
 
 def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, target_size: float) -> bool:
@@ -37,7 +37,7 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
     dx = float(target.x) - float(origin.x)
     dy = float(target.y) - float(origin.y)
     radius_f = float(radius)
-    size_margin = float(target_size) * 0.14285715 + 3.0
+    size_margin = native_find_size_margin(float(target_size))
     max_axis_delta = float(radius_f) + float(size_margin) + _NATIVE_FIND_RADIUS_MARGIN_EPS
     # Fast reject for the common case where either axis already exceeds the
     # maximal accepted Euclidean radius.
@@ -100,4 +100,5 @@ __all__ = [
     "_creature_find_nearest_for_secondary",
     "_hit_radius_for",
     "_within_native_find_radius",
+    "native_find_size_margin",
 ]
