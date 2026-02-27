@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...creatures.lifecycle import creature_lifecycle_is_alive
-from ...owner_ref import OwnerLike, owner_ref
+from ...owner_ref import OwnerRef
 from ..types import CreatureDamageApplier
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ def _apply_damage_to_creature(
     *,
     damage_type: int,
     impulse: Vec2,
-    owner_id: OwnerLike,
+    owner: OwnerRef,
     apply_creature_damage: CreatureDamageApplier | None = None,
 ) -> None:
     if damage <= 0.0:
@@ -84,13 +84,12 @@ def _apply_damage_to_creature(
     if not (0 <= idx < len(creatures)):
         return
     if apply_creature_damage is not None:
-        owner = owner_ref(owner_id)
         apply_creature_damage(
             idx,
             float(damage),
             int(damage_type),
             impulse,
-            owner.to_legacy(),
+            owner,
         )
     else:
         creatures[idx].hp -= float(damage)

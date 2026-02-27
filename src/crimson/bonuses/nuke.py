@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from ..projectiles import ProjectileTypeId
-from ..weapon_runtime.spawn import owner_id_for_player, projectile_spawn
+from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 
 
@@ -76,7 +76,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                         float(damage),
                         3,
                         Vec2(),
-                        owner_id_for_player(ctx.player.index),
+                        owner_ref_for_player(ctx.player.index),
                     )
                 else:
                     creature.hp -= float(damage)

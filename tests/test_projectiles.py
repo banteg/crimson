@@ -8,6 +8,7 @@ from syrupy import SnapshotAssertion
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import (
     ProjectileHit,
     ProjectilePool,
@@ -279,7 +280,7 @@ def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAsser
                 "damage": round(float(call.args[1]), 6),
                 "damage_type": int(call.args[2]),
                 "impulse": _normalize_vec2(call.args[3]),
-                "owner_id": int(call.args[4]),
+                "owner_id": int(call.args[4].to_legacy()),
             }
             for call in apply_damage.call_args_list
         ],
@@ -292,8 +293,8 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, 0.0), hp=20.0)]
     fx_queue = FxQueue()
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
-        _ = (damage_type, impulse, owner_id)
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef) -> None:
+        _ = (damage_type, impulse, owner)
         creatures[int(idx)].hp -= float(damage)
 
     on_kill = mocker.Mock()

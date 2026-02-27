@@ -138,7 +138,7 @@ def _rng_zero() -> int:
     return 0
 
 
-CreatureDamageApplier = Callable[[int, float, int, Vec2, int], None]
+CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
 SecondaryDetonationKillHandler = Callable[[int], None]
 
 

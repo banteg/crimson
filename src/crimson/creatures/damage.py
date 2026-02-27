@@ -9,7 +9,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 
 from ..effects_atlas import EffectId
-from ..owner_ref import OwnerLike, OwnerRef, owner_ref
+from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import PlayerState
@@ -172,7 +172,7 @@ def creature_apply_damage(
     damage_amount: float,
     damage_type: int,
     impulse: Vec2,
-    owner_id: OwnerLike,
+    owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
@@ -188,7 +188,6 @@ def creature_apply_damage(
     - `damage_type` is a native integer category; call sites must supply it.
     """
 
-    owner = owner_ref(owner_id)
     creature.last_hit_owner = owner
     creature.hit_flash_timer = 0.2
 
@@ -245,7 +244,7 @@ def creature_apply_damage_with_lethal_followup(
     damage_amount: float,
     damage_type: int,
     impulse: Vec2,
-    owner_id: OwnerLike,
+    owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
@@ -265,7 +264,7 @@ def creature_apply_damage_with_lethal_followup(
         damage_amount=float(damage_amount),
         damage_type=int(damage_type),
         impulse=impulse,
-        owner_id=owner_id,
+        owner=owner,
         dt=float(dt),
         players=players,
         rand=rand,

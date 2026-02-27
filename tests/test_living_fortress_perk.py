@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -23,7 +24,7 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
         damage_amount=10.0,
         damage_type=1,
         impulse=Vec2(),
-        owner_id=-100,
+        owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player0, player1],
         rand=lambda: 0,

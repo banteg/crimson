@@ -8,6 +8,7 @@ from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import ProjectileHit, ProjectileTypeId, ProjectileUpdateOptions, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -157,7 +158,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
     def _fake_projectile_update(*_args: object, options: ProjectileUpdateOptions, **_kwargs: object) -> list[ProjectileHit]:
         apply_creature_damage = options.apply_creature_damage
         assert apply_creature_damage is not None
-        apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
+        apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), OwnerRef.from_player(0))
         return []
 
     def _fake_particles_update(*_args: object, **_kwargs: object) -> None:
@@ -276,7 +277,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         options = cast("ProjectileUpdateOptions", kwargs.get("options"))
         apply_creature_damage = options.apply_creature_damage if options is not None else None
         if apply_creature_damage is not None:
-            apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), -1)
+            apply_creature_damage(0, 1000.0, int(ProjectileTypeId.PISTOL), Vec2(), OwnerRef.from_player(0))
         return []
 
     mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)

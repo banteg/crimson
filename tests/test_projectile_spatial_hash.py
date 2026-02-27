@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
+from crimson.owner_ref import OwnerRef
 from crimson.projectiles import SecondaryProjectilePool
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from grim.geom import Vec2
@@ -51,8 +52,8 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
 
     hit_indices: list[int] = []
 
-    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner_id: int) -> None:
-        _ = (damage, damage_type, impulse, owner_id)
+    def _apply(idx: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef) -> None:
+        _ = (damage, damage_type, impulse, owner)
         hit_indices.append(int(idx))
 
     pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)

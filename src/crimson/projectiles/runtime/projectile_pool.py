@@ -434,7 +434,7 @@ class ProjectilePool:
                                 float(damage_amount),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner,
+                                owner=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))
@@ -447,7 +447,7 @@ class ProjectilePool:
                                 float(remaining),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner,
+                                owner=proj.owner,
                                 apply_creature_damage=apply_creature_damage,
                             )
                             creature_spatial.sync_index(int(hit_idx))

@@ -7,6 +7,7 @@ from grim.geom import Vec2
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.spawn import CreatureFlags
 from ...effects import FxQueue
+from ...owner_ref import OwnerRef
 from ...sim.state_types import GameplayState, PlayerState
 from ..helpers import perk_active
 from ..ids import PerkId
@@ -65,7 +66,7 @@ def apply_final_revenge_on_player_death(
             damage_amount=damage,
             damage_type=CreatureDamageType.EXPLOSION,
             impulse=Vec2(),
-            owner_id=-1 - int(player.index),
+            owner=OwnerRef.from_player(int(player.index)),
             dt=float(dt),
             players=players,
             rand=rand,

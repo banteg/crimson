@@ -118,7 +118,7 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -141,7 +141,7 @@ def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -164,7 +164,7 @@ def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 damage,
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
-                owner_id=proj.owner,
+                owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
 
@@ -318,7 +318,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
             float(creature.hp) + 1.0,
             damage_type=CreatureDamageType.BULLET,
             impulse=Vec2(),
-            owner_id=hit.proj.owner,
+            owner=hit.proj.owner,
             apply_creature_damage=ctx.apply_creature_damage,
         )
     hit.proj.life_timer = 0.25
