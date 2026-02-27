@@ -23,7 +23,7 @@ def _spawn_type(
         players=players,
         pos=Vec2(100.0, 100.0),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=int(owner_id),
         owner_player_index=owner_player_index,
     )

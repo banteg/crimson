@@ -232,8 +232,8 @@ def _owner_to_player_index(owner: OwnerLike) -> int | None:
     return owner_ref(owner).player_index()
 
 
-def _travel_budget_for_type_id(type_id: int) -> float:
-    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
+def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
+    return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
 
 
 @dataclass(slots=True)
@@ -1223,7 +1223,7 @@ class CreaturePool:
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
-                        projectile_type = int(creature.orbit_radius)
+                        projectile_type = ProjectileTypeId(int(creature.orbit_radius))
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),

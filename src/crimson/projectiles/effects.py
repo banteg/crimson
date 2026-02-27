@@ -73,7 +73,7 @@ def _spawn_ion_hit_effects(
     effects: _EffectsLike | None,
     sfx_queue: MutableSequence[str] | None,
     *,
-    type_id: int,
+    type_id: ProjectileTypeId,
     pos: Vec2,
     rng: Callable[[], int],
     detail_preset: int,
@@ -84,15 +84,15 @@ def _spawn_ion_hit_effects(
     ring_scale = 0.0
     ring_strength = 0.0
     burst_scale = 0.0
-    if type_id == int(ProjectileTypeId.ION_MINIGUN):
+    if type_id == ProjectileTypeId.ION_MINIGUN:
         ring_scale = 1.5
         ring_strength = 0.1
         burst_scale = 0.8
-    elif type_id == int(ProjectileTypeId.ION_RIFLE):
+    elif type_id == ProjectileTypeId.ION_RIFLE:
         ring_scale = 1.2
         ring_strength = 0.4
         burst_scale = 1.2
-    elif type_id == int(ProjectileTypeId.ION_CANNON):
+    elif type_id == ProjectileTypeId.ION_CANNON:
         ring_scale = 1.0
         ring_strength = 1.0
         burst_scale = 2.2

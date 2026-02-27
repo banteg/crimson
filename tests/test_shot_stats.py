@@ -119,7 +119,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
         owner_player_index=1,
     )
@@ -139,7 +139,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=-2,
     )
 
@@ -157,7 +157,7 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
         owner_player_index=0,
     )
@@ -178,7 +178,7 @@ def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on(
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=ProjectileTypeId.PISTOL,
         owner_id=-100,
         owner_player_index=0,
     )

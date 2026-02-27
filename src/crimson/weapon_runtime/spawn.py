@@ -33,8 +33,8 @@ def owner_id_for_player_projectiles(state: GameplayState, player_index: int) -> 
     return owner_ref_for_player_projectiles(state, player_index).to_legacy()
 
 
-def travel_budget_for_type_id(type_id: int) -> float:
-    return float(cast(int, WEAPON_BY_ID[int(type_id)].travel_budget))
+def travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
+    return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
 
 
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
@@ -112,13 +112,12 @@ def projectile_spawn(
     players: list[PlayerState] | None,
     pos: Vec2,
     angle: float,
-    type_id: int,
+    type_id: ProjectileTypeId,
     owner_id: OwnerLike,
     owner_player_index: int | None = None,
     hits_players: bool = False,
 ) -> int:
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
-    type_id = int(type_id)
     owner = owner_ref(owner_id)
     if (not state.bonus_spawn_guard) and owner.is_player():
         while True:
@@ -131,7 +130,7 @@ def projectile_spawn(
             state.shots_fired_total += 1
             if player_index is not None:
                 state.shots_fired[player_index] += 1
-            if type_id == int(ProjectileTypeId.FIRE_BULLETS):
+            if type_id == ProjectileTypeId.FIRE_BULLETS:
                 break
             if not _fire_bullets_active(
                 players,
@@ -140,13 +139,13 @@ def projectile_spawn(
                 owner_player_index=owner_player_index,
             ):
                 break
-            type_id = int(ProjectileTypeId.FIRE_BULLETS)
+            type_id = ProjectileTypeId.FIRE_BULLETS
 
     meta = travel_budget_for_type_id(type_id)
     return state.projectiles.spawn(
         pos=pos,
         angle=float(angle),
-        type_id=int(type_id),
+        type_id=type_id,
         owner_id=owner,
         travel_budget=float(meta),
         hits_players=bool(hits_players),
@@ -159,7 +158,7 @@ def spawn_projectile_ring(
     *,
     count: int,
     angle_offset: float,
-    type_id: int,
+    type_id: ProjectileTypeId,
     owner_id: OwnerLike,
     owner_player_index: int | None = None,
     players: list[PlayerState] | None = None,
@@ -173,7 +172,7 @@ def spawn_projectile_ring(
             players=players,
             pos=origin.pos,
             angle=float(idx) * step + float(angle_offset),
-            type_id=int(type_id),
+            type_id=type_id,
             owner_id=owner_id,
             owner_player_index=owner_player_index,
         )

@@ -46,7 +46,7 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         players=ctx.players,
         pos=origin,
         angle=angle,
-        type_id=int(ProjectileTypeId.ION_RIFLE),
+        type_id=ProjectileTypeId.ION_RIFLE,
         owner_id=int(owner_id),
         owner_player_index=ctx.player.index,
     )

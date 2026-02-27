@@ -138,7 +138,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "rocket_no_splash_type_0x0b",
-            "type_id": 0x0B,
+            "type_id": ProjectileTypeId.PLASMA_MINIGUN,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -149,7 +149,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "ion_minigun_linger",
-            "type_id": 0x16,
+            "type_id": ProjectileTypeId.ION_MINIGUN,
             "travel_budget": 20.0,
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
@@ -165,7 +165,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         idx = pool.spawn(
             pos=Vec2(),
             angle=math.pi / 2.0,
-            type_id=int(case["type_id"]),
+            type_id=ProjectileTypeId(int(case["type_id"])),
             owner_id=-100,
             travel_budget=float(case["travel_budget"]),
         )
@@ -197,12 +197,12 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
 
 def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = ProjectilePool(size=1)
-    idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=4, owner_id=-100)
+    idx = pool.spawn(pos=Vec2(), angle=math.pi / 2.0, type_id=ProjectileTypeId.ASSAULT_RIFLE, owner_id=-100)
     pool.update_demo(
         0.1,
         [],
         world_size=1024.0,
-        speed_by_type={4: 100.0},
+        speed_by_type={int(ProjectileTypeId.ASSAULT_RIFLE): 100.0},
         damage_by_type={},
     )
 

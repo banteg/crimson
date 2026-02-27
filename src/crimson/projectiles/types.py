@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, MutableSequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Protocol, SupportsInt
+from typing import Protocol
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -132,8 +132,6 @@ class SecondaryProjectileTypeId(IntEnum):
 
 
 _CREATURE_LIFECYCLE_ALIVE = CREATURE_LIFECYCLE_ALIVE
-ProjectileTypeLike = ProjectileTypeId | SupportsInt
-SecondaryProjectileTypeLike = SecondaryProjectileTypeId | SupportsInt
 
 
 def _rng_zero() -> int:
@@ -211,13 +209,11 @@ __all__ = [
     "Projectile",
     "ProjectileHit",
     "ProjectileRuntimeState",
-    "ProjectileTypeLike",
     "ProjectileTypeId",
     "OwnerRef",
     "SecondaryDetonationKillHandler",
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
-    "SecondaryProjectileTypeLike",
     "SecondaryProjectileTypeId",
     "_CREATURE_LIFECYCLE_ALIVE",
     "_EffectsLike",

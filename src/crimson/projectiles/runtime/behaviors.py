@@ -203,7 +203,7 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
     _spawn_ion_hit_effects(
         ctx.effects,
         ctx.sfx_queue,
-        type_id=int(hit.proj.type_id),
+        type_id=ProjectileTypeId(hit.proj.type_id),
         pos=hit.proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
@@ -250,7 +250,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                 proj_id = ctx.pool.spawn(
                     pos=origin_pos,
                     angle=angle,
-                    type_id=int(hit.proj.type_id),
+                    type_id=ProjectileTypeId(hit.proj.type_id),
                     owner_id=OwnerRef.from_creature(hit_creature),
                     travel_budget=hit.proj.travel_budget,
                 )
