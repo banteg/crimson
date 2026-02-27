@@ -6,6 +6,7 @@ from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..creatures.spawn import (
+    SpawnId,
     SpawnTemplateCall,
     build_tutorial_stage3_fire_spawns,
     build_tutorial_stage4_clear_spawns,
@@ -61,7 +62,7 @@ class TutorialState:
 
 @dataclass(frozen=True, slots=True)
 class BonusSpawnCall:
-    bonus_id: int
+    bonus_id: BonusId
     amount: int
     pos: Vec2
 
@@ -74,13 +75,13 @@ class TutorialFrameActions:
     hint_alpha: float = 0.0
     spawn_templates: tuple[SpawnTemplateCall, ...] = ()
     spawn_bonuses: tuple[BonusSpawnCall, ...] = ()
-    stage5_bonus_carrier_drop: tuple[int, int] | None = None
+    stage5_bonus_carrier_drop: tuple[BonusId, int] | None = None
     play_levelup_sfx: bool = False
     force_player_health: float = 100.0
     force_player_experience: int | None = None
 
 
-def tutorial_stage5_bonus_carrier_config(repeat_spawn_count: int) -> tuple[int, int] | None:
+def tutorial_stage5_bonus_carrier_config(repeat_spawn_count: int) -> tuple[BonusId, int] | None:
     """Return the (bonus_id, amount_override) applied to the stage-5 bonus carrier for this repeat count.
 
     This reproduces the packed bonus-arg writes to `tutorial_hint_bonus_ptr` in `tutorial_timeline_update`.
@@ -90,15 +91,15 @@ def tutorial_stage5_bonus_carrier_config(repeat_spawn_count: int) -> tuple[int, 
     """
     n = int(repeat_spawn_count)
     if n == 1:
-        return int(BonusId.SPEED), -1
+        return BonusId.SPEED, -1
     if n == 2:
-        return int(BonusId.WEAPON), 5
+        return BonusId.WEAPON, 5
     if n == 3:
-        return int(BonusId.DOUBLE_EXPERIENCE), -1
+        return BonusId.DOUBLE_EXPERIENCE, -1
     if n == 4:
-        return int(BonusId.NUKE), -1
+        return BonusId.NUKE, -1
     if n == 5:
-        return int(BonusId.REFLEX_BOOST), -1
+        return BonusId.REFLEX_BOOST, -1
     return None
 
 
@@ -169,8 +170,12 @@ def _tick_hint(
         state.hint_index = int(state.hint_index) + 1
         hint_spawns.extend(
             (
-                SpawnTemplateCall(template_id=0x24, pos=Vec2(128.0, 128.0), heading=3.1415927),
-                SpawnTemplateCall(template_id=0x26, pos=Vec2(152.0, 160.0), heading=3.1415927),
+                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(128.0, 128.0), heading=3.1415927),
+                SpawnTemplateCall(
+                    template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    pos=Vec2(152.0, 160.0),
+                    heading=3.1415927,
+                ),
             ),
         )
 
@@ -241,7 +246,7 @@ def tick_tutorial_timeline(
     spawn_templates: list[SpawnTemplateCall] = list(actions.spawn_templates)
     spawn_bonuses: list[BonusSpawnCall] = []
     play_levelup_sfx = False
-    stage5_bonus_carrier_drop: tuple[int, int] | None = None
+    stage5_bonus_carrier_drop: tuple[BonusId, int] | None = None
     force_experience = actions.force_player_experience
 
     if stage_index == 0:
@@ -256,9 +261,9 @@ def tick_tutorial_timeline(
             play_levelup_sfx = True
             spawn_bonuses.extend(
                 (
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(260.0, 260.0)),
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=1000, pos=Vec2(600.0, 400.0)),
-                    BonusSpawnCall(bonus_id=int(BonusId.POINTS), amount=500, pos=Vec2(300.0, 400.0)),
+                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=500, pos=Vec2(260.0, 260.0)),
+                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=1000, pos=Vec2(600.0, 400.0)),
+                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=500, pos=Vec2(300.0, 400.0)),
                 ),
             )
     elif stage_index == 2:

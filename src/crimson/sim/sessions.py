@@ -91,7 +91,7 @@ class SurvivalDeterministicSession:
             self.stage = stage
             for call in milestone_calls:
                 self.world.creatures.spawn_template(
-                    int(call.template_id),
+                    call.template_id,
                     call.pos,
                     float(call.heading),
                     state.rng,
@@ -350,7 +350,7 @@ class QuestDeterministicSession:
             state.time_scale_active = False
         for call in spawns:
             self.world.creatures.spawn_template(
-                int(call.template_id),
+                call.template_id,
                 call.pos,
                 float(call.heading),
                 state.rng,

@@ -3,15 +3,33 @@ from __future__ import annotations
 import pytest
 from syrupy import SnapshotAssertion
 
-from crimson.creatures.spawn import SPAWN_TEMPLATES, SpawnEnv, build_spawn_plan
+from crimson.creatures.spawn import SPAWN_TEMPLATES, SpawnEnv, SpawnId, build_spawn_plan
 from grim.geom import Vec2
 from grim.rand import Crand
 
-_TEMPLATE_IDS = tuple(sorted(int(entry.spawn_id) for entry in SPAWN_TEMPLATES))
+_TEMPLATE_IDS = tuple(sorted(entry.spawn_id for entry in SPAWN_TEMPLATES))
 _VARIANT_CASES = (
-    ("demo_disabled", 0xBEEF, 0.0, {"demo_mode_active": False}, (0x00, 0x03, 0x1F)),
-    ("hardcore", 0x1234, 0.0, {"hardcore": True}, (0x00, 0x15, 0x41)),
-    ("alt_difficulty", 0x5555, -100.0, {"difficulty_level": 1}, (0x03, 0x04, 0x05)),
+    (
+        "demo_disabled",
+        0xBEEF,
+        0.0,
+        {"demo_mode_active": False},
+        (SpawnId.ZOMBIE_BOSS_SPAWNER_00, SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.ALIEN_RANDOM_1F),
+    ),
+    (
+        "hardcore",
+        0x1234,
+        0.0,
+        {"hardcore": True},
+        (SpawnId.ZOMBIE_BOSS_SPAWNER_00, SpawnId.FORMATION_GRID_ALIEN_WHITE_15, SpawnId.ZOMBIE_RANDOM_41),
+    ),
+    (
+        "alt_difficulty",
+        0x5555,
+        -100.0,
+        {"difficulty_level": 1},
+        (SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.LIZARD_RANDOM_04, SpawnId.SPIDER_SP2_RANDOM_05),
+    ),
 )
 _VARIANT_TEMPLATE_CASES = tuple(
     pytest.param(
@@ -19,7 +37,7 @@ _VARIANT_TEMPLATE_CASES = tuple(
         seed,
         heading,
         env_overrides,
-        int(template_id),
+        template_id,
         id=f"{case_name}_template_{int(template_id):02x}",
     )
     for case_name, seed, heading, env_overrides, template_ids in _VARIANT_CASES
@@ -34,14 +52,14 @@ def _round_or_none(value: float | None) -> float | None:
 
 
 def _normalize_plan(
-    template_id: int,
+    template_id: SpawnId,
     *,
     env: SpawnEnv,
     seed: int,
     heading: float,
 ) -> dict[str, object]:
     rng = Crand(int(seed))
-    plan = build_spawn_plan(int(template_id), Vec2(100.0, 200.0), float(heading), rng, env)
+    plan = build_spawn_plan(template_id, Vec2(100.0, 200.0), float(heading), rng, env)
     return {
         "template_id": int(template_id),
         "seed": int(seed),
@@ -104,16 +122,16 @@ def _normalize_plan(
 
 @pytest.mark.parametrize(
     "template_id",
-    [pytest.param(int(template_id), id=f"default_template_{int(template_id):02x}") for template_id in _TEMPLATE_IDS],
+    [pytest.param(template_id, id=f"default_template_{int(template_id):02x}") for template_id in _TEMPLATE_IDS],
 )
 def test_spawn_plan_templates_snapshot(
     snapshot: SnapshotAssertion,
     default_spawn_env: SpawnEnv,
-    template_id: int,
+    template_id: SpawnId,
 ) -> None:
     snapshot(name=f"default_template_{template_id:02x}").assert_match(
         _normalize_plan(
-            int(template_id),
+            template_id,
             env=default_spawn_env,
             seed=0xBEEF,
             heading=0.0,
@@ -132,12 +150,12 @@ def test_spawn_plan_variant_snapshot(
     seed: int,
     heading: float,
     env_overrides: dict[str, object],
-    template_id: int,
+    template_id: SpawnId,
 ) -> None:
     env = make_spawn_env(**env_overrides)
     snapshot(name=f"{case_name}_template_{template_id:02x}").assert_match(
         _normalize_plan(
-            int(template_id),
+            template_id,
             env=env,
             seed=int(seed),
             heading=float(heading),
@@ -146,9 +164,9 @@ def test_spawn_plan_variant_snapshot(
 
 
 def test_spawn_plan_seed_stability(default_spawn_env: SpawnEnv) -> None:
-    baseline = _normalize_plan(0x1F, env=default_spawn_env, seed=0xBEEF, heading=0.0)
-    repeat = _normalize_plan(0x1F, env=default_spawn_env, seed=0xBEEF, heading=0.0)
-    changed_seed = _normalize_plan(0x1F, env=default_spawn_env, seed=0xBEEE, heading=0.0)
+    baseline = _normalize_plan(SpawnId.ALIEN_RANDOM_1F, env=default_spawn_env, seed=0xBEEF, heading=0.0)
+    repeat = _normalize_plan(SpawnId.ALIEN_RANDOM_1F, env=default_spawn_env, seed=0xBEEF, heading=0.0)
+    changed_seed = _normalize_plan(SpawnId.ALIEN_RANDOM_1F, env=default_spawn_env, seed=0xBEEE, heading=0.0)
 
     assert baseline == repeat
     assert baseline != changed_seed

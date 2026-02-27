@@ -12,7 +12,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.POINTS), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.POINTS, state=world.state)
     assert entry is not None
 
     assert not world.state.effects.iter_active()
@@ -29,7 +29,7 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.FREEZE), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.FREEZE, state=world.state)
     assert entry is not None
     entry.time_left = 0.01
     world.state.bonuses.freeze = 0.0

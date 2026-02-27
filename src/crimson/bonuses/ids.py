@@ -172,8 +172,8 @@ BONUS_BY_ID = {int(entry.bonus_id): entry for entry in BONUS_TABLE}
 
 _BONUS_FIXED_NAMES: dict[int, str] = {}
 _BONUS_FIXED_DESCRIPTIONS = {
-    int(BonusId.WEAPON_POWER_UP): "Your fire rate and load time increase for a short period.",
-    int(BonusId.FIRE_BULLETS): "For a few seconds -- make them count.",
+    BonusId.WEAPON_POWER_UP: "Your fire rate and load time increase for a short period.",
+    BonusId.FIRE_BULLETS: "For a few seconds -- make them count.",
 }
 
 def bonus_display_name(bonus_id: int, *, preserve_bugs: bool = False) -> str:

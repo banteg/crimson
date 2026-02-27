@@ -23,19 +23,19 @@ if TYPE_CHECKING:
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 _NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
-    int(WeaponId.PISTOL): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    int(WeaponId.ASSAULT_RIFLE): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    int(WeaponId.SHOTGUN): ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
-    int(WeaponId.SAWED_OFF_SHOTGUN): ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
-    int(WeaponId.SUBMACHINE_GUN): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    int(WeaponId.GAUSS_GUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
-    int(WeaponId.ROCKET_LAUNCHER): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
-    int(WeaponId.SEEKER_ROCKETS): ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
-    int(WeaponId.MINI_ROCKET_SWARMERS): ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
-    int(WeaponId.ROCKET_MINIGUN): ((25.0, 1.0, 0.34),),
-    int(WeaponId.JACKHAMMER): ((15.0, 2.0, 0.223),),
-    int(WeaponId.SHRINKIFIER_5K): ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    int(WeaponId.GAUSS_SHOTGUN): ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+    WeaponId.PISTOL: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    WeaponId.ASSAULT_RIFLE: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    WeaponId.SHOTGUN: ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
+    WeaponId.SAWED_OFF_SHOTGUN: ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
+    WeaponId.SUBMACHINE_GUN: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    WeaponId.GAUSS_GUN: ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
+    WeaponId.ROCKET_LAUNCHER: ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    WeaponId.SEEKER_ROCKETS: ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
+    WeaponId.MINI_ROCKET_SWARMERS: ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
+    WeaponId.ROCKET_MINIGUN: ((25.0, 1.0, 0.34),),
+    WeaponId.JACKHAMMER: ((15.0, 2.0, 0.223),),
+    WeaponId.SHRINKIFIER_5K: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
+    WeaponId.GAUSS_SHOTGUN: ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
 }
 
 _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import cast
 
 import crimson.creatures.runtime as creature_runtime
+from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import (
@@ -13,6 +14,7 @@ from crimson.creatures.spawn import (
     CreatureInit,
     CreatureTypeId,
     SpawnEnv,
+    SpawnId,
     SpawnSlotInit,
     build_spawn_plan,
 )
@@ -37,7 +39,7 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x13, Vec2(100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Occupy a few pool slots so plan-local indices do not equal pool indices.
@@ -65,7 +67,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
         hardcore=False,
         difficulty_level=0,
     )
-    plan = build_spawn_plan(0x00, Vec2(100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
 
     pool = CreaturePool()
     # Seed an existing spawn slot so the plan slot id (0) must be remapped.
@@ -78,7 +80,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
             count=0,
             limit=0,
             interval=1.0,
-            child_template_id=0,
+            child_template_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
         ),
     )
 
@@ -106,7 +108,7 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     state = GameplayState(rng=rng)
     pool = CreaturePool(env=env, effects=state.effects)
 
-    plan = build_spawn_plan(1, Vec2(100.0, 200.0), 0.0, rng, env)
+    plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, rng, env)
     pool.spawn_plan(plan, rand=rng.rand, detail_preset=5)
 
     active = state.effects.iter_active()
@@ -161,7 +163,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
             count=0,
             limit=1,
             interval=1.0,
-            child_template_id=0x1D,
+            child_template_id=SpawnId.ALIEN_RANDOM_1D,
         ),
     )
 
@@ -180,7 +182,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     child_template_id = int(build_spawn_plan.call_args.args[0])
     heading = float(build_spawn_plan.call_args.args[2])
     env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
-    assert child_template_id == 0x1D
+    assert child_template_id == int(SpawnId.ALIEN_RANDOM_1D)
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
     assert env_arg is env
     spawn_plan.assert_called_once()
@@ -216,7 +218,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
             count=0,
             limit=1,
             interval=1.0,
-            child_template_id=0x1D,
+            child_template_id=SpawnId.ALIEN_RANDOM_1D,
         ),
     )
 
@@ -257,7 +259,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
             count=0,
             limit=1,
             interval=1.0,
-            child_template_id=0x29,
+            child_template_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
         ),
     )
 
@@ -680,7 +682,7 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = 1
+    creature.bonus_id = BonusId.POINTS
     creature.bonus_duration_override = 5
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
@@ -722,7 +724,7 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = 1
+    creature.bonus_id = BonusId.POINTS
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 0.0
 
@@ -891,7 +893,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
     creature = pool.entries[0]
     creature.active = False
     creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = 1
+    creature.bonus_id = BonusId.POINTS
     creature.bonus_duration_override = 5
     creature.hp = -1.0
     creature.pos = Vec2(100.0, 100.0)
@@ -933,7 +935,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
     creature = pool.entries[0]
     creature.active = False
     creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = 1
+    creature.bonus_id = BonusId.POINTS
     creature.bonus_duration_override = 5
     creature.hp = -1.0
     creature.pos = Vec2(100.0, 100.0)

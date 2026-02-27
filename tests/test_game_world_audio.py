@@ -135,7 +135,7 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.POINTS), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.POINTS, state=world.state)
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -153,7 +153,11 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     world.audio_rng = random.Random(0)
 
     player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=int(BonusId.FIREBLAST), state=world.state)
+    entry = world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=BonusId.FIREBLAST,
+        state=world.state,
+    )
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)

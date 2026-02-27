@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.creatures.spawn import SpawnSlotInit, tick_spawn_slot
+from crimson.creatures.spawn import SpawnId, SpawnSlotInit, tick_spawn_slot
 from crimson.math_parity import f32
 from tests.helpers import assert_float_close
 
@@ -11,9 +11,9 @@ from tests.helpers import assert_float_close
     ("timer", "count", "dt", "expected_spawn", "expected_count"),
     [
         (1.0, 0, 0.3, None, 0),
-        (0.1, 0, 0.3, 0x41, 1),
+        (0.1, 0, 0.3, SpawnId.ZOMBIE_RANDOM_41, 1),
         (0.1, 10, 0.3, None, 10),
-        (0.1, 0, 2.0, 0x41, 1),
+        (0.1, 0, 2.0, SpawnId.ZOMBIE_RANDOM_41, 1),
     ],
     ids=["no-trigger", "triggers-and-increments", "resets-at-limit", "does-not-loop-large-dt"],
 )
@@ -21,7 +21,7 @@ def test_tick_spawn_slot_behavior(
     timer: float,
     count: int,
     dt: float,
-    expected_spawn: int | None,
+    expected_spawn: SpawnId | None,
     expected_count: int,
 ) -> None:
     slot = SpawnSlotInit(
@@ -30,7 +30,7 @@ def test_tick_spawn_slot_behavior(
         count=count,
         limit=10,
         interval=0.7,
-        child_template_id=0x41,
+        child_template_id=SpawnId.ZOMBIE_RANDOM_41,
     )
 
     assert tick_spawn_slot(slot, dt) == expected_spawn
@@ -48,7 +48,7 @@ def test_tick_spawn_slot_uses_float32_cadence_at_boundary() -> None:
         count=0,
         limit=10,
         interval=2.4,
-        child_template_id=0x41,
+        child_template_id=SpawnId.ZOMBIE_RANDOM_41,
     )
 
     spawn_ticks: list[int] = []

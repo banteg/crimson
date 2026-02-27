@@ -17,7 +17,6 @@ See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import SupportsInt
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -74,7 +73,7 @@ class AlienSpawnerSpec:
     timer: float
     limit: int
     interval: float
-    child_template_id: int
+    child_template_id: SpawnId
     size: float
     health: float
     move_speed: float
@@ -82,7 +81,7 @@ class AlienSpawnerSpec:
     tint: TintRGBA
 
 
-ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
+ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
     SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07: AlienSpawnerSpec(
         timer=1.0,
         limit=100,
@@ -230,7 +229,7 @@ class RingFormationSpec:
     set_parent_max_health: bool = True
 
 
-CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
+CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
     SpawnId.SPIDER_SP2_SPLITTER_01: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP2,
         health=400.0,
@@ -470,7 +469,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
     ),
 }
 
-GRID_FORMATIONS: dict[int, GridFormationSpec] = {
+GRID_FORMATIONS: dict[SpawnId, GridFormationSpec] = {
     SpawnId.FORMATION_GRID_ALIEN_GREEN_14: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.ALIEN,
@@ -597,7 +596,7 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
     ),
 }
 
-RING_FORMATIONS: dict[int, RingFormationSpec] = {
+RING_FORMATIONS: dict[SpawnId, RingFormationSpec] = {
     SpawnId.FORMATION_RING_ALIEN_8_12: RingFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.ALIEN,
@@ -650,8 +649,8 @@ RING_FORMATIONS: dict[int, RingFormationSpec] = {
 }
 
 
-def spawn_id_label(spawn_id: SupportsInt) -> str:
-    entry = SPAWN_ID_TO_TEMPLATE.get(int(spawn_id))
+def spawn_id_label(spawn_id: SpawnId) -> str:
+    entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
     if entry is None or entry.creature is None:
         return "unknown"
     return entry.creature
@@ -728,7 +727,7 @@ class SpawnSlotInit:
     count: int
     limit: int
     interval: float
-    child_template_id: int
+    child_template_id: SpawnId
 
 
 @dataclass(frozen=True, slots=True)
@@ -746,7 +745,7 @@ def add_spawn_slot(
     timer: float,
     limit: int,
     interval: float,
-    child_template_id: int,
+    child_template_id: SpawnId,
 ) -> int:
     slot_idx = len(spawn_slots)
     spawn_slots.append(
@@ -848,7 +847,7 @@ def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: floa
 
 def spawn_ring_children(
     creatures: list[CreatureInit],
-    template_id: int,
+    template_id: SpawnId,
     pos: Vec2,
     rng: CrandLike,
     *,
@@ -882,7 +881,7 @@ def spawn_ring_children(
 
 def spawn_grid_children(
     creatures: list[CreatureInit],
-    template_id: int,
+    template_id: SpawnId,
     pos: Vec2,
     rng: CrandLike,
     *,
@@ -908,7 +907,7 @@ def spawn_grid_children(
 
 def spawn_chain_children(
     creatures: list[CreatureInit],
-    template_id: int,
+    template_id: SpawnId,
     pos: Vec2,
     rng: CrandLike,
     *,
@@ -932,7 +931,7 @@ def spawn_chain_children(
 
 @dataclass(slots=True)
 class PlanBuilder:
-    template_id: int
+    template_id: SpawnId
     pos: Vec2
     rng: CrandLike
     env: SpawnEnv
@@ -944,7 +943,7 @@ class PlanBuilder:
     @classmethod
     def start(
         cls,
-        template_id: int,
+        template_id: SpawnId,
         pos: Vec2,
         heading: float,
         rng: CrandLike,
@@ -978,14 +977,14 @@ class PlanBuilder:
     def base(self) -> CreatureInit:
         return self.creatures[0]
 
-    def add_slot(self, *, owner: int, timer: float, limit: int, interval: float, child: SupportsInt) -> int:
+    def add_slot(self, *, owner: int, timer: float, limit: int, interval: float, child: SpawnId) -> int:
         return add_spawn_slot(
             self.spawn_slots,
             owner_creature=owner,
             timer=timer,
             limit=limit,
             interval=interval,
-            child_template_id=int(child),
+            child_template_id=child,
         )
 
     def ring_children(self, **kwargs) -> int:
@@ -1034,19 +1033,19 @@ class PlanBuilder:
 
 
 TemplateFn = Callable[[PlanBuilder], None]
-TEMPLATE_BUILDERS: dict[int, TemplateFn] = {}
+TEMPLATE_BUILDERS: dict[SpawnId, TemplateFn] = {}
 
 
-def register_template(*template_ids: SupportsInt) -> Callable[[TemplateFn], TemplateFn]:
+def register_template(*template_ids: SpawnId) -> Callable[[TemplateFn], TemplateFn]:
     def decorator(fn: TemplateFn) -> TemplateFn:
         for template_id in template_ids:
-            TEMPLATE_BUILDERS[int(template_id)] = fn
+            TEMPLATE_BUILDERS[template_id] = fn
         return fn
 
     return decorator
 
 
-def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
+def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> SpawnId | None:
     """Advance a spawn slot timer by `frame_dt`, returning a spawned template id if triggered.
 
     Modeled after `creature_update_all`'s spawn-slot tick:
@@ -1308,7 +1307,7 @@ def tick_survival_wave_spawns(
 
 @dataclass(frozen=True, slots=True)
 class SpawnTemplateCall:
-    template_id: int
+    template_id: SpawnId
     pos: Vec2
     heading: float
 
@@ -1656,7 +1655,7 @@ def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
 
 
 def apply_tail(
-    template_id: int,
+    template_id: SpawnId,
     plan_creatures: list[CreatureInit],
     plan_spawn_slots: list[SpawnSlotInit],
     plan_effects: list[BurstEffect],
@@ -1839,7 +1838,7 @@ def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     c.contact_damage = 50.0
 
 
-BASIC_RANDOM_TYPE_IDS: dict[int, CreatureTypeId] = {
+BASIC_RANDOM_TYPE_IDS: dict[SpawnId, CreatureTypeId] = {
     SpawnId.SPIDER_SP1_RANDOM_03: CreatureTypeId.SPIDER_SP1,
     SpawnId.SPIDER_SP2_RANDOM_05: CreatureTypeId.SPIDER_SP2,
     SpawnId.ALIEN_RANDOM_06: CreatureTypeId.ALIEN,
@@ -1992,7 +1991,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-AI1_BLUE_TINT_TEMPLATES: dict[int, tuple[CreatureTypeId, float]] = {
+AI1_BLUE_TINT_TEMPLATES: dict[SpawnId, tuple[CreatureTypeId, float]] = {
     SpawnId.AI1_ALIEN_BLUE_TINT_1A: (CreatureTypeId.ALIEN, 50.0),
     SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B: (CreatureTypeId.SPIDER_SP1, 40.0),
     SpawnId.AI1_LIZARD_BLUE_TINT_1C: (CreatureTypeId.LIZARD, 50.0),
@@ -2245,7 +2244,7 @@ def template_41_zombie_random(ctx: PlanBuilder) -> None:
 
 
 def build_spawn_plan(
-    template_id: SupportsInt,
+    template_id: SpawnId,
     pos: Vec2,
     heading: float,
     rng: CrandLike,
@@ -2258,7 +2257,6 @@ def build_spawn_plan(
       - any spawn-slot configurations (deferred child spawns)
       - side-effects like burst FX
     """
-    template_id = int(template_id)
     ctx, final_heading = PlanBuilder.start(template_id, pos, heading, rng, env)
 
     if builder := TEMPLATE_BUILDERS.get(template_id):
@@ -2272,6 +2270,6 @@ def build_spawn_plan(
     elif spec := CONSTANT_SPAWN_TEMPLATES.get(template_id):
         apply_constant_spawn(ctx, spec)
     else:
-        raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
+        raise NotImplementedError(f"spawn plan not implemented for template_id=0x{int(template_id):x}")
 
     return ctx.finish(final_heading)

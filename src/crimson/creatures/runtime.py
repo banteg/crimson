@@ -19,6 +19,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
+from ..bonuses import BonusId
 from ..effects import FxQueue, FxQueueRotated
 from ..gameplay import (
     award_experience,
@@ -58,6 +59,7 @@ from .spawn import (
     CreatureInit,
     CreatureTypeId,
     SpawnEnv,
+    SpawnId,
     SpawnPlan,
     SpawnSlotInit,
     build_spawn_plan,
@@ -285,7 +287,7 @@ class CreatureState:
 
     # Rewrite-only helpers (not in native struct, but derived from spawn plans).
     spawn_slot_index: int | None = None
-    bonus_id: int | None = None
+    bonus_id: BonusId | None = None
     bonus_duration_override: int | None = None
 
     @property
@@ -791,7 +793,7 @@ class CreaturePool:
                     count=int(slot.count),
                     limit=int(slot.limit),
                     interval=float(slot.interval),
-                    child_template_id=int(slot.child_template_id),
+                    child_template_id=slot.child_template_id,
                 ),
             )
             slot_mapping.append(len(self.spawn_slots) - 1)
@@ -849,7 +851,12 @@ class CreaturePool:
         spawn_env = env or self.env
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
-        plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
+        template_raw = int(template_id)
+        try:
+            template = SpawnId(template_raw)
+        except ValueError as exc:
+            raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_raw:x}") from exc
+        plan = build_spawn_plan(template, pos, heading, rng, spawn_env)
         return self.spawn_plan(
             plan,
             rand=rng.rand if rand is None else rand,
@@ -1278,7 +1285,7 @@ class CreaturePool:
                         child_template_id = tick_spawn_slot(slot, dt)
                         if child_template_id is not None:
                             plan = build_spawn_plan(
-                                int(child_template_id),
+                                child_template_id,
                                 creature.pos,
                                 float(RANDOM_HEADING_SENTINEL),
                                 state.rng,
@@ -1315,7 +1322,7 @@ class CreaturePool:
         if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
-                bonus_id=int(creature.bonus_id),
+                bonus_id=creature.bonus_id,
                 duration_override=int(creature.bonus_duration_override) if creature.bonus_duration_override is not None else -1,
                 state=state,
                 world_width=world_width,
@@ -1427,7 +1434,7 @@ class CreaturePool:
         entry.spawn_slot_index = None
         entry.attack_cooldown = 0.0
 
-        entry.bonus_id = int(init.bonus_id) if init.bonus_id is not None else None
+        entry.bonus_id = init.bonus_id
         entry.bonus_duration_override = (
             int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
         )

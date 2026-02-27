@@ -37,8 +37,8 @@ def _apply_freeze_hook(state: GameplayState, pickup: BonusPickupEvent, detail_pr
 
 
 _BONUS_PICKUP_HOOKS: dict[int, BonusPickupFxHook] = {
-    int(BonusId.REFLEX_BOOST): _apply_reflex_boost_hook,
-    int(BonusId.FREEZE): _apply_freeze_hook,
+    BonusId.REFLEX_BOOST: _apply_reflex_boost_hook,
+    BonusId.FREEZE: _apply_freeze_hook,
 }
 
 

@@ -58,8 +58,8 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
 # native amount domain (see docs/rewrite/original-bugs.md).
 _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[int, int] = {
     # Native default amount stored for Double Experience drops is 1.
-    int(BonusId.DOUBLE_EXPERIENCE): 1,
-    int(BonusId.FIRE_BULLETS): 4,
+    BonusId.DOUBLE_EXPERIENCE: 1,
+    BonusId.FIRE_BULLETS: 4,
 }
 
 
@@ -129,7 +129,7 @@ class BonusPool:
     def spawn_at(
         self,
         pos: Vec2,
-        bonus_id: int | BonusId,
+        bonus_id: BonusId,
         duration_override: int = -1,
         *,
         state: GameplayState,
@@ -138,7 +138,7 @@ class BonusPool:
     ) -> BonusEntry | None:
         if int(state.game_mode) == int(GameMode.RUSH):
             return None
-        if int(bonus_id) == 0:
+        if bonus_id == BonusId.UNUSED:
             return None
         entry = self._alloc_slot()
         if entry is None:

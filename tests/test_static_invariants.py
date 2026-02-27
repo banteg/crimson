@@ -31,7 +31,7 @@ def test_weapon_table_invariants() -> None:
 
 
 def test_spawn_template_child_references_exist() -> None:
-    template_ids = {int(entry.spawn_id) for entry in SPAWN_TEMPLATES}
+    template_ids = {entry.spawn_id for entry in SPAWN_TEMPLATES}
     env = SpawnEnv(
         terrain_width=1024.0,
         terrain_height=1024.0,
@@ -40,10 +40,10 @@ def test_spawn_template_child_references_exist() -> None:
         difficulty_level=0,
     )
 
-    child_template_ids: set[int] = set()
+    child_template_ids: set[SpawnId] = set()
     for template_id in template_ids:
         plan = build_spawn_plan(template_id, Vec2(512.0, 512.0), 0.0, Crand(0xBEEF), env)
-        child_template_ids.update(int(slot.child_template_id) for slot in plan.spawn_slots)
+        child_template_ids.update(slot.child_template_id for slot in plan.spawn_slots)
 
     assert child_template_ids <= template_ids
 

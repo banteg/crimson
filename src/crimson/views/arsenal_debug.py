@@ -186,7 +186,7 @@ class ArsenalDebugView:
         bonus_pool = self._world.state.bonus_pool
         bonus_pool.reset()
 
-        bonus_ids = [int(entry.bonus_id) for entry in BONUS_TABLE if int(entry.bonus_id) != int(BonusId.UNUSED)]
+        bonus_ids = [entry.bonus_id for entry in BONUS_TABLE if entry.bonus_id != BonusId.UNUSED]
         count = max(1, len(bonus_ids))
 
         player_pos = player.pos
@@ -198,7 +198,7 @@ class ArsenalDebugView:
             pos = player_pos + Vec2.from_angle(angle) * float(ARSENAL_BONUS_RING_RADIUS)
 
             amount_override = -1
-            if bonus_id == int(BonusId.WEAPON) and self._weapon_ids:
+            if bonus_id == BonusId.WEAPON and self._weapon_ids:
                 weapon_id = int(current_weapon_id)
                 for _ in range(8):
                     weapon_id = int(self._weapon_ids[int(rng()) % len(self._weapon_ids)])
