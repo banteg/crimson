@@ -531,35 +531,12 @@ def _replay_list_mode_style(game_mode_id: int) -> str:
 
 
 def _replay_list_score_kills(
-    replay_path: Path,
     *,
     replay: object,
-    default_checkpoints_path_fn: Callable[[Path], Path],
-    legacy_checkpoints_path_fn: Callable[[Path], Path],
-    load_checkpoints_file_fn: Callable[[Path], object],
 ) -> tuple[str, str]:
     replay_obj = cast("Any", replay)
     claimed_stats = replay_obj.header.claimed_stats
-    if claimed_stats is not None:
-        return str(int(claimed_stats.score_xp)), str(int(claimed_stats.kills))
-
-    checkpoints_path = default_checkpoints_path_fn(replay_path)
-    if not checkpoints_path.is_file():
-        legacy_path = legacy_checkpoints_path_fn(replay_path)
-        if legacy_path.is_file():
-            checkpoints_path = legacy_path
-    if not checkpoints_path.is_file():
-        return "-", "-"
-
-    try:
-        checkpoints = cast("Any", load_checkpoints_file_fn(checkpoints_path))
-    except Exception:
-        return "-", "-"
-
-    if not checkpoints.checkpoints:
-        return "-", "-"
-    latest = max(checkpoints.checkpoints, key=lambda item: int(item.tick_index))
-    return str(int(latest.score_xp)), str(int(latest.kills))
+    return str(int(claimed_stats.score_xp)), str(int(claimed_stats.kills))
 
 
 def _build_replay_list_row(
@@ -567,9 +544,6 @@ def _build_replay_list_row(
     *,
     replays_dir: Path,
     load_replay_fn: Callable[[bytes], object],
-    default_checkpoints_path_fn: Callable[[Path], Path],
-    legacy_checkpoints_path_fn: Callable[[Path], Path],
-    load_checkpoints_file_fn: Callable[[Path], object],
     current_version: str,
 ) -> tuple[_ReplayListRow, str | None]:
     rel = str(replay_path.relative_to(replays_dir))
@@ -629,11 +603,7 @@ def _build_replay_list_row(
         quest_level=quest_level,
     )
     score_xp, kills = _replay_list_score_kills(
-        replay_path,
         replay=replay,
-        default_checkpoints_path_fn=default_checkpoints_path_fn,
-        legacy_checkpoints_path_fn=legacy_checkpoints_path_fn,
-        load_checkpoints_file_fn=load_checkpoints_file_fn,
     )
     is_old = _is_version_older(replay_version=game_version, current_version=current_version)
     return (
@@ -739,7 +709,6 @@ def cmd_replay_list(
 
     from .. import __version__
     from ..replay import load_replay
-    from ..replay.checkpoints import default_checkpoints_path, legacy_checkpoints_path, load_checkpoints_file
 
     replays_dir = Path(base_dir) / "replays"
     replay_files = sorted(
@@ -757,9 +726,6 @@ def cmd_replay_list(
             replay_path,
             replays_dir=replays_dir,
             load_replay_fn=load_replay,
-            default_checkpoints_path_fn=default_checkpoints_path,
-            legacy_checkpoints_path_fn=legacy_checkpoints_path,
-            load_checkpoints_file_fn=load_checkpoints_file,
             current_version=str(__version__),
         )
         rows.append(row)
@@ -874,7 +840,7 @@ def cmd_replay_verify(
     header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
-    if claimed_stats is not None and bool(full_replay_simulated):
+    if bool(full_replay_simulated):
         expected_claim = _ReplayVerifyClaimedStatsPayload(
             complete=bool(claimed_stats.complete),
             ticks=int(claimed_stats.ticks),

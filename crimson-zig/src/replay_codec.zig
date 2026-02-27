@@ -81,7 +81,7 @@ pub const ReplayHeader = struct {
     world_size: f32,
     player_count: i32,
     status: ReplayStatus,
-    claimed_stats: ?ReplayClaimedStats = null,
+    claimed_stats: ReplayClaimedStats = .{},
     input_quantization: []u8,
 
     pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
@@ -419,7 +419,7 @@ const ReplayHeaderWire = struct {
     world_size: f32 = 1024.0,
     player_count: i32 = 1,
     status: ReplayStatusWire = .{},
-    claimed_stats: ?ReplayClaimedStatsWire = null,
+    claimed_stats: ReplayClaimedStatsWire,
     input_quantization: []const u8 = "raw",
 };
 
@@ -1176,29 +1176,25 @@ fn buildHeader(
         usage_counts[idx] = try parseU32(value);
     }
 
-    var claimed_stats: ?ReplayClaimedStats = null;
-    if (wire.claimed_stats) |claimed_wire| {
-        const parsed = ReplayClaimedStats{
-            .complete = claimed_wire.complete,
-            .ticks = try parseI32(claimed_wire.ticks),
-            .elapsed_ms = try parseI64(claimed_wire.elapsed_ms),
-            .score_xp = try parseI64(claimed_wire.score_xp),
-            .kills = try parseI32(claimed_wire.kills),
-            .most_used_weapon_id = try parseI32(claimed_wire.most_used_weapon_id),
-            .shots_fired = try parseI32(claimed_wire.shots_fired),
-            .shots_hit = try parseI32(claimed_wire.shots_hit),
-        };
-        if (parsed.ticks < 0 or
-            parsed.elapsed_ms < 0 or
-            parsed.score_xp < 0 or
-            parsed.kills < 0 or
-            parsed.shots_fired < 0 or
-            parsed.shots_hit < 0 or
-            parsed.shots_hit > parsed.shots_fired)
-        {
-            return error.InvalidHeaderValue;
-        }
-        claimed_stats = parsed;
+    const claimed_stats = ReplayClaimedStats{
+        .complete = wire.claimed_stats.complete,
+        .ticks = try parseI32(wire.claimed_stats.ticks),
+        .elapsed_ms = try parseI64(wire.claimed_stats.elapsed_ms),
+        .score_xp = try parseI64(wire.claimed_stats.score_xp),
+        .kills = try parseI32(wire.claimed_stats.kills),
+        .most_used_weapon_id = try parseI32(wire.claimed_stats.most_used_weapon_id),
+        .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
+        .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
+    };
+    if (claimed_stats.ticks < 0 or
+        claimed_stats.elapsed_ms < 0 or
+        claimed_stats.score_xp < 0 or
+        claimed_stats.kills < 0 or
+        claimed_stats.shots_fired < 0 or
+        claimed_stats.shots_hit < 0 or
+        claimed_stats.shots_hit > claimed_stats.shots_fired)
+    {
+        return error.InvalidHeaderValue;
     }
 
     return .{
@@ -1516,6 +1512,7 @@ test "build header rejects world_size above i32 range" {
             .quest_unlock_index_full = 0,
             .weapon_usage_counts = usage_counts[0..],
         },
+        .claimed_stats = .{},
         .input_quantization = "raw",
     };
     try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
@@ -1559,8 +1556,7 @@ test "build header parses claimed stats snapshot" {
     const header = try buildHeader(std.testing.allocator, wire);
     defer header.deinit(std.testing.allocator);
 
-    try std.testing.expect(header.claimed_stats != null);
-    const claimed = header.claimed_stats.?;
+    const claimed = header.claimed_stats;
     try std.testing.expect(claimed.complete);
     try std.testing.expectEqual(@as(i32, 12), claimed.ticks);
     try std.testing.expectEqual(@as(i64, 200), claimed.elapsed_ms);

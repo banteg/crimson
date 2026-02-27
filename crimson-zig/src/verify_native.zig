@@ -208,16 +208,10 @@ fn runNativeVerify(
         .shots_hit = scaffold.shots_hit,
         .rng_state = scaffold.wave_spawn_rng_state,
     };
-    var header_claim_payload: ?HeaderClaimPayload = null;
-    defer if (header_claim_payload) |claim| allocator.free(claim.mismatched_fields);
-    if (header.claimed_stats) |claimed| {
-        header_claim_payload = try buildHeaderClaimPayload(allocator, claimed, run_result);
-    }
+    const header_claim_payload = try buildHeaderClaimPayload(allocator, header.claimed_stats, run_result);
+    defer allocator.free(header_claim_payload.mismatched_fields);
 
-    const status: []const u8 = if (header_claim_payload) |claim|
-        if (claim.match) "ok" else "header_stats_mismatch"
-    else
-        "ok";
+    const status: []const u8 = if (header_claim_payload.match) "ok" else "header_stats_mismatch";
 
     const payload = try buildVerifyPayload(
         allocator,
@@ -263,21 +257,19 @@ fn runNativeVerify(
                 run_result.rng_state,
             },
         );
-        if (header_claim_payload) |claim| {
-            try writer.print(
-                "; header_claim complete={s} match={s} mismatches=",
-                .{
-                    if (claim.expected.complete) "true" else "false",
-                    if (claim.match) "true" else "false",
-                },
-            );
-            if (claim.mismatched_fields.len == 0) {
-                try writer.writeAll("-");
-            } else {
-                for (claim.mismatched_fields, 0..) |field, idx| {
-                    if (idx != 0) try writer.writeByte(',');
-                    try writer.writeAll(field);
-                }
+        try writer.print(
+            "; header_claim complete={s} match={s} mismatches=",
+            .{
+                if (header_claim_payload.expected.complete) "true" else "false",
+                if (header_claim_payload.match) "true" else "false",
+            },
+        );
+        if (header_claim_payload.mismatched_fields.len == 0) {
+            try writer.writeAll("-");
+        } else {
+            for (header_claim_payload.mismatched_fields, 0..) |field, idx| {
+                if (idx != 0) try writer.writeByte(',');
+                try writer.writeAll(field);
             }
         }
         try writer.writeByte('\n');

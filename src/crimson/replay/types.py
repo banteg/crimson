@@ -194,7 +194,7 @@ class ReplayHeader:
     world_size: float = 1024.0
     player_count: int = 1
     status: ReplayStatusSnapshot = field(default_factory=ReplayStatusSnapshot)
-    claimed_stats: ReplayClaimedStatsSnapshot | None = None
+    claimed_stats: ReplayClaimedStatsSnapshot = field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "raw"
 
 

@@ -35,6 +35,16 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
             "status": {
                 "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
             },
+            "claimed_stats": {
+                "complete": False,
+                "ticks": 0,
+                "elapsed_ms": 0,
+                "score_xp": 0,
+                "kills": 0,
+                "most_used_weapon_id": 0,
+                "shots_fired": 0,
+                "shots_hit": 0,
+            },
         },
         "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
         "events": [],
@@ -200,6 +210,16 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
             "input_quantization": "f32",
             "status": {
                 "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
+            },
+            "claimed_stats": {
+                "complete": False,
+                "ticks": 1,
+                "elapsed_ms": 16,
+                "score_xp": 0,
+                "kills": 0,
+                "most_used_weapon_id": 0,
+                "shots_fired": 0,
+                "shots_hit": 0,
             },
         },
         "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],

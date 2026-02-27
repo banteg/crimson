@@ -71,7 +71,24 @@ def _build_replay(
                 for _ in range(int(player_count))
             ],
         )
-    return recorder.finish()
+    replay = recorder.finish()
+    result = run_replay(replay)
+    return replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=int(result.ticks),
+                elapsed_ms=int(result.elapsed_ms),
+                score_xp=int(result.score_xp),
+                kills=int(result.creature_kill_count),
+                most_used_weapon_id=int(result.most_used_weapon_id),
+                shots_fired=int(result.shots_fired),
+                shots_hit=int(result.shots_hit),
+            ),
+        ),
+    )
 
 
 def _write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -192,8 +209,24 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
     assert "quest 3.10 2p" in unstyle(result.output)
 
 
-def test_replay_list_uses_latest_checkpoint_score_and_kills(tmp_path: Path) -> None:
+def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay = replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=2,
+                elapsed_ms=33,
+                score_xp=1234,
+                kills=56,
+                most_used_weapon_id=1,
+                shots_fired=10,
+                shots_hit=8,
+            ),
+        ),
+    )
     replay_path = _write_replay(tmp_path / "replays", replay=replay, name="stats.crd")
     sidecar_path = _write_checkpoint_sidecar(replay_path, replay)
     payload = load_checkpoints_file(sidecar_path)
@@ -212,7 +245,7 @@ def test_replay_list_uses_latest_checkpoint_score_and_kills(tmp_path: Path) -> N
 
     assert result.exit_code == 0, result.output
     output = unstyle(result.output)
-    assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+42\s+7\s+", output) is not None
+    assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
 
 
 def test_replay_list_uses_header_claimed_stats_without_sidecar(tmp_path: Path) -> None:
