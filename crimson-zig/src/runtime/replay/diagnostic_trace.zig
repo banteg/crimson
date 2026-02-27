@@ -1,5 +1,6 @@
 const std = @import("std");
 
+const game_ids = @import("../../game_ids.zig");
 const bonus_runtime = @import("../bonuses.zig");
 const creatures_mod = @import("../creatures.zig");
 const native_math = @import("../native_math.zig");
@@ -10,19 +11,21 @@ const state_mod = @import("../state.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
-pub const replay_tick_trace_schema_version: i32 = 2;
+pub const replay_tick_trace_schema_version: i32 = 3;
+pub const perk_count_size: usize = state_mod.perk_count_size;
+pub const bonus_id_count: usize = @typeInfo(game_ids.BonusId).@"enum".fields.len;
 
 pub const ProjectileTraceEntry = struct {
     index: usize,
     type_id: i32,
-    pos_x_q4: i32,
-    pos_y_q4: i32,
-    origin_x_q4: i32,
-    origin_y_q4: i32,
-    life_timer_q4: i32,
-    damage_pool_q4: i32,
-    angle_q6: i32,
-    speed_scale_q4: i32,
+    pos_x_bits: u32,
+    pos_y_bits: u32,
+    origin_x_bits: u32,
+    origin_y_bits: u32,
+    life_timer_bits: u32,
+    damage_pool_bits: u32,
+    angle_bits: u32,
+    speed_scale_bits: u32,
     owner_legacy: i32,
     hits_players: bool,
 };
@@ -33,23 +36,33 @@ pub const CreatureTraceEntry = struct {
     flags: i32,
     ai_mode: i32,
     link_index: i32,
-    pos_x_q4: i32,
-    pos_y_q4: i32,
-    target_x_q4: i32,
-    target_y_q4: i32,
-    heading_q6: i32,
-    target_heading_q6: i32,
-    hp_q4: i32,
-    lifecycle_stage_q4: i32,
-    size_q4: i32,
-    attack_cooldown_q6: i32,
+    pos_x_bits: u32,
+    pos_y_bits: u32,
+    target_x_bits: u32,
+    target_y_bits: u32,
+    heading_bits: u32,
+    target_heading_bits: u32,
+    hp_bits: u32,
+    lifecycle_stage_bits: u32,
+    size_bits: u32,
+    attack_cooldown_bits: u32,
 };
 
-pub const ReplayTickTimingV2 = struct {
+pub const BonusActiveEntry = struct {
+    bonus_id: i32,
+    amount: i32,
+};
+
+pub const ProjectileTypeCountEntry = struct {
+    type_id: i32,
+    count: usize,
+};
+
+pub const ReplayTickTiming = struct {
     elapsed_ms: i64,
 };
 
-pub const ReplayTickRngV2 = struct {
+pub const ReplayTickRng = struct {
     rng_state: u32,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
@@ -63,7 +76,7 @@ pub const ReplayTickRngV2 = struct {
     rng_after_bonus_update: u32,
 };
 
-pub const ReplayTickSummaryV2 = struct {
+pub const ReplayTickSummary = struct {
     elapsed_ms: i64 = 0,
     score_xp: i32,
     kills: i32,
@@ -75,7 +88,7 @@ pub const ReplayTickSummaryV2 = struct {
     perk_pending: i32,
 };
 
-pub const ReplayTickSummaryJsonV2 = struct {
+pub const ReplayTickSummaryJson = struct {
     score_xp: i32,
     kills: i32,
     shots_fired_p0: i32,
@@ -86,82 +99,70 @@ pub const ReplayTickSummaryJsonV2 = struct {
     perk_pending: i32,
 };
 
-pub const ReplayTickPlayerV2 = struct {
+pub const ReplayTickPlayer = struct {
     player_weapon_id: i32,
-    player_ammo_q4: i32,
-    player_health_q4: i32,
-    player_pos_x_q4: i32,
-    player_pos_y_q4: i32,
-    player_aim_x_q4: i32,
-    player_aim_y_q4: i32,
-    player_heading_q6: i32,
-    player_aim_heading_q6: i32,
-    player_move_speed_q4: i32,
-    player_turn_speed_q4: i32,
+    player_ammo_bits: u32,
+    player_health_bits: u32,
+    player_pos_x_bits: u32,
+    player_pos_y_bits: u32,
+    player_aim_x_bits: u32,
+    player_aim_y_bits: u32,
+    player_heading_bits: u32,
+    player_aim_heading_bits: u32,
+    player_move_speed_bits: u32,
+    player_turn_speed_bits: u32,
     player_level: i32,
     player_experience: i32,
     player_reload_active: bool,
-    player_reload_timer_q4: i32,
-    player_shot_cooldown_q4: i32,
+    player_reload_timer_bits: u32,
+    player_shot_cooldown_bits: u32,
     player_shot_seq: i32,
-    player_perk31_count: i32,
-    player_perk53_count: i32,
-    player_perk54_count: i32,
-    player_perk55_count: i32,
-    player_hot_tempered_timer_q6: i32,
-    player_shield_timer_q4: i32,
-    player_man_bomb_timer_q6: i32,
-    player_fire_cough_timer_q6: i32,
-    player_living_fortress_timer_q6: i32,
-    perk_interval_hot_tempered_q6: i32,
-    perk_interval_man_bomb_q6: i32,
-    perk_interval_fire_cough_q6: i32,
+    player_perk_counts: [perk_count_size]i32,
+    player_hot_tempered_timer_bits: u32,
+    player_shield_timer_bits: u32,
+    player_man_bomb_timer_bits: u32,
+    player_fire_cough_timer_bits: u32,
+    player_living_fortress_timer_bits: u32,
+    perk_interval_hot_tempered_bits: u32,
+    perk_interval_man_bomb_bits: u32,
+    perk_interval_fire_cough_bits: u32,
 };
 
-pub const ReplayTickBonusesV2 = struct {
-    bonus_weapon_power_up_ms: i32,
-    bonus_reflex_boost_ms: i32,
-    bonus_energizer_ms: i32,
-    bonus_double_experience_ms: i32,
-    bonus_freeze_ms: i32,
+pub const ReplayTickBonuses = struct {
+    bonus_timer_ms_by_id: [bonus_id_count]i32,
     bonus_active_count: usize,
-    bonus0_id: i32,
-    bonus0_amount: i32,
-    bonus1_id: i32,
-    bonus1_amount: i32,
+    active_entries_len: usize,
+    active_entries: [bonus_runtime.bonus_pool_size]BonusActiveEntry,
 };
 
-pub const ReplayTickProjectilesV2 = struct {
+pub const ReplayTickProjectiles = struct {
     projectile_state_hash: u64,
     projectile_count: usize,
     projectile_active_index_sum: i32,
     projectile_active_index_xor: i32,
-    projectile_type45_count: usize,
     projectile_hit_count: i32,
-    projectile_type1_count: usize,
-    projectile_type6_count: usize,
-    projectile_type11_count: usize,
-    projectile_type21_count: usize,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
     projectile_first_hit_type_id: i32,
-    projectile_first_hit_origin_x_q4: i32,
-    projectile_first_hit_origin_y_q4: i32,
-    projectile_first_hit_pos_x_q4: i32,
-    projectile_first_hit_pos_y_q4: i32,
-    projectile_first_hit_target_size_q4: i32,
-    projectile_first_hit_target_x_q4: i32,
-    projectile_first_hit_target_y_q4: i32,
+    projectile_first_hit_origin_x_bits: u32,
+    projectile_first_hit_origin_y_bits: u32,
+    projectile_first_hit_pos_x_bits: u32,
+    projectile_first_hit_pos_y_bits: u32,
+    projectile_first_hit_target_size_bits: u32,
+    projectile_first_hit_target_x_bits: u32,
+    projectile_first_hit_target_y_bits: u32,
+    projectile_type_counts_len: usize,
+    projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry,
     entries_len: usize,
     entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry,
 };
 
-pub const ReplayTickCreaturesV2 = struct {
+pub const ReplayTickCreatures = struct {
     entries_len: usize,
     entries: [creatures_mod.max_creatures]CreatureTraceEntry,
 };
 
-pub const ReplayTickDebugV2 = struct {
+pub const ReplayTickDebug = struct {
     debug_pending_nuke: i32,
     debug_nuke_kills_last: i32,
     debug_nuke_tick_last: i32,
@@ -170,61 +171,65 @@ pub const ReplayTickDebugV2 = struct {
     debug_last_picked_bonus_amount: i32,
 };
 
-pub const ReplayTickTraceV2 = struct {
+pub const ReplayTickTrace = struct {
     tick: usize = 0,
     tick_index: usize,
-    timing: ReplayTickTimingV2,
-    rng: ReplayTickRngV2,
-    summary: ReplayTickSummaryV2,
-    player: ReplayTickPlayerV2,
-    bonuses: ReplayTickBonusesV2,
-    projectiles: ReplayTickProjectilesV2,
-    creatures: ReplayTickCreaturesV2,
-    debug: ReplayTickDebugV2,
+    timing: ReplayTickTiming,
+    rng: ReplayTickRng,
+    summary: ReplayTickSummary,
+    player: ReplayTickPlayer,
+    bonuses: ReplayTickBonuses,
+    projectiles: ReplayTickProjectiles,
+    creatures: ReplayTickCreatures,
+    debug: ReplayTickDebug,
 };
 
-pub const ReplayTickProjectilesJsonV2 = struct {
+pub const ReplayTickBonusesJson = struct {
+    bonus_timer_ms_by_id: [bonus_id_count]i32,
+    bonus_active_count: usize,
+    active_entries: []const BonusActiveEntry,
+};
+
+pub const ReplayTickProjectilesJson = struct {
     projectile_state_hash: u64,
     projectile_count: usize,
     projectile_active_index_sum: i32,
     projectile_active_index_xor: i32,
-    projectile_type45_count: usize,
     projectile_hit_count: i32,
-    projectile_type1_count: usize,
-    projectile_type6_count: usize,
-    projectile_type11_count: usize,
-    projectile_type21_count: usize,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
     projectile_first_hit_type_id: i32,
-    projectile_first_hit_origin_x_q4: i32,
-    projectile_first_hit_origin_y_q4: i32,
-    projectile_first_hit_pos_x_q4: i32,
-    projectile_first_hit_pos_y_q4: i32,
-    projectile_first_hit_target_size_q4: i32,
-    projectile_first_hit_target_x_q4: i32,
-    projectile_first_hit_target_y_q4: i32,
+    projectile_first_hit_origin_x_bits: u32,
+    projectile_first_hit_origin_y_bits: u32,
+    projectile_first_hit_pos_x_bits: u32,
+    projectile_first_hit_pos_y_bits: u32,
+    projectile_first_hit_target_size_bits: u32,
+    projectile_first_hit_target_x_bits: u32,
+    projectile_first_hit_target_y_bits: u32,
+    projectile_type_counts: []const ProjectileTypeCountEntry,
     entries: []const ProjectileTraceEntry,
 };
 
-pub const ReplayTickCreaturesJsonV2 = struct {
+pub const ReplayTickCreaturesJson = struct {
     entries: []const CreatureTraceEntry,
 };
 
-pub const ReplayTickTraceJsonRowV2 = struct {
+pub const ReplayTickTraceJsonRow = struct {
     schema_version: i32,
     tick_index: usize,
-    timing: ReplayTickTimingV2,
-    rng: ReplayTickRngV2,
-    summary: ReplayTickSummaryJsonV2,
-    player: ReplayTickPlayerV2,
-    bonuses: ReplayTickBonusesV2,
-    projectiles: ReplayTickProjectilesJsonV2,
-    creatures: ReplayTickCreaturesJsonV2,
-    debug: ReplayTickDebugV2,
+    timing: ReplayTickTiming,
+    rng: ReplayTickRng,
+    summary: ReplayTickSummaryJson,
+    player: ReplayTickPlayer,
+    bonuses: ReplayTickBonusesJson,
+    projectiles: ReplayTickProjectilesJson,
+    creatures: ReplayTickCreaturesJson,
+    debug: ReplayTickDebug,
 };
 
-pub fn toJsonRowV2(trace: anytype) ReplayTickTraceJsonRowV2 {
+pub fn toJsonRow(trace: anytype) ReplayTickTraceJsonRow {
+    const bonus_active_entries = trace.bonuses.active_entries[0..trace.bonuses.active_entries_len];
+    const projectile_type_counts = trace.projectiles.projectile_type_counts[0..trace.projectiles.projectile_type_counts_len];
     const projectile_entries = trace.projectiles.entries[0..trace.projectiles.entries_len];
     const creature_entries = trace.creatures.entries[0..trace.creatures.entries_len];
     return .{
@@ -256,70 +261,29 @@ pub fn toJsonRowV2(trace: anytype) ReplayTickTraceJsonRowV2 {
             .creature_state_hash = trace.summary.creature_state_hash,
             .perk_pending = trace.summary.perk_pending,
         },
-        .player = .{
-            .player_weapon_id = trace.player.player_weapon_id,
-            .player_ammo_q4 = trace.player.player_ammo_q4,
-            .player_health_q4 = trace.player.player_health_q4,
-            .player_pos_x_q4 = trace.player.player_pos_x_q4,
-            .player_pos_y_q4 = trace.player.player_pos_y_q4,
-            .player_aim_x_q4 = trace.player.player_aim_x_q4,
-            .player_aim_y_q4 = trace.player.player_aim_y_q4,
-            .player_heading_q6 = trace.player.player_heading_q6,
-            .player_aim_heading_q6 = trace.player.player_aim_heading_q6,
-            .player_move_speed_q4 = trace.player.player_move_speed_q4,
-            .player_turn_speed_q4 = trace.player.player_turn_speed_q4,
-            .player_level = trace.player.player_level,
-            .player_experience = trace.player.player_experience,
-            .player_reload_active = trace.player.player_reload_active,
-            .player_reload_timer_q4 = trace.player.player_reload_timer_q4,
-            .player_shot_cooldown_q4 = trace.player.player_shot_cooldown_q4,
-            .player_shot_seq = trace.player.player_shot_seq,
-            .player_perk31_count = trace.player.player_perk31_count,
-            .player_perk53_count = trace.player.player_perk53_count,
-            .player_perk54_count = trace.player.player_perk54_count,
-            .player_perk55_count = trace.player.player_perk55_count,
-            .player_hot_tempered_timer_q6 = trace.player.player_hot_tempered_timer_q6,
-            .player_shield_timer_q4 = trace.player.player_shield_timer_q4,
-            .player_man_bomb_timer_q6 = trace.player.player_man_bomb_timer_q6,
-            .player_fire_cough_timer_q6 = trace.player.player_fire_cough_timer_q6,
-            .player_living_fortress_timer_q6 = trace.player.player_living_fortress_timer_q6,
-            .perk_interval_hot_tempered_q6 = trace.player.perk_interval_hot_tempered_q6,
-            .perk_interval_man_bomb_q6 = trace.player.perk_interval_man_bomb_q6,
-            .perk_interval_fire_cough_q6 = trace.player.perk_interval_fire_cough_q6,
-        },
+        .player = trace.player,
         .bonuses = .{
-            .bonus_weapon_power_up_ms = trace.bonuses.bonus_weapon_power_up_ms,
-            .bonus_reflex_boost_ms = trace.bonuses.bonus_reflex_boost_ms,
-            .bonus_energizer_ms = trace.bonuses.bonus_energizer_ms,
-            .bonus_double_experience_ms = trace.bonuses.bonus_double_experience_ms,
-            .bonus_freeze_ms = trace.bonuses.bonus_freeze_ms,
+            .bonus_timer_ms_by_id = trace.bonuses.bonus_timer_ms_by_id,
             .bonus_active_count = trace.bonuses.bonus_active_count,
-            .bonus0_id = trace.bonuses.bonus0_id,
-            .bonus0_amount = trace.bonuses.bonus0_amount,
-            .bonus1_id = trace.bonuses.bonus1_id,
-            .bonus1_amount = trace.bonuses.bonus1_amount,
+            .active_entries = @ptrCast(bonus_active_entries),
         },
         .projectiles = .{
             .projectile_state_hash = trace.projectiles.projectile_state_hash,
             .projectile_count = trace.projectiles.projectile_count,
             .projectile_active_index_sum = trace.projectiles.projectile_active_index_sum,
             .projectile_active_index_xor = trace.projectiles.projectile_active_index_xor,
-            .projectile_type45_count = trace.projectiles.projectile_type45_count,
             .projectile_hit_count = trace.projectiles.projectile_hit_count,
-            .projectile_type1_count = trace.projectiles.projectile_type1_count,
-            .projectile_type6_count = trace.projectiles.projectile_type6_count,
-            .projectile_type11_count = trace.projectiles.projectile_type11_count,
-            .projectile_type21_count = trace.projectiles.projectile_type21_count,
             .projectile_first_hit_creature_index = trace.projectiles.projectile_first_hit_creature_index,
             .projectile_first_hit_projectile_index = trace.projectiles.projectile_first_hit_projectile_index,
             .projectile_first_hit_type_id = trace.projectiles.projectile_first_hit_type_id,
-            .projectile_first_hit_origin_x_q4 = trace.projectiles.projectile_first_hit_origin_x_q4,
-            .projectile_first_hit_origin_y_q4 = trace.projectiles.projectile_first_hit_origin_y_q4,
-            .projectile_first_hit_pos_x_q4 = trace.projectiles.projectile_first_hit_pos_x_q4,
-            .projectile_first_hit_pos_y_q4 = trace.projectiles.projectile_first_hit_pos_y_q4,
-            .projectile_first_hit_target_size_q4 = trace.projectiles.projectile_first_hit_target_size_q4,
-            .projectile_first_hit_target_x_q4 = trace.projectiles.projectile_first_hit_target_x_q4,
-            .projectile_first_hit_target_y_q4 = trace.projectiles.projectile_first_hit_target_y_q4,
+            .projectile_first_hit_origin_x_bits = trace.projectiles.projectile_first_hit_origin_x_bits,
+            .projectile_first_hit_origin_y_bits = trace.projectiles.projectile_first_hit_origin_y_bits,
+            .projectile_first_hit_pos_x_bits = trace.projectiles.projectile_first_hit_pos_x_bits,
+            .projectile_first_hit_pos_y_bits = trace.projectiles.projectile_first_hit_pos_y_bits,
+            .projectile_first_hit_target_size_bits = trace.projectiles.projectile_first_hit_target_size_bits,
+            .projectile_first_hit_target_x_bits = trace.projectiles.projectile_first_hit_target_x_bits,
+            .projectile_first_hit_target_y_bits = trace.projectiles.projectile_first_hit_target_y_bits,
+            .projectile_type_counts = @ptrCast(projectile_type_counts),
             .entries = @ptrCast(projectile_entries),
         },
         .creatures = .{
@@ -343,7 +307,7 @@ fn traceTickIndex(trace: anytype) usize {
     }
     if (@hasField(trace_type, "tick_index")) return trace.tick_index;
     if (@hasField(trace_type, "tick")) return trace.tick;
-    @compileError("toJsonRowV2 expects a trace with tick_index or tick");
+    @compileError("toJsonRow expects a trace with tick_index or tick");
 }
 
 fn traceElapsedMs(trace: anytype) i64 {
@@ -353,10 +317,10 @@ fn traceElapsedMs(trace: anytype) i64 {
     }
     if (@hasField(trace_type, "timing")) return trace.timing.elapsed_ms;
     if (@hasField(trace_type, "summary")) return trace.summary.elapsed_ms;
-    @compileError("toJsonRowV2 expects a trace with timing.elapsed_ms or summary.elapsed_ms");
+    @compileError("toJsonRow expects a trace with timing.elapsed_ms or summary.elapsed_ms");
 }
 
-pub fn buildReplayTickTraceV2(
+pub fn buildReplayTickTrace(
     tick_index: usize,
     elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
@@ -375,63 +339,49 @@ pub fn buildReplayTickTraceV2(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
-) ReplayTickTraceV2 {
+) ReplayTickTrace {
     var projectile_count: usize = 0;
     var projectile_state_hash: u64 = 1469598103934665603;
-    var projectile_type1_count: usize = 0;
-    var projectile_type6_count: usize = 0;
-    var projectile_type11_count: usize = 0;
-    var projectile_type21_count: usize = 0;
-    var projectile_type45_count: usize = 0;
     var projectile_active_index_sum: i32 = 0;
     var projectile_active_index_xor: i32 = 0;
+    var projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry = undefined;
+    var projectile_type_counts_len: usize = 0;
     var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry = undefined;
     var projectile_entries_len: usize = 0;
     for (projectiles.entries, 0..) |entry, idx| {
         projectile_state_hash = hashMix(projectile_state_hash, @intCast(idx));
         projectile_state_hash = hashMix(projectile_state_hash, if (entry.active) 1 else 0);
         if (!entry.active) continue;
+
         const idx_i32: i32 = @intCast(idx);
         projectile_active_index_sum += idx_i32;
         projectile_active_index_xor ^= idx_i32;
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.type_id)));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.x))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.pos.y))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.x))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.origin.y))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.life_timer))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.damage_pool))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ6(entry.angle))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, quantizeQ4(entry.speed_scale))));
-        projectile_state_hash = hashMix(projectile_state_hash, @bitCast(@as(i64, entry.owner.toLegacy())));
+        projectile_state_hash = hashMixI32(projectile_state_hash, entry.type_id);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.pos.x);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.pos.y);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.origin.x);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.origin.y);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.life_timer);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.damage_pool);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.angle);
+        projectile_state_hash = hashMixF32(projectile_state_hash, entry.speed_scale);
+        projectile_state_hash = hashMixI32(projectile_state_hash, entry.owner.toLegacy());
         projectile_state_hash = hashMix(projectile_state_hash, if (entry.hits_players) 1 else 0);
         projectile_count += 1;
-        if (entry.type_id == 1) {
-            projectile_type1_count += 1;
-        }
-        if (entry.type_id == 6) {
-            projectile_type6_count += 1;
-        }
-        if (entry.type_id == 11) {
-            projectile_type11_count += 1;
-        }
-        if (entry.type_id == 21) {
-            projectile_type21_count += 1;
-        }
-        if (entry.type_id == 45) {
-            projectile_type45_count += 1;
-        }
+
+        addProjectileTypeCount(&projectile_type_counts, &projectile_type_counts_len, entry.type_id);
+
         projectile_entries[projectile_entries_len] = .{
             .index = idx,
             .type_id = entry.type_id,
-            .pos_x_q4 = quantizeQ4(entry.pos.x),
-            .pos_y_q4 = quantizeQ4(entry.pos.y),
-            .origin_x_q4 = quantizeQ4(entry.origin.x),
-            .origin_y_q4 = quantizeQ4(entry.origin.y),
-            .life_timer_q4 = quantizeQ4(entry.life_timer),
-            .damage_pool_q4 = quantizeQ4(entry.damage_pool),
-            .angle_q6 = quantizeQ6(entry.angle),
-            .speed_scale_q4 = quantizeQ4(entry.speed_scale),
+            .pos_x_bits = f32Bits(entry.pos.x),
+            .pos_y_bits = f32Bits(entry.pos.y),
+            .origin_x_bits = f32Bits(entry.origin.x),
+            .origin_y_bits = f32Bits(entry.origin.y),
+            .life_timer_bits = f32Bits(entry.life_timer),
+            .damage_pool_bits = f32Bits(entry.damage_pool),
+            .angle_bits = f32Bits(entry.angle),
+            .speed_scale_bits = f32Bits(entry.speed_scale),
             .owner_legacy = entry.owner.toLegacy(),
             .hits_players = entry.hits_players,
         };
@@ -452,68 +402,81 @@ pub fn buildReplayTickTraceV2(
         creature_active_index_sum += idx_i32;
         creature_active_index_xor ^= idx_i32;
 
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.type_id)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.pos.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.target.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.heading))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.target_heading))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.phase_seed))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.x))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.vel.y))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_scale))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.force_target)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, @intFromEnum(creature.ai_mode))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.link_index)));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ6(creature.orbit_angle))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.orbit_radius))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.hp))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.max_hp))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.move_speed))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.reward_value))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.size))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.contact_damage))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.lifecycle_stage))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, quantizeQ4(creature.attack_cooldown))));
-        creature_state_hash = hashMix(creature_state_hash, @bitCast(@as(i64, creature.last_hit_owner.toLegacy())));
+        creature_state_hash = hashMixI32(creature_state_hash, creature.type_id);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.pos.x);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.pos.y);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.target.x);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.target.y);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.heading);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.target_heading);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.phase_seed);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.vel.x);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.vel.y);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.move_scale);
+        creature_state_hash = hashMixI32(creature_state_hash, creature.force_target);
+        creature_state_hash = hashMixI32(creature_state_hash, @intFromEnum(creature.ai_mode));
+        creature_state_hash = hashMixI32(creature_state_hash, creature.link_index);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.orbit_angle);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.orbit_radius);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.hp);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.max_hp);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.move_speed);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.reward_value);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.size);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.contact_damage);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.lifecycle_stage);
+        creature_state_hash = hashMixF32(creature_state_hash, creature.attack_cooldown);
+        creature_state_hash = hashMixI32(creature_state_hash, creature.last_hit_owner.toLegacy());
         creature_state_hash = hashMix(creature_state_hash, creature.flags);
+
         creature_entries[creature_entries_len] = .{
             .index = idx,
             .type_id = creature.type_id,
             .flags = @bitCast(creature.flags),
             .ai_mode = @intFromEnum(creature.ai_mode),
             .link_index = creature.link_index,
-            .pos_x_q4 = quantizeQ4(creature.pos.x),
-            .pos_y_q4 = quantizeQ4(creature.pos.y),
-            .target_x_q4 = quantizeQ4(creature.target.x),
-            .target_y_q4 = quantizeQ4(creature.target.y),
-            .heading_q6 = quantizeQ6(creature.heading),
-            .target_heading_q6 = quantizeQ6(creature.target_heading),
-            .hp_q4 = quantizeQ4(creature.hp),
-            .lifecycle_stage_q4 = quantizeQ4(creature.lifecycle_stage),
-            .size_q4 = quantizeQ4(creature.size),
-            .attack_cooldown_q6 = quantizeQ6(creature.attack_cooldown),
+            .pos_x_bits = f32Bits(creature.pos.x),
+            .pos_y_bits = f32Bits(creature.pos.y),
+            .target_x_bits = f32Bits(creature.target.x),
+            .target_y_bits = f32Bits(creature.target.y),
+            .heading_bits = f32Bits(creature.heading),
+            .target_heading_bits = f32Bits(creature.target_heading),
+            .hp_bits = f32Bits(creature.hp),
+            .lifecycle_stage_bits = f32Bits(creature.lifecycle_stage),
+            .size_bits = f32Bits(creature.size),
+            .attack_cooldown_bits = f32Bits(creature.attack_cooldown),
         };
         creature_entries_len += 1;
     }
 
     var bonus_active_count: usize = 0;
-    var bonus0_id: i32 = 0;
-    var bonus0_amount: i32 = 0;
-    var bonus1_id: i32 = 0;
-    var bonus1_amount: i32 = 0;
+    var bonus_active_entries: [bonus_runtime.bonus_pool_size]BonusActiveEntry = undefined;
+    var bonus_active_entries_len: usize = 0;
     for (bonuses.entries) |entry| {
         if (entry.bonus_id == .unused) continue;
-        if (bonus_active_count == 0) {
-            bonus0_id = @intFromEnum(entry.bonus_id);
-            bonus0_amount = entry.amount;
-        } else if (bonus_active_count == 1) {
-            bonus1_id = @intFromEnum(entry.bonus_id);
-            bonus1_amount = entry.amount;
-        }
         bonus_active_count += 1;
+        addBonusActiveEntry(
+            &bonus_active_entries,
+            &bonus_active_entries_len,
+            .{
+                .bonus_id = @intFromEnum(entry.bonus_id),
+                .amount = entry.amount,
+            },
+        );
     }
+
+    var player_perk_counts: [perk_count_size]i32 = undefined;
+    for (0..perk_count_size) |idx| {
+        const perk_id: PerkId = @enumFromInt(@as(i32, @intCast(idx)));
+        player_perk_counts[idx] = player.perk_counts.get(perk_id);
+    }
+
+    var bonus_timer_ms_by_id = [_]i32{0} ** bonus_id_count;
+    bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.weapon_power_up)] = bonusTimerMs(state.bonuses.weapon_power_up);
+    bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.reflex_boost)] = bonusTimerMs(state.bonuses.reflex_boost);
+    bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.energizer)] = bonusTimerMs(state.bonuses.energizer);
+    bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.double_experience)] = bonusTimerMs(state.bonuses.double_experience);
+    bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.freeze)] = bonusTimerMs(state.bonuses.freeze);
 
     return .{
         .tick = tick_index,
@@ -547,68 +510,56 @@ pub fn buildReplayTickTraceV2(
         },
         .player = .{
             .player_weapon_id = @intFromEnum(player.weapon_id),
-            .player_ammo_q4 = quantizeQ4(player.ammo),
-            .player_health_q4 = quantizeQ4(player.health),
-            .player_pos_x_q4 = quantizeQ4(player.pos.x),
-            .player_pos_y_q4 = quantizeQ4(player.pos.y),
-            .player_aim_x_q4 = quantizeQ4(player.aim.x),
-            .player_aim_y_q4 = quantizeQ4(player.aim.y),
-            .player_heading_q6 = quantizeQ6(player.heading),
-            .player_aim_heading_q6 = quantizeQ6(player.aim_heading),
-            .player_move_speed_q4 = quantizeQ4(player.move_speed),
-            .player_turn_speed_q4 = quantizeQ4(player.turn_speed),
+            .player_ammo_bits = f32Bits(player.ammo),
+            .player_health_bits = f32Bits(player.health),
+            .player_pos_x_bits = f32Bits(player.pos.x),
+            .player_pos_y_bits = f32Bits(player.pos.y),
+            .player_aim_x_bits = f32Bits(player.aim.x),
+            .player_aim_y_bits = f32Bits(player.aim.y),
+            .player_heading_bits = f32Bits(player.heading),
+            .player_aim_heading_bits = f32Bits(player.aim_heading),
+            .player_move_speed_bits = f32Bits(player.move_speed),
+            .player_turn_speed_bits = f32Bits(player.turn_speed),
             .player_level = player.level,
             .player_experience = player.experience,
             .player_reload_active = player.reload_active,
-            .player_reload_timer_q4 = quantizeQ4(player.reload_timer),
-            .player_shot_cooldown_q4 = quantizeQ4(player.shot_cooldown),
+            .player_reload_timer_bits = f32Bits(player.reload_timer),
+            .player_shot_cooldown_bits = f32Bits(player.shot_cooldown),
             .player_shot_seq = player.shot_seq,
-            .player_perk31_count = player.perk_counts.get(PerkId.hot_tempered),
-            .player_perk53_count = player.perk_counts.get(PerkId.man_bomb),
-            .player_perk54_count = player.perk_counts.get(PerkId.fire_caugh),
-            .player_perk55_count = player.perk_counts.get(PerkId.living_fortress),
-            .player_hot_tempered_timer_q6 = quantizeQ6(player.hot_tempered_timer),
-            .player_shield_timer_q4 = quantizeQ4(player.shield_timer),
-            .player_man_bomb_timer_q6 = quantizeQ6(player.man_bomb_timer),
-            .player_fire_cough_timer_q6 = quantizeQ6(player.fire_cough_timer),
-            .player_living_fortress_timer_q6 = quantizeQ6(player.living_fortress_timer),
-            .perk_interval_hot_tempered_q6 = quantizeQ6(state.perk_interval_hot_tempered),
-            .perk_interval_man_bomb_q6 = quantizeQ6(state.perk_interval_man_bomb),
-            .perk_interval_fire_cough_q6 = quantizeQ6(state.perk_interval_fire_cough),
+            .player_perk_counts = player_perk_counts,
+            .player_hot_tempered_timer_bits = f32Bits(player.hot_tempered_timer),
+            .player_shield_timer_bits = f32Bits(player.shield_timer),
+            .player_man_bomb_timer_bits = f32Bits(player.man_bomb_timer),
+            .player_fire_cough_timer_bits = f32Bits(player.fire_cough_timer),
+            .player_living_fortress_timer_bits = f32Bits(player.living_fortress_timer),
+            .perk_interval_hot_tempered_bits = f32Bits(state.perk_interval_hot_tempered),
+            .perk_interval_man_bomb_bits = f32Bits(state.perk_interval_man_bomb),
+            .perk_interval_fire_cough_bits = f32Bits(state.perk_interval_fire_cough),
         },
         .bonuses = .{
-            .bonus_weapon_power_up_ms = bonusTimerMs(state.bonuses.weapon_power_up),
-            .bonus_reflex_boost_ms = bonusTimerMs(state.bonuses.reflex_boost),
-            .bonus_energizer_ms = bonusTimerMs(state.bonuses.energizer),
-            .bonus_double_experience_ms = bonusTimerMs(state.bonuses.double_experience),
-            .bonus_freeze_ms = bonusTimerMs(state.bonuses.freeze),
+            .bonus_timer_ms_by_id = bonus_timer_ms_by_id,
             .bonus_active_count = bonus_active_count,
-            .bonus0_id = bonus0_id,
-            .bonus0_amount = bonus0_amount,
-            .bonus1_id = bonus1_id,
-            .bonus1_amount = bonus1_amount,
+            .active_entries_len = bonus_active_entries_len,
+            .active_entries = bonus_active_entries,
         },
         .projectiles = .{
             .projectile_state_hash = projectile_state_hash,
             .projectile_count = projectile_count,
             .projectile_active_index_sum = projectile_active_index_sum,
             .projectile_active_index_xor = projectile_active_index_xor,
-            .projectile_type45_count = projectile_type45_count,
             .projectile_hit_count = projectile_tick_stats.hit_count,
-            .projectile_type1_count = projectile_type1_count,
-            .projectile_type6_count = projectile_type6_count,
-            .projectile_type11_count = projectile_type11_count,
-            .projectile_type21_count = projectile_type21_count,
             .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
             .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
             .projectile_first_hit_type_id = projectile_tick_stats.first_hit_type_id,
-            .projectile_first_hit_origin_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_origin.x),
-            .projectile_first_hit_origin_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_origin.y),
-            .projectile_first_hit_pos_x_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.x),
-            .projectile_first_hit_pos_y_q4 = quantizeQ4(projectile_tick_stats.first_hit_pos.y),
-            .projectile_first_hit_target_size_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_size)),
-            .projectile_first_hit_target_x_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_x)),
-            .projectile_first_hit_target_y_q4 = quantizeQ4(narrowF32(projectile_tick_stats.first_hit_target_y)),
+            .projectile_first_hit_origin_x_bits = f32Bits(projectile_tick_stats.first_hit_origin.x),
+            .projectile_first_hit_origin_y_bits = f32Bits(projectile_tick_stats.first_hit_origin.y),
+            .projectile_first_hit_pos_x_bits = f32Bits(projectile_tick_stats.first_hit_pos.x),
+            .projectile_first_hit_pos_y_bits = f32Bits(projectile_tick_stats.first_hit_pos.y),
+            .projectile_first_hit_target_size_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_size)),
+            .projectile_first_hit_target_x_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_x)),
+            .projectile_first_hit_target_y_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_y)),
+            .projectile_type_counts_len = projectile_type_counts_len,
+            .projectile_type_counts = projectile_type_counts,
             .entries_len = projectile_entries_len,
             .entries = projectile_entries,
         },
@@ -627,18 +578,55 @@ pub fn buildReplayTickTraceV2(
     };
 }
 
-fn quantizeQ4(value: f32) i32 {
-    const scaled = @round(value * 10000.0);
-    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
-    return @intFromFloat(scaled);
+fn addProjectileTypeCount(
+    entries: *[projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry,
+    len: *usize,
+    type_id: i32,
+) void {
+    var idx: usize = 0;
+    while (idx < len.* and entries[idx].type_id < type_id) : (idx += 1) {}
+    if (idx < len.* and entries[idx].type_id == type_id) {
+        entries[idx].count += 1;
+        return;
+    }
+
+    var move_idx = len.*;
+    while (move_idx > idx) : (move_idx -= 1) {
+        entries[move_idx] = entries[move_idx - 1];
+    }
+    entries[idx] = .{
+        .type_id = type_id,
+        .count = 1,
+    };
+    len.* += 1;
 }
 
-fn quantizeQ6(value: f32) i32 {
-    const scaled = @round(value * 1_000_000.0);
-    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
-    return @intFromFloat(scaled);
+fn addBonusActiveEntry(
+    entries: *[bonus_runtime.bonus_pool_size]BonusActiveEntry,
+    len: *usize,
+    entry: BonusActiveEntry,
+) void {
+    var idx: usize = 0;
+    while (idx < len.* and entries[idx].bonus_id < entry.bonus_id) : (idx += 1) {}
+
+    var move_idx = len.*;
+    while (move_idx > idx) : (move_idx -= 1) {
+        entries[move_idx] = entries[move_idx - 1];
+    }
+    entries[idx] = entry;
+    len.* += 1;
+}
+
+fn f32Bits(value: f32) u32 {
+    return @bitCast(value);
+}
+
+fn hashMixI32(seed: u64, value: i32) u64 {
+    return hashMix(seed, @as(u64, @bitCast(@as(i64, value))));
+}
+
+fn hashMixF32(seed: u64, value: f32) u64 {
+    return hashMix(seed, @as(u64, f32Bits(value)));
 }
 
 fn bonusTimerMs(seconds: f32) i32 {

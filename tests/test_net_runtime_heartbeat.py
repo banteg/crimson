@@ -47,7 +47,7 @@ def test_continuous_outbound_inputs_still_emit_periodic_pings(mocker) -> None:
 
     for i in range(20):
         now = 1000 + i * 50
-        runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], i], now_ms=now)
+        runtime.queue_local_input([0.0, 0.0, 0.0, 0.0, i], now_ms=now)
         runtime.update(now_ms=now)
 
     pings = [call.args[-1].message for call in send_packet.call_args_list if isinstance(call.args[-1].message, Ping)]

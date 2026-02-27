@@ -119,7 +119,7 @@ pub const StepOptions = struct {
     diagnostic_trace_sink: ?DiagnosticTraceSink = null,
 };
 
-pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTickTraceV2) void;
+pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTickTrace) void;
 
 pub const diagnostic_trace = struct {
     pub const TickSnapshot = struct {
@@ -741,7 +741,7 @@ fn buildDiagnosticTrace(
     context: *SimulationContext,
     tick_index: usize,
     frame: *const StepFrame,
-) diagnostic_trace_mod.ReplayTickTraceV2 {
+) diagnostic_trace_mod.ReplayTickTrace {
     const players = context.players();
     var player0 = state_mod.PlayerState{
         .index = 0,
@@ -756,7 +756,7 @@ fn buildDiagnosticTrace(
         .rush => @as(f32, @floatFromInt(context.elapsed_ms_sim_rush)),
         else => context.elapsed_ms_sim,
     };
-    return diagnostic_trace_mod.buildReplayTickTraceV2(
+    return diagnostic_trace_mod.buildReplayTickTrace(
         tick_index,
         narrowF32(trace_elapsed_ms),
         &context.state,
@@ -797,7 +797,7 @@ fn testHeader() replay_codec.ReplayHeader {
         .player_count = 1,
         .status = .{},
         .claimed_stats = .{},
-        .input_quantization = @constCast("raw"),
+        .input_quantization = @constCast("f32"),
     };
 }
 

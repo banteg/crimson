@@ -3,9 +3,8 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.original.capture import CAPTURE_BOOTSTRAP_EVENT_KIND, CAPTURE_PERK_APPLY_EVENT_KIND
 from crimson.perks import PerkId
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder, UnknownEvent
+from crimson.replay import CapturePerkApplyEvent, ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
 from crimson.sim.driver.replay_runner import run_survival_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from crimson.sim.input import PlayerInput
@@ -13,6 +12,7 @@ from grim.geom import Vec2
 from tests.helpers import assert_float_close
 from tests.replay_runner_helpers import (
     _blank_survival_replay,
+    _strict_bootstrap_event,
     _strict_bootstrap_payload,
     _strict_bootstrap_player_payload,
 )
@@ -198,13 +198,7 @@ def test_survival_runner_applies_original_capture_bootstrap_event() -> None:
             level=5,
         ),
     ]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     with pytest.warns(ReplayGameVersionWarning):
         result = run_survival_replay(replay, strict_events=True, max_ticks=1)
@@ -237,13 +231,7 @@ def test_survival_runner_bootstrap_player_shot_cooldown_blocks_first_tick_fire()
             bootstrap_player["shot_cooldown"] = 0.5
         bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
         bootstrap_payload["players"] = [bootstrap_player]
-        replay.events.append(
-            UnknownEvent(
-                tick_index=0,
-                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[bootstrap_payload],
-            ),
-        )
+        replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
         checkpoints = []
         with pytest.warns(ReplayGameVersionWarning):
@@ -301,13 +289,7 @@ def test_survival_runner_bootstrap_perk_counts_enable_alternate_weapon_swap() ->
                 "choices": [],
                 "player_nonzero_counts": [[[int(PerkId.ALTERNATE_WEAPON), 1]]],
             }
-        replay.events.append(
-            UnknownEvent(
-                tick_index=0,
-                kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                payload=[payload],
-            ),
-        )
+        replay.events.append(_strict_bootstrap_event(payload))
 
         checkpoints = []
         with pytest.warns(ReplayGameVersionWarning):
@@ -335,13 +317,7 @@ def test_survival_runner_does_not_stop_early_on_death_for_original_capture_repla
     replay = rec.finish()
     bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
     bootstrap_payload["players"] = [_strict_bootstrap_player_payload(health=-1.0)]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     with pytest.warns(ReplayGameVersionWarning):
         result = run_survival_replay(replay, strict_events=True)
@@ -364,18 +340,14 @@ def test_survival_runner_skips_world_dt_perk_steps_for_original_capture_dt_overr
         if include_bootstrap:
             bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
             bootstrap_payload["digital_move_enabled_by_player"] = [True]
-            replay.events.append(
-                UnknownEvent(
-                    tick_index=0,
-                    kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-                    payload=[bootstrap_payload],
-                ),
-            )
+            replay.events.append(_strict_bootstrap_event(bootstrap_payload))
         replay.events.append(
-            UnknownEvent(
+            CapturePerkApplyEvent(
                 tick_index=0,
-                kind=CAPTURE_PERK_APPLY_EVENT_KIND,
-                payload=[{"perk_id": int(PerkId.REFLEX_BOOSTED), "outside_before": False}],
+                perk_id=int(PerkId.REFLEX_BOOSTED),
+                outside_before=False,
+                pending_before=None,
+                pending_after=None,
             ),
         )
 
@@ -402,13 +374,7 @@ def test_survival_runner_original_capture_reflex_scaled_dt_ms_uses_scaled_float_
     bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
     bootstrap_payload["bonus_timers_ms"] = {"9": 124}
     bootstrap_payload["digital_move_enabled_by_player"] = [True]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     with pytest.warns(ReplayGameVersionWarning):
         result = run_survival_replay(
@@ -436,13 +402,7 @@ def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_
     replay = recorder.finish()
     bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
     bootstrap_payload["digital_move_enabled_by_player"] = [True]
-    replay.events.append(
-        UnknownEvent(
-            tick_index=0,
-            kind=CAPTURE_BOOTSTRAP_EVENT_KIND,
-            payload=[bootstrap_payload],
-        ),
-    )
+    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
 
     checkpoints = []
     with pytest.warns(ReplayGameVersionWarning):
@@ -455,4 +415,3 @@ def test_survival_runner_original_capture_uses_packed_move_vector_for_turn_only_
 
     assert len(checkpoints) == 1
     assert float(checkpoints[0].players[0].pos.x) > 512.0
-

@@ -90,7 +90,7 @@ def test_reconnect_room_state_clears_pause_and_resumes(mocker) -> None:
         now_ms=2201,
     )
 
-    runtime.queue_local_input([1.0, 0.0, [0.0, 0.0], 1], now_ms=2202)
+    runtime.queue_local_input([1.0, 0.0, 0.0, 0.0, 1], now_ms=2202)
     frame = runtime.pop_tick_frame()
     assert frame is not None
     assert runtime.error == ""

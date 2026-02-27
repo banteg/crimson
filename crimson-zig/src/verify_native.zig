@@ -32,6 +32,12 @@ const VerifyRequest = struct {
     debug_trace_jsonl: ?[]const u8 = null,
 };
 
+const ReplayRunnerProgressHint = struct {
+    processed_ticks: ?usize = null,
+    total_ticks: usize = 0,
+    event_count: usize = 0,
+};
+
 const ParseOutcome = union(enum) {
     ok: VerifyRequest,
     unsupported: []const u8,
@@ -181,7 +187,15 @@ fn runNativeVerify(
                 writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
                     return buildVerifyFailedOutput(allocator, @errorName(trace_err));
                 };
-                return buildNotPortedOutputForReplayRunnerError(allocator, err);
+                return buildNotPortedOutputForReplayRunnerError(
+                    allocator,
+                    err,
+                    .{
+                        .processed_ticks = tick_trace.items.len,
+                        .total_ticks = replay.tickCount(),
+                        .event_count = replay.events.len,
+                    },
+                );
             };
             writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
                 return buildVerifyFailedOutput(allocator, @errorName(trace_err));
@@ -190,7 +204,14 @@ fn runNativeVerify(
         }
 
         break :blk replay_runner.runReplayScaffoldWithOptions(replay, .{}) catch |err| {
-            return buildNotPortedOutputForReplayRunnerError(allocator, err);
+            return buildNotPortedOutputForReplayRunnerError(
+                allocator,
+                err,
+                .{
+                    .total_ticks = replay.tickCount(),
+                    .event_count = replay.events.len,
+                },
+            );
         };
     };
 
@@ -299,7 +320,7 @@ fn writeReplayTickTraceJsonl(
     var writer = file.writer(&buffer);
     const out = &writer.interface;
     for (trace) |entry| {
-        const row = diagnostic_trace.toJsonRowV2(&entry);
+        const row = diagnostic_trace.toJsonRow(&entry);
         try std.json.Stringify.value(row, .{}, out);
         try out.writeByte('\n');
     }
@@ -532,8 +553,8 @@ fn unsupportedReplayHeaderDetail(
     if (header.preserve_bugs) {
         return "preserve_bugs=true replays are not ported";
     }
-    if (!std.mem.eql(u8, header.input_quantization, "raw") and !std.mem.eql(u8, header.input_quantization, "f32")) {
-        return "only raw/f32 input quantization is currently ported";
+    if (!std.mem.eql(u8, header.input_quantization, "f32")) {
+        return "only f32 input quantization is currently ported";
     }
     if (tick_count > std.math.maxInt(i32)) {
         return "replay has too many ticks for current native verifier";
@@ -568,13 +589,14 @@ fn buildNotPortedOutputForReplayCodecError(
 fn buildNotPortedOutputForReplayRunnerError(
     allocator: std.mem.Allocator,
     err: replay_runner.ReplayRunnerError,
+    progress: ReplayRunnerProgressHint,
 ) !CommandOutput {
     const detail = switch (err) {
         error.OutOfMemory => "replay simulation scaffold ran out of memory",
         error.InvalidHeaderValue => "replay simulation scaffold received invalid header values",
         error.UnsupportedGameMode => "replay simulation scaffold only supports survival/rush/quest modes",
         error.UnsupportedPlayerCount => "replay simulation scaffold only supports 1-4 player replays",
-        error.UnsupportedInputQuantization => "replay simulation scaffold only supports raw/f32 quantization",
+        error.UnsupportedInputQuantization => "replay simulation scaffold only supports f32 quantization",
         error.UnsupportedDemoMode => "replay simulation scaffold does not support demo_mode_active=true",
         error.UnsupportedPreserveBugs => "replay simulation scaffold does not support preserve_bugs=true",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
@@ -588,7 +610,35 @@ fn buildNotPortedOutputForReplayRunnerError(
         error.UnsupportedWeaponFirePath => "replay triggered weapon fire path not yet ported in native projectile runtime",
         error.UnsupportedBonusApplyPath => "replay triggered bonus apply path not yet ported in native bonus runtime",
     };
-    return buildNotPortedOutput(allocator, detail);
+
+    var stderr_buf: std.ArrayList(u8) = .empty;
+    defer stderr_buf.deinit(allocator);
+
+    var writer = stderr_buf.writer(allocator);
+    try writer.print("replay verification path not yet ported: {s}", .{detail});
+    if (progress.processed_ticks) |processed_ticks| {
+        try writer.print(
+            " (progress: ticks_processed={d}/{d}, event_count={d})\n",
+            .{ processed_ticks, progress.total_ticks, progress.event_count },
+        );
+    } else if (progress.total_ticks > 0 or progress.event_count > 0) {
+        try writer.print(
+            " (progress: ticks_total={d}, event_count={d})\n",
+            .{ progress.total_ticks, progress.event_count },
+        );
+    } else {
+        try writer.writeByte('\n');
+    }
+
+    const stderr = try stderr_buf.toOwnedSlice(allocator);
+    errdefer allocator.free(stderr);
+    const stdout = try allocator.dupe(u8, "");
+
+    return .{
+        .stdout = stdout,
+        .stderr = stderr,
+        .exit_code = 1,
+    };
 }
 
 fn parseNativeSubset(args: []const []const u8) ParseOutcome {
@@ -1006,7 +1056,11 @@ test "replay codec unsupported event kind remains not ported output" {
 
 test "survival sim not ported output maps unsupported weapon fire path" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedWeaponFirePath);
+    const output = try buildNotPortedOutputForReplayRunnerError(
+        allocator,
+        error.UnsupportedWeaponFirePath,
+        .{},
+    );
     defer allocator.free(output.stdout);
     defer allocator.free(output.stderr);
 
@@ -1016,7 +1070,11 @@ test "survival sim not ported output maps unsupported weapon fire path" {
 
 test "survival sim not ported output maps unsupported demo mode path" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedDemoMode);
+    const output = try buildNotPortedOutputForReplayRunnerError(
+        allocator,
+        error.UnsupportedDemoMode,
+        .{},
+    );
     defer allocator.free(output.stdout);
     defer allocator.free(output.stderr);
 
@@ -1026,12 +1084,35 @@ test "survival sim not ported output maps unsupported demo mode path" {
 
 test "survival sim not ported output maps unsupported bonus apply path" {
     const allocator = std.testing.allocator;
-    const output = try buildNotPortedOutputForReplayRunnerError(allocator, error.UnsupportedBonusApplyPath);
+    const output = try buildNotPortedOutputForReplayRunnerError(
+        allocator,
+        error.UnsupportedBonusApplyPath,
+        .{},
+    );
     defer allocator.free(output.stdout);
     defer allocator.free(output.stderr);
 
     try std.testing.expectEqual(@as(i32, 1), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "bonus apply path not yet ported") != null);
+}
+
+test "survival sim not ported output includes replay progress hints" {
+    const allocator = std.testing.allocator;
+    const output = try buildNotPortedOutputForReplayRunnerError(
+        allocator,
+        error.InvalidPerkPickEvent,
+        .{
+            .processed_ticks = 2559,
+            .total_ticks = 8807,
+            .event_count = 8,
+        },
+    );
+    defer allocator.free(output.stdout);
+    defer allocator.free(output.stderr);
+
+    try std.testing.expectEqual(@as(i32, 1), output.exit_code);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "ticks_processed=2559/8807") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.stderr, "event_count=8") != null);
 }
 
 fn makeTestReplayHeader(
@@ -1058,7 +1139,7 @@ fn makeTestReplayHeader(
             .quest_unlock_index_full = 0,
             .weapon_usage_counts = [_]u32{0} ** replay_codec.weapon_usage_count,
         },
-        .input_quantization = try allocator.dupe(u8, "raw"),
+        .input_quantization = try allocator.dupe(u8, "f32"),
     };
 }
 
@@ -1092,7 +1173,7 @@ test "unsupported replay header detail rejects preserve bugs replays" {
     try std.testing.expectEqualStrings("preserve_bugs=true replays are not ported", detail);
 }
 
-test "unsupported replay header detail rejects non raw quantization" {
+test "unsupported replay header detail rejects non f32 quantization" {
     const allocator = std.testing.allocator;
     var header = try makeTestReplayHeader(allocator);
     defer header.deinit(allocator);
@@ -1100,7 +1181,7 @@ test "unsupported replay header detail rejects non raw quantization" {
     header.input_quantization = try allocator.dupe(u8, "u8");
 
     const detail = unsupportedReplayHeaderDetail(header, 1) orelse return error.TestExpectedUnsupported;
-    try std.testing.expectEqualStrings("only raw/f32 input quantization is currently ported", detail);
+    try std.testing.expectEqualStrings("only f32 input quantization is currently ported", detail);
 }
 
 test "unsupported replay header detail rejects oversized tick count" {

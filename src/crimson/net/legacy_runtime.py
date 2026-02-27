@@ -157,7 +157,7 @@ class LanRuntime:
 
     _neutral_input: PackedPlayerInput = field(
         init=False,
-        default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0],
+        default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0],
     )
 
     def __post_init__(self) -> None:

@@ -7,15 +7,20 @@ from typing import cast
 from ...game_modes import GameMode
 from ...gameplay import build_gameplay_state
 from ...original.capture import (
-    CAPTURE_BOOTSTRAP_EVENT_KIND,
-    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
     capture_bootstrap_payload_from_event_payload,
     is_capture_state_reset_target,
 )
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, SpawnEntry
-from ...replay import Replay, UnknownEvent, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
+from ...replay import (
+    CaptureBootstrapEvent,
+    CaptureCreatureSpawnEvent,
+    Replay,
+    apply_replay_bootstrap,
+    unpack_tick_inputs,
+    warn_on_game_version_mismatch,
+)
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
@@ -61,6 +66,7 @@ def run_survival_replay(
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
+    tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -103,7 +109,7 @@ def run_survival_replay(
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             original_capture_replay = True
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
     apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
@@ -215,6 +221,14 @@ def run_survival_replay(
                     command_hash=str(step.command_hash),
                 ),
             )
+        if tick_trace_observer is not None:
+            tick_trace_observer(
+                int(tick_index),
+                world,
+                float(tick.elapsed_ms),
+                events,
+                dict(tick.rng_marks),
+            )
         if tick_observer is not None:
             tick_observer(int(tick_index), world)
 
@@ -298,9 +312,9 @@ def run_rush_replay(
     if warn_on_version_mismatch:
         warn_on_game_version_mismatch(replay, action="verification")
 
-    events_by_tick: dict[int, list[UnknownEvent]] = {}
+    events_by_tick: dict[int, list[CaptureBootstrapEvent]] = {}
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
             continue
         raise ReplayRunnerError("rush replay does not support events")
@@ -583,15 +597,13 @@ def run_quest_replay(
     has_capture_creature_spawn_events = False
     for event in replay.events:
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
-        if not isinstance(event, UnknownEvent):
-            continue
-        if str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             original_capture_replay = True
             tick_index = int(event.tick_index)
             if bootstrap_start_tick is None or tick_index < int(bootstrap_start_tick):
                 bootstrap_start_tick = int(tick_index)
             continue
-        if str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+        if isinstance(event, CaptureCreatureSpawnEvent):
             has_capture_creature_spawn_events = True
     apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
         original_capture_replay=bool(original_capture_replay),
@@ -707,9 +719,9 @@ def run_quest_replay(
         )
         bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
         for event in events_by_tick.get(int(bootstrap_start_tick), []):
-            if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
+            if not isinstance(event, CaptureBootstrapEvent):
                 continue
-            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(event)
             if payload is None:
                 break
             if payload.quest_session is not None:

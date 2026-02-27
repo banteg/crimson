@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
+from crimson.original.capture import _capture_bootstrap_event_from_payload
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay import CaptureBootstrapEvent, ReplayHeader, ReplayRecorder
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
@@ -93,3 +94,7 @@ def _strict_bootstrap_payload(*, tick_index: int = 0, player_count: int = 1) -> 
         "players": [_strict_bootstrap_player_payload() for _ in range(max(0, int(player_count)))],
         "digital_move_enabled_by_player": [False for _ in range(max(0, int(player_count)))],
     }
+
+
+def _strict_bootstrap_event(payload: dict[str, object]) -> CaptureBootstrapEvent:
+    return _capture_bootstrap_event_from_payload(dict(payload))

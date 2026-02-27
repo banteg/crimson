@@ -73,7 +73,7 @@ def test_resync_request_to_stream_to_apply_flow(mocker) -> None:
     assert pending[1] == payload
 
     join.mark_resync_applied(8)
-    join.queue_local_input([0.0, 0.0, [0.0, 0.0], 1], now_ms=1202)
+    join.queue_local_input([0.0, 0.0, 0.0, 0.0, 1], now_ms=1202)
     assert join.pop_tick_frame() is not None
 
 

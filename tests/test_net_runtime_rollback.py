@@ -59,19 +59,19 @@ def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[NetRuntime, 
 def test_runtime_emits_tick_frames_from_local_inputs(mocker) -> None:
     runtime, send_packet = _start_runtime(mocker)
 
-    runtime.queue_local_input([1.0, 0.0, [0.0, 0.0], 7], now_ms=1001)
+    runtime.queue_local_input([1.0, 0.0, 0.0, 0.0, 7], now_ms=1001)
     frame = runtime.pop_tick_frame()
 
     assert frame is not None
     assert frame.tick_index == 0
-    assert frame.frame_inputs[0][3] == 7
-    assert frame.frame_inputs[1] == [0.0, 0.0, [0.0, 0.0], 0]
+    assert frame.frame_inputs[0][4] == 7
+    assert frame.frame_inputs[1] == [0.0, 0.0, 0.0, 0.0, 0]
     assert any(isinstance(message, RbInputBatch) for message in _sent_messages(send_packet))
 
 
 def test_runtime_tracks_prediction_mismatches_and_rollbacks(mocker) -> None:
     runtime, _sent = _start_runtime(mocker)
-    runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], 1], now_ms=1100)
+    runtime.queue_local_input([0.0, 0.0, 0.0, 0.0, 1], now_ms=1100)
     assert runtime.pop_tick_frame() is not None
     runtime.store_local_snapshot(
         0,
@@ -82,13 +82,13 @@ def test_runtime_tracks_prediction_mismatches_and_rollbacks(mocker) -> None:
             mode_state={"stage": 1},
         ),
     )
-    runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], 2], now_ms=1101)
+    runtime.queue_local_input([0.0, 0.0, 0.0, 0.0, 2], now_ms=1101)
     assert runtime.pop_tick_frame() is not None
 
     runtime._handle_message(
         message=RbInputBatch(
             slot_index=1,
-            samples=[RbInputSample(tick_index=1, packed_input=[1.0, 0.0, [0.0, 0.0], 9])],
+            samples=[RbInputSample(tick_index=1, packed_input=[1.0, 0.0, 0.0, 0.0, 9])],
         ),
         now_ms=1102,
     )
@@ -104,13 +104,13 @@ def test_runtime_requests_resync_when_correction_exceeds_rollback_cap(mocker) ->
     runtime, send_packet = _start_runtime(mocker, rollback_max_ticks=2)
 
     for tick in range(6):
-        runtime.queue_local_input([0.0, 0.0, [0.0, 0.0], tick], now_ms=1200 + tick)
+        runtime.queue_local_input([0.0, 0.0, 0.0, 0.0, tick], now_ms=1200 + tick)
         assert runtime.pop_tick_frame() is not None
 
     runtime._handle_message(
         message=RbInputBatch(
             slot_index=1,
-            samples=[RbInputSample(tick_index=2, packed_input=[1.0, 0.0, [0.0, 0.0], 99])],
+            samples=[RbInputSample(tick_index=2, packed_input=[1.0, 0.0, 0.0, 0.0, 99])],
         ),
         now_ms=1300,
     )

@@ -7,27 +7,27 @@ from crimson.net.rollback import RollbackController
 def test_prediction_uses_hold_last_or_neutral_for_missing_remote_inputs() -> None:
     controller = RollbackController(player_count=2, local_slot_index=0, input_delay_ticks=0, max_rollback_ticks=8)
 
-    controller.queue_local_input([1.0, 0.0, [0.0, 0.0], 1])
+    controller.queue_local_input([1.0, 0.0, 0.0, 0.0, 1])
     frame0 = controller.pop_frame()
 
     assert frame0 is not None
     assert frame0.tick_index == 0
     assert frame0.predicted_slots == (1,)
-    assert frame0.frame_inputs[0][3] == 1
-    assert frame0.frame_inputs[1] == [0.0, 0.0, [0.0, 0.0], 0]
+    assert frame0.frame_inputs[0][4] == 1
+    assert frame0.frame_inputs[1] == [0.0, 0.0, 0.0, 0.0, 0]
 
 
 def test_prediction_mismatch_requests_rollback_within_cap() -> None:
     controller = RollbackController(player_count=2, local_slot_index=0, input_delay_ticks=0, max_rollback_ticks=8)
 
-    controller.queue_local_input([0.0, 0.0, [0.0, 0.0], 1])
+    controller.queue_local_input([0.0, 0.0, 0.0, 0.0, 1])
     assert controller.pop_frame() is not None
 
     controller.ingest_remote_samples(
         slot_index=1,
         samples=[
             # Late correction for a previously predicted tick.
-            RbInputSample(tick_index=0, packed_input=[1.0, 0.0, [0.0, 0.0], 9]),
+            RbInputSample(tick_index=0, packed_input=[1.0, 0.0, 0.0, 0.0, 9]),
         ],
     )
 
@@ -40,13 +40,13 @@ def test_prediction_mismatch_requests_rollback_within_cap() -> None:
 def test_noop_correction_does_not_trigger_rollback() -> None:
     controller = RollbackController(player_count=2, local_slot_index=0, input_delay_ticks=0, max_rollback_ticks=8)
 
-    controller.queue_local_input([0.0, 0.0, [0.0, 0.0], 1])
+    controller.queue_local_input([0.0, 0.0, 0.0, 0.0, 1])
     assert controller.pop_frame() is not None
 
     controller.ingest_remote_samples(
         slot_index=1,
         samples=[
-            RbInputSample(tick_index=0, packed_input=[0.0, 0.0, [0.0, 0.0], 0]),
+            RbInputSample(tick_index=0, packed_input=[0.0, 0.0, 0.0, 0.0, 0]),
         ],
     )
 
@@ -60,14 +60,14 @@ def test_corrections_older_than_cap_trigger_resync_request() -> None:
     controller = RollbackController(player_count=2, local_slot_index=0, input_delay_ticks=0, max_rollback_ticks=2)
 
     for tick in range(6):
-        controller.queue_local_input([0.0, 0.0, [0.0, 0.0], tick])
+        controller.queue_local_input([0.0, 0.0, 0.0, 0.0, tick])
         assert controller.pop_frame() is not None
 
     controller.ingest_remote_samples(
         slot_index=1,
         samples=[
             # Use tick 2 so the emitted-frame history still tracks this frame.
-            RbInputSample(tick_index=2, packed_input=[1.0, 0.0, [0.0, 0.0], 99]),
+            RbInputSample(tick_index=2, packed_input=[1.0, 0.0, 0.0, 0.0, 99]),
         ],
     )
 

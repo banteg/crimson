@@ -130,7 +130,7 @@ class NetRuntime:
     reconnect_count: int = field(init=False, default=0)
     _reconnect_deadline_ms: int = field(init=False, default=0)
 
-    _neutral_input: PackedPlayerInput = field(init=False, default_factory=lambda: [0.0, 0.0, [0.0, 0.0], 0])
+    _neutral_input: PackedPlayerInput = field(init=False, default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0])
 
     def __post_init__(self) -> None:
         self.transport = RelayUdpTransport(bind_host="0.0.0.0", bind_port=0)

@@ -55,7 +55,7 @@ def test_relay_packet_round_trip_for_rollback_input_batch() -> None:
         reliable=False,
         message=RbInputBatch(
             slot_index=1,
-            samples=[RbInputSample(tick_index=11, packed_input=[1.0, 0.0, [2.0, 3.0], 4])],
+            samples=[RbInputSample(tick_index=11, packed_input=[1.0, 0.0, 2.0, 3.0, 4])],
         ),
     )
 

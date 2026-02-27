@@ -8,9 +8,6 @@ from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...gameplay import build_gameplay_state
 from ...original.capture import (
-    CAPTURE_BOOTSTRAP_EVENT_KIND,
-    CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-    CAPTURE_STATE_TRANSITION_EVENT_KIND,
     capture_bootstrap_payload_from_event_payload,
     capture_state_transitions_from_event_payload,
     is_capture_state_reset_target,
@@ -19,7 +16,15 @@ from ...perks.ids import perk_display_name
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext
-from ...replay import PerkMenuOpenEvent, Replay, UnknownEvent, apply_replay_bootstrap, unpack_tick_inputs
+from ...replay import (
+    CaptureBootstrapEvent,
+    CaptureCreatureSpawnEvent,
+    CaptureStateTransitionEvent,
+    PerkMenuOpenEvent,
+    Replay,
+    apply_replay_bootstrap,
+    unpack_tick_inputs,
+)
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId, weapon_display_name
 from ..sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
@@ -169,11 +174,9 @@ def _append_extra_replay_events(
                 include_extra_events=True,
             )
             continue
-        if not isinstance(event, UnknownEvent):
+        if not isinstance(event, CaptureStateTransitionEvent):
             continue
-        if str(event.kind) != CAPTURE_STATE_TRANSITION_EVENT_KIND:
-            continue
-        transitions = capture_state_transitions_from_event_payload(list(event.payload))
+        transitions = capture_state_transitions_from_event_payload(event)
         if transitions is None:
             continue
         for target_state, before_state, after_state in transitions:
@@ -429,7 +432,7 @@ def _run_survival_replay_info(
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             original_capture_replay = True
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
 
@@ -594,9 +597,9 @@ def _run_rush_replay_info(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> ReplayInfoResult:
-    events_by_tick: dict[int, list[UnknownEvent]] = {}
+    events_by_tick: dict[int, list[CaptureBootstrapEvent]] = {}
     for event in replay.events:
-        if isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
             continue
         raise ReplayRunnerError("rush replay does not support events")
@@ -780,15 +783,13 @@ def _run_quest_replay_info(
     has_capture_creature_spawn_events = False
     for event in replay.events:
         events_by_tick.setdefault(int(event.tick_index), []).append(event)
-        if not isinstance(event, UnknownEvent):
-            continue
-        if str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND:
+        if isinstance(event, CaptureBootstrapEvent):
             original_capture_replay = True
             tick_event = int(event.tick_index)
             if bootstrap_start_tick is None or tick_event < int(bootstrap_start_tick):
                 bootstrap_start_tick = int(tick_event)
             continue
-        if str(event.kind) == CAPTURE_CREATURE_SPAWN_EVENT_KIND:
+        if isinstance(event, CaptureCreatureSpawnEvent):
             has_capture_creature_spawn_events = True
 
     apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
@@ -891,9 +892,9 @@ def _run_quest_replay_info(
         )
         bootstrap_dt_ms = float(bootstrap_dt) * 1000.0
         for event in events_by_tick.get(int(bootstrap_start_tick), []):
-            if not (isinstance(event, UnknownEvent) and str(event.kind) == CAPTURE_BOOTSTRAP_EVENT_KIND):
+            if not isinstance(event, CaptureBootstrapEvent):
                 continue
-            payload = capture_bootstrap_payload_from_event_payload(list(event.payload))
+            payload = capture_bootstrap_payload_from_event_payload(event)
             if payload is None:
                 break
             if payload.quest_session is not None:

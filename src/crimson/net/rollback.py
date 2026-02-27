@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from ..replay.types import PackedPlayerInput
 from .relay_protocol import RbInputBatch, RbInputSample
 
-_NEUTRAL_INPUT: PackedPlayerInput = [0.0, 0.0, [0.0, 0.0], 0]
+_NEUTRAL_INPUT: PackedPlayerInput = [0.0, 0.0, 0.0, 0.0, 0]
 _MAX_SENT_HISTORY_TICKS = 256
 _MAX_RESEND_SAMPLES = 64
 
