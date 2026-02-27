@@ -1525,13 +1525,13 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
 
     elapsed = apply_capture_bootstrap_payload(payload, state=state, players=[player])
     assert elapsed is None
-    assert_float_close(player.hot_tempered_timer, 1.36)
-    assert_float_close(player.man_bomb_timer, 0.5)
-    assert_float_close(player.living_fortress_timer, 0.25)
-    assert_float_close(player.fire_cough_timer, 0.75)
-    assert_float_close(state.perk_intervals.hot_tempered, 1.4)
-    assert_float_close(state.perk_intervals.man_bomb, 6.0)
-    assert_float_close(state.perk_intervals.fire_cough, 3.0)
+    assert_float_close(player.hot_tempered_timer, float(f32(1.36)))
+    assert_float_close(player.man_bomb_timer, float(f32(0.5)))
+    assert_float_close(player.living_fortress_timer, float(f32(0.25)))
+    assert_float_close(player.fire_cough_timer, float(f32(0.75)))
+    assert_float_close(state.perk_intervals.hot_tempered, float(f32(1.4)))
+    assert_float_close(state.perk_intervals.man_bomb, float(f32(6.0)))
+    assert_float_close(state.perk_intervals.fire_cough, float(f32(3.0)))
 
 
 def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> None:

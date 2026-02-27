@@ -81,10 +81,10 @@ pub const ReplayHeader = struct {
 };
 
 pub const ReplayPlayerInput = struct {
-    move_x: f64,
-    move_y: f64,
-    aim_x: f64,
-    aim_y: f64,
+    move_x: f32,
+    move_y: f32,
+    aim_x: f32,
+    aim_y: f32,
     flags: u32,
 };
 
@@ -142,9 +142,9 @@ pub const max_capture_state_transition_rows_per_event: usize = 64;
 pub const max_capture_bootstrap_perk_pairs_per_player: usize = 96;
 
 pub const CaptureBootstrapQuestSession = struct {
-    spawn_timeline_ms: f64 = 0.0,
-    no_creatures_timer_ms: f64 = 0.0,
-    completion_transition_ms: f64 = -1.0,
+    spawn_timeline_ms: f32 = 0.0,
+    no_creatures_timer_ms: f32 = 0.0,
+    completion_transition_ms: f32 = -1.0,
 };
 
 pub const CaptureBootstrapPlayerPerkPair = struct {
@@ -161,35 +161,35 @@ pub const CaptureBootstrapPlayerPerkCounts = struct {
 
 pub const CaptureBootstrapPlayer = struct {
     weapon_id: i32 = 1,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
-    health: f64 = 100.0,
-    ammo: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
+    health: f32 = 100.0,
+    ammo: f32 = 0.0,
     experience: i32 = 0,
     level: i32 = 1,
     clip_size: ?i32 = null,
     reload_active: ?bool = null,
-    reload_timer: ?f64 = null,
-    reload_timer_max: ?f64 = null,
-    shot_cooldown: ?f64 = null,
-    spread_heat: ?f64 = null,
-    aim_x: ?f64 = null,
-    aim_y: ?f64 = null,
-    aim_heading: ?f64 = null,
+    reload_timer: ?f32 = null,
+    reload_timer_max: ?f32 = null,
+    shot_cooldown: ?f32 = null,
+    spread_heat: ?f32 = null,
+    aim_x: ?f32 = null,
+    aim_y: ?f32 = null,
+    aim_heading: ?f32 = null,
     alt_weapon_id: ?i32 = null,
     alt_clip_size: ?i32 = null,
-    alt_ammo: ?f64 = null,
+    alt_ammo: ?f32 = null,
     alt_reload_active: ?bool = null,
-    alt_reload_timer: ?f64 = null,
-    alt_reload_timer_max: ?f64 = null,
-    alt_shot_cooldown: ?f64 = null,
+    alt_reload_timer: ?f32 = null,
+    alt_reload_timer_max: ?f32 = null,
+    alt_shot_cooldown: ?f32 = null,
     shield_ms: ?i32 = null,
     fire_bullets_ms: ?i32 = null,
     speed_bonus_ms: ?i32 = null,
-    hot_tempered_timer: ?f64 = null,
-    man_bomb_timer: ?f64 = null,
-    living_fortress_timer: ?f64 = null,
-    fire_cough_timer: ?f64 = null,
+    hot_tempered_timer: ?f32 = null,
+    man_bomb_timer: ?f32 = null,
+    living_fortress_timer: ?f32 = null,
+    fire_cough_timer: ?f32 = null,
 };
 
 pub const CaptureBootstrapEvent = struct {
@@ -214,9 +214,9 @@ pub const CaptureBootstrapEvent = struct {
     energizer_ms: ?i32 = null,
     double_experience_ms: ?i32 = null,
     freeze_ms: ?i32 = null,
-    perk_interval_man_bomb: ?f64 = null,
-    perk_interval_fire_cough: ?f64 = null,
-    perk_interval_hot_tempered: ?f64 = null,
+    perk_interval_man_bomb: ?f32 = null,
+    perk_interval_fire_cough: ?f32 = null,
+    perk_interval_hot_tempered: ?f32 = null,
     quest_session: ?CaptureBootstrapQuestSession = null,
 };
 
@@ -235,36 +235,36 @@ pub const CapturePerkPendingEvent = struct {
 
 pub const CaptureCreatureSpawnRow = struct {
     template_id: i32 = 0,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
-    heading: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
+    heading: f32 = 0.0,
 };
 
 pub const CaptureCreatureAddedHeadRow = struct {
     index: i32 = -1,
     has_heading: bool = false,
-    heading: f64 = 0.0,
+    heading: f32 = 0.0,
     has_target_heading: bool = false,
-    target_heading: f64 = 0.0,
+    target_heading: f32 = 0.0,
     has_ai_mode: bool = false,
     ai_mode: i32 = 0,
     has_link_index: bool = false,
     link_index: i32 = 0,
     has_hp: bool = false,
-    hp: f64 = 0.0,
+    hp: f32 = 0.0,
     has_lifecycle_stage: bool = false,
-    lifecycle_stage: f64 = 0.0,
+    lifecycle_stage: f32 = 0.0,
     has_orbit_angle: bool = false,
-    orbit_angle: f64 = 0.0,
+    orbit_angle: f32 = 0.0,
     has_orbit_radius: bool = false,
-    orbit_radius: f64 = 0.0,
+    orbit_radius: f32 = 0.0,
     has_flags: bool = false,
     flags: i32 = 0,
     has_type_id: bool = false,
     type_id: i32 = 0,
     has_pos: bool = false,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
 };
 
 pub const CaptureCreatureSpawnEvent = struct {
@@ -917,39 +917,39 @@ fn parseCaptureBootstrapEvent(
     for (payload.players, 0..) |player_wire, idx| {
         event.players[idx] = .{
             .weapon_id = try parseEventI32(player_wire.weapon_id),
-            .pos_x = player_wire.pos.x,
-            .pos_y = player_wire.pos.y,
-            .health = player_wire.health,
-            .ammo = player_wire.ammo,
+            .pos_x = narrowEventF32(player_wire.pos.x),
+            .pos_y = narrowEventF32(player_wire.pos.y),
+            .health = narrowEventF32(player_wire.health),
+            .ammo = narrowEventF32(player_wire.ammo),
             .experience = try parseEventI32(player_wire.experience),
             .level = try parseEventI32(player_wire.level),
             .clip_size = if (player_wire.clip_size) |clip_size| try parseEventI32(clip_size) else null,
             .reload_active = player_wire.reload_active,
-            .reload_timer = player_wire.reload_timer,
-            .reload_timer_max = player_wire.reload_timer_max,
-            .shot_cooldown = player_wire.shot_cooldown,
-            .spread_heat = player_wire.spread_heat,
+            .reload_timer = narrowEventOptF32(player_wire.reload_timer),
+            .reload_timer_max = narrowEventOptF32(player_wire.reload_timer_max),
+            .shot_cooldown = narrowEventOptF32(player_wire.shot_cooldown),
+            .spread_heat = narrowEventOptF32(player_wire.spread_heat),
             .shield_ms = if (player_wire.bonus_timers_ms.get("shield")) |value| try parseEventI32(value) else null,
             .fire_bullets_ms = if (player_wire.bonus_timers_ms.get("fire_bullets")) |value| try parseEventI32(value) else null,
             .speed_bonus_ms = if (player_wire.bonus_timers_ms.get("speed_bonus")) |value| try parseEventI32(value) else null,
-            .hot_tempered_timer = player_wire.perk_timers.get("hot_tempered"),
-            .man_bomb_timer = player_wire.perk_timers.get("man_bomb"),
-            .living_fortress_timer = player_wire.perk_timers.get("living_fortress"),
-            .fire_cough_timer = player_wire.perk_timers.get("fire_cough"),
+            .hot_tempered_timer = parseMapF32(player_wire.perk_timers, "hot_tempered"),
+            .man_bomb_timer = parseMapF32(player_wire.perk_timers, "man_bomb"),
+            .living_fortress_timer = parseMapF32(player_wire.perk_timers, "living_fortress"),
+            .fire_cough_timer = parseMapF32(player_wire.perk_timers, "fire_cough"),
         };
         if (player_wire.aim) |aim| {
-            event.players[idx].aim_x = aim.x;
-            event.players[idx].aim_y = aim.y;
-            event.players[idx].aim_heading = aim.heading;
+            event.players[idx].aim_x = narrowEventF32(aim.x);
+            event.players[idx].aim_y = narrowEventF32(aim.y);
+            event.players[idx].aim_heading = narrowEventOptF32(aim.heading);
         }
         if (player_wire.alt_weapon) |alt_weapon| {
             event.players[idx].alt_weapon_id = if (alt_weapon.weapon_id) |value| try parseEventI32(value) else null;
             event.players[idx].alt_clip_size = if (alt_weapon.clip_size) |value| try parseEventI32(value) else null;
-            event.players[idx].alt_ammo = alt_weapon.ammo;
+            event.players[idx].alt_ammo = narrowEventOptF32(alt_weapon.ammo);
             event.players[idx].alt_reload_active = alt_weapon.reload_active;
-            event.players[idx].alt_reload_timer = alt_weapon.reload_timer;
-            event.players[idx].alt_reload_timer_max = alt_weapon.reload_timer_max;
-            event.players[idx].alt_shot_cooldown = alt_weapon.shot_cooldown;
+            event.players[idx].alt_reload_timer = narrowEventOptF32(alt_weapon.reload_timer);
+            event.players[idx].alt_reload_timer_max = narrowEventOptF32(alt_weapon.reload_timer_max);
+            event.players[idx].alt_shot_cooldown = narrowEventOptF32(alt_weapon.shot_cooldown);
         }
     }
 
@@ -965,14 +965,14 @@ fn parseCaptureBootstrapEvent(
     event.energizer_ms = try parseMapI32(payload.bonus_timers_ms, "2");
     event.double_experience_ms = try parseMapI32(payload.bonus_timers_ms, "6");
     event.freeze_ms = try parseMapI32(payload.bonus_timers_ms, "11");
-    event.perk_interval_man_bomb = payload.perk_intervals.get("man_bomb");
-    event.perk_interval_fire_cough = payload.perk_intervals.get("fire_cough");
-    event.perk_interval_hot_tempered = payload.perk_intervals.get("hot_tempered");
+    event.perk_interval_man_bomb = parseMapF32(payload.perk_intervals, "man_bomb");
+    event.perk_interval_fire_cough = parseMapF32(payload.perk_intervals, "fire_cough");
+    event.perk_interval_hot_tempered = parseMapF32(payload.perk_intervals, "hot_tempered");
     if (payload.quest_session) |quest_session| {
         event.quest_session = .{
-            .spawn_timeline_ms = quest_session.spawn_timeline_ms,
-            .no_creatures_timer_ms = quest_session.no_creatures_timer_ms,
-            .completion_transition_ms = quest_session.completion_transition_ms,
+            .spawn_timeline_ms = narrowEventF32(quest_session.spawn_timeline_ms),
+            .no_creatures_timer_ms = narrowEventF32(quest_session.no_creatures_timer_ms),
+            .completion_transition_ms = narrowEventF32(quest_session.completion_transition_ms),
         };
     }
 
@@ -1028,9 +1028,9 @@ fn parseCaptureCreatureSpawnEvent(
     for (payload.spawns, 0..) |spawn_row, idx| {
         event.spawns[idx] = .{
             .template_id = try parseEventI32(spawn_row.template_id),
-            .pos_x = spawn_row.pos.x,
-            .pos_y = spawn_row.pos.y,
-            .heading = spawn_row.heading,
+            .pos_x = narrowEventF32(spawn_row.pos.x),
+            .pos_y = narrowEventF32(spawn_row.pos.y),
+            .heading = narrowEventF32(spawn_row.heading),
         };
     }
 
@@ -1039,28 +1039,28 @@ fn parseCaptureCreatureSpawnEvent(
         event.added_head[idx] = .{
             .index = try parseEventI32(row.index),
             .has_heading = row.heading != null,
-            .heading = row.heading orelse 0.0,
+            .heading = if (row.heading) |value| narrowEventF32(value) else 0.0,
             .has_target_heading = row.target_heading != null,
-            .target_heading = row.target_heading orelse 0.0,
+            .target_heading = if (row.target_heading) |value| narrowEventF32(value) else 0.0,
             .has_ai_mode = row.ai_mode != null,
             .ai_mode = if (row.ai_mode) |value| try parseEventI32(value) else 0,
             .has_link_index = row.link_index != null,
             .link_index = if (row.link_index) |value| try parseEventI32(value) else 0,
             .has_hp = row.hp != null,
-            .hp = row.hp orelse 0.0,
+            .hp = if (row.hp) |value| narrowEventF32(value) else 0.0,
             .has_lifecycle_stage = row.lifecycle_stage != null,
-            .lifecycle_stage = row.lifecycle_stage orelse 0.0,
+            .lifecycle_stage = if (row.lifecycle_stage) |value| narrowEventF32(value) else 0.0,
             .has_orbit_angle = row.orbit_angle != null,
-            .orbit_angle = row.orbit_angle orelse 0.0,
+            .orbit_angle = if (row.orbit_angle) |value| narrowEventF32(value) else 0.0,
             .has_orbit_radius = row.orbit_radius != null,
-            .orbit_radius = row.orbit_radius orelse 0.0,
+            .orbit_radius = if (row.orbit_radius) |value| narrowEventF32(value) else 0.0,
             .has_flags = row.flags != null,
             .flags = if (row.flags) |value| try parseEventI32(value) else 0,
             .has_type_id = row.type_id != null,
             .type_id = if (row.type_id) |value| try parseEventI32(value) else 0,
             .has_pos = row.pos != null,
-            .pos_x = if (row.pos) |pos| pos.x else 0.0,
-            .pos_y = if (row.pos) |pos| pos.y else 0.0,
+            .pos_x = if (row.pos) |pos| narrowEventF32(pos.x) else 0.0,
+            .pos_y = if (row.pos) |pos| narrowEventF32(pos.y) else 0.0,
         };
     }
 
@@ -1094,6 +1094,13 @@ fn parseMapI32(
 ) ReplayCodecError!?i32 {
     if (map.get(key)) |value| {
         return try parseEventI32(value);
+    }
+    return null;
+}
+
+fn parseMapF32(map: anytype, key: []const u8) ?f32 {
+    if (map.get(key)) |value| {
+        return narrowEventF32(value);
     }
     return null;
 }
@@ -1176,15 +1183,25 @@ fn buildHeader(
     };
 }
 
-fn normalizeInputValue(value: f64, input_quantization: []const u8) ReplayCodecError!f64 {
+fn normalizeInputValue(value: f64, input_quantization: []const u8) ReplayCodecError!f32 {
     if (std.mem.eql(u8, input_quantization, "raw")) {
-        return value;
+        return narrowEventF32(value);
     }
     if (std.mem.eql(u8, input_quantization, "f32")) {
-        const value_f32: f32 = @floatCast(value);
-        return @floatCast(value_f32);
+        return narrowEventF32(value);
     }
     return error.UnsupportedInputQuantization;
+}
+
+fn narrowEventF32(value: f64) f32 {
+    return @floatCast(value);
+}
+
+fn narrowEventOptF32(value: ?f64) ?f32 {
+    if (value) |inner| {
+        return narrowEventF32(inner);
+    }
+    return null;
 }
 
 fn parseInputFlagsValue(value: i64) ReplayCodecError!u32 {
