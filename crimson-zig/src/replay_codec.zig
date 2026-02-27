@@ -374,27 +374,27 @@ pub const ReplaySummary = struct {
 };
 
 const ReplayStatusWire = struct {
-    quest_unlock_index: i64 = 0,
-    quest_unlock_index_full: i64 = 0,
-    weapon_usage_counts: []const i64 = &.{},
+    quest_unlock_index: i32 = 0,
+    quest_unlock_index_full: i32 = 0,
+    weapon_usage_counts: []const u32 = &.{},
 };
 
 const ReplayHeaderWire = struct {
-    game_mode_id: i64,
-    seed: i64,
-    replay_format_version: i64,
+    game_mode_id: i32,
+    seed: u32,
+    replay_format_version: i32,
     quest_level: []const u8 = "",
     bootstrap_kind: []const u8 = "none",
-    bootstrap_seed: i64 = 0,
+    bootstrap_seed: u32 = 0,
     game_version: []const u8 = "",
-    tick_rate: i64 = 60,
-    difficulty_level: i64 = 0,
+    tick_rate: i32 = 60,
+    difficulty_level: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
-    detail_preset: i64 = 5,
-    fx_toggle: i64 = 0,
+    detail_preset: i32 = 5,
+    fx_toggle: i32 = 0,
     world_size: f32 = 1024.0,
-    player_count: i64 = 1,
+    player_count: i32 = 1,
     status: ReplayStatusWire = .{},
     input_quantization: []const u8 = "raw",
 };
@@ -404,7 +404,7 @@ const ReplayInputWire = struct {
     move_y: f32,
     aim_x: f32,
     aim_y: f32,
-    flags: i64,
+    flags: i32,
 
     pub fn msgpackFormat() msgpack.StructFormat {
         return .{ .as_array = .{} };
@@ -438,14 +438,14 @@ fn StringMapWire(comptime Value: type) type {
     };
 }
 
-const StringI64Map = StringMapWire(i64);
+const StringI32Map = StringMapWire(i32);
 const StringF32Map = StringMapWire(f32);
 
 const CaptureBootstrapPerkWire = struct {
-    pending_count: i64 = 0,
+    pending_count: i32 = 0,
     choices_dirty: bool = false,
-    choices: []const i64 = &.{},
-    player_nonzero_counts: []const []const []const i64 = &.{},
+    choices: []const i32 = &.{},
+    player_nonzero_counts: []const []const []const i32 = &.{},
 };
 
 const CaptureBootstrapPlayerAimWire = struct {
@@ -455,8 +455,8 @@ const CaptureBootstrapPlayerAimWire = struct {
 };
 
 const CaptureBootstrapPlayerAltWeaponWire = struct {
-    weapon_id: ?i64 = null,
-    clip_size: ?i64 = null,
+    weapon_id: ?i32 = null,
+    clip_size: ?i32 = null,
     ammo: ?f32 = null,
     reload_active: ?bool = null,
     reload_timer: ?f32 = null,
@@ -465,13 +465,13 @@ const CaptureBootstrapPlayerAltWeaponWire = struct {
 };
 
 const CaptureBootstrapPlayerWire = struct {
-    weapon_id: i64,
+    weapon_id: i32,
     pos: CaptureVec2Wire,
     health: f32,
     ammo: f32,
-    experience: i64,
-    level: i64,
-    clip_size: ?i64 = null,
+    experience: i32,
+    level: i32,
+    clip_size: ?i32 = null,
     reload_active: ?bool = null,
     reload_timer: ?f32 = null,
     reload_timer_max: ?f32 = null,
@@ -479,7 +479,7 @@ const CaptureBootstrapPlayerWire = struct {
     spread_heat: ?f32 = null,
     aim: ?CaptureBootstrapPlayerAimWire = null,
     alt_weapon: ?CaptureBootstrapPlayerAltWeaponWire = null,
-    bonus_timers_ms: StringI64Map = .{},
+    bonus_timers_ms: StringI32Map = .{},
     perk_timers: StringF32Map = .{},
 };
 
@@ -490,57 +490,57 @@ const CaptureBootstrapQuestSessionWire = struct {
 };
 
 const CaptureCreatureSpawnRowWire = struct {
-    template_id: i64,
+    template_id: i32,
     pos: CaptureVec2Wire,
     heading: f32,
 };
 
 const CaptureCreatureSpawnAddedHeadRowWire = struct {
-    index: i64,
+    index: i32,
     heading: ?f32 = null,
     target_heading: ?f32 = null,
-    ai_mode: ?i64 = null,
-    link_index: ?i64 = null,
+    ai_mode: ?i32 = null,
+    link_index: ?i32 = null,
     hp: ?f32 = null,
     lifecycle_stage: ?f32 = null,
     orbit_angle: ?f32 = null,
     orbit_radius: ?f32 = null,
-    flags: ?i64 = null,
-    type_id: ?i64 = null,
+    flags: ?i32 = null,
+    type_id: ?i32 = null,
     pos: ?CaptureVec2Wire = null,
 };
 
 const CaptureStateTransitionRowWire = struct {
-    target_state: i64,
-    before_state: ?i64 = null,
-    after_state: ?i64 = null,
+    target_state: i32,
+    before_state: ?i32 = null,
+    after_state: ?i32 = null,
 };
 
 const ReplayEventPayloadWire = struct {
-    tick_index: ?i64 = null,
-    elapsed_ms: ?i64 = null,
-    score_xp: ?i64 = null,
-    perk_pending: ?i64 = null,
+    tick_index: ?i32 = null,
+    elapsed_ms: ?i32 = null,
+    score_xp: ?i32 = null,
+    perk_pending: ?i32 = null,
     perk: ?CaptureBootstrapPerkWire = null,
-    bonus_timers_ms: StringI64Map = .{},
+    bonus_timers_ms: StringI32Map = .{},
     players: []const CaptureBootstrapPlayerWire = &.{},
     digital_move_enabled_by_player: []const bool = &.{},
     perk_intervals: StringF32Map = .{},
     quest_session: ?CaptureBootstrapQuestSessionWire = null,
-    perk_id: ?i64 = null,
+    perk_id: ?i32 = null,
     outside_before: bool = false,
-    pending_before: ?i64 = null,
-    pending_after: ?i64 = null,
+    pending_before: ?i32 = null,
+    pending_after: ?i32 = null,
     spawns: []const CaptureCreatureSpawnRowWire = &.{},
     added_head: []const CaptureCreatureSpawnAddedHeadRowWire = &.{},
     transitions: []const CaptureStateTransitionRowWire = &.{},
 };
 
 const ReplayEventWire = struct {
-    tick_index: i64,
+    tick_index: i32,
     kind: []const u8,
-    player_index: i64 = -1,
-    choice_index: i64 = -1,
+    player_index: i32 = -1,
+    choice_index: i32 = -1,
     payload: []const ReplayEventPayloadWire = &.{},
 
     pub fn msgpackFormat() msgpack.StructFormat {
@@ -1092,10 +1092,7 @@ fn parseMapI32(
     map: anytype,
     key: []const u8,
 ) ReplayCodecError!?i32 {
-    if (map.get(key)) |value| {
-        return try parseEventI32(value);
-    }
-    return null;
+    return map.get(key);
 }
 
 fn parseMapF32(map: anytype, key: []const u8) ?f32 {
@@ -1190,14 +1187,13 @@ fn normalizeInputValue(value: f32, input_quantization: []const u8) ReplayCodecEr
     return error.UnsupportedInputQuantization;
 }
 
-fn parseInputFlagsValue(value: i64) ReplayCodecError!u32 {
+fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
     if (value < 0 or value > std.math.maxInt(u32)) return error.UnsupportedInputShape;
     return @intCast(value);
 }
 
-fn parseEventI32(value: i64) ReplayCodecError!i32 {
-    if (value < std.math.minInt(i32) or value > std.math.maxInt(i32)) return error.UnsupportedEventShape;
-    return @intCast(value);
+fn parseEventI32(value: i32) ReplayCodecError!i32 {
+    return value;
 }
 
 fn chooseTerrainIds(quest_unlock_index: i32, rng: *Crand) i32 {
@@ -1233,14 +1229,12 @@ fn floatToPositiveI32(value: f32) i32 {
     return @intFromFloat(clamped);
 }
 
-fn parseI32(value: i64) ReplayCodecError!i32 {
-    if (value < std.math.minInt(i32) or value > std.math.maxInt(i32)) return error.InvalidHeaderValue;
-    return @intCast(value);
+fn parseI32(value: i32) ReplayCodecError!i32 {
+    return value;
 }
 
-fn parseU32(value: i64) ReplayCodecError!u32 {
-    if (value < 0 or value > std.math.maxInt(u32)) return error.InvalidHeaderValue;
-    return @intCast(value);
+fn parseU32(value: u32) ReplayCodecError!u32 {
+    return value;
 }
 
 test "unpack input flags decodes packed fields" {
@@ -1445,7 +1439,7 @@ test "parse replay event rejects capture payload arrays that are not singleton" 
 }
 
 test "build header rejects world_size above i32 range" {
-    const usage_counts = [_]i64{0} ** weapon_usage_count;
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
     const too_large_world_size: f32 = @as(f32, @floatFromInt(std.math.maxInt(i32))) + 1024.0;
     const wire = ReplayHeaderWire{
         .game_mode_id = 1,
@@ -1514,8 +1508,8 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
 }
 
 test "capture bootstrap rejects perk nonzero counts above max players" {
-    const empty_pairs = [_][]const i64{};
-    const player_nonzero_counts = [_][]const []const i64{empty_pairs[0..]} ** (max_players + 1);
+    const empty_pairs = [_][]const i32{};
+    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
     const payload = [_]ReplayEventPayloadWire{
         .{
             .perk = .{

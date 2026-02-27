@@ -1116,7 +1116,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
     try runTelekineticUpdate(&pool, &state, perk_players[0..], 0.7);
 
     try std.testing.expect(pool.entries[0].picked);
-    try std.testing.expectEqual(@as(i64, 500), perk_players[0].experience);
+    try std.testing.expectEqual(@as(i32, 500), perk_players[0].experience);
 }
 
 test "telekinetic nuke stores pending origin from bonus position" {
@@ -1208,8 +1208,8 @@ test "telekinetic picks only one bonus per frame across players" {
     try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
     try std.testing.expect(pool.entries[0].picked);
     try std.testing.expect(!pool.entries[1].picked);
-    try std.testing.expectEqual(@as(i64, 500), players[0].experience);
-    try std.testing.expectEqual(@as(i64, 0), players[1].experience);
+    try std.testing.expectEqual(@as(i32, 500), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 0), players[1].experience);
 }
 
 test "telekinetic hover timer carries across bonus switch" {
