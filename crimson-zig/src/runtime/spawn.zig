@@ -941,14 +941,13 @@ pub fn advanceSurvivalSpawnStage(
         if (stage == 2) {
             if (level < 11) break;
             stage = 3;
-            const step = 128.0 / 3.0;
+            const step: f32 = 42.666668;
             for (0..12) |idx| {
-                const idx_f64: f64 = @floatFromInt(idx);
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp2_random_35,
                     1088.0,
-                    idx_f64 * step + 256.0,
+                    @as(f32, @floatFromInt(idx)) * step + 256.0,
                     heading,
                 );
             }
@@ -1876,7 +1875,8 @@ test "survival milestone stage2 grid positions" {
     try expectFloatClose(1088.0, out.calls[0].pos.x);
     try expectFloatClose(256.0, out.calls[0].pos.y);
     try expectFloatClose(1088.0, out.calls[out.count - 1].pos.x);
-    try expectFloatClose(256.0 + 11.0 * (128.0 / 3.0), out.calls[out.count - 1].pos.y);
+    const stage2_step: f32 = 42.666668;
+    try expectFloatClose(256.0 + 11.0 * stage2_step, out.calls[out.count - 1].pos.y);
 }
 
 test "survival milestone stage9 final wave layout" {
