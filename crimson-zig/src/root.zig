@@ -13,4 +13,6 @@ pub const weapons = @import("runtime/weapons.zig");
 pub const projectiles = @import("runtime/projectiles.zig");
 pub const bonuses = @import("runtime/bonuses.zig");
 
+pub const formats = @import("formats/mod.zig");
+
 pub const version = "0.1.0-dev";
