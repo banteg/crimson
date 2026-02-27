@@ -66,6 +66,7 @@ def run_survival_replay(
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
+    tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -219,6 +220,14 @@ def run_survival_replay(
                     events=events,
                     command_hash=str(step.command_hash),
                 ),
+            )
+        if tick_trace_observer is not None:
+            tick_trace_observer(
+                int(tick_index),
+                world,
+                float(tick.elapsed_ms),
+                events,
+                dict(tick.rng_marks),
             )
         if tick_observer is not None:
             tick_observer(int(tick_index), world)
