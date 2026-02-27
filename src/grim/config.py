@@ -13,8 +13,6 @@ PLAYER_NAME_SIZE = 0x20
 PLAYER_NAME_MAX_BYTES = PLAYER_NAME_SIZE - 1
 KEYBINDS_BLOB_SIZE = 0x80
 UNKNOWN_248_SIZE = 0x1F8
-UNKNOWN_1C_SIZE = 0x28
-UNKNOWN_4C_SIZE = 0x20
 PLAYER_BIND_BLOCK_DWORDS = 0x10
 PLAYER_BIND_BLOCK_SIZE = PLAYER_BIND_BLOCK_DWORDS * 4
 PLAYER_BIND_INPUT_DWORDS = 0x0D
@@ -26,6 +24,18 @@ EXT_HUD_INDICATOR_UNSET = 0
 EXT_HUD_INDICATOR_OFF = 1
 EXT_HUD_INDICATOR_ON = 2
 KEYBIND_UNBOUND_CODE = 0x17E
+PLAYER_MODE_FLAG_KEYS = (
+    "player_mode_flag_p1",
+    "player_mode_flag_p2",
+    "player_mode_flag_p3",
+    "player_mode_flag_p4",
+)
+AIM_SCHEME_KEYS = (
+    "aim_scheme_p1",
+    "aim_scheme_p2",
+    "aim_scheme_p3",
+    "aim_scheme_p4",
+)
 
 CRIMSON_CFG_STRUCT = Struct(
     "sound_disable" / Byte,
@@ -43,10 +53,16 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_12" / Bytes(2),
     "player_count" / Int32ul,
     "game_mode" / Int32ul,
-    "unknown_1c" / Bytes(0x28),
-    "unknown_44" / Int32ul,
-    "unknown_48" / Int32ul,
-    "unknown_4c" / Bytes(0x20),
+    "player_mode_flag_p1" / Int32ul,
+    "player_mode_flag_p2" / Int32ul,
+    "player_mode_flag_p3" / Int32ul,
+    "player_mode_flag_p4" / Int32ul,
+    "player_mode_flags_reserved" / Bytes(0x18),
+    "aim_scheme_p1" / Int32ul,
+    "aim_scheme_p2" / Int32ul,
+    "aim_scheme_p3" / Int32ul,
+    "aim_scheme_p4" / Int32ul,
+    "aim_schemes_reserved" / Bytes(0x18),
     "unknown_6c" / Int32ul,
     "texture_scale" / Float32l,
     "name_tag" / Bytes(12),
@@ -59,8 +75,8 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_1a4" / Int32ul,
     "unknown_1a8" / Int32ul,
     "unknown_1ac" / Int32ul,
-    "unknown_1b0" / Int32ul,
-    "unknown_1b4" / Int32ul,
+    "aim_pov_right" / Int32ul,
+    "aim_pov_left" / Int32ul,
     "screen_bpp" / Int32ul,
     "screen_width" / Int32ul,
     "screen_height" / Int32ul,
@@ -207,6 +223,18 @@ def _coerce_sized_blob(raw: object, *, size: int, fill: int = 0) -> bytes:
     if len(data) > size:
         del data[size:]
     return bytes(data)
+
+
+def _config_player_index(value: int) -> int:
+    return max(0, min(3, int(value)))
+
+
+def _player_mode_flag_key(player_index: int) -> str:
+    return PLAYER_MODE_FLAG_KEYS[_config_player_index(player_index)]
+
+
+def _aim_scheme_key(player_index: int) -> str:
+    return AIM_SCHEME_KEYS[_config_player_index(player_index)]
 
 
 def _require_crimson_config(config: CrimsonConfig | None) -> CrimsonConfig | None:
@@ -657,37 +685,17 @@ class CrimsonConfig:
     def hud_indicators(self, value: bytes | bytearray) -> None:
         self.set_blob_value("hud_indicators", value, size=2, fill=1)
 
-    @property
-    def unknown_1c(self) -> bytes:
-        return self.blob_value("unknown_1c", size=UNKNOWN_1C_SIZE, default=bytes(UNKNOWN_1C_SIZE))
+    def player_mode_flag(self, *, player_index: int, default: int = 2) -> int:
+        return self.int_value(_player_mode_flag_key(player_index), default)
 
-    @unknown_1c.setter
-    def unknown_1c(self, value: bytes | bytearray) -> None:
-        self.set_blob_value("unknown_1c", value, size=UNKNOWN_1C_SIZE)
+    def set_player_mode_flag(self, *, player_index: int, value: int) -> None:
+        self.set_int_value(_player_mode_flag_key(player_index), value)
 
-    @property
-    def unknown_44(self) -> int:
-        return self.int_value("unknown_44", 0)
+    def aim_scheme_for_player(self, *, player_index: int, default: int = 0) -> int:
+        return self.int_value(_aim_scheme_key(player_index), default)
 
-    @unknown_44.setter
-    def unknown_44(self, value: int) -> None:
-        self.set_int_value("unknown_44", value)
-
-    @property
-    def unknown_48(self) -> int:
-        return self.int_value("unknown_48", 0)
-
-    @unknown_48.setter
-    def unknown_48(self, value: int) -> None:
-        self.set_int_value("unknown_48", value)
-
-    @property
-    def unknown_4c(self) -> bytes:
-        return self.blob_value("unknown_4c", size=UNKNOWN_4C_SIZE, default=bytes(UNKNOWN_4C_SIZE))
-
-    @unknown_4c.setter
-    def unknown_4c(self, value: bytes | bytearray) -> None:
-        self.set_blob_value("unknown_4c", value, size=UNKNOWN_4C_SIZE)
+    def set_aim_scheme_for_player(self, *, player_index: int, value: int) -> None:
+        self.set_int_value(_aim_scheme_key(player_index), value)
 
     @property
     def sfx_volume(self) -> float:
@@ -962,8 +970,16 @@ def default_crimson_cfg_data() -> dict:
     config.data["selected_name_slot"] = 0
     config.data["saved_name_index"] = 1
     config.data["unknown_1a4"] = 100
-    config.data["unknown_1b0"] = 9000
-    config.data["unknown_1b4"] = 27000
+    config.data["aim_pov_right"] = 9000
+    config.data["aim_pov_left"] = 27000
+    config.data["player_mode_flag_p1"] = 2
+    config.data["player_mode_flag_p2"] = 2
+    config.data["player_mode_flag_p3"] = 0
+    config.data["player_mode_flag_p4"] = 0
+    config.data["aim_scheme_p1"] = 0
+    config.data["aim_scheme_p2"] = 0
+    config.data["aim_scheme_p3"] = 0
+    config.data["aim_scheme_p4"] = 0
 
     saved_name_order = bytearray()
     for idx in range(8):

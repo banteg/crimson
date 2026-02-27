@@ -11,4 +11,5 @@ test {
     _ = @import("runtime/state.zig");
     _ = @import("runtime/weapons.zig");
     _ = @import("verify_native.zig");
+    _ = @import("formats/mod.zig");
 }

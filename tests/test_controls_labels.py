@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import struct
-
 from crimson.aim_schemes import AimScheme
 from crimson.frontend.panels.controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -36,13 +34,15 @@ def test_input_scheme_label_mapping() -> None:
 
 
 def test_controls_method_labels_reads_player_arrays() -> None:
-    mode_flags = struct.pack("<IIII", 2, 4, 5, 1) + b"\x00" * (40 - 16)
-    aim_tail = struct.pack("<II", 4, 5) + b"\x00" * (32 - 8)
     config_data = {
-        "unknown_1c": mode_flags,
-        "unknown_44": 3,
-        "unknown_48": 2,
-        "unknown_4c": aim_tail,
+        "player_mode_flag_p1": 2,
+        "player_mode_flag_p2": 4,
+        "player_mode_flag_p3": 5,
+        "player_mode_flag_p4": 1,
+        "aim_scheme_p1": 3,
+        "aim_scheme_p2": 2,
+        "aim_scheme_p3": 4,
+        "aim_scheme_p4": 5,
     }
 
     assert controls_method_labels(config_data, player_index=0) == ("Mouse relative", "Static")
@@ -57,8 +57,12 @@ def test_controls_method_labels_defaults_missing_blob() -> None:
 
 
 def test_controls_method_values_unknown_move_mode_maps_to_unknown_enum() -> None:
-    mode_flags = struct.pack("<IIII", 99, 2, 2, 2) + b"\x00" * (40 - 16)
-    config_data = {"unknown_1c": mode_flags}
+    config_data = {
+        "player_mode_flag_p1": 99,
+        "player_mode_flag_p2": 2,
+        "player_mode_flag_p3": 2,
+        "player_mode_flag_p4": 2,
+    }
 
     assert controls_method_values(config_data, player_index=0) == (AimScheme.MOUSE, MovementControlType.UNKNOWN)
 

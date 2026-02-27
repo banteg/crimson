@@ -8,6 +8,21 @@ Standalone Zig replay verifier workspace.
 - JSON output contract: mirrors `crimson replay verify --format json`
 - WASM target: `wasm32-freestanding` export ABI for Worker-style hosts
 
+## Format codecs (library-only)
+
+The `crimson_zig.formats` module now includes deterministic byte-level codecs for:
+
+- `formats.paq`: PAQ archive decode/encode (`paq\\0`, sequential entries).
+- `formats.jaz`: JAZ parse + zlib inflate + payload split (`jpeg_bytes` + `alpha_rle_bytes`).
+- `formats.crimson_cfg`: fixed-size `crimson.cfg` decode/encode (`0x480` bytes).
+- `formats.game_cfg`: `game.cfg` blob/file encode/decode, checksum, and status-struct parse/build.
+
+This wave is intentionally codec-only:
+
+- no new CLI commands yet,
+- no `ensure_*`/repair helpers,
+- no JPEG-to-RGBA expansion yet (JAZ returns split payload components).
+
 ## Current backend behavior
 
 - Native CLI currently verifies **latest-ruleset single-player survival/rush** replays using:

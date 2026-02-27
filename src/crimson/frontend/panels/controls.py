@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import struct
 from dataclasses import dataclass
 
 from grim.config import (
@@ -458,35 +457,11 @@ class ControlsMenuView(PanelMenuView):
                 return True
         return False
 
-    @staticmethod
-    def _coerce_blob(raw: object, size: int) -> bytearray:
-        values = bytearray(raw) if isinstance(raw, (bytes, bytearray)) else bytearray()
-        if len(values) < size:
-            values.extend(b"\x00" * (size - len(values)))
-        if len(values) > size:
-            del values[size:]
-        return values
-
     def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
-        config = self.state.config
-        raw = self._coerce_blob(config.unknown_1c, 0x28)
-        idx = max(0, min(3, int(player_index)))
-        struct.pack_into("<I", raw, idx * 4, move_mode.value)
-        config.unknown_1c = bytes(raw)
+        self.state.config.set_player_mode_flag(player_index=player_index, value=move_mode.value)
 
     def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: AimScheme) -> None:
-        config = self.state.config
-        idx = max(0, min(3, int(player_index)))
-        scheme = int(aim_scheme.value)
-        if idx == 0:
-            config.unknown_44 = scheme
-            return
-        if idx == 1:
-            config.unknown_48 = scheme
-            return
-        raw = self._coerce_blob(config.unknown_4c, 0x20)
-        struct.pack_into("<I", raw, (idx - 2) * 4, scheme)
-        config.unknown_4c = bytes(raw)
+        self.state.config.set_aim_scheme_for_player(player_index=player_index, value=int(aim_scheme.value))
 
     @staticmethod
     def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:
