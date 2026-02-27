@@ -16,7 +16,7 @@ from grim import jaz, paq
 from grim.geom import Vec2
 from grim.rand import Crand
 
-from ..creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
+from ..creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan, spawn_id_label
 from ..paths import default_runtime_dir
 from ..quests import all_quests
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
@@ -178,7 +178,7 @@ def cmd_quests(
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
     typer.echo("Meta: " + "; ".join(_format_meta(quest)))
 
-    plan_cache: dict[int, tuple[int, int]] = {}
+    plan_cache: dict[SpawnId, tuple[int, int]] = {}
     if show_plan:
         env = SpawnEnv(
             terrain_width=float(width),
@@ -395,7 +395,11 @@ def cmd_spawn_plan(
     as_json: bool = typer.Option(False, "--json", help="print JSON"),
 ) -> None:
     """Build and print a spawn plan for a single template id."""
-    template_id = _parse_int_auto(template)
+    template_id_raw = _parse_int_auto(template)
+    try:
+        template_id = SpawnId(template_id_raw)
+    except ValueError as exc:
+        raise typer.BadParameter(f"invalid spawn template id: {template!r}") from exc
     rng = Crand(_parse_int_auto(seed))
     spawn_pos = _parse_vec2(pos)
     env = SpawnEnv(
@@ -411,7 +415,7 @@ def cmd_spawn_plan(
         spawn_slots = msgspec.to_builtins(plan.spawn_slots)
         effects = msgspec.to_builtins(plan.effects)
         payload: dict[str, object] = {
-            "template_id": template_id,
+            "template_id": int(template_id),
             "pos": [spawn_pos.x, spawn_pos.y],
             "heading": heading,
             "seed": _parse_int_auto(seed),
@@ -431,7 +435,7 @@ def cmd_spawn_plan(
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
 
-    typer.echo(f"template_id=0x{template_id:02x} ({template_id}) creature={spawn_id_label(template_id)}")
+    typer.echo(f"template_id=0x{int(template_id):02x} ({int(template_id)}) creature={spawn_id_label(template_id)}")
     typer.echo(
         f"pos=({spawn_pos.x:.1f},{spawn_pos.y:.1f}) "
         f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}",

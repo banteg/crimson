@@ -114,7 +114,7 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     state.bonus_pool = BonusPool()
 
     player = PlayerState(index=0, pos=Vec2(), weapon_id=int(WeaponId.ASSAULT_RIFLE))
-    seeded = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=int(BonusId.POINTS), state=state)
+    seeded = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.POINTS, state=state)
     assert seeded is not None
     before_calls = rng.calls
     before_state = rng.state

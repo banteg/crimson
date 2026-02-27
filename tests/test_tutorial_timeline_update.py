@@ -54,18 +54,18 @@ def test_stage1_move_spawns_point_bonuses() -> None:
     assert state.stage_transition_timer_ms == -1000
     assert actions.play_levelup_sfx is True
     assert [(c.bonus_id, c.amount, c.pos) for c in actions.spawn_bonuses] == [
-        (int(BonusId.POINTS), 500, Vec2(260.0, 260.0)),
-        (int(BonusId.POINTS), 1000, Vec2(600.0, 400.0)),
-        (int(BonusId.POINTS), 500, Vec2(300.0, 400.0)),
+        (BonusId.POINTS, 500, Vec2(260.0, 260.0)),
+        (BonusId.POINTS, 1000, Vec2(600.0, 400.0)),
+        (BonusId.POINTS, 500, Vec2(300.0, 400.0)),
     ]
 
 
 def test_stage5_bonus_carrier_config() -> None:
-    assert tutorial_stage5_bonus_carrier_config(1) == (int(BonusId.SPEED), -1)
-    assert tutorial_stage5_bonus_carrier_config(2) == (int(BonusId.WEAPON), 5)
-    assert tutorial_stage5_bonus_carrier_config(3) == (int(BonusId.DOUBLE_EXPERIENCE), -1)
-    assert tutorial_stage5_bonus_carrier_config(4) == (int(BonusId.NUKE), -1)
-    assert tutorial_stage5_bonus_carrier_config(5) == (int(BonusId.REFLEX_BOOST), -1)
+    assert tutorial_stage5_bonus_carrier_config(1) == (BonusId.SPEED, -1)
+    assert tutorial_stage5_bonus_carrier_config(2) == (BonusId.WEAPON, 5)
+    assert tutorial_stage5_bonus_carrier_config(3) == (BonusId.DOUBLE_EXPERIENCE, -1)
+    assert tutorial_stage5_bonus_carrier_config(4) == (BonusId.NUKE, -1)
+    assert tutorial_stage5_bonus_carrier_config(5) == (BonusId.REFLEX_BOOST, -1)
     assert tutorial_stage5_bonus_carrier_config(0) is None
     assert tutorial_stage5_bonus_carrier_config(6) is None
 

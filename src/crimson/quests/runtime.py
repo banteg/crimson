@@ -4,6 +4,7 @@ import inspect
 import random
 from dataclasses import replace
 
+from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
 QUEST_COMPLETION_HIT_SFX_START_MS = 800.0
@@ -38,10 +39,10 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
 
     adjusted: list[SpawnEntry] = []
     for entry in entries:
-        spawn_id = int(entry.spawn_id)
+        spawn_id = entry.spawn_id
         count = int(entry.count)
-        if count > 1 and spawn_id != 0x3C:
-            if spawn_id == 0x2B:
+        if count > 1 and spawn_id != SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C:
+            if spawn_id == SpawnId.ALIEN_CONST_RED_FAST_2B:
                 count += 2
             else:
                 count += 8

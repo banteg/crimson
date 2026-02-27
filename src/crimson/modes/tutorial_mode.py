@@ -14,6 +14,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ..creatures.runtime import CreatureFlags
+from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
@@ -312,7 +313,7 @@ class TutorialMode(BaseGameplayMode):
         for call in actions.spawn_bonuses:
             spawned = self.state.bonus_pool.spawn_at(
                 pos=call.pos,
-                bonus_id=int(call.bonus_id),
+                bonus_id=call.bonus_id,
                 duration_override=int(call.amount),
                 state=self.state,
                 world_width=float(self.world.world_size),
@@ -328,19 +329,23 @@ class TutorialMode(BaseGameplayMode):
 
         for call in actions.spawn_templates:
             mapping, primary = self.creatures.spawn_template(
-                int(call.template_id),
+                call.template_id,
                 call.pos,
                 float(call.heading),
                 self.state.rng,
                 rand=self.state.rng.rand,
             )
-            if int(call.template_id) == 0x27 and primary is not None and actions.stage5_bonus_carrier_drop is not None:
+            if (
+                call.template_id == SpawnId.ALIEN_CONST_WEAPON_BONUS_27
+                and primary is not None
+                and actions.stage5_bonus_carrier_drop is not None
+            ):
                 drop_id, drop_amount = actions.stage5_bonus_carrier_drop
                 self._tutorial.hint_bonus_creature_ref = int(primary)
                 if 0 <= int(primary) < len(self.creatures.entries):
                     creature = self.creatures.entries[int(primary)]
                     creature.flags |= CreatureFlags.BONUS_ON_DEATH
-                    creature.bonus_id = int(drop_id)
+                    creature.bonus_id = drop_id
                     creature.bonus_duration_override = int(drop_amount)
 
         mouse = self._ui_mouse_pos()

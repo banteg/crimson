@@ -129,7 +129,7 @@ class BonusPool:
     def spawn_at(
         self,
         pos: Vec2,
-        bonus_id: int | BonusId,
+        bonus_id: BonusId,
         duration_override: int = -1,
         *,
         state: GameplayState,
@@ -138,7 +138,7 @@ class BonusPool:
     ) -> BonusEntry | None:
         if int(state.game_mode) == int(GameMode.RUSH):
             return None
-        if int(bonus_id) == 0:
+        if bonus_id == BonusId.UNUSED:
             return None
         entry = self._alloc_slot()
         if entry is None:
