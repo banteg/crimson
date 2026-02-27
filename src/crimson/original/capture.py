@@ -2710,6 +2710,7 @@ def convert_capture_to_replay(
                 fire_down=bool(fire_down),
                 fire_pressed=bool(fire_pressed),
                 reload_pressed=bool(reload_pressed),
+                reload_down=False,
                 move_mode=(
                     _coerce_int_like(sample.move_mode)
                     if sample is not None
