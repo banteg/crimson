@@ -25,6 +25,8 @@ For capture-driven parity investigations (when you are handed only a fresh captu
 
 For structural search / codemods, prefer ast-grep over regex-only edits:
 - Project config: [`sgconfig.yml`](sgconfig.yml)
+- For Zig files, use [`sgconfig.local.yml`](sgconfig.local.yml) so ast-grep loads the custom `zig` language parser.
+- Zig metavariables use `_VAR` syntax (for example `_EXPR`) with this config.
 - Rules/tests location: [`tools/ast-grep/`](tools/ast-grep/)
 - Run checks with `just check`
 

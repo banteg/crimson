@@ -81,10 +81,10 @@ pub const ReplayHeader = struct {
 };
 
 pub const ReplayPlayerInput = struct {
-    move_x: f64,
-    move_y: f64,
-    aim_x: f64,
-    aim_y: f64,
+    move_x: f32,
+    move_y: f32,
+    aim_x: f32,
+    aim_y: f32,
     flags: u32,
 };
 
@@ -142,9 +142,9 @@ pub const max_capture_state_transition_rows_per_event: usize = 64;
 pub const max_capture_bootstrap_perk_pairs_per_player: usize = 96;
 
 pub const CaptureBootstrapQuestSession = struct {
-    spawn_timeline_ms: f64 = 0.0,
-    no_creatures_timer_ms: f64 = 0.0,
-    completion_transition_ms: f64 = -1.0,
+    spawn_timeline_ms: f32 = 0.0,
+    no_creatures_timer_ms: f32 = 0.0,
+    completion_transition_ms: f32 = -1.0,
 };
 
 pub const CaptureBootstrapPlayerPerkPair = struct {
@@ -161,35 +161,35 @@ pub const CaptureBootstrapPlayerPerkCounts = struct {
 
 pub const CaptureBootstrapPlayer = struct {
     weapon_id: i32 = 1,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
-    health: f64 = 100.0,
-    ammo: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
+    health: f32 = 100.0,
+    ammo: f32 = 0.0,
     experience: i32 = 0,
     level: i32 = 1,
     clip_size: ?i32 = null,
     reload_active: ?bool = null,
-    reload_timer: ?f64 = null,
-    reload_timer_max: ?f64 = null,
-    shot_cooldown: ?f64 = null,
-    spread_heat: ?f64 = null,
-    aim_x: ?f64 = null,
-    aim_y: ?f64 = null,
-    aim_heading: ?f64 = null,
+    reload_timer: ?f32 = null,
+    reload_timer_max: ?f32 = null,
+    shot_cooldown: ?f32 = null,
+    spread_heat: ?f32 = null,
+    aim_x: ?f32 = null,
+    aim_y: ?f32 = null,
+    aim_heading: ?f32 = null,
     alt_weapon_id: ?i32 = null,
     alt_clip_size: ?i32 = null,
-    alt_ammo: ?f64 = null,
+    alt_ammo: ?f32 = null,
     alt_reload_active: ?bool = null,
-    alt_reload_timer: ?f64 = null,
-    alt_reload_timer_max: ?f64 = null,
-    alt_shot_cooldown: ?f64 = null,
+    alt_reload_timer: ?f32 = null,
+    alt_reload_timer_max: ?f32 = null,
+    alt_shot_cooldown: ?f32 = null,
     shield_ms: ?i32 = null,
     fire_bullets_ms: ?i32 = null,
     speed_bonus_ms: ?i32 = null,
-    hot_tempered_timer: ?f64 = null,
-    man_bomb_timer: ?f64 = null,
-    living_fortress_timer: ?f64 = null,
-    fire_cough_timer: ?f64 = null,
+    hot_tempered_timer: ?f32 = null,
+    man_bomb_timer: ?f32 = null,
+    living_fortress_timer: ?f32 = null,
+    fire_cough_timer: ?f32 = null,
 };
 
 pub const CaptureBootstrapEvent = struct {
@@ -214,9 +214,9 @@ pub const CaptureBootstrapEvent = struct {
     energizer_ms: ?i32 = null,
     double_experience_ms: ?i32 = null,
     freeze_ms: ?i32 = null,
-    perk_interval_man_bomb: ?f64 = null,
-    perk_interval_fire_cough: ?f64 = null,
-    perk_interval_hot_tempered: ?f64 = null,
+    perk_interval_man_bomb: ?f32 = null,
+    perk_interval_fire_cough: ?f32 = null,
+    perk_interval_hot_tempered: ?f32 = null,
     quest_session: ?CaptureBootstrapQuestSession = null,
 };
 
@@ -235,36 +235,36 @@ pub const CapturePerkPendingEvent = struct {
 
 pub const CaptureCreatureSpawnRow = struct {
     template_id: i32 = 0,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
-    heading: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
+    heading: f32 = 0.0,
 };
 
 pub const CaptureCreatureAddedHeadRow = struct {
     index: i32 = -1,
     has_heading: bool = false,
-    heading: f64 = 0.0,
+    heading: f32 = 0.0,
     has_target_heading: bool = false,
-    target_heading: f64 = 0.0,
+    target_heading: f32 = 0.0,
     has_ai_mode: bool = false,
     ai_mode: i32 = 0,
     has_link_index: bool = false,
     link_index: i32 = 0,
     has_hp: bool = false,
-    hp: f64 = 0.0,
+    hp: f32 = 0.0,
     has_lifecycle_stage: bool = false,
-    lifecycle_stage: f64 = 0.0,
+    lifecycle_stage: f32 = 0.0,
     has_orbit_angle: bool = false,
-    orbit_angle: f64 = 0.0,
+    orbit_angle: f32 = 0.0,
     has_orbit_radius: bool = false,
-    orbit_radius: f64 = 0.0,
+    orbit_radius: f32 = 0.0,
     has_flags: bool = false,
     flags: i32 = 0,
     has_type_id: bool = false,
     type_id: i32 = 0,
     has_pos: bool = false,
-    pos_x: f64 = 0.0,
-    pos_y: f64 = 0.0,
+    pos_x: f32 = 0.0,
+    pos_y: f32 = 0.0,
 };
 
 pub const CaptureCreatureSpawnEvent = struct {
@@ -374,37 +374,37 @@ pub const ReplaySummary = struct {
 };
 
 const ReplayStatusWire = struct {
-    quest_unlock_index: i64 = 0,
-    quest_unlock_index_full: i64 = 0,
-    weapon_usage_counts: []const i64 = &.{},
+    quest_unlock_index: i32 = 0,
+    quest_unlock_index_full: i32 = 0,
+    weapon_usage_counts: []const u32 = &.{},
 };
 
 const ReplayHeaderWire = struct {
-    game_mode_id: i64,
-    seed: i64,
-    replay_format_version: i64,
+    game_mode_id: i32,
+    seed: u32,
+    replay_format_version: i32,
     quest_level: []const u8 = "",
     bootstrap_kind: []const u8 = "none",
-    bootstrap_seed: i64 = 0,
+    bootstrap_seed: u32 = 0,
     game_version: []const u8 = "",
-    tick_rate: i64 = 60,
-    difficulty_level: i64 = 0,
+    tick_rate: i32 = 60,
+    difficulty_level: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
-    detail_preset: i64 = 5,
-    fx_toggle: i64 = 0,
-    world_size: f64 = 1024.0,
-    player_count: i64 = 1,
+    detail_preset: i32 = 5,
+    fx_toggle: i32 = 0,
+    world_size: f32 = 1024.0,
+    player_count: i32 = 1,
     status: ReplayStatusWire = .{},
     input_quantization: []const u8 = "raw",
 };
 
 const ReplayInputWire = struct {
-    move_x: f64,
-    move_y: f64,
-    aim_x: f64,
-    aim_y: f64,
-    flags: i64,
+    move_x: f32,
+    move_y: f32,
+    aim_x: f32,
+    aim_y: f32,
+    flags: i32,
 
     pub fn msgpackFormat() msgpack.StructFormat {
         return .{ .as_array = .{} };
@@ -412,8 +412,8 @@ const ReplayInputWire = struct {
 };
 
 const CaptureVec2Wire = struct {
-    x: f64,
-    y: f64,
+    x: f32,
+    y: f32,
 };
 
 fn StringMapWire(comptime Value: type) type {
@@ -438,109 +438,109 @@ fn StringMapWire(comptime Value: type) type {
     };
 }
 
-const StringI64Map = StringMapWire(i64);
-const StringF64Map = StringMapWire(f64);
+const StringI32Map = StringMapWire(i32);
+const StringF32Map = StringMapWire(f32);
 
 const CaptureBootstrapPerkWire = struct {
-    pending_count: i64 = 0,
+    pending_count: i32 = 0,
     choices_dirty: bool = false,
-    choices: []const i64 = &.{},
-    player_nonzero_counts: []const []const []const i64 = &.{},
+    choices: []const i32 = &.{},
+    player_nonzero_counts: []const []const []const i32 = &.{},
 };
 
 const CaptureBootstrapPlayerAimWire = struct {
-    x: f64,
-    y: f64,
-    heading: ?f64 = null,
+    x: f32,
+    y: f32,
+    heading: ?f32 = null,
 };
 
 const CaptureBootstrapPlayerAltWeaponWire = struct {
-    weapon_id: ?i64 = null,
-    clip_size: ?i64 = null,
-    ammo: ?f64 = null,
+    weapon_id: ?i32 = null,
+    clip_size: ?i32 = null,
+    ammo: ?f32 = null,
     reload_active: ?bool = null,
-    reload_timer: ?f64 = null,
-    reload_timer_max: ?f64 = null,
-    shot_cooldown: ?f64 = null,
+    reload_timer: ?f32 = null,
+    reload_timer_max: ?f32 = null,
+    shot_cooldown: ?f32 = null,
 };
 
 const CaptureBootstrapPlayerWire = struct {
-    weapon_id: i64,
+    weapon_id: i32,
     pos: CaptureVec2Wire,
-    health: f64,
-    ammo: f64,
-    experience: i64,
-    level: i64,
-    clip_size: ?i64 = null,
+    health: f32,
+    ammo: f32,
+    experience: i32,
+    level: i32,
+    clip_size: ?i32 = null,
     reload_active: ?bool = null,
-    reload_timer: ?f64 = null,
-    reload_timer_max: ?f64 = null,
-    shot_cooldown: ?f64 = null,
-    spread_heat: ?f64 = null,
+    reload_timer: ?f32 = null,
+    reload_timer_max: ?f32 = null,
+    shot_cooldown: ?f32 = null,
+    spread_heat: ?f32 = null,
     aim: ?CaptureBootstrapPlayerAimWire = null,
     alt_weapon: ?CaptureBootstrapPlayerAltWeaponWire = null,
-    bonus_timers_ms: StringI64Map = .{},
-    perk_timers: StringF64Map = .{},
+    bonus_timers_ms: StringI32Map = .{},
+    perk_timers: StringF32Map = .{},
 };
 
 const CaptureBootstrapQuestSessionWire = struct {
-    spawn_timeline_ms: f64,
-    no_creatures_timer_ms: f64,
-    completion_transition_ms: f64,
+    spawn_timeline_ms: f32,
+    no_creatures_timer_ms: f32,
+    completion_transition_ms: f32,
 };
 
 const CaptureCreatureSpawnRowWire = struct {
-    template_id: i64,
+    template_id: i32,
     pos: CaptureVec2Wire,
-    heading: f64,
+    heading: f32,
 };
 
 const CaptureCreatureSpawnAddedHeadRowWire = struct {
-    index: i64,
-    heading: ?f64 = null,
-    target_heading: ?f64 = null,
-    ai_mode: ?i64 = null,
-    link_index: ?i64 = null,
-    hp: ?f64 = null,
-    lifecycle_stage: ?f64 = null,
-    orbit_angle: ?f64 = null,
-    orbit_radius: ?f64 = null,
-    flags: ?i64 = null,
-    type_id: ?i64 = null,
+    index: i32,
+    heading: ?f32 = null,
+    target_heading: ?f32 = null,
+    ai_mode: ?i32 = null,
+    link_index: ?i32 = null,
+    hp: ?f32 = null,
+    lifecycle_stage: ?f32 = null,
+    orbit_angle: ?f32 = null,
+    orbit_radius: ?f32 = null,
+    flags: ?i32 = null,
+    type_id: ?i32 = null,
     pos: ?CaptureVec2Wire = null,
 };
 
 const CaptureStateTransitionRowWire = struct {
-    target_state: i64,
-    before_state: ?i64 = null,
-    after_state: ?i64 = null,
+    target_state: i32,
+    before_state: ?i32 = null,
+    after_state: ?i32 = null,
 };
 
 const ReplayEventPayloadWire = struct {
-    tick_index: ?i64 = null,
-    elapsed_ms: ?i64 = null,
-    score_xp: ?i64 = null,
-    perk_pending: ?i64 = null,
+    tick_index: ?i32 = null,
+    elapsed_ms: ?i32 = null,
+    score_xp: ?i32 = null,
+    perk_pending: ?i32 = null,
     perk: ?CaptureBootstrapPerkWire = null,
-    bonus_timers_ms: StringI64Map = .{},
+    bonus_timers_ms: StringI32Map = .{},
     players: []const CaptureBootstrapPlayerWire = &.{},
     digital_move_enabled_by_player: []const bool = &.{},
-    perk_intervals: StringF64Map = .{},
+    perk_intervals: StringF32Map = .{},
     quest_session: ?CaptureBootstrapQuestSessionWire = null,
-    perk_id: ?i64 = null,
+    perk_id: ?i32 = null,
     outside_before: bool = false,
-    pending_before: ?i64 = null,
-    pending_after: ?i64 = null,
+    pending_before: ?i32 = null,
+    pending_after: ?i32 = null,
     spawns: []const CaptureCreatureSpawnRowWire = &.{},
     added_head: []const CaptureCreatureSpawnAddedHeadRowWire = &.{},
     transitions: []const CaptureStateTransitionRowWire = &.{},
 };
 
 const ReplayEventWire = struct {
-    tick_index: i64,
+    tick_index: i32,
     kind: []const u8,
-    player_index: i64 = -1,
-    choice_index: i64 = -1,
+    player_index: i32 = -1,
+    choice_index: i32 = -1,
     payload: []const ReplayEventPayloadWire = &.{},
 
     pub fn msgpackFormat() msgpack.StructFormat {
@@ -932,10 +932,10 @@ fn parseCaptureBootstrapEvent(
             .shield_ms = if (player_wire.bonus_timers_ms.get("shield")) |value| try parseEventI32(value) else null,
             .fire_bullets_ms = if (player_wire.bonus_timers_ms.get("fire_bullets")) |value| try parseEventI32(value) else null,
             .speed_bonus_ms = if (player_wire.bonus_timers_ms.get("speed_bonus")) |value| try parseEventI32(value) else null,
-            .hot_tempered_timer = player_wire.perk_timers.get("hot_tempered"),
-            .man_bomb_timer = player_wire.perk_timers.get("man_bomb"),
-            .living_fortress_timer = player_wire.perk_timers.get("living_fortress"),
-            .fire_cough_timer = player_wire.perk_timers.get("fire_cough"),
+            .hot_tempered_timer = parseMapF32(player_wire.perk_timers, "hot_tempered"),
+            .man_bomb_timer = parseMapF32(player_wire.perk_timers, "man_bomb"),
+            .living_fortress_timer = parseMapF32(player_wire.perk_timers, "living_fortress"),
+            .fire_cough_timer = parseMapF32(player_wire.perk_timers, "fire_cough"),
         };
         if (player_wire.aim) |aim| {
             event.players[idx].aim_x = aim.x;
@@ -965,9 +965,9 @@ fn parseCaptureBootstrapEvent(
     event.energizer_ms = try parseMapI32(payload.bonus_timers_ms, "2");
     event.double_experience_ms = try parseMapI32(payload.bonus_timers_ms, "6");
     event.freeze_ms = try parseMapI32(payload.bonus_timers_ms, "11");
-    event.perk_interval_man_bomb = payload.perk_intervals.get("man_bomb");
-    event.perk_interval_fire_cough = payload.perk_intervals.get("fire_cough");
-    event.perk_interval_hot_tempered = payload.perk_intervals.get("hot_tempered");
+    event.perk_interval_man_bomb = parseMapF32(payload.perk_intervals, "man_bomb");
+    event.perk_interval_fire_cough = parseMapF32(payload.perk_intervals, "fire_cough");
+    event.perk_interval_hot_tempered = parseMapF32(payload.perk_intervals, "hot_tempered");
     if (payload.quest_session) |quest_session| {
         event.quest_session = .{
             .spawn_timeline_ms = quest_session.spawn_timeline_ms,
@@ -1092,10 +1092,11 @@ fn parseMapI32(
     map: anytype,
     key: []const u8,
 ) ReplayCodecError!?i32 {
-    if (map.get(key)) |value| {
-        return try parseEventI32(value);
-    }
-    return null;
+    return map.get(key);
+}
+
+fn parseMapF32(map: anytype, key: []const u8) ?f32 {
+    return map.get(key);
 }
 
 fn validateInputShape(
@@ -1113,8 +1114,8 @@ fn buildHeader(
     allocator: std.mem.Allocator,
     wire: ReplayHeaderWire,
 ) ReplayCodecError!ReplayHeader {
-    const max_world_size_i32_f64: f64 = @floatFromInt(std.math.maxInt(i32));
-    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f64) {
+    const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
+    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f32) {
         return error.InvalidHeaderValue;
     }
     if (!std.mem.eql(u8, wire.bootstrap_kind, "none") and !std.mem.eql(u8, wire.bootstrap_kind, "terrain_v1")) {
@@ -1165,7 +1166,7 @@ fn buildHeader(
         .preserve_bugs = wire.preserve_bugs,
         .detail_preset = detail_preset,
         .fx_toggle = fx_toggle,
-        .world_size = @floatCast(wire.world_size),
+        .world_size = wire.world_size,
         .player_count = player_count,
         .status = .{
             .quest_unlock_index = quest_unlock_index,
@@ -1176,25 +1177,23 @@ fn buildHeader(
     };
 }
 
-fn normalizeInputValue(value: f64, input_quantization: []const u8) ReplayCodecError!f64 {
+fn normalizeInputValue(value: f32, input_quantization: []const u8) ReplayCodecError!f32 {
     if (std.mem.eql(u8, input_quantization, "raw")) {
         return value;
     }
     if (std.mem.eql(u8, input_quantization, "f32")) {
-        const value_f32: f32 = @floatCast(value);
-        return @floatCast(value_f32);
+        return value;
     }
     return error.UnsupportedInputQuantization;
 }
 
-fn parseInputFlagsValue(value: i64) ReplayCodecError!u32 {
+fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
     if (value < 0 or value > std.math.maxInt(u32)) return error.UnsupportedInputShape;
     return @intCast(value);
 }
 
-fn parseEventI32(value: i64) ReplayCodecError!i32 {
-    if (value < std.math.minInt(i32) or value > std.math.maxInt(i32)) return error.UnsupportedEventShape;
-    return @intCast(value);
+fn parseEventI32(value: i32) ReplayCodecError!i32 {
+    return value;
 }
 
 fn chooseTerrainIds(quest_unlock_index: i32, rng: *Crand) i32 {
@@ -1230,14 +1229,12 @@ fn floatToPositiveI32(value: f32) i32 {
     return @intFromFloat(clamped);
 }
 
-fn parseI32(value: i64) ReplayCodecError!i32 {
-    if (value < std.math.minInt(i32) or value > std.math.maxInt(i32)) return error.InvalidHeaderValue;
-    return @intCast(value);
+fn parseI32(value: i32) ReplayCodecError!i32 {
+    return value;
 }
 
-fn parseU32(value: i64) ReplayCodecError!u32 {
-    if (value < 0 or value > std.math.maxInt(u32)) return error.InvalidHeaderValue;
-    return @intCast(value);
+fn parseU32(value: u32) ReplayCodecError!u32 {
+    return value;
 }
 
 test "unpack input flags decodes packed fields" {
@@ -1442,8 +1439,8 @@ test "parse replay event rejects capture payload arrays that are not singleton" 
 }
 
 test "build header rejects world_size above i32 range" {
-    const usage_counts = [_]i64{0} ** weapon_usage_count;
-    const too_large_world_size: f64 = @as(f64, @floatFromInt(std.math.maxInt(i32))) + 1.0;
+    const usage_counts = [_]u32{0} ** weapon_usage_count;
+    const too_large_world_size: f32 = @as(f32, @floatFromInt(std.math.maxInt(i32))) + 1024.0;
     const wire = ReplayHeaderWire{
         .game_mode_id = 1,
         .seed = 1,
@@ -1511,8 +1508,8 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
 }
 
 test "capture bootstrap rejects perk nonzero counts above max players" {
-    const empty_pairs = [_][]const i64{};
-    const player_nonzero_counts = [_][]const []const i64{empty_pairs[0..]} ** (max_players + 1);
+    const empty_pairs = [_][]const i32{};
+    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
     const payload = [_]ReplayEventPayloadWire{
         .{
             .perk = .{

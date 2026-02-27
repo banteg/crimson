@@ -43,8 +43,8 @@ pub fn main() !void {
         try writeStderr("invalid seed\n");
         std.process.exit(1);
     };
-    const world_size: f64 = if (args.len == 6)
-        std.fmt.parseFloat(f64, args[5]) catch {
+    const world_size: f32 = if (args.len == 6)
+        std.fmt.parseFloat(f32, args[5]) catch {
             try writeStderr("invalid world_size\n");
             std.process.exit(1);
         }
@@ -97,7 +97,7 @@ fn buildByImpl(
     level_key: i32,
     player_count: i32,
     seed: u32,
-    world_size: f64,
+    world_size: f32,
     out_entries: []spawn_runtime.QuestSpawnEntry,
 ) !quest_spawn_logic_full.QuestSpawnBuildResult {
     if (std.mem.eql(u8, impl, "main")) {

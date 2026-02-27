@@ -23,19 +23,19 @@ const math = @import("math.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 const GameModeId = game_ids.GameModeId;
-const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
-const native_pi: f64 = native_math.roundTripF32(native_math.native_pi);
-const native_tau: f64 = native_math.roundTripF32(native_math.native_tau);
-const relative_move_heading_none: f64 = -1.0;
-const relative_move_heading_forward: f64 = 0.0;
-const relative_move_heading_forward_right: f64 = 0.7853981852531433;
-const relative_move_heading_right: f64 = native_half_pi;
-const relative_move_heading_backward_right: f64 = 2.356194496154785;
-const relative_move_heading_backward: f64 = native_pi;
-const relative_move_heading_backward_left: f64 = 3.9269909858703613;
-const relative_move_heading_left: f64 = native_math.roundTripF32(native_tau - native_half_pi);
-const relative_move_heading_forward_left: f64 = 5.4977874755859375;
-const relative_move_turn_align_scale: f64 = 7.957746982574463;
+const native_half_pi: f32 = native_math.native_half_pi;
+const native_pi: f32 = native_math.native_pi;
+const native_tau: f32 = native_math.native_tau;
+const relative_move_heading_none: f32 = -1.0;
+const relative_move_heading_forward: f32 = 0.0;
+const relative_move_heading_forward_right: f32 = 0.7853981852531433;
+const relative_move_heading_right: f32 = native_half_pi;
+const relative_move_heading_backward_right: f32 = 2.356194496154785;
+const relative_move_heading_backward: f32 = native_pi;
+const relative_move_heading_backward_left: f32 = 3.9269909858703613;
+const relative_move_heading_left: f32 = narrowF32(native_tau - native_half_pi);
+const relative_move_heading_forward_left: f32 = 5.4977874755859375;
+const relative_move_turn_align_scale: f32 = 7.957746982574463;
 const movement_control_relative: i32 = 1;
 const movement_control_static: i32 = 2;
 const movement_control_dual_action_pad: i32 = 3;
@@ -375,7 +375,7 @@ pub const ReplayTickTrace = struct {
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
-    dt_frame: f64,
+    dt_frame: f32,
 };
 
 pub const ReplayScaffoldOptions = struct {
@@ -454,7 +454,7 @@ pub fn runReplayScaffoldWithTrace(
     var reload_pressed_count: usize = 0;
     var stage_spawn_count: usize = 0;
     var wave_spawn_count: usize = 0;
-    var spawn_cooldown: f64 = 0.0;
+    var spawn_cooldown: f32 = 0.0;
     var spawn_stage: i32 = 0;
     var quest_spawn_timeline_ms: f32 = 0.0;
     var quest_no_creatures_timer_ms: f32 = 0.0;
@@ -490,13 +490,13 @@ pub fn runReplayScaffoldWithTrace(
         state.status_weapon_usage_counts.set(weapon_id, count);
     }
 
-    var elapsed_ms_sim: f64 = 0.0;
-    const terrain_size_floor = @floor(@as(f64, header.world_size));
-    if (terrain_size_floor > @as(f64, @floatFromInt(std.math.maxInt(i32)))) {
+    var elapsed_ms_sim: f32 = 0.0;
+    const terrain_size_floor = @floor(header.world_size);
+    if (terrain_size_floor > @as(f32, @floatFromInt(std.math.maxInt(i32)))) {
         return error.InvalidHeaderValue;
     }
     const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor)));
-    const dt_nominal: f64 = 1.0 / @as(f64, @floatFromInt(header.tick_rate));
+    const dt_nominal: f32 = 1.0 / @as(f32, @floatFromInt(header.tick_rate));
     const quest_unlock_index = header.status.quest_unlock_index;
     const player_count = header.player_count;
     if (game_mode == .rush) {
@@ -836,7 +836,7 @@ pub fn runReplayScaffoldWithTrace(
                 quest_spawn_entries,
                 quest_spawn_timeline_ms,
                 narrowF32(dt_frame_ms),
-                @as(f64, @floatFromInt(terrain_size)),
+                @floatFromInt(terrain_size),
                 quest_creatures_none_active,
                 quest_no_creatures_timer_ms,
             );
@@ -1026,9 +1026,9 @@ pub fn runReplayScaffoldWithTrace(
     }
     if (event_index != events.len) return error.UnsupportedEventOrdering;
 
-    const tick_rate_f64: f64 = @floatFromInt(header.tick_rate);
-    const ticks_f64: f64 = @floatFromInt(replay.tickCount());
-    const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f64 * (1000.0 / tick_rate_f64)));
+    const tick_rate_f32: f32 = @floatFromInt(header.tick_rate);
+    const ticks_f32: f32 = @floatFromInt(replay.tickCount());
+    const elapsed_ms_nominal: i64 = @intFromFloat(@round(ticks_f32 * (1000.0 / tick_rate_f32)));
     const elapsed_ms_sim_i64: i64 = if (game_mode == .quests)
         @intFromFloat(quest_spawn_timeline_ms)
     else
@@ -1064,7 +1064,7 @@ pub fn runReplayScaffoldWithTrace(
         .survival_reward_fire_seen = state.survival_reward_fire_seen,
         .survival_reward_damage_seen = state.survival_reward_damage_seen,
         .spawn_stage = spawn_stage,
-        .spawn_cooldown_ms = @floatCast(spawn_cooldown),
+        .spawn_cooldown_ms = spawn_cooldown,
         .quest_completion_transition_ms = @floatCast(quest_completion_transition_ms),
         .quest_completed = quest_completed,
         .quest_play_hit_sfx = quest_play_hit_sfx,
@@ -1962,8 +1962,8 @@ fn consumeExplosionBurstRng(
 fn resolveDtFrame(
     overrides: ?[]const DtFrameOverride,
     tick_index: usize,
-    default_dt: f64,
-) f64 {
+    default_dt: f32,
+) f32 {
     if (overrides) |entries| {
         for (entries) |entry| {
             if (entry.tick_index == tick_index) return entry.dt_frame;
@@ -2235,10 +2235,10 @@ fn applyCaptureBootstrapEvent(
                 player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
             }
         }
-        players[idx].pos.x = narrowF32(payload.pos_x);
-        players[idx].pos.y = narrowF32(payload.pos_y);
-        players[idx].health = narrowF32(payload.health);
-        players[idx].ammo = narrowF32(payload.ammo);
+        players[idx].pos.x = payload.pos_x;
+        players[idx].pos.y = payload.pos_y;
+        players[idx].health = payload.health;
+        players[idx].ammo = payload.ammo;
         players[idx].experience = payload.experience;
         if (payload.level > 0) {
             players[idx].level = payload.level;
@@ -2250,25 +2250,25 @@ fn applyCaptureBootstrapEvent(
             players[idx].reload_active = reload_active;
         }
         if (payload.reload_timer) |reload_timer| {
-            players[idx].reload_timer = @max(0.0, narrowF32(reload_timer));
+            players[idx].reload_timer = @max(0.0, reload_timer);
         }
         if (payload.reload_timer_max) |reload_timer_max| {
-            players[idx].reload_timer_max = @max(0.0, narrowF32(reload_timer_max));
+            players[idx].reload_timer_max = @max(0.0, reload_timer_max);
         }
         if (payload.shot_cooldown) |shot_cooldown| {
-            players[idx].shot_cooldown = @max(0.0, narrowF32(shot_cooldown));
+            players[idx].shot_cooldown = @max(0.0, shot_cooldown);
         }
         if (payload.spread_heat) |spread_heat| {
-            players[idx].spread_heat = @max(0.0, narrowF32(spread_heat));
+            players[idx].spread_heat = @max(0.0, spread_heat);
         }
         if (payload.aim_x) |aim_x| {
-            players[idx].aim.x = narrowF32(aim_x);
+            players[idx].aim.x = aim_x;
         }
         if (payload.aim_y) |aim_y| {
-            players[idx].aim.y = narrowF32(aim_y);
+            players[idx].aim.y = aim_y;
         }
         if (payload.aim_heading) |aim_heading| {
-            players[idx].aim_heading = narrowF32(aim_heading);
+            players[idx].aim_heading = aim_heading;
             players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
@@ -2278,40 +2278,40 @@ fn applyCaptureBootstrapEvent(
             if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
         }
         if (payload.alt_ammo) |alt_ammo| {
-            players[idx].alt_ammo = narrowF32(alt_ammo);
+            players[idx].alt_ammo = alt_ammo;
         }
         if (payload.alt_reload_active) |alt_reload_active| {
             players[idx].alt_reload_active = alt_reload_active;
         }
         if (payload.alt_reload_timer) |alt_reload_timer| {
-            players[idx].alt_reload_timer = @max(0.0, narrowF32(alt_reload_timer));
+            players[idx].alt_reload_timer = @max(0.0, alt_reload_timer);
         }
         if (payload.alt_reload_timer_max) |alt_reload_timer_max| {
-            players[idx].alt_reload_timer_max = @max(0.0, narrowF32(alt_reload_timer_max));
+            players[idx].alt_reload_timer_max = @max(0.0, alt_reload_timer_max);
         }
         if (payload.alt_shot_cooldown) |alt_shot_cooldown| {
-            players[idx].alt_shot_cooldown = @max(0.0, narrowF32(alt_shot_cooldown));
+            players[idx].alt_shot_cooldown = @max(0.0, alt_shot_cooldown);
         }
         if (payload.shield_ms) |shield_ms| {
-            players[idx].shield_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(shield_ms)) / 1000.0));
+            players[idx].shield_timer = @max(0.0, @as(f32, @floatFromInt(shield_ms)) / 1000.0);
         }
         if (payload.fire_bullets_ms) |fire_bullets_ms| {
-            players[idx].fire_bullets_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0));
+            players[idx].fire_bullets_timer = @max(0.0, @as(f32, @floatFromInt(fire_bullets_ms)) / 1000.0);
         }
         if (payload.speed_bonus_ms) |speed_bonus_ms| {
-            players[idx].speed_bonus_timer = @max(0.0, narrowF32(@as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0));
+            players[idx].speed_bonus_timer = @max(0.0, @as(f32, @floatFromInt(speed_bonus_ms)) / 1000.0);
         }
         if (payload.hot_tempered_timer) |hot_tempered_timer| {
-            players[idx].hot_tempered_timer = @max(0.0, narrowF32(hot_tempered_timer));
+            players[idx].hot_tempered_timer = @max(0.0, hot_tempered_timer);
         }
         if (payload.man_bomb_timer) |man_bomb_timer| {
-            players[idx].man_bomb_timer = @max(0.0, narrowF32(man_bomb_timer));
+            players[idx].man_bomb_timer = @max(0.0, man_bomb_timer);
         }
         if (payload.living_fortress_timer) |living_fortress_timer| {
-            players[idx].living_fortress_timer = @max(0.0, narrowF32(living_fortress_timer));
+            players[idx].living_fortress_timer = @max(0.0, living_fortress_timer);
         }
         if (payload.fire_cough_timer) |fire_cough_timer| {
-            players[idx].fire_cough_timer = @max(0.0, narrowF32(fire_cough_timer));
+            players[idx].fire_cough_timer = @max(0.0, fire_cough_timer);
         }
     }
 
@@ -2350,22 +2350,22 @@ fn applyCaptureBootstrapEvent(
     state.time_scale_active = state.bonuses.reflex_boost > 0.0;
 
     if (bootstrap.perk_interval_man_bomb) |value| {
-        state.perk_interval_man_bomb = @max(0.0, narrowF32(value));
+        state.perk_interval_man_bomb = @max(0.0, value);
     }
     if (bootstrap.perk_interval_fire_cough) |value| {
-        state.perk_interval_fire_cough = @max(0.0, narrowF32(value));
+        state.perk_interval_fire_cough = @max(0.0, value);
     }
     if (bootstrap.perk_interval_hot_tempered) |value| {
-        state.perk_interval_hot_tempered = @max(0.0, narrowF32(value));
+        state.perk_interval_hot_tempered = @max(0.0, value);
     }
 
     if (bootstrap.quest_session) |quest_session| {
-        quest_spawn_timeline_ms.* = @max(0.0, narrowF32(quest_session.spawn_timeline_ms));
-        quest_no_creatures_timer_ms.* = @max(0.0, narrowF32(quest_session.no_creatures_timer_ms));
+        quest_spawn_timeline_ms.* = @max(0.0, quest_session.spawn_timeline_ms);
+        quest_no_creatures_timer_ms.* = @max(0.0, quest_session.no_creatures_timer_ms);
         if (quest_session.completion_transition_ms < 0.0) {
             quest_completion_transition_ms.* = -1.0;
         } else {
-            quest_completion_transition_ms.* = @max(0.0, narrowF32(quest_session.completion_transition_ms));
+            quest_completion_transition_ms.* = @max(0.0, quest_session.completion_transition_ms);
         }
     }
 }
@@ -2422,18 +2422,18 @@ fn applyCaptureCreatureSpawnEvent(
 
         if (row.has_pos) {
             entry.pos = .{
-                .x = narrowF32(row.pos_x),
-                .y = narrowF32(row.pos_y),
+                .x = row.pos_x,
+                .y = row.pos_y,
             };
         }
-        if (row.has_heading) entry.heading = narrowF32(row.heading);
-        if (row.has_target_heading) entry.target_heading = narrowF32(row.target_heading);
+        if (row.has_heading) entry.heading = row.heading;
+        if (row.has_target_heading) entry.target_heading = row.target_heading;
         if (ai_mode) |mode| entry.ai_mode = mode;
         if (row.has_link_index) entry.link_index = row.link_index;
-        if (row.has_hp) entry.hp = narrowF32(row.hp);
-        if (row.has_lifecycle_stage) entry.lifecycle_stage = narrowF32(row.lifecycle_stage);
-        if (row.has_orbit_angle) entry.orbit_angle = narrowF32(row.orbit_angle);
-        if (row.has_orbit_radius) entry.orbit_radius = narrowF32(row.orbit_radius);
+        if (row.has_hp) entry.hp = row.hp;
+        if (row.has_lifecycle_stage) entry.lifecycle_stage = row.lifecycle_stage;
+        if (row.has_orbit_angle) entry.orbit_angle = row.orbit_angle;
+        if (row.has_orbit_radius) entry.orbit_radius = row.orbit_radius;
         if (row.has_flags) entry.flags = @intCast(@max(0, flags_i32));
         if (row.has_type_id) entry.type_id = row.type_id;
     }
@@ -2688,8 +2688,8 @@ fn updatePlayerFromReplayInput(
         speed_multiplier += 1.0;
     }
 
-    var speed: f64 = 0.0;
-    var phase_sign: f64 = 1.0;
+    var speed: f32 = 0.0;
+    var phase_sign: f32 = 1.0;
     var move_delta_override: ?state_mod.Vec2 = null;
     const player_controlled_movement =
         move_mode != movement_control_computer and
@@ -2796,14 +2796,14 @@ fn updatePlayerFromReplayInput(
             }
         } else {
             const moving_input = raw_mag > 0.2;
-            var turn_alignment_scale: f64 = 1.0;
+            var turn_alignment_scale: f32 = 1.0;
             if (moving_input) {
                 const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
                 raw_move = raw_move.mul(inv);
                 const target_heading = normalizeHeading(raw_move.toHeading());
                 const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
                 move = directionFromHeadingNative(player.heading);
-                turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+                turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
                 playerAccelerateMoveSpeed(player, movement_dt);
             } else {
                 playerDecelerateMoveSpeed(player, movement_dt);
@@ -2818,16 +2818,16 @@ fn updatePlayerFromReplayInput(
             }
         }
     } else {
-        const move_input_threshold: f64 = 0.2;
+        const move_input_threshold: f32 = 0.2;
         const moving_input = raw_mag > move_input_threshold;
-        var turn_alignment_scale: f64 = 1.0;
+        var turn_alignment_scale: f32 = 1.0;
         if (moving_input) {
             const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
             raw_move = raw_move.mul(inv);
             const target_heading = normalizeHeading(raw_move.toHeading());
             const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
             move = directionFromHeadingNative(player.heading);
-            turn_alignment_scale = @max(0.0, (std.math.pi - angle_diff) / std.math.pi);
+            turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
             playerAccelerateMoveSpeed(player, movement_dt);
         } else {
             playerDecelerateMoveSpeed(player, movement_dt);
@@ -2949,7 +2949,7 @@ fn playerMoveDeltaFromHeading(
     };
 }
 
-fn directionFromHeadingNative(heading: f64) state_mod.Vec2 {
+fn directionFromHeadingNative(heading: f32) state_mod.Vec2 {
     const radians = narrowF32(heading - native_half_pi);
     return .{
         .x = narrowF32(math.cos(radians)),
@@ -2990,18 +2990,18 @@ fn playerApplyMoveSpeedCaps(
 }
 
 const HeadingApproachResult = struct {
-    diff: f64,
-    turn_delta: f64,
+    diff: f32,
+    turn_delta: f32,
 };
 
 fn playerHeadingApproachTargetWithDelta(
     player: *state_mod.PlayerState,
-    target_heading: f64,
-    dt: f64,
+    target_heading: f32,
+    dt: f32,
 ) HeadingApproachResult {
-    var heading = narrowF32(normalizeHeading(player.heading));
+    var heading = normalizeHeading(player.heading);
     player.heading = heading;
-    const target = narrowF32(target_heading);
+    const target = target_heading;
 
     const direct = narrowF32(@abs(narrowF32(target - heading)));
     var high = heading;
@@ -3011,9 +3011,8 @@ fn playerHeadingApproachTargetWithDelta(
     const wrapped = narrowF32(@abs(narrowF32(native_tau - high + low)));
     const diff = if (direct >= wrapped) wrapped else direct;
 
-    const dt_f32 = narrowF32(dt);
-    const scaled = narrowF32(dt_f32 * diff);
-    var turn_delta: f64 = 0.0;
+    const scaled = narrowF32(dt * diff);
+    var turn_delta: f32 = 0.0;
     if (direct <= wrapped) {
         if (target > heading) {
             turn_delta = narrowF32(scaled * 5.0);
@@ -3038,15 +3037,14 @@ fn playerHeadingApproachTargetWithDelta(
 
 fn playerHeadingApproachTarget(
     player: *state_mod.PlayerState,
-    target_heading: f64,
-    dt: f64,
-) f64 {
+    target_heading: f32,
+    dt: f32,
+) f32 {
     return playerHeadingApproachTargetWithDelta(player, target_heading, dt).diff;
 }
 
-fn normalizeHeading(value: f64) f64 {
-    const wrapped = native_math.wrapAngle0Tau(narrowF32(value));
-    return native_math.roundTripF32(wrapped);
+fn normalizeHeading(value: f32) f32 {
+    return native_math.wrapAngle0Tau(value);
 }
 
 fn applyPerkWorldDtSteps(
@@ -3814,9 +3812,9 @@ test "rush scaffold spawn cadence uses raw frame dt, not sim dt" {
     defer replay.deinit(allocator);
 
     const result = try runReplayScaffold(replay);
-    // Rush starts with one immediate spawn batch (2 creatures). A second batch should
-    // not land until tick 15 at 60Hz.
-    try std.testing.expectEqual(@as(usize, 2), result.wave_spawn_count);
+    // Native rush cooldown arithmetic is float32; at 60 Hz nominal dt this yields a
+    // second batch on tick 15 (0-indexed tick 14), so 4 total creatures in 15 ticks.
+    try std.testing.expectEqual(@as(usize, 4), result.wave_spawn_count);
 }
 
 test "rush scaffold inter-tick rand draws shift rng deterministically" {

@@ -1944,9 +1944,9 @@ def capture_creature_spawns_from_event_payload(
         out.append(
             (
                 int(row.template_id),
-                float(row.pos.x),
-                float(row.pos.y),
-                float(row.heading),
+                _conversion_f32(float(row.pos.x)),
+                _conversion_f32(float(row.pos.y)),
+                _conversion_f32(float(row.heading)),
             ),
         )
     return tuple(out)
@@ -1966,8 +1966,8 @@ def capture_creature_spawn_added_head_from_event_payload(
         out.append(
             (
                 int(row.index),
-                float(row.heading) if row.heading is not None else None,
-                float(row.target_heading) if row.target_heading is not None else None,
+                _conversion_f32(float(row.heading)) if row.heading is not None else None,
+                _conversion_f32(float(row.target_heading)) if row.target_heading is not None else None,
                 int(row.ai_mode) if row.ai_mode is not None else None,
                 int(row.link_index) if row.link_index is not None else None,
             ),
@@ -2034,9 +2034,9 @@ def apply_capture_bootstrap_payload(
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
-        player.pos = Vec2(float(raw_player.pos.x), float(raw_player.pos.y))
-        player.health = float(raw_player.health)
-        player.ammo = float(raw_player.ammo)
+        player.pos = Vec2(_conversion_f32(float(raw_player.pos.x)), _conversion_f32(float(raw_player.pos.y)))
+        player.health = _conversion_f32(float(raw_player.health))
+        player.ammo = _conversion_f32(float(raw_player.ammo))
         player.experience = int(raw_player.experience)
         if int(raw_player.level) > 0:
             player.level = int(raw_player.level)
@@ -2046,19 +2046,19 @@ def apply_capture_bootstrap_payload(
         if raw_player.reload_active is not None:
             player.reload_active = bool(raw_player.reload_active)
         if raw_player.reload_timer is not None:
-            player.reload_timer = max(0.0, float(raw_player.reload_timer))
+            player.reload_timer = _conversion_f32(max(0.0, float(raw_player.reload_timer)))
         if raw_player.reload_timer_max is not None:
-            player.reload_timer_max = max(0.0, float(raw_player.reload_timer_max))
+            player.reload_timer_max = _conversion_f32(max(0.0, float(raw_player.reload_timer_max)))
         if raw_player.shot_cooldown is not None:
-            player.shot_cooldown = max(0.0, float(raw_player.shot_cooldown))
+            player.shot_cooldown = _conversion_f32(max(0.0, float(raw_player.shot_cooldown)))
         if raw_player.spread_heat is not None:
-            player.spread_heat = max(0.0, float(raw_player.spread_heat))
+            player.spread_heat = _conversion_f32(max(0.0, float(raw_player.spread_heat)))
 
         if raw_player.aim is not None:
-            player.aim = Vec2(float(raw_player.aim.x), float(raw_player.aim.y))
+            player.aim = Vec2(_conversion_f32(float(raw_player.aim.x)), _conversion_f32(float(raw_player.aim.y)))
             if raw_player.aim.heading is not None:
-                player.aim_heading = float(raw_player.aim.heading)
-                player.aim_dir = Vec2.from_heading(float(raw_player.aim.heading))
+                player.aim_heading = _conversion_f32(float(raw_player.aim.heading))
+                player.aim_dir = Vec2.from_heading(_conversion_f32(float(raw_player.aim.heading)))
 
         if raw_player.alt_weapon is not None:
             alt_weapon = raw_player.alt_weapon
@@ -2067,26 +2067,26 @@ def apply_capture_bootstrap_payload(
             if alt_weapon.clip_size is not None and int(alt_weapon.clip_size) >= 0:
                 player.alt_clip_size = int(alt_weapon.clip_size)
             if alt_weapon.ammo is not None:
-                player.alt_ammo = float(alt_weapon.ammo)
+                player.alt_ammo = _conversion_f32(float(alt_weapon.ammo))
             if alt_weapon.reload_active is not None:
                 player.alt_reload_active = bool(alt_weapon.reload_active)
             if alt_weapon.reload_timer is not None:
-                player.alt_reload_timer = max(0.0, float(alt_weapon.reload_timer))
+                player.alt_reload_timer = _conversion_f32(max(0.0, float(alt_weapon.reload_timer)))
             if alt_weapon.reload_timer_max is not None:
-                player.alt_reload_timer_max = max(0.0, float(alt_weapon.reload_timer_max))
+                player.alt_reload_timer_max = _conversion_f32(max(0.0, float(alt_weapon.reload_timer_max)))
             if alt_weapon.shot_cooldown is not None:
-                player.alt_shot_cooldown = max(0.0, float(alt_weapon.shot_cooldown))
+                player.alt_shot_cooldown = _conversion_f32(max(0.0, float(alt_weapon.shot_cooldown)))
 
         if raw_player.bonus_timers_ms is not None:
             shield_ms = raw_player.bonus_timers_ms.get("shield")
             fire_bullets_ms = raw_player.bonus_timers_ms.get("fire_bullets")
             speed_bonus_ms = raw_player.bonus_timers_ms.get("speed_bonus")
             if shield_ms is not None:
-                player.shield_timer = max(0.0, float(shield_ms) / 1000.0)
+                player.shield_timer = _conversion_f32(max(0.0, float(shield_ms) / 1000.0))
             if fire_bullets_ms is not None:
-                player.fire_bullets_timer = max(0.0, float(fire_bullets_ms) / 1000.0)
+                player.fire_bullets_timer = _conversion_f32(max(0.0, float(fire_bullets_ms) / 1000.0))
             if speed_bonus_ms is not None:
-                player.speed_bonus_timer = max(0.0, float(speed_bonus_ms) / 1000.0)
+                player.speed_bonus_timer = _conversion_f32(max(0.0, float(speed_bonus_ms) / 1000.0))
 
         if raw_player.perk_timers is not None:
             hot_tempered_timer = raw_player.perk_timers.get("hot_tempered")
@@ -2094,13 +2094,13 @@ def apply_capture_bootstrap_payload(
             living_fortress_timer = raw_player.perk_timers.get("living_fortress")
             fire_cough_timer = raw_player.perk_timers.get("fire_cough")
             if hot_tempered_timer is not None:
-                player.hot_tempered_timer = max(0.0, float(hot_tempered_timer))
+                player.hot_tempered_timer = _conversion_f32(max(0.0, float(hot_tempered_timer)))
             if man_bomb_timer is not None:
-                player.man_bomb_timer = max(0.0, float(man_bomb_timer))
+                player.man_bomb_timer = _conversion_f32(max(0.0, float(man_bomb_timer)))
             if living_fortress_timer is not None:
-                player.living_fortress_timer = max(0.0, float(living_fortress_timer))
+                player.living_fortress_timer = _conversion_f32(max(0.0, float(living_fortress_timer)))
             if fire_cough_timer is not None:
-                player.fire_cough_timer = max(0.0, float(fire_cough_timer))
+                player.fire_cough_timer = _conversion_f32(max(0.0, float(fire_cough_timer)))
 
     pending = int(parsed.perk_pending)
     perk_payload = parsed.perk
@@ -2144,15 +2144,15 @@ def apply_capture_bootstrap_payload(
     double_xp_ms = timers_raw.get(str(int(BonusId.DOUBLE_EXPERIENCE)))
     freeze_ms = timers_raw.get(str(int(BonusId.FREEZE)))
     if weapon_power_up_ms is not None:
-        state_obj.bonuses.weapon_power_up = max(0.0, float(weapon_power_up_ms) / 1000.0)
+        state_obj.bonuses.weapon_power_up = _conversion_f32(max(0.0, float(weapon_power_up_ms) / 1000.0))
     if reflex_boost_ms is not None:
-        state_obj.bonuses.reflex_boost = max(0.0, float(reflex_boost_ms) / 1000.0)
+        state_obj.bonuses.reflex_boost = _conversion_f32(max(0.0, float(reflex_boost_ms) / 1000.0))
     if energizer_ms is not None:
-        state_obj.bonuses.energizer = max(0.0, float(energizer_ms) / 1000.0)
+        state_obj.bonuses.energizer = _conversion_f32(max(0.0, float(energizer_ms) / 1000.0))
     if double_xp_ms is not None:
-        state_obj.bonuses.double_experience = max(0.0, float(double_xp_ms) / 1000.0)
+        state_obj.bonuses.double_experience = _conversion_f32(max(0.0, float(double_xp_ms) / 1000.0))
     if freeze_ms is not None:
-        state_obj.bonuses.freeze = max(0.0, float(freeze_ms) / 1000.0)
+        state_obj.bonuses.freeze = _conversion_f32(max(0.0, float(freeze_ms) / 1000.0))
     state_obj.time_scale_active = float(state_obj.bonuses.reflex_boost) > 0.0
 
     if parsed.perk_intervals is not None:
@@ -2160,11 +2160,11 @@ def apply_capture_bootstrap_payload(
         fire_cough_interval = parsed.perk_intervals.get("fire_cough")
         hot_tempered_interval = parsed.perk_intervals.get("hot_tempered")
         if man_bomb_interval is not None:
-            state_obj.perk_intervals.man_bomb = max(0.0, float(man_bomb_interval))
+            state_obj.perk_intervals.man_bomb = _conversion_f32(max(0.0, float(man_bomb_interval)))
         if fire_cough_interval is not None:
-            state_obj.perk_intervals.fire_cough = max(0.0, float(fire_cough_interval))
+            state_obj.perk_intervals.fire_cough = _conversion_f32(max(0.0, float(fire_cough_interval)))
         if hot_tempered_interval is not None:
-            state_obj.perk_intervals.hot_tempered = max(0.0, float(hot_tempered_interval))
+            state_obj.perk_intervals.hot_tempered = _conversion_f32(max(0.0, float(hot_tempered_interval)))
 
     return elapsed_ms
 

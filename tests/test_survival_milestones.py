@@ -5,6 +5,7 @@ import math
 import pytest
 
 from crimson.creatures.spawn import advance_survival_spawn_stage
+from crimson.math_parity import f32
 from tests.helpers import assert_float_close
 
 
@@ -50,7 +51,9 @@ def test_advance_survival_spawn_stage_stage2_grid_positions() -> None:
     assert_float_close(spawns[0].pos.y, 256.0)
 
     assert_float_close(spawns[-1].pos.x, 1088.0)
-    assert_float_close(spawns[-1].pos.y, 256.0 + 11.0 * (128.0 / 3.0))
+    stage2_step = f32(42.666668)
+    expected_last_y = f32(f32(f32(11.0) * f32(stage2_step)) + f32(256.0))
+    assert_float_close(spawns[-1].pos.y, expected_last_y)
 
 
 def test_advance_survival_spawn_stage_stage9_final_wave() -> None:

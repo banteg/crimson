@@ -18,7 +18,7 @@ const PerkId = perks.PerkId;
 const WeaponId = state_mod.WeaponId;
 
 pub const main_projectile_pool_size: usize = 0x60;
-const native_half_pi: f64 = native_math.roundTripF32(native_math.native_half_pi);
+const native_half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
 
 pub const Projectile = struct {
     active: bool = false,
@@ -650,7 +650,7 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
+fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 

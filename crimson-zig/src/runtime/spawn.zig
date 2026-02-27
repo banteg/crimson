@@ -111,8 +111,8 @@ pub const SpawnId = enum(i32) {
 };
 
 pub const Vec2 = struct {
-    x: f64,
-    y: f64,
+    x: f32,
+    y: f32,
 };
 
 pub const Crand = struct {
@@ -135,23 +135,23 @@ pub const Crand = struct {
 pub const CreatureInit = struct {
     origin_template_id: i32 = -1,
     pos: Vec2,
-    heading: f64 = 0.0,
+    heading: f32 = 0.0,
     set_heading: bool = true,
-    phase_seed: f64 = 0.0,
+    phase_seed: f32 = 0.0,
     type_id: CreatureTypeId = .alien,
     ai_mode: CreatureAiMode = .orbit_player,
     flags: u32 = 0,
-    size: f64 = 0.0,
-    move_speed: f64 = 0.0,
-    health: f64 = 0.0,
-    max_health: f64 = 0.0,
-    reward_value: f64 = 0.0,
-    contact_damage: f64 = 0.0,
-    tint: [4]f64 = .{ 1.0, 1.0, 1.0, 1.0 },
+    size: f32 = 0.0,
+    move_speed: f32 = 0.0,
+    health: f32 = 0.0,
+    max_health: f32 = 0.0,
+    reward_value: f32 = 0.0,
+    contact_damage: f32 = 0.0,
+    tint: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
 };
 
 pub const WaveSpawnResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     spawns: []CreatureInit,
 
     pub fn deinit(self: WaveSpawnResult, allocator: std.mem.Allocator) void {
@@ -160,7 +160,7 @@ pub const WaveSpawnResult = struct {
 };
 
 pub const WaveSpawnCountResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     spawn_count: usize,
 };
 
@@ -171,7 +171,7 @@ const empty_creature_init = CreatureInit{
 };
 
 pub const WaveSpawnBatchResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     count: usize,
     spawns: [max_wave_spawn_batch]CreatureInit = [_]CreatureInit{empty_creature_init} ** max_wave_spawn_batch,
 
@@ -183,7 +183,7 @@ pub const WaveSpawnBatchResult = struct {
 pub const SpawnTemplateCall = struct {
     template_id: i32,
     pos: Vec2,
-    heading: f64,
+    heading: f32,
 };
 
 pub const SpawnSlotInit = struct {
@@ -197,7 +197,7 @@ pub const SpawnSlotInit = struct {
 
 pub const QuestSpawnEntry = struct {
     pos: Vec2,
-    heading: f64,
+    heading: f32,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
@@ -284,7 +284,7 @@ pub fn tickQuestSpawnTimeline(
     entries: []QuestSpawnEntry,
     quest_spawn_timeline_ms: f32,
     frame_dt_ms: f32,
-    terrain_width: f64,
+    terrain_width: f32,
     creatures_none_active: bool,
     no_creatures_timer_ms: f32,
 ) QuestSpawnTimelineResult {
@@ -320,10 +320,11 @@ pub fn tickQuestSpawnTimeline(
     for (entries[start_idx.?..], start_idx.?..) |entry, idx| {
         if (entry.trigger_ms != trigger_ms) break;
 
-        const offscreen_x = entry.pos.x < 0.0 or terrain_width < entry.pos.x;
+        const entry_x = entry.pos.x;
+        const offscreen_x = entry_x < 0.0 or terrain_width < entry_x;
         for (0..@as(usize, @intCast(@max(entry.count, 0)))) |spawn_idx| {
             if (result.spawn_count >= result.spawns.len) break;
-            const magnitude = @as(f64, @floatFromInt(spawn_idx * 0x28));
+            const magnitude = @as(f32, @floatFromInt(spawn_idx * 0x28));
             const offset = if ((spawn_idx & 1) == 0) magnitude else -magnitude;
             var pos = entry.pos;
             if (offscreen_x) {
@@ -352,7 +353,7 @@ pub fn tickQuestModeSpawns(
     entries: []QuestSpawnEntry,
     quest_spawn_timeline_ms: f32,
     frame_dt_ms: f32,
-    terrain_width: f64,
+    terrain_width: f32,
     creatures_none_active: bool,
     no_creatures_timer_ms: f32,
 ) QuestModeSpawnsResult {
@@ -492,22 +493,17 @@ pub fn buildSurvivalSpawnCreature(
     }
     creature.type_id = type_id;
 
-    creature.size = @floatFromInt(rng.rand() % 20 + 44);
+    const size = @as(f32, @floatFromInt(rng.rand() % 20 + 44));
+    creature.size = size;
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
-        creature.heading = @floatCast(heading_scaled);
+        creature.heading = heading_scaled;
     }
 
     const move_speed_xp: f32 = @floatFromInt(@divTrunc(xp, 4000));
     const move_speed_scaled = @as(f32, move_speed_xp * @as(f32, 0.045));
-    var move_speed: f32 = @as(
-        f32,
-        @floatCast(
-            @as(f64, @floatCast(move_speed_scaled)) +
-                @as(f64, @floatCast(@as(f32, 0.9))),
-        ),
-    );
+    var move_speed = narrowF32(move_speed_scaled + 0.9);
     if (creature.type_id == .spider_sp1) {
         creature.flags |= CreatureFlags.ai7_link_timer;
         move_speed = @as(f32, move_speed * @as(f32, 1.3));
@@ -517,14 +513,7 @@ pub fn buildSurvivalSpawnCreature(
     const health_xp: f32 = @floatFromInt(xp);
     const health_scaled = @as(f32, health_xp * @as(f32, 0.00125));
     const health_rand = @as(f32, @floatFromInt(r_health & 0xF));
-    var health: f32 = @as(
-        f32,
-        @floatCast(
-            @as(f64, @floatCast(health_scaled)) +
-                @as(f64, @floatCast(health_rand)) +
-                @as(f64, @floatCast(@as(f32, 52.0))),
-        ),
-    );
+    var health = narrowF32(health_scaled + health_rand + 52.0);
 
     if (creature.type_id == .zombie) {
         move_speed = @as(f32, move_speed * @as(f32, 0.6));
@@ -534,35 +523,58 @@ pub fn buildSurvivalSpawnCreature(
 
     if (move_speed > @as(f32, 3.5)) move_speed = 3.5;
 
-    creature.move_speed = @floatCast(move_speed);
-    creature.health = @floatCast(health);
+    creature.move_speed = move_speed;
+    creature.health = health;
     creature.reward_value = 0.0;
 
-    const tint_a = 1.0;
-    var tint_r: f64 = 0.0;
-    var tint_g: f64 = 0.0;
-    var tint_b: f64 = 0.0;
+    const tint_a: f32 = 1.0;
+    var tint_r: f32 = 0.0;
+    var tint_g: f32 = 0.0;
+    var tint_b: f32 = 0.0;
     if (xp < 50_000) {
-        tint_r = 1.0 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.7;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(rand_b * 0.01 + 0.7);
     } else if (xp < 100_000) {
-        tint_r = 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.8 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(xp - 50_000)) * 6e-06 + @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.7;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const xp_delta_50k: f32 = @floatFromInt(xp - 50_000);
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(0.9 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.8 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(xp_delta_50k * 6e-06 + rand_b * 0.01 + 0.7);
     } else {
-        tint_r = 1.0 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 1000))) + 10.0);
-        tint_g = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 0.9 - 1.0 / (@as(f64, @floatFromInt(@divTrunc(xp, 10_000))) + 10.0);
-        tint_b = @as(f64, @floatFromInt(rng.rand() % 10)) * 0.01 + 1.0 - @as(f64, @floatFromInt(xp - 100_000)) * 3e-06;
+        const xp_1000: f32 = @floatFromInt(@divTrunc(xp, 1000));
+        const xp_10k: f32 = @floatFromInt(@divTrunc(xp, 10_000));
+        const xp_delta_100k: f32 = @floatFromInt(xp - 100_000);
+        const rand_g: f32 = @floatFromInt(rng.rand() % 10);
+        const rand_b: f32 = @floatFromInt(rng.rand() % 10);
+        tint_r = narrowF32(1.0 - 1.0 / narrowF32(xp_1000 + 10.0));
+        tint_g = narrowF32(rand_g * 0.01 + 0.9 - 1.0 / narrowF32(xp_10k + 10.0));
+        tint_b = narrowF32(rand_b * 0.01 + 1.0 - xp_delta_100k * 3e-06);
         if (tint_b < 0.5) tint_b = 0.5;
     }
-    creature.tint = .{ tint_r, tint_g, tint_b, tint_a };
+    creature.tint = .{
+        tint_r,
+        tint_g,
+        tint_b,
+        tint_a,
+    };
 
-    creature.contact_damage = creature.size * (2.0 / 21.0);
-    creature.reward_value = creature.health * 0.4 +
-        creature.contact_damage * 0.8 +
-        @as(f64, @floatCast(move_speed)) * 5.0 +
-        @as(f64, @floatFromInt(rng.rand() % 10 + 10));
+    const contact_damage = narrowF32(size * (2.0 / 21.0));
+    creature.contact_damage = contact_damage;
+    const reward_value = narrowF32(
+        health * 0.4 +
+            contact_damage * 0.8 +
+            move_speed * 5.0 +
+            @as(f32, @floatFromInt(rng.rand() % 10 + 10)),
+    );
+    creature.reward_value = reward_value;
 
     var r = rng.rand();
     if ((r % 180) < 2) {
@@ -602,7 +614,7 @@ pub fn buildSurvivalSpawnCreature(
     }
 
     creature.max_health = creature.health;
-    creature.reward_value *= 0.8;
+    creature.reward_value = narrowF32(creature.reward_value * 0.8);
     creature.tint = .{
         clamp01(creature.tint[0]),
         clamp01(creature.tint[1]),
@@ -623,15 +635,21 @@ pub fn randSurvivalSpawnPos(
 
     return switch (rng.rand() & 3) {
         0 => .{ .x = @floatFromInt(rng.rand() % width), .y = -40.0 },
-        1 => .{ .x = @floatFromInt(rng.rand() % width), .y = @as(f64, @floatFromInt(terrain_height)) + 40.0 },
+        1 => .{
+            .x = @floatFromInt(rng.rand() % width),
+            .y = @as(f32, @floatFromInt(terrain_height)) + 40.0,
+        },
         2 => .{ .x = -40.0, .y = @floatFromInt(rng.rand() % height) },
-        else => .{ .x = @as(f64, @floatFromInt(terrain_width)) + 40.0, .y = @floatFromInt(rng.rand() % height) },
+        else => .{
+            .x = @as(f32, @floatFromInt(terrain_width)) + 40.0,
+            .y = @floatFromInt(rng.rand() % height),
+        },
     };
 }
 
 pub fn buildRushModeSpawnCreature(
     pos: Vec2,
-    tint_rgba: [4]f64,
+    tint_rgba: [4]f32,
     rng: *Crand,
     type_id: CreatureTypeId,
     survival_elapsed_ms: i32,
@@ -642,30 +660,36 @@ pub fn buildRushModeSpawnCreature(
     creature.type_id = type_id;
     creature.ai_mode = CreatureAiMode.orbit_player;
 
-    creature.health = @as(f64, @floatFromInt(elapsed_ms)) * 1e-4 + 10.0;
+    const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
+    creature.health = narrowF32(elapsed_f32 * 1e-4 + 10.0);
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
-        creature.heading = @floatCast(heading_scaled);
+        creature.heading = heading_scaled;
     }
-    creature.move_speed = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 2.5;
+    creature.move_speed = narrowF32(elapsed_f32 * 1e-5 + 2.5);
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
-    creature.tint = tint_rgba;
+    creature.tint = .{
+        tint_rgba[0],
+        tint_rgba[1],
+        tint_rgba[2],
+        tint_rgba[3],
+    };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
-    creature.size = @as(f64, @floatFromInt(elapsed_ms)) * 1e-5 + 47.0;
+    creature.size = narrowF32(elapsed_f32 * 1e-5 + 47.0);
 
     return creature;
 }
 
 pub fn tickRushModeSpawns(
     allocator: std.mem.Allocator,
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     terrain_width: i32,
     terrain_height: i32,
 ) !WaveSpawnResult {
@@ -688,16 +712,16 @@ pub fn tickRushModeSpawns(
 }
 
 pub fn tickRushModeSpawnsBatch(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
     var result = WaveSpawnBatchResult{
-        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
 
@@ -705,25 +729,25 @@ pub fn tickRushModeSpawnsBatch(
         result.cooldown += 250.0;
 
         const t_i32: i32 = @intFromFloat(survival_elapsed_ms + 1.0);
-        const t = @as(f64, @floatFromInt(t_i32));
-        const tint = [4]f64{
-            clamp01(t * (1.0 / 120000.0) + 0.3),
-            clamp01(t * 10000.0 + 0.3),
-            clamp01(std.math.sin(t * 1e-4) + 0.3),
+        const t: f32 = @floatFromInt(t_i32);
+        const tint = [4]f32{
+            clamp01(narrowF32(t * (1.0 / 120000.0) + 0.3)),
+            clamp01(narrowF32(t * 10000.0 + 0.3)),
+            clamp01(narrowF32(std.math.sin(narrowF32(t * 1e-4)) + 0.3)),
             1.0,
         };
 
         const elapsed_ms: i32 = @intFromFloat(survival_elapsed_ms);
-        const theta = @as(f64, @floatFromInt(elapsed_ms)) * 0.001;
-        const terrain_width_f = @as(f64, @floatFromInt(terrain_width));
-        const terrain_height_f = @as(f64, @floatFromInt(terrain_height));
+        const theta = @as(f32, @floatFromInt(elapsed_ms)) * 0.001;
+        const terrain_width_f: f32 = @floatFromInt(terrain_width);
+        const terrain_height_f: f32 = @floatFromInt(terrain_height);
         const spawn_right = Vec2{
-            .x = terrain_width_f + 64.0,
-            .y = terrain_height_f * 0.5 + std.math.cos(theta) * 256.0,
+            .x = narrowF32(terrain_width_f + 64.0),
+            .y = narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0),
         };
         const spawn_left = Vec2{
             .x = -64.0,
-            .y = terrain_height_f * 0.5 + std.math.sin(theta) * 256.0,
+            .y = narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0),
         };
 
         var alien = buildRushModeSpawnCreature(
@@ -760,16 +784,16 @@ pub fn tickRushModeSpawnsBatch(
 
 pub fn tickSurvivalWaveSpawns(
     allocator: std.mem.Allocator,
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) !WaveSpawnResult {
-    var cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms;
+    var cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms;
 
     var spawns: std.ArrayList(CreatureInit) = .empty;
     defer spawns.deinit(allocator);
@@ -804,16 +828,16 @@ pub fn tickSurvivalWaveSpawns(
 }
 
 pub fn tickSurvivalWaveSpawnsCount(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnCountResult {
-    var cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms;
+    var cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms;
     var count: usize = 0;
 
     if (cooldown > -1.0) {
@@ -848,17 +872,17 @@ pub fn tickSurvivalWaveSpawnsCount(
 }
 
 pub fn tickSurvivalWaveSpawnsBatch(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
     var result = WaveSpawnBatchResult{
-        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
 
@@ -918,13 +942,13 @@ pub fn advanceSurvivalSpawnStage(
         if (stage == 2) {
             if (level < 11) break;
             stage = 3;
-            const step = 128.0 / 3.0;
+            const step: f32 = 42.666668;
             for (0..12) |idx| {
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp2_random_35,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * step + 256.0,
+                    @as(f32, @floatFromInt(idx)) * step + 256.0,
                     heading,
                 );
             }
@@ -938,7 +962,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.alien_const_red_fast_2b,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -952,7 +976,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_ai7_timer_38,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -961,7 +985,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_ai7_timer_38,
                     -64.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -994,7 +1018,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -1003,7 +1027,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
                     -64.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -1018,7 +1042,7 @@ pub fn advanceSurvivalSpawnStage(
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     -64.0,
                     heading,
                 );
@@ -1027,7 +1051,7 @@ pub fn advanceSurvivalSpawnStage(
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     1088.0,
                     heading,
                 );
@@ -1042,7 +1066,7 @@ pub fn advanceSurvivalSpawnStage(
 }
 
 fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
-    const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
     return .{
         .origin_template_id = template_id,
         .pos = pos,
@@ -1050,34 +1074,42 @@ fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
     };
 }
 
-fn clamp01(value: f64) f64 {
+fn clamp01(value: f32) f32 {
     if (value < 0.0) return 0.0;
     if (value > 1.0) return 1.0;
     return value;
 }
 
-fn applyTint(creature: *CreatureInit, tint: [4]f64) void {
-    creature.tint = tint;
+fn applyTint(creature: *CreatureInit, tint: [4]f32) void {
+    creature.tint = .{
+        tint[0],
+        tint[1],
+        tint[2],
+        tint[3],
+    };
 }
 
 fn appendSpawnCall(
     result: *SpawnStageResult,
     template_id: SpawnId,
-    x: f64,
-    y: f64,
-    heading: f64,
+    x: f32,
+    y: f32,
+    heading: f32,
 ) void {
     std.debug.assert(result.count < result.calls.len);
     result.calls[result.count] = .{
         .template_id = @intFromEnum(template_id),
-        .pos = .{ .x = x, .y = y },
+        .pos = .{
+            .x = x,
+            .y = y,
+        },
         .heading = heading,
     };
     result.count += 1;
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
-    try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+fn expectFloatClose(expected: f32, actual: anytype) !void {
+    try std.testing.expectApproxEqAbs(expected, @as(f32, @floatCast(actual)), 1e-6);
 }
 
 test "spawn slot tick behavior parity" {
@@ -1370,7 +1402,7 @@ test "tick quest spawn timeline triggers horizontal spread when on screen" {
     try std.testing.expect(!result.creatures_none_active);
     try expectFloatClose(16.0, result.no_creatures_timer_ms);
     try std.testing.expectEqual(@as(usize, 3), result.spawn_count);
-    const expected = [_][2]f64{
+    const expected = [_][2]f32{
         .{ 512.0, 512.0 },
         .{ 472.0, 512.0 },
         .{ 592.0, 512.0 },
@@ -1401,7 +1433,7 @@ test "tick quest spawn timeline triggers vertical spread when offscreen x" {
         0.0,
     );
 
-    const expected = [_][2]f64{
+    const expected = [_][2]f32{
         .{ -50.0, 512.0 },
         .{ -50.0, 472.0 },
         .{ -50.0, 592.0 },
@@ -1544,7 +1576,7 @@ test "survival wave extra spawns on negative interval" {
 
     try expectFloatClose(0.0, out.cooldown);
     try std.testing.expectEqual(@as(usize, 3), out.spawns.len);
-    const expected_pos = [_][2]f64{
+    const expected_pos = [_][2]f32{
         .{ 35.0, 1064.0 },
         .{ 1064.0, 947.0 },
         .{ -40.0, 435.0 },
@@ -1716,13 +1748,13 @@ test "survival spawn zombie speed floor and health scale" {
 test "survival spawn rare variants" {
     const cases = [_]struct {
         seed: u32,
-        expected_size: f64,
-        expected_contact_damage: f64,
-        expected_health: f64,
-        expected_reward_value: f64,
-        expected_tint_r: f64,
-        expected_tint_g: f64,
-        expected_tint_b: f64,
+        expected_size: f32,
+        expected_contact_damage: f32,
+        expected_health: f32,
+        expected_reward_value: f32,
+        expected_tint_r: f32,
+        expected_tint_g: f32,
+        expected_tint_b: f32,
         expected_rng_state: u32,
     }{
         .{
@@ -1844,7 +1876,8 @@ test "survival milestone stage2 grid positions" {
     try expectFloatClose(1088.0, out.calls[0].pos.x);
     try expectFloatClose(256.0, out.calls[0].pos.y);
     try expectFloatClose(1088.0, out.calls[out.count - 1].pos.x);
-    try expectFloatClose(256.0 + 11.0 * (128.0 / 3.0), out.calls[out.count - 1].pos.y);
+    const stage2_step: f32 = 42.666668;
+    try expectFloatClose(256.0 + 11.0 * stage2_step, out.calls[out.count - 1].pos.y);
 }
 
 test "survival milestone stage9 final wave layout" {

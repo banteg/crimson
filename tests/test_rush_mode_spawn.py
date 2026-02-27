@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
+from crimson.math_parity import f32
 from grim.rand import Crand
 from tests.helpers import assert_float_close
 
@@ -51,9 +52,9 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert_float_close(alien.move_speed, 2.5)
     assert_float_close(alien.reward_value, 144.0)
     assert_float_close(alien.size, 47.0)
-    expected_tint_r = 0.3 + 1.0 / 120000.0
+    expected_tint_r = float(f32(f32(1.0) * f32(1.0 / 120000.0) + 0.3))
     expected_tint_g = 1.0  # clamp01(0.3 + 10000.0)
-    expected_tint_b = 0.3 + math.sin(1e-4)
+    expected_tint_b = float(f32(math.sin(float(f32(f32(1.0) * f32(1e-4)))) + 0.3))
     assert alien.tint is not None
     assert_float_close(alien.tint[0], expected_tint_r)
     assert_float_close(alien.tint[1], expected_tint_g)

@@ -790,10 +790,10 @@ test "death clock apply and update mirror runtime hooks" {
     try applyPerk(&state, players[0..], PerkId.death_clock);
     try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts.get(PerkId.regeneration));
     try std.testing.expectEqual(@as(i32, 0), players[0].perk_counts.get(PerkId.greater_regeneration));
-    try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
+    try std.testing.expectEqual(@as(f32, 100.0), players[0].health);
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 99.944444445), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 99.944444445), players[0].health, 1e-5);
 }
 
 test "regeneration heals when rng allows" {
@@ -808,7 +808,7 @@ test "regeneration heals when rng allows" {
     players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.2), players[0].health, 1e-5);
 }
 
 test "regeneration skips when rng blocks" {
@@ -823,7 +823,7 @@ test "regeneration skips when rng blocks" {
     players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.0), players[0].health, 1e-6);
 }
 
 test "greater regeneration doubles heal by default" {
@@ -839,7 +839,7 @@ test "greater regeneration doubles heal by default" {
     players[0].perk_counts.set(PerkId.greater_regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.4), players[0].health, 1e-5);
 }
 
 test "greater regeneration remains no-op in preserve bugs mode" {
@@ -856,7 +856,7 @@ test "greater regeneration remains no-op in preserve bugs mode" {
     players[0].perk_counts.set(PerkId.greater_regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.2), players[0].health, 1e-5);
 }
 
 test "regeneration multiplayer targets all alive players by default" {
@@ -876,8 +876,8 @@ test "regeneration multiplayer targets all alive players by default" {
     players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.2), players[0].health, 1e-5);
-    try std.testing.expectApproxEqAbs(@as(f64, 80.2), players[1].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.2), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.2), players[1].health, 1e-5);
 }
 
 test "regeneration preserve bugs repeats write to player zero only" {
@@ -898,8 +898,8 @@ test "regeneration preserve bugs repeats write to player zero only" {
     players[0].perk_counts.set(PerkId.regeneration, 1);
 
     updatePerkEffects(&state, players[0..], 0.2);
-    try std.testing.expectApproxEqAbs(@as(f64, 90.4), players[0].health, 1e-5);
-    try std.testing.expectApproxEqAbs(@as(f64, 80.0), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 90.4), players[0].health, 1e-5);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), players[1].health, 1e-6);
 }
 
 test "bandage adds random amount and clamps in default mode" {
@@ -913,7 +913,7 @@ test "bandage adds random amount and clamps in default mode" {
     };
 
     try applyPerk(&state, players[0..], PerkId.bandage);
-    try std.testing.expectApproxEqAbs(@as(f64, 53.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 53.0), players[0].health, 1e-6);
 }
 
 test "bandage preserve bugs multiplies instead of adds" {
@@ -928,7 +928,7 @@ test "bandage preserve bugs multiplies instead of adds" {
     };
 
     try applyPerk(&state, players[0..], PerkId.bandage);
-    try std.testing.expectApproxEqAbs(@as(f64, 100.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), players[0].health, 1e-6);
 }
 
 test "random weapon assigns non-pistol weapon from pistol baseline" {
@@ -998,9 +998,9 @@ test "fatal lottery grants xp when rng is even" {
 
     try applyPerk(&state, players[0..], PerkId.fatal_lottery);
     try std.testing.expectEqual(@as(i32, 10_123), players[0].experience);
-    try std.testing.expectEqual(@as(f64, 100.0), players[0].health);
+    try std.testing.expectEqual(@as(f32, 100.0), players[0].health);
     try std.testing.expectEqual(@as(i32, 456), players[1].experience);
-    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+    try std.testing.expectEqual(@as(f32, 100.0), players[1].health);
 }
 
 test "fatal lottery kills owner only when rng is odd" {
@@ -1018,7 +1018,7 @@ test "fatal lottery kills owner only when rng is odd" {
 
     try applyPerk(&state, players[0..], PerkId.fatal_lottery);
     try std.testing.expect(players[0].health < 0.0);
-    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+    try std.testing.expectEqual(@as(f32, 100.0), players[1].health);
 }
 
 test "grim deal kills owner and boosts experience" {
@@ -1041,7 +1041,7 @@ test "grim deal kills owner and boosts experience" {
     try applyPerk(&state, players[0..], PerkId.grim_deal);
     try std.testing.expect(players[0].health < 0.0);
     try std.testing.expectEqual(@as(i32, 14_567), players[0].experience);
-    try std.testing.expectEqual(@as(f64, 100.0), players[1].health);
+    try std.testing.expectEqual(@as(f32, 100.0), players[1].health);
     try std.testing.expectEqual(@as(i32, 7), players[1].experience);
 }
 
@@ -1068,8 +1068,8 @@ test "infernal contract grants levels and forces low health" {
     try std.testing.expectEqual(@as(i32, 8), players[0].level);
     try std.testing.expectEqual(@as(i32, 3), state.perk_selection.pending_count);
     try std.testing.expect(state.perk_selection.choices_dirty);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.1), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.1), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.1), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.1), players[1].health, 1e-6);
 }
 
 test "ammo maniac reassigns weapons and boosts clip size for all players" {
@@ -1090,12 +1090,12 @@ test "ammo maniac reassigns weapons and boosts clip size for all players" {
 
     try std.testing.expect(players[0].clip_size > base_clip0);
     try std.testing.expect(players[1].clip_size > base_clip1);
-    try std.testing.expectEqual(@as(f64, @floatFromInt(players[0].clip_size)), players[0].ammo);
-    try std.testing.expectEqual(@as(f64, @floatFromInt(players[1].clip_size)), players[1].ammo);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(players[0].clip_size)), players[0].ammo);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(players[1].clip_size)), players[1].ammo);
     try std.testing.expect(!players[0].reload_active);
     try std.testing.expect(!players[1].reload_active);
-    try std.testing.expectEqual(@as(f64, 0.0), players[0].reload_timer);
-    try std.testing.expectEqual(@as(f64, 0.0), players[1].reload_timer);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].reload_timer);
+    try std.testing.expectEqual(@as(f32, 0.0), players[1].reload_timer);
     try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts.get(PerkId.ammo_maniac));
 }
 
@@ -1111,11 +1111,11 @@ test "my favourite weapon increases clip size and keeps current ammo on apply" {
     try applyPerk(&state, players[0..], PerkId.my_favourite_weapon);
 
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
-    try std.testing.expectEqual(@as(f64, 5.0), players[0].ammo);
+    try std.testing.expectEqual(@as(f32, 5.0), players[0].ammo);
 
     player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
     try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
-    try std.testing.expectEqual(@as(f64, @floatFromInt(base_clip + 2)), players[0].ammo);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(base_clip + 2)), players[0].ammo);
 }
 
 test "breathing room reduces player health and clears bonus spawn guard" {
@@ -1127,8 +1127,8 @@ test "breathing room reduces player health and clears bonus spawn guard" {
     };
 
     try applyPerk(&state, players[0..], PerkId.breathing_room);
-    try std.testing.expectApproxEqAbs(@as(f64, 30.0), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 15.0), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 30.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 15.0), players[1].health, 1e-6);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
@@ -1140,8 +1140,8 @@ test "thick skinned clamps health floor at one" {
     };
 
     try applyPerk(&state, players[0..], PerkId.thick_skinned);
-    try std.testing.expectApproxEqAbs(@as(f64, 60.0), players[0].health, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f64, 1.0), players[1].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 60.0), players[0].health, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), players[1].health, 1e-6);
 }
 
 test "plaguebearer apply marks all players active" {
@@ -1172,7 +1172,7 @@ test "lean mean exp machine ticks xp and ignores double experience multiplier" {
 
     updatePerkEffects(&state, players[0..], 0.1);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.25), state.lean_mean_exp_timer, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), state.lean_mean_exp_timer, 1e-6);
 }
 
 test "lean mean exp machine tick awards player zero only in multiplayer" {

@@ -172,7 +172,7 @@ pub const CreaturePool = struct {
         call: spawn_mod.SpawnTemplateCall,
         rng: *spawn_mod.Crand,
         state: ?*const state_mod.GameplayState,
-        terrain_size: f64,
+        terrain_size: f32,
     ) CreatureRuntimeError!void {
         switch (call.template_id) {
             @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12) => {
@@ -192,7 +192,7 @@ pub const CreaturePool = struct {
                 );
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
-                const transient_heading = narrowF32(@as(f32, @floatFromInt(rng.rand() % 314)) * 0.01);
+                const transient_heading = @as(f32, @floatFromInt(rng.rand() % 314)) * 0.01;
                 self.entries[parent_idx].heading = transient_heading;
 
                 const angle_step = std.math.pi / 4.0;
@@ -552,7 +552,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -573,7 +573,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -595,7 +595,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -673,7 +673,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -701,7 +701,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -729,7 +729,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -755,7 +755,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -1281,7 +1281,7 @@ pub const CreaturePool = struct {
             @intFromEnum(spawn_mod.SpawnId.spider_sp2_random_35) => {
                 // Match Python/native plan builder ordering:
                 // allocCreature phase seed, transient heading draw, then template randoms.
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
 
                 const size = randf(rng, 10, 1.0, 30.0);
@@ -1295,7 +1295,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp2,
@@ -1329,14 +1329,14 @@ pub const CreaturePool = struct {
                 self.entries[idx].orbit_radius = 1.5;
             },
             0x37 => {
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
-                const size = @as(f64, @floatFromInt((rng.rand() & 3) + 41));
+                const size = @as(f32, @floatFromInt((rng.rand() & 3) + 41));
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp2,
@@ -1351,14 +1351,14 @@ pub const CreaturePool = struct {
                 });
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38) => {
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
-                const size = @as(f64, @floatFromInt((rng.rand() & 3) + 41));
+                const size = @as(f32, @floatFromInt((rng.rand() & 3) + 41));
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1374,14 +1374,14 @@ pub const CreaturePool = struct {
                 self.entries[idx].link_index = 0;
             },
             0x39 => {
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
-                const size = @as(f64, @floatFromInt(rng.rand() % 4 + 26));
+                const size = @as(f32, @floatFromInt(rng.rand() % 4 + 26));
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1487,7 +1487,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -1545,7 +1545,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -1571,7 +1571,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1598,7 +1598,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1625,7 +1625,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1641,16 +1641,16 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3D => {
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
                 _ = rng.rand() % 20;
-                const size = @as(f64, @floatFromInt(rng.rand() % 7 + 45));
+                const size = @as(f32, @floatFromInt(rng.rand() % 7 + 45));
                 const contact_damage = narrowF32(size * 0.22);
 
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1717,7 +1717,7 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x41 => {
-                const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+                const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
                 _ = rng.rand() % 314;
                 const size = randf(rng, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
@@ -1729,7 +1729,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.zombie,
@@ -1781,10 +1781,12 @@ pub const CreaturePool = struct {
         }
 
         if (state) |game_state| {
+            const call_pos_x = narrowF32(call.pos.x);
+            const call_pos_y = narrowF32(call.pos.y);
             if (!game_state.demo_mode_active and
                 terrain_size > 0.0 and
-                call.pos.x > 0.0 and call.pos.x < terrain_size and
-                call.pos.y > 0.0 and call.pos.y < terrain_size)
+                call_pos_x > 0.0 and call_pos_x < terrain_size and
+                call_pos_y > 0.0 and call_pos_y < terrain_size)
             {
                 consumeSpawnTemplateBurstRng(rng, 8);
             }
@@ -2109,7 +2111,7 @@ pub const CreaturePool = struct {
         aim_target: state_mod.Vec2,
         shot_count: i32,
         weapon_id: i32,
-        world_size: f64,
+        world_size: f32,
     ) ShotResolutionResult {
         if (players.len == 0) return .{};
         if (player_index >= players.len) return .{};
@@ -2167,7 +2169,7 @@ pub const CreaturePool = struct {
                 .{},
                 owner,
                 narrowF32(1.0 / 60.0),
-                narrowF32(world_size),
+                world_size,
             );
             consumeProjectileHitPresentationPostRng(state, projectile_type_id);
             consumeHitSfxRng(state, &hit_audio_game_tune_started, projectile_type_id);
@@ -2493,7 +2495,7 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
         pos: state_mod.Vec2,
-        heading: f64,
+        heading: f32,
         stats: SpawnStats,
     ) usize {
         return self.spawnFromStatsWithFlags(rng, pos, heading, stats, 0, true);
@@ -2528,12 +2530,12 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
         pos: state_mod.Vec2,
-        heading: f64,
+        heading: f32,
         stats: SpawnStats,
         flags: u32,
         set_heading: bool,
     ) usize {
-        const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+        const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
         return self.spawnInit(.{
             .origin_template_id = -1,
             .pos = .{
@@ -2546,12 +2548,12 @@ pub const CreaturePool = struct {
             .type_id = stats.type_id,
             .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
             .flags = flags,
-            .size = @as(f64, stats.size),
-            .move_speed = @as(f64, stats.move_speed),
-            .health = @as(f64, stats.health),
-            .max_health = @as(f64, stats.health),
-            .reward_value = @as(f64, stats.reward_value),
-            .contact_damage = @as(f64, stats.contact_damage),
+            .size = stats.size,
+            .move_speed = stats.move_speed,
+            .health = stats.health,
+            .max_health = stats.health,
+            .reward_value = stats.reward_value,
+            .contact_damage = stats.contact_damage,
         });
     }
 
@@ -2583,7 +2585,7 @@ pub const CreaturePool = struct {
         call: spawn_mod.SpawnTemplateCall,
         creature_type: spawn_mod.CreatureTypeId,
     ) void {
-        const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+        const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
         _ = rng.rand() % 314;
 
         const size = randf(rng, 15, 1.0, 38.0);
@@ -2605,7 +2607,7 @@ pub const CreaturePool = struct {
         const idx = self.spawnInit(.{
             .origin_template_id = -1,
             .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-            .heading = call.heading,
+            .heading = narrowF32(call.heading),
             .set_heading = true,
             .phase_seed = phase_seed,
             .type_id = creature_type,
@@ -2966,12 +2968,12 @@ const SpawnStats = struct {
     contact_damage: f32,
 };
 
-fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f64, base: f64) f64 {
-    return narrowF32(@as(f64, @floatFromInt(rng.rand() % mod)) * scale + base);
+fn randf(rng: *spawn_mod.Crand, mod: u32, scale: f32, base: f32) f32 {
+    return @as(f32, @floatFromInt(rng.rand() % mod)) * scale + base;
 }
 
-fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f64 {
-    const phase_seed = @as(f64, @floatFromInt(rng.rand() & 0x17f));
+fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f32 {
+    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
     _ = rng.rand() % 314;
     return phase_seed;
 }
@@ -3605,7 +3607,7 @@ pub fn applyPlayerContactDamage(
     }
 }
 
-fn expectFloatClose(expected: f64, actual: f64) !void {
+fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
 
@@ -4316,7 +4318,7 @@ test "template spawn supports quest spider and zombie late templates" {
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.zombie)), entry.type_id);
         try std.testing.expectEqual(@as(u32, 0), entry.flags);
-        try expectFloatClose(60.2857141494751, entry.hp);
+        try expectFloatClose(60.28571701049805, entry.hp);
         try expectFloatClose(1.01, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4505,7 +4507,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), entry.type_id);
-        try expectFloatClose(70.28571319580078, entry.hp);
+        try expectFloatClose(70.28572082519531, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4525,7 +4527,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(70.28571319580078, entry.hp);
+        try expectFloatClose(70.28572082519531, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4545,7 +4547,7 @@ test "template spawn supports quest mid-tier random templates" {
         );
         const entry = pool.entries[0];
         try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.lizard)), entry.type_id);
-        try expectFloatClose(60.2857141494751, entry.hp);
+        try expectFloatClose(60.28571701049805, entry.hp);
         try expectFloatClose(1.5, entry.move_speed);
         try expectFloatClose(138.0, entry.reward_value);
         try expectFloatClose(44.0, entry.size);
@@ -4621,11 +4623,11 @@ test "template spawn supports quest mid-tier random templates" {
 
 test "template spawn supports quest constant alien templates" {
     const template_ids = [_]i32{ 0x0F, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2D };
-    const expected_health = [_]f64{ 20.0, 53.0, 25.0, 5.0, 20.0, 25.0, 50.0, 50.0, 50.0, 800.0, 50.0, 45.0 };
-    const expected_speed = [_]f64{ 2.9, 1.7, 1.7, 1.7, 2.0, 2.5, 2.2, 2.1, 1.7, 2.5, 3.1, 3.1 };
-    const expected_reward = [_]f64{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
-    const expected_size = [_]f64{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
-    const expected_contact = [_]f64{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
+    const expected_health = [_]f32{ 20.0, 53.0, 25.0, 5.0, 20.0, 25.0, 50.0, 50.0, 50.0, 800.0, 50.0, 45.0 };
+    const expected_speed = [_]f32{ 2.9, 1.7, 1.7, 1.7, 2.0, 2.5, 2.2, 2.1, 1.7, 2.5, 3.1, 3.1 };
+    const expected_reward = [_]f32{ 60.0, 120.0, 150.0, 180.0, 110.0, 125.0, 125.0, 125.0, 150.0, 450.0, 300.0, 200.0 };
+    const expected_size = [_]f32{ 50.0, 55.0, 50.0, 45.0, 50.0, 30.0, 45.0, 45.0, 55.0, 70.0, 60.0, 38.0 };
+    const expected_contact = [_]f32{ 35.0, 8.0, 8.0, 8.0, 4.0, 3.0, 10.0, 10.0, 8.0, 20.0, 8.0, 3.0 };
     const expected_flags = [_]u32{ 0, 0, 0, 0, 0, 0, 0, spawn_mod.CreatureFlags.bonus_on_death, 0, 0, 0, 0 };
     const expected_ai_mode = [_]spawn_mod.CreatureAiMode{
         spawn_mod.CreatureAiMode.orbit_player,
@@ -4667,11 +4669,11 @@ test "template spawn supports quest constant alien templates" {
 
 test "template spawn supports quest constant lizard templates" {
     const template_ids = [_]i32{ 0x2F, 0x30 };
-    const expected_health = [_]f64{ 20.0, 1000.0 };
-    const expected_speed = [_]f64{ 2.5, 2.0 };
-    const expected_reward = [_]f64{ 150.0, 400.0 };
-    const expected_size = [_]f64{ 45.0, 65.0 };
-    const expected_contact = [_]f64{ 4.0, 10.0 };
+    const expected_health = [_]f32{ 20.0, 1000.0 };
+    const expected_speed = [_]f32{ 2.5, 2.0 };
+    const expected_reward = [_]f32{ 150.0, 400.0 };
+    const expected_size = [_]f32{ 45.0, 65.0 };
+    const expected_contact = [_]f32{ 4.0, 10.0 };
 
     for (template_ids, 0..) |template_id, idx| {
         var pool = CreaturePool{};
@@ -4856,14 +4858,14 @@ test "template spawn supports quest spawner templates and slot ticks" {
         template_id: i32,
         expected_type_id: i32,
         expected_flags: u32,
-        expected_health: f64,
-        expected_move_speed: f64,
-        expected_reward: f64,
-        expected_size: f64,
-        expected_contact: f64,
-        expected_timer: f64,
+        expected_health: f32,
+        expected_move_speed: f32,
+        expected_reward: f32,
+        expected_size: f32,
+        expected_contact: f32,
+        expected_timer: f32,
         expected_limit: i32,
-        expected_interval: f64,
+        expected_interval: f32,
         expected_child_template: i32,
     }{
         .{ .template_id = 0x00, .expected_type_id = @intFromEnum(spawn_mod.CreatureTypeId.zombie), .expected_flags = spawn_mod.CreatureFlags.anim_ping_pong | spawn_mod.CreatureFlags.anim_long_strip, .expected_health = 8500.0, .expected_move_speed = 1.3, .expected_reward = 6600.0, .expected_size = 64.0, .expected_contact = 50.0, .expected_timer = 1.0, .expected_limit = 812, .expected_interval = 0.7, .expected_child_template = 0x41 },
@@ -5079,7 +5081,7 @@ test "creature update applies contact damage and movement" {
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
-    try expectFloatClose(@as(f64, 1.0), pool.entries[0].attack_cooldown);
+    try expectFloatClose(@as(f32, 1.0), pool.entries[0].attack_cooldown);
 }
 
 test "veins of poison sets self-damage flag on contact hit" {

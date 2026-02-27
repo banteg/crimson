@@ -153,7 +153,7 @@ fn build_404_the_collaboration(
     var trigger: i32 = 1500;
     var wave: i32 = 0;
     while (trigger < 0x2B55C) {
-        const count = @as(i32, @intFromFloat(@as(f64, @floatFromInt(wave)) * 0.8 + 7.0));
+        const count = @as(i32, @intFromFloat(@as(f32, @floatFromInt(wave)) * 0.8 + 7.0));
         try common.appendSpawn(
             out_entries,
             len,
@@ -234,11 +234,11 @@ fn build_405_the_massacre(
 
 const UnblitzkriegSweepAxis = enum { horizontal, vertical };
 
-fn unblitzkriegCoord(reverse: bool, i_var5: i32) f64 {
+fn unblitzkriegCoord(reverse: bool, i_var5: i32) f32 {
     return if (reverse)
-        @as(f64, @floatFromInt(0x338 - @divTrunc(i_var5, 10)))
+        @as(f32, @floatFromInt(0x338 - @divTrunc(i_var5, 10)))
     else
-        @as(f64, @floatFromInt(@divTrunc(i_var5, 10) + 200));
+        @as(f32, @floatFromInt(@divTrunc(i_var5, 10) + 200));
 }
 
 fn appendUnblitzkriegSweep(
@@ -246,7 +246,7 @@ fn appendUnblitzkriegSweep(
     len: *usize,
     trigger: *i32,
     axis: UnblitzkriegSweepAxis,
-    fixed_coord: f64,
+    fixed_coord: f32,
     reverse: bool,
     trigger_step: i32,
     start_toggle: bool,
@@ -316,7 +316,7 @@ fn build_407_gauntlet(
 
     const ring_count = player_count + 9;
     if (ring_count > 0) {
-        const step = std.math.tau / @as(f64, @floatFromInt(ring_count));
+        const step = std.math.tau / @as(f32, @floatFromInt(ring_count));
         try common.appendRingSpawns(
             out_entries,
             len,
@@ -352,7 +352,7 @@ fn build_407_gauntlet(
 
     const outer_count = player_count + 0x11;
     if (outer_count > 0) {
-        const step = std.math.tau / @as(f64, @floatFromInt(outer_count));
+        const step = std.math.tau / @as(f32, @floatFromInt(outer_count));
         try common.appendRingSpawns(
             out_entries,
             len,
@@ -434,8 +434,8 @@ fn build_409_the_annihilation(
     var i_var5: i32 = 0;
     var idx: i32 = 0;
     while (idx < 12) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(@divTrunc(i_var5, 12) + 0x80));
-        const x: f64 = if (@mod(idx, 2) == 0) 832.0 else 896.0;
+        const y = @as(f32, @floatFromInt(@divTrunc(i_var5, 12) + 0x80));
+        const x: f32 = if (@mod(idx, 2) == 0) 832.0 else 896.0;
         try common.appendSpawn(
             out_entries,
             len,
@@ -454,8 +454,8 @@ fn build_409_the_annihilation(
     var toggle = false;
     idx = 0;
     while (idx < 12) : (idx += 1) {
-        const y = @as(f64, @floatFromInt(@divTrunc(i_var5, 12) + 0x80));
-        const x: f64 = if (toggle) 832.0 else 896.0;
+        const y = @as(f32, @floatFromInt(@divTrunc(i_var5, 12) + 0x80));
+        const x: f32 = if (toggle) 832.0 else 896.0;
         try common.appendSpawn(
             out_entries,
             len,

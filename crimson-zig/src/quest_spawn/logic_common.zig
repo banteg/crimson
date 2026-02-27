@@ -15,8 +15,8 @@ pub const QuestSpawnBuildResult = struct {
 };
 
 pub const BuildContext = struct {
-    width: f64,
-    height: f64,
+    width: f32,
+    height: f32,
     player_count: i32,
 };
 
@@ -71,7 +71,7 @@ pub inline fn appendSpawn(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     pos: spawn_runtime.Vec2,
-    heading: f64,
+    heading: f32,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
@@ -85,14 +85,14 @@ pub inline fn appendSpawn(
     });
 }
 
-pub inline fn centerPoint(width: f64, height: f64) spawn_runtime.Vec2 {
+pub inline fn centerPoint(width: f32, height: f32) spawn_runtime.Vec2 {
     return .{
         .x = width * 0.5,
         .y = height * 0.5,
     };
 }
 
-pub inline fn edgeMidpoints(width: f64, height: f64, offset: f64) EdgePoints {
+pub inline fn edgeMidpoints(width: f32, height: f32, offset: f32) EdgePoints {
     const center = centerPoint(width, height);
     return .{
         .left = .{ .x = -offset, .y = center.y },
@@ -102,11 +102,11 @@ pub inline fn edgeMidpoints(width: f64, height: f64, offset: f64) EdgePoints {
     };
 }
 
-pub inline fn squareEdgeMidpoints(width: f64, offset: f64) EdgePoints {
+pub inline fn squareEdgeMidpoints(width: f32, offset: f32) EdgePoints {
     return edgeMidpoints(width, width, offset);
 }
 
-pub inline fn cornerPoints(width: f64, height: f64, offset: f64) CornerPoints {
+pub inline fn cornerPoints(width: f32, height: f32, offset: f32) CornerPoints {
     return .{
         .top_left = .{ .x = -offset, .y = -offset },
         .top_right = .{ .x = width + offset, .y = -offset },
@@ -115,7 +115,7 @@ pub inline fn cornerPoints(width: f64, height: f64, offset: f64) CornerPoints {
     };
 }
 
-pub inline fn insetCornerPoints(width: f64, height: f64, inset: f64) CornerPoints {
+pub inline fn insetCornerPoints(width: f32, height: f32, inset: f32) CornerPoints {
     return .{
         .top_left = .{ .x = inset, .y = inset },
         .top_right = .{ .x = width - inset, .y = inset },
@@ -124,36 +124,36 @@ pub inline fn insetCornerPoints(width: f64, height: f64, inset: f64) CornerPoint
     };
 }
 
-pub inline fn cornerPointTopLeft(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
+pub inline fn cornerPointTopLeft(width: f32, height: f32, offset: f32) spawn_runtime.Vec2 {
     _ = width;
     _ = height;
     return .{ .x = -offset, .y = -offset };
 }
 
-pub inline fn cornerPointTopRight(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
+pub inline fn cornerPointTopRight(width: f32, height: f32, offset: f32) spawn_runtime.Vec2 {
     _ = height;
     return .{ .x = width + offset, .y = -offset };
 }
 
-pub inline fn cornerPointBottomLeft(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
+pub inline fn cornerPointBottomLeft(width: f32, height: f32, offset: f32) spawn_runtime.Vec2 {
     _ = width;
     return .{ .x = -offset, .y = height + offset };
 }
 
-pub inline fn cornerPointBottomRight(width: f64, height: f64, offset: f64) spawn_runtime.Vec2 {
+pub inline fn cornerPointBottomRight(width: f32, height: f32, offset: f32) spawn_runtime.Vec2 {
     return .{ .x = width + offset, .y = height + offset };
 }
 
-pub inline fn randomAngle(rng: *PythonRandom) f64 {
+pub inline fn randomAngle(rng: *PythonRandom) f32 {
     // Native quest scripts draw a 0..611 integer and scale by 0.01 radians.
-    return @as(f64, @floatFromInt(rng.randBelow(0x264))) * 0.01;
+    return @as(f32, @floatFromInt(rng.randBelow(0x264))) * 0.01;
 }
 
-pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime.Vec2) f64 {
+pub inline fn headingFromCenter(point: spawn_runtime.Vec2, center: spawn_runtime.Vec2) f32 {
     return math_runtime.atan2(point.y - center.y, point.x - center.x) - (std.math.pi / 2.0);
 }
 
-pub inline fn vecFromAngle(angle: f64) spawn_runtime.Vec2 {
+pub inline fn vecFromAngle(angle: f32) spawn_runtime.Vec2 {
     return .{
         .x = math_runtime.cos(angle),
         .y = math_runtime.sin(angle),
@@ -174,22 +174,22 @@ pub inline fn subVec(a: spawn_runtime.Vec2, b: spawn_runtime.Vec2) spawn_runtime
     };
 }
 
-pub inline fn mulVec(vec: spawn_runtime.Vec2, scalar: f64) spawn_runtime.Vec2 {
+pub inline fn mulVec(vec: spawn_runtime.Vec2, scalar: f32) spawn_runtime.Vec2 {
     return .{
         .x = vec.x * scalar,
         .y = vec.y * scalar,
     };
 }
 
-pub inline fn toAngle(vec: spawn_runtime.Vec2) f64 {
+pub inline fn toAngle(vec: spawn_runtime.Vec2) f32 {
     return math_runtime.atan2(vec.y, vec.x);
 }
 
 pub inline fn linePointAt(start: spawn_runtime.Vec2, step: spawn_runtime.Vec2, idx: i32) spawn_runtime.Vec2 {
-    return addVec(start, mulVec(step, @as(f64, @floatFromInt(idx))));
+    return addVec(start, mulVec(step, @as(f32, @floatFromInt(idx))));
 }
 
-pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f64, angle: f64) spawn_runtime.Vec2 {
+pub inline fn ringPoint(center: spawn_runtime.Vec2, radius: f32, angle: f32) spawn_runtime.Vec2 {
     return addVec(center, mulVec(vecFromAngle(angle), radius));
 }
 
@@ -197,7 +197,7 @@ pub inline fn appendSpawnAtAllEdges(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     edges: EdgePoints,
-    heading: f64,
+    heading: f32,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
@@ -212,10 +212,10 @@ pub fn appendRingSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    radius: f64,
+    radius: f32,
     count: i32,
-    step: f64,
-    start_angle: f64,
+    step: f32,
+    start_angle: f32,
     heading_mode: RingHeadingMode,
     spawn_id: SpawnId,
     trigger_start: i32,
@@ -226,7 +226,7 @@ pub fn appendRingSpawns(
     var trigger = trigger_start;
     var idx: i32 = 0;
     while (idx < count) : (idx += 1) {
-        const angle = start_angle + @as(f64, @floatFromInt(idx)) * step;
+        const angle = start_angle + @as(f32, @floatFromInt(idx)) * step;
         const heading = switch (heading_mode) {
             .zero => 0.0,
             .angle => angle,
@@ -248,10 +248,10 @@ pub fn appendRadialSpawns(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
     center: spawn_runtime.Vec2,
-    angle: f64,
-    radius_start: f64,
-    radius_end: f64,
-    radius_step: f64,
+    angle: f32,
+    radius_start: f32,
+    radius_end: f32,
+    radius_step: f32,
     heading_mode: RadialHeadingMode,
     spawn_id: SpawnId,
     trigger_ms: i32,

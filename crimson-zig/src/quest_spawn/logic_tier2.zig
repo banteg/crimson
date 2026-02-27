@@ -430,7 +430,7 @@ fn build27SurvivalOfTheFastest(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = @as(f64, @floatFromInt(x)), .y = 256.0 },
+            .{ .x = @as(f32, @floatFromInt(x)), .y = 256.0 },
             0.0,
             common.SpawnId.alien_spawner_child_32_fast_10,
             trigger,
@@ -445,7 +445,7 @@ fn build27SurvivalOfTheFastest(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 688.0, .y = @as(f64, @floatFromInt(y)) },
+            .{ .x = 688.0, .y = @as(f32, @floatFromInt(y)) },
             0.0,
             common.SpawnId.alien_spawner_child_32_fast_10,
             trigger,
@@ -460,7 +460,7 @@ fn build27SurvivalOfTheFastest(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = @as(f64, @floatFromInt(x_value)), .y = 688.0 },
+            .{ .x = @as(f32, @floatFromInt(x_value)), .y = 688.0 },
             0.0,
             common.SpawnId.alien_spawner_child_32_fast_10,
             trigger,
@@ -475,7 +475,7 @@ fn build27SurvivalOfTheFastest(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = 400.0, .y = @as(f64, @floatFromInt(y_value)) },
+            .{ .x = 400.0, .y = @as(f32, @floatFromInt(y_value)) },
             0.0,
             common.SpawnId.alien_spawner_child_32_fast_10,
             trigger,
@@ -490,7 +490,7 @@ fn build27SurvivalOfTheFastest(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = @as(f64, @floatFromInt(x)), .y = 400.0 },
+            .{ .x = @as(f32, @floatFromInt(x)), .y = 400.0 },
             0.0,
             common.SpawnId.alien_spawner_child_32_fast_10,
             trigger,

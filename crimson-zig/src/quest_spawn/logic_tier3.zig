@@ -169,7 +169,7 @@ fn build302LizardKings(
     );
 
     var trigger: i32 = 1500;
-    var angle: f64 = 0.0;
+    var angle: f32 = 0.0;
     var idx: i32 = 0;
     while (idx < 28) : (idx += 1) {
         const point = common.ringPoint(center, 256.0, angle);
@@ -221,8 +221,8 @@ fn build303TheKilling(
                         out_entries,
                         len,
                         .{
-                            .x = @as(f64, @floatFromInt(x)),
-                            .y = @as(f64, @floatFromInt(y)),
+                            .x = @as(f32, @floatFromInt(x)),
+                            .y = @as(f32, @floatFromInt(y)),
                         },
                         0.0,
                         common.SpawnId.alien_spawner_child_1d_fast_07,

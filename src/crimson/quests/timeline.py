@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from ..creatures.spawn import SpawnTemplateCall
+from ..math_parity import f32
 from .types import SpawnEntry
 
 
@@ -20,13 +21,13 @@ def tick_quest_spawn_timeline(
     Returns:
       (updated_entries, creatures_none_active, no_creatures_timer_ms, spawn_calls)
     """
-    timeline_ms = float(quest_spawn_timeline_ms)
-    dt_ms = float(frame_dt_ms)
+    timeline_ms = f32(quest_spawn_timeline_ms)
+    dt_ms = f32(frame_dt_ms)
 
     if not creatures_none_active:
         no_creatures_timer_ms = 0.0
     else:
-        no_creatures_timer_ms += dt_ms
+        no_creatures_timer_ms = f32(no_creatures_timer_ms + dt_ms)
 
     force_spawn = creatures_none_active and 3000.0 < no_creatures_timer_ms and 0x6A4 < timeline_ms
 
@@ -34,7 +35,7 @@ def tick_quest_spawn_timeline(
     for idx, entry in enumerate(entries):
         if entry.count <= 0:
             continue
-        if float(entry.trigger_ms) < timeline_ms or force_spawn:
+        if f32(float(entry.trigger_ms)) < timeline_ms or force_spawn:
             start_idx = idx
             break
 
@@ -51,16 +52,16 @@ def tick_quest_spawn_timeline(
             break
 
         base_pos = entry.pos
-        offscreen_x = base_pos.x < 0.0 or float(terrain_width) < base_pos.x
+        offscreen_x = base_pos.x < 0.0 or f32(terrain_width) < base_pos.x
 
         for spawn_idx in range(int(entry.count)):
-            magnitude = float(spawn_idx * 0x28)
+            magnitude = f32(float(spawn_idx * 0x28))
             offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
             if offscreen_x:
                 pos = base_pos.offset(dy=offset)
             else:
                 pos = base_pos.offset(dx=offset)
-            spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=float(entry.heading)))
+            spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=f32(entry.heading)))
 
         if entry.count != 0:
             updated_entries[idx] = replace(entry, count=0)
@@ -68,7 +69,7 @@ def tick_quest_spawn_timeline(
     # After spawning, the original forces the "none active" flag off.
     creatures_none_active = False
 
-    return tuple(updated_entries), creatures_none_active, no_creatures_timer_ms, tuple(spawns)
+    return tuple(updated_entries), creatures_none_active, float(no_creatures_timer_ms), tuple(spawns)
 
 
 def quest_spawn_table_empty(entries: tuple[SpawnEntry, ...]) -> bool:
@@ -95,11 +96,11 @@ def tick_quest_mode_spawns(
     Returns:
       (updated_entries, quest_spawn_timeline_ms, creatures_none_active, no_creatures_timer_ms, spawn_calls)
     """
-    timeline_ms = float(quest_spawn_timeline_ms)
-    dt_ms = float(frame_dt_ms)
+    timeline_ms = f32(quest_spawn_timeline_ms)
+    dt_ms = f32(frame_dt_ms)
 
     if (not creatures_none_active) or (not quest_spawn_table_empty(entries)):
-        timeline_ms += dt_ms
+        timeline_ms = f32(timeline_ms + dt_ms)
 
     entries, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_spawn_timeline(
         entries,
@@ -110,4 +111,4 @@ def tick_quest_mode_spawns(
         no_creatures_timer_ms=no_creatures_timer_ms,
     )
 
-    return entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns
+    return entries, float(timeline_ms), creatures_none_active, no_creatures_timer_ms, spawns

@@ -5,21 +5,12 @@ pub const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 
-pub const native_left_axis_heading_pos: f32 = roundF32(native_tau - native_half_pi);
-pub const native_left_axis_heading_eps: f32 = 1e-6;
-pub const native_left_axis_dy_eps: f32 = 5e-4;
+const native_left_axis_heading_pos: f32 = roundF32(native_tau - native_half_pi);
+const native_left_axis_heading_eps: f32 = 1e-6;
+const native_left_axis_dy_eps: f32 = 5e-4;
 
 pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
-}
-
-pub inline fn roundTripF32(value: anytype) f64 {
-    const rounded: f32 = roundF32(value);
-    return @floatCast(rounded);
-}
-
-pub inline fn f64f32(value: anytype) f64 {
-    return roundTripF32(value);
 }
 
 pub inline fn sinNative(value: f32) f32 {
@@ -57,10 +48,6 @@ pub inline fn headingFromDeltaNative(dx: f32, dy: f32) f32 {
         heading = roundF32(heading - native_tau);
     }
     return heading;
-}
-
-pub inline fn headingAddPiNative(heading: f32) f32 {
-    return roundF32(heading + native_pi);
 }
 
 test "wrap angle 0..tau keeps native finite behavior" {
