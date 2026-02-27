@@ -615,10 +615,10 @@ pub fn buildSurvivalSpawnCreature(
     creature.max_health = creature.health;
     creature.reward_value = @floatCast(narrowF32(@as(f32, @floatCast(creature.reward_value)) * 0.8));
     creature.tint = .{
-        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[0])))),
-        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[1])))),
-        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[2])))),
-        @as(f64, clamp01(@as(f32, @floatCast(creature.tint[3])))),
+        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[0])))),
+        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[1])))),
+        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[2])))),
+        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[3])))),
     };
 
     return creature;
@@ -634,9 +634,15 @@ pub fn randSurvivalSpawnPos(
 
     return switch (rng.rand() & 3) {
         0 => .{ .x = @floatFromInt(rng.rand() % width), .y = -40.0 },
-        1 => .{ .x = @floatFromInt(rng.rand() % width), .y = @as(f64, @floatFromInt(terrain_height)) + 40.0 },
+        1 => .{
+            .x = @floatFromInt(rng.rand() % width),
+            .y = @floatCast(@as(f32, @floatFromInt(terrain_height)) + 40.0),
+        },
         2 => .{ .x = -40.0, .y = @floatFromInt(rng.rand() % height) },
-        else => .{ .x = @as(f64, @floatFromInt(terrain_width)) + 40.0, .y = @floatFromInt(rng.rand() % height) },
+        else => .{
+            .x = @floatCast(@as(f32, @floatFromInt(terrain_width)) + 40.0),
+            .y = @floatFromInt(rng.rand() % height),
+        },
     };
 }
 
@@ -664,10 +670,10 @@ pub fn buildRushModeSpawnCreature(
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
     creature.tint = .{
-        @as(f64, tint_rgba[0]),
-        @as(f64, tint_rgba[1]),
-        @as(f64, tint_rgba[2]),
-        @as(f64, tint_rgba[3]),
+        @floatCast(tint_rgba[0]),
+        @floatCast(tint_rgba[1]),
+        @floatCast(tint_rgba[2]),
+        @floatCast(tint_rgba[3]),
     };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
@@ -937,11 +943,12 @@ pub fn advanceSurvivalSpawnStage(
             stage = 3;
             const step = 128.0 / 3.0;
             for (0..12) |idx| {
+                const idx_f64: f64 = @floatFromInt(idx);
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp2_random_35,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * step + 256.0,
+                    idx_f64 * step + 256.0,
                     heading,
                 );
             }
@@ -955,7 +962,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.alien_const_red_fast_2b,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -969,7 +976,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_ai7_timer_38,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -978,7 +985,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_ai7_timer_38,
                     -64.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -1011,7 +1018,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
                     1088.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -1020,7 +1027,7 @@ pub fn advanceSurvivalSpawnStage(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
                     -64.0,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     heading,
                 );
             }
@@ -1035,7 +1042,7 @@ pub fn advanceSurvivalSpawnStage(
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     -64.0,
                     heading,
                 );
@@ -1044,7 +1051,7 @@ pub fn advanceSurvivalSpawnStage(
                 appendSpawnCall(
                     &result,
                     SpawnId.spider_sp1_const_ranged_variant_3c,
-                    @as(f64, @floatFromInt(idx)) * 64.0 + 384.0,
+                    @as(f32, @floatFromInt(idx)) * 64.0 + 384.0,
                     1088.0,
                     heading,
                 );
@@ -1075,25 +1082,28 @@ fn clamp01(value: f32) f32 {
 
 fn applyTint(creature: *CreatureInit, tint: [4]f32) void {
     creature.tint = .{
-        @as(f64, tint[0]),
-        @as(f64, tint[1]),
-        @as(f64, tint[2]),
-        @as(f64, tint[3]),
+        @floatCast(tint[0]),
+        @floatCast(tint[1]),
+        @floatCast(tint[2]),
+        @floatCast(tint[3]),
     };
 }
 
 fn appendSpawnCall(
     result: *SpawnStageResult,
     template_id: SpawnId,
-    x: f64,
-    y: f64,
-    heading: f64,
+    x: anytype,
+    y: anytype,
+    heading: anytype,
 ) void {
+    const x_f64: f64 = @floatCast(x);
+    const y_f64: f64 = @floatCast(y);
+    const heading_f64: f64 = @floatCast(heading);
     std.debug.assert(result.count < result.calls.len);
     result.calls[result.count] = .{
         .template_id = @intFromEnum(template_id),
-        .pos = .{ .x = x, .y = y },
-        .heading = heading,
+        .pos = .{ .x = x_f64, .y = y_f64 },
+        .heading = heading_f64,
     };
     result.count += 1;
 }
