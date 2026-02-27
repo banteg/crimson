@@ -173,7 +173,7 @@ class RushDeterministicSession:
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
-    elapsed_ms_i32: int = 0
+    elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
 
     def step_tick(
@@ -191,7 +191,7 @@ class RushDeterministicSession:
         if dt_ms_i32 < 1:
             dt_ms_i32 = 1
         dt_frame_ms = float(dt_ms_i32)
-        elapsed_before_ms_i32 = int(self.elapsed_ms_i32)
+        elapsed_before_ms = int(self.elapsed_ms)
 
         if self.enforce_loadout is not None:
             self.enforce_loadout()
@@ -207,7 +207,7 @@ class RushDeterministicSession:
                 dt_frame_ms,
                 state.rng,
                 player_count=len(self.world.players),
-                survival_elapsed_ms=int(elapsed_before_ms_i32),
+                survival_elapsed_ms=int(elapsed_before_ms),
                 terrain_width=float(self.world_size),
                 terrain_height=float(self.world_size),
             )
@@ -250,11 +250,11 @@ class RushDeterministicSession:
         rng_marks["after_world_step"] = int(state.rng.state)
         rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
         self.world.creatures.finalize_post_render_lifecycle()
-        self.elapsed_ms_i32 = int(self.elapsed_ms_i32) + int(dt_ms_i32)
+        self.elapsed_ms = int(self.elapsed_ms) + int(dt_ms_i32)
 
         return DeterministicSessionTick(
             step=step,
-            elapsed_ms=float(self.elapsed_ms_i32),
+            elapsed_ms=float(self.elapsed_ms),
             rng_marks=rng_marks,
             creature_count_world_step=int(creature_count_world_step),
         )

@@ -715,7 +715,7 @@ def _run_rush_replay_info(
         game_mode_id=int(GameMode.RUSH),
         tick_rate=int(tick_rate),
         ticks_simulated=int(tick_index),
-        elapsed_ms=int(session.elapsed_ms_i32),
+        elapsed_ms=int(session.elapsed_ms),
         player_count=int(len(world.players)),
         timeline=timeline,
     )

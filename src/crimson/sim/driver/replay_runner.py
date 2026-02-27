@@ -444,7 +444,7 @@ def run_rush_replay(
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=world,
-                elapsed_ms=float(session.elapsed_ms_i32),
+                elapsed_ms=float(session.elapsed_ms),
                 rng_marks={"before_events": int(rng_before_events), "after_events": int(rng_after_events)},
                 deaths=[],
                 events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
@@ -460,7 +460,7 @@ def run_rush_replay(
         game_mode_id=int(GameMode.RUSH),
         tick_rate=tick_rate,
         ticks=int(tick_index),
-        elapsed_ms=int(session.elapsed_ms_i32),
+        elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
         most_used_weapon_id=int(most_used_weapon_id),

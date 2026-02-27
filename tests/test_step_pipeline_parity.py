@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from crimson.creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
+from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
 from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
@@ -22,7 +23,7 @@ from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.sim.driver.replay_runner import run_quest_replay, run_rush_replay, run_survival_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import QuestDeterministicSession
+from crimson.sim.sessions import QuestDeterministicSession, RushDeterministicSession
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -167,66 +168,44 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
 
+    session = RushDeterministicSession(
+        world=world.world_state,
+        world_size=float(world.world_size),
+        damage_scale_by_type=world._damage_scale_by_type,
+        fx_queue=world.fx_queue,
+        fx_queue_rotated=world.fx_queue_rotated,
+        detail_preset=5,
+        fx_toggle=0,
+        clear_fx_queues_each_tick=True,
+        enforce_loadout=lambda: _enforce_rush_loadout(world),
+    )
+
     checkpoints: list[ReplayCheckpoint] = []
     dt_frame = 1.0 / float(replay.header.tick_rate)
-    dt_frame_ms = dt_frame * 1000.0
-    elapsed_ms = 0.0
-    spawn_cooldown_ms = 0.0
-
     for tick_index in range(len(replay.inputs)):
-        elapsed_ms += float(dt_frame_ms)
-        _enforce_rush_loadout(world)
-        rng_before_world_step = int(world.state.rng.state)
-        world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
         tick_inputs = _inputs_for_tick(replay, tick_index)
-        rush_inputs = [
-            PlayerInput(
-                move=inp.move,
-                aim=inp.aim,
-                fire_down=bool(inp.fire_down),
-                fire_pressed=bool(inp.fire_pressed),
-                reload_pressed=False,
-            )
-            for inp in tick_inputs
-        ]
-        world.update(
-            dt_frame,
+        rush_inputs = [replace(inp, reload_pressed=False) for inp in tick_inputs]
+        tick = session.step_tick(
+            dt_frame=float(dt_frame),
             inputs=rush_inputs,
-            auto_pick_perks=False,
-            game_mode=int(GameMode.RUSH),
-            perk_progression_enabled=False,
-            defer_camera_shake_update=True,
-            rng_marks_out=world_step_marks,
+            trace_rng=False,
         )
-        world_events = world.last_events
-        rng_after_world_step = int(world.state.rng.state)
-
-        cooldown, spawns = tick_rush_mode_spawns(
-            spawn_cooldown_ms,
-            dt_frame_ms,
-            world.state.rng,
-            player_count=len(world.players),
-            survival_elapsed_ms=int(elapsed_ms),
-            terrain_width=float(world.world_size),
-            terrain_height=float(world.world_size),
+        step = tick.step
+        world.apply_step_result(
+            step,
+            game_tune_started=bool(session.game_tune_started),
+            apply_audio=False,
+            update_camera=False,
         )
-        spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(spawns)
-        rng_after_rush_spawns = int(world.state.rng.state)
-
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=world.world_state,
-                elapsed_ms=float(elapsed_ms),
-                rng_marks={
-                    **world_step_marks,
-                    "after_world_step": int(rng_after_world_step),
-                    "after_rush_spawns": int(rng_after_rush_spawns),
-                },
-                deaths=world_events.deaths,
-                events=world_events,
-                command_hash=str(world.last_command_hash),
+                elapsed_ms=float(tick.elapsed_ms),
+                rng_marks=dict(tick.rng_marks),
+                deaths=step.events.deaths,
+                events=step.events,
+                command_hash=str(step.command_hash),
             ),
         )
 
