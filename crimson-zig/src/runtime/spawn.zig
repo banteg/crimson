@@ -320,7 +320,7 @@ pub fn tickQuestSpawnTimeline(
     for (entries[start_idx.?..], start_idx.?..) |entry, idx| {
         if (entry.trigger_ms != trigger_ms) break;
 
-        const entry_x = @as(f32, @floatCast(entry.pos.x));
+        const entry_x = entry.pos.x;
         const offscreen_x = entry_x < 0.0 or terrain_width < entry_x;
         for (0..@as(usize, @intCast(@max(entry.count, 0)))) |spawn_idx| {
             if (result.spawn_count >= result.spawns.len) break;
@@ -493,12 +493,12 @@ pub fn buildSurvivalSpawnCreature(
     }
     creature.type_id = type_id;
 
-    const size = narrowF32(@as(f32, @floatFromInt(rng.rand() % 20 + 44)));
-    creature.size = @floatCast(size);
+    const size = @as(f32, @floatFromInt(rng.rand() % 20 + 44));
+    creature.size = size;
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
-        creature.heading = @floatCast(heading_scaled);
+        creature.heading = heading_scaled;
     }
 
     const move_speed_xp: f32 = @floatFromInt(@divTrunc(xp, 4000));
@@ -523,8 +523,8 @@ pub fn buildSurvivalSpawnCreature(
 
     if (move_speed > @as(f32, 3.5)) move_speed = 3.5;
 
-    creature.move_speed = @floatCast(move_speed);
-    creature.health = @floatCast(health);
+    creature.move_speed = move_speed;
+    creature.health = health;
     creature.reward_value = 0.0;
 
     const tint_a: f32 = 1.0;
@@ -567,7 +567,7 @@ pub fn buildSurvivalSpawnCreature(
     };
 
     const contact_damage = narrowF32(size * (2.0 / 21.0));
-    creature.contact_damage = @floatCast(contact_damage);
+    creature.contact_damage = contact_damage;
     const reward_value = narrowF32(
         health * 0.4 +
             contact_damage * 0.8 +
@@ -637,11 +637,11 @@ pub fn randSurvivalSpawnPos(
         0 => .{ .x = @floatFromInt(rng.rand() % width), .y = -40.0 },
         1 => .{
             .x = @floatFromInt(rng.rand() % width),
-            .y = @floatCast(@as(f32, @floatFromInt(terrain_height)) + 40.0),
+            .y = @as(f32, @floatFromInt(terrain_height)) + 40.0,
         },
         2 => .{ .x = -40.0, .y = @floatFromInt(rng.rand() % height) },
         else => .{
-            .x = @floatCast(@as(f32, @floatFromInt(terrain_width)) + 40.0),
+            .x = @as(f32, @floatFromInt(terrain_width)) + 40.0,
             .y = @floatFromInt(rng.rand() % height),
         },
     };
@@ -661,13 +661,13 @@ pub fn buildRushModeSpawnCreature(
     creature.ai_mode = CreatureAiMode.orbit_player;
 
     const elapsed_f32: f32 = @floatFromInt(elapsed_ms);
-    creature.health = @floatCast(narrowF32(elapsed_f32 * 1e-4 + 10.0));
+    creature.health = narrowF32(elapsed_f32 * 1e-4 + 10.0);
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
         const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
-        creature.heading = @floatCast(heading_scaled);
+        creature.heading = heading_scaled;
     }
-    creature.move_speed = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 2.5));
+    creature.move_speed = narrowF32(elapsed_f32 * 1e-5 + 2.5);
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
     creature.tint = .{
@@ -678,7 +678,7 @@ pub fn buildRushModeSpawnCreature(
     };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
-    creature.size = @floatCast(narrowF32(elapsed_f32 * 1e-5 + 47.0));
+    creature.size = narrowF32(elapsed_f32 * 1e-5 + 47.0);
 
     return creature;
 }
@@ -738,16 +738,16 @@ pub fn tickRushModeSpawnsBatch(
         };
 
         const elapsed_ms: i32 = @intFromFloat(survival_elapsed_ms);
-        const theta = narrowF32(@as(f32, @floatFromInt(elapsed_ms)) * 0.001);
+        const theta = @as(f32, @floatFromInt(elapsed_ms)) * 0.001;
         const terrain_width_f: f32 = @floatFromInt(terrain_width);
         const terrain_height_f: f32 = @floatFromInt(terrain_height);
         const spawn_right = Vec2{
-            .x = @floatCast(narrowF32(terrain_width_f + 64.0)),
-            .y = @floatCast(narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0)),
+            .x = narrowF32(terrain_width_f + 64.0),
+            .y = narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0),
         };
         const spawn_left = Vec2{
             .x = -64.0,
-            .y = @floatCast(narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0)),
+            .y = narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0),
         };
 
         var alien = buildRushModeSpawnCreature(
@@ -1066,7 +1066,7 @@ pub fn advanceSurvivalSpawnStage(
 }
 
 fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
-    const phase_seed = narrowF32(@as(f32, @floatFromInt(rng.rand() & 0x17f)));
+    const phase_seed = @as(f32, @floatFromInt(rng.rand() & 0x17f));
     return .{
         .origin_template_id = template_id,
         .pos = pos,
@@ -1092,18 +1092,18 @@ fn applyTint(creature: *CreatureInit, tint: [4]f32) void {
 fn appendSpawnCall(
     result: *SpawnStageResult,
     template_id: SpawnId,
-    x: anytype,
-    y: anytype,
-    heading: anytype,
+    x: f32,
+    y: f32,
+    heading: f32,
 ) void {
     std.debug.assert(result.count < result.calls.len);
     result.calls[result.count] = .{
         .template_id = @intFromEnum(template_id),
         .pos = .{
-            .x = @floatCast(x),
-            .y = @floatCast(y),
+            .x = x,
+            .y = y,
         },
-        .heading = @floatCast(heading),
+        .heading = heading,
     };
     result.count += 1;
 }
