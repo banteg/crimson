@@ -1148,7 +1148,9 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand()
-    health = f32(f32(f32(float(xp)) * f32(0.00125)) + f32(float(r_health & 0xF)) + f32(52.0))
+    health_scaled = f32(f32(float(xp)) * f32(0.00125))
+    health_rand = f32(float(r_health & 0xF))
+    health = f32(f32(health_scaled + health_rand) + f32(52.0))
 
     if c.type_id == CreatureTypeId.ZOMBIE:
         move_speed = f32(f32(move_speed) * f32(0.6))
