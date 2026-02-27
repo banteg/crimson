@@ -61,7 +61,7 @@ fn summarizeQuestEntries(entries: []const spawn_runtime.QuestSpawnEntry) u64 {
         hash = summaryHashMix(hash, @as(u64, @intCast(@intFromEnum(entry.spawn_id))));
         hash = summaryHashMix(hash, @as(u64, @bitCast(entry.pos.x)));
         hash = summaryHashMix(hash, @as(u64, @bitCast(entry.pos.y)));
-        hash = summaryHashMix(hash, @as(u64, @bitCast(entry.heading)));
+        hash = summaryHashMix(hash, @as(u64, @as(u32, @bitCast(entry.heading))));
         hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.trigger_ms))));
         hash = summaryHashMix(hash, @as(u64, @bitCast(@as(i64, entry.count))));
     }

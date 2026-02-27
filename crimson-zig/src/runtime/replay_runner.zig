@@ -2382,7 +2382,7 @@ fn applyCaptureCreatureSpawnEvent(
                     .x = spawn_row.pos_x,
                     .y = spawn_row.pos_y,
                 },
-                .heading = spawn_row.heading,
+                .heading = narrowF32(spawn_row.heading),
             },
             &state.rng,
         ) catch |err| switch (err) {

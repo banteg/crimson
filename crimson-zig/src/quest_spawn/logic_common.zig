@@ -78,7 +78,7 @@ pub inline fn appendSpawn(
 ) QuestSpawnBuildError!void {
     try appendEntry(out_entries, len, .{
         .pos = pos,
-        .heading = heading,
+        .heading = @floatCast(heading),
         .spawn_id = spawn_id,
         .trigger_ms = trigger_ms,
         .count = count,

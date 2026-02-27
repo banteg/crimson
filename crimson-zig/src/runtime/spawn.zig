@@ -183,7 +183,7 @@ pub const WaveSpawnBatchResult = struct {
 pub const SpawnTemplateCall = struct {
     template_id: i32,
     pos: Vec2,
-    heading: f64,
+    heading: f32,
 };
 
 pub const SpawnSlotInit = struct {
@@ -197,7 +197,7 @@ pub const SpawnSlotInit = struct {
 
 pub const QuestSpawnEntry = struct {
     pos: Vec2,
-    heading: f64,
+    heading: f32,
     spawn_id: SpawnId,
     trigger_ms: i32,
     count: i32,
