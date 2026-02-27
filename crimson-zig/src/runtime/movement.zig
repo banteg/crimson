@@ -391,7 +391,8 @@ fn playerApplyMoveWithSpawnAvoidance(
 }
 
 fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
-    const radians = @as(f64, @floatCast(heading - native_half_pi));
+    // Keep `heading - half_pi` wide before trig to mirror x87-style precision.
+    const radians = @as(f64, @floatCast(heading)) - @as(f64, @floatCast(native_half_pi));
     return .{
         .x = std.math.cos(radians),
         .y = std.math.sin(radians),
