@@ -21,19 +21,19 @@ class SecondaryRocketStyle:
 
 
 _ROCKET_STYLE_BY_TYPE: dict[int, SecondaryRocketStyle] = {
-    int(SecondaryProjectileTypeId.ROCKET): SecondaryRocketStyle(
+    SecondaryProjectileTypeId.ROCKET: SecondaryRocketStyle(
         base_size=14.0,
         glow_size=60.0,
         glow_rgb=(1.0, 1.0, 1.0),
         glow_alpha_mul=0.68,
     ),
-    int(SecondaryProjectileTypeId.HOMING_ROCKET): SecondaryRocketStyle(
+    SecondaryProjectileTypeId.HOMING_ROCKET: SecondaryRocketStyle(
         base_size=10.0,
         glow_size=40.0,
         glow_rgb=(1.0, 1.0, 1.0),
         glow_alpha_mul=0.58,
     ),
-    int(SecondaryProjectileTypeId.ROCKET_MINIGUN): SecondaryRocketStyle(
+    SecondaryProjectileTypeId.ROCKET_MINIGUN: SecondaryRocketStyle(
         base_size=8.0,
         glow_size=30.0,
         glow_rgb=(0.7, 0.7, 1.0),

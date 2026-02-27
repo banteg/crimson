@@ -10,10 +10,10 @@ from .types import SecondaryProjectileDrawCtx
 type SecondaryProjectileDrawHandler = Callable[[SecondaryProjectileDrawCtx], bool]
 
 SECONDARY_PROJECTILE_DRAW_HANDLERS_BY_TYPE: dict[int, tuple[SecondaryProjectileDrawHandler, ...]] = {
-    int(SecondaryProjectileTypeId.ROCKET): (draw_secondary_rocket,),
-    int(SecondaryProjectileTypeId.HOMING_ROCKET): (draw_secondary_rocket,),
-    int(SecondaryProjectileTypeId.DETONATION): (draw_secondary_detonation,),
-    int(SecondaryProjectileTypeId.ROCKET_MINIGUN): (draw_secondary_rocket, draw_secondary_type4_fallback),
+    SecondaryProjectileTypeId.ROCKET: (draw_secondary_rocket,),
+    SecondaryProjectileTypeId.HOMING_ROCKET: (draw_secondary_rocket,),
+    SecondaryProjectileTypeId.DETONATION: (draw_secondary_detonation,),
+    SecondaryProjectileTypeId.ROCKET_MINIGUN: (draw_secondary_rocket, draw_secondary_type4_fallback),
 }
 
 

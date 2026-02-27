@@ -508,15 +508,15 @@ QUICK_LEARNER_DESCRIPTION = (
 )
 
 _PERK_FIXED_NAMES = {
-    int(PerkId.FIRE_CAUGH): "Fire Cough",
+    PerkId.FIRE_CAUGH: "Fire Cough",
 }
 
 _PERK_FIXED_DESCRIPTIONS = {
-    int(PerkId.ANXIOUS_LOADER): "When you can't stand waiting for your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
-    int(PerkId.PERK_EXPERT): "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
-    int(PerkId.DODGER): "It seems so stupid just to take the hits. Each time a monster attacks you, you have a chance to dodge the attack.",
-    int(PerkId.NINJA): "You've taken your dodging abilities to the next level; monsters have a really hard time hitting you.",
-    int(PerkId.LIVING_FORTRESS): "There comes a time in each man's life when you'd just rather not move anymore. Being a living fortress comes with extra benefits as well. You do more damage the longer you stand still.",
+    PerkId.ANXIOUS_LOADER: "When you can't stand waiting for your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.",
+    PerkId.PERK_EXPERT: "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.",
+    PerkId.DODGER: "It seems so stupid just to take the hits. Each time a monster attacks you, you have a chance to dodge the attack.",
+    PerkId.NINJA: "You've taken your dodging abilities to the next level; monsters have a really hard time hitting you.",
+    PerkId.LIVING_FORTRESS: "There comes a time in each man's life when you'd just rather not move anymore. Being a living fortress comes with extra benefits as well. You do more damage the longer you stand still.",
 }
 
 

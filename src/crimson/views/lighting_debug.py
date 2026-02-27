@@ -384,37 +384,37 @@ STATIC_OCCLUDER_LAYOUT: tuple[tuple[float, float, float], ...] = (
 
 
 _PRIMARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
-    int(ProjectileTypeId.PISTOL): (105.0, 0.75),
-    int(ProjectileTypeId.ION_RIFLE): (235.0, 1.0),
-    int(ProjectileTypeId.ION_MINIGUN): (190.0, 0.95),
-    int(ProjectileTypeId.PLASMA_RIFLE): (220.0, 1.0),
-    int(ProjectileTypeId.PLASMA_CANNON): (275.0, 1.0),
-    int(ProjectileTypeId.FIRE_BULLETS): (170.0, 0.9),
+    ProjectileTypeId.PISTOL: (105.0, 0.75),
+    ProjectileTypeId.ION_RIFLE: (235.0, 1.0),
+    ProjectileTypeId.ION_MINIGUN: (190.0, 0.95),
+    ProjectileTypeId.PLASMA_RIFLE: (220.0, 1.0),
+    ProjectileTypeId.PLASMA_CANNON: (275.0, 1.0),
+    ProjectileTypeId.FIRE_BULLETS: (170.0, 0.9),
 }
 
 _SECONDARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
-    int(SecondaryProjectileTypeId.ROCKET): (230.0, 0.95),
-    int(SecondaryProjectileTypeId.HOMING_ROCKET): (245.0, 1.0),
-    int(SecondaryProjectileTypeId.DETONATION): (280.0, 1.0),
-    int(SecondaryProjectileTypeId.ROCKET_MINIGUN): (180.0, 0.85),
+    SecondaryProjectileTypeId.ROCKET: (230.0, 0.95),
+    SecondaryProjectileTypeId.HOMING_ROCKET: (245.0, 1.0),
+    SecondaryProjectileTypeId.DETONATION: (280.0, 1.0),
+    SecondaryProjectileTypeId.ROCKET_MINIGUN: (180.0, 0.85),
 }
 
 _PRIMARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
-    int(ProjectileTypeId.PISTOL): (0.20, 1.15),
+    ProjectileTypeId.PISTOL: (0.20, 1.15),
     # Ion streak emissive is rendered head->tail and is not forward-cone biased.
-    int(ProjectileTypeId.ION_RIFLE): (0.0, 1.0),
-    int(ProjectileTypeId.ION_MINIGUN): (0.0, 1.0),
+    ProjectileTypeId.ION_RIFLE: (0.0, 1.0),
+    ProjectileTypeId.ION_MINIGUN: (0.0, 1.0),
     # Plasma glow is omni in the native render path (head + aura/tail sprites).
-    int(ProjectileTypeId.PLASMA_RIFLE): (0.0, 1.0),
-    int(ProjectileTypeId.PLASMA_CANNON): (0.0, 1.0),
-    int(ProjectileTypeId.FIRE_BULLETS): (0.55, 1.45),
+    ProjectileTypeId.PLASMA_RIFLE: (0.0, 1.0),
+    ProjectileTypeId.PLASMA_CANNON: (0.0, 1.0),
+    ProjectileTypeId.FIRE_BULLETS: (0.55, 1.45),
 }
 
 _SECONDARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
-    int(SecondaryProjectileTypeId.ROCKET): (0.80, 2.00),
-    int(SecondaryProjectileTypeId.HOMING_ROCKET): (0.86, 2.20),
-    int(SecondaryProjectileTypeId.DETONATION): (0.0, 1.0),
-    int(SecondaryProjectileTypeId.ROCKET_MINIGUN): (0.72, 1.80),
+    SecondaryProjectileTypeId.ROCKET: (0.80, 2.00),
+    SecondaryProjectileTypeId.HOMING_ROCKET: (0.86, 2.20),
+    SecondaryProjectileTypeId.DETONATION: (0.0, 1.0),
+    SecondaryProjectileTypeId.ROCKET_MINIGUN: (0.72, 1.80),
 }
 
 _ION_PROJECTILE_TYPES: frozenset[int] = frozenset(

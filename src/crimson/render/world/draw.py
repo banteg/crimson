@@ -222,11 +222,11 @@ def draw_players(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, alive: bo
 
 def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, CreatureState]]:
     creature_type_order = {
-        int(CreatureTypeId.ZOMBIE): 0,
-        int(CreatureTypeId.SPIDER_SP1): 1,
-        int(CreatureTypeId.SPIDER_SP2): 2,
-        int(CreatureTypeId.ALIEN): 3,
-        int(CreatureTypeId.LIZARD): 4,
+        CreatureTypeId.ZOMBIE: 0,
+        CreatureTypeId.SPIDER_SP1: 1,
+        CreatureTypeId.SPIDER_SP2: 2,
+        CreatureTypeId.ALIEN: 3,
+        CreatureTypeId.LIZARD: 4,
     }
     creatures = [(idx, creature) for idx, creature in enumerate(render_ctx.creatures.entries) if creature.active]
     creatures.sort(

@@ -58,8 +58,8 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
 # native amount domain (see docs/rewrite/original-bugs.md).
 _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[int, int] = {
     # Native default amount stored for Double Experience drops is 1.
-    int(BonusId.DOUBLE_EXPERIENCE): 1,
-    int(BonusId.FIRE_BULLETS): 4,
+    BonusId.DOUBLE_EXPERIENCE: 1,
+    BonusId.FIRE_BULLETS: 4,
 }
 
 
