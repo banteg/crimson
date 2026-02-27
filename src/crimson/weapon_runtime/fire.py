@@ -13,7 +13,7 @@ from ..perks.helpers import perk_active
 from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
-from ..math_parity import f32
+from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
@@ -69,6 +69,34 @@ def _spawn_native_fire_muzzle_sprites(
             scale=float(scale),
             color=RGBA(0.5, 0.5, 0.5, float(alpha)),
         )
+
+
+def _native_shot_angle_with_jitter(
+    *,
+    aim: Vec2,
+    player_pos: Vec2,
+    spread_heat: float,
+    rand: Callable[[], int],
+) -> float:
+    # `player_fire_weapon` computes jitter in float locals before `to_heading`.
+    aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
+    aim_dy = float(f32(float(aim.y) - float(player_pos.y)))
+    dist_sq = float(f32(float(f32(float(aim_dx) * float(aim_dx))) + float(f32(float(aim_dy) * float(aim_dy)))))
+    dist = float(f32(math.sqrt(float(dist_sq))))
+    max_offset = float(f32(float(f32(float(dist) * float(spread_heat))) * 0.5))
+
+    dir_angle = float(f32(float(int(rand()) & 0x1FF) * (float(NATIVE_TAU) / 512.0)))
+    mag = float(f32(float(int(rand()) & 0x1FF) * (1.0 / 512.0)))
+    offset = float(f32(float(max_offset) * float(mag)))
+
+    dir_x = float(f32(math.cos(float(dir_angle))))
+    dir_y = float(f32(math.sin(float(dir_angle))))
+    aim_jitter_x = float(f32(float(aim.x) + float(f32(float(dir_x) * float(offset)))))
+    aim_jitter_y = float(f32(float(aim.y) + float(f32(float(dir_y) * float(offset)))))
+
+    shot_dx = float(f32(float(aim_jitter_x) - float(player_pos.x)))
+    shot_dy = float(f32(float(aim_jitter_y) - float(player_pos.y)))
+    return float(heading_from_delta_f32(dx=float(shot_dx), dy=float(shot_dy)))
 
 
 def player_fire_weapon(
@@ -153,7 +181,7 @@ def player_fire_weapon(
 
     aim = input_state.aim
     aim_delta = aim - player.pos
-    aim_heading = aim_delta.to_heading()
+    aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
 
     muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
     state.effects.spawn_shell_casing(
@@ -164,13 +192,12 @@ def player_fire_weapon(
         detail_preset=int(detail_preset),
     )
 
-    dist = aim_delta.length()
-    max_offset = dist * float(player.spread_heat) * 0.5
-    dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
-    mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
-    offset = max_offset * mag
-    aim_jitter = aim + Vec2.from_angle(dir_angle) * offset
-    shot_angle = (aim_jitter - player.pos).to_heading()
+    shot_angle = _native_shot_angle_with_jitter(
+        aim=aim,
+        player_pos=player.pos,
+        spread_heat=float(player.spread_heat),
+        rand=state.rng.rand,
+    )
     particle_angle = Vec2.from_heading(shot_angle).to_angle()
     if weapon_id in (WeaponId.FLAMETHROWER, WeaponId.BLOW_TORCH, WeaponId.HR_FLAMER):
         particle_angle = Vec2.from_heading(aim_heading).to_angle()
