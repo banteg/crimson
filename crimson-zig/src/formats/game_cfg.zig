@@ -52,7 +52,7 @@ pub fn decodeBlob(encoded: []const u8) GameCfgError![blob_size]u8 {
     var decoded: [blob_size]u8 = undefined;
     for (encoded, 0..) |byte, idx| {
         const value: i32 = @as(i32, byte) - 0x6f - indexPoly(idx);
-        decoded[idx] = @truncate(value);
+        decoded[idx] = @intCast(value & 0xff);
     }
     return decoded;
 }
@@ -63,7 +63,7 @@ pub fn encodeBlob(decoded: []const u8) GameCfgError![blob_size]u8 {
     var encoded: [blob_size]u8 = undefined;
     for (decoded, 0..) |byte, idx| {
         const value: i32 = @as(i32, byte) + 0x6f + indexPoly(idx);
-        encoded[idx] = @truncate(value);
+        encoded[idx] = @intCast(value & 0xff);
     }
     return encoded;
 }
@@ -78,7 +78,7 @@ pub fn computeChecksum(decoded: []const u8) GameCfgError!u32 {
         const c: i64 = toS8(byte);
         const i_var5: i64 = (c * 7 + @as(i64, @intCast(idx))) * c + u;
         const addend: i64 = 0x0d + i_var5;
-        acc +%= @truncate(addend);
+        acc +%= @intCast(addend & 0xffffffff);
         u += 0x6f;
     }
 
@@ -187,7 +187,7 @@ test "game.cfg blob encode/decode roundtrip" {
 
 test "game.cfg file build/parse preserves checksum and payload" {
     var decoded: [blob_size]u8 = undefined;
-    for (&decoded, 0..) |*byte, idx| byte.* = @truncate(255 - idx);
+    for (&decoded, 0..) |*byte, idx| byte.* = @intCast((255 +% idx) & 0xFF);
 
     const raw = try buildFile(decoded[0..]);
     const parsed = try parseFile(raw[0..]);

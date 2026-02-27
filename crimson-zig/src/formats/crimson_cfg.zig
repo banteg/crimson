@@ -23,10 +23,16 @@ pub const CrimsonCfg = struct {
     unknown_12: [2]u8,
     player_count: u32,
     game_mode: u32,
-    unknown_1c: [0x28]u8,
-    unknown_44: u32,
-    unknown_48: u32,
-    unknown_4c: [0x20]u8,
+    player_mode_flag_p1: u32,
+    player_mode_flag_p2: u32,
+    player_mode_flag_p3: u32,
+    player_mode_flag_p4: u32,
+    player_mode_flags_reserved: [0x18]u8,
+    aim_scheme_p1: u32,
+    aim_scheme_p2: u32,
+    aim_scheme_p3: u32,
+    aim_scheme_p4: u32,
+    aim_schemes_reserved: [0x18]u8,
     unknown_6c: u32,
     texture_scale: f32,
     name_tag: [12]u8,
@@ -39,8 +45,8 @@ pub const CrimsonCfg = struct {
     unknown_1a4: u32,
     unknown_1a8: u32,
     unknown_1ac: u32,
-    unknown_1b0: u32,
-    unknown_1b4: u32,
+    aim_pov_right: u32,
+    aim_pov_left: u32,
     screen_bpp: u32,
     screen_width: u32,
     screen_height: u32,
@@ -90,10 +96,16 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
         .unknown_12 = try reader.readArray(2),
         .player_count = try reader.readU32Le(),
         .game_mode = try reader.readU32Le(),
-        .unknown_1c = try reader.readArray(0x28),
-        .unknown_44 = try reader.readU32Le(),
-        .unknown_48 = try reader.readU32Le(),
-        .unknown_4c = try reader.readArray(0x20),
+        .player_mode_flag_p1 = try reader.readU32Le(),
+        .player_mode_flag_p2 = try reader.readU32Le(),
+        .player_mode_flag_p3 = try reader.readU32Le(),
+        .player_mode_flag_p4 = try reader.readU32Le(),
+        .player_mode_flags_reserved = try reader.readArray(0x18),
+        .aim_scheme_p1 = try reader.readU32Le(),
+        .aim_scheme_p2 = try reader.readU32Le(),
+        .aim_scheme_p3 = try reader.readU32Le(),
+        .aim_scheme_p4 = try reader.readU32Le(),
+        .aim_schemes_reserved = try reader.readArray(0x18),
         .unknown_6c = try reader.readU32Le(),
         .texture_scale = try reader.readF32Le(),
         .name_tag = try reader.readArray(12),
@@ -106,8 +118,8 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
         .unknown_1a4 = try reader.readU32Le(),
         .unknown_1a8 = try reader.readU32Le(),
         .unknown_1ac = try reader.readU32Le(),
-        .unknown_1b0 = try reader.readU32Le(),
-        .unknown_1b4 = try reader.readU32Le(),
+        .aim_pov_right = try reader.readU32Le(),
+        .aim_pov_left = try reader.readU32Le(),
         .screen_bpp = try reader.readU32Le(),
         .screen_width = try reader.readU32Le(),
         .screen_height = try reader.readU32Le(),
@@ -156,10 +168,16 @@ pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
     writer.writeBytes(&cfg.unknown_12) catch unreachable;
     writer.writeU32Le(cfg.player_count) catch unreachable;
     writer.writeU32Le(cfg.game_mode) catch unreachable;
-    writer.writeBytes(&cfg.unknown_1c) catch unreachable;
-    writer.writeU32Le(cfg.unknown_44) catch unreachable;
-    writer.writeU32Le(cfg.unknown_48) catch unreachable;
-    writer.writeBytes(&cfg.unknown_4c) catch unreachable;
+    writer.writeU32Le(cfg.player_mode_flag_p1) catch unreachable;
+    writer.writeU32Le(cfg.player_mode_flag_p2) catch unreachable;
+    writer.writeU32Le(cfg.player_mode_flag_p3) catch unreachable;
+    writer.writeU32Le(cfg.player_mode_flag_p4) catch unreachable;
+    writer.writeBytes(&cfg.player_mode_flags_reserved) catch unreachable;
+    writer.writeU32Le(cfg.aim_scheme_p1) catch unreachable;
+    writer.writeU32Le(cfg.aim_scheme_p2) catch unreachable;
+    writer.writeU32Le(cfg.aim_scheme_p3) catch unreachable;
+    writer.writeU32Le(cfg.aim_scheme_p4) catch unreachable;
+    writer.writeBytes(&cfg.aim_schemes_reserved) catch unreachable;
     writer.writeU32Le(cfg.unknown_6c) catch unreachable;
     writer.writeF32Le(cfg.texture_scale) catch unreachable;
     writer.writeBytes(&cfg.name_tag) catch unreachable;
@@ -172,8 +190,8 @@ pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
     writer.writeU32Le(cfg.unknown_1a4) catch unreachable;
     writer.writeU32Le(cfg.unknown_1a8) catch unreachable;
     writer.writeU32Le(cfg.unknown_1ac) catch unreachable;
-    writer.writeU32Le(cfg.unknown_1b0) catch unreachable;
-    writer.writeU32Le(cfg.unknown_1b4) catch unreachable;
+    writer.writeU32Le(cfg.aim_pov_right) catch unreachable;
+    writer.writeU32Le(cfg.aim_pov_left) catch unreachable;
     writer.writeU32Le(cfg.screen_bpp) catch unreachable;
     writer.writeU32Le(cfg.screen_width) catch unreachable;
     writer.writeU32Le(cfg.screen_height) catch unreachable;

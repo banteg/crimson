@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import struct
 from collections.abc import Mapping
 
 from ...aim_schemes import AimScheme, aim_scheme_from_value
@@ -8,6 +7,29 @@ from ...movement_controls import MovementControlType, movement_control_type_from
 
 PICK_PERK_BIND_SLOT = -1
 RELOAD_BIND_SLOT = -2
+_PLAYER_MODE_FLAG_KEYS = (
+    "player_mode_flag_p1",
+    "player_mode_flag_p2",
+    "player_mode_flag_p3",
+    "player_mode_flag_p4",
+)
+_AIM_SCHEME_KEYS = (
+    "aim_scheme_p1",
+    "aim_scheme_p2",
+    "aim_scheme_p3",
+    "aim_scheme_p4",
+)
+
+
+def _coerce_int(value: object, default: int = 0) -> int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (int, float, str, bytes, bytearray)):
+        try:
+            return int(value)
+        except (TypeError, ValueError, OverflowError):
+            return default
+    return default
 
 
 def input_configure_for_label(config_id: AimScheme | int) -> str:
@@ -43,36 +65,18 @@ def _read_player_mode_flags(
 ) -> tuple[MovementControlType, MovementControlType, MovementControlType, MovementControlType]:
     # Defaults from `config_init_defaults`: 2 (Static) for player mode flags.
     values = [MovementControlType.STATIC] * 4
-    raw = config_data.get("unknown_1c")
-    if isinstance(raw, (bytes, bytearray)) and len(raw) >= 16:
-        for idx in range(4):
-            value = int(struct.unpack_from("<I", raw, idx * 4)[0])
-            if value > 0:
-                values[idx] = movement_control_type_from_value(value)
+    for idx, key in enumerate(_PLAYER_MODE_FLAG_KEYS):
+        value = _coerce_int(config_data.get(key), 2 if idx < 2 else 0)
+        if value > 0:
+            values[idx] = movement_control_type_from_value(value)
     return (values[0], values[1], values[2], values[3])
 
 
 def _read_aim_schemes(config_data: Mapping[str, object]) -> tuple[AimScheme, AimScheme, AimScheme, AimScheme]:
     # Defaults from `config_init_defaults`: 0 (Mouse) for aim schemes.
     values = [AimScheme.MOUSE] * 4
-
-    def _coerce_int(value: object, default: int = 0) -> int:
-        if isinstance(value, bool):
-            return int(value)
-        if isinstance(value, (int, float, str, bytes, bytearray)):
-            try:
-                return int(value)
-            except (TypeError, ValueError, OverflowError):
-                return default
-        return default
-
-    values[0] = aim_scheme_from_value(_coerce_int(config_data.get("unknown_44"), 0))
-    values[1] = aim_scheme_from_value(_coerce_int(config_data.get("unknown_48"), 0))
-
-    raw = config_data.get("unknown_4c")
-    if isinstance(raw, (bytes, bytearray)) and len(raw) >= 8:
-        values[2] = aim_scheme_from_value(int(struct.unpack_from("<I", raw, 0)[0]))
-        values[3] = aim_scheme_from_value(int(struct.unpack_from("<I", raw, 4)[0]))
+    for idx, key in enumerate(_AIM_SCHEME_KEYS):
+        values[idx] = aim_scheme_from_value(_coerce_int(config_data.get(key), 0))
 
     for idx in range(4):
         if values[idx] is AimScheme.UNKNOWN:

@@ -25,12 +25,12 @@ pub const Reader = struct {
 
     pub fn readU16Le(self: *Reader) BinaryError!u16 {
         const raw = try self.readBytes(2);
-        return std.mem.readInt(u16, raw, .little);
+        return std.mem.readInt(u16, raw[0..2], .little);
     }
 
     pub fn readU32Le(self: *Reader) BinaryError!u32 {
         const raw = try self.readBytes(4);
-        return std.mem.readInt(u32, raw, .little);
+        return std.mem.readInt(u32, raw[0..4], .little);
     }
 
     pub fn readF32Le(self: *Reader) BinaryError!f32 {
@@ -72,13 +72,13 @@ pub const Writer = struct {
 
     pub fn writeU16Le(self: *Writer, value: u16) BinaryError!void {
         if (self.remaining() < 2) return error.UnexpectedEof;
-        std.mem.writeInt(u16, self.bytes[self.pos .. self.pos + 2], value, .little);
+        std.mem.writeInt(u16, self.bytes[self.pos .. self.pos + 2][0..2], value, .little);
         self.pos += 2;
     }
 
     pub fn writeU32Le(self: *Writer, value: u32) BinaryError!void {
         if (self.remaining() < 4) return error.UnexpectedEof;
-        std.mem.writeInt(u32, self.bytes[self.pos .. self.pos + 4], value, .little);
+        std.mem.writeInt(u32, self.bytes[self.pos .. self.pos + 4][0..4], value, .little);
         self.pos += 4;
     }
 
