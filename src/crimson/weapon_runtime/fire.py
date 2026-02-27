@@ -13,6 +13,7 @@ from ..perks.helpers import perk_active
 from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
+from ..math_parity import f32
 from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
@@ -128,7 +129,7 @@ def player_fire_weapon(
     pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
-    shot_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
+    shot_cooldown = float(f32(float(weapon.shot_cooldown))) if weapon.shot_cooldown is not None else 0.0
     weapon_spread_heat = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
     fire_bullets_spread_heat = weapon_spread_heat
     if fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
@@ -136,17 +137,19 @@ def player_fire_weapon(
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
         shot_cooldown = (
-            float(fire_bullets_weapon.shot_cooldown) if fire_bullets_weapon.shot_cooldown is not None else 0.0
+            float(f32(float(fire_bullets_weapon.shot_cooldown)))
+            if fire_bullets_weapon.shot_cooldown is not None
+            else 0.0
         )
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = spread_heat_base * 1.3
 
     if perk_active(player, PerkId.FASTSHOT):
-        shot_cooldown *= 0.88
+        shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
     if perk_active(player, PerkId.SHARPSHOOTER):
-        shot_cooldown *= 1.05
-    player.shot_cooldown = max(0.0, shot_cooldown)
+        shot_cooldown = float(f32(float(shot_cooldown) * 1.05))
+    player.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
     aim = input_state.aim
     aim_delta = aim - player.pos
