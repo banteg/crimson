@@ -502,7 +502,7 @@ def _print_state_diff(
 
     console = Console()
     console.print()
-    console.print("[bold]state diff (python → zig)[/bold]")
+    console.print(f"[bold]state diff at tick {python_row.tick_index} (python → zig)[/bold]")
 
     if "values_changed" in diff:
         for path, change in diff["values_changed"].items():
