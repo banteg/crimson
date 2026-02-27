@@ -7,6 +7,7 @@ from .runtime import (
     ProjectileUpdateOptions,
     SecondaryProjectilePool,
     _within_native_find_radius,
+    projectile_collision_profile,
 )
 from .types import (
     MAIN_PROJECTILE_POOL_SIZE,
@@ -15,6 +16,7 @@ from .types import (
     FxQueueLike,
     OwnerRef,
     Projectile,
+    ProjectileCollisionProfile,
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
@@ -30,6 +32,7 @@ __all__ = [
     "PROJECTILE_BEHAVIOR_BY_TYPE_ID",
     "Projectile",
     "ProjectileBehavior",
+    "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectilePool",
     "ProjectileUpdateOptions",
@@ -42,4 +45,5 @@ __all__ = [
     "SecondaryProjectilePool",
     "SecondaryProjectileTypeId",
     "_within_native_find_radius",
+    "projectile_collision_profile",
 ]

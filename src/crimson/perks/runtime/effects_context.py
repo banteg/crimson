@@ -6,6 +6,7 @@ from typing import Protocol
 
 from grim.geom import Vec2
 
+from ...collision_math import native_find_size_margin
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
@@ -40,7 +41,7 @@ def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2,
             continue
 
         dist = (creature.pos - pos).length() - radius
-        threshold = float(creature.size) * 0.14285715 + 3.0
+        threshold = native_find_size_margin(float(creature.size))
         if threshold < dist:
             continue
         if not creature_lifecycle_is_collidable(creature.lifecycle_stage):

@@ -5,16 +5,19 @@ from typing import Any
 
 from syrupy import SnapshotAssertion
 
+from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles import (
+    ProjectileCollisionProfile,
     ProjectileHit,
     ProjectilePool,
     ProjectileTypeId,
     ProjectileUpdateOptions,
     SecondaryProjectilePool,
+    projectile_collision_profile,
 )
 from crimson.projectiles.runtime.collision import _within_native_find_radius
 from grim.geom import Vec2
@@ -94,7 +97,7 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
     origin = Vec2()
     radius = 30.0
     target_size = 50.0
-    threshold = radius + target_size * 0.14285715 + 3.0
+    threshold = radius + native_find_size_margin(target_size)
 
     assert (
         _within_native_find_radius(
@@ -114,6 +117,51 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
         )
         is False
     )
+
+
+def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
+    expected: dict[ProjectileTypeId, ProjectileCollisionProfile] = {
+        ProjectileTypeId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
+        ProjectileTypeId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
+        ProjectileTypeId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+        ProjectileTypeId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+        ProjectileTypeId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
+        ProjectileTypeId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
+        ProjectileTypeId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
+    }
+
+    for type_id, profile in expected.items():
+        assert projectile_collision_profile(type_id) == profile
+
+    assert projectile_collision_profile(ProjectileTypeId.PISTOL) == ProjectileCollisionProfile(
+        hit_radius=1.0,
+        initial_damage_pool=1.0,
+    )
+
+
+def test_primary_spawn_uses_collision_profile_defaults() -> None:
+    pool = ProjectilePool(size=1)
+    for type_id in (
+        ProjectileTypeId.PISTOL,
+        ProjectileTypeId.ION_MINIGUN,
+        ProjectileTypeId.ION_RIFLE,
+        ProjectileTypeId.ION_CANNON,
+        ProjectileTypeId.PLASMA_CANNON,
+        ProjectileTypeId.GAUSS_GUN,
+        ProjectileTypeId.FIRE_BULLETS,
+        ProjectileTypeId.BLADE_GUN,
+    ):
+        idx = pool.spawn(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=type_id,
+            owner_id=OwnerRef.from_local_player(0),
+        )
+        entry = pool.entries[idx]
+        profile = projectile_collision_profile(type_id)
+        assert_float_close(float(entry.hit_radius), float(profile.hit_radius))
+        assert_float_close(float(entry.damage_pool), float(profile.initial_damage_pool))
+        pool.reset()
 
 
 def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None:

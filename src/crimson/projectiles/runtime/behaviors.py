@@ -100,10 +100,17 @@ def _linger_gauss_gun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
     proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * 0.1)
 
 
-def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
-    damage = ctx.dt * 40.0
-    radius = ctx.ion_scale * 60.0
+def _linger_ion_aoe(
+    ctx: _ProjectileUpdateCtx,
+    proj: Projectile,
+    *,
+    life_decay_scale: float,
+    damage_per_second: float,
+    base_radius: float,
+) -> None:
+    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * float(life_decay_scale))
+    damage = float(ctx.dt) * float(damage_per_second)
+    radius = float(ctx.ion_scale) * float(base_radius)
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue
@@ -121,52 +128,36 @@ def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
                 owner=proj.owner,
                 apply_creature_damage=ctx.apply_creature_damage,
             )
+
+
+def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
+    _linger_ion_aoe(
+        ctx,
+        proj,
+        life_decay_scale=1.0,
+        damage_per_second=40.0,
+        base_radius=60.0,
+    )
 
 
 def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
-    damage = ctx.dt * 100.0
-    radius = ctx.ion_scale * 88.0
-    for creature_idx, creature in enumerate(ctx.creatures):
-        if not creature.active:
-            continue
-        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-            continue
-        creature_radius = _hit_radius_for(creature)
-        hit_r = radius + creature_radius
-        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-            _apply_damage_to_creature(
-                ctx.creatures,
-                creature_idx,
-                damage,
-                damage_type=CreatureDamageType.ION,
-                impulse=Vec2(),
-                owner=proj.owner,
-                apply_creature_damage=ctx.apply_creature_damage,
-            )
+    _linger_ion_aoe(
+        ctx,
+        proj,
+        life_decay_scale=1.0,
+        damage_per_second=100.0,
+        base_radius=88.0,
+    )
 
 
 def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * 0.7)
-    damage = ctx.dt * 300.0
-    radius = ctx.ion_scale * 128.0
-    for creature_idx, creature in enumerate(ctx.creatures):
-        if not creature.active:
-            continue
-        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-            continue
-        creature_radius = _hit_radius_for(creature)
-        hit_r = radius + creature_radius
-        if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-            _apply_damage_to_creature(
-                ctx.creatures,
-                creature_idx,
-                damage,
-                damage_type=CreatureDamageType.ION,
-                impulse=Vec2(),
-                owner=proj.owner,
-                apply_creature_damage=ctx.apply_creature_damage,
-            )
+    _linger_ion_aoe(
+        ctx,
+        proj,
+        life_decay_scale=0.7,
+        damage_per_second=300.0,
+        base_radius=128.0,
+    )
 
 
 def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int) -> None:
