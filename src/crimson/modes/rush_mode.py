@@ -14,6 +14,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
@@ -615,7 +616,7 @@ class RushMode(BaseGameplayMode):
                 frame_dt_ms=self._last_dt_ms,
             )
 
-        if not self._game_over_active:
+        if debug_enabled() and (not self._game_over_active):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
