@@ -1282,11 +1282,11 @@ def tick_survival_wave_spawns(
         spawn_cooldown += interval_ms
         spawn 1 creature at a random edge
     """
-    spawn_cooldown -= float(player_count) * frame_dt_ms
-    if spawn_cooldown > -1.0:
-        return spawn_cooldown, ()
+    cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
+    if cooldown > -1.0:
+        return float(cooldown), ()
 
-    interval_ms = 500 - int(survival_elapsed_ms) // 1800
+    interval_ms = 500 - int(f32(survival_elapsed_ms)) // 1800
 
     spawns: list[CreatureInit] = []
     if interval_ms < 0:
@@ -1298,12 +1298,12 @@ def tick_survival_wave_spawns(
 
     if interval_ms < 1:
         interval_ms = 1
-    spawn_cooldown += float(interval_ms)
+    cooldown = f32(cooldown + f32(float(interval_ms)))
 
     pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
     spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
-    return spawn_cooldown, tuple(spawns)
+    return float(cooldown), tuple(spawns)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1507,9 +1507,10 @@ def build_rush_mode_spawn_creature(
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
-    c.health = float(elapsed_ms) * 1e-4 + 10.0
-    c.heading = float(rng.rand() % 314) * 0.01
-    c.move_speed = float(elapsed_ms) * 1e-5 + 2.5
+    elapsed_f32 = f32(float(elapsed_ms))
+    c.health = float(f32(elapsed_f32 * f32(1e-4) + 10.0))
+    c.heading = float(f32(f32(float(rng.rand() % 314)) * f32(0.01)))
+    c.move_speed = float(f32(elapsed_f32 * f32(1e-5) + 2.5))
     c.reward_value = float(rng.rand() % 30 + 140)
 
     c.tint = tint_rgba
@@ -1517,7 +1518,7 @@ def build_rush_mode_spawn_creature(
 
     if c.health is not None:
         c.max_health = c.health
-    c.size = float(elapsed_ms) * 1e-5 + 47.0
+    c.size = float(f32(elapsed_f32 * f32(1e-5) + 47.0))
 
     return c
 
@@ -1533,23 +1534,31 @@ def tick_rush_mode_spawns(
     terrain_height: float,
 ) -> tuple[float, tuple[CreatureInit, ...]]:
     """Advance rush-mode edge wave spawning (pure model of `rush_mode_update` / 0x004072b0)."""
-    spawn_cooldown -= float(player_count) * frame_dt_ms
+    cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
 
     spawns: list[CreatureInit] = []
-    while spawn_cooldown < 0.0:
-        spawn_cooldown += 250.0
+    while cooldown < 0.0:
+        cooldown = f32(cooldown + 250.0)
 
-        t = float(int(float(survival_elapsed_ms) + 1.0))
-        tint_r = clamp01(t * (1.0 / 120000.0) + 0.3)
-        tint_g = clamp01(t * 10000.0 + 0.3)
-        tint_b = clamp01(math.sin(t * 1e-4) + 0.3)
+        t = f32(float(int(float(survival_elapsed_ms) + 1.0)))
+        tint_r = clamp01(f32(t * f32(1.0 / 120000.0) + 0.3))
+        tint_g = clamp01(f32(t * 10000.0 + 0.3))
+        tint_b = clamp01(f32(math.sin(float(f32(t * f32(1e-4)))) + 0.3))
         tint_a = 1.0
         tint = (tint_r, tint_g, tint_b, tint_a)
 
         elapsed_ms = int(survival_elapsed_ms)
-        theta = float(elapsed_ms) * 0.001
-        spawn_right = Vec2(terrain_width + 64.0, terrain_height * 0.5 + math.cos(theta) * 256.0)
-        spawn_left = Vec2(-64.0, terrain_height * 0.5 + math.sin(theta) * 256.0)
+        theta = f32(f32(float(elapsed_ms)) * f32(0.001))
+        terrain_width_f = f32(terrain_width)
+        terrain_height_f = f32(terrain_height)
+        spawn_right = Vec2(
+            float(f32(terrain_width_f + 64.0)),
+            float(f32(terrain_height_f * 0.5 + math.cos(float(theta)) * 256.0)),
+        )
+        spawn_left = Vec2(
+            -64.0,
+            float(f32(terrain_height_f * 0.5 + math.sin(float(theta)) * 256.0)),
+        )
 
         c = build_rush_mode_spawn_creature(spawn_right, tint, rng, type_id=2, survival_elapsed_ms=elapsed_ms)
         c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
@@ -1559,10 +1568,10 @@ def tick_rush_mode_spawns(
         c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         if c.move_speed is not None:
-            c.move_speed *= 1.4
+            c.move_speed = float(f32(c.move_speed * 1.4))
         spawns.append(c)
 
-    return spawn_cooldown, tuple(spawns)
+    return float(cooldown), tuple(spawns)
 
 
 def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:

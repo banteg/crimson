@@ -552,7 +552,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -573,7 +573,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -595,7 +595,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -673,7 +673,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -701,7 +701,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -729,7 +729,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -755,7 +755,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
@@ -1295,7 +1295,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.spider_sp2,
@@ -1336,7 +1336,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.spider_sp2,
@@ -1358,7 +1358,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1381,7 +1381,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1487,7 +1487,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -1545,7 +1545,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
@@ -1571,7 +1571,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1598,7 +1598,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1625,7 +1625,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1650,7 +1650,7 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
@@ -1729,7 +1729,7 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = call.heading,
+                    .heading = narrowF32(call.heading),
                     .set_heading = true,
                     .phase_seed = @floatCast(phase_seed),
                     .type_id = spawn_mod.CreatureTypeId.zombie,
@@ -2609,7 +2609,7 @@ pub const CreaturePool = struct {
         const idx = self.spawnInit(.{
             .origin_template_id = -1,
             .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-            .heading = call.heading,
+            .heading = narrowF32(call.heading),
             .set_heading = true,
             .phase_seed = @floatCast(phase_seed),
             .type_id = creature_type,

@@ -368,7 +368,7 @@ pub const ReplayTickTrace = struct {
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
-    dt_frame: f64,
+    dt_frame: f32,
 };
 
 pub const ReplayScaffoldOptions = struct {
@@ -447,7 +447,7 @@ pub fn runReplayScaffoldWithTrace(
     var reload_pressed_count: usize = 0;
     var stage_spawn_count: usize = 0;
     var wave_spawn_count: usize = 0;
-    var spawn_cooldown: f64 = 0.0;
+    var spawn_cooldown: f32 = 0.0;
     var spawn_stage: i32 = 0;
     var quest_spawn_timeline_ms: f32 = 0.0;
     var quest_no_creatures_timer_ms: f32 = 0.0;
@@ -483,13 +483,13 @@ pub fn runReplayScaffoldWithTrace(
         state.status_weapon_usage_counts.set(weapon_id, count);
     }
 
-    var elapsed_ms_sim: f64 = 0.0;
-    const terrain_size_floor = @floor(@as(f64, header.world_size));
-    if (terrain_size_floor > @as(f64, @floatFromInt(std.math.maxInt(i32)))) {
+    var elapsed_ms_sim: f32 = 0.0;
+    const terrain_size_floor = @floor(header.world_size);
+    if (terrain_size_floor > @as(f32, @floatFromInt(std.math.maxInt(i32)))) {
         return error.InvalidHeaderValue;
     }
     const terrain_size: i32 = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor)));
-    const dt_nominal: f64 = 1.0 / @as(f64, @floatFromInt(header.tick_rate));
+    const dt_nominal: f32 = 1.0 / @as(f32, @floatFromInt(header.tick_rate));
     const quest_unlock_index = header.status.quest_unlock_index;
     const player_count = header.player_count;
     if (game_mode == .rush) {
@@ -829,7 +829,7 @@ pub fn runReplayScaffoldWithTrace(
                 quest_spawn_entries,
                 quest_spawn_timeline_ms,
                 narrowF32(dt_frame_ms),
-                @as(f64, @floatFromInt(terrain_size)),
+                @floatFromInt(terrain_size),
                 quest_creatures_none_active,
                 quest_no_creatures_timer_ms,
             );
@@ -1057,7 +1057,7 @@ pub fn runReplayScaffoldWithTrace(
         .survival_reward_fire_seen = state.survival_reward_fire_seen,
         .survival_reward_damage_seen = state.survival_reward_damage_seen,
         .spawn_stage = spawn_stage,
-        .spawn_cooldown_ms = @floatCast(spawn_cooldown),
+        .spawn_cooldown_ms = spawn_cooldown,
         .quest_completion_transition_ms = @floatCast(quest_completion_transition_ms),
         .quest_completed = quest_completed,
         .quest_play_hit_sfx = quest_play_hit_sfx,
@@ -1955,8 +1955,8 @@ fn consumeExplosionBurstRng(
 fn resolveDtFrame(
     overrides: ?[]const DtFrameOverride,
     tick_index: usize,
-    default_dt: f64,
-) f64 {
+    default_dt: f32,
+) f32 {
     if (overrides) |entries| {
         for (entries) |entry| {
             if (entry.tick_index == tick_index) return entry.dt_frame;
@@ -3806,9 +3806,9 @@ test "rush scaffold spawn cadence uses raw frame dt, not sim dt" {
     defer replay.deinit(allocator);
 
     const result = try runReplayScaffold(replay);
-    // Rush starts with one immediate spawn batch (2 creatures). A second batch should
-    // not land until tick 15 at 60Hz.
-    try std.testing.expectEqual(@as(usize, 2), result.wave_spawn_count);
+    // Native rush cooldown arithmetic is float32; at 60 Hz nominal dt this yields a
+    // second batch on tick 15 (0-indexed tick 14), so 4 total creatures in 15 ticks.
+    try std.testing.expectEqual(@as(usize, 4), result.wave_spawn_count);
 }
 
 test "rush scaffold inter-tick rand draws shift rng deterministically" {

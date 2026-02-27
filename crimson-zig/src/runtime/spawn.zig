@@ -135,23 +135,23 @@ pub const Crand = struct {
 pub const CreatureInit = struct {
     origin_template_id: i32 = -1,
     pos: Vec2,
-    heading: f64 = 0.0,
+    heading: f32 = 0.0,
     set_heading: bool = true,
-    phase_seed: f64 = 0.0,
+    phase_seed: f32 = 0.0,
     type_id: CreatureTypeId = .alien,
     ai_mode: CreatureAiMode = .orbit_player,
     flags: u32 = 0,
-    size: f64 = 0.0,
-    move_speed: f64 = 0.0,
-    health: f64 = 0.0,
-    max_health: f64 = 0.0,
-    reward_value: f64 = 0.0,
-    contact_damage: f64 = 0.0,
-    tint: [4]f64 = .{ 1.0, 1.0, 1.0, 1.0 },
+    size: f32 = 0.0,
+    move_speed: f32 = 0.0,
+    health: f32 = 0.0,
+    max_health: f32 = 0.0,
+    reward_value: f32 = 0.0,
+    contact_damage: f32 = 0.0,
+    tint: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
 };
 
 pub const WaveSpawnResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     spawns: []CreatureInit,
 
     pub fn deinit(self: WaveSpawnResult, allocator: std.mem.Allocator) void {
@@ -160,7 +160,7 @@ pub const WaveSpawnResult = struct {
 };
 
 pub const WaveSpawnCountResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     spawn_count: usize,
 };
 
@@ -171,7 +171,7 @@ const empty_creature_init = CreatureInit{
 };
 
 pub const WaveSpawnBatchResult = struct {
-    cooldown: f64,
+    cooldown: f32,
     count: usize,
     spawns: [max_wave_spawn_batch]CreatureInit = [_]CreatureInit{empty_creature_init} ** max_wave_spawn_batch,
 
@@ -284,7 +284,7 @@ pub fn tickQuestSpawnTimeline(
     entries: []QuestSpawnEntry,
     quest_spawn_timeline_ms: f32,
     frame_dt_ms: f32,
-    terrain_width: f64,
+    terrain_width: f32,
     creatures_none_active: bool,
     no_creatures_timer_ms: f32,
 ) QuestSpawnTimelineResult {
@@ -320,7 +320,8 @@ pub fn tickQuestSpawnTimeline(
     for (entries[start_idx.?..], start_idx.?..) |entry, idx| {
         if (entry.trigger_ms != trigger_ms) break;
 
-        const offscreen_x = entry.pos.x < 0.0 or terrain_width < entry.pos.x;
+        const entry_x = @as(f32, @floatCast(entry.pos.x));
+        const offscreen_x = entry_x < 0.0 or terrain_width < entry_x;
         for (0..@as(usize, @intCast(@max(entry.count, 0)))) |spawn_idx| {
             if (result.spawn_count >= result.spawns.len) break;
             const magnitude = @as(f64, @floatFromInt(spawn_idx * 0x28));
@@ -352,7 +353,7 @@ pub fn tickQuestModeSpawns(
     entries: []QuestSpawnEntry,
     quest_spawn_timeline_ms: f32,
     frame_dt_ms: f32,
-    terrain_width: f64,
+    terrain_width: f32,
     creatures_none_active: bool,
     no_creatures_timer_ms: f32,
 ) QuestModeSpawnsResult {
@@ -559,10 +560,10 @@ pub fn buildSurvivalSpawnCreature(
         if (tint_b < 0.5) tint_b = 0.5;
     }
     creature.tint = .{
-        @floatCast(tint_r),
-        @floatCast(tint_g),
-        @floatCast(tint_b),
-        @floatCast(tint_a),
+        tint_r,
+        tint_g,
+        tint_b,
+        tint_a,
     };
 
     const contact_damage = narrowF32(size * (2.0 / 21.0));
@@ -573,7 +574,7 @@ pub fn buildSurvivalSpawnCreature(
             move_speed * 5.0 +
             @as(f32, @floatFromInt(rng.rand() % 10 + 10)),
     );
-    creature.reward_value = @floatCast(reward_value);
+    creature.reward_value = reward_value;
 
     var r = rng.rand();
     if ((r % 180) < 2) {
@@ -613,12 +614,12 @@ pub fn buildSurvivalSpawnCreature(
     }
 
     creature.max_health = creature.health;
-    creature.reward_value = @floatCast(narrowF32(@as(f32, @floatCast(creature.reward_value)) * 0.8));
+    creature.reward_value = narrowF32(creature.reward_value * 0.8);
     creature.tint = .{
-        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[0])))),
-        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[1])))),
-        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[2])))),
-        @floatCast(clamp01(@as(f32, @floatCast(creature.tint[3])))),
+        clamp01(creature.tint[0]),
+        clamp01(creature.tint[1]),
+        clamp01(creature.tint[2]),
+        clamp01(creature.tint[3]),
     };
 
     return creature;
@@ -670,10 +671,10 @@ pub fn buildRushModeSpawnCreature(
     creature.reward_value = @floatFromInt(rng.rand() % 30 + 140);
 
     creature.tint = .{
-        @floatCast(tint_rgba[0]),
-        @floatCast(tint_rgba[1]),
-        @floatCast(tint_rgba[2]),
-        @floatCast(tint_rgba[3]),
+        tint_rgba[0],
+        tint_rgba[1],
+        tint_rgba[2],
+        tint_rgba[3],
     };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
@@ -684,11 +685,11 @@ pub fn buildRushModeSpawnCreature(
 
 pub fn tickRushModeSpawns(
     allocator: std.mem.Allocator,
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     terrain_width: i32,
     terrain_height: i32,
 ) !WaveSpawnResult {
@@ -711,16 +712,16 @@ pub fn tickRushModeSpawns(
 }
 
 pub fn tickRushModeSpawnsBatch(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
     var result = WaveSpawnBatchResult{
-        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
 
@@ -783,16 +784,16 @@ pub fn tickRushModeSpawnsBatch(
 
 pub fn tickSurvivalWaveSpawns(
     allocator: std.mem.Allocator,
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) !WaveSpawnResult {
-    var cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms;
+    var cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms;
 
     var spawns: std.ArrayList(CreatureInit) = .empty;
     defer spawns.deinit(allocator);
@@ -827,16 +828,16 @@ pub fn tickSurvivalWaveSpawns(
 }
 
 pub fn tickSurvivalWaveSpawnsCount(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnCountResult {
-    var cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms;
+    var cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms;
     var count: usize = 0;
 
     if (cooldown > -1.0) {
@@ -871,17 +872,17 @@ pub fn tickSurvivalWaveSpawnsCount(
 }
 
 pub fn tickSurvivalWaveSpawnsBatch(
-    spawn_cooldown: f64,
-    frame_dt_ms: f64,
+    spawn_cooldown: f32,
+    frame_dt_ms: f32,
     rng: *Crand,
     player_count: i32,
-    survival_elapsed_ms: f64,
+    survival_elapsed_ms: f32,
     player_experience: i32,
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
     var result = WaveSpawnBatchResult{
-        .cooldown = spawn_cooldown - @as(f64, @floatFromInt(player_count)) * frame_dt_ms,
+        .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
 
@@ -1069,7 +1070,7 @@ fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
     return .{
         .origin_template_id = template_id,
         .pos = pos,
-        .phase_seed = @floatCast(phase_seed),
+        .phase_seed = phase_seed,
     };
 }
 
@@ -1081,10 +1082,10 @@ fn clamp01(value: f32) f32 {
 
 fn applyTint(creature: *CreatureInit, tint: [4]f32) void {
     creature.tint = .{
-        @floatCast(tint[0]),
-        @floatCast(tint[1]),
-        @floatCast(tint[2]),
-        @floatCast(tint[3]),
+        tint[0],
+        tint[1],
+        tint[2],
+        tint[3],
     };
 }
 
