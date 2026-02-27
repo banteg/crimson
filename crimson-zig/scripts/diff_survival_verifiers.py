@@ -9,16 +9,22 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict
 
 from crimson.bonuses.ids import BonusId
 from crimson.replay import ReplayCodecError, load_replay
 from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.diagnostic_trace_schema import (
+    REPLAY_TICK_TRACE_SCHEMA_VERSION,
+    ReplayTickTraceJsonRowV2,
+    decode_replay_tick_trace_jsonl,
+)
 from crimson.sim.driver.replay_runner import ReplayRunnerError, run_survival_replay
 
 
-class TickTrace(TypedDict):
+@dataclass(frozen=True, slots=True)
+class TickTrace:
     tick_index: int
     rng_state: int
     elapsed_ms: int
@@ -38,7 +44,6 @@ class TickTrace(TypedDict):
     bonus_freeze_ms: int
 
 
-TRACE_SCHEMA_VERSION = 2
 TRACE_FIELDS: tuple[tuple[str, str], ...] = (
     ("rng_state", "rng.rng_state"),
     ("elapsed_ms", "timing.elapsed_ms"),
@@ -63,31 +68,6 @@ BONUS_KEY_REFLEX_BOOST = str(BonusId.REFLEX_BOOST)
 BONUS_KEY_ENERGIZER = str(BonusId.ENERGIZER)
 BONUS_KEY_DOUBLE_EXPERIENCE = str(BonusId.DOUBLE_EXPERIENCE)
 BONUS_KEY_FREEZE = str(BonusId.FREEZE)
-
-
-def _require_field(payload: dict[str, object], key: str, *, field: str) -> object:
-    if key not in payload:
-        raise ValueError(f"trace row missing required key: {field}")
-    return payload[key]
-
-
-def _require_int(value: object, *, field: str) -> int:
-    if isinstance(value, bool):
-        raise TypeError(f"trace row field {field} must be int, got bool")
-    if isinstance(value, int):
-        return int(value)
-    raise TypeError(f"trace row field {field} must be int, got {type(value).__name__}")
-
-
-def _require_object_dict(value: object, *, field: str) -> dict[str, object]:
-    if not isinstance(value, dict):
-        raise TypeError(f"trace row field {field} must be an object")
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if not isinstance(key, str):
-            raise TypeError(f"trace row field {field} contains non-string key")
-        out[key] = item
-    return out
 
 
 def _default_runtime_dir() -> Path:
@@ -158,128 +138,25 @@ def _checkpoint_to_trace(checkpoint: ReplayCheckpoint) -> TickTrace:
     )
 
 
-def _payload_to_trace(payload: dict[str, object]) -> TickTrace:
-    schema_version = _require_int(
-        _require_field(payload, "schema_version", field="schema_version"),
-        field="schema_version",
-    )
-    if schema_version != TRACE_SCHEMA_VERSION:
-        raise ValueError(
-            f"trace row schema_version must be {TRACE_SCHEMA_VERSION}, got {schema_version}",
-        )
-
-    timing = _require_object_dict(_require_field(payload, "timing", field="timing"), field="timing")
-    rng = _require_object_dict(_require_field(payload, "rng", field="rng"), field="rng")
-    summary = _require_object_dict(_require_field(payload, "summary", field="summary"), field="summary")
-    player = _require_object_dict(_require_field(payload, "player", field="player"), field="player")
-    bonuses = _require_object_dict(_require_field(payload, "bonuses", field="bonuses"), field="bonuses")
-    projectiles = _require_object_dict(
-        _require_field(payload, "projectiles", field="projectiles"),
-        field="projectiles",
-    )
-    _require_object_dict(
-        _require_field(payload, "creatures", field="creatures"),
-        field="creatures",
-    )
-    debug = _require_object_dict(_require_field(payload, "debug", field="debug"), field="debug")
-
-    _require_int(
-        _require_field(projectiles, "projectile_state_hash", field="projectiles.projectile_state_hash"),
-        field="projectiles.projectile_state_hash",
-    )
-    _require_int(
-        _require_field(summary, "creature_state_hash", field="summary.creature_state_hash"),
-        field="summary.creature_state_hash",
-    )
-    _require_int(
-        _require_field(debug, "debug_pending_nuke", field="debug.debug_pending_nuke"),
-        field="debug.debug_pending_nuke",
-    )
-    _require_int(
-        _require_field(debug, "debug_nuke_kills_last", field="debug.debug_nuke_kills_last"),
-        field="debug.debug_nuke_kills_last",
-    )
-    _require_int(
-        _require_field(debug, "debug_nuke_tick_last", field="debug.debug_nuke_tick_last"),
-        field="debug.debug_nuke_tick_last",
-    )
-    _require_int(
-        _require_field(debug, "debug_nuke_kill_index_sum", field="debug.debug_nuke_kill_index_sum"),
-        field="debug.debug_nuke_kill_index_sum",
-    )
-    _require_int(
-        _require_field(debug, "debug_last_picked_bonus_id", field="debug.debug_last_picked_bonus_id"),
-        field="debug.debug_last_picked_bonus_id",
-    )
-    _require_int(
-        _require_field(debug, "debug_last_picked_bonus_amount", field="debug.debug_last_picked_bonus_amount"),
-        field="debug.debug_last_picked_bonus_amount",
-    )
-
+def _row_to_trace(row: ReplayTickTraceJsonRowV2) -> TickTrace:
     return TickTrace(
-        tick_index=_require_int(_require_field(payload, "tick_index", field="tick_index"), field="tick_index"),
-        rng_state=_require_int(_require_field(rng, "rng_state", field="rng.rng_state"), field="rng.rng_state"),
-        elapsed_ms=_require_int(
-            _require_field(timing, "elapsed_ms", field="timing.elapsed_ms"),
-            field="timing.elapsed_ms",
-        ),
-        score_xp=_require_int(
-            _require_field(summary, "score_xp", field="summary.score_xp"),
-            field="summary.score_xp",
-        ),
-        kills=_require_int(_require_field(summary, "kills", field="summary.kills"), field="summary.kills"),
-        creature_count=_require_int(
-            _require_field(summary, "creature_count", field="summary.creature_count"),
-            field="summary.creature_count",
-        ),
-        perk_pending=_require_int(
-            _require_field(summary, "perk_pending", field="summary.perk_pending"),
-            field="summary.perk_pending",
-        ),
-        player_weapon_id=_require_int(
-            _require_field(player, "player_weapon_id", field="player.player_weapon_id"),
-            field="player.player_weapon_id",
-        ),
-        player_ammo_q4=_require_int(
-            _require_field(player, "player_ammo_q4", field="player.player_ammo_q4"),
-            field="player.player_ammo_q4",
-        ),
-        player_health_q4=_require_int(
-            _require_field(player, "player_health_q4", field="player.player_health_q4"),
-            field="player.player_health_q4",
-        ),
-        player_level=_require_int(
-            _require_field(player, "player_level", field="player.player_level"),
-            field="player.player_level",
-        ),
-        player_experience=_require_int(
-            _require_field(player, "player_experience", field="player.player_experience"),
-            field="player.player_experience",
-        ),
-        bonus_weapon_power_up_ms=_require_int(
-            _require_field(bonuses, "bonus_weapon_power_up_ms", field="bonuses.bonus_weapon_power_up_ms"),
-            field="bonuses.bonus_weapon_power_up_ms",
-        ),
-        bonus_reflex_boost_ms=_require_int(
-            _require_field(bonuses, "bonus_reflex_boost_ms", field="bonuses.bonus_reflex_boost_ms"),
-            field="bonuses.bonus_reflex_boost_ms",
-        ),
-        bonus_energizer_ms=_require_int(
-            _require_field(bonuses, "bonus_energizer_ms", field="bonuses.bonus_energizer_ms"),
-            field="bonuses.bonus_energizer_ms",
-        ),
-        bonus_double_experience_ms=_require_int(
-            _require_field(
-                bonuses,
-                "bonus_double_experience_ms",
-                field="bonuses.bonus_double_experience_ms",
-            ),
-            field="bonuses.bonus_double_experience_ms",
-        ),
-        bonus_freeze_ms=_require_int(
-            _require_field(bonuses, "bonus_freeze_ms", field="bonuses.bonus_freeze_ms"),
-            field="bonuses.bonus_freeze_ms",
-        ),
+        tick_index=int(row.tick_index),
+        rng_state=int(row.rng.rng_state),
+        elapsed_ms=int(row.timing.elapsed_ms),
+        score_xp=int(row.summary.score_xp),
+        kills=int(row.summary.kills),
+        creature_count=int(row.summary.creature_count),
+        perk_pending=int(row.summary.perk_pending),
+        player_weapon_id=int(row.player.player_weapon_id),
+        player_ammo_q4=int(row.player.player_ammo_q4),
+        player_health_q4=int(row.player.player_health_q4),
+        player_level=int(row.player.player_level),
+        player_experience=int(row.player.player_experience),
+        bonus_weapon_power_up_ms=int(row.bonuses.bonus_weapon_power_up_ms),
+        bonus_reflex_boost_ms=int(row.bonuses.bonus_reflex_boost_ms),
+        bonus_energizer_ms=int(row.bonuses.bonus_energizer_ms),
+        bonus_double_experience_ms=int(row.bonuses.bonus_double_experience_ms),
+        bonus_freeze_ms=int(row.bonuses.bonus_freeze_ms),
     )
 
 
@@ -301,15 +178,8 @@ def _build_python_trace(replay_path: Path) -> list[TickTrace]:
 
 
 def _load_trace_jsonl(trace_path: Path) -> list[TickTrace]:
-    trace_rows: list[TickTrace] = []
-    with trace_path.open("r", encoding="utf-8") as handle:
-        for raw in handle:
-            line = raw.strip()
-            if not line:
-                continue
-            payload = json.loads(line)
-            trace_rows.append(_payload_to_trace(payload))
-    return trace_rows
+    rows = decode_replay_tick_trace_jsonl(trace_path)
+    return [_row_to_trace(row) for row in rows]
 
 
 def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
@@ -317,37 +187,99 @@ def _write_trace_jsonl(trace_path: Path, trace_rows: list[TickTrace]) -> None:
     with trace_path.open("w", encoding="utf-8") as handle:
         for row in trace_rows:
             line = {
-                "schema_version": TRACE_SCHEMA_VERSION,
-                "tick_index": int(row["tick_index"]),
+                "schema_version": int(REPLAY_TICK_TRACE_SCHEMA_VERSION),
+                "tick_index": int(row.tick_index),
                 "timing": {
-                    "elapsed_ms": int(row["elapsed_ms"]),
+                    "elapsed_ms": int(row.elapsed_ms),
                 },
                 "rng": {
-                    "rng_state": int(row["rng_state"]),
+                    "rng_state": int(row.rng_state),
+                    "rng_after_perk_effects": 0,
+                    "rng_after_creatures": 0,
+                    "rng_after_projectiles": 0,
+                    "rng_after_secondary_projectiles": 0,
+                    "rng_after_particles": 0,
+                    "rng_after_player_update": 0,
+                    "rng_after_stage_spawns": 0,
+                    "rng_after_wave_spawns": 0,
+                    "rng_after_spawns": 0,
+                    "rng_after_bonus_update": 0,
                 },
                 "summary": {
-                    "score_xp": int(row["score_xp"]),
-                    "kills": int(row["kills"]),
-                    "creature_count": int(row["creature_count"]),
+                    "score_xp": int(row.score_xp),
+                    "kills": int(row.kills),
+                    "shots_fired_p0": 0,
+                    "creature_count": int(row.creature_count),
+                    "creature_active_index_sum": 0,
+                    "creature_active_index_xor": 0,
                     "creature_state_hash": 0,
-                    "perk_pending": int(row["perk_pending"]),
+                    "perk_pending": int(row.perk_pending),
                 },
                 "player": {
-                    "player_weapon_id": int(row["player_weapon_id"]),
-                    "player_ammo_q4": int(row["player_ammo_q4"]),
-                    "player_health_q4": int(row["player_health_q4"]),
-                    "player_level": int(row["player_level"]),
-                    "player_experience": int(row["player_experience"]),
+                    "player_weapon_id": int(row.player_weapon_id),
+                    "player_ammo_q4": int(row.player_ammo_q4),
+                    "player_health_q4": int(row.player_health_q4),
+                    "player_pos_x_q4": 0,
+                    "player_pos_y_q4": 0,
+                    "player_aim_x_q4": 0,
+                    "player_aim_y_q4": 0,
+                    "player_heading_q6": 0,
+                    "player_aim_heading_q6": 0,
+                    "player_move_speed_q4": 0,
+                    "player_turn_speed_q4": 0,
+                    "player_level": int(row.player_level),
+                    "player_experience": int(row.player_experience),
+                    "player_reload_active": False,
+                    "player_reload_timer_q4": 0,
+                    "player_shot_cooldown_q4": 0,
+                    "player_shot_seq": 0,
+                    "player_perk31_count": 0,
+                    "player_perk53_count": 0,
+                    "player_perk54_count": 0,
+                    "player_perk55_count": 0,
+                    "player_hot_tempered_timer_q6": 0,
+                    "player_shield_timer_q4": 0,
+                    "player_man_bomb_timer_q6": 0,
+                    "player_fire_cough_timer_q6": 0,
+                    "player_living_fortress_timer_q6": 0,
+                    "perk_interval_hot_tempered_q6": 0,
+                    "perk_interval_man_bomb_q6": 0,
+                    "perk_interval_fire_cough_q6": 0,
                 },
                 "bonuses": {
-                    "bonus_weapon_power_up_ms": int(row["bonus_weapon_power_up_ms"]),
-                    "bonus_reflex_boost_ms": int(row["bonus_reflex_boost_ms"]),
-                    "bonus_energizer_ms": int(row["bonus_energizer_ms"]),
-                    "bonus_double_experience_ms": int(row["bonus_double_experience_ms"]),
-                    "bonus_freeze_ms": int(row["bonus_freeze_ms"]),
+                    "bonus_weapon_power_up_ms": int(row.bonus_weapon_power_up_ms),
+                    "bonus_reflex_boost_ms": int(row.bonus_reflex_boost_ms),
+                    "bonus_energizer_ms": int(row.bonus_energizer_ms),
+                    "bonus_double_experience_ms": int(row.bonus_double_experience_ms),
+                    "bonus_freeze_ms": int(row.bonus_freeze_ms),
+                    "bonus_active_count": 0,
+                    "bonus0_id": 0,
+                    "bonus0_amount": 0,
+                    "bonus1_id": 0,
+                    "bonus1_amount": 0,
                 },
                 "projectiles": {
                     "projectile_state_hash": 0,
+                    "projectile_count": 0,
+                    "projectile_active_index_sum": 0,
+                    "projectile_active_index_xor": 0,
+                    "projectile_type45_count": 0,
+                    "projectile_hit_count": 0,
+                    "projectile_type1_count": 0,
+                    "projectile_type6_count": 0,
+                    "projectile_type11_count": 0,
+                    "projectile_type21_count": 0,
+                    "projectile_first_hit_creature_index": -1,
+                    "projectile_first_hit_projectile_index": -1,
+                    "projectile_first_hit_type_id": 0,
+                    "projectile_first_hit_origin_x_q4": 0,
+                    "projectile_first_hit_origin_y_q4": 0,
+                    "projectile_first_hit_pos_x_q4": 0,
+                    "projectile_first_hit_pos_y_q4": 0,
+                    "projectile_first_hit_target_size_q4": 0,
+                    "projectile_first_hit_target_x_q4": 0,
+                    "projectile_first_hit_target_y_q4": 0,
+                    "entries": [],
                 },
                 "creatures": {
                     "entries": [],
@@ -397,11 +329,11 @@ def _first_mismatch(
     for index in range(limit):
         expected_row = expected[index]
         actual_row = actual[index]
-        if int(expected_row["tick_index"]) != int(actual_row["tick_index"]):
-            return index, "tick_index", int(expected_row["tick_index"]), int(actual_row["tick_index"])
+        if int(expected_row.tick_index) != int(actual_row.tick_index):
+            return index, "tick_index", int(expected_row.tick_index), int(actual_row.tick_index)
         for key, path in TRACE_FIELDS:
-            expected_value = int(expected_row[key])
-            actual_value = int(actual_row[key])
+            expected_value = int(getattr(expected_row, key))
+            actual_value = int(getattr(actual_row, key))
             if expected_value != actual_value:
                 return index, path, expected_value, actual_value
     if len(expected) != len(actual):
@@ -465,7 +397,7 @@ def main() -> int:
             python_trace = _load_trace_jsonl(args.python_trace_jsonl)
             rebuild_python_trace = False
             print(f"loaded python trace cache: {args.python_trace_jsonl}")
-        except (OSError, json.JSONDecodeError, ValueError) as exc:
+        except (OSError, ValueError) as exc:
             print(
                 f"python trace cache invalid ({args.python_trace_jsonl}): {exc}; rebuilding",
                 file=sys.stderr,
