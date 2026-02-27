@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -17,7 +17,7 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
-from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -38,10 +38,10 @@ from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
-from ..weapon_runtime import weapon_assign_player
+from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
-from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 
 WORLD_SIZE = 1024.0
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -290,6 +290,28 @@ class RushMode(BaseGameplayMode):
             return
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         replay = recorder.finish()
+        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        most_used_weapon_id = most_used_weapon_id_for_player(
+            self.state,
+            player_index=int(self.player.index),
+            fallback_weapon_id=int(self.player.weapon_id),
+        )
+        replay = replace(
+            replay,
+            header=replace(
+                replay.header,
+                claimed_stats=ReplayClaimedStatsSnapshot(
+                    complete=bool(self._game_over_active),
+                    ticks=int(recorder.tick_index),
+                    elapsed_ms=int(self._rush.elapsed_ms),
+                    score_xp=int(self.player.experience),
+                    kills=int(self.creatures.kill_count),
+                    most_used_weapon_id=int(most_used_weapon_id),
+                    shots_fired=int(shots_fired),
+                    shots_hit=int(shots_hit),
+                ),
+            ),
+        )
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")

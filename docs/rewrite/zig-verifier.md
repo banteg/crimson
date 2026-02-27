@@ -29,8 +29,8 @@ with explicit hard-fail behavior for unsupported native paths.
 - Deterministic Quest spawn tables and runtime progression hooks ported in Zig.
   - Quest spawn builder logic is full-version-only in Zig (no shareware-gated branch path).
 - Multiplayer gameplay logic and perk gating parity achieved.
-- CLI surface: `crimson-zig replay verify <replay>` with human/json outputs and
-  score-claim checking (`--submitted-score`), plus replay SHA-256 reporting.
+- CLI surface: `crimson-zig replay verify <replay>` with human/json outputs,
+  intrinsic replay-header claimed-stats checking, plus replay SHA-256 reporting.
 - Wasm target build + export ABI for worker-side integration.
 - Differential harness for tick-level Python-vs-Zig comparisons:
   - `uv run crimson-zig/scripts/diff_survival_verifiers.py ...`

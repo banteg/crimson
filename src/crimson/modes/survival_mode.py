@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol, cast
 
 from grim.assets import PaqTextureCache
@@ -31,7 +31,7 @@ from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
-from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -52,10 +52,10 @@ from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSessio
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
-from ..weapon_runtime import weapon_assign_player
+from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID
 from .base_gameplay_mode import BaseGameplayMode, DeterministicSessionLike
-from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
@@ -195,6 +195,28 @@ class SurvivalMode(BaseGameplayMode):
         if recorder is None:
             return
         replay = recorder.finish()
+        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        most_used_weapon_id = most_used_weapon_id_for_player(
+            self.state,
+            player_index=int(self.player.index),
+            fallback_weapon_id=int(self.player.weapon_id),
+        )
+        replay = replace(
+            replay,
+            header=replace(
+                replay.header,
+                claimed_stats=ReplayClaimedStatsSnapshot(
+                    complete=bool(self._game_over_active),
+                    ticks=int(recorder.tick_index),
+                    elapsed_ms=int(self._survival.elapsed_ms),
+                    score_xp=int(self.player.experience),
+                    kills=int(self.creatures.kill_count),
+                    most_used_weapon_id=int(most_used_weapon_id),
+                    shots_fired=int(shots_fired),
+                    shots_hit=int(shots_hit),
+                ),
+            ),
+        )
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         terminal_tick = int(recorder.tick_index)
         if any(int(event.tick_index) == terminal_tick for event in replay.events):

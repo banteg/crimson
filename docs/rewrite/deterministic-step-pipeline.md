@@ -97,16 +97,11 @@ Server-oriented / machine-readable flow:
 uv run crimson replay verify replay.crd --format json
 ```
 
-Claim validation flow (returns exit code `3` when claim mismatches):
+Claim validation flow (returns exit code `3` when replay header claimed stats mismatch):
 
 ```bash
-uv run crimson replay verify replay.crd --submitted-score 12345
+uv run crimson replay verify replay.crd
 ```
-
-By default (`--score-metric auto`), claim comparison is mode-aware:
-
-- Survival -> `score_xp`
-- Rush / Quests -> `elapsed_ms`
 
 ## Replay info (timeline extraction for analysis/infographics)
 

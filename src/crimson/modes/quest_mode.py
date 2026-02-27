@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Protocol, cast
 
 from grim.assets import PaqTextureCache, TextureLoader
@@ -36,7 +36,7 @@ from ..quests.runtime import tick_quest_completion_transition as _legacy_tick_qu
 from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_table_empty
 from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -300,6 +300,28 @@ class QuestMode(BaseGameplayMode):
             self._replay_checkpoints_last_tick = None
             return
         replay = recorder.finish()
+        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        most_used_weapon_id = most_used_weapon_id_for_player(
+            self.state,
+            player_index=int(self.player.index),
+            fallback_weapon_id=int(self.player.weapon_id),
+        )
+        replay = replace(
+            replay,
+            header=replace(
+                replay.header,
+                claimed_stats=ReplayClaimedStatsSnapshot(
+                    complete=bool(self._outcome is not None),
+                    ticks=int(recorder.tick_index),
+                    elapsed_ms=int(self._quest.spawn_timeline_ms),
+                    score_xp=int(self.player.experience),
+                    kills=int(self.creatures.kill_count),
+                    most_used_weapon_id=int(most_used_weapon_id),
+                    shots_fired=int(shots_fired),
+                    shots_hit=int(shots_hit),
+                ),
+            ),
+        )
         self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
         terminal_tick = int(recorder.tick_index)
         if any(int(event.tick_index) == terminal_tick for event in replay.events):

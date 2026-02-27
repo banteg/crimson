@@ -188,20 +188,6 @@ def _render_checkpoint_diff_failure(diff: object) -> None:
     raise typer.Exit(code=1)
 
 
-def _resolve_replay_verify_metric(
-    *,
-    game_mode_id: int,
-    score_metric: Literal["auto", "score_xp", "elapsed_ms"],
-) -> Literal["score_xp", "elapsed_ms"]:
-    if str(score_metric) == "score_xp":
-        return "score_xp"
-    if str(score_metric) == "elapsed_ms":
-        return "elapsed_ms"
-    if int(game_mode_id) in (int(GameMode.RUSH), int(GameMode.QUESTS)):
-        return "elapsed_ms"
-    return "score_xp"
-
-
 def _replay_mode_label(game_mode_id: int) -> str:
     if int(game_mode_id) == int(GameMode.SURVIVAL):
         return "survival"
@@ -232,12 +218,31 @@ class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True)
     match: bool
 
 
+class _ReplayVerifyClaimedStatsPayload(msgspec.Struct, forbid_unknown_fields=True):
+    complete: bool
+    ticks: int
+    elapsed_ms: int
+    score_xp: int
+    kills: int
+    most_used_weapon_id: int
+    shots_fired: int
+    shots_hit: int
+
+
+class _ReplayVerifyHeaderClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
+    expected: _ReplayVerifyClaimedStatsPayload
+    simulated: _ReplayVerifyClaimedStatsPayload
+    match: bool
+    mismatched_fields: list[str]
+
+
 class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     status: str
     replay: str
     replay_sha256: str
     run_result: _RunResultPayload
+    header_claim: _ReplayVerifyHeaderClaimPayload | None
     score_claim: _ReplayVerifyScoreClaimPayload | None
 
 
@@ -526,29 +531,12 @@ def _replay_list_mode_style(game_mode_id: int) -> str:
 
 
 def _replay_list_score_kills(
-    replay_path: Path,
     *,
-    default_checkpoints_path_fn: Callable[[Path], Path],
-    legacy_checkpoints_path_fn: Callable[[Path], Path],
-    load_checkpoints_file_fn: Callable[[Path], object],
+    replay: object,
 ) -> tuple[str, str]:
-    checkpoints_path = default_checkpoints_path_fn(replay_path)
-    if not checkpoints_path.is_file():
-        legacy_path = legacy_checkpoints_path_fn(replay_path)
-        if legacy_path.is_file():
-            checkpoints_path = legacy_path
-    if not checkpoints_path.is_file():
-        return "-", "-"
-
-    try:
-        checkpoints = cast("Any", load_checkpoints_file_fn(checkpoints_path))
-    except Exception:
-        return "-", "-"
-
-    if not checkpoints.checkpoints:
-        return "-", "-"
-    latest = max(checkpoints.checkpoints, key=lambda item: int(item.tick_index))
-    return str(int(latest.score_xp)), str(int(latest.kills))
+    replay_obj = cast("Any", replay)
+    claimed_stats = replay_obj.header.claimed_stats
+    return str(int(claimed_stats.score_xp)), str(int(claimed_stats.kills))
 
 
 def _build_replay_list_row(
@@ -556,9 +544,6 @@ def _build_replay_list_row(
     *,
     replays_dir: Path,
     load_replay_fn: Callable[[bytes], object],
-    default_checkpoints_path_fn: Callable[[Path], Path],
-    legacy_checkpoints_path_fn: Callable[[Path], Path],
-    load_checkpoints_file_fn: Callable[[Path], object],
     current_version: str,
 ) -> tuple[_ReplayListRow, str | None]:
     rel = str(replay_path.relative_to(replays_dir))
@@ -618,10 +603,7 @@ def _build_replay_list_row(
         quest_level=quest_level,
     )
     score_xp, kills = _replay_list_score_kills(
-        replay_path,
-        default_checkpoints_path_fn=default_checkpoints_path_fn,
-        legacy_checkpoints_path_fn=legacy_checkpoints_path_fn,
-        load_checkpoints_file_fn=load_checkpoints_file_fn,
+        replay=replay,
     )
     is_old = _is_version_older(replay_version=game_version, current_version=current_version)
     return (
@@ -727,7 +709,6 @@ def cmd_replay_list(
 
     from .. import __version__
     from ..replay import load_replay
-    from ..replay.checkpoints import default_checkpoints_path, legacy_checkpoints_path, load_checkpoints_file
 
     replays_dir = Path(base_dir) / "replays"
     replay_files = sorted(
@@ -745,9 +726,6 @@ def cmd_replay_list(
             replay_path,
             replays_dir=replays_dir,
             load_replay_fn=load_replay,
-            default_checkpoints_path_fn=default_checkpoints_path,
-            legacy_checkpoints_path_fn=legacy_checkpoints_path,
-            load_checkpoints_file_fn=load_checkpoints_file,
             current_version=str(__version__),
         )
         rows.append(row)
@@ -823,16 +801,6 @@ def cmd_replay_verify(
         "--json-out",
         help="optional JSON output path for verify result payload",
     ),
-    submitted_score: int | None = typer.Option(
-        None,
-        "--submitted-score",
-        help="optional submitted score/time to compare against simulated result",
-    ),
-    score_metric: Literal["auto", "score_xp", "elapsed_ms"] = typer.Option(
-        "auto",
-        "--score-metric",
-        help="score metric for submitted score validation",
-    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -868,24 +836,57 @@ def cmd_replay_verify(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    resolved_metric = _resolve_replay_verify_metric(
-        game_mode_id=int(result.game_mode_id),
-        score_metric=score_metric,
-    )
-    score_claim_payload: _ReplayVerifyScoreClaimPayload | None = None
-    status = "ok"
-    claim_matches = True
-    if submitted_score is not None:
-        simulated_value = int(result.score_xp) if resolved_metric == "score_xp" else int(result.elapsed_ms)
-        claim_matches = int(submitted_score) == int(simulated_value)
-        if not claim_matches:
-            status = "score_mismatch"
-        score_claim_payload = _ReplayVerifyScoreClaimPayload(
-            metric=str(resolved_metric),
-            submitted_score=int(submitted_score),
-            simulated_value=int(simulated_value),
-            match=bool(claim_matches),
+    full_replay_simulated = max_ticks is None or int(max_ticks) >= int(len(replay.inputs))
+    header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
+    header_claim_matches = True
+    claimed_stats = replay.header.claimed_stats
+    if bool(full_replay_simulated):
+        expected_claim = _ReplayVerifyClaimedStatsPayload(
+            complete=bool(claimed_stats.complete),
+            ticks=int(claimed_stats.ticks),
+            elapsed_ms=int(claimed_stats.elapsed_ms),
+            score_xp=int(claimed_stats.score_xp),
+            kills=int(claimed_stats.kills),
+            most_used_weapon_id=int(claimed_stats.most_used_weapon_id),
+            shots_fired=int(claimed_stats.shots_fired),
+            shots_hit=int(claimed_stats.shots_hit),
         )
+        simulated_claim = _ReplayVerifyClaimedStatsPayload(
+            complete=bool(claimed_stats.complete),
+            ticks=int(result.ticks),
+            elapsed_ms=int(result.elapsed_ms),
+            score_xp=int(result.score_xp),
+            kills=int(result.creature_kill_count),
+            most_used_weapon_id=int(result.most_used_weapon_id),
+            shots_fired=int(result.shots_fired),
+            shots_hit=int(result.shots_hit),
+        )
+        mismatched_fields: list[str] = []
+        if int(expected_claim.ticks) != int(simulated_claim.ticks):
+            mismatched_fields.append("ticks")
+        if int(expected_claim.elapsed_ms) != int(simulated_claim.elapsed_ms):
+            mismatched_fields.append("elapsed_ms")
+        if int(expected_claim.score_xp) != int(simulated_claim.score_xp):
+            mismatched_fields.append("score_xp")
+        if int(expected_claim.kills) != int(simulated_claim.kills):
+            mismatched_fields.append("kills")
+        if int(expected_claim.most_used_weapon_id) != int(simulated_claim.most_used_weapon_id):
+            mismatched_fields.append("most_used_weapon_id")
+        if int(expected_claim.shots_fired) != int(simulated_claim.shots_fired):
+            mismatched_fields.append("shots_fired")
+        if int(expected_claim.shots_hit) != int(simulated_claim.shots_hit):
+            mismatched_fields.append("shots_hit")
+        header_claim_matches = not mismatched_fields
+        header_claim_payload = _ReplayVerifyHeaderClaimPayload(
+            expected=expected_claim,
+            simulated=simulated_claim,
+            match=bool(header_claim_matches),
+            mismatched_fields=list(mismatched_fields),
+        )
+
+    status = "ok"
+    if not bool(header_claim_matches):
+        status = "header_stats_mismatch"
 
     payload = _ReplayVerifyPayload(
         schema_version=int(_REPLAY_VERIFY_SCHEMA_VERSION),
@@ -893,7 +894,8 @@ def cmd_replay_verify(
         replay=str(replay_path),
         replay_sha256=str(replay_sha256),
         run_result=_run_result_payload(result),
-        score_claim=score_claim_payload,
+        header_claim=header_claim_payload,
+        score_claim=None,
     )
     payload_json = msgspec.json.encode(payload)
 
@@ -907,21 +909,25 @@ def cmd_replay_verify(
         typer.echo(payload_json.decode("utf-8"))
     else:
         message = (
-            f"{'ok' if status == 'ok' else 'score_mismatch'}: "
+            f"{status}: "
             f"ticks={result.ticks} elapsed_ms={result.elapsed_ms} score_xp={result.score_xp} "
             f"kills={result.creature_kill_count} most_used_weapon_id={result.most_used_weapon_id} "
             f"shots_fired={result.shots_fired} shots_hit={result.shots_hit} rng_state={result.rng_state}"
         )
-        if score_claim_payload is not None:
+        if header_claim_payload is not None:
+            mismatch_fields = (
+                ",".join(header_claim_payload.mismatched_fields)
+                if header_claim_payload.mismatched_fields
+                else "-"
+            )
             message += (
-                f"; score_claim metric={score_claim_payload.metric} "
-                f"submitted={score_claim_payload.submitted_score} "
-                f"simulated={score_claim_payload.simulated_value} "
-                f"match={score_claim_payload.match}"
+                f"; header_claim complete={header_claim_payload.expected.complete} "
+                f"match={header_claim_payload.match} "
+                f"mismatches={mismatch_fields}"
             )
         typer.echo(message)
 
-    if not claim_matches:
+    if not bool(header_claim_matches):
         raise typer.Exit(code=int(_REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE))
 
 

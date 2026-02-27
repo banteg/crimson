@@ -15,7 +15,15 @@ from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.original.capture import CAPTURE_PERK_APPLY_EVENT_KIND
 from crimson.perks import PerkId
-from crimson.replay import PerkMenuOpenEvent, Replay, ReplayHeader, ReplayRecorder, UnknownEvent, dump_replay
+from crimson.replay import (
+    PerkMenuOpenEvent,
+    Replay,
+    ReplayClaimedStatsSnapshot,
+    ReplayHeader,
+    ReplayRecorder,
+    UnknownEvent,
+    dump_replay,
+)
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
@@ -63,7 +71,24 @@ def _build_replay(
                 for _ in range(int(player_count))
             ],
         )
-    return recorder.finish()
+    replay = recorder.finish()
+    result = run_replay(replay)
+    return replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=int(result.ticks),
+                elapsed_ms=int(result.elapsed_ms),
+                score_xp=int(result.score_xp),
+                kills=int(result.creature_kill_count),
+                most_used_weapon_id=int(result.most_used_weapon_id),
+                shots_fired=int(result.shots_fired),
+                shots_hit=int(result.shots_hit),
+            ),
+        ),
+    )
 
 
 def _write_replay(tmp_path: Path, *, replay: Replay, name: str) -> Path:
@@ -184,8 +209,24 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
     assert "quest 3.10 2p" in unstyle(result.output)
 
 
-def test_replay_list_uses_latest_checkpoint_score_and_kills(tmp_path: Path) -> None:
+def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay = replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=2,
+                elapsed_ms=33,
+                score_xp=1234,
+                kills=56,
+                most_used_weapon_id=1,
+                shots_fired=10,
+                shots_hit=8,
+            ),
+        ),
+    )
     replay_path = _write_replay(tmp_path / "replays", replay=replay, name="stats.crd")
     sidecar_path = _write_checkpoint_sidecar(replay_path, replay)
     payload = load_checkpoints_file(sidecar_path)
@@ -204,7 +245,38 @@ def test_replay_list_uses_latest_checkpoint_score_and_kills(tmp_path: Path) -> N
 
     assert result.exit_code == 0, result.output
     output = unstyle(result.output)
-    assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+42\s+7\s+", output) is not None
+    assert re.search(r"stats\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
+
+
+def test_replay_list_uses_header_claimed_stats_without_sidecar(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay = replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=2,
+                elapsed_ms=33,
+                score_xp=1234,
+                kills=56,
+                most_used_weapon_id=1,
+                shots_fired=10,
+                shots_hit=8,
+            ),
+        ),
+    )
+    _write_replay(tmp_path / "replays", replay=replay, name="claimed.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["replay", "list", "--base-dir", str(tmp_path), "--no-color"],
+    )
+
+    assert result.exit_code == 0, result.output
+    output = unstyle(result.output)
+    assert re.search(r"claimed\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
 
 
 def test_replay_list_reports_when_no_replays_found(tmp_path: Path) -> None:
@@ -251,7 +323,70 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["run_result"]["score_xp"] == 0
 
 
-def test_replay_verify_submitted_score_match_exit_zero(tmp_path: Path) -> None:
+def test_replay_verify_checks_header_claimed_stats_match(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    expected = run_replay(replay)
+    replay = replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=int(expected.ticks),
+                elapsed_ms=int(expected.elapsed_ms),
+                score_xp=int(expected.score_xp),
+                kills=int(expected.creature_kill_count),
+                most_used_weapon_id=int(expected.most_used_weapon_id),
+                shots_fired=int(expected.shots_fired),
+                shots_hit=int(expected.shots_hit),
+            ),
+        ),
+    )
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival-claimed.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "ok"
+    assert payload["header_claim"]["match"] is True
+    assert payload["header_claim"]["mismatched_fields"] == []
+
+
+def test_replay_verify_reports_header_claimed_stats_mismatch(tmp_path: Path) -> None:
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
+    replay = replace(
+        replay,
+        header=replace(
+            replay.header,
+            claimed_stats=ReplayClaimedStatsSnapshot(
+                complete=True,
+                ticks=2,
+                elapsed_ms=1,
+                score_xp=999,
+                kills=4,
+                most_used_weapon_id=1,
+                shots_fired=2,
+                shots_hit=1,
+            ),
+        ),
+    )
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival-claimed-bad.crd")
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 3, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "header_stats_mismatch"
+    assert payload["header_claim"]["match"] is False
+    assert "elapsed_ms" in payload["header_claim"]["mismatched_fields"]
+    assert "score_xp" in payload["header_claim"]["mismatched_fields"]
+    assert payload["score_claim"] is None
+
+
+def test_replay_verify_rejects_removed_submitted_score_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
@@ -262,43 +397,15 @@ def test_replay_verify_submitted_score_match_exit_zero(tmp_path: Path) -> None:
             "replay",
             "verify",
             str(replay_path),
-            "--format",
-            "json",
             "--submitted-score",
             "0",
         ],
     )
 
-    assert result.exit_code == 0, result.output
-    payload = json.loads(result.output)
-    assert payload["status"] == "ok"
-    assert payload["score_claim"]["metric"] == "score_xp"
-    assert payload["score_claim"]["match"] is True
-
-
-def test_replay_verify_submitted_score_mismatch_exit_three(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "verify",
-            str(replay_path),
-            "--format",
-            "json",
-            "--submitted-score",
-            "1",
-        ],
-    )
-
-    assert result.exit_code == 3, result.output
-    payload = json.loads(result.output)
-    assert payload["status"] == "score_mismatch"
-    assert payload["score_claim"]["metric"] == "score_xp"
-    assert payload["score_claim"]["match"] is False
+    assert result.exit_code == 2
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--submitted-score" in output
 
 
 def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
@@ -323,32 +430,6 @@ def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     assert "ok:" in result.output
-
-
-def test_replay_verify_auto_metric_uses_elapsed_ms_for_rush(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.RUSH, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="rush.crd")
-    expected_elapsed_ms = run_replay(replay).elapsed_ms
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "verify",
-            str(replay_path),
-            "--format",
-            "json",
-            "--submitted-score",
-            str(expected_elapsed_ms),
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    payload = json.loads(result.output)
-    assert payload["score_claim"]["metric"] == "elapsed_ms"
-    assert payload["score_claim"]["simulated_value"] == int(expected_elapsed_ms)
-    assert payload["score_claim"]["match"] is True
 
 
 def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
