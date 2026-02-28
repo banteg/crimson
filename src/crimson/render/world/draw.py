@@ -524,8 +524,8 @@ def draw_aim_indicators(
         screen_radius = max(1.0, radius * ctx.scale)
         draw_circle(aim_screen, screen_radius, ctx.entity_alpha)
 
-        reload_timer = float(player.reload_timer)
-        reload_max = float(player.reload_timer_max)
+        reload_timer = float(player.weapon.reload_timer)
+        reload_max = float(player.weapon.reload_timer_max)
         if reload_max > 1e-6 and reload_timer > 1e-6:
             progress = reload_timer / reload_max
             if progress > 0.0:

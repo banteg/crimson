@@ -79,6 +79,16 @@ pub const Vec2 = struct {
     }
 };
 
+pub const WeaponSlotState = struct {
+    weapon_id: WeaponId,
+    clip_size: i32 = 0,
+    ammo: f32 = 0.0,
+    reload_active: bool = false,
+    reload_timer: f32 = 0.0,
+    reload_timer_max: f32 = 0.0,
+    shot_cooldown: f32 = 0.0,
+};
+
 pub const PlayerState = struct {
     index: i32,
     pos: Vec2,
@@ -97,26 +107,13 @@ pub const PlayerState = struct {
     aim_heading: f32 = 0.0,
     aim_dir: Vec2 = .{ .x = 1.0, .y = 0.0 },
 
-    weapon_id: WeaponId = .pistol,
-    clip_size: i32 = 0,
-    ammo: f32 = 0.0,
-    reload_active: bool = false,
-    reload_timer: f32 = 0.0,
-    reload_timer_max: f32 = 0.0,
-    shot_cooldown: f32 = 0.0,
+    weapon: WeaponSlotState = .{ .weapon_id = .pistol },
+    alt_weapon: ?WeaponSlotState = null,
     shot_seq: i32 = 0,
     weapon_reset_latch: i32 = 0,
     aux_timer: f32 = 0.0,
     spread_heat: f32 = 0.01,
     muzzle_flash_alpha: f32 = 0.0,
-
-    alt_weapon_id: ?WeaponId = null,
-    alt_clip_size: i32 = 0,
-    alt_ammo: f32 = 0.0,
-    alt_reload_active: bool = false,
-    alt_reload_timer: f32 = 0.0,
-    alt_reload_timer_max: f32 = 0.0,
-    alt_shot_cooldown: f32 = 0.0,
     reload_stationary_latch: bool = true,
 
     experience: i32 = 0,

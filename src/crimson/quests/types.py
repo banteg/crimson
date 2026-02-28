@@ -7,6 +7,7 @@ from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId
 from ..terrain_assets import TerrainTextureId
+from ..weapons import WeaponId
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,11 +68,16 @@ class QuestDefinition:
     title: str
     builder: QuestBuilder
     time_limit_ms: int
-    start_weapon_id: int
+    start_weapon_id: WeaponId
     unlock_perk_id: int | None = None
-    unlock_weapon_id: int | None = None
+    unlock_weapon_id: WeaponId | None = None
     terrain_ids: tuple[int, int, int] | None = None
     builder_address: int | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "start_weapon_id", WeaponId(self.start_weapon_id))
+        if self.unlock_weapon_id is not None:
+            object.__setattr__(self, "unlock_weapon_id", WeaponId(self.unlock_weapon_id))
 
     @property
     def level(self) -> str:

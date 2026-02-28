@@ -12,8 +12,8 @@ def apply_weapon_power_up(ctx: BonusApplyCtx) -> None:
         f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )
     ctx.player.weapon_reset_latch = 0
-    ctx.player.shot_cooldown = 0.0
-    ctx.player.reload_active = False
-    ctx.player.reload_timer = 0.0
-    ctx.player.reload_timer_max = 0.0
-    ctx.player.ammo = float(ctx.player.clip_size)
+    ctx.player.weapon.shot_cooldown = 0.0
+    ctx.player.weapon.reload_active = False
+    ctx.player.weapon.reload_timer = 0.0
+    ctx.player.weapon.reload_timer_max = 0.0
+    ctx.player.weapon.ammo = float(ctx.player.weapon.clip_size)

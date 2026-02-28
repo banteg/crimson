@@ -139,7 +139,7 @@ pub fn survivalUpdateWeaponHandouts(
         @as(i32, @intFromFloat(survival_elapsed_ms)) > 64_000 and
         state.survival_reward_handout_enabled)
     {
-        if (player.weapon_id == WeaponId.pistol) {
+        if (player.weapon.weapon_id == WeaponId.pistol) {
             weaponAssignPlayerWithState(player, WeaponId.shrinkifier_5k, state);
             state.survival_reward_weapon_guard_id = WeaponId.shrinkifier_5k;
         }
@@ -175,10 +175,10 @@ pub fn survivalEnforceRewardWeaponGuard(
 ) void {
     const guard_id = state.survival_reward_weapon_guard_id;
     for (players) |*player| {
-        if (player.weapon_id == WeaponId.blade_gun and guard_id != WeaponId.blade_gun) {
+        if (player.weapon.weapon_id == WeaponId.blade_gun and guard_id != WeaponId.blade_gun) {
             weaponAssignPlayer(player, WeaponId.pistol);
         }
-        if (player.weapon_id == WeaponId.shrinkifier_5k and guard_id != WeaponId.shrinkifier_5k) {
+        if (player.weapon.weapon_id == WeaponId.shrinkifier_5k and guard_id != WeaponId.shrinkifier_5k) {
             weaponAssignPlayer(player, WeaponId.pistol);
         }
     }
@@ -224,7 +224,7 @@ test "survival handout time gate assigns shrinkifier" {
 
     survivalUpdateWeaponHandouts(&state, players[0..], 64_001.0);
 
-    try std.testing.expectEqual(WeaponId.shrinkifier_5k, players[0].weapon_id);
+    try std.testing.expectEqual(WeaponId.shrinkifier_5k, players[0].weapon.weapon_id);
     try std.testing.expectEqual(WeaponId.shrinkifier_5k, state.survival_reward_weapon_guard_id);
     try std.testing.expect(!state.survival_reward_handout_enabled);
     try std.testing.expect(state.survival_reward_damage_seen);
@@ -240,7 +240,7 @@ test "survival handout time gate consumes without pistol" {
 
     survivalUpdateWeaponHandouts(&state, players[0..], 64_001.0);
 
-    try std.testing.expectEqual(WeaponId.assault_rifle, players[0].weapon_id);
+    try std.testing.expectEqual(WeaponId.assault_rifle, players[0].weapon.weapon_id);
     try std.testing.expectEqual(WeaponId.pistol, state.survival_reward_weapon_guard_id);
     try std.testing.expect(!state.survival_reward_handout_enabled);
     try std.testing.expect(state.survival_reward_damage_seen);
@@ -258,8 +258,8 @@ test "survival handouts are single player only" {
 
     survivalUpdateWeaponHandouts(&state, players[0..], 64_001.0);
 
-    try std.testing.expectEqual(WeaponId.pistol, players[0].weapon_id);
-    try std.testing.expectEqual(WeaponId.pistol, players[1].weapon_id);
+    try std.testing.expectEqual(WeaponId.pistol, players[0].weapon.weapon_id);
+    try std.testing.expectEqual(WeaponId.pistol, players[1].weapon.weapon_id);
     try std.testing.expect(state.survival_reward_handout_enabled);
     try std.testing.expect(!state.survival_reward_damage_seen);
     try std.testing.expect(!state.survival_reward_fire_seen);
@@ -284,7 +284,7 @@ test "survival handout centroid gate assigns blade gun" {
 
     survivalUpdateWeaponHandouts(&state, players[0..], 0.0);
 
-    try std.testing.expectEqual(WeaponId.blade_gun, players[0].weapon_id);
+    try std.testing.expectEqual(WeaponId.blade_gun, players[0].weapon.weapon_id);
     try std.testing.expectEqual(WeaponId.blade_gun, state.survival_reward_weapon_guard_id);
     try std.testing.expect(state.survival_reward_fire_seen);
     try std.testing.expect(!state.survival_reward_handout_enabled);
@@ -322,8 +322,8 @@ test "survival reward guard reverts temporary weapons" {
 
     survivalEnforceRewardWeaponGuard(state, players[0..]);
 
-    try std.testing.expectEqual(WeaponId.shrinkifier_5k, players[0].weapon_id);
-    try std.testing.expectEqual(WeaponId.pistol, players[1].weapon_id);
+    try std.testing.expectEqual(WeaponId.shrinkifier_5k, players[0].weapon.weapon_id);
+    try std.testing.expectEqual(WeaponId.pistol, players[1].weapon.weapon_id);
 }
 
 test "time scale reflex boost bonus mirrors f32 latch" {

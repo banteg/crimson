@@ -289,7 +289,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Muzzle",
         auto_interval=0.11,
-        rate_weapon_id=int(WeaponId.PISTOL),
+        rate_weapon_id=WeaponId.PISTOL,
         primary_type_id=ProjectileTypeId.PISTOL,
         flash_radius=95.0,
         flash_ttl=0.11,
@@ -298,7 +298,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Ion Rifle",
         auto_interval=0.16,
-        rate_weapon_id=int(WeaponId.ION_RIFLE),
+        rate_weapon_id=WeaponId.ION_RIFLE,
         primary_type_id=ProjectileTypeId.ION_RIFLE,
         flash_radius=140.0,
         flash_ttl=0.17,
@@ -307,7 +307,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Ion Minigun",
         auto_interval=0.06,
-        rate_weapon_id=int(WeaponId.ION_MINIGUN),
+        rate_weapon_id=WeaponId.ION_MINIGUN,
         primary_type_id=ProjectileTypeId.ION_MINIGUN,
         burst_count=2,
         spread_rad=0.03,
@@ -318,7 +318,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Plasma Rifle",
         auto_interval=0.13,
-        rate_weapon_id=int(WeaponId.PLASMA_RIFLE),
+        rate_weapon_id=WeaponId.PLASMA_RIFLE,
         primary_type_id=ProjectileTypeId.PLASMA_RIFLE,
         flash_radius=150.0,
         flash_ttl=0.19,
@@ -327,7 +327,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Plasma Cannon",
         auto_interval=0.27,
-        rate_weapon_id=int(WeaponId.PLASMA_CANNON),
+        rate_weapon_id=WeaponId.PLASMA_CANNON,
         primary_type_id=ProjectileTypeId.PLASMA_CANNON,
         flash_radius=210.0,
         flash_ttl=0.24,
@@ -336,7 +336,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Fire/Flame",
         auto_interval=0.08,
-        rate_weapon_id=int(WeaponId.HR_FLAMER),
+        rate_weapon_id=WeaponId.HR_FLAMER,
         primary_type_id=ProjectileTypeId.FIRE_BULLETS,
         burst_count=4,
         spread_rad=0.16,
@@ -347,7 +347,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
     EmissiveProfile(
         name="Explosion",
         auto_interval=0.45,
-        rate_weapon_id=int(WeaponId.ROCKET_LAUNCHER),
+        rate_weapon_id=WeaponId.ROCKET_LAUNCHER,
         secondary_type_id=SecondaryProjectileTypeId.DETONATION,
         secondary_ttl=0.95,
         flash_radius=280.0,
@@ -2285,7 +2285,7 @@ class LightingDebugView:
     def _profile_auto_interval(profile: EmissiveProfile) -> float:
         weapon_id = profile.rate_weapon_id
         if weapon_id is not None:
-            entry = WEAPON_BY_ID.get(int(weapon_id))
+            entry = WEAPON_BY_ID.get(weapon_id)
             cooldown = None if entry is None else entry.shot_cooldown
             if cooldown is not None:
                 return max(0.001, float(cooldown))

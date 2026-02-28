@@ -44,10 +44,10 @@ RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
-        if int(player.weapon_id) != int(RUSH_WEAPON_ID):
-            weapon_assign_player(player, int(RUSH_WEAPON_ID))
+        if player.weapon.weapon_id != RUSH_WEAPON_ID:
+            weapon_assign_player(player, RUSH_WEAPON_ID)
         # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-        player.ammo = float(max(0, int(player.clip_size)))
+        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
 
 def run_survival_replay(
@@ -281,7 +281,7 @@ def run_survival_replay(
         elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
-        most_used_weapon_id=int(most_used_weapon_id),
+        most_used_weapon_id=most_used_weapon_id,
         shots_fired=int(shots_fired),
         shots_hit=int(shots_hit),
         rng_state=int(world.state.rng.state),
@@ -477,7 +477,7 @@ def run_rush_replay(
         elapsed_ms=int(session.elapsed_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
-        most_used_weapon_id=int(most_used_weapon_id),
+        most_used_weapon_id=most_used_weapon_id,
         shots_fired=int(shots_fired),
         shots_hit=int(shots_hit),
         rng_state=int(world.state.rng.state),
@@ -505,7 +505,7 @@ def run_quest_replay(
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     quest_stage_major: int | None = None,
     quest_stage_minor: int | None = None,
-    start_weapon_id: int | None = None,
+    start_weapon_id: WeaponId | None = None,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
     strict_events: bool = True,
@@ -562,7 +562,7 @@ def run_quest_replay(
         if quest_stage_major is None or quest_stage_minor is None:
             world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
         if start_weapon_id is None:
-            start_weapon_id = int(quest.start_weapon_id)
+            start_weapon_id = quest.start_weapon_id
 
         ctx = QuestContext(
             width=int(world_size),
@@ -586,10 +586,12 @@ def run_quest_replay(
     if quest_stage_minor is not None:
         world.state.quest_stage_minor = int(quest_stage_minor)
 
-    weapon_id = max(1, int(start_weapon_id or 1))
+    weapon_id = start_weapon_id or WeaponId.PISTOL
+    if weapon_id <= WeaponId.NONE:
+        weapon_id = WeaponId.PISTOL
     for player in world.players:
         weapon_assign_player(player, weapon_id)
-    quest_start_weapon_id = int(weapon_id)
+    quest_start_weapon_id = weapon_id
 
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -677,11 +679,11 @@ def run_quest_replay(
             player_count=int(replay.header.player_count),
         )
         for player in world.players:
-            weapon_assign_player(player, int(quest_start_weapon_id))
-            if int(quest_start_weapon_id) == int(WeaponId.PISTOL):
-                player.clip_size = max(12, int(player.clip_size))
-                if float(player.ammo) < 12.0:
-                    player.ammo = 12.0
+            weapon_assign_player(player, quest_start_weapon_id)
+            if quest_start_weapon_id == WeaponId.PISTOL:
+                player.weapon.clip_size = max(12, int(player.weapon.clip_size))
+                if float(player.weapon.ammo) < 12.0:
+                    player.weapon.ammo = 12.0
         world.spawn_env = replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
         world.creatures.env = world.spawn_env
         world.creatures.effects = world.state.effects
@@ -887,7 +889,7 @@ def run_quest_replay(
         elapsed_ms=int(session.spawn_timeline_ms),
         score_xp=score_xp,
         creature_kill_count=int(world.creatures.kill_count),
-        most_used_weapon_id=int(most_used_weapon_id),
+        most_used_weapon_id=most_used_weapon_id,
         shots_fired=int(shots_fired),
         shots_hit=int(shots_hit),
         rng_state=int(world.state.rng.state),

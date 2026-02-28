@@ -19,6 +19,7 @@ from .sim.input import PlayerInput
 from .sim.sessions import SurvivalDeterministicSession
 from .sim.state_types import PlayerState
 from .sim.world_state import WorldState
+from .weapons import WeaponId
 
 
 class OutputMode:
@@ -92,11 +93,11 @@ def export_player_state(player: PlayerState) -> dict[str, Any]:
         "index": int(player.index),
         "pos": player.pos.to_dict(ndigits=4),
         "health": round(float(player.health), 4),
-        "weapon_id": int(player.weapon_id),
-        "ammo": round(float(player.ammo), 4),
+        "weapon_id": player.weapon.weapon_id,
+        "ammo": round(float(player.weapon.ammo), 4),
         "experience": int(player.experience),
         "level": int(player.level),
-        "reload_active": bool(player.reload_active),
+        "reload_active": bool(player.weapon.reload_active),
         "heading": round(float(player.heading), 4),
         "aim_heading": round(float(player.aim_heading), 4),
     }
@@ -209,7 +210,7 @@ def export_game_state_summary(
             {
                 "pos": p.pos.to_dict(ndigits=2),
                 "health": round(float(p.health), 2),
-                "weapon_id": int(p.weapon_id),
+                "weapon_id": p.weapon.weapon_id,
                 "level": int(p.level),
             }
             for p in players
@@ -258,7 +259,7 @@ class CheckpointTracker:
         kills = world_state.creatures.kill_count
         level = players[0].level if players else 1
         health = players[0].health if players else 0.0
-        weapon_id = players[0].weapon_id if players else 1
+        weapon_id = players[0].weapon.weapon_id if players else 1
 
         changed = (
             score != self.last_score
@@ -301,7 +302,7 @@ def run_headless(config: OracleConfig) -> None:
         from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
 
         player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-        weapon_assign_player(player, 1)
+        weapon_assign_player(player, WeaponId.PISTOL)
         init_default_alt_weapon(player)
         players.append(player)
 

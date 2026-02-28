@@ -440,7 +440,7 @@ def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path:
         {
             "pos": {"x": 12345.0, "y": 67890.0},
             "health": 1.0,
-            "weapon_id": 99,
+            "weapon_id": 2,
             "ammo": 2.0,
             "experience": 3,
             "level": 4,

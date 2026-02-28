@@ -673,7 +673,7 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
         elapsed_ms=int(elapsed_ms),
         score_xp=int(score_xp),
         creature_kill_count=int(world.creatures.kill_count),
-        most_used_weapon_id=int(most_used_weapon_id),
+        most_used_weapon_id=most_used_weapon_id,
         shots_fired=int(shots_fired),
         shots_hit=int(shots_hit),
         rng_state=int(world.state.rng.state),

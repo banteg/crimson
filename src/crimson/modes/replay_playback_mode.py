@@ -422,7 +422,9 @@ class ReplayPlaybackMode:
                     detail_path=detail_path,
                 )
 
-            start_weapon_id = max(1, int(quest.start_weapon_id))
+            start_weapon_id = quest.start_weapon_id
+            if start_weapon_id <= WeaponId.NONE:
+                start_weapon_id = WeaponId.PISTOL
             for player in world.players:
                 weapon_assign_player(player, start_weapon_id)
 
@@ -527,9 +529,9 @@ class ReplayPlaybackMode:
         if world is None:
             return
         for player in world.players:
-            if int(player.weapon_id) != int(RUSH_WEAPON_ID):
-                weapon_assign_player(player, int(RUSH_WEAPON_ID))
-            player.ammo = float(max(0, int(player.clip_size)))
+            if player.weapon.weapon_id != RUSH_WEAPON_ID:
+                weapon_assign_player(player, RUSH_WEAPON_ID)
+            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
     def _apply_tick_events(self, events: list[object], *, tick_index: int, dt_frame: float) -> None:
         replay = self._replay

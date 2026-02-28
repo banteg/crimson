@@ -87,7 +87,7 @@ class WeaponId(IntEnum):
 
 @dataclass(frozen=True)
 class Weapon:
-    weapon_id: int
+    weapon_id: WeaponId | int
     name: str | None
     ammo_class: int | None
     clip_size: int | None
@@ -101,6 +101,9 @@ class Weapon:
     travel_budget: int | None
     damage_scale: float | None
     pellet_count: int | None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
 
 
 WEAPON_TABLE = [
@@ -778,26 +781,23 @@ WEAPON_TABLE = [
     ),
 ]
 
-WEAPON_BY_ID = {
-    entry.weapon_id: entry for entry in WEAPON_TABLE
-}
+WEAPON_BY_ID: dict[int, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
-_WEAPON_FIXED_NAMES = {
+_WEAPON_FIXED_NAMES: dict[int, str] = {
     WeaponId.PLAGUE_SPREADER_GUN: "Plague Spreader Gun",
     WeaponId.LIGHTNING_RIFLE: "Lightning Rifle",
     WeaponId.FIRE_BULLETS: "Fire Bullets",
 }
 
 
-def weapon_display_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
-    weapon_id_i = int(weapon_id)
-    entry = WEAPON_BY_ID.get(weapon_id_i)
+def weapon_display_name(weapon_id: WeaponId | int, *, preserve_bugs: bool = False) -> str:
+    entry = WEAPON_BY_ID.get(weapon_id)
     if entry is None:
-        return f"weapon_{weapon_id_i}"
-    name = entry.name or f"weapon_{int(entry.weapon_id)}"
+        return f"weapon_{weapon_id}"
+    name = entry.name or f"weapon_{entry.weapon_id}"
     if bool(preserve_bugs):
         return str(name)
-    fixed = _WEAPON_FIXED_NAMES.get(weapon_id_i)
+    fixed = _WEAPON_FIXED_NAMES.get(weapon_id)
     if fixed is not None:
         return fixed
     return str(name)
@@ -844,19 +844,18 @@ WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
 
 def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
     # Native `projectile_spawn` indexes the weapon table by `type_id`.
-    return WEAPON_BY_ID.get(int(type_id))
+    return WEAPON_BY_ID.get(type_id)
 
 
-def projectile_type_id_from_weapon_id(weapon_id: int) -> int | None:
+def projectile_type_id_from_weapon_id(weapon_id: WeaponId | int) -> int | None:
     """Return the primary projectile `type_id` used by `weapon_id`.
 
     Returns `None` for weapons that don't use the main projectile pool.
     """
 
-    weapon_id = int(weapon_id)
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return int(type_ids[0]) if type_ids else None
+        return type_ids[0] if type_ids else None
 
     # Default native behavior for projectile weapons is `type_id == weapon_id`.
     if weapon_id in WEAPON_BY_ID:
@@ -864,13 +863,12 @@ def projectile_type_id_from_weapon_id(weapon_id: int) -> int | None:
     return None
 
 
-def projectile_type_ids_from_weapon_id(weapon_id: int) -> tuple[int, ...]:
+def projectile_type_ids_from_weapon_id(weapon_id: WeaponId | int) -> tuple[int, ...]:
     """Return all projectile `type_id` values produced by `weapon_id`."""
 
-    weapon_id = int(weapon_id)
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return tuple(int(v) for v in type_ids)
+        return type_ids
     if weapon_id in WEAPON_BY_ID:
         return (weapon_id,)
     return ()

@@ -119,7 +119,7 @@ def run_deterministic_step(
     )
     _mark("gw_after_time_scale")
 
-    prev_audio = [(player.shot_seq, player.reload_active, player.reload_timer) for player in world.players]
+    prev_audio = [(player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players]
     prev_perk_pending = int(state.perk_selection.pending_count)
 
     dt_sim_ms_i32: int | None = None

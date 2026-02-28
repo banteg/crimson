@@ -11,7 +11,7 @@ def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
 
-    weapon_assign_player(player, int(WeaponId.SHOTGUN), state=state)
+    weapon_assign_player(player, WeaponId.SHOTGUN, state=state)
 
     assert player.weapon_reset_latch == 0
     assert player.aux_timer == 2.0

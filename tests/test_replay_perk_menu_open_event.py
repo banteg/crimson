@@ -360,10 +360,10 @@ def test_original_capture_outside_before_random_weapon_does_not_shift_rng_state(
 
     state = world.state
     state.game_mode = int(GameMode.SURVIVAL)
-    world.players[0].weapon_id = int(WeaponId.ASSAULT_RIFLE)
+    world.players[0].weapon.weapon_id = WeaponId.ASSAULT_RIFLE
     state.rng.srand(0x1234)
     before_rng = int(state.rng.state)
-    before_weapon = int(world.players[0].weapon_id)
+    before_weapon = world.players[0].weapon.weapon_id
 
     apply_replay_tick_events(
         [
@@ -383,7 +383,7 @@ def test_original_capture_outside_before_random_weapon_does_not_shift_rng_state(
     )
 
     assert perk_count_get(world.players[0], PerkId.RANDOM_WEAPON) == 1
-    assert int(world.players[0].weapon_id) != before_weapon
+    assert world.players[0].weapon.weapon_id != before_weapon
     assert int(state.rng.state) == before_rng
 
 
@@ -400,7 +400,7 @@ def test_original_capture_outside_before_perk_apply_consumes_one_pending_after_p
     state = world.state
     state.game_mode = int(GameMode.SURVIVAL)
     state.perk_selection.pending_count = 1
-    world.players[0].weapon_id = int(WeaponId.ASSAULT_RIFLE)
+    world.players[0].weapon.weapon_id = WeaponId.ASSAULT_RIFLE
     state.rng.srand(0x1234)
     before_rng = int(state.rng.state)
 

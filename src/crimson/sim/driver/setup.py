@@ -11,7 +11,7 @@ from ...effects import FxQueue, FxQueueRotated
 from ...math_parity import f32
 from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
 from ...weapon_runtime import init_default_alt_weapon, most_used_weapon_id_for_player, weapon_assign_player
-from ...weapons import WEAPON_TABLE
+from ...weapons import WEAPON_TABLE, WeaponId
 from ..state_types import GameplayState, PlayerState
 from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 
@@ -28,18 +28,21 @@ class RunResult:
     elapsed_ms: int
     score_xp: int
     creature_kill_count: int
-    most_used_weapon_id: int
+    most_used_weapon_id: WeaponId | int
     shots_fired: int
     shots_hit: int
     rng_state: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
 
 
 def build_damage_scale_by_type() -> dict[int, float]:
     damage_scale_by_type: dict[int, float] = {}
     for entry in WEAPON_TABLE:
-        if int(entry.weapon_id) <= 0:
+        if entry.weapon_id <= WeaponId.NONE:
             continue
-        damage_scale_by_type[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
+        damage_scale_by_type[entry.weapon_id] = float(cast(float, entry.damage_scale))
     return damage_scale_by_type
 
 
@@ -92,7 +95,7 @@ def reset_players(
     for idx in range(count):
         pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
         player = PlayerState(index=idx, pos=pos)
-        weapon_assign_player(player, 1)
+        weapon_assign_player(player, WeaponId.PISTOL)
         init_default_alt_weapon(player)
         players.append(player)
 
@@ -107,10 +110,10 @@ def player0_shots(state: GameplayState) -> tuple[int, int]:
     return fired, hit
 
 
-def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]) -> int:
-    fallback_weapon_id = 1
+def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]) -> WeaponId:
+    fallback_weapon_id = WeaponId.PISTOL
     if players:
-        fallback_weapon_id = int(players[0].weapon_id)
+        fallback_weapon_id = players[0].weapon.weapon_id
     return most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=fallback_weapon_id)
 
 

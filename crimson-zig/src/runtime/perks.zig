@@ -265,7 +265,7 @@ pub fn applyPerk(
         },
         PerkId.ammo_maniac => {
             for (players) |*player| {
-                player_runtime.weaponAssignPlayerWithState(player, player.weapon_id, state);
+                player_runtime.weaponAssignPlayerWithState(player, player.weapon.weapon_id, state);
             }
         },
         PerkId.fatal_lottery => {
@@ -305,11 +305,11 @@ pub fn applyPerk(
         },
         PerkId.my_favourite_weapon => {
             for (players) |*player| {
-                player.clip_size += 2;
+                player.weapon.clip_size += 2;
             }
         },
         PerkId.random_weapon => {
-            const current = players[0].weapon_id;
+            const current = players[0].weapon.weapon_id;
             var selected = current;
             for (0..100) |_| {
                 const candidate = bonus_runtime.weaponPickRandomAvailable(state);
@@ -723,12 +723,12 @@ fn pyromaniacAllowed(
     player: *const state_mod.PlayerState,
     player_count: i32,
 ) bool {
-    if (player.weapon_id == game_ids.WeaponId.flamethrower) return true;
+    if (player.weapon.weapon_id == game_ids.WeaponId.flamethrower) return true;
     if (state.preserve_bugs or player_count <= 1) return false;
 
     for (players) |source_player| {
         if (source_player.health <= 0.0) continue;
-        if (source_player.weapon_id == game_ids.WeaponId.flamethrower) return true;
+        if (source_player.weapon.weapon_id == game_ids.WeaponId.flamethrower) return true;
     }
     return false;
 }
@@ -915,8 +915,8 @@ test "perk generate choices forces monster vision first on quest 3-4" {
 test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
     var state = state_mod.GameplayState.init(0x1234);
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
-        .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.flamethrower },
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.pistol } },
+        .{ .index = 1, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.flamethrower } },
     };
 
     try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
@@ -924,11 +924,11 @@ test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
     players[1].health = 0.0;
     try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
 
-    players[0].weapon_id = game_ids.WeaponId.flamethrower;
+    players[0].weapon.weapon_id = game_ids.WeaponId.flamethrower;
     try std.testing.expect(pyromaniacAllowed(&state, players[0..], &players[0], 2));
 
     state.preserve_bugs = true;
-    players[0].weapon_id = game_ids.WeaponId.pistol;
+    players[0].weapon.weapon_id = game_ids.WeaponId.pistol;
     players[1].health = 100.0;
     try std.testing.expect(!pyromaniacAllowed(&state, players[0..], &players[0], 2));
 }
@@ -936,7 +936,7 @@ test "pyromaniac multiplayer gate matches default and preserve-bugs behavior" {
 test "perk generate choices rejects pyromaniac when no player has flamethrower" {
     var state = state_mod.GameplayState.init(0x1234);
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.pistol } },
     };
     setOnlyPerksAvailable(&state, 0, &.{
         PerkId.pyromaniac,
@@ -1155,12 +1155,12 @@ test "random weapon assigns non-pistol weapon from pistol baseline" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = game_ids.WeaponId.pistol,
+            .weapon = .{ .weapon_id = game_ids.WeaponId.pistol },
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon.weapon_id);
 }
 
 test "random weapon rerolls pistol when current weapon is not pistol" {
@@ -1169,12 +1169,12 @@ test "random weapon rerolls pistol when current weapon is not pistol" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = game_ids.WeaponId.shotgun,
+            .weapon = .{ .weapon_id = game_ids.WeaponId.shotgun },
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon.weapon_id);
 }
 
 test "random weapon retry cap applies last roll after 100 attempts" {
@@ -1190,12 +1190,12 @@ test "random weapon retry cap applies last roll after 100 attempts" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = game_ids.WeaponId.pistol,
+            .weapon = .{ .weapon_id = game_ids.WeaponId.pistol },
         },
     };
 
     try applyPerk(&state, players[0..], PerkId.random_weapon);
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, players[0].weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, players[0].weapon.weapon_id);
     try std.testing.expectEqual(expected.rng.state, state.rng.state);
 }
 
@@ -1293,47 +1293,47 @@ test "infernal contract grants levels and forces low health" {
 test "ammo maniac reassigns weapons and boosts clip size for all players" {
     var state = state_mod.GameplayState.init(1);
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.assault_rifle },
-        .{ .index = 1, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.assault_rifle } },
+        .{ .index = 1, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.pistol } },
     };
-    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
-    player_runtime.weaponAssignPlayerWithState(&players[1], players[1].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon.weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[1], players[1].weapon.weapon_id, &state);
 
-    const base_clip0 = players[0].clip_size;
-    const base_clip1 = players[1].clip_size;
-    players[0].ammo = 1.0;
-    players[1].ammo = 2.0;
+    const base_clip0 = players[0].weapon.clip_size;
+    const base_clip1 = players[1].weapon.clip_size;
+    players[0].weapon.ammo = 1.0;
+    players[1].weapon.ammo = 2.0;
 
     try applyPerk(&state, players[0..], PerkId.ammo_maniac);
 
-    try std.testing.expect(players[0].clip_size > base_clip0);
-    try std.testing.expect(players[1].clip_size > base_clip1);
-    try std.testing.expectEqual(@as(f32, @floatFromInt(players[0].clip_size)), players[0].ammo);
-    try std.testing.expectEqual(@as(f32, @floatFromInt(players[1].clip_size)), players[1].ammo);
-    try std.testing.expect(!players[0].reload_active);
-    try std.testing.expect(!players[1].reload_active);
-    try std.testing.expectEqual(@as(f32, 0.0), players[0].reload_timer);
-    try std.testing.expectEqual(@as(f32, 0.0), players[1].reload_timer);
+    try std.testing.expect(players[0].weapon.clip_size > base_clip0);
+    try std.testing.expect(players[1].weapon.clip_size > base_clip1);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(players[0].weapon.clip_size)), players[0].weapon.ammo);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(players[1].weapon.clip_size)), players[1].weapon.ammo);
+    try std.testing.expect(!players[0].weapon.reload_active);
+    try std.testing.expect(!players[1].weapon.reload_active);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].weapon.reload_timer);
+    try std.testing.expectEqual(@as(f32, 0.0), players[1].weapon.reload_timer);
     try std.testing.expectEqual(@as(i32, 1), players[1].perk_counts.get(PerkId.ammo_maniac));
 }
 
 test "my favourite weapon increases clip size and keeps current ammo on apply" {
     var state = state_mod.GameplayState.init(1);
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .weapon_id = game_ids.WeaponId.pistol },
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.pistol } },
     };
-    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon.weapon_id, &state);
 
-    const base_clip = players[0].clip_size;
-    players[0].ammo = 5.0;
+    const base_clip = players[0].weapon.clip_size;
+    players[0].weapon.ammo = 5.0;
     try applyPerk(&state, players[0..], PerkId.my_favourite_weapon);
 
-    try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
-    try std.testing.expectEqual(@as(f32, 5.0), players[0].ammo);
+    try std.testing.expectEqual(base_clip + 2, players[0].weapon.clip_size);
+    try std.testing.expectEqual(@as(f32, 5.0), players[0].weapon.ammo);
 
-    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon_id, &state);
-    try std.testing.expectEqual(base_clip + 2, players[0].clip_size);
-    try std.testing.expectEqual(@as(f32, @floatFromInt(base_clip + 2)), players[0].ammo);
+    player_runtime.weaponAssignPlayerWithState(&players[0], players[0].weapon.weapon_id, &state);
+    try std.testing.expectEqual(base_clip + 2, players[0].weapon.clip_size);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(base_clip + 2)), players[0].weapon.ammo);
 }
 
 test "breathing room reduces player health and clears bonus spawn guard" {

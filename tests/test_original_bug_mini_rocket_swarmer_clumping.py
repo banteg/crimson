@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.gameplay import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime.fire import player_fire_weapon
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -13,9 +13,11 @@ def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[floa
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.MINI_ROCKET_SWARMERS),
-        clip_size=int(ammo),
-        ammo=float(ammo),
+        weapon=WeaponSlot(
+            weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
+            clip_size=int(ammo),
+            ammo=float(ammo),
+        ),
         spread_heat=0.0,
     )
 

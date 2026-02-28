@@ -135,7 +135,7 @@ class AudioRouter:
     ) -> None:
         if self.audio is None:
             return
-        weapon = WEAPON_BY_ID.get(int(player.weapon_id))
+        weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
         if weapon is None:
             return
 
@@ -143,8 +143,8 @@ class AudioRouter:
             if float(player.fire_bullets_timer) > 0.0:
                 # player_update (crimsonland.exe): when Fire Bullets is active, the regular per-weapon
                 # shot sfx is suppressed and replaced by Fire Bullets + Plasma Minigun fire sfx.
-                fire_bullets = WEAPON_BY_ID.get(int(WeaponId.FIRE_BULLETS))
-                plasma_minigun = WEAPON_BY_ID.get(int(WeaponId.PLASMA_MINIGUN))
+                fire_bullets = WEAPON_BY_ID.get(WeaponId.FIRE_BULLETS)
+                plasma_minigun = WEAPON_BY_ID.get(WeaponId.PLASMA_MINIGUN)
                 if fire_bullets is not None:
                     self.play_sfx(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
                 if plasma_minigun is not None:
@@ -152,8 +152,8 @@ class AudioRouter:
             else:
                 self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
-        reload_active = player.reload_active
-        reload_timer = float(player.reload_timer)
+        reload_active = player.weapon.reload_active
+        reload_timer = float(player.weapon.reload_timer)
         reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
         if reload_started:
             self.play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))
@@ -165,7 +165,7 @@ class AudioRouter:
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        weapon = WEAPON_BY_ID.get(int(type_id))
+        weapon = WEAPON_BY_ID.get(type_id)
         ammo_class = weapon.ammo_class if weapon is not None else None
         if ammo_class == 4:
             return "sfx_shock_hit_01"

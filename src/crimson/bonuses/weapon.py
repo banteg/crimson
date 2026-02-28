@@ -2,18 +2,23 @@ from __future__ import annotations
 
 from ..perks import PerkId
 from ..perks.helpers import perk_active
+from ..sim.state_types import WeaponSlot
 from ..weapon_runtime.assign import weapon_assign_player
+from ..weapons import WeaponId
 from .apply_context import BonusApplyCtx
 
 
 def apply_weapon(ctx: BonusApplyCtx) -> None:
-    weapon_id = int(ctx.amount)
-    if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon_id is None:
-        ctx.player.alt_weapon_id = int(ctx.player.weapon_id)
-        ctx.player.alt_clip_size = int(ctx.player.clip_size)
-        ctx.player.alt_ammo = float(ctx.player.ammo)
-        ctx.player.alt_reload_active = bool(ctx.player.reload_active)
-        ctx.player.alt_reload_timer = float(ctx.player.reload_timer)
-        ctx.player.alt_shot_cooldown = float(ctx.player.shot_cooldown)
-        ctx.player.alt_reload_timer_max = float(ctx.player.reload_timer_max)
+    weapon_id = WeaponId(ctx.amount)
+    if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon is None:
+        primary = ctx.player.weapon
+        ctx.player.alt_weapon = WeaponSlot(
+            weapon_id=primary.weapon_id,
+            clip_size=int(primary.clip_size),
+            ammo=float(primary.ammo),
+            reload_active=bool(primary.reload_active),
+            reload_timer=float(primary.reload_timer),
+            reload_timer_max=float(primary.reload_timer_max),
+            shot_cooldown=float(primary.shot_cooldown),
+        )
     weapon_assign_player(ctx.player, weapon_id, state=ctx.state)

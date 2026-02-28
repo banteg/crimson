@@ -70,13 +70,12 @@ def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> in
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[int]:
     carried: set[int] = set()
     for player in players:
-        weapon_id = int(player.weapon_id)
+        weapon_id = player.weapon.weapon_id
         if weapon_id > 0:
             carried.add(weapon_id)
-        alt_weapon_id = player.alt_weapon_id
-        if alt_weapon_id is None:
+        if player.alt_weapon is None:
             continue
-        alt = int(alt_weapon_id)
+        alt = player.alt_weapon.weapon_id
         if alt > 0:
             carried.add(alt)
     return carried
@@ -233,7 +232,7 @@ class BonusPool:
 
         rng = state.rng
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
-        if players and any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players):
+        if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
             if (int(rng.rand()) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
@@ -246,7 +245,7 @@ class BonusPool:
                 entry.bonus_id = int(BonusId.WEAPON)
                 weapon_id = int(weapon_pick_random_available(state))
                 entry.amount = int(weapon_id)
-                if weapon_id == int(WeaponId.PISTOL):
+                if weapon_id == WeaponId.PISTOL:
                     weapon_id = int(weapon_pick_random_available(state))
                     entry.amount = int(weapon_id)
 
@@ -255,7 +254,7 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == int(WeaponId.PISTOL) or (
+                if entry.amount == WeaponId.PISTOL or (
                     players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
                 ):
                     self._clear_entry(entry)
@@ -271,9 +270,9 @@ class BonusPool:
             if players:
                 has_pistol = False
                 if bool(state.preserve_bugs):
-                    has_pistol = int(players[0].weapon_id) == int(WeaponId.PISTOL)
+                    has_pistol = players[0].weapon.weapon_id == WeaponId.PISTOL
                 else:
-                    has_pistol = any(int(player.weapon_id) == int(WeaponId.PISTOL) for player in players)
+                    has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
                     allow_without_magnet = int(rng.rand()) % 5 == 1
 
@@ -318,7 +317,7 @@ class BonusPool:
 
         if players:
             if bool(state.preserve_bugs):
-                weapon_id = int(players[0].weapon_id)
+                weapon_id = players[0].weapon.weapon_id
                 amount = _bonus_amount_for_weapon_id_suppression(bonus_id=int(entry.bonus_id), amount=int(entry.amount))
                 if amount == weapon_id:
                     self._clear_entry(entry)
@@ -423,9 +422,9 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
 
     bonus_id = int(entry.bonus_id)
     if bonus_id == int(BonusId.WEAPON):
-        weapon = WEAPON_BY_ID.get(int(entry.amount))
+        weapon = WEAPON_BY_ID.get(entry.amount)
         if weapon is not None and weapon.name:
-            return weapon_display_name(int(entry.amount), preserve_bugs=bool(preserve_bugs))
+            return weapon_display_name(entry.amount, preserve_bugs=bool(preserve_bugs))
         return "Weapon"
     if bonus_id == int(BonusId.POINTS):
         points_label = bonus_display_name(int(BonusId.POINTS), preserve_bugs=bool(preserve_bugs))

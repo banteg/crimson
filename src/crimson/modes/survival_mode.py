@@ -53,7 +53,7 @@ from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
-from ..weapons import WEAPON_BY_ID
+from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import BaseGameplayMode, DeterministicSessionLike
 from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -199,7 +199,7 @@ class SurvivalMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon_id),
+            fallback_weapon_id=self.player.weapon.weapon_id,
         )
         replay = replace(
             replay,
@@ -211,7 +211,7 @@ class SurvivalMode(BaseGameplayMode):
                     elapsed_ms=int(self._survival.elapsed_ms),
                     score_xp=int(self.player.experience),
                     kills=int(self.creatures.kill_count),
-                    most_used_weapon_id=int(most_used_weapon_id),
+                    most_used_weapon_id=most_used_weapon_id,
                     shots_fired=int(shots_fired),
                     shots_hit=int(shots_hit),
                 ),
@@ -467,12 +467,12 @@ class SurvivalMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self.player.weapon_id)
+        current = self.player.weapon.weapon_id
         try:
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
-        weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:

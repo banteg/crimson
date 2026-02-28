@@ -353,7 +353,7 @@ class QuestFailedView:
         record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))
         record.score_xp = int(outcome.experience)
         record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = int(outcome.most_used_weapon_id)
+        record.most_used_weapon_id = outcome.most_used_weapon_id
         fired = max(0, int(outcome.shots_fired))
         hit = max(0, min(int(outcome.shots_hit), fired))
         record.shots_fired = fired

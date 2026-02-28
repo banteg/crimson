@@ -450,7 +450,7 @@ fn playerDecelerateMoveSpeed(
 fn playerApplyMoveSpeedCaps(
     player: *state_mod.PlayerState,
 ) void {
-    if (player.weapon_id == game_ids.WeaponId.mean_minigun and player.move_speed > 0.8) {
+    if (player.weapon.weapon_id == game_ids.WeaponId.mean_minigun and player.move_speed > 0.8) {
         player.move_speed = 0.8;
     }
 }

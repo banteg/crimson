@@ -36,7 +36,7 @@ from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .terrain_assets import TerrainTextureId, terrain_texture_by_id
 from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
-from .weapons import WEAPON_TABLE
+from .weapons import WEAPON_TABLE, WeaponId
 
 
 @dataclass(slots=True)
@@ -166,7 +166,7 @@ class GameWorld:
         for idx in range(count):
             pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
             player = PlayerState(index=idx, pos=pos)
-            weapon_assign_player(player, 1)
+            weapon_assign_player(player, WeaponId.PISTOL)
             init_default_alt_weapon(player)
             self.players.append(player)
         self.camera = Vec2(-1.0, -1.0)

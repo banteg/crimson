@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
+from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -36,17 +37,17 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     player = world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
-    player.weapon_id = 1
-    player.clip_size = 12
-    player.ammo = 0
-    player.reload_active = True
-    player.reload_timer = 0.01
-    player.reload_timer_max = 1.0
-    player.shot_cooldown = 0.0
+    player.weapon.weapon_id = WeaponId.PISTOL
+    player.weapon.clip_size = 12
+    player.weapon.ammo = 0
+    player.weapon.reload_active = True
+    player.weapon.reload_timer = 0.01
+    player.weapon.reload_timer_max = 1.0
+    player.weapon.shot_cooldown = 0.0
 
     prev_shot_seq = int(player.shot_seq)
-    prev_reload_active = bool(player.reload_active)
-    prev_reload_timer = float(player.reload_timer)
+    prev_reload_active = bool(player.weapon.reload_active)
+    prev_reload_timer = float(player.weapon.reload_timer)
 
     input_state = PlayerInput(
         fire_down=True,
@@ -76,18 +77,18 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
 
     player = world.players[0]
 
-    player.weapon_id = 3  # Shotgun
-    player.clip_size = 12
-    player.ammo = 12
-    player.reload_active = False
-    player.reload_timer = 0.0
-    player.reload_timer_max = 1.0
-    player.shot_cooldown = 0.0
+    player.weapon.weapon_id = WeaponId.SHOTGUN  # Shotgun
+    player.weapon.clip_size = 12
+    player.weapon.ammo = 12
+    player.weapon.reload_active = False
+    player.weapon.reload_timer = 0.0
+    player.weapon.reload_timer_max = 1.0
+    player.weapon.shot_cooldown = 0.0
     player.fire_bullets_timer = 1.0
 
     prev_shot_seq = int(player.shot_seq)
-    prev_reload_active = bool(player.reload_active)
-    prev_reload_timer = float(player.reload_timer)
+    prev_reload_active = bool(player.weapon.reload_active)
+    prev_reload_timer = float(player.weapon.reload_timer)
 
     input_state = PlayerInput(
         fire_down=True,
@@ -197,11 +198,11 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 0
     player.hot_tempered_timer = 0.0
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
-    player.reload_active = True
-    player.reload_timer = 1.1
-    player.reload_timer_max = 2.0
-    player.clip_size = 10
-    player.ammo = 0
+    player.weapon.reload_active = True
+    player.weapon.reload_timer = 1.1
+    player.weapon.reload_timer_max = 2.0
+    player.weapon.clip_size = 10
+    player.weapon.ammo = 0
     world.update(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"

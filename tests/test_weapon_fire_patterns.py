@@ -28,12 +28,12 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.MULTI_PLASMA))
+    weapon_assign_player(player, WeaponId.MULTI_PLASMA)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
-    assert state.weapon_shots_fired[0][int(WeaponId.MULTI_PLASMA)] == 5
+    assert state.weapon_shots_fired[0][WeaponId.MULTI_PLASMA] == 5
 
     shot_angle = float(NATIVE_HALF_PI)
     spread_small = math.pi / 10.0
@@ -58,12 +58,12 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.PLASMA_SHOTGUN))
+    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
-    assert state.weapon_shots_fired[0][int(WeaponId.PLASMA_SHOTGUN)] == 14
+    assert state.weapon_shots_fired[0][WeaponId.PLASMA_SHOTGUN] == 14
 
     shot_angle = float(NATIVE_HALF_PI)
     expected_angle = float(f32(float(shot_angle) + (127.0 * 0.002)))
@@ -80,11 +80,11 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.PLASMA_SHOTGUN))
-    start_ammo = float(player.ammo)
+    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN)
+    start_ammo = float(player.weapon.ammo)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
-    assert_float_close(float(player.ammo), start_ammo - 1.0)
+    assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
 
 
 @pytest.mark.parametrize(
@@ -108,7 +108,7 @@ def test_shotgun_family_fires_expected_pellets(
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(weapon_id))
+    weapon_assign_player(player, WeaponId(weapon_id))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)

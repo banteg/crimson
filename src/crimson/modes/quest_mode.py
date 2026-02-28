@@ -67,7 +67,7 @@ from ..weapon_runtime import (
     most_used_weapon_id_for_player,
     weapon_assign_player,
 )
-from ..weapons import WEAPON_BY_ID
+from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -131,11 +131,15 @@ class QuestRunOutcome:
     pending_perk_count: int
     experience: int
     kill_count: int
-    weapon_id: int
+    weapon_id: WeaponId | int
     shots_fired: int
     shots_hit: int
-    most_used_weapon_id: int
+    most_used_weapon_id: WeaponId | int
     player_health_values: tuple[float, ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
+        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
 
 
 def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
@@ -304,7 +308,7 @@ class QuestMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon_id),
+            fallback_weapon_id=self.player.weapon.weapon_id,
         )
         replay = replace(
             replay,
@@ -316,7 +320,7 @@ class QuestMode(BaseGameplayMode):
                     elapsed_ms=int(self._quest.spawn_timeline_ms),
                     score_xp=int(self.player.experience),
                     kills=int(self.creatures.kill_count),
-                    most_used_weapon_id=int(most_used_weapon_id),
+                    most_used_weapon_id=most_used_weapon_id,
                     shots_fired=int(shots_fired),
                     shots_hit=int(shots_hit),
                 ),
@@ -434,7 +438,9 @@ class QuestMode(BaseGameplayMode):
             )
 
         # Quest metadata already stores native (1-based) weapon ids.
-        start_weapon_id = max(1, int(quest.start_weapon_id))
+        start_weapon_id = quest.start_weapon_id
+        if start_weapon_id <= WeaponId.NONE:
+            start_weapon_id = WeaponId.PISTOL
         for player in self.world.players:
             weapon_assign_player(player, start_weapon_id, state=self.state)
 
@@ -560,12 +566,12 @@ class QuestMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self.player.weapon_id)
+        current = self.player.weapon.weapon_id
         try:
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
-        weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
@@ -595,7 +601,7 @@ class QuestMode(BaseGameplayMode):
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
                 player_index=int(self.player.index),
-                fallback_weapon_id=int(self.player.weapon_id),
+                fallback_weapon_id=self.player.weapon.weapon_id,
             )
             player_health_values = tuple(float(player.health) for player in self.world.players)
             player2_health = None
@@ -611,10 +617,10 @@ class QuestMode(BaseGameplayMode):
                 pending_perk_count=int(self.state.perk_selection.pending_count),
                 experience=int(self.player.experience),
                 kill_count=int(self.creatures.kill_count),
-                weapon_id=int(self.player.weapon_id),
+                weapon_id=self.player.weapon.weapon_id,
                 shots_fired=fired,
                 shots_hit=hit,
-                most_used_weapon_id=int(most_used_weapon_id),
+                most_used_weapon_id=most_used_weapon_id,
             )
         self._save_replay()
         self.close_requested = True
@@ -813,7 +819,7 @@ class QuestMode(BaseGameplayMode):
                     most_used_weapon_id = most_used_weapon_id_for_player(
                         self.state,
                         player_index=int(self.player.index),
-                        fallback_weapon_id=int(self.player.weapon_id),
+                        fallback_weapon_id=self.player.weapon.weapon_id,
                     )
                     player_health_values = tuple(float(player.health) for player in self.world.players)
                     player2_health = None
@@ -829,10 +835,10 @@ class QuestMode(BaseGameplayMode):
                         pending_perk_count=int(self.state.perk_selection.pending_count),
                         experience=int(self.player.experience),
                         kill_count=int(self.creatures.kill_count),
-                        weapon_id=int(self.player.weapon_id),
+                        weapon_id=self.player.weapon.weapon_id,
                         shots_fired=fired,
                         shots_hit=hit,
-                        most_used_weapon_id=int(most_used_weapon_id),
+                        most_used_weapon_id=most_used_weapon_id,
                     )
                 self._save_replay()
                 self.close_requested = True
@@ -1015,7 +1021,7 @@ class QuestMode(BaseGameplayMode):
                         most_used_weapon_id = most_used_weapon_id_for_player(
                             self.state,
                             player_index=int(self.player.index),
-                            fallback_weapon_id=int(self.player.weapon_id),
+                            fallback_weapon_id=self.player.weapon.weapon_id,
                         )
                         player_health_values = tuple(float(player.health) for player in self.world.players)
                         player2_health = None
@@ -1033,10 +1039,10 @@ class QuestMode(BaseGameplayMode):
                             pending_perk_count=int(self.state.perk_selection.pending_count),
                             experience=int(self.player.experience),
                             kill_count=int(self.creatures.kill_count),
-                            weapon_id=int(self.player.weapon_id),
+                            weapon_id=self.player.weapon.weapon_id,
                             shots_fired=fired,
                             shots_hit=hit,
-                            most_used_weapon_id=int(most_used_weapon_id),
+                            most_used_weapon_id=most_used_weapon_id,
                         )
                     self._save_replay()
                     self.close_requested = True

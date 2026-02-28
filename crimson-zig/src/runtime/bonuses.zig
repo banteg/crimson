@@ -79,7 +79,7 @@ pub const BonusPool = struct {
 
         var has_pistol = false;
         for (players) |player| {
-            if (player.weapon_id == game_ids.WeaponId.pistol) {
+            if (player.weapon.weapon_id == game_ids.WeaponId.pistol) {
                 has_pistol = true;
                 break;
             }
@@ -353,11 +353,11 @@ fn applyBonus(
         .weapon_power_up => {
             state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
-            player.shot_cooldown = 0.0;
-            player.reload_active = false;
-            player.reload_timer = 0.0;
-            player.reload_timer_max = 0.0;
-            player.ammo = @floatFromInt(player.clip_size);
+            player.weapon.shot_cooldown = 0.0;
+            player.weapon.reload_active = false;
+            player.weapon.reload_timer = 0.0;
+            player.weapon.reload_timer_max = 0.0;
+            player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
         .double_experience => {
             state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
@@ -365,10 +365,10 @@ fn applyBonus(
         .reflex_boost => {
             state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
-                target.ammo = @floatFromInt(target.clip_size);
-                target.reload_active = false;
-                target.reload_timer = 0.0;
-                target.reload_timer_max = 0.0;
+                target.weapon.ammo = @floatFromInt(target.weapon.clip_size);
+                target.weapon.reload_active = false;
+                target.weapon.reload_timer = 0.0;
+                target.weapon.reload_timer_max = 0.0;
             }
         },
         .shield => {
@@ -388,21 +388,15 @@ fn applyBonus(
         .fire_bullets => {
             player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
             player.weapon_reset_latch = 0;
-            player.shot_cooldown = 0.0;
-            player.reload_active = false;
-            player.reload_timer = 0.0;
-            player.reload_timer_max = 0.0;
-            player.ammo = @floatFromInt(player.clip_size);
+            player.weapon.shot_cooldown = 0.0;
+            player.weapon.reload_active = false;
+            player.weapon.reload_timer = 0.0;
+            player.weapon.reload_timer_max = 0.0;
+            player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
         .weapon => {
-            if (perkActive(player.*, PerkId.alternate_weapon) and player.alt_weapon_id == null) {
-                player.alt_weapon_id = player.weapon_id;
-                player.alt_clip_size = player.clip_size;
-                player.alt_ammo = player.ammo;
-                player.alt_reload_active = player.reload_active;
-                player.alt_reload_timer = player.reload_timer;
-                player.alt_shot_cooldown = player.shot_cooldown;
-                player.alt_reload_timer_max = player.reload_timer_max;
+            if (perkActive(player.*, PerkId.alternate_weapon) and player.alt_weapon == null) {
+                player.alt_weapon = player.weapon;
             }
             const weapon_id = weapon_data.weaponIdFromInt(effective_amount);
             player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
@@ -474,9 +468,9 @@ fn anyPerkActive(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
 
 fn carriedWeaponId(players: []const state_mod.PlayerState, weapon_id: game_ids.WeaponId) bool {
     for (players) |player| {
-        if (player.weapon_id == weapon_id) return true;
-        if (player.alt_weapon_id) |alt_id| {
-            if (alt_id == weapon_id) return true;
+        if (player.weapon.weapon_id == weapon_id) return true;
+        if (player.alt_weapon) |alt_slot| {
+            if (alt_slot.weapon_id == weapon_id) return true;
         }
     }
     return false;
@@ -904,10 +898,10 @@ test "alternate weapon starts with preloaded pistol alt slot" {
         null,
     );
 
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon_id);
-    try std.testing.expect(player.alt_weapon_id != null);
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.alt_weapon_id.?);
-    try std.testing.expectEqual(@as(i32, 12), player.alt_clip_size);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
+    try std.testing.expect(player.alt_weapon != null);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.alt_weapon.?.weapon_id);
+    try std.testing.expectEqual(@as(i32, 12), player.alt_weapon.?.clip_size);
 }
 
 test "bonus magnet allows spawn on secondary roll" {
@@ -918,7 +912,7 @@ test "bonus magnet allows spawn on secondary roll" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = game_ids.WeaponId.assault_rifle,
+            .weapon = .{ .weapon_id = game_ids.WeaponId.assault_rifle },
         },
     };
 
@@ -937,7 +931,7 @@ test "bonus magnet allows spawn on secondary roll" {
         .{
             .index = 0,
             .pos = .{},
-            .weapon_id = game_ids.WeaponId.assault_rifle,
+            .weapon = .{ .weapon_id = game_ids.WeaponId.assault_rifle },
         },
     };
     perk_players[0].perk_counts.set(PerkId.bonus_magnet, 1);

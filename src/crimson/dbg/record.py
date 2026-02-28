@@ -27,6 +27,7 @@ from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
 from ..sim.driver.setup import ReplayRunnerError
 from ..sim.world_state import WorldState
+from ..weapons import WeaponId
 from .checkpoint_codec import checkpoint_to_channel
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
 from .trace import TraceSummary, write_trace
@@ -651,7 +652,6 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
     summary = row.summary
     player = row.player
     bonuses = row.bonuses
-    projectiles = row.projectiles
     debug = row.debug
 
     player_pos_x = _f32_from_bits(int(player.player_pos_x_bits))
@@ -690,7 +690,7 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
             ReplayPlayerCheckpoint(
                 pos=Vec2(float(player_pos_x), float(player_pos_y)),
                 health=float(player_health),
-                weapon_id=int(player_weapon_id),
+                weapon_id=WeaponId(player_weapon_id),
                 ammo=float(player_ammo),
                 experience=int(player_experience),
                 level=int(player_level),

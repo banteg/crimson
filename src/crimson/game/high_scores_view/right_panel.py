@@ -542,7 +542,7 @@ def _draw_right_panel_local_score(
         separator_color,
     )
 
-    weapon_id = int(entry.most_used_weapon_id)
+    weapon_id = entry.most_used_weapon_id
     weapon_name, icon_index = _weapon_label_and_icon(view, weapon_id)
     if icon_index is not None:
         _draw_wicon(
@@ -656,10 +656,10 @@ def _draw_wicon(
 def _weapon_label_and_icon(view: "HighScoresView", weapon_id: int) -> tuple[str, int | None]:
     from ...weapons import WEAPON_BY_ID, weapon_display_name
 
-    weapon = WEAPON_BY_ID.get(int(weapon_id))
+    weapon = WEAPON_BY_ID.get(weapon_id)
     if weapon is None:
         return f"Weapon {int(weapon_id)}", None
-    name = weapon_display_name(int(weapon.weapon_id), preserve_bugs=bool(view.state.preserve_bugs))
+    name = weapon_display_name(weapon.weapon_id, preserve_bugs=bool(view.state.preserve_bugs))
     return name, weapon.icon_index
 
 

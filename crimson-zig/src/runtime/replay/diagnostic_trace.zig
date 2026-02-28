@@ -433,8 +433,8 @@ pub fn buildReplayTickTrace(
             .perk_pending = state.perk_selection.pending_count,
         },
         .player = .{
-            .player_weapon_id = @intFromEnum(player.weapon_id),
-            .player_ammo_bits = f32Bits(player.ammo),
+            .player_weapon_id = @intFromEnum(player.weapon.weapon_id),
+            .player_ammo_bits = f32Bits(player.weapon.ammo),
             .player_health_bits = f32Bits(player.health),
             .player_pos_x_bits = f32Bits(player.pos.x),
             .player_pos_y_bits = f32Bits(player.pos.y),
@@ -446,9 +446,9 @@ pub fn buildReplayTickTrace(
             .player_turn_speed_bits = f32Bits(player.turn_speed),
             .player_level = player.level,
             .player_experience = player.experience,
-            .player_reload_active = player.reload_active,
-            .player_reload_timer_bits = f32Bits(player.reload_timer),
-            .player_shot_cooldown_bits = f32Bits(player.shot_cooldown),
+            .player_reload_active = player.weapon.reload_active,
+            .player_reload_timer_bits = f32Bits(player.weapon.reload_timer),
+            .player_shot_cooldown_bits = f32Bits(player.weapon.shot_cooldown),
             .player_shot_seq = player.shot_seq,
             .player_perk_counts = player_perk_counts,
             .player_hot_tempered_timer_bits = f32Bits(player.hot_tempered_timer),
@@ -549,4 +549,3 @@ fn bonusTimerMs(seconds: f32) i32 {
     if (ms >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
     return @intFromFloat(ms);
 }
-

@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -30,7 +30,7 @@ def test_original_amount_weapon_id_suppression_bug_is_fixed_by_default() -> None
     state.preserve_bugs = False
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is not None
     assert entry.bonus_id == int(BonusId.SPEED)
@@ -41,7 +41,7 @@ def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
     state.preserve_bugs = True
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.FLAMETHROWER))
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None
 
@@ -56,7 +56,7 @@ def test_original_amount_weapon_id_suppression_handles_nuke_amount_domain() -> N
     state.preserve_bugs = True
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None
 
@@ -70,6 +70,6 @@ def test_original_amount_weapon_id_suppression_handles_double_xp_amount_domain()
     state.preserve_bugs = True
     state.bonus_pool = BonusPool()
 
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is None

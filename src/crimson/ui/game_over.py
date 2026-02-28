@@ -74,7 +74,7 @@ COLOR_SCORE_VALUE = rl.Color(230, 230, 255, 255)
 
 def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
     weapon_id = int(weapon_id_native)
-    entry = WEAPON_BY_ID.get(int(weapon_id))
+    entry = WEAPON_BY_ID.get(weapon_id)
     icon_index = entry.icon_index if entry is not None else None
     if icon_index is None or icon_index < 0 or icon_index > 31:
         return None
@@ -560,14 +560,14 @@ class GameOverUi:
                 max(0.0, min(1.0, self._hover_weapon + (dt_hover if hovering_weapon else -dt_hover))),
             )
 
-            src = _weapon_icon_src(hud_assets.wicons, int(record.most_used_weapon_id))
+            src = _weapon_icon_src(hud_assets.wicons, record.most_used_weapon_id)
             if src is not None:
                 dst = rl.Rectangle(weapon_pos.x, weapon_pos.y, 64.0 * scale, 32.0 * scale)
                 rl.draw_texture_pro(
                     hud_assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)),
                 )
 
-            weapon_id = int(record.most_used_weapon_id)
+            weapon_id = record.most_used_weapon_id
             weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
             name_w = self._text_width(weapon_name, 1.0 * scale)
             name_pos = Vec2(card_origin.x + max(0.0, (32.0 * scale - name_w * 0.5)), row_pos.y + 32.0 * scale)

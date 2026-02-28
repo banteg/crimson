@@ -48,6 +48,7 @@ from ..replay.types import (
     ReplayStatusSnapshot,
     pack_input_flags,
 )
+from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
 from ..weapons import WeaponId, projectile_type_ids_from_weapon_id
 from .schema import (
     CAPTURE_FORMAT_VERSION,
@@ -91,10 +92,10 @@ _AIM_SCHEME_COMPUTER = 5
 _PROJECTILE_TYPE_FIRE_BULLETS = 45
 _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS = frozenset(
     {
-        int(WeaponId.FLAMETHROWER),
-        int(WeaponId.BLOW_TORCH),
-        int(WeaponId.HR_FLAMER),
-        int(WeaponId.BUBBLEGUN),
+        WeaponId.FLAMETHROWER,
+        WeaponId.BLOW_TORCH,
+        WeaponId.HR_FLAMER,
+        WeaponId.BUBBLEGUN,
     },
 )
 _FRACTIONAL_WEAPON_FIRE_SFX_CALLER_SUFFIXES = frozenset({"+0x15f1c"})
@@ -157,28 +158,16 @@ class _BootstrapState(Protocol):
 
 
 class _BootstrapPlayer(Protocol):
-    weapon_id: int
+    weapon: WeaponSlot
     pos: Vec2
     health: float
-    ammo: float
     experience: int
     level: int
-    clip_size: int
-    reload_active: bool
-    reload_timer: float
-    reload_timer_max: float
-    shot_cooldown: float
     spread_heat: float
     aim: Vec2
     aim_heading: float
     aim_dir: Vec2
-    alt_weapon_id: int | None
-    alt_clip_size: int
-    alt_ammo: float
-    alt_reload_active: bool
-    alt_reload_timer: float
-    alt_reload_timer_max: float
-    alt_shot_cooldown: float
+    alt_weapon: WeaponSlot | None
     shield_timer: float
     fire_bullets_timer: float
     speed_bonus_timer: float
@@ -220,7 +209,7 @@ class _CaptureBootstrapPlayerAimPayload(msgspec.Struct, forbid_unknown_fields=Tr
 
 
 class _CaptureBootstrapPlayerAltWeaponPayload(msgspec.Struct, forbid_unknown_fields=True):
-    weapon_id: int | None = None
+    weapon_id: WeaponId | None = None
     clip_size: int | None = None
     ammo: float | None = None
     reload_active: bool | None = None
@@ -230,7 +219,7 @@ class _CaptureBootstrapPlayerAltWeaponPayload(msgspec.Struct, forbid_unknown_fie
 
 
 class _CaptureBootstrapPlayerPayload(msgspec.Struct, forbid_unknown_fields=True):
-    weapon_id: int
+    weapon_id: WeaponId
     pos: CaptureVec2
     health: float
     ammo: float
@@ -418,7 +407,7 @@ def _replay_player(player: CapturePlayerCheckpoint) -> ReplayPlayerCheckpoint:
     return ReplayPlayerCheckpoint(
         pos=Vec2(float(player.pos.x), float(player.pos.y)),
         health=float(player.health),
-        weapon_id=int(player.weapon_id),
+        weapon_id=WeaponId(player.weapon_id),
         ammo=float(player.ammo),
         experience=int(player.experience),
         level=int(player.level),
@@ -1881,7 +1870,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
         player_perk_timers = raw_player.perk_timers or {}
         players.append(
             CaptureBootstrapPlayer(
-                weapon_id=int(raw_player.weapon_id),
+                weapon_id=WeaponId(raw_player.weapon_id),
                 pos_x=_conversion_f32(float(raw_player.pos.x)),
                 pos_y=_conversion_f32(float(raw_player.pos.y)),
                 health=_conversion_f32(float(raw_player.health)),
@@ -1912,7 +1901,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
                     else None
                 ),
                 alt_weapon_id=(
-                    int(raw_player.alt_weapon.weapon_id)
+                    WeaponId(raw_player.alt_weapon.weapon_id)
                     if raw_player.alt_weapon is not None and raw_player.alt_weapon.weapon_id is not None
                     else None
                 ),
@@ -2141,31 +2130,35 @@ def apply_capture_bootstrap_payload(
             break
         player = cast(_BootstrapPlayer, players[idx])
 
-        weapon_id = int(raw_player.weapon_id)
+        weapon_id = WeaponId(raw_player.weapon_id)
         if int(weapon_id) > 0:
             try:
-                if int(player.weapon_id) != int(weapon_id):
-                    weapon_assign_player(player, int(weapon_id), state=state)  # ty:ignore[invalid-argument-type]
+                if player.weapon.weapon_id != int(weapon_id):
+                    weapon_assign_player(
+                        cast(PlayerState, player),
+                        weapon_id,
+                        state=cast(GameplayState, state),
+                    )
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
         player.pos = Vec2(_conversion_f32(float(raw_player.pos_x)), _conversion_f32(float(raw_player.pos_y)))
         player.health = _conversion_f32(float(raw_player.health))
-        player.ammo = _conversion_f32(float(raw_player.ammo))
+        player.weapon.ammo = _conversion_f32(float(raw_player.ammo))
         player.experience = int(raw_player.experience)
         if int(raw_player.level) > 0:
             player.level = int(raw_player.level)
 
         if raw_player.clip_size is not None and int(raw_player.clip_size) >= 0:
-            player.clip_size = int(raw_player.clip_size)
+            player.weapon.clip_size = int(raw_player.clip_size)
         if raw_player.reload_active is not None:
-            player.reload_active = bool(raw_player.reload_active)
+            player.weapon.reload_active = bool(raw_player.reload_active)
         if raw_player.reload_timer is not None:
-            player.reload_timer = _conversion_f32(max(0.0, float(raw_player.reload_timer)))
+            player.weapon.reload_timer = _conversion_f32(max(0.0, float(raw_player.reload_timer)))
         if raw_player.reload_timer_max is not None:
-            player.reload_timer_max = _conversion_f32(max(0.0, float(raw_player.reload_timer_max)))
+            player.weapon.reload_timer_max = _conversion_f32(max(0.0, float(raw_player.reload_timer_max)))
         if raw_player.shot_cooldown is not None:
-            player.shot_cooldown = _conversion_f32(max(0.0, float(raw_player.shot_cooldown)))
+            player.weapon.shot_cooldown = _conversion_f32(max(0.0, float(raw_player.shot_cooldown)))
         if raw_player.spread_heat is not None:
             player.spread_heat = _conversion_f32(max(0.0, float(raw_player.spread_heat)))
 
@@ -2176,19 +2169,38 @@ def apply_capture_bootstrap_payload(
             player.aim_dir = Vec2.from_heading(_conversion_f32(float(raw_player.aim_heading)))
 
         if raw_player.alt_weapon_id is not None:
-            player.alt_weapon_id = int(raw_player.alt_weapon_id) if int(raw_player.alt_weapon_id) > 0 else None
-        if raw_player.alt_clip_size is not None and int(raw_player.alt_clip_size) >= 0:
-            player.alt_clip_size = int(raw_player.alt_clip_size)
-        if raw_player.alt_ammo is not None:
-            player.alt_ammo = _conversion_f32(float(raw_player.alt_ammo))
-        if raw_player.alt_reload_active is not None:
-            player.alt_reload_active = bool(raw_player.alt_reload_active)
-        if raw_player.alt_reload_timer is not None:
-            player.alt_reload_timer = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer)))
-        if raw_player.alt_reload_timer_max is not None:
-            player.alt_reload_timer_max = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer_max)))
-        if raw_player.alt_shot_cooldown is not None:
-            player.alt_shot_cooldown = _conversion_f32(max(0.0, float(raw_player.alt_shot_cooldown)))
+            alt_weapon_id = int(raw_player.alt_weapon_id)
+            if alt_weapon_id > 0:
+                alt_weapon = WeaponId(alt_weapon_id)
+                if player.alt_weapon is None:
+                    player.alt_weapon = WeaponSlot(weapon_id=alt_weapon)
+                else:
+                    player.alt_weapon.weapon_id = alt_weapon
+            else:
+                player.alt_weapon = None
+        alt_slot = player.alt_weapon
+        if alt_slot is None and (
+            raw_player.alt_clip_size is not None
+            or raw_player.alt_ammo is not None
+            or raw_player.alt_reload_active is not None
+            or raw_player.alt_reload_timer is not None
+            or raw_player.alt_reload_timer_max is not None
+            or raw_player.alt_shot_cooldown is not None
+        ):
+            alt_slot = WeaponSlot(weapon_id=WeaponId.PISTOL)
+            player.alt_weapon = alt_slot
+        if alt_slot is not None and raw_player.alt_clip_size is not None and int(raw_player.alt_clip_size) >= 0:
+            alt_slot.clip_size = int(raw_player.alt_clip_size)
+        if alt_slot is not None and raw_player.alt_ammo is not None:
+            alt_slot.ammo = _conversion_f32(float(raw_player.alt_ammo))
+        if alt_slot is not None and raw_player.alt_reload_active is not None:
+            alt_slot.reload_active = bool(raw_player.alt_reload_active)
+        if alt_slot is not None and raw_player.alt_reload_timer is not None:
+            alt_slot.reload_timer = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer)))
+        if alt_slot is not None and raw_player.alt_reload_timer_max is not None:
+            alt_slot.reload_timer_max = _conversion_f32(max(0.0, float(raw_player.alt_reload_timer_max)))
+        if alt_slot is not None and raw_player.alt_shot_cooldown is not None:
+            alt_slot.shot_cooldown = _conversion_f32(max(0.0, float(raw_player.alt_shot_cooldown)))
 
         if raw_player.shield_ms is not None:
             player.shield_timer = _conversion_f32(max(0.0, float(raw_player.shield_ms) / 1000.0))

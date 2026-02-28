@@ -9,10 +9,16 @@ from crimson.gameplay import (
 from crimson.perks import PerkId
 from crimson.sim.driver.setup import reset_players
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
+
+
+def _alt(player: PlayerState) -> WeaponSlot:
+    assert player.alt_weapon is not None
+    return player.alt_weapon
 
 
 def test_alternate_weapon_slows_movement() -> None:
@@ -33,13 +39,14 @@ def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:
     players: list[PlayerState] = []
     reset_players(players, world_size=1024.0, player_count=1)
     player = players[0]
+    alt = _alt(player)
 
-    assert player.weapon_id == 1
-    assert player.alt_weapon_id == 1
-    assert player.alt_clip_size == 12
-    assert_float_close(player.alt_ammo, 12.0)
-    assert player.alt_reload_active is False
-    assert_float_close(player.alt_reload_timer_max, 1.2)
+    assert player.weapon.weapon_id == 1
+    assert alt.weapon_id == 1
+    assert alt.clip_size == 12
+    assert_float_close(alt.ammo, 12.0)
+    assert alt.reload_active is False
+    assert_float_close(alt.reload_timer_max, 1.2)
 
 
 def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> None:
@@ -50,40 +57,43 @@ def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> N
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
+    alt = _alt(player)
 
-    assert player.weapon_id == 2
-    assert player.alt_weapon_id == 1
-    assert player.alt_clip_size == 12
-    assert_float_close(player.alt_ammo, 12.0)
+    assert player.weapon.weapon_id == 2
+    assert alt.weapon_id == 1
+    assert alt.clip_size == 12
+    assert_float_close(alt.ammo, 12.0)
 
 
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
+    alt = _alt(player)
 
-    assert player.weapon_id == 2
-    assert player.alt_weapon_id == 1
+    assert player.weapon.weapon_id == 2
+    assert alt.weapon_id == 1
 
-    player.shot_cooldown = 0.0
+    player.weapon.shot_cooldown = 0.0
     state.sfx_queue.clear()
     player_update(player, PlayerInput(reload_pressed=True), dt=0.1, state=state)
+    alt = _alt(player)
 
-    assert player.weapon_id == 1
-    assert player.alt_weapon_id == 2
-    assert_float_close(player.shot_cooldown, 0.1)
+    assert player.weapon.weapon_id == 1
+    assert alt.weapon_id == 2
+    assert_float_close(player.weapon.shot_cooldown, 0.1)
 
 
 def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
-    player.shot_cooldown = 0.0
+    player.weapon.shot_cooldown = 0.0
     state.sfx_queue.clear()
     player_update(
         player,
@@ -91,24 +101,26 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
         dt=0.1,
         state=state,
     )
+    alt = _alt(player)
 
-    assert player.weapon_id == 1
-    assert player.alt_weapon_id == 2
-    assert_float_close(player.shot_cooldown, 0.1)
+    assert player.weapon.weapon_id == 1
+    assert alt.weapon_id == 2
+    assert_float_close(player.weapon.shot_cooldown, 0.1)
 
 
 def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=11)
+    alt = _alt(player)
 
-    assert player.weapon_id == 11
-    assert player.alt_weapon_id == 1
-    starting_alt_ammo = float(player.alt_ammo)
+    assert player.weapon.weapon_id == 11
+    assert alt.weapon_id == 1
+    starting_alt_ammo = float(alt.ammo)
 
-    player.shot_cooldown = 0.05
+    player.weapon.shot_cooldown = 0.05
     player_update(
         player,
         PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True),
@@ -116,27 +128,29 @@ def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
         state=state,
     )
 
-    assert player.weapon_id == 1
-    assert player.ammo < starting_alt_ammo
+    assert player.weapon.weapon_id == 1
+    assert player.weapon.ammo < starting_alt_ammo
 
 
 def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 29)
+    weapon_assign_player(player, WeaponId.SPLITTER_GUN)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    player.ammo = 2.0
-    player.reload_timer = 0.0
-    player.reload_active = False
-    player.alt_weapon_id = 11
-    player.alt_ammo = 0.0
-    player.alt_clip_size = 30
-    player.alt_reload_active = True
-    player.alt_reload_timer = 0.85
-    player.alt_reload_timer_max = 1.3
-    player.alt_shot_cooldown = 0.0
+    player.weapon.ammo = 2.0
+    player.weapon.reload_timer = 0.0
+    player.weapon.reload_active = False
+    player.alt_weapon = WeaponSlot(
+        weapon_id=WeaponId.PLASMA_MINIGUN,
+        clip_size=30,
+        ammo=0.0,
+        reload_active=True,
+        reload_timer=0.85,
+        reload_timer_max=1.3,
+        shot_cooldown=0.0,
+    )
 
-    player.shot_cooldown = 0.05
+    player.weapon.shot_cooldown = 0.05
     player_update(
         player,
         PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True),
@@ -144,50 +158,50 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
         state=state,
     )
 
-    assert player.weapon_id == 11
-    assert player.reload_timer > 0.0
-    assert_float_close(player.reload_timer, player.reload_timer_max)
-    assert player.ammo < 0.0
+    assert player.weapon.weapon_id == 11
+    assert player.weapon.reload_timer > 0.0
+    assert_float_close(player.weapon.reload_timer, player.weapon.reload_timer_max)
+    assert player.weapon.ammo < 0.0
     assert player.shot_seq >= 1
 
 
 def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
-    assert player.weapon_id == 2
+    assert player.weapon.weapon_id == 2
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
-    assert player.weapon_id == 1
+    assert player.weapon.weapon_id == 1
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
     for _ in range(3):
         player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
-        assert player.weapon_id == 1
+        assert player.weapon.weapon_id == 1
 
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
-    assert player.weapon_id == 2
+    assert player.weapon.weapon_id == 2
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
 
 def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
-    assert player.weapon_id == 1
+    assert player.weapon.weapon_id == 1
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
     player_update(player, PlayerInput(reload_pressed=False), dt=0.05, state=state)
     assert state.player_alt_weapon_swap_cooldown_ms == 0
 
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
-    assert player.weapon_id == 2
+    assert player.weapon.weapon_id == 2
 
 
 def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None:
@@ -196,7 +210,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
     player1 = PlayerState(index=1, pos=Vec2())
 
     for player in (player0, player1):
-        weapon_assign_player(player, 1)
+        weapon_assign_player(player, WeaponId.PISTOL)
         player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
         bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
@@ -209,7 +223,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         players=players,
         reload_active_any=True,
     )
-    assert player0.weapon_id == 1
+    assert player0.weapon.weapon_id == 1
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
     player_update(
@@ -230,4 +244,4 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         players=players,
         reload_active_any=True,
     )
-    assert player0.weapon_id == 1
+    assert player0.weapon.weapon_id == 1

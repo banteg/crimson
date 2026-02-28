@@ -7,7 +7,7 @@ from ..sim.state_types import PlayerState
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
-TYPO_WEAPON_ID = int(WeaponId.SAWED_OFF_SHOTGUN)
+TYPO_WEAPON_ID = WeaponId.SAWED_OFF_SHOTGUN
 
 
 def enforce_typo_player_frame(player: PlayerState) -> None:
@@ -17,16 +17,16 @@ def enforce_typo_player_frame(player: PlayerState) -> None:
     cooldown) controls rate of fire.
     """
 
-    if int(player.weapon_id) != TYPO_WEAPON_ID:
+    if player.weapon.weapon_id != TYPO_WEAPON_ID:
         weapon_assign_player(player, TYPO_WEAPON_ID)
 
-    player.shot_cooldown = 0.0
+    player.weapon.shot_cooldown = 0.0
     player.spread_heat = 0.0
-    player.ammo = float(max(0, int(player.clip_size)))
+    player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
-    player.reload_active = False
-    player.reload_timer = 0.0
-    player.reload_timer_max = 0.0
+    player.weapon.reload_active = False
+    player.weapon.reload_timer = 0.0
+    player.weapon.reload_timer_max = 0.0
 
 
 def build_typo_player_input(

@@ -461,7 +461,7 @@
       }),
     ]),
     'level': '1.10',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       0,
@@ -470,7 +470,7 @@
     'time_limit_ms': 240000,
     'title': '8-legged Terror',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 12,
+    'unlock_weapon_id': <WeaponId.ROCKET_LAUNCHER: 12>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.1]
@@ -511,7 +511,7 @@
       }),
     ]),
     'level': '1.1',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -520,7 +520,7 @@
     'time_limit_ms': 120000,
     'title': 'Land Hostile',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 2,
+    'unlock_weapon_id': <WeaponId.ASSAULT_RIFLE: 2>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.2]
@@ -825,7 +825,7 @@
       }),
     ]),
     'level': '1.2',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -834,7 +834,7 @@
     'time_limit_ms': 120000,
     'title': 'Minor Alien Breach',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 3,
+    'unlock_weapon_id': <WeaponId.SHOTGUN: 3>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.3]
@@ -1083,7 +1083,7 @@
       }),
     ]),
     'level': '1.3',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -1501,7 +1501,7 @@
       }),
     ]),
     'level': '1.4',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -1510,7 +1510,7 @@
     'time_limit_ms': 300000,
     'title': 'Frontline Assault',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 8,
+    'unlock_weapon_id': <WeaponId.FLAMETHROWER: 8>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.5]
@@ -1559,7 +1559,7 @@
       }),
     ]),
     'level': '1.5',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -1745,7 +1745,7 @@
       }),
     ]),
     'level': '1.6',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       0,
@@ -1754,7 +1754,7 @@
     'time_limit_ms': 300000,
     'title': 'The Random Factor',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 5,
+    'unlock_weapon_id': <WeaponId.SUBMACHINE_GUN: 5>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.7]
@@ -1907,7 +1907,7 @@
       }),
     ]),
     'level': '1.7',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       0,
@@ -2405,7 +2405,7 @@
       }),
     ]),
     'level': '1.8',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       0,
@@ -2414,7 +2414,7 @@
     'time_limit_ms': 180000,
     'title': 'Alien Squads',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 6,
+    'unlock_weapon_id': <WeaponId.GAUSS_GUN: 6>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_1.9]
@@ -2519,7 +2519,7 @@
       }),
     ]),
     'level': '1.9',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       0,
@@ -2585,7 +2585,7 @@
       }),
     ]),
     'level': '2.10',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       2,
@@ -2594,7 +2594,7 @@
     'time_limit_ms': 360000,
     'title': 'Spideroids',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 11,
+    'unlock_weapon_id': <WeaponId.PLASMA_MINIGUN: 11>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_2.1]
@@ -2875,7 +2875,7 @@
       }),
     ]),
     'level': '2.1',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       3,
@@ -2981,7 +2981,7 @@
       }),
     ]),
     'level': '2.2',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       3,
@@ -2990,7 +2990,7 @@
     'time_limit_ms': 300000,
     'title': 'Spider Spawns',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 9,
+    'unlock_weapon_id': <WeaponId.PLASMA_RIFLE: 9>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_2.3]
@@ -3143,7 +3143,7 @@
       }),
     ]),
     'level': '2.3',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       3,
@@ -3849,7 +3849,7 @@
       }),
     ]),
     'level': '2.4',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       3,
@@ -3858,7 +3858,7 @@
     'time_limit_ms': 240000,
     'title': 'Two Fronts',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 21,
+    'unlock_weapon_id': <WeaponId.ION_RIFLE: 21>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_2.5]
@@ -4379,7 +4379,7 @@
       }),
     ]),
     'level': '2.5',
-    'start_weapon_id': 6,
+    'start_weapon_id': <WeaponId.GAUSS_GUN: 6>,
     'terrain_ids': tuple(
       2,
       3,
@@ -4717,7 +4717,7 @@
       }),
     ]),
     'level': '2.6',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       2,
@@ -4726,7 +4726,7 @@
     'time_limit_ms': 180000,
     'title': 'Evil Zombies At Large',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 7,
+    'unlock_weapon_id': <WeaponId.MEAN_MINIGUN: 7>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_2.7]
@@ -4943,7 +4943,7 @@
       }),
     ]),
     'level': '2.7',
-    'start_weapon_id': 5,
+    'start_weapon_id': <WeaponId.SUBMACHINE_GUN: 5>,
     'terrain_ids': tuple(
       2,
       2,
@@ -4993,7 +4993,7 @@
       }),
     ]),
     'level': '2.8',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       2,
@@ -5002,7 +5002,7 @@
     'time_limit_ms': 180000,
     'title': 'Land Of Lizards',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 4,
+    'unlock_weapon_id': <WeaponId.SAWED_OFF_SHOTGUN: 4>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_2.9]
@@ -5131,7 +5131,7 @@
       }),
     ]),
     'level': '2.9',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       2,
@@ -5181,7 +5181,7 @@
       }),
     ]),
     'level': '3.10',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       4,
@@ -5190,7 +5190,7 @@
     'time_limit_ms': 300000,
     'title': 'Zombie Masters',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 20,
+    'unlock_weapon_id': <WeaponId.JACKHAMMER: 20>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_3.1]
@@ -5335,7 +5335,7 @@
       }),
     ]),
     'level': '3.1',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       5,
@@ -5601,7 +5601,7 @@
       }),
     ]),
     'level': '3.2',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       5,
@@ -5610,7 +5610,7 @@
     'time_limit_ms': 180000,
     'title': 'Lizard Kings',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 10,
+    'unlock_weapon_id': <WeaponId.MULTI_PLASMA: 10>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_3.3]
@@ -5731,7 +5731,7 @@
       }),
     ]),
     'level': '3.3',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       5,
@@ -5789,7 +5789,7 @@
       }),
     ]),
     'level': '3.4',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       5,
@@ -5798,7 +5798,7 @@
     'time_limit_ms': 300000,
     'title': 'Hidden Evil',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 13,
+    'unlock_weapon_id': <WeaponId.SEEKER_ROCKETS: 13>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_3.5]
@@ -5967,7 +5967,7 @@
       }),
     ]),
     'level': '3.5',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       5,
@@ -6153,7 +6153,7 @@
       }),
     ]),
     'level': '3.6',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       4,
@@ -6162,7 +6162,7 @@
     'time_limit_ms': 300000,
     'title': 'The Lizquidation',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 15,
+    'unlock_weapon_id': <WeaponId.BLOW_TORCH: 15>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_3.7]
@@ -6435,7 +6435,7 @@
       }),
     ]),
     'level': '3.7',
-    'start_weapon_id': 11,
+    'start_weapon_id': <WeaponId.PLASMA_MINIGUN: 11>,
     'terrain_ids': tuple(
       4,
       4,
@@ -6717,7 +6717,7 @@
       }),
     ]),
     'level': '3.8',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       4,
       4,
@@ -6726,7 +6726,7 @@
     'time_limit_ms': 300000,
     'title': 'Lizard Raze',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 18,
+    'unlock_weapon_id': <WeaponId.ROCKET_MINIGUN: 18>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_3.9]
@@ -7311,7 +7311,7 @@
       }),
     ]),
     'level': '3.9',
-    'start_weapon_id': 6,
+    'start_weapon_id': <WeaponId.GAUSS_GUN: 6>,
     'terrain_ids': tuple(
       4,
       4,
@@ -7625,7 +7625,7 @@
       }),
     ]),
     'level': '4.10',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       6,
@@ -7634,7 +7634,7 @@
     'time_limit_ms': 480000,
     'title': 'The End of All',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 23,
+    'unlock_weapon_id': <WeaponId.ION_CANNON: 23>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_4.1]
@@ -9243,7 +9243,7 @@
       }),
     ]),
     'level': '4.1',
-    'start_weapon_id': 18,
+    'start_weapon_id': <WeaponId.ROCKET_MINIGUN: 18>,
     'terrain_ids': tuple(
       6,
       7,
@@ -9453,7 +9453,7 @@
       }),
     ]),
     'level': '4.2',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       7,
@@ -9462,7 +9462,7 @@
     'time_limit_ms': 300000,
     'title': 'Zombie Time',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 19,
+    'unlock_weapon_id': <WeaponId.PULSE_GUN: 19>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_4.3]
@@ -9791,7 +9791,7 @@
       }),
     ]),
     'level': '4.3',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       7,
@@ -10321,7 +10321,7 @@
       }),
     ]),
     'level': '4.4',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       7,
@@ -10330,7 +10330,7 @@
     'time_limit_ms': 360000,
     'title': 'The Collaboration',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 14,
+    'unlock_weapon_id': <WeaponId.PLASMA_SHOTGUN: 14>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_4.5]
@@ -10555,7 +10555,7 @@
       }),
     ]),
     'level': '4.5',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       7,
@@ -11221,7 +11221,7 @@
       }),
     ]),
     'level': '4.6',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       6,
@@ -11230,7 +11230,7 @@
     'time_limit_ms': 600000,
     'title': 'The Unblitzkrieg',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 17,
+    'unlock_weapon_id': <WeaponId.MINI_ROCKET_SWARMERS: 17>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_4.7]
@@ -11975,7 +11975,7 @@
       }),
     ]),
     'level': '4.7',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       6,
@@ -12441,7 +12441,7 @@
       }),
     ]),
     'level': '4.8',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       6,
@@ -12450,7 +12450,7 @@
     'time_limit_ms': 300000,
     'title': 'Syntax Terror',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 22,
+    'unlock_weapon_id': <WeaponId.ION_MINIGUN: 22>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_4.9]
@@ -12659,7 +12659,7 @@
       }),
     ]),
     'level': '4.9',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       6,
       6,
@@ -12781,7 +12781,7 @@
       }),
     ]),
     'level': '5.10',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       1,
@@ -12790,7 +12790,7 @@
     'time_limit_ms': 480000,
     'title': 'The Gathering',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 28,
+    'unlock_weapon_id': <WeaponId.PLASMA_CANNON: 28>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_5.1]
@@ -13047,7 +13047,7 @@
       }),
     ]),
     'level': '5.1',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       1,
       1,
@@ -13056,7 +13056,7 @@
     'time_limit_ms': 480000,
     'title': 'The Beating',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 31,
+    'unlock_weapon_id': <WeaponId.ION_SHOTGUN: 31>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_5.2]
@@ -14121,7 +14121,7 @@
       }),
     ]),
     'level': '5.2',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       1,
@@ -14475,7 +14475,7 @@
       }),
     ]),
     'level': '5.3',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       3,
       1,
@@ -14685,7 +14685,7 @@
       }),
     ]),
     'level': '5.4',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -14694,7 +14694,7 @@
     'time_limit_ms': 480000,
     'title': 'The Gang Wars',
     'unlock_perk_id': None,
-    'unlock_weapon_id': 30,
+    'unlock_weapon_id': <WeaponId.GAUSS_SHOTGUN: 30>,
   })
 # ---
 # name: test_quest_builders_snapshot[quest_5.5]
@@ -16663,7 +16663,7 @@
       }),
     ]),
     'level': '5.5',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       1,
       1,
@@ -16737,7 +16737,7 @@
       }),
     ]),
     'level': '5.6',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       2,
       1,
@@ -16843,7 +16843,7 @@
       }),
     ]),
     'level': '5.7',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       3,
       1,
@@ -17405,7 +17405,7 @@
       }),
     ]),
     'level': '5.8',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       0,
       1,
@@ -18735,7 +18735,7 @@
       }),
     ]),
     'level': '5.9',
-    'start_weapon_id': 1,
+    'start_weapon_id': <WeaponId.PISTOL: 1>,
     'terrain_ids': tuple(
       1,
       1,

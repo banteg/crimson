@@ -7,6 +7,7 @@ from crimson.modes.components.highscore_record_builder import (
     shots_from_state,
 )
 from crimson.sim.state_types import PlayerState
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
@@ -25,7 +26,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     player.experience = 1234
-    player.weapon_id = 1
+    player.weapon.weapon_id = WeaponId.PISTOL
 
     state.weapon_shots_fired[0][2] = 10
     state.shots_fired[0] = 20

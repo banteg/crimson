@@ -134,7 +134,7 @@ class GameplayState:
     player_death_hook_skip_indices: set[int] = field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    survival_reward_weapon_guard_id: int = int(WeaponId.PISTOL)
+    survival_reward_weapon_guard_id: int = WeaponId.PISTOL
     survival_reward_handout_enabled: bool = True
     survival_reward_fire_seen: bool = False
     survival_reward_damage_seen: bool = False
@@ -312,9 +312,9 @@ def survival_update_weapon_handouts(
         and int(float(survival_elapsed_ms)) > 64000
         and bool(state.survival_reward_handout_enabled)
     ):
-        if int(player.weapon_id) == int(WeaponId.PISTOL):
-            _weapon_assign_player(player, int(WeaponId.SHRINKIFIER_5K), state=state)
-            state.survival_reward_weapon_guard_id = int(WeaponId.SHRINKIFIER_5K)
+        if player.weapon.weapon_id == WeaponId.PISTOL:
+            _weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
+            state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
         state.survival_reward_handout_enabled = False
         state.survival_reward_damage_seen = True
         state.survival_reward_fire_seen = True
@@ -326,8 +326,8 @@ def survival_update_weapon_handouts(
         dx = float(player.pos.x) - float(centroid_x)
         dy = float(player.pos.y) - float(centroid_y)
         if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
-            _weapon_assign_player(player, int(WeaponId.BLADE_GUN), state=state)
-            state.survival_reward_weapon_guard_id = int(WeaponId.BLADE_GUN)
+            _weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
+            state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
             state.survival_reward_fire_seen = True
             state.survival_reward_handout_enabled = False
 
@@ -337,11 +337,11 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
 
     guard_id = int(state.survival_reward_weapon_guard_id)
     for player in players:
-        weapon_id = int(player.weapon_id)
-        if weapon_id == int(WeaponId.BLADE_GUN) and guard_id != int(WeaponId.BLADE_GUN):
-            _weapon_assign_player(player, int(WeaponId.PISTOL))
-        if weapon_id == int(WeaponId.SHRINKIFIER_5K) and guard_id != int(WeaponId.SHRINKIFIER_5K):
-            _weapon_assign_player(player, int(WeaponId.PISTOL))
+        weapon_id = player.weapon.weapon_id
+        if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:
+            _weapon_assign_player(player, WeaponId.PISTOL)
+        if weapon_id == WeaponId.SHRINKIFIER_5K and guard_id != WeaponId.SHRINKIFIER_5K:
+            _weapon_assign_player(player, WeaponId.PISTOL)
 
 
 def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:
@@ -466,7 +466,7 @@ def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
 
 
 def _player_apply_move_speed_caps(player: PlayerState) -> None:
-    if player.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
+    if player.weapon.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
         player.move_speed = 0.8
 
 
@@ -601,10 +601,10 @@ def player_update(
 
     player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
-    next_shot_cooldown = float(f32(float(player.shot_cooldown) - float(cooldown_decay)))
-    player.shot_cooldown = max(0.0, float(next_shot_cooldown))
-    if 0.0 < float(player.shot_cooldown) < 1e-6:
-        player.shot_cooldown = 0.0
+    next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
+    player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
+    if 0.0 < float(player.weapon.shot_cooldown) < 1e-6:
+        player.weapon.shot_cooldown = 0.0
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
@@ -860,15 +860,15 @@ def player_update(
         reload_scale = 3.0
 
     # Reload + reload perks.
-    if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.reload_timer > 0.0:
-        anxious_next = f32(float(player.reload_timer) - 0.05)
-        player.reload_timer = float(anxious_next)
+    if perk_active(player, PerkId.ANXIOUS_LOADER) and input_state.fire_pressed and player.weapon.reload_timer > 0.0:
+        anxious_next = f32(float(player.weapon.reload_timer) - 0.05)
+        player.weapon.reload_timer = float(anxious_next)
         if float(anxious_next) <= 0.0:
             # Native restarts the tail of the reload at `frame_dt * 0.8` when
             # Anxious Loader overcuts the timer.
-            player.reload_timer = float(f32(float(dt) * 0.8))
+            player.weapon.reload_timer = float(f32(float(dt) * 0.8))
 
-    reload_timer_now = float(f32(float(player.reload_timer)))
+    reload_timer_now = float(f32(float(player.weapon.reload_timer)))
     dt_f32 = float(f32(float(dt)))
     # Native preloads ammo one frame before reload timer underflows using the
     # unscaled `frame_dt` (before Stationary Reloader scale is applied). That
@@ -884,20 +884,20 @@ def player_update(
     # completion for fire-held ticks to avoid a spurious empty-shot reload loop.
     preload_crossed = reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
     preload_fire_boundary = input_state.fire_down and reload_preload_underflow <= _RELOAD_PRELOAD_UNDERFLOW_EPS
-    if player.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary):
-        player.ammo = float(player.clip_size)
+    if player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary):
+        player.weapon.ammo = float(player.weapon.clip_size)
 
-    if player.reload_timer > 0.0:
+    if player.weapon.reload_timer > 0.0:
         if (
             perk_active(player, PerkId.ANGRY_RELOADER)
-            and player.reload_timer_max > 0.5
-            and (player.reload_timer_max * 0.5) < player.reload_timer
+            and player.weapon.reload_timer_max > 0.5
+            and (player.weapon.reload_timer_max * 0.5) < player.weapon.reload_timer
         ):
-            half = player.reload_timer_max * 0.5
-            next_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
-            player.reload_timer = next_timer
+            half = player.weapon.reload_timer_max * 0.5
+            next_timer = float(f32(float(player.weapon.reload_timer) - float(reload_scale) * float(dt)))
+            player.weapon.reload_timer = next_timer
             if next_timer <= half:
-                count = 7 + int(player.reload_timer_max * 4.0)
+                count = 7 + int(player.weapon.reload_timer_max * 4.0)
                 state.bonus_spawn_guard = True
                 _spawn_projectile_ring(
                     state,
@@ -912,10 +912,10 @@ def player_update(
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append("sfx_explosion_small")
         else:
-            player.reload_timer = float(f32(float(player.reload_timer) - float(reload_scale) * float(dt)))
+            player.weapon.reload_timer = float(f32(float(player.weapon.reload_timer) - float(reload_scale) * float(dt)))
 
-    if player.reload_timer < 0.0:
-        player.reload_timer = 0.0
+    if player.weapon.reload_timer < 0.0:
+        player.weapon.reload_timer = 0.0
 
     has_alt_weapon_perk = perk_active(player, PerkId.ALTERNATE_WEAPON)
     single_player_mode = (len(players) == 1) if players is not None else True
@@ -924,7 +924,7 @@ def player_update(
         and (not state.demo_mode_active)
         and (not has_alt_weapon_perk)
         and int(move_mode) != int(MovementControlType.MOUSE_POINT_CLICK)
-        and float(player.reload_timer) == 0.0
+        and float(player.weapon.reload_timer) == 0.0
         and bool(single_player_mode)
     )
     if manual_reload_allowed:
@@ -947,12 +947,12 @@ def player_update(
     else:
         player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
 
-    fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0
+    fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0
 
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
     # even if ammo is empty and perk firing paths can still proceed.
     if fire_gate_open_pre_reload:
-        player.reload_active = False
+        player.weapon.reload_active = False
 
     swapped_alt_weapon = False
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
@@ -968,14 +968,14 @@ def player_update(
         if cooldown_ms < 1 and reload_key_active:
             if _player_swap_alt_weapon(player):
                 swapped_alt_weapon = True
-                weapon = _weapon_entry(player.weapon_id)
+                weapon = _weapon_entry(player.weapon.weapon_id)
                 if weapon is not None and weapon.reload_sound is not None:
                     from .weapon_sfx import resolve_weapon_sfx_ref
 
                     key = resolve_weapon_sfx_ref(weapon.reload_sound)
                     if key is not None:
                         state.sfx_queue.append(key)
-                player.shot_cooldown = float(player.shot_cooldown) + 0.1
+                player.weapon.shot_cooldown = float(player.weapon.shot_cooldown) + 0.1
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:
                 state.player_alt_weapon_swap_cooldown_ms = 0
@@ -988,7 +988,7 @@ def player_update(
     # before alt-weapon swap mutates cooldown; preserve same-tick fire eligibility.
     force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_state.fire_down
     if force_pre_swap_fire_gate:
-        player.shot_cooldown = 0.0
+        player.weapon.shot_cooldown = 0.0
 
     if input_state.fire_down:
         state.survival_reward_fire_seen = True
