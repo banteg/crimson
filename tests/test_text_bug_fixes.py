@@ -66,6 +66,6 @@ def test_bonus_display_description_fixes_text_by_default() -> None:
 
 
 def test_bonus_label_for_entry_uses_typo_fixes_unless_preserving_bugs() -> None:
-    entry = BonusEntry(bonus_id=int(BonusId.WEAPON), amount=WeaponId.LIGHTNING_RIFLE)
+    entry = BonusEntry(bonus_id=BonusId.WEAPON, amount=WeaponId.LIGHTNING_RIFLE)
     assert bonus_label_for_entry(entry) == "Lightning Rifle"
     assert bonus_label_for_entry(entry, preserve_bugs=True) == "Lighting Rifle"

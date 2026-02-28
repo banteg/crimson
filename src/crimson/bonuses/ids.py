@@ -204,4 +204,4 @@ def bonus_label(bonus_id: int, *, preserve_bugs: bool = False) -> str:
     entry = BONUS_BY_ID.get(int(bonus_id))
     if entry is None:
         return "unknown"
-    return bonus_display_name(int(entry.bonus_id), preserve_bugs=preserve_bugs)
+    return bonus_display_name(entry.bonus_id, preserve_bugs=preserve_bugs)

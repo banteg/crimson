@@ -56,13 +56,13 @@ def bonus_telekinetic_update(
             continue
         if not perk_active(player, PerkId.TELEKINETIC):
             continue
-        if entry.picked or entry.bonus_id == 0:
+        if entry.picked or entry.bonus_id == BonusId.UNUSED:
             continue
 
         bonus_apply(
             state,
             player,
-            BonusId(int(entry.bonus_id)),
+            entry.bonus_id,
             amount=int(entry.amount),
             origin=entry,
             creatures=creatures,

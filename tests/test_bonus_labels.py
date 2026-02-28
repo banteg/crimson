@@ -20,5 +20,5 @@ def test_bonus_label_for_entry_formats_expected_labels(
     amount: int,
     expected_label: str,
 ) -> None:
-    entry = BonusEntry(bonus_id=int(bonus_id), amount=amount)
+    entry = BonusEntry(bonus_id=bonus_id, amount=amount)
     assert bonus_label_for_entry(entry) == expected_label

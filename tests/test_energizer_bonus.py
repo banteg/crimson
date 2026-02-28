@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CreaturePool, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
@@ -61,4 +62,4 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     assert player.experience == 10
     assert player.health == 100.0
     assert "sfx_ui_bonus" in result.sfx
-    assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+    assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)

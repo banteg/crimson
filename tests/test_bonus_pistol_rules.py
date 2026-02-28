@@ -104,7 +104,7 @@ def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> No
         expected_draws=3,
         expected_after_state=2,
     )
-    assert not any(slot.bonus_id != 0 for slot in state.bonus_pool.entries)
+    assert not any(slot.bonus_id != BonusId.UNUSED for slot in state.bonus_pool.entries)
 
 
 def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
@@ -128,7 +128,7 @@ def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
         expected_draws=3,
         expected_after_state=0,
     )
-    active = [slot for slot in state.bonus_pool.entries if slot.bonus_id != 0]
+    active = [slot for slot in state.bonus_pool.entries if slot.bonus_id != BonusId.UNUSED]
     assert len(active) == 1
 
 

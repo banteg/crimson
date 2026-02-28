@@ -59,7 +59,7 @@ def draw_bonus_pickups(
         return
     if render_ctx.bonuses_texture is None:
         for bonus in render_ctx.state.bonus_pool.entries:
-            if bonus.bonus_id == 0:
+            if bonus.bonus_id == BonusId.UNUSED:
                 continue
             screen = render_ctx._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
             tint = rl.Color(220, 220, 90, int(255 * alpha + 0.5))
@@ -70,7 +70,7 @@ def draw_bonus_pickups(
     bubble_size = 32.0 * scale
 
     for idx, bonus in enumerate(render_ctx.state.bonus_pool.entries):
-        if bonus.bonus_id == 0:
+        if bonus.bonus_id == BonusId.UNUSED:
             continue
 
         fade = bonus_fade(float(bonus.time_left), float(bonus.time_max))
@@ -82,8 +82,8 @@ def draw_bonus_pickups(
         tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
         rl.draw_texture_pro(render_ctx.bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
 
-        bonus_id = int(bonus.bonus_id)
-        if bonus_id == int(BonusId.WEAPON):
+        bonus_id = bonus.bonus_id
+        if bonus_id == BonusId.WEAPON:
             weapon = WEAPON_BY_ID.get(bonus.amount)
             icon_index = int(weapon.icon_index) if weapon is not None and weapon.icon_index is not None else None
             if icon_index is None or not (0 <= icon_index <= 31) or render_ctx.wicons_texture is None:
@@ -102,11 +102,11 @@ def draw_bonus_pickups(
             rl.draw_texture_pro(render_ctx.wicons_texture, src, dst, origin, 0.0, tint)
             continue
 
-        meta = BONUS_BY_ID.get(bonus_id)
+        meta = BONUS_BY_ID.get(int(bonus_id))
         icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else None
         if icon_id is None or icon_id < 0:
             continue
-        if bonus_id == int(BonusId.POINTS) and int(bonus.amount) == 1000:
+        if bonus_id == BonusId.POINTS and int(bonus.amount) == 1000:
             icon_id += 1
 
         pulse = math.sin(float(idx) + float(render_ctx.bonus_anim_phase)) ** 4 * 0.25 + 0.75

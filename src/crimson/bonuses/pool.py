@@ -33,7 +33,7 @@ BONUS_TELEKINETIC_PICKUP_MS = 650.0
 
 @dataclass(slots=True)
 class BonusEntry:
-    bonus_id: int = 0
+    bonus_id: BonusId = BonusId.UNUSED
     picked: bool = False
     time_left: float = 0.0
     time_max: float = 0.0
@@ -43,7 +43,7 @@ class BonusEntry:
 
 def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
     return (
-        int(entry.bonus_id) == 0
+        entry.bonus_id == BonusId.UNUSED
         and not entry.picked
         and float(entry.time_left) <= 0.0
         and float(entry.time_max) <= 0.0
@@ -56,15 +56,15 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
 # regardless of bonus type. In the rewrite, `amount` is used as the "effective"
 # duration/value for some bonuses, so `--preserve-bugs` compares against the
 # native amount domain (see docs/rewrite/original-bugs.md).
-_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[int, int] = {
+_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, int] = {
     # Native default amount stored for Double Experience drops is 1.
     BonusId.DOUBLE_EXPERIENCE: 1,
     BonusId.FIRE_BULLETS: 4,
 }
 
 
-def _bonus_amount_for_weapon_id_suppression(*, bonus_id: int, amount: int) -> int:
-    return int(_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(int(bonus_id), int(amount)))
+def _bonus_amount_for_weapon_id_suppression(*, bonus_id: BonusId, amount: int) -> int:
+    return int(_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(bonus_id, int(amount)))
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[int]:
@@ -94,14 +94,14 @@ class BonusPool:
 
     def reset(self) -> None:
         for entry in self._entries:
-            entry.bonus_id = 0
+            entry.bonus_id = BonusId.UNUSED
             entry.picked = False
             entry.time_left = 0.0
             entry.time_max = 0.0
             entry.amount = 0
 
     def iter_active(self) -> list[BonusEntry]:
-        return [entry for entry in self._entries if entry.bonus_id != 0]
+        return [entry for entry in self._entries if entry.bonus_id != BonusId.UNUSED]
 
     def _alloc_slot(self) -> BonusEntry | None:
         for entry in self._entries:
@@ -119,7 +119,7 @@ class BonusPool:
         return entry is self._sentinel
 
     def _clear_entry(self, entry: BonusEntry) -> None:
-        entry.bonus_id = 0
+        entry.bonus_id = BonusId.UNUSED
         entry.picked = False
         entry.time_left = 0.0
         entry.time_max = 0.0
@@ -143,7 +143,7 @@ class BonusPool:
         if entry is None:
             return None
 
-        entry.bonus_id = int(bonus_id)
+        entry.bonus_id = bonus_id
         entry.picked = False
         entry.pos = pos.clamp_rect(
             BONUS_SPAWN_MARGIN,
@@ -185,25 +185,25 @@ class BonusPool:
         bonus_id = bonus_pick_random_type(self, state, players)
         min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
         for active_entry in self._entries:
-            if active_entry.bonus_id == 0:
+            if active_entry.bonus_id == BonusId.UNUSED:
                 continue
             if Vec2.distance_sq(pos, active_entry.pos) < min_dist_sq:
                 entry = self._sentinel
                 break
 
-        entry.bonus_id = int(bonus_id)
+        entry.bonus_id = bonus_id
         entry.picked = False
         entry.pos = pos
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
         rng = state.rng
-        if entry.bonus_id == int(BonusId.WEAPON):
+        if entry.bonus_id == BonusId.WEAPON:
             entry.amount = weapon_pick_random_available(state)
-        elif entry.bonus_id == int(BonusId.POINTS):
+        elif entry.bonus_id == BonusId.POINTS:
             entry.amount = 1000 if (rng.rand() & 7) < 3 else 500
         else:
-            meta = BONUS_BY_ID.get(entry.bonus_id)
+            meta = BONUS_BY_ID.get(int(entry.bonus_id))
             entry.amount = int(meta.default_amount or 0) if meta is not None else 0
         return entry
 
@@ -242,7 +242,7 @@ class BonusPool:
                     world_height=world_height,
                 )
 
-                entry.bonus_id = int(BonusId.WEAPON)
+                entry.bonus_id = BonusId.WEAPON
                 weapon_id = int(weapon_pick_random_available(state))
                 entry.amount = int(weapon_id)
                 if weapon_id == WeaponId.PISTOL:
@@ -296,7 +296,7 @@ class BonusPool:
             world_height=world_height,
         )
 
-        if entry.bonus_id == int(BonusId.WEAPON):
+        if entry.bonus_id == BonusId.WEAPON:
             near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
             near_player = False
             if players:
@@ -306,10 +306,10 @@ class BonusPool:
                 else:
                     near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
             if near_player:
-                entry.bonus_id = int(BonusId.POINTS)
+                entry.bonus_id = BonusId.POINTS
                 entry.amount = 100
 
-        if entry.bonus_id != int(BonusId.POINTS):
+        if entry.bonus_id != BonusId.POINTS:
             matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
             if matches > 1:
                 self._clear_entry(entry)
@@ -318,13 +318,13 @@ class BonusPool:
         if players:
             if bool(state.preserve_bugs):
                 weapon_id = players[0].weapon.weapon_id
-                amount = _bonus_amount_for_weapon_id_suppression(bonus_id=int(entry.bonus_id), amount=int(entry.amount))
+                amount = _bonus_amount_for_weapon_id_suppression(bonus_id=entry.bonus_id, amount=int(entry.amount))
                 if amount == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
                 carried_weapon_ids = _all_carried_weapon_ids(players)
-                if entry.bonus_id == int(BonusId.WEAPON) and int(entry.amount) in carried_weapon_ids:
+                if entry.bonus_id == BonusId.WEAPON and int(entry.amount) in carried_weapon_ids:
                     self._clear_entry(entry)
                     return None
 
@@ -363,7 +363,7 @@ class BonusPool:
                     continue
                 # Native `bonus_update` sets bonus_id to NONE before pickup checks
                 # and still allows one final in-range pickup in that tick.
-                entry.bonus_id = int(BonusId.UNUSED)
+                entry.bonus_id = BonusId.UNUSED
                 expired_to_unused = True
 
             if entry.picked:
@@ -375,7 +375,7 @@ class BonusPool:
                     bonus_apply(
                         state,
                         player,
-                        BonusId(entry.bonus_id),
+                        entry.bonus_id,
                         amount=entry.amount,
                         origin=entry,
                         creatures=creatures,
@@ -390,7 +390,7 @@ class BonusPool:
                     pickups.append(
                         BonusPickupEvent(
                             player_index=player.index,
-                            bonus_id=entry.bonus_id,
+                            bonus_id=int(entry.bonus_id),
                             amount=entry.amount,
                             pos=entry.pos,
                         ),
@@ -410,7 +410,7 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
     aim_pos = player.aim
     radius_sq = BONUS_AIM_HOVER_RADIUS * BONUS_AIM_HOVER_RADIUS
     for idx, entry in enumerate(bonus_pool.entries):
-        if entry.bonus_id == 0:
+        if entry.bonus_id == BonusId.UNUSED:
             continue
         if Vec2.distance_sq(aim_pos, entry.pos) < radius_sq:
             return idx, entry
@@ -420,16 +420,16 @@ def bonus_find_aim_hover_entry(player: PlayerState, bonus_pool: BonusPool) -> tu
 def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> str:
     """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
 
-    bonus_id = int(entry.bonus_id)
-    if bonus_id == int(BonusId.WEAPON):
+    bonus_id = entry.bonus_id
+    if bonus_id == BonusId.WEAPON:
         weapon = WEAPON_BY_ID.get(entry.amount)
         if weapon is not None and weapon.name:
-            return weapon_display_name(WeaponId(int(entry.amount)), preserve_bugs=bool(preserve_bugs))
+            return weapon_display_name(WeaponId(entry.amount), preserve_bugs=bool(preserve_bugs))
         return "Weapon"
-    if bonus_id == int(BonusId.POINTS):
-        points_label = bonus_display_name(int(BonusId.POINTS), preserve_bugs=bool(preserve_bugs))
+    if bonus_id == BonusId.POINTS:
+        points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))
         return f"{points_label}: {int(entry.amount)}"
-    meta = BONUS_BY_ID.get(bonus_id)
+    meta = BONUS_BY_ID.get(int(bonus_id))
     if meta is not None:
-        return bonus_display_name(int(meta.bonus_id), preserve_bugs=bool(preserve_bugs))
+        return bonus_display_name(meta.bonus_id, preserve_bugs=bool(preserve_bugs))
     return "Bonus"

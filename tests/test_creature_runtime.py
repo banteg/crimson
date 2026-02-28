@@ -669,7 +669,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     )
     assert death.xp_awarded == 10
     assert player.experience == 10
-    assert any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+    assert any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert state.rng._idx == 67  # type: ignore[attr-defined]
 
@@ -691,12 +691,24 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
     spawn_at = mocker.patch.object(
         state.bonus_pool,
         "spawn_at",
-        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+        return_value=BonusEntry(
+            bonus_id=BonusId.POINTS,
+            pos=Vec2(100.0, 100.0),
+            time_left=10.0,
+            time_max=10.0,
+            amount=5,
+        ),
     )
     try_spawn_on_kill = mocker.patch.object(
         state.bonus_pool,
         "try_spawn_on_kill",
-        return_value=BonusEntry(bonus_id=2, pos=organic_pos, time_left=10.0, time_max=10.0, amount=1),
+        return_value=BonusEntry(
+            bonus_id=BonusId.ENERGIZER,
+            pos=organic_pos,
+            time_left=10.0,
+            time_max=10.0,
+            amount=1,
+        ),
     )
 
     pool.handle_death(
@@ -731,7 +743,13 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
     spawn_at = mocker.patch.object(
         state.bonus_pool,
         "spawn_at",
-        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+        return_value=BonusEntry(
+            bonus_id=BonusId.POINTS,
+            pos=Vec2(100.0, 100.0),
+            time_left=10.0,
+            time_max=10.0,
+            amount=5,
+        ),
     )
     try_spawn_on_kill = mocker.patch.object(state.bonus_pool, "try_spawn_on_kill", return_value=None)
 
@@ -884,7 +902,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
     assert death.xp_awarded == 0
     assert player.experience == 0
     add_random.assert_not_called()
-    assert not any(entry.bonus_id != 0 for entry in state.bonus_pool.entries)
+    assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
 
 
 def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_default(mocker) -> None:
@@ -901,7 +919,13 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
     spawn_at = mocker.patch.object(
         state.bonus_pool,
         "spawn_at",
-        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+        return_value=BonusEntry(
+            bonus_id=BonusId.POINTS,
+            pos=Vec2(100.0, 100.0),
+            time_left=10.0,
+            time_max=10.0,
+            amount=5,
+        ),
     )
 
     death = pool.handle_death(
@@ -943,7 +967,13 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
     spawn_at = mocker.patch.object(
         state.bonus_pool,
         "spawn_at",
-        return_value=BonusEntry(bonus_id=1, pos=Vec2(100.0, 100.0), time_left=10.0, time_max=10.0, amount=5),
+        return_value=BonusEntry(
+            bonus_id=BonusId.POINTS,
+            pos=Vec2(100.0, 100.0),
+            time_left=10.0,
+            time_max=10.0,
+            amount=5,
+        ),
     )
 
     pool.handle_death(
