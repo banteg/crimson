@@ -34,6 +34,7 @@ jobs:
 
       - name: Build + test
         run: |
+          rm -rf .zig-cache
           zig build test --summary all
           zig build -Doptimize=ReleaseFast
 
