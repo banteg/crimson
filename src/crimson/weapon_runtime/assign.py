@@ -39,6 +39,18 @@ _WEAPON_ASSIGN_CLIP_MODIFIERS: tuple[_WeaponAssignClipModifier, ...] = (
 )
 
 
+def init_default_alt_weapon(player: PlayerState) -> None:
+    """Initialize native reset-time alternate weapon slot state."""
+
+    player.alt_weapon_id = 1
+    player.alt_clip_size = 12
+    player.alt_ammo = 12.0
+    player.alt_reload_active = False
+    player.alt_reload_timer = 0.0
+    player.alt_reload_timer_max = 1.2
+    player.alt_shot_cooldown = 0.0
+
+
 def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: GameplayState | None = None) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 

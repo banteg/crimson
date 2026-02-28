@@ -138,6 +138,17 @@ pub fn playerSwapAltWeapon(player: *PlayerState) bool {
     return true;
 }
 
+pub fn initDefaultAltWeapon(player: *PlayerState) void {
+    // Native reset preloads an alternate pistol slot before the perk is acquired.
+    player.alt_weapon_id = WeaponId.pistol;
+    player.alt_clip_size = 12;
+    player.alt_ammo = 12.0;
+    player.alt_reload_active = false;
+    player.alt_reload_timer = 0.0;
+    player.alt_reload_timer_max = 1.2;
+    player.alt_shot_cooldown = 0.0;
+}
+
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
     var reload_time = weapon_stats.get(player.weapon_id).reload_time;
     if (player.reload_active and (playerPerkActive(player, .ammunition_within) or playerPerkActive(player, .regression_bullets))) {
@@ -179,6 +190,7 @@ pub fn resetPlayers(
             .pos = base.clampRect(0.0, 0.0, world_size, world_size),
         };
         weaponAssignPlayer(&players[0], WeaponId.pistol);
+        initDefaultAltWeapon(&players[0]);
         return;
     }
 
@@ -191,6 +203,7 @@ pub fn resetPlayers(
             .pos = Vec2.add(base, offset).clampRect(0.0, 0.0, world_size, world_size),
         };
         weaponAssignPlayer(player, WeaponId.pistol);
+        initDefaultAltWeapon(player);
     }
 }
 
@@ -241,4 +254,21 @@ test "weapon assign with state resets latch, sets aux timer, and records usage" 
     try std.testing.expectEqual(@as(i32, 0), player.weapon_reset_latch);
     try expectFloatClose(2.0, player.aux_timer);
     try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts.get(WeaponId.shotgun));
+}
+
+test "reset players preloads alternate pistol slot" {
+    var players = [_]PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+        },
+    };
+
+    resetPlayers(players[0..], 1024.0, null);
+
+    try std.testing.expectEqual(WeaponId.pistol, players[0].alt_weapon_id.?);
+    try std.testing.expectEqual(@as(i32, 12), players[0].alt_clip_size);
+    try std.testing.expectApproxEqAbs(@as(f32, 12.0), players[0].alt_ammo, 1e-6);
+    try std.testing.expect(!players[0].alt_reload_active);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.2), players[0].alt_reload_timer_max, 1e-6);
 }

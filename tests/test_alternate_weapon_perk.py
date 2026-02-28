@@ -7,6 +7,7 @@ from crimson.gameplay import (
     player_update,
 )
 from crimson.perks import PerkId
+from crimson.sim.driver.setup import reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
@@ -28,17 +29,32 @@ def test_alternate_weapon_slows_movement() -> None:
     assert_float_close(perk.pos.x, 80.0)
 
 
-def test_alternate_weapon_stashes_previous_weapon_on_first_weapon_pickup() -> None:
+def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:
+    players: list[PlayerState] = []
+    reset_players(players, world_size=1024.0, player_count=1)
+    player = players[0]
+
+    assert player.weapon_id == 1
+    assert player.alt_weapon_id == 1
+    assert player.alt_clip_size == 12
+    assert_float_close(player.alt_ammo, 12.0)
+    assert player.alt_reload_active is False
+    assert_float_close(player.alt_reload_timer_max, 1.2)
+
+
+def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    players: list[PlayerState] = []
+    reset_players(players, world_size=1024.0, player_count=1)
+    player = players[0]
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
     assert player.weapon_id == 2
     assert player.alt_weapon_id == 1
-    assert player.alt_clip_size == 10
+    assert player.alt_clip_size == 12
+    assert_float_close(player.alt_ammo, 12.0)
 
 
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:

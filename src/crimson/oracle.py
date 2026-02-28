@@ -298,10 +298,11 @@ def run_headless(config: OracleConfig) -> None:
     players = world_state.players
     if not players:
         from .sim.state_types import PlayerState
-        from .weapon_runtime import weapon_assign_player
+        from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
 
         player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
         weapon_assign_player(player, 1)
+        init_default_alt_weapon(player)
         players.append(player)
 
     # Load inputs if provided
