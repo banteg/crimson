@@ -69,7 +69,6 @@ crimson replay verify <file>      headlessly simulate replay stats / score claim
 crimson replay benchmark <file>   benchmark replay throughput (headless or render, + optional profiling)
 crimson replay render <file>      render replay to high-quality 60fps video via ffmpeg
 crimson replay verify-checkpoints <file>  compare replay output to checkpoint sidecar
-crimson oracle [--seed N]         headless simulation for differential testing
 ```
 
 Useful flags: `--seed N` (deterministic runs), `--demo` (shareware teaser), `--no-intro` (skip logos), `--base-dir PATH` / `CRIMSON_RUNTIME_DIR` (runtime file location), `--assets-dir PATH` (PAQ / extracted asset location).
