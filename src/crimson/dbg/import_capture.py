@@ -10,7 +10,7 @@ import msgspec
 from ..original.capture import convert_capture_to_checkpoints, load_capture
 from ..original.schema import CaptureTick
 from .checkpoint_codec import checkpoint_to_channel
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
+from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace
 
 _ENTITY_KIND_CODES = {
@@ -228,7 +228,7 @@ def import_capture_to_trace(
         },
         source=capture_fingerprint,
         channels=sorted(str(channel) for channel in channels_seen),
-        channel_versions={str(channel): 1 for channel in sorted(channels_seen)},
+        channel_versions=channel_versions_for(sorted(channels_seen)),
         tick_range={
             "start_tick": int(tick_start),
             "end_tick": int(tick_end),
@@ -243,4 +243,3 @@ def import_capture_to_trace(
         ticks=tick_rows,
         chunk_ticks=max(1, int(chunk_ticks)),
     )
-

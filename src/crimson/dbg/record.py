@@ -27,7 +27,7 @@ from ..sim.driver.setup import ReplayRunnerError
 from ..sim.world_state import WorldState
 from ..weapons import WeaponId
 from .checkpoint_codec import checkpoint_to_channel
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
+from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace
 
 RecordProfile = Literal["minimal", "standard", "full"]
@@ -430,7 +430,7 @@ def _build_trace_meta(
         },
         source=replay_fingerprint,
         channels=channels_sorted,
-        channel_versions={channel: 1 for channel in channels_sorted},
+        channel_versions=channel_versions_for(channels_sorted),
         tick_range={
             "start_tick": tick_start,
             "end_tick": tick_end,
