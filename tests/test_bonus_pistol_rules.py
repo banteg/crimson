@@ -18,7 +18,7 @@ def test_pistol_safety_net_forces_weapon_drop() -> None:
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
     assert entry is not None
-    assert entry.bonus_id == int(BonusId.WEAPON)
+    assert entry.bonus_id == BonusId.WEAPON
     assert entry.amount == WeaponId.ASSAULT_RIFLE
 
 
@@ -67,7 +67,7 @@ def test_weapon_drop_near_player2_converts_to_points_by_default() -> None:
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(500.0, 500.0), state=state, players=[player1, player2])
     assert entry is not None
-    assert entry.bonus_id == int(BonusId.POINTS)
+    assert entry.bonus_id == BonusId.POINTS
     assert entry.amount == 100
 
 
@@ -81,7 +81,7 @@ def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> Non
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(500.0, 500.0), state=state, players=[player1, player2])
     assert entry is not None
-    assert entry.bonus_id == int(BonusId.WEAPON)
+    assert entry.bonus_id == BonusId.WEAPON
     assert entry.amount == WeaponId.SUBMACHINE_GUN
 
 
@@ -154,5 +154,5 @@ def test_weapon_drop_suppression_preserve_bugs_checks_player1_weapon_only() -> N
 
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player1, player2])
     assert entry is not None
-    assert entry.bonus_id == int(BonusId.WEAPON)
+    assert entry.bonus_id == BonusId.WEAPON
     assert entry.amount == WeaponId.SHOTGUN

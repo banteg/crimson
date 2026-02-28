@@ -67,22 +67,26 @@ def _bonus_weapon_id_for_suppression(*, bonus_id: BonusId, amount: int) -> Weapo
     mapped = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(bonus_id)
     if mapped is not None:
         return mapped
+    return _weapon_id_from_bonus_amount(amount)
+
+
+def _weapon_id_from_bonus_amount(amount: int) -> WeaponId | None:
     weapon = WEAPON_BY_ID.get(int(amount))
     if weapon is None:
         return None
     return weapon.weapon_id
 
 
-def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[int]:
-    carried: set[int] = set()
+def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
+    carried: set[WeaponId] = set()
     for player in players:
         weapon_id = player.weapon.weapon_id
-        if weapon_id > 0:
+        if weapon_id > WeaponId.NONE:
             carried.add(weapon_id)
         if player.alt_weapon is None:
             continue
         alt = player.alt_weapon.weapon_id
-        if alt > 0:
+        if alt > WeaponId.NONE:
             carried.add(alt)
     return carried
 
@@ -249,10 +253,10 @@ class BonusPool:
                 )
 
                 entry.bonus_id = BonusId.WEAPON
-                weapon_id = int(weapon_pick_random_available(state))
+                weapon_id = WeaponId(weapon_pick_random_available(state))
                 entry.amount = int(weapon_id)
                 if weapon_id == WeaponId.PISTOL:
-                    weapon_id = int(weapon_pick_random_available(state))
+                    weapon_id = WeaponId(weapon_pick_random_available(state))
                     entry.amount = int(weapon_id)
 
                 matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
@@ -326,14 +330,15 @@ class BonusPool:
                 weapon_id = players[0].weapon.weapon_id
                 suppression_weapon_id = _bonus_weapon_id_for_suppression(
                     bonus_id=entry.bonus_id,
-                    amount=int(entry.amount),
+                    amount=entry.amount,
                 )
                 if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
                 carried_weapon_ids = _all_carried_weapon_ids(players)
-                if entry.bonus_id == BonusId.WEAPON and int(entry.amount) in carried_weapon_ids:
+                bonus_weapon_id = _weapon_id_from_bonus_amount(entry.amount)
+                if entry.bonus_id == BonusId.WEAPON and bonus_weapon_id in carried_weapon_ids:
                     self._clear_entry(entry)
                     return None
 
