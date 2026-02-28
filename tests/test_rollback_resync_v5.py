@@ -4,16 +4,13 @@ import pytest
 
 from crimson.math_parity import f32
 from crimson.net.rollback_resync_v5 import (
-    QuestsModeSnapshotV2,
-    QuestsSessionSnapshotV2,
+    QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
     RbResyncAssemblerV5,
     RollbackResyncV5Error,
-    RushModeSnapshotV2,
-    RushSessionSnapshotV2,
+    RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
-    SurvivalModeSnapshotV2,
-    SurvivalSessionSnapshotV2,
+    SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
     build_rb_resync_messages,
     decode_mode_snapshot,
@@ -25,15 +22,10 @@ def test_encode_decode_mode_snapshot_round_trip() -> None:
     blob = encode_mode_snapshot(
         snapshot=SurvivalStateSnapshotV2(
             tick_index=42,
-            session_state=SurvivalSessionSnapshotV2(
+            runtime_state=SurvivalRuntimeSnapshotV2(
                 elapsed_ms=42.0,
                 stage=3,
                 spawn_cooldown_ms=0.100000001,
-            ),
-            mode_state=SurvivalModeSnapshotV2(
-                survival_elapsed_ms=42.0,
-                survival_stage=3,
-                survival_spawn_cooldown=0.0,
                 perk_pending_count=0,
             ),
         ),
@@ -44,21 +36,17 @@ def test_encode_decode_mode_snapshot_round_trip() -> None:
     assert isinstance(decoded, SurvivalStateSnapshotV2)
     assert decoded.mode == "survival"
     assert decoded.tick_index == 42
-    assert decoded.session_state.stage == 3
-    assert decoded.session_state.spawn_cooldown_ms == float(f32(0.100000001))
+    assert decoded.runtime_state.stage == 3
+    assert decoded.runtime_state.spawn_cooldown_ms == float(f32(0.100000001))
 
 
 def test_resync_message_build_and_assembler_round_trip() -> None:
     payload = encode_mode_snapshot(
         snapshot=RushStateSnapshotV2(
             tick_index=9,
-            session_state=RushSessionSnapshotV2(
+            runtime_state=RushRuntimeSnapshotV2(
                 elapsed_ms=9.0,
                 spawn_cooldown_ms=0.0,
-            ),
-            mode_state=RushModeSnapshotV2(
-                rush_elapsed_ms=9.0,
-                rush_spawn_cooldown_ms=0.0,
                 kill_count=0,
             ),
         ),
@@ -79,16 +67,11 @@ def test_resync_assembler_rejects_checksum_mismatch() -> None:
     payload = encode_mode_snapshot(
         snapshot=QuestsStateSnapshotV2(
             tick_index=12,
-            session_state=QuestsSessionSnapshotV2(
+            runtime_state=QuestsRuntimeSnapshotV2(
                 elapsed_ms=12.0,
                 spawn_timeline_ms=0.0,
                 no_creatures_timer_ms=0.0,
                 completion_transition_ms=0.0,
-            ),
-            mode_state=QuestsModeSnapshotV2(
-                quest_spawn_timeline_ms=0.0,
-                quest_no_creatures_timer_ms=0.0,
-                quest_completion_transition_ms=0.0,
                 quest_name_timer_ms=1.0,
                 perk_pending_count=0,
             ),

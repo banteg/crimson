@@ -18,8 +18,7 @@ from crimson.net.relay_protocol import (
     RoomState,
 )
 from crimson.net.rollback_resync_v5 import (
-    SurvivalModeSnapshotV2,
-    SurvivalSessionSnapshotV2,
+    SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
@@ -83,15 +82,10 @@ def test_runtime_tracks_prediction_mismatches_and_rollbacks(mocker) -> None:
         encode_mode_snapshot(
             snapshot=SurvivalStateSnapshotV2(
                 tick_index=0,
-                session_state=SurvivalSessionSnapshotV2(
+                runtime_state=SurvivalRuntimeSnapshotV2(
                     elapsed_ms=0.0,
                     stage=0,
                     spawn_cooldown_ms=0.0,
-                ),
-                mode_state=SurvivalModeSnapshotV2(
-                    survival_elapsed_ms=0.0,
-                    survival_stage=1,
-                    survival_spawn_cooldown=0.0,
                     perk_pending_count=0,
                 ),
             ),
@@ -140,15 +134,10 @@ def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> N
     payload = encode_mode_snapshot(
         snapshot=SurvivalStateSnapshotV2(
             tick_index=12,
-            session_state=SurvivalSessionSnapshotV2(
+            runtime_state=SurvivalRuntimeSnapshotV2(
                 elapsed_ms=12.0,
                 stage=0,
                 spawn_cooldown_ms=0.0,
-            ),
-            mode_state=SurvivalModeSnapshotV2(
-                survival_elapsed_ms=12.0,
-                survival_stage=2,
-                survival_spawn_cooldown=0.0,
                 perk_pending_count=0,
             ),
         ),

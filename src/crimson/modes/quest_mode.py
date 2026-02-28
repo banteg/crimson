@@ -30,8 +30,7 @@ from ..input_codes import (
 )
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.rollback_resync_v5 import (
-    QuestsModeSnapshotV2,
-    QuestsSessionSnapshotV2,
+    QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
 from ..perks.state import CreatureForPerks
@@ -969,16 +968,11 @@ class QuestMode(BaseGameplayMode):
                     snapshot=QuestsStateSnapshotV2(
                         tick_index=int(frame.tick_index),
                         replay_state=self._net_replay_snapshot_state(),
-                        session_state=QuestsSessionSnapshotV2(
+                        runtime_state=QuestsRuntimeSnapshotV2(
                             elapsed_ms=float(tick.elapsed_ms),
                             spawn_timeline_ms=float(tick.spawn_timeline_ms),
                             no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
                             completion_transition_ms=float(tick.completion_transition_ms),
-                        ),
-                        mode_state=QuestsModeSnapshotV2(
-                            quest_spawn_timeline_ms=float(self._quest.spawn_timeline_ms),
-                            quest_no_creatures_timer_ms=float(self._quest.no_creatures_timer_ms),
-                            quest_completion_transition_ms=float(self._quest.completion_transition_ms),
                             quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
                             perk_pending_count=int(self.state.perk_selection.pending_count),
                         ),

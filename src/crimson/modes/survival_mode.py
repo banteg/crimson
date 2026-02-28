@@ -31,8 +31,7 @@ from ..input_codes import (
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import (
-    SurvivalModeSnapshotV2,
-    SurvivalSessionSnapshotV2,
+    SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
 from ..perks.selection import perk_selection_pick
@@ -919,15 +918,10 @@ class SurvivalMode(BaseGameplayMode):
                     snapshot=SurvivalStateSnapshotV2(
                         tick_index=int(frame.tick_index),
                         replay_state=self._net_replay_snapshot_state(),
-                        session_state=SurvivalSessionSnapshotV2(
+                        runtime_state=SurvivalRuntimeSnapshotV2(
                             elapsed_ms=float(session_elapsed_ms),
                             stage=int(session_stage),
                             spawn_cooldown_ms=float(session_spawn_cooldown_ms),
-                        ),
-                        mode_state=SurvivalModeSnapshotV2(
-                            survival_elapsed_ms=float(self._survival.elapsed_ms),
-                            survival_stage=int(self._survival.stage),
-                            survival_spawn_cooldown=float(self._survival.spawn_cooldown),
                             perk_pending_count=int(self.state.perk_selection.pending_count),
                         ),
                     ),

@@ -20,8 +20,7 @@ from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.rollback_resync_v5 import (
-    RushModeSnapshotV2,
-    RushSessionSnapshotV2,
+    RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
 )
 from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
@@ -524,13 +523,9 @@ class RushMode(BaseGameplayMode):
                     snapshot=RushStateSnapshotV2(
                         tick_index=int(frame.tick_index),
                         replay_state=self._net_replay_snapshot_state(),
-                        session_state=RushSessionSnapshotV2(
+                        runtime_state=RushRuntimeSnapshotV2(
                             elapsed_ms=float(tick.elapsed_ms),
                             spawn_cooldown_ms=float(session.spawn_cooldown_ms),
-                        ),
-                        mode_state=RushModeSnapshotV2(
-                            rush_elapsed_ms=float(self._rush.elapsed_ms),
-                            rush_spawn_cooldown_ms=float(self._rush.spawn_cooldown_ms),
                             kill_count=int(self.creatures.kill_count),
                         ),
                     ),
