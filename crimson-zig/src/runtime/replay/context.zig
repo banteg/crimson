@@ -184,6 +184,10 @@ pub const SimulationContext = struct {
         return context;
     }
 
+    pub fn rebindQuestSpawnEntries(self: *SimulationContext) void {
+        self.quest_spawn_entries = self.quest_spawn_entries_storage[0..self.reset_quest_spawn_entries_len];
+    }
+
     pub fn players(self: *SimulationContext) []state_mod.PlayerState {
         return self.players_storage[0..self.players_len];
     }
@@ -266,6 +270,7 @@ fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
 test "simulation context init from header seeds mutable loop state" {
     const header = testHeader(.quests);
     var context = try SimulationContext.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
 
     try std.testing.expectEqual(@as(usize, 1), context.players().len);
     try std.testing.expectEqual(@as(i32, 1), context.player_count);

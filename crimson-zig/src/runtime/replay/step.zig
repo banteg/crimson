@@ -804,6 +804,7 @@ fn testHeader() replay_codec.ReplayHeader {
 test "step tick applies counters and emits trace snapshot" {
     const header = testHeader();
     var context = try context_mod.SimulationContext.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
 
     const before_speed = context.players()[0].move_speed;
 

@@ -4,7 +4,13 @@ from unittest.mock import MagicMock
 
 from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import RbResyncBegin, RbResyncChunk, RbResyncCommit, RbResyncRequest, RoomStart
-from crimson.net.rollback_resync_v5 import encode_mode_snapshot
+from crimson.net.rollback_resync_v5 import (
+    RushRuntimeSnapshotV2,
+    RushStateSnapshotV2,
+    SurvivalRuntimeSnapshotV2,
+    SurvivalStateSnapshotV2,
+    encode_mode_snapshot,
+)
 
 
 def _sent_messages(send_packet: MagicMock) -> list[object]:
@@ -51,10 +57,15 @@ def test_resync_request_to_stream_to_apply_flow(mocker) -> None:
     host, host_send_packet = _started_runtime(mocker, role="host", slot_index=0)
 
     payload = encode_mode_snapshot(
-        mode="survival",
-        tick_index=8,
-        session_state={"elapsed_ms": 8.0},
-        mode_state={"stage": 1},
+        snapshot=SurvivalStateSnapshotV2(
+            tick_index=8,
+            runtime_state=SurvivalRuntimeSnapshotV2(
+                elapsed_ms=8.0,
+                stage=1,
+                spawn_cooldown_ms=0.0,
+                perk_pending_count=0,
+            ),
+        ),
     )
     host.store_local_snapshot(8, payload)
 
@@ -82,10 +93,14 @@ def test_resync_checksum_mismatch_sets_error(mocker) -> None:
     host, host_send_packet = _started_runtime(mocker, role="host", slot_index=0)
 
     payload = encode_mode_snapshot(
-        mode="rush",
-        tick_index=16,
-        session_state={"elapsed_ms": 16.0},
-        mode_state={"spawn_cooldown_ms": 0.0},
+        snapshot=RushStateSnapshotV2(
+            tick_index=16,
+            runtime_state=RushRuntimeSnapshotV2(
+                elapsed_ms=16.0,
+                spawn_cooldown_ms=0.0,
+                kill_count=0,
+            ),
+        ),
     )
     host.store_local_snapshot(16, payload)
     host._handle_message(

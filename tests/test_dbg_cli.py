@@ -145,6 +145,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
         """\
         #!/usr/bin/env python3
         import json
+        import msgspec
         import pathlib
         import struct
         import sys
@@ -154,20 +155,20 @@ def _write_fake_zig_bin(path: Path) -> Path:
         idx = 0
         while idx < len(args):
             arg = args[idx]
-            if arg == "--debug-trace-jsonl":
+            if arg == "--debug-trace-msgpack":
                 idx += 1
                 trace_path = pathlib.Path(args[idx])
             idx += 1
 
         if trace_path is None:
-            raise SystemExit("missing --debug-trace-jsonl")
+            raise SystemExit("missing --debug-trace-msgpack")
 
-        def f32_bits(value: float) -> int:
-            return struct.unpack("<I", struct.pack("<f", float(value)))[0]
+        def wire_f32(value: float) -> float:
+            return struct.unpack("<f", struct.pack("<f", float(value)))[0]
 
         def build_row(*, tick_index: int, elapsed_ms: int, rng_state: int, rng_base: int, score_xp: int, kills: int, player_ammo: float, player_health: float, player_pos_x: float, player_pos_y: float, player_experience: int, player_shot_seq: int, perk_pending: int, debug_pending_nuke: int) -> dict[str, object]:
             return {
-                "schema_version": 3,
+                "schema_version": 5,
                 "tick_index": tick_index,
                 "timing": {
                     "elapsed_ms": elapsed_ms,
@@ -194,31 +195,31 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 },
                 "player": {
                     "player_weapon_id": 14,
-                    "player_ammo_bits": f32_bits(player_ammo),
-                    "player_health_bits": f32_bits(player_health),
-                    "player_pos_x_bits": f32_bits(player_pos_x),
-                    "player_pos_y_bits": f32_bits(player_pos_y),
-                    "player_aim_x_bits": f32_bits(player_pos_x),
-                    "player_aim_y_bits": f32_bits(player_pos_y),
-                    "player_heading_bits": f32_bits(0.0),
-                    "player_aim_heading_bits": f32_bits(0.0),
-                    "player_move_speed_bits": f32_bits(0.0),
-                    "player_turn_speed_bits": f32_bits(0.0),
+                    "player_ammo": wire_f32(player_ammo),
+                    "player_health": wire_f32(player_health),
+                    "player_pos_x": wire_f32(player_pos_x),
+                    "player_pos_y": wire_f32(player_pos_y),
+                    "player_aim_x": wire_f32(player_pos_x),
+                    "player_aim_y": wire_f32(player_pos_y),
+                    "player_heading": 0.0,
+                    "player_aim_heading": 0.0,
+                    "player_move_speed": 0.0,
+                    "player_turn_speed": 0.0,
                     "player_experience": player_experience,
                     "player_level": 1,
                     "player_reload_active": False,
-                    "player_reload_timer_bits": f32_bits(0.0),
-                    "player_shot_cooldown_bits": f32_bits(0.0),
+                    "player_reload_timer": 0.0,
+                    "player_shot_cooldown": 0.0,
                     "player_shot_seq": player_shot_seq,
                     "player_perk_counts": [0] * 58,
-                    "player_hot_tempered_timer_bits": f32_bits(0.0),
-                    "player_shield_timer_bits": f32_bits(0.0),
-                    "player_man_bomb_timer_bits": f32_bits(0.0),
-                    "player_fire_cough_timer_bits": f32_bits(0.0),
-                    "player_living_fortress_timer_bits": f32_bits(0.0),
-                    "perk_interval_hot_tempered_bits": f32_bits(0.0),
-                    "perk_interval_man_bomb_bits": f32_bits(0.0),
-                    "perk_interval_fire_cough_bits": f32_bits(0.0),
+                    "player_hot_tempered_timer": 0.0,
+                    "player_shield_timer": 0.0,
+                    "player_man_bomb_timer": 0.0,
+                    "player_fire_cough_timer": 0.0,
+                    "player_living_fortress_timer": 0.0,
+                    "perk_interval_hot_tempered": 0.0,
+                    "perk_interval_man_bomb": 0.0,
+                    "perk_interval_fire_cough": 0.0,
                 },
                 "bonuses": {
                     "bonus_timer_ms_by_id": [0] * 15,
@@ -231,13 +232,13 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "projectile_first_hit_creature_index": -1,
                     "projectile_first_hit_projectile_index": -1,
                     "projectile_first_hit_type_id": 0,
-                    "projectile_first_hit_origin_x_bits": f32_bits(0.0),
-                    "projectile_first_hit_origin_y_bits": f32_bits(0.0),
-                    "projectile_first_hit_pos_x_bits": f32_bits(0.0),
-                    "projectile_first_hit_pos_y_bits": f32_bits(0.0),
-                    "projectile_first_hit_target_size_bits": f32_bits(0.0),
-                    "projectile_first_hit_target_x_bits": f32_bits(0.0),
-                    "projectile_first_hit_target_y_bits": f32_bits(0.0),
+                    "projectile_first_hit_origin_x": 0.0,
+                    "projectile_first_hit_origin_y": 0.0,
+                    "projectile_first_hit_pos_x": 0.0,
+                    "projectile_first_hit_pos_y": 0.0,
+                    "projectile_first_hit_target_size": 0.0,
+                    "projectile_first_hit_target_x": 0.0,
+                    "projectile_first_hit_target_y": 0.0,
                     "projectile_type_counts": [],
                     "entries": [],
                 },
@@ -289,10 +290,13 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 debug_pending_nuke=1,
             ),
         ]
-        with trace_path.open("w", encoding="utf-8") as handle:
+        magic = b"crimson_replay_tick_trace_msgpack_v3\\n"
+        with trace_path.open("wb") as handle:
+            handle.write(magic)
             for row in rows:
-                handle.write(json.dumps(row))
-                handle.write("\\n")
+                payload = msgspec.msgpack.encode(row)
+                handle.write(struct.pack("<I", len(payload)))
+                handle.write(payload)
 
         payload = {
             "producer": {"impl": "zig", "impl_version": "test"},

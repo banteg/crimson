@@ -9,7 +9,7 @@ from .channel_helpers import as_object_dict, channel_dict, channel_list, rng_row
 from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from .policy import ParityPolicy
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
+from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceReader, write_trace
 
 
@@ -447,7 +447,7 @@ def bisect_traces(
                     "first_bad_tick": first_bad,
                 },
                 channels=["golden", "candidate", "focus_tick"],
-                channel_versions={"golden": 1, "candidate": 1, "focus_tick": 1},
+                channel_versions=channel_versions_for(("golden", "candidate", "focus_tick")),
                 tick_range={
                     "start_tick": left,
                     "end_tick": right,

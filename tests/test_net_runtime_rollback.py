@@ -17,7 +17,11 @@ from crimson.net.relay_protocol import (
     RoomStart,
     RoomState,
 )
-from crimson.net.rollback_resync_v5 import encode_mode_snapshot
+from crimson.net.rollback_resync_v5 import (
+    SurvivalRuntimeSnapshotV2,
+    SurvivalStateSnapshotV2,
+    encode_mode_snapshot,
+)
 
 
 def _sent_messages(send_packet: MagicMock) -> list[object]:
@@ -76,10 +80,15 @@ def test_runtime_tracks_prediction_mismatches_and_rollbacks(mocker) -> None:
     runtime.store_local_snapshot(
         0,
         encode_mode_snapshot(
-            mode="survival",
-            tick_index=0,
-            session_state={"elapsed_ms": 0.0},
-            mode_state={"stage": 1},
+            snapshot=SurvivalStateSnapshotV2(
+                tick_index=0,
+                runtime_state=SurvivalRuntimeSnapshotV2(
+                    elapsed_ms=0.0,
+                    stage=0,
+                    spawn_cooldown_ms=0.0,
+                    perk_pending_count=0,
+                ),
+            ),
         ),
     )
     runtime.queue_local_input([0.0, 0.0, 0.0, 0.0, 2], now_ms=1101)
@@ -123,10 +132,15 @@ def test_runtime_requests_resync_when_correction_exceeds_rollback_cap(mocker) ->
 def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> None:
     runtime, _sent = _start_runtime(mocker)
     payload = encode_mode_snapshot(
-        mode="survival",
-        tick_index=12,
-        session_state={"elapsed_ms": 12.0},
-        mode_state={"stage": 2},
+        snapshot=SurvivalStateSnapshotV2(
+            tick_index=12,
+            runtime_state=SurvivalRuntimeSnapshotV2(
+                elapsed_ms=12.0,
+                stage=0,
+                spawn_cooldown_ms=0.0,
+                perk_pending_count=0,
+            ),
+        ),
     )
 
     # Build a valid stream with the real metadata through runtime's host helper.

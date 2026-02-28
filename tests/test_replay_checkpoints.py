@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import gzip
-import json
-
+import msgspec
 import pytest
 
 from crimson.replay.checkpoints import (
@@ -94,7 +92,7 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
             },
         ],
     }
-    payload = gzip.compress(json.dumps(payload_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"), mtime=0)
+    payload = msgspec.msgpack.encode(payload_obj)
     loaded = load_checkpoints(payload)
     assert loaded.checkpoints[0].perk.pending_count == 0
     assert loaded.checkpoints[0].perk.choices == []
@@ -106,14 +104,14 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     assert loaded.checkpoints[0].events.sfx_count == 0
 
 
-def test_load_checkpoints_rejects_invalid_gzip_payload() -> None:
-    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints gzip payload"):
-        load_checkpoints(b"\x1f\x8bnot-a-gzip-stream")
+def test_load_checkpoints_rejects_invalid_msgpack_payload() -> None:
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints msgpack payload"):
+        load_checkpoints(b"\x81\xa7version\xc3")
 
 
-def test_load_checkpoints_rejects_gzip_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_load_checkpoints_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES", "4")
-    payload = gzip.compress(b"12345", mtime=0)
+    payload = b"12345"
     with pytest.raises(ReplayCheckpointsError, match="payload too large"):
         load_checkpoints(payload)
 

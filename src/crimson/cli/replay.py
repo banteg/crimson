@@ -1571,7 +1571,6 @@ def cmd_replay_verify_checkpoints(
     from ..replay.checkpoints import (
         ReplayCheckpointsError,
         default_checkpoints_path,
-        legacy_checkpoints_path,
         load_checkpoints_file,
     )
     from ..sim.driver.replay_runner import ReplayRunnerError, run_replay
@@ -1594,10 +1593,6 @@ def cmd_replay_verify_checkpoints(
 
     if checkpoints_file is None:
         checkpoints_path = default_checkpoints_path(replay_path)
-        if not checkpoints_path.is_file():
-            legacy_path = legacy_checkpoints_path(replay_path)
-            if legacy_path.is_file():
-                checkpoints_path = legacy_path
     else:
         checkpoints_path = Path(checkpoints_file)
     if not checkpoints_path.is_file():
@@ -1754,4 +1749,3 @@ def cmd_replay_convert_capture(
     typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
     typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
     typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")
-

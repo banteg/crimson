@@ -253,7 +253,6 @@ pub fn runReplayScaffoldWithTrace(
             quest_spawn_entries = quest_spawn_entries_storage[0..0];
         }
     }
-
     var context = replay_context_mod.SimulationContext.initFromReplayHeader(
         header,
         .{
@@ -275,6 +274,7 @@ pub fn runReplayScaffoldWithTrace(
         error.UnsupportedGameMode => return error.UnsupportedGameMode,
         error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
     };
+    context.rebindQuestSpawnEntries();
 
     if (game_mode == .quests) {
         const weapon_id = @max(1, quest_start_weapon_id_for_reset);
@@ -1091,7 +1091,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
                 .shots_fired = result.shots_fired,
-                .ammo_bits = trace.items[0].player.player_ammo_bits,
+                .ammo_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_ammo))),
             };
         }
     }.runCase;
@@ -1497,7 +1497,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
         .{},
     );
     try std.testing.expectEqual(@as(usize, 1), trace.items.len);
-    try std.testing.expect(trace.items[0].player.player_pos_x_bits > f32Bits(512.0));
+    try std.testing.expect(f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_x))) > f32Bits(512.0));
 }
 
 test "rush scaffold supports multiplayer replays" {
@@ -2376,8 +2376,8 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             );
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
-                .x_bits = trace.items[0].player.player_pos_x_bits,
-                .y_bits = trace.items[0].player.player_pos_y_bits,
+                .x_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_x))),
+                .y_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_y))),
             };
         }
     }.runCase;

@@ -3,10 +3,11 @@ from __future__ import annotations
 import hashlib
 import math
 import zlib
-from typing import Any, Literal
+from typing import Literal
 
 import msgspec
 
+from ..wire.float32_wire import assert_wire_f32, wire_f32
 from .relay_protocol import (
     RESYNC_CHUNK_PAYLOAD_BYTES,
     RESYNC_MAX_SNAPSHOT_BYTES,
@@ -15,25 +16,124 @@ from .relay_protocol import (
     RbResyncCommit,
 )
 
-SCHEMA_VERSION = 1
-SNAPSHOT_CODEC = "msgpack_state_v1"
+SCHEMA_VERSION = 2
+SNAPSHOT_CODEC = "msgpack_state_v2_f32wire"
 
 
 class RollbackResyncV5Error(RuntimeError):
     """Raised when rollback resync stream payloads are invalid."""
 
 
-class ModeStateSnapshotV1(msgspec.Struct, forbid_unknown_fields=True):
-    schema_version: int = SCHEMA_VERSION
-    mode: Literal["survival", "rush", "quests"] = "survival"
+class ReplayStateSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
     tick_index: int = 0
-    session_state: dict[str, Any] = msgspec.field(default_factory=dict)
-    mode_state: dict[str, Any] = msgspec.field(default_factory=dict)
-    replay_state: dict[str, Any] | None = None
+    recorded_tick_count: int = 0
+
+    def __post_init__(self) -> None:
+        self.tick_index = int(self.tick_index)
+        self.recorded_tick_count = int(self.recorded_tick_count)
+
+
+class SurvivalRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
+    elapsed_ms: float = 0.0
+    stage: int = 0
+    spawn_cooldown_ms: float = 0.0
+    perk_pending_count: int = 0
+
+    def __post_init__(self) -> None:
+        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="survival.runtime_state.elapsed_ms")
+        self.stage = int(self.stage)
+        self.spawn_cooldown_ms = wire_f32(
+            float(self.spawn_cooldown_ms),
+            field="survival.runtime_state.spawn_cooldown_ms",
+        )
+        self.perk_pending_count = int(self.perk_pending_count)
+
+
+class RushRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
+    elapsed_ms: float = 0.0
+    spawn_cooldown_ms: float = 0.0
+    kill_count: int = 0
+
+    def __post_init__(self) -> None:
+        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="rush.runtime_state.elapsed_ms")
+        self.spawn_cooldown_ms = wire_f32(float(self.spawn_cooldown_ms), field="rush.runtime_state.spawn_cooldown_ms")
+        self.kill_count = int(self.kill_count)
+
+
+class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
+    elapsed_ms: float = 0.0
+    spawn_timeline_ms: float = 0.0
+    no_creatures_timer_ms: float = 0.0
+    completion_transition_ms: float = 0.0
+    quest_name_timer_ms: float = 0.0
+    perk_pending_count: int = 0
+
+    def __post_init__(self) -> None:
+        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="quests.runtime_state.elapsed_ms")
+        self.spawn_timeline_ms = wire_f32(float(self.spawn_timeline_ms), field="quests.runtime_state.spawn_timeline_ms")
+        self.no_creatures_timer_ms = wire_f32(
+            float(self.no_creatures_timer_ms),
+            field="quests.runtime_state.no_creatures_timer_ms",
+        )
+        self.completion_transition_ms = wire_f32(
+            float(self.completion_transition_ms),
+            field="quests.runtime_state.completion_transition_ms",
+        )
+        self.quest_name_timer_ms = wire_f32(float(self.quest_name_timer_ms), field="quests.runtime_state.quest_name_timer_ms")
+        self.perk_pending_count = int(self.perk_pending_count)
+
+
+class _ModeStateSnapshotV2Base(msgspec.Struct, forbid_unknown_fields=True):
+    schema_version: int = SCHEMA_VERSION
+    tick_index: int = 0
+    replay_state: ReplayStateSnapshotV2 | None = None
+
+    def __post_init__(self) -> None:
+        self.schema_version = int(self.schema_version)
+        self.tick_index = int(self.tick_index)
+
+
+class SurvivalStateSnapshotV2(
+    _ModeStateSnapshotV2Base,
+    tag="survival",
+    tag_field="mode",
+):
+    runtime_state: SurvivalRuntimeSnapshotV2 = msgspec.field(default_factory=SurvivalRuntimeSnapshotV2)
+
+    @property
+    def mode(self) -> Literal["survival"]:
+        return "survival"
+
+
+class RushStateSnapshotV2(
+    _ModeStateSnapshotV2Base,
+    tag="rush",
+    tag_field="mode",
+):
+    runtime_state: RushRuntimeSnapshotV2 = msgspec.field(default_factory=RushRuntimeSnapshotV2)
+
+    @property
+    def mode(self) -> Literal["rush"]:
+        return "rush"
+
+
+class QuestsStateSnapshotV2(
+    _ModeStateSnapshotV2Base,
+    tag="quests",
+    tag_field="mode",
+):
+    runtime_state: QuestsRuntimeSnapshotV2 = msgspec.field(default_factory=QuestsRuntimeSnapshotV2)
+
+    @property
+    def mode(self) -> Literal["quests"]:
+        return "quests"
+
+
+ModeStateSnapshotV2 = SurvivalStateSnapshotV2 | RushStateSnapshotV2 | QuestsStateSnapshotV2
 
 
 _SNAPSHOT_ENCODER = msgspec.msgpack.Encoder()
-_SNAPSHOT_DECODER = msgspec.msgpack.Decoder(type=ModeStateSnapshotV1)
+_SNAPSHOT_DECODER = msgspec.msgpack.Decoder(type=ModeStateSnapshotV2)
 
 
 def _sha256_hex(blob: bytes) -> str:
@@ -42,33 +142,69 @@ def _sha256_hex(blob: bytes) -> str:
 
 def encode_mode_snapshot(
     *,
-    mode: Literal["survival", "rush", "quests"],
-    tick_index: int,
-    session_state: dict[str, Any],
-    mode_state: dict[str, Any],
-    replay_state: dict[str, Any] | None = None,
+    snapshot: ModeStateSnapshotV2,
 ) -> bytes:
-    snapshot = ModeStateSnapshotV1(
-        schema_version=SCHEMA_VERSION,
-        mode=mode,
-        tick_index=int(tick_index),
-        session_state=dict(session_state),
-        mode_state=dict(mode_state),
-        replay_state=(None if replay_state is None else dict(replay_state)),
-    )
+    if int(snapshot.schema_version) != int(SCHEMA_VERSION):
+        raise RollbackResyncV5Error("unsupported_snapshot_schema")
+    _assert_snapshot_f32(snapshot)
     blob = _SNAPSHOT_ENCODER.encode(snapshot)
     if len(blob) > int(RESYNC_MAX_SNAPSHOT_BYTES):
         raise RollbackResyncV5Error("snapshot_too_large")
     return blob
 
 
-def decode_mode_snapshot(blob: bytes) -> ModeStateSnapshotV1:
+def decode_mode_snapshot(blob: bytes) -> ModeStateSnapshotV2:
     if len(blob) > int(RESYNC_MAX_SNAPSHOT_BYTES):
         raise RollbackResyncV5Error("snapshot_too_large")
-    snapshot = _SNAPSHOT_DECODER.decode(blob)
+    try:
+        snapshot = _SNAPSHOT_DECODER.decode(blob)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise RollbackResyncV5Error("snapshot_decode_error") from exc
     if int(snapshot.schema_version) != int(SCHEMA_VERSION):
         raise RollbackResyncV5Error("unsupported_snapshot_schema")
+    _assert_snapshot_f32(snapshot)
     return snapshot
+
+
+def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
+    replay_state = snapshot.replay_state
+    if replay_state is not None:
+        replay_state.tick_index = int(replay_state.tick_index)
+        replay_state.recorded_tick_count = int(replay_state.recorded_tick_count)
+    if isinstance(snapshot, SurvivalStateSnapshotV2):
+        runtime_state = snapshot.runtime_state
+        runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="survival.runtime_state.elapsed_ms")
+        runtime_state.spawn_cooldown_ms = assert_wire_f32(
+            runtime_state.spawn_cooldown_ms,
+            field="survival.runtime_state.spawn_cooldown_ms",
+        )
+        return
+    if isinstance(snapshot, RushStateSnapshotV2):
+        runtime_state = snapshot.runtime_state
+        runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="rush.runtime_state.elapsed_ms")
+        runtime_state.spawn_cooldown_ms = assert_wire_f32(
+            runtime_state.spawn_cooldown_ms,
+            field="rush.runtime_state.spawn_cooldown_ms",
+        )
+        return
+    runtime_state = snapshot.runtime_state
+    runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="quests.runtime_state.elapsed_ms")
+    runtime_state.spawn_timeline_ms = assert_wire_f32(
+        runtime_state.spawn_timeline_ms,
+        field="quests.runtime_state.spawn_timeline_ms",
+    )
+    runtime_state.no_creatures_timer_ms = assert_wire_f32(
+        runtime_state.no_creatures_timer_ms,
+        field="quests.runtime_state.no_creatures_timer_ms",
+    )
+    runtime_state.completion_transition_ms = assert_wire_f32(
+        runtime_state.completion_transition_ms,
+        field="quests.runtime_state.completion_transition_ms",
+    )
+    runtime_state.quest_name_timer_ms = assert_wire_f32(
+        runtime_state.quest_name_timer_ms,
+        field="quests.runtime_state.quest_name_timer_ms",
+    )
 
 
 class RbResyncMessageSet(msgspec.Struct, frozen=True):
@@ -197,12 +333,19 @@ class RbResyncAssemblerV5(msgspec.Struct):
 
 
 __all__ = [
-    "ModeStateSnapshotV1",
+    "ModeStateSnapshotV2",
+    "QuestsRuntimeSnapshotV2",
+    "QuestsStateSnapshotV2",
     "RbResyncAssemblerV5",
     "RbResyncMessageSet",
     "RollbackResyncV5Error",
+    "RushRuntimeSnapshotV2",
+    "RushStateSnapshotV2",
     "SCHEMA_VERSION",
     "SNAPSHOT_CODEC",
+    "SurvivalRuntimeSnapshotV2",
+    "SurvivalStateSnapshotV2",
+    "ReplayStateSnapshotV2",
     "build_rb_resync_messages",
     "decode_mode_snapshot",
     "encode_mode_snapshot",

@@ -17,6 +17,7 @@ from .schema import (
     CHUNK_KIND_TICK,
     CHUNK_KINDS,
     DEFAULT_CHUNK_FLAGS,
+    SUPPORTED_TRACE_SCHEMA_VERSIONS,
     TRACE_FORMAT_VERSION,
     TRACE_MAGIC,
     TRAILER_MAGIC,
@@ -203,7 +204,13 @@ def _load_meta_at_offset(stream: io.BufferedReader, *, offset: int) -> TraceMeta
     kind, _start, _end, payload = _chunk_payload_from_file(stream, offset=offset)
     if kind != CHUNK_KIND_META:
         raise TraceError("invalid trace meta chunk")
-    return _META_DECODER.decode(payload)
+    meta = _META_DECODER.decode(payload)
+    if int(meta.trace_schema_version) not in SUPPORTED_TRACE_SCHEMA_VERSIONS:
+        supported = ", ".join(str(version) for version in sorted(SUPPORTED_TRACE_SCHEMA_VERSIONS))
+        raise TraceError(
+            f"unsupported trace schema version: {meta.trace_schema_version} (supported: {supported})",
+        )
+    return meta
 
 
 def _load_footer_and_meta_offsets(path: Path) -> tuple[int, int]:

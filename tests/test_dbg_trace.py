@@ -3,9 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import msgspec
+import pytest
 
-from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta
-from crimson.dbg.trace import TraceReader, write_trace
+from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from crimson.dbg.trace import TraceError, TraceReader, write_trace
 
 
 def _meta() -> TraceMeta:
@@ -16,7 +17,7 @@ def _meta() -> TraceMeta:
         producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
         source={"kind": "unit_test", "sha256": "0" * 64},
         channels=["checkpoint"],
-        channel_versions={"checkpoint": 1},
+        channel_versions=channel_versions_for(("checkpoint",)),
         tick_range={"start_tick": 0, "end_tick": 2, "tick_count": 3},
         config={},
     )
@@ -76,3 +77,45 @@ def test_tick_record_decodes_with_unknown_fields() -> None:
     )
     tick = msgspec.msgpack.decode(payload, type=TickRecord)
     assert tick.tick_index == 7
+
+
+def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:
+    out_path = tmp_path / "trace_schema_v1.cdt"
+    meta = TraceMeta(
+        trace_format_version=int(TRACE_FORMAT_VERSION),
+        trace_schema_version=1,
+        created_utc="2026-02-24T00:00:00+00:00",
+        producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
+        source={"kind": "unit_test", "sha256": "1" * 64},
+        channels=["checkpoint"],
+        channel_versions=channel_versions_for(("checkpoint",)),
+        tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
+        config={},
+    )
+    rows = [TickRecord(tick_index=0, elapsed_ms=0, mode_id=1, channels={"checkpoint": {"score_xp": 0}})]
+    write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
+
+    with pytest.raises(TraceError, match="unsupported trace schema version"):
+        with TraceReader(out_path):
+            pass
+
+
+def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
+    out_path = tmp_path / "trace_schema_bad.cdt"
+    meta = TraceMeta(
+        trace_format_version=int(TRACE_FORMAT_VERSION),
+        trace_schema_version=99,
+        created_utc="2026-02-24T00:00:00+00:00",
+        producer={"impl": "python", "impl_version": "test", "platform": "darwin", "arch": "x86_64"},
+        source={"kind": "unit_test", "sha256": "2" * 64},
+        channels=["checkpoint"],
+        channel_versions=channel_versions_for(("checkpoint",)),
+        tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
+        config={},
+    )
+    rows = [TickRecord(tick_index=0, elapsed_ms=0, mode_id=1, channels={"checkpoint": {"score_xp": 0}})]
+    write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
+
+    with pytest.raises(TraceError, match="unsupported trace schema version"):
+        with TraceReader(out_path):
+            pass

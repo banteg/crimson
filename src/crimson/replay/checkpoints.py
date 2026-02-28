@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import gzip
 import hashlib
-import io
-import json
 import os
 from collections.abc import Sequence
 from pathlib import Path
@@ -32,7 +29,7 @@ class _EventsLike(Protocol):
     pickups: list[object]
     sfx: list[str]
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 _DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 64 * 1024 * 1024
 _MAX_CHECKPOINTS_PAYLOAD_ENV = "CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES"
 
@@ -108,8 +105,8 @@ def _replay_player_checkpoint_to_obj(player: ReplayPlayerCheckpoint) -> dict[str
     }
 
 
-_CHECKPOINTS_ENCODER = msgspec.json.Encoder(order="deterministic")
-_CHECKPOINTS_DECODER = msgspec.json.Decoder(type=ReplayCheckpoints)
+_CHECKPOINTS_ENCODER = msgspec.msgpack.Encoder()
+_CHECKPOINTS_DECODER = msgspec.msgpack.Decoder(type=ReplayCheckpoints)
 
 
 def default_checkpoints_path(replay_path: Path) -> Path:
@@ -148,19 +145,6 @@ def _max_checkpoints_payload_bytes() -> int:
     if parsed <= 0:
         return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
     return int(parsed)
-
-
-def _decompress_gzip_checkpoints(data: bytes, *, max_output_bytes: int) -> bytes:
-    try:
-        with gzip.GzipFile(fileobj=io.BytesIO(data), mode="rb") as stream:
-            payload = stream.read(int(max_output_bytes) + 1)
-    except OSError as exc:
-        raise ReplayCheckpointsError("invalid checkpoints gzip payload") from exc
-    if len(payload) > int(max_output_bytes):
-        raise ReplayCheckpointsError(
-            f"checkpoints payload too large after gzip decompression (> {int(max_output_bytes)} bytes)",
-        )
-    return payload
 
 
 def _bonus_timer_ms(value: float) -> int:
@@ -297,7 +281,7 @@ def build_checkpoint(
         "bonus_timers": dict(bonus_timers),
     }
     state_hash = hashlib.sha256(
-        json.dumps(hash_obj, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+        msgspec.msgpack.encode(hash_obj),
     ).hexdigest()[:16]
 
     return ReplayCheckpoint(
@@ -320,20 +304,18 @@ def build_checkpoint(
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    raw = _CHECKPOINTS_ENCODER.encode(checkpoints)
-    return gzip.compress(raw, compresslevel=9, mtime=0)
+    return _CHECKPOINTS_ENCODER.encode(checkpoints)
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:
     max_payload_bytes = int(_max_checkpoints_payload_bytes())
-    if data.startswith(b"\x1f\x8b"):
-        data = _decompress_gzip_checkpoints(data, max_output_bytes=max_payload_bytes)
-    if len(data) > int(max_payload_bytes):
+    payload = bytes(data)
+    if len(payload) > int(max_payload_bytes):
         raise ReplayCheckpointsError(f"checkpoints payload too large (> {int(max_payload_bytes)} bytes)")
     try:
-        decoded = _CHECKPOINTS_DECODER.decode(data)
+        decoded = _CHECKPOINTS_DECODER.decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCheckpointsError("invalid checkpoints JSON payload") from exc
+        raise ReplayCheckpointsError("invalid checkpoints msgpack payload") from exc
 
     if int(decoded.version) != FORMAT_VERSION:
         raise ReplayCheckpointsError(f"unsupported checkpoints version: {int(decoded.version)}")

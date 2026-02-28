@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 import msgspec
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 1
+TRACE_SCHEMA_VERSION = 2
+SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
+
+_DEFAULT_CHANNEL_VERSION = 1
+_CHANNEL_VERSION_OVERRIDES = {
+    "zig_tick_trace": 5,
+}
 
 _CHUNK_KIND_META = b"META"
 _CHUNK_KIND_TICK = b"TICK"
@@ -65,3 +73,11 @@ class TraceFooter(msgspec.Struct):
     first_tick: int | None
     last_tick: int | None
     channel_counts: dict[str, int]
+
+
+def channel_version_for(channel: str) -> int:
+    return int(_CHANNEL_VERSION_OVERRIDES.get(channel, _DEFAULT_CHANNEL_VERSION))
+
+
+def channel_versions_for(channels: Iterable[str]) -> dict[str, int]:
+    return {str(channel): channel_version_for(str(channel)) for channel in channels}
