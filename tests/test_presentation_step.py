@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from itertools import count
 
+from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.effects import FxQueue
@@ -148,7 +149,7 @@ def test_apply_world_presentation_step_orders_sfx() -> None:
         pickups=[
             BonusPickupEvent(
                 player_index=0,
-                bonus_id=1,
+                bonus_id=BonusId.POINTS,
                 amount=100,
                 pos=Vec2(),
             ),

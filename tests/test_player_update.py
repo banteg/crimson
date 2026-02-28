@@ -921,12 +921,12 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     for _ in range(40):
         bonus_hud_update(state, [player], dt=1.0 / 60.0)
 
-    assert any(slot.active and slot.bonus_id == int(BonusId.WEAPON_POWER_UP) for slot in state.bonus_hud.slots)
+    assert any(slot.active and slot.bonus_id == BonusId.WEAPON_POWER_UP for slot in state.bonus_hud.slots)
 
     state.bonuses.weapon_power_up = 0.0
     for _ in range(60):
         bonus_hud_update(state, [player], dt=1.0 / 60.0)
-    assert not any(slot.active and slot.bonus_id == int(BonusId.WEAPON_POWER_UP) for slot in state.bonus_hud.slots)
+    assert not any(slot.active and slot.bonus_id == BonusId.WEAPON_POWER_UP for slot in state.bonus_hud.slots)
 
 
 def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:

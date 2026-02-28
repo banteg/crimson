@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, TypeAlias
 
 from grim.geom import Vec2
 
+from ..bonuses.ids import BonusId
 from ..weapons import WeaponId
 
 PERK_COUNT_SIZE = 0x80
@@ -71,7 +72,7 @@ class PlayerState:
 @dataclass(frozen=True, slots=True)
 class BonusPickupEvent:
     player_index: int
-    bonus_id: int
+    bonus_id: BonusId
     amount: int
     pos: Vec2
 

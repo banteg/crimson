@@ -55,4 +55,4 @@ def test_bonus_pick_random_type_quest_suppression(
     players = [PlayerState(index=0, pos=Vec2())]
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-    assert bonus_id == int(expected_bonus_id)
+    assert bonus_id == expected_bonus_id

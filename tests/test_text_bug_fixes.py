@@ -55,8 +55,8 @@ def test_perk_display_description_fixes_grammar_by_default() -> None:
 
 
 def test_bonus_display_description_fixes_text_by_default() -> None:
-    power_up = int(BonusId.WEAPON_POWER_UP)
-    fire_bullets = int(BonusId.FIRE_BULLETS)
+    power_up = BonusId.WEAPON_POWER_UP
+    fire_bullets = BonusId.FIRE_BULLETS
 
     assert bonus_display_description(power_up) == "Your fire rate and load time increase for a short period."
     assert bonus_display_description(power_up, preserve_bugs=True) == "Your firerate and load time increase for a short period."
@@ -66,6 +66,6 @@ def test_bonus_display_description_fixes_text_by_default() -> None:
 
 
 def test_bonus_label_for_entry_uses_typo_fixes_unless_preserving_bugs() -> None:
-    entry = BonusEntry(bonus_id=int(BonusId.WEAPON), amount=WeaponId.LIGHTNING_RIFLE)
+    entry = BonusEntry(bonus_id=BonusId.WEAPON, amount=WeaponId.LIGHTNING_RIFLE)
     assert bonus_label_for_entry(entry) == "Lightning Rifle"
     assert bonus_label_for_entry(entry, preserve_bugs=True) == "Lighting Rifle"

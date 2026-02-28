@@ -61,7 +61,7 @@ def bonus_apply(
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
-    meta = BONUS_BY_ID.get(int(bonus_id))
+    meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:
         return
     if amount is None:

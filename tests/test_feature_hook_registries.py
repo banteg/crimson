@@ -56,19 +56,19 @@ def test_bonus_pickup_feature_hooks_emit_expected_fx() -> None:
     pickups = [
         BonusPickupEvent(
             player_index=0,
-            bonus_id=int(BonusId.REFLEX_BOOST),
+            bonus_id=BonusId.REFLEX_BOOST,
             amount=3,
             pos=Vec2(100.0, 100.0),
         ),
         BonusPickupEvent(
             player_index=0,
-            bonus_id=int(BonusId.FREEZE),
+            bonus_id=BonusId.FREEZE,
             amount=5,
             pos=Vec2(200.0, 200.0),
         ),
         BonusPickupEvent(
             player_index=0,
-            bonus_id=int(BonusId.NUKE),
+            bonus_id=BonusId.NUKE,
             amount=0,
             pos=Vec2(300.0, 300.0),
         ),

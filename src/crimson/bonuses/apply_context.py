@@ -69,7 +69,7 @@ BonusApplyHandler = Callable[[BonusApplyCtx], None]
 
 
 def bonus_apply_seconds(ctx: BonusApplyCtx) -> float:
-    meta = BONUS_BY_ID.get(int(ctx.bonus_id))
+    meta = BONUS_BY_ID.get(ctx.bonus_id)
     if meta is not None and meta.apply_seconds is not None:
         return float(meta.apply_seconds)
     return float(ctx.amount)

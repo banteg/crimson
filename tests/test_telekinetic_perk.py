@@ -113,7 +113,7 @@ def test_telekinetic_hover_timer_carries_across_bonus_switch() -> None:
     pickups = bonus_telekinetic_update(state, [player], dt=0.3)
 
     assert len(pickups) == 1
-    assert pickups[0].bonus_id == int(BonusId.POINTS)
+    assert pickups[0].bonus_id == BonusId.POINTS
     assert_float_close(pickups[0].pos.x, 130.0)
     assert_float_close(pickups[0].pos.y, 100.0)
     assert first.picked is False

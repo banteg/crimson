@@ -37,7 +37,7 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     world.update(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    assert int(entry.bonus_id) == int(BonusId.UNUSED)
+    assert entry.bonus_id == BonusId.UNUSED
     assert world.state.bonuses.freeze == 0.0
     active = world.state.effects.iter_active()
     assert len(active) == 12
