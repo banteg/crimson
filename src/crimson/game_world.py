@@ -35,7 +35,7 @@ from .sim.step_pipeline import DeterministicStepResult, StepPipelineOptions, run
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .terrain_assets import TerrainTextureId, terrain_texture_by_id
-from .weapon_runtime import weapon_assign_player
+from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
 from .weapons import WEAPON_TABLE
 
 
@@ -167,6 +167,7 @@ class GameWorld:
             pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
             player = PlayerState(index=idx, pos=pos)
             weapon_assign_player(player, 1)
+            init_default_alt_weapon(player)
             self.players.append(player)
         self.camera = Vec2(-1.0, -1.0)
         if self.ground is not None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .assign import (
+    init_default_alt_weapon,
     most_used_weapon_id_for_player,
     player_start_reload,
     player_swap_alt_weapon,
@@ -18,6 +19,7 @@ from .spawn import (
 )
 
 __all__ = [
+    "init_default_alt_weapon",
     "most_used_weapon_id_for_player",
     "owner_ref_for_player",
     "owner_ref_for_player_projectiles",

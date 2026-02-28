@@ -10,7 +10,7 @@ from grim.geom import Vec2
 from ...effects import FxQueue, FxQueueRotated
 from ...math_parity import f32
 from ...persistence.save_status import WEAPON_USAGE_COUNT, GameStatus, default_status_data
-from ...weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
+from ...weapon_runtime import init_default_alt_weapon, most_used_weapon_id_for_player, weapon_assign_player
 from ...weapons import WEAPON_TABLE
 from ..state_types import GameplayState, PlayerState
 from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
@@ -93,6 +93,7 @@ def reset_players(
         pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
         player = PlayerState(index=idx, pos=pos)
         weapon_assign_player(player, 1)
+        init_default_alt_weapon(player)
         players.append(player)
 
 
