@@ -30,6 +30,11 @@ from ..input_codes import (
 )
 from ..net.debug_log import lan_debug_log
 from ..net.protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from ..net.rollback_resync_v5 import (
+    SurvivalModeSnapshotV2,
+    SurvivalSessionSnapshotV2,
+    SurvivalStateSnapshotV2,
+)
 from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
@@ -911,19 +916,21 @@ class SurvivalMode(BaseGameplayMode):
 
                 self._lan_last_tick_index = int(frame.tick_index)
                 self._store_net_runtime_snapshot(
-                    mode_name="survival",
-                    tick_index=int(frame.tick_index),
-                    session_state={
-                        "elapsed_ms": float(session_elapsed_ms),
-                        "stage": int(session_stage),
-                        "spawn_cooldown_ms": float(session_spawn_cooldown_ms),
-                    },
-                    mode_state={
-                        "survival_elapsed_ms": float(self._survival.elapsed_ms),
-                        "survival_stage": int(self._survival.stage),
-                        "survival_spawn_cooldown": float(self._survival.spawn_cooldown),
-                        "perk_pending_count": int(self.state.perk_selection.pending_count),
-                    },
+                    snapshot=SurvivalStateSnapshotV2(
+                        tick_index=int(frame.tick_index),
+                        replay_state=self._net_replay_snapshot_state(),
+                        session_state=SurvivalSessionSnapshotV2(
+                            elapsed_ms=float(session_elapsed_ms),
+                            stage=int(session_stage),
+                            spawn_cooldown_ms=float(session_spawn_cooldown_ms),
+                        ),
+                        mode_state=SurvivalModeSnapshotV2(
+                            survival_elapsed_ms=float(self._survival.elapsed_ms),
+                            survival_stage=int(self._survival.stage),
+                            survival_spawn_cooldown=float(self._survival.spawn_cooldown),
+                            perk_pending_count=int(self.state.perk_selection.pending_count),
+                        ),
+                    ),
                 )
                 _apply_due_perk_events()
                 if self._perk_menu.active:

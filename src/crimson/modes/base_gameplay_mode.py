@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -22,7 +22,12 @@ from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
 from ..net.protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
-from ..net.rollback_resync_v5 import decode_mode_snapshot, encode_mode_snapshot
+from ..net.rollback_resync_v5 import (
+    ModeStateSnapshotV2,
+    ReplayStateSnapshotV2,
+    decode_mode_snapshot,
+    encode_mode_snapshot,
+)
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects import _creature_find_in_radius
@@ -633,37 +638,28 @@ class BaseGameplayMode:
                 scale=0.8,
             )
 
-    def _net_replay_snapshot_state(self) -> dict[str, Any] | None:
+    def _net_replay_snapshot_state(self) -> ReplayStateSnapshotV2 | None:
         recorder = self._replay_recorder
         if recorder is None:
             return None
-        return {
-            "tick_index": int(recorder.tick_index),
-            "recorded_tick_count": int(recorder.recorded_tick_count),
-        }
+        return ReplayStateSnapshotV2(
+            tick_index=int(recorder.tick_index),
+            recorded_tick_count=int(recorder.recorded_tick_count),
+        )
 
     def _store_net_runtime_snapshot(
         self,
         *,
-        mode_name: Literal["survival", "rush", "quests"],
-        tick_index: int,
-        session_state: dict[str, Any],
-        mode_state: dict[str, Any],
+        snapshot: ModeStateSnapshotV2,
     ) -> None:
         runtime = self._lan_runtime
         if runtime is None or (not isinstance(runtime, _LanRuntimeRollbackLike)):
             return
-        tick = max(0, int(tick_index))
+        tick = max(0, int(snapshot.tick_index))
         if (tick % 4) != 0:
             return
         try:
-            payload = encode_mode_snapshot(
-                mode=mode_name,
-                tick_index=int(tick),
-                session_state=dict(session_state),
-                mode_state=dict(mode_state),
-                replay_state=self._net_replay_snapshot_state(),
-            )
+            payload = encode_mode_snapshot(snapshot=snapshot)
         except Exception:
             return
         runtime.store_local_snapshot(int(tick), payload)
@@ -686,9 +682,15 @@ class BaseGameplayMode:
             return
         tick_index, payload = pending
         try:
-            decode_mode_snapshot(payload)
+            snapshot = decode_mode_snapshot(payload)
         except Exception:
             runtime.error = "resync_decode_error"
+            return
+        if str(snapshot.mode) != str(mode_name):
+            runtime.error = "resync_mode_mismatch"
+            return
+        if int(snapshot.tick_index) != int(tick_index):
+            runtime.error = "resync_tick_mismatch"
             return
         runtime.mark_resync_applied(int(tick_index))
 
