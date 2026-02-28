@@ -9,6 +9,7 @@ from grim.view import ViewContext
 from ..persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
+from ..weapons import WeaponId
 from .registry import register_view
 
 _BASE_DIR = Path("artifacts") / "game_over_debug"
@@ -30,7 +31,7 @@ def _seed_highscores(config: CrimsonConfig) -> None:
         record.score_xp = 10_000 - idx
         record.survival_elapsed_ms = (idx + 1) * 1000
         record.creature_kill_count = 500 - idx
-        record.most_used_weapon_id = 1
+        record.most_used_weapon_id = WeaponId.PISTOL
         record.shots_fired = 100
         record.shots_hit = 42
         records.append(record)
@@ -78,7 +79,7 @@ class GameOverDebugView:
         record.score_xp = 20_000 if self._qualifies else 1
         record.survival_elapsed_ms = 123_456
         record.creature_kill_count = 123
-        record.most_used_weapon_id = 1
+        record.most_used_weapon_id = WeaponId.PISTOL
         record.shots_fired = 120
         record.shots_hit = 37
         self._record = record

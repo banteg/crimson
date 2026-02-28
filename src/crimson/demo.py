@@ -71,11 +71,8 @@ class DemoState(Protocol):
     quit_requested: bool
 
 
-def _weapon_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
-    raw_weapon_id = int(weapon_id)
-    if raw_weapon_id in WeaponId._value2member_map_:
-        return weapon_display_name(WeaponId(raw_weapon_id), preserve_bugs=bool(preserve_bugs))
-    return f"weapon_{raw_weapon_id}"
+def _weapon_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
+    return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
 
 
 class DemoView:
