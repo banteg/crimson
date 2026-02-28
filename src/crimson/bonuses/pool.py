@@ -424,7 +424,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     if bonus_id == int(BonusId.WEAPON):
         weapon = WEAPON_BY_ID.get(entry.amount)
         if weapon is not None and weapon.name:
-            return weapon_display_name(entry.amount, preserve_bugs=bool(preserve_bugs))
+            return weapon_display_name(WeaponId(int(entry.amount)), preserve_bugs=bool(preserve_bugs))
         return "Weapon"
     if bonus_id == int(BonusId.POINTS):
         points_label = bonus_display_name(int(BonusId.POINTS), preserve_bugs=bool(preserve_bugs))

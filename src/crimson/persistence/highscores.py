@@ -8,6 +8,7 @@ from pathlib import Path
 from grim.config import CrimsonConfig
 
 from ..quests.types import parse_level
+from ..weapons import WeaponId
 
 RECORD_SIZE = 0x48
 RECORD_WIRE_SIZE = RECORD_SIZE + 4  # record + checksum
@@ -137,12 +138,12 @@ class HighScoreRecord:
         self.data[0x2A] = int(value) & 0xFF
 
     @property
-    def most_used_weapon_id(self) -> int:
-        return int(self.data[0x2B])
+    def most_used_weapon_id(self) -> WeaponId:
+        return WeaponId(int(self.data[0x2B]))
 
     @most_used_weapon_id.setter
-    def most_used_weapon_id(self, value: int) -> None:
-        self.data[0x2B] = int(value) & 0xFF
+    def most_used_weapon_id(self, value: WeaponId) -> None:
+        self.data[0x2B] = int(WeaponId(value)) & 0xFF
 
     @property
     def shots_fired(self) -> int:

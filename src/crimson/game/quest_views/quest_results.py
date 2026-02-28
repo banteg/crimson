@@ -66,11 +66,11 @@ class QuestResultsView:
         if quest is not None:
             weapon_id_native = int(quest.unlock_weapon_id) if quest.unlock_weapon_id is not None else 0
             if weapon_id_native > 0:
-                from ...weapons import WEAPON_BY_ID, weapon_display_name
+                from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
                 weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                 self._unlock_weapon_name = (
-                    weapon_display_name(weapon_id_native, preserve_bugs=bool(self.state.preserve_bugs))
+                    weapon_display_name(WeaponId(weapon_id_native), preserve_bugs=bool(self.state.preserve_bugs))
                     if weapon_entry is not None and weapon_entry.name
                     else f"weapon_{weapon_id_native}"
                 )

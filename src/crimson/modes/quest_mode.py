@@ -131,15 +131,11 @@ class QuestRunOutcome:
     pending_perk_count: int
     experience: int
     kill_count: int
-    weapon_id: WeaponId | int
+    weapon_id: WeaponId
     shots_fired: int
     shots_hit: int
-    most_used_weapon_id: WeaponId | int
+    most_used_weapon_id: WeaponId
     player_health_values: tuple[float, ...] = ()
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
-        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
 
 
 def _quest_attempt_counter_index(major: int, minor: int) -> int | None:

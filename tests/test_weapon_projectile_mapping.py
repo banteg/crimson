@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.weapons import (
+    WeaponId,
     projectile_type_id_from_weapon_id,
     projectile_type_ids_from_weapon_id,
 )
@@ -36,13 +37,14 @@ def test_weapon_projectile_type_mapping() -> None:
         45: 0x2D,  # Fire Bullets
     }
     for weapon_id, type_id in cases.items():
-        assert projectile_type_id_from_weapon_id(weapon_id) == type_id
+        assert projectile_type_id_from_weapon_id(WeaponId(weapon_id)) == type_id
 
-    assert projectile_type_ids_from_weapon_id(10) == (0x09, 0x0B)
+    assert projectile_type_ids_from_weapon_id(WeaponId.MULTI_PLASMA) == (0x09, 0x0B)
 
 
 def test_non_projectile_weapons_return_none() -> None:
     # Non-projectile paths: particles or secondary projectile pool.
     for weapon_id in (8, 12, 13, 15, 16, 17, 18, 42):
-        assert projectile_type_id_from_weapon_id(weapon_id) is None
-        assert projectile_type_ids_from_weapon_id(weapon_id) == ()
+        weapon = WeaponId(weapon_id)
+        assert projectile_type_id_from_weapon_id(weapon) is None
+        assert projectile_type_ids_from_weapon_id(weapon) == ()

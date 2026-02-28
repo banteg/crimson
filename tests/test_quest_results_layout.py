@@ -8,6 +8,7 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
 from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsAssets, QuestResultsUi
+from crimson.weapons import WeaponId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 
@@ -77,7 +78,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     record.creature_kill_count = 10
     record.shots_fired = 43
     record.shots_hit = 10
-    record.most_used_weapon_id = 3
+    record.most_used_weapon_id = WeaponId.SHOTGUN
     ui.record = record
     return ui
 

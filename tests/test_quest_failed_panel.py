@@ -7,6 +7,7 @@ import pytest
 import crimson.game.quest_views.quest_failed as quest_failed_module
 from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.modes.quest_mode import QuestRunOutcome
+from crimson.weapons import WeaponId
 from grim import music as grim_music
 from grim import sfx as grim_sfx
 from grim.audio import AudioState
@@ -45,10 +46,10 @@ def _failed_outcome() -> QuestRunOutcome:
         pending_perk_count=0,
         experience=123,
         kill_count=45,
-        weapon_id=1,
+        weapon_id=WeaponId.PISTOL,
         shots_fired=100,
         shots_hit=42,
-        most_used_weapon_id=1,
+        most_used_weapon_id=WeaponId.PISTOL,
     )
 
 

@@ -40,7 +40,7 @@ def build_highscore_record_for_game_over(
     weapon_id = most_used_weapon_id_for_player(
         state, player_index=int(player.index), fallback_weapon_id=player.weapon.weapon_id,
     )
-    record.most_used_weapon_id = int(weapon_id)
+    record.most_used_weapon_id = weapon_id
 
     if shots_fired is None or shots_hit is None:
         fired, hit = shots_from_state(state, player_index=int(player.index))

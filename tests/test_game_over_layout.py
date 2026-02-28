@@ -9,6 +9,7 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
 from crimson.ui.hud import HudAssets
 from crimson.ui.perk_menu import PerkMenuAssets
+from crimson.weapons import WeaponId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -265,7 +266,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     record.creature_kill_count = 20
     record.shots_fired = 50
     record.shots_hit = 25
-    record.most_used_weapon_id = 1
+    record.most_used_weapon_id = WeaponId.PISTOL
 
     mocker.patch.object(game_over_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
     mocker.patch.object(game_over_module.rl, "draw_line", side_effect=lambda *_args, **_kwargs: None)

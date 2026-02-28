@@ -51,10 +51,6 @@ class ReplayPlayerCheckpoint:
     experience: int
     level: int
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
-
-
 @dataclass(frozen=True, slots=True)
 class ReplayCheckpoint:
     tick_index: int

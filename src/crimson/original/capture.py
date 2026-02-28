@@ -906,8 +906,12 @@ def _tick_player_weapon_projectile_spawned(
     weapon_id: int,
 ) -> bool:
     # Captures report projectile type IDs; many weapons do not emit `weapon_id` directly.
-    target_type_ids = set(projectile_type_ids_from_weapon_id(int(weapon_id)))
-    target_type_ids.add(int(weapon_id))
+    weapon_id_raw = int(weapon_id)
+    if weapon_id_raw in WeaponId._value2member_map_:
+        target_type_ids = set(projectile_type_ids_from_weapon_id(WeaponId(weapon_id_raw)))
+    else:
+        target_type_ids = set()
+    target_type_ids.add(weapon_id_raw)
     for head in tick.event_heads:
         if not isinstance(head, CaptureEventHeadProjectileSpawn):
             continue

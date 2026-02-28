@@ -84,10 +84,6 @@ class _PlayerSnapshot:
     weapon_id: WeaponId
     perk_counts: tuple[int, ...]
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
-
-
 def _resolve_quest_level(replay: Replay) -> str:
     quest_level = str(replay.header.quest_level)
     if quest_level:

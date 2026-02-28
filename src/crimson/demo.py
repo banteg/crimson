@@ -71,7 +71,7 @@ class DemoState(Protocol):
     quit_requested: bool
 
 
-def _weapon_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
+def _weapon_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
     return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
 
 

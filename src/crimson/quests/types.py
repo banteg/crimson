@@ -74,11 +74,6 @@ class QuestDefinition:
     terrain_ids: tuple[int, int, int] | None = None
     builder_address: int | None = None
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "start_weapon_id", WeaponId(self.start_weapon_id))
-        if self.unlock_weapon_id is not None:
-            object.__setattr__(self, "unlock_weapon_id", WeaponId(self.unlock_weapon_id))
-
     @property
     def level(self) -> str:
         return format_level(self.major, self.minor)
