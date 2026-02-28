@@ -1,5 +1,6 @@
 const builtin = @import("builtin");
 const std = @import("std");
+const msgpack = @import("msgpack");
 
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
@@ -29,7 +30,7 @@ const VerifyRequest = struct {
     output_format: OutputFormat = .human,
     json_out: ?[]const u8 = null,
     base_dir: ?[]const u8 = null,
-    debug_trace_jsonl: ?[]const u8 = null,
+    debug_trace_msgpack: ?[]const u8 = null,
 };
 
 const ReplayRunnerProgressHint = struct {
@@ -174,7 +175,7 @@ fn runNativeVerify(
         return buildNotPortedOutputForReplayCodecError(allocator, err);
     };
     const scaffold = blk: {
-        if (request.debug_trace_jsonl) |trace_path| {
+        if (request.debug_trace_msgpack) |trace_path| {
             var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
             defer tick_trace.deinit(allocator);
 
@@ -184,7 +185,7 @@ fn runNativeVerify(
                 allocator,
                 .{},
             ) catch |err| {
-                writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+                writeReplayTickTraceMsgpack(allocator, trace_path, tick_trace.items) catch |trace_err| {
                     return buildVerifyFailedOutput(allocator, @errorName(trace_err));
                 };
                 return buildNotPortedOutputForReplayRunnerError(
@@ -197,7 +198,7 @@ fn runNativeVerify(
                     },
                 );
             };
-            writeReplayTickTraceJsonl(trace_path, tick_trace.items) catch |trace_err| {
+            writeReplayTickTraceMsgpack(allocator, trace_path, tick_trace.items) catch |trace_err| {
                 return buildVerifyFailedOutput(allocator, @errorName(trace_err));
             };
             break :blk traced;
@@ -304,7 +305,8 @@ fn runNativeVerify(
     };
 }
 
-fn writeReplayTickTraceJsonl(
+fn writeReplayTickTraceMsgpack(
+    allocator: std.mem.Allocator,
     trace_path: []const u8,
     trace: []const replay_runner.ReplayTickTrace,
 ) !void {
@@ -319,10 +321,18 @@ fn writeReplayTickTraceJsonl(
     var buffer: [4096]u8 = undefined;
     var writer = file.writer(&buffer);
     const out = &writer.interface;
+    try out.writeAll(diagnostic_trace.replay_tick_trace_msgpack_magic);
     for (trace) |entry| {
-        const row = diagnostic_trace.toJsonRow(&entry);
-        try std.json.Stringify.value(row, .{}, out);
-        try out.writeByte('\n');
+        const row = try diagnostic_trace.toMsgpackRow(&entry);
+        var row_writer: std.Io.Writer.Allocating = .init(allocator);
+        defer row_writer.deinit();
+        try msgpack.encode(row, &row_writer.writer);
+        const payload = row_writer.written();
+        if (payload.len > std.math.maxInt(u32)) return error.TraceRowTooLarge;
+        var len_buf: [4]u8 = undefined;
+        std.mem.writeInt(u32, &len_buf, @intCast(payload.len), .little);
+        try out.writeAll(len_buf[0..]);
+        try out.writeAll(payload);
     }
     try out.flush();
 }
@@ -664,14 +674,14 @@ fn parseNativeSubset(args: []const []const u8) ParseOutcome {
         if (std.mem.eql(u8, arg, "--max-ticks") or std.mem.startsWith(u8, arg, "--max-ticks=")) {
             return .{ .unsupported = "--max-ticks" };
         }
-        if (std.mem.eql(u8, arg, "--debug-trace-jsonl")) {
-            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --debug-trace-jsonl" };
+        if (std.mem.eql(u8, arg, "--debug-trace-msgpack")) {
+            if (idx + 1 >= args.len) return .{ .invalid = "missing value for --debug-trace-msgpack" };
             idx += 1;
-            request.debug_trace_jsonl = args[idx];
+            request.debug_trace_msgpack = args[idx];
             continue;
         }
-        if (std.mem.startsWith(u8, arg, "--debug-trace-jsonl=")) {
-            request.debug_trace_jsonl = arg["--debug-trace-jsonl=".len..];
+        if (std.mem.startsWith(u8, arg, "--debug-trace-msgpack=")) {
+            request.debug_trace_msgpack = arg["--debug-trace-msgpack=".len..];
             continue;
         }
 
@@ -871,6 +881,31 @@ test "parse native subset for reference verify options" {
     try std.testing.expect(req.output_format == .json);
     try std.testing.expect(req.json_out != null);
     try std.testing.expectEqualStrings("verify.json", req.json_out.?);
+}
+
+test "parse native subset accepts debug trace msgpack option" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--debug-trace-msgpack",
+        "trace.msgpack",
+    });
+    const req = switch (parsed) {
+        .ok => |request| request,
+        else => return error.TestExpectedNativeRequest,
+    };
+    try std.testing.expect(req.debug_trace_msgpack != null);
+    try std.testing.expectEqualStrings("trace.msgpack", req.debug_trace_msgpack.?);
+}
+
+test "parse native subset reports missing debug trace msgpack argument" {
+    const parsed = parseNativeSubset(&.{
+        "survival_20260224_041009_score76661.crd",
+        "--debug-trace-msgpack",
+    });
+    switch (parsed) {
+        .invalid => |detail| try std.testing.expectEqualStrings("missing value for --debug-trace-msgpack", detail),
+        else => return error.TestExpectedInvalidOption,
+    }
 }
 
 test "parse native subset reports unsupported options" {

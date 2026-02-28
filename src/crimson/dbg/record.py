@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import os
 import platform
-import struct
 import subprocess
 import tempfile
 from datetime import UTC, datetime
@@ -18,9 +17,9 @@ from ..bonuses import BonusId
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint, ReplayEventSummary, ReplayPerkSnapshot, ReplayPlayerCheckpoint
 from ..replay.diagnostic_trace_schema import (
-    ReplayTickRngJson,
-    ReplayTickTraceJsonRow,
-    decode_replay_tick_trace_json_row,
+    ReplayTickRng,
+    ReplayTickTraceRow,
+    decode_replay_tick_trace_msgpack_stream,
 )
 from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
@@ -120,10 +119,6 @@ def _require_int(value: object, *, field: str) -> int:
     if isinstance(value, int):
         return value
     raise TypeError(f"{field} must be int, got {type(value).__name__}")
-
-
-def _f32_from_bits(value: int) -> float:
-    return struct.unpack("<f", struct.pack("<I", int(value) & 0xFFFFFFFF))[0]
 
 
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
@@ -582,7 +577,7 @@ def _run_zig_verify_trace(
     *,
     replay_path: Path,
     strict_events: bool,
-) -> tuple[list[ReplayTickTraceJsonRow], dict[str, object]]:
+) -> tuple[list[ReplayTickTraceRow], dict[str, object]]:
     if not strict_events:
         raise ValueError("dbg record --impl zig requires --strict-events")
 
@@ -592,7 +587,7 @@ def _run_zig_verify_trace(
 
     with tempfile.TemporaryDirectory(prefix="crimson-dbg-zig-") as temp_dir:
         temp_root = Path(temp_dir)
-        trace_jsonl = temp_root / "zig_trace.jsonl"
+        trace_msgpack = temp_root / "zig_trace.msgpack"
         cmd = [
             str(zig_bin),
             "replay",
@@ -601,8 +596,8 @@ def _run_zig_verify_trace(
             "--format",
             "json",
             "--strict-events",
-            "--debug-trace-jsonl",
-            str(trace_jsonl),
+            "--debug-trace-msgpack",
+            str(trace_msgpack),
         ]
         run = subprocess.run(
             cmd,
@@ -623,27 +618,21 @@ def _run_zig_verify_trace(
             stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
             detail = stderr_text if stderr_text else stdout_text
             raise ValueError(f"zig replay verify failed: {detail or f'exit={run.returncode}'}")
-        if not trace_jsonl.is_file():
-            raise ValueError("zig replay verify did not emit --debug-trace-jsonl output")
+        if not trace_msgpack.is_file():
+            raise ValueError("zig replay verify did not emit --debug-trace-msgpack output")
 
-        rows: list[ReplayTickTraceJsonRow] = []
-        for line_number, raw_line in enumerate(trace_jsonl.read_bytes().splitlines(), start=1):
-            line = raw_line.strip()
-            if not line:
-                continue
-            row = decode_replay_tick_trace_json_row(line, field=f"zig trace row {line_number}")
-            rows.append(row)
+        rows = decode_replay_tick_trace_msgpack_stream(trace_msgpack)
         return rows, verify_payload
 
 
-def _zig_rng_marks(rng: ReplayTickRngJson) -> dict[str, int]:
+def _zig_rng_marks(rng: ReplayTickRng) -> dict[str, int]:
     marks: dict[str, int] = {}
     for key in _ZIG_RNG_MARK_KEYS:
         marks[key] = int(getattr(rng, key))
     return marks
 
 
-def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) -> ReplayCheckpoint:
+def _zig_checkpoint_from_row(row: ReplayTickTraceRow, *, player_count: int) -> ReplayCheckpoint:
     tick_index = int(row.tick_index)
     timing = row.timing
     rng = row.rng
@@ -652,10 +641,10 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
     bonuses = row.bonuses
     debug = row.debug
 
-    player_pos_x = _f32_from_bits(int(player.player_pos_x_bits))
-    player_pos_y = _f32_from_bits(int(player.player_pos_y_bits))
-    player_health = _f32_from_bits(int(player.player_health_bits))
-    player_ammo = _f32_from_bits(int(player.player_ammo_bits))
+    player_pos_x = float(player.player_pos_x)
+    player_pos_y = float(player.player_pos_y)
+    player_health = float(player.player_health)
+    player_ammo = float(player.player_ammo)
     player_weapon_id = int(player.player_weapon_id)
     player_experience = int(player.player_experience)
     player_level = int(player.player_level)

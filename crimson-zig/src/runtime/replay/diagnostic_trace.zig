@@ -11,21 +11,22 @@ const state_mod = @import("../state.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
-pub const replay_tick_trace_schema_version: i32 = 3;
+pub const replay_tick_trace_schema_version: i32 = 4;
 pub const perk_count_size: usize = state_mod.perk_count_size;
 pub const bonus_id_count: usize = @typeInfo(game_ids.BonusId).@"enum".fields.len;
+pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v2\n";
 
 pub const ProjectileTraceEntry = struct {
     index: usize,
     type_id: i32,
-    pos_x_bits: u32,
-    pos_y_bits: u32,
-    origin_x_bits: u32,
-    origin_y_bits: u32,
-    life_timer_bits: u32,
-    damage_pool_bits: u32,
-    angle_bits: u32,
-    speed_scale_bits: u32,
+    pos_x: f64,
+    pos_y: f64,
+    origin_x: f64,
+    origin_y: f64,
+    life_timer: f64,
+    damage_pool: f64,
+    angle: f64,
+    speed_scale: f64,
     owner_legacy: i32,
     hits_players: bool,
 };
@@ -36,16 +37,16 @@ pub const CreatureTraceEntry = struct {
     flags: i32,
     ai_mode: i32,
     link_index: i32,
-    pos_x_bits: u32,
-    pos_y_bits: u32,
-    target_x_bits: u32,
-    target_y_bits: u32,
-    heading_bits: u32,
-    target_heading_bits: u32,
-    hp_bits: u32,
-    lifecycle_stage_bits: u32,
-    size_bits: u32,
-    attack_cooldown_bits: u32,
+    pos_x: f64,
+    pos_y: f64,
+    target_x: f64,
+    target_y: f64,
+    heading: f64,
+    target_heading: f64,
+    hp: f64,
+    lifecycle_stage: f64,
+    size: f64,
+    attack_cooldown: f64,
 };
 
 pub const BonusActiveEntry = struct {
@@ -85,41 +86,33 @@ pub const ReplayTickSummary = struct {
     perk_pending: i32,
 };
 
-pub const ReplayTickSummaryJson = struct {
-    score_xp: i32,
-    kills: i32,
-    shots_fired_p0: i32,
-    creature_count: usize,
-    perk_pending: i32,
-};
-
 pub const ReplayTickPlayer = struct {
     player_weapon_id: i32,
-    player_ammo_bits: u32,
-    player_health_bits: u32,
-    player_pos_x_bits: u32,
-    player_pos_y_bits: u32,
-    player_aim_x_bits: u32,
-    player_aim_y_bits: u32,
-    player_heading_bits: u32,
-    player_aim_heading_bits: u32,
-    player_move_speed_bits: u32,
-    player_turn_speed_bits: u32,
+    player_ammo: f64,
+    player_health: f64,
+    player_pos_x: f64,
+    player_pos_y: f64,
+    player_aim_x: f64,
+    player_aim_y: f64,
+    player_heading: f64,
+    player_aim_heading: f64,
+    player_move_speed: f64,
+    player_turn_speed: f64,
     player_level: i32,
     player_experience: i32,
     player_reload_active: bool,
-    player_reload_timer_bits: u32,
-    player_shot_cooldown_bits: u32,
+    player_reload_timer: f64,
+    player_shot_cooldown: f64,
     player_shot_seq: i32,
     player_perk_counts: [perk_count_size]i32,
-    player_hot_tempered_timer_bits: u32,
-    player_shield_timer_bits: u32,
-    player_man_bomb_timer_bits: u32,
-    player_fire_cough_timer_bits: u32,
-    player_living_fortress_timer_bits: u32,
-    perk_interval_hot_tempered_bits: u32,
-    perk_interval_man_bomb_bits: u32,
-    perk_interval_fire_cough_bits: u32,
+    player_hot_tempered_timer: f64,
+    player_shield_timer: f64,
+    player_man_bomb_timer: f64,
+    player_fire_cough_timer: f64,
+    player_living_fortress_timer: f64,
+    perk_interval_hot_tempered: f64,
+    perk_interval_man_bomb: f64,
+    perk_interval_fire_cough: f64,
 };
 
 pub const ReplayTickBonuses = struct {
@@ -135,13 +128,13 @@ pub const ReplayTickProjectiles = struct {
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
     projectile_first_hit_type_id: i32,
-    projectile_first_hit_origin_x_bits: u32,
-    projectile_first_hit_origin_y_bits: u32,
-    projectile_first_hit_pos_x_bits: u32,
-    projectile_first_hit_pos_y_bits: u32,
-    projectile_first_hit_target_size_bits: u32,
-    projectile_first_hit_target_x_bits: u32,
-    projectile_first_hit_target_y_bits: u32,
+    projectile_first_hit_origin_x: f64,
+    projectile_first_hit_origin_y: f64,
+    projectile_first_hit_pos_x: f64,
+    projectile_first_hit_pos_y: f64,
+    projectile_first_hit_target_size: f64,
+    projectile_first_hit_target_x: f64,
+    projectile_first_hit_target_y: f64,
     projectile_type_counts_len: usize,
     projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry,
     entries_len: usize,
@@ -175,51 +168,97 @@ pub const ReplayTickTrace = struct {
     debug: ReplayTickDebug,
 };
 
-pub const ReplayTickBonusesJson = struct {
+pub const ReplayTickBonusesMsgpack = struct {
     bonus_timer_ms_by_id: [bonus_id_count]i32,
     bonus_active_count: usize,
     active_entries: []const BonusActiveEntry,
 };
 
-pub const ReplayTickProjectilesJson = struct {
+pub const ReplayTickProjectilesMsgpack = struct {
     projectile_count: usize,
     projectile_hit_count: i32,
     projectile_first_hit_creature_index: i32,
     projectile_first_hit_projectile_index: i32,
     projectile_first_hit_type_id: i32,
-    projectile_first_hit_origin_x_bits: u32,
-    projectile_first_hit_origin_y_bits: u32,
-    projectile_first_hit_pos_x_bits: u32,
-    projectile_first_hit_pos_y_bits: u32,
-    projectile_first_hit_target_size_bits: u32,
-    projectile_first_hit_target_x_bits: u32,
-    projectile_first_hit_target_y_bits: u32,
+    projectile_first_hit_origin_x: f64,
+    projectile_first_hit_origin_y: f64,
+    projectile_first_hit_pos_x: f64,
+    projectile_first_hit_pos_y: f64,
+    projectile_first_hit_target_size: f64,
+    projectile_first_hit_target_x: f64,
+    projectile_first_hit_target_y: f64,
     projectile_type_counts: []const ProjectileTypeCountEntry,
     entries: []const ProjectileTraceEntry,
 };
 
-pub const ReplayTickCreaturesJson = struct {
+pub const ReplayTickCreaturesMsgpack = struct {
     entries: []const CreatureTraceEntry,
 };
 
-pub const ReplayTickTraceJsonRow = struct {
+pub const ReplayTickSummaryMsgpack = struct {
+    score_xp: i32,
+    kills: i32,
+    shots_fired_p0: i32,
+    creature_count: usize,
+    perk_pending: i32,
+};
+
+pub const ReplayTickTraceMsgpackRow = struct {
     schema_version: i32,
     tick_index: usize,
     timing: ReplayTickTiming,
     rng: ReplayTickRng,
-    summary: ReplayTickSummaryJson,
+    summary: ReplayTickSummaryMsgpack,
     player: ReplayTickPlayer,
-    bonuses: ReplayTickBonusesJson,
-    projectiles: ReplayTickProjectilesJson,
-    creatures: ReplayTickCreaturesJson,
+    bonuses: ReplayTickBonusesMsgpack,
+    projectiles: ReplayTickProjectilesMsgpack,
+    creatures: ReplayTickCreaturesMsgpack,
     debug: ReplayTickDebug,
 };
 
-pub fn toJsonRow(trace: anytype) ReplayTickTraceJsonRow {
+pub const TraceMsgpackError = error{
+    NonFiniteWireFloat,
+};
+
+pub fn toMsgpackRow(trace: anytype) TraceMsgpackError!ReplayTickTraceMsgpackRow {
     const bonus_active_entries = trace.bonuses.active_entries[0..trace.bonuses.active_entries_len];
     const projectile_type_counts = trace.projectiles.projectile_type_counts[0..trace.projectiles.projectile_type_counts_len];
     const projectile_entries = trace.projectiles.entries[0..trace.projectiles.entries_len];
     const creature_entries = trace.creatures.entries[0..trace.creatures.entries_len];
+    for (projectile_entries, 0..) |entry, idx| {
+        if (!std.math.isFinite(entry.pos_x) or !std.math.isFinite(entry.pos_y)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.origin_x) or !std.math.isFinite(entry.origin_y)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.life_timer) or !std.math.isFinite(entry.damage_pool)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.angle) or !std.math.isFinite(entry.speed_scale)) return error.NonFiniteWireFloat;
+        _ = idx;
+    }
+    for (creature_entries, 0..) |entry, idx| {
+        if (!std.math.isFinite(entry.pos_x) or !std.math.isFinite(entry.pos_y)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.target_x) or !std.math.isFinite(entry.target_y)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.heading) or !std.math.isFinite(entry.target_heading)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.hp) or !std.math.isFinite(entry.lifecycle_stage)) return error.NonFiniteWireFloat;
+        if (!std.math.isFinite(entry.size) or !std.math.isFinite(entry.attack_cooldown)) return error.NonFiniteWireFloat;
+        _ = idx;
+    }
+    if (!std.math.isFinite(trace.player.player_ammo) or !std.math.isFinite(trace.player.player_health)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_pos_x) or !std.math.isFinite(trace.player.player_pos_y)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_aim_x) or !std.math.isFinite(trace.player.player_aim_y)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_heading) or !std.math.isFinite(trace.player.player_aim_heading)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_move_speed) or !std.math.isFinite(trace.player.player_turn_speed)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_reload_timer) or !std.math.isFinite(trace.player.player_shot_cooldown)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_hot_tempered_timer) or !std.math.isFinite(trace.player.player_shield_timer)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_man_bomb_timer) or !std.math.isFinite(trace.player.player_fire_cough_timer)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.player_living_fortress_timer)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.perk_interval_hot_tempered)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.perk_interval_man_bomb)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.player.perk_interval_fire_cough)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_origin_x)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_origin_y)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_pos_x)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_pos_y)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_size)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_x)) return error.NonFiniteWireFloat;
+    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_y)) return error.NonFiniteWireFloat;
     return .{
         .schema_version = replay_tick_trace_schema_version,
         .tick_index = traceTickIndex(trace),
@@ -258,13 +297,13 @@ pub fn toJsonRow(trace: anytype) ReplayTickTraceJsonRow {
             .projectile_first_hit_creature_index = trace.projectiles.projectile_first_hit_creature_index,
             .projectile_first_hit_projectile_index = trace.projectiles.projectile_first_hit_projectile_index,
             .projectile_first_hit_type_id = trace.projectiles.projectile_first_hit_type_id,
-            .projectile_first_hit_origin_x_bits = trace.projectiles.projectile_first_hit_origin_x_bits,
-            .projectile_first_hit_origin_y_bits = trace.projectiles.projectile_first_hit_origin_y_bits,
-            .projectile_first_hit_pos_x_bits = trace.projectiles.projectile_first_hit_pos_x_bits,
-            .projectile_first_hit_pos_y_bits = trace.projectiles.projectile_first_hit_pos_y_bits,
-            .projectile_first_hit_target_size_bits = trace.projectiles.projectile_first_hit_target_size_bits,
-            .projectile_first_hit_target_x_bits = trace.projectiles.projectile_first_hit_target_x_bits,
-            .projectile_first_hit_target_y_bits = trace.projectiles.projectile_first_hit_target_y_bits,
+            .projectile_first_hit_origin_x = trace.projectiles.projectile_first_hit_origin_x,
+            .projectile_first_hit_origin_y = trace.projectiles.projectile_first_hit_origin_y,
+            .projectile_first_hit_pos_x = trace.projectiles.projectile_first_hit_pos_x,
+            .projectile_first_hit_pos_y = trace.projectiles.projectile_first_hit_pos_y,
+            .projectile_first_hit_target_size = trace.projectiles.projectile_first_hit_target_size,
+            .projectile_first_hit_target_x = trace.projectiles.projectile_first_hit_target_x,
+            .projectile_first_hit_target_y = trace.projectiles.projectile_first_hit_target_y,
             .projectile_type_counts = @ptrCast(projectile_type_counts),
             .entries = @ptrCast(projectile_entries),
         },
@@ -289,7 +328,7 @@ fn traceTickIndex(trace: anytype) usize {
     }
     if (@hasField(trace_type, "tick_index")) return trace.tick_index;
     if (@hasField(trace_type, "tick")) return trace.tick;
-    @compileError("toJsonRow expects a trace with tick_index or tick");
+    @compileError("toMsgpackRow expects a trace with tick_index or tick");
 }
 
 fn traceElapsedMs(trace: anytype) i64 {
@@ -299,7 +338,7 @@ fn traceElapsedMs(trace: anytype) i64 {
     }
     if (@hasField(trace_type, "timing")) return trace.timing.elapsed_ms;
     if (@hasField(trace_type, "summary")) return trace.summary.elapsed_ms;
-    @compileError("toJsonRow expects a trace with timing.elapsed_ms or summary.elapsed_ms");
+    @compileError("toMsgpackRow expects a trace with timing.elapsed_ms or summary.elapsed_ms");
 }
 
 pub fn buildReplayTickTrace(
@@ -337,14 +376,14 @@ pub fn buildReplayTickTrace(
         projectile_entries[projectile_entries_len] = .{
             .index = idx,
             .type_id = entry.type_id,
-            .pos_x_bits = f32Bits(entry.pos.x),
-            .pos_y_bits = f32Bits(entry.pos.y),
-            .origin_x_bits = f32Bits(entry.origin.x),
-            .origin_y_bits = f32Bits(entry.origin.y),
-            .life_timer_bits = f32Bits(entry.life_timer),
-            .damage_pool_bits = f32Bits(entry.damage_pool),
-            .angle_bits = f32Bits(entry.angle),
-            .speed_scale_bits = f32Bits(entry.speed_scale),
+            .pos_x = wireF64(entry.pos.x),
+            .pos_y = wireF64(entry.pos.y),
+            .origin_x = wireF64(entry.origin.x),
+            .origin_y = wireF64(entry.origin.y),
+            .life_timer = wireF64(entry.life_timer),
+            .damage_pool = wireF64(entry.damage_pool),
+            .angle = wireF64(entry.angle),
+            .speed_scale = wireF64(entry.speed_scale),
             .owner_legacy = entry.owner.toLegacy(),
             .hits_players = entry.hits_players,
         };
@@ -362,16 +401,16 @@ pub fn buildReplayTickTrace(
             .flags = @bitCast(creature.flags),
             .ai_mode = @intFromEnum(creature.ai_mode),
             .link_index = creature.link_index,
-            .pos_x_bits = f32Bits(creature.pos.x),
-            .pos_y_bits = f32Bits(creature.pos.y),
-            .target_x_bits = f32Bits(creature.target.x),
-            .target_y_bits = f32Bits(creature.target.y),
-            .heading_bits = f32Bits(creature.heading),
-            .target_heading_bits = f32Bits(creature.target_heading),
-            .hp_bits = f32Bits(creature.hp),
-            .lifecycle_stage_bits = f32Bits(creature.lifecycle_stage),
-            .size_bits = f32Bits(creature.size),
-            .attack_cooldown_bits = f32Bits(creature.attack_cooldown),
+            .pos_x = wireF64(creature.pos.x),
+            .pos_y = wireF64(creature.pos.y),
+            .target_x = wireF64(creature.target.x),
+            .target_y = wireF64(creature.target.y),
+            .heading = wireF64(creature.heading),
+            .target_heading = wireF64(creature.target_heading),
+            .hp = wireF64(creature.hp),
+            .lifecycle_stage = wireF64(creature.lifecycle_stage),
+            .size = wireF64(creature.size),
+            .attack_cooldown = wireF64(creature.attack_cooldown),
         };
         creature_entries_len += 1;
     }
@@ -434,31 +473,31 @@ pub fn buildReplayTickTrace(
         },
         .player = .{
             .player_weapon_id = @intFromEnum(player.weapon.weapon_id),
-            .player_ammo_bits = f32Bits(player.weapon.ammo),
-            .player_health_bits = f32Bits(player.health),
-            .player_pos_x_bits = f32Bits(player.pos.x),
-            .player_pos_y_bits = f32Bits(player.pos.y),
-            .player_aim_x_bits = f32Bits(player.aim.x),
-            .player_aim_y_bits = f32Bits(player.aim.y),
-            .player_heading_bits = f32Bits(player.heading),
-            .player_aim_heading_bits = f32Bits(player.aim_heading),
-            .player_move_speed_bits = f32Bits(player.move_speed),
-            .player_turn_speed_bits = f32Bits(player.turn_speed),
+            .player_ammo = wireF64(player.weapon.ammo),
+            .player_health = wireF64(player.health),
+            .player_pos_x = wireF64(player.pos.x),
+            .player_pos_y = wireF64(player.pos.y),
+            .player_aim_x = wireF64(player.aim.x),
+            .player_aim_y = wireF64(player.aim.y),
+            .player_heading = wireF64(player.heading),
+            .player_aim_heading = wireF64(player.aim_heading),
+            .player_move_speed = wireF64(player.move_speed),
+            .player_turn_speed = wireF64(player.turn_speed),
             .player_level = player.level,
             .player_experience = player.experience,
             .player_reload_active = player.weapon.reload_active,
-            .player_reload_timer_bits = f32Bits(player.weapon.reload_timer),
-            .player_shot_cooldown_bits = f32Bits(player.weapon.shot_cooldown),
+            .player_reload_timer = wireF64(player.weapon.reload_timer),
+            .player_shot_cooldown = wireF64(player.weapon.shot_cooldown),
             .player_shot_seq = player.shot_seq,
             .player_perk_counts = player_perk_counts,
-            .player_hot_tempered_timer_bits = f32Bits(player.hot_tempered_timer),
-            .player_shield_timer_bits = f32Bits(player.shield_timer),
-            .player_man_bomb_timer_bits = f32Bits(player.man_bomb_timer),
-            .player_fire_cough_timer_bits = f32Bits(player.fire_cough_timer),
-            .player_living_fortress_timer_bits = f32Bits(player.living_fortress_timer),
-            .perk_interval_hot_tempered_bits = f32Bits(state.perk_interval_hot_tempered),
-            .perk_interval_man_bomb_bits = f32Bits(state.perk_interval_man_bomb),
-            .perk_interval_fire_cough_bits = f32Bits(state.perk_interval_fire_cough),
+            .player_hot_tempered_timer = wireF64(player.hot_tempered_timer),
+            .player_shield_timer = wireF64(player.shield_timer),
+            .player_man_bomb_timer = wireF64(player.man_bomb_timer),
+            .player_fire_cough_timer = wireF64(player.fire_cough_timer),
+            .player_living_fortress_timer = wireF64(player.living_fortress_timer),
+            .perk_interval_hot_tempered = wireF64(state.perk_interval_hot_tempered),
+            .perk_interval_man_bomb = wireF64(state.perk_interval_man_bomb),
+            .perk_interval_fire_cough = wireF64(state.perk_interval_fire_cough),
         },
         .bonuses = .{
             .bonus_timer_ms_by_id = bonus_timer_ms_by_id,
@@ -472,13 +511,13 @@ pub fn buildReplayTickTrace(
             .projectile_first_hit_creature_index = projectile_tick_stats.first_hit_creature_index,
             .projectile_first_hit_projectile_index = projectile_tick_stats.first_hit_projectile_index,
             .projectile_first_hit_type_id = projectile_tick_stats.first_hit_type_id,
-            .projectile_first_hit_origin_x_bits = f32Bits(projectile_tick_stats.first_hit_origin.x),
-            .projectile_first_hit_origin_y_bits = f32Bits(projectile_tick_stats.first_hit_origin.y),
-            .projectile_first_hit_pos_x_bits = f32Bits(projectile_tick_stats.first_hit_pos.x),
-            .projectile_first_hit_pos_y_bits = f32Bits(projectile_tick_stats.first_hit_pos.y),
-            .projectile_first_hit_target_size_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_size)),
-            .projectile_first_hit_target_x_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_x)),
-            .projectile_first_hit_target_y_bits = f32Bits(narrowF32(projectile_tick_stats.first_hit_target_y)),
+            .projectile_first_hit_origin_x = wireF64(projectile_tick_stats.first_hit_origin.x),
+            .projectile_first_hit_origin_y = wireF64(projectile_tick_stats.first_hit_origin.y),
+            .projectile_first_hit_pos_x = wireF64(projectile_tick_stats.first_hit_pos.x),
+            .projectile_first_hit_pos_y = wireF64(projectile_tick_stats.first_hit_pos.y),
+            .projectile_first_hit_target_size = wireF64(narrowF32(projectile_tick_stats.first_hit_target_size)),
+            .projectile_first_hit_target_x = wireF64(narrowF32(projectile_tick_stats.first_hit_target_x)),
+            .projectile_first_hit_target_y = wireF64(narrowF32(projectile_tick_stats.first_hit_target_y)),
             .projectile_type_counts_len = projectile_type_counts_len,
             .projectile_type_counts = projectile_type_counts,
             .entries_len = projectile_entries_len,
@@ -538,8 +577,8 @@ fn addBonusActiveEntry(
     len.* += 1;
 }
 
-fn f32Bits(value: f32) u32 {
-    return @bitCast(value);
+fn wireF64(value: f32) f64 {
+    return @as(f64, @floatCast(value));
 }
 
 fn bonusTimerMs(seconds: f32) i32 {
