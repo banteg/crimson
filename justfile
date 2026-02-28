@@ -27,6 +27,7 @@ check *args:
     sg scan
     sg test
     uv run pytest {{args}}
+    just check-zig
 
 check-zig:
     cd crimson-zig && zig build test --summary all
