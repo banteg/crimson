@@ -15,7 +15,7 @@ BonusPickupFxHook = Callable[[GameplayState, BonusPickupEvent, int], None]
 
 
 def _apply_default_pickup_burst(*, state: GameplayState, pickup: BonusPickupEvent, detail_preset: int) -> None:
-    if int(pickup.bonus_id) == int(BonusId.NUKE):
+    if pickup.bonus_id == BonusId.NUKE:
         return
     state.effects.spawn_burst(
         pos=pickup.pos,
@@ -36,7 +36,7 @@ def _apply_freeze_hook(state: GameplayState, pickup: BonusPickupEvent, detail_pr
     apply_freeze_pickup_fx(state=state, pickup=pickup, detail_preset=detail_preset)
 
 
-_BONUS_PICKUP_HOOKS: dict[int, BonusPickupFxHook] = {
+_BONUS_PICKUP_HOOKS: dict[BonusId, BonusPickupFxHook] = {
     BonusId.REFLEX_BOOST: _apply_reflex_boost_hook,
     BonusId.FREEZE: _apply_freeze_hook,
 }
@@ -46,6 +46,6 @@ def emit_bonus_pickup_effects(*, state: GameplayState, pickups: list[BonusPickup
     """Emit deterministic pickup FX for the provided pickup list."""
     for pickup in pickups:
         _apply_default_pickup_burst(state=state, pickup=pickup, detail_preset=int(detail_preset))
-        hook = _BONUS_PICKUP_HOOKS.get(int(pickup.bonus_id))
+        hook = _BONUS_PICKUP_HOOKS.get(pickup.bonus_id)
         if hook is not None:
             hook(state, pickup, int(detail_preset))

@@ -159,7 +159,7 @@ class BonusPool:
 
         amount = duration_override
         if amount == -1:
-            meta = BONUS_BY_ID.get(int(bonus_id))
+            meta = BONUS_BY_ID.get(bonus_id)
             amount = int(meta.default_amount or 0) if meta is not None else 0
         entry.amount = int(amount)
         return entry
@@ -206,7 +206,7 @@ class BonusPool:
         elif entry.bonus_id == BonusId.POINTS:
             entry.amount = 1000 if (rng.rand() & 7) < 3 else 500
         else:
-            meta = BONUS_BY_ID.get(int(entry.bonus_id))
+            meta = BONUS_BY_ID.get(entry.bonus_id)
             entry.amount = int(meta.default_amount or 0) if meta is not None else 0
         return entry
 
@@ -396,7 +396,7 @@ class BonusPool:
                     pickups.append(
                         BonusPickupEvent(
                             player_index=player.index,
-                            bonus_id=int(entry.bonus_id),
+                            bonus_id=entry.bonus_id,
                             amount=entry.amount,
                             pos=entry.pos,
                         ),
@@ -435,7 +435,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     if bonus_id == BonusId.POINTS:
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))
         return f"{points_label}: {int(entry.amount)}"
-    meta = BONUS_BY_ID.get(int(bonus_id))
+    meta = BONUS_BY_ID.get(bonus_id)
     if meta is not None:
         return bonus_display_name(meta.bonus_id, preserve_bugs=bool(preserve_bugs))
     return "Bonus"

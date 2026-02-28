@@ -214,16 +214,16 @@ def _append_bonus_pickup_events(
 ) -> None:
     for pickup in pickups:
         player_idx = int(pickup.player_index)
-        bonus_id = int(pickup.bonus_id)
+        bonus_id = pickup.bonus_id
         amount = int(pickup.amount)
-        bonus_name = bonus_display_name(int(bonus_id), preserve_bugs=bool(preserve_bugs))
+        bonus_name = bonus_display_name(bonus_id, preserve_bugs=bool(preserve_bugs))
         detail = f"p{int(player_idx)} picked {str(bonus_name)} ({int(bonus_id)}) amount={int(amount)}"
         data: dict[str, object] = {
             "bonus_id": int(bonus_id),
             "bonus_name": str(bonus_name),
             "amount": int(amount),
         }
-        if int(bonus_id) == int(BonusId.WEAPON):
+        if bonus_id == BonusId.WEAPON:
             weapon_id = WeaponId(amount)
             weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
             detail += f" -> {str(weapon_name)}"

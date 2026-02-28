@@ -16,7 +16,7 @@ class _TimerRef:
 @dataclass(slots=True)
 class BonusHudSlot:
     active: bool = False
-    bonus_id: int = 0
+    bonus_id: BonusId = BonusId.UNUSED
     label: str = ""
     icon_id: int = -1
     slide_x: float = -184.0
@@ -45,7 +45,7 @@ class BonusHudState:
         existing = None
         free = None
         for slot in self.slots:
-            if slot.active and slot.bonus_id == int(bonus_id):
+            if slot.active and slot.bonus_id == bonus_id:
                 existing = slot
                 break
             if (not slot.active) and free is None:
@@ -54,7 +54,7 @@ class BonusHudState:
         if slot is None:
             slot = self.slots[-1]
         slot.active = True
-        slot.bonus_id = int(bonus_id)
+        slot.bonus_id = bonus_id
         slot.label = label
         slot.icon_id = int(icon_id)
         slot.slide_x = -184.0
@@ -127,7 +127,7 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
 
         if slot.slide_x < -184.0 and not any(other.active for other in state.bonus_hud.slots[slot_index + 1 :]):
             slot.active = False
-            slot.bonus_id = 0
+            slot.bonus_id = BonusId.UNUSED
             slot.label = ""
             slot.icon_id = -1
             slot.slide_x = -184.0

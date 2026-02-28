@@ -102,7 +102,7 @@ def draw_bonus_pickups(
             rl.draw_texture_pro(render_ctx.wicons_texture, src, dst, origin, 0.0, tint)
             continue
 
-        meta = BONUS_BY_ID.get(int(bonus_id))
+        meta = BONUS_BY_ID.get(bonus_id)
         icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else None
         if icon_id is None or icon_id < 0:
             continue

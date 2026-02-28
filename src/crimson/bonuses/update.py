@@ -77,7 +77,7 @@ def bonus_telekinetic_update(
         pickups.append(
             BonusPickupEvent(
                 player_index=int(player.index),
-                bonus_id=int(entry.bonus_id),
+                bonus_id=entry.bonus_id,
                 amount=int(entry.amount),
                 pos=entry.pos,
             ),

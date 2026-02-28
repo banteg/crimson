@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def _bonus_enabled(bonus_id: BonusId) -> bool:
-    meta = BONUS_BY_ID.get(int(bonus_id))
+    meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:
         return False
     return meta.bonus_id != BonusId.UNUSED
