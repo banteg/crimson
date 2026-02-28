@@ -9,7 +9,7 @@ from ..runtime.hook_types import PerkHooks
 
 
 def apply_random_weapon(ctx: PerkApplyCtx) -> None:
-    current = int(ctx.owner.weapon_id)
+    current = int(ctx.owner.weapon.weapon_id)
     weapon_id = int(current)
     for _ in range(100):
         candidate = int(weapon_pick_random_available(ctx.state))

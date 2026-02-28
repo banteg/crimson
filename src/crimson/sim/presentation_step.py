@@ -87,7 +87,7 @@ def plan_player_audio_sfx(
 ) -> list[str]:
     keys: list[str] = []
 
-    weapon = WEAPON_BY_ID.get(int(player.weapon_id))
+    weapon = WEAPON_BY_ID.get(int(player.weapon.weapon_id))
     if weapon is None:
         return keys
 
@@ -108,8 +108,8 @@ def plan_player_audio_sfx(
             if key is not None:
                 keys.append(key)
 
-    reload_active = player.reload_active
-    reload_timer = float(player.reload_timer)
+    reload_active = player.weapon.reload_active
+    reload_timer = float(player.weapon.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
         key = resolve_weapon_sfx_ref(weapon.reload_sound)

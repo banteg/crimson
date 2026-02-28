@@ -527,9 +527,9 @@ class ReplayPlaybackMode:
         if world is None:
             return
         for player in world.players:
-            if int(player.weapon_id) != int(RUSH_WEAPON_ID):
+            if int(player.weapon.weapon_id) != int(RUSH_WEAPON_ID):
                 weapon_assign_player(player, int(RUSH_WEAPON_ID))
-            player.ammo = float(max(0, int(player.clip_size)))
+            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
     def _apply_tick_events(self, events: list[object], *, tick_index: int, dt_frame: float) -> None:
         replay = self._replay

@@ -22,20 +22,20 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, int(WeaponId.MINI_ROCKET_SWARMERS))
-    assert player.ammo == player.clip_size
+    assert player.weapon.ammo == player.weapon.clip_size
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
-    assert len(spawned) == player.clip_size
-    assert player.ammo == 0
-    assert player.reload_active is True
+    assert len(spawned) == player.weapon.clip_size
+    assert player.weapon.ammo == 0
+    assert player.weapon.reload_active is True
 
-    assert state.weapon_shots_fired[0][int(WeaponId.MINI_ROCKET_SWARMERS)] == player.clip_size
+    assert state.weapon_shots_fired[0][int(WeaponId.MINI_ROCKET_SWARMERS)] == player.weapon.clip_size
 
     shot_angle = float(NATIVE_HALF_PI)
     spread = math.pi * (2.0 / 3.0)
-    step = spread / float(player.clip_size - 1)
+    step = spread / float(player.weapon.clip_size - 1)
     expected0 = float(shot_angle) - spread * 0.5
     expected1 = float(shot_angle) - spread * 0.5 + step
     assert_float_close(spawned[0].angle, expected0)

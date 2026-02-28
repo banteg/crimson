@@ -304,7 +304,7 @@ class QuestMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon_id),
+            fallback_weapon_id=int(self.player.weapon.weapon_id),
         )
         replay = replace(
             replay,
@@ -560,7 +560,7 @@ class QuestMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self.player.weapon_id)
+        current = int(self.player.weapon.weapon_id)
         try:
             idx = weapon_ids.index(current)
         except ValueError:
@@ -595,7 +595,7 @@ class QuestMode(BaseGameplayMode):
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
                 player_index=int(self.player.index),
-                fallback_weapon_id=int(self.player.weapon_id),
+                fallback_weapon_id=int(self.player.weapon.weapon_id),
             )
             player_health_values = tuple(float(player.health) for player in self.world.players)
             player2_health = None
@@ -611,7 +611,7 @@ class QuestMode(BaseGameplayMode):
                 pending_perk_count=int(self.state.perk_selection.pending_count),
                 experience=int(self.player.experience),
                 kill_count=int(self.creatures.kill_count),
-                weapon_id=int(self.player.weapon_id),
+                weapon_id=int(self.player.weapon.weapon_id),
                 shots_fired=fired,
                 shots_hit=hit,
                 most_used_weapon_id=int(most_used_weapon_id),
@@ -813,7 +813,7 @@ class QuestMode(BaseGameplayMode):
                     most_used_weapon_id = most_used_weapon_id_for_player(
                         self.state,
                         player_index=int(self.player.index),
-                        fallback_weapon_id=int(self.player.weapon_id),
+                        fallback_weapon_id=int(self.player.weapon.weapon_id),
                     )
                     player_health_values = tuple(float(player.health) for player in self.world.players)
                     player2_health = None
@@ -829,7 +829,7 @@ class QuestMode(BaseGameplayMode):
                         pending_perk_count=int(self.state.perk_selection.pending_count),
                         experience=int(self.player.experience),
                         kill_count=int(self.creatures.kill_count),
-                        weapon_id=int(self.player.weapon_id),
+                        weapon_id=int(self.player.weapon.weapon_id),
                         shots_fired=fired,
                         shots_hit=hit,
                         most_used_weapon_id=int(most_used_weapon_id),
@@ -1015,7 +1015,7 @@ class QuestMode(BaseGameplayMode):
                         most_used_weapon_id = most_used_weapon_id_for_player(
                             self.state,
                             player_index=int(self.player.index),
-                            fallback_weapon_id=int(self.player.weapon_id),
+                            fallback_weapon_id=int(self.player.weapon.weapon_id),
                         )
                         player_health_values = tuple(float(player.health) for player in self.world.players)
                         player2_health = None
@@ -1033,7 +1033,7 @@ class QuestMode(BaseGameplayMode):
                             pending_perk_count=int(self.state.perk_selection.pending_count),
                             experience=int(self.player.experience),
                             kill_count=int(self.creatures.kill_count),
-                            weapon_id=int(self.player.weapon_id),
+                            weapon_id=int(self.player.weapon.weapon_id),
                             shots_fired=fired,
                             shots_hit=hit,
                             most_used_weapon_id=int(most_used_weapon_id),

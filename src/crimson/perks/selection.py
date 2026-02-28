@@ -109,7 +109,7 @@ def perk_generate_choices(
         player_count=player_count,
     )
     player_perk_counts = player.perk_counts
-    player_weapon_id = int(player.weapon_id)
+    player_weapon_id = int(player.weapon.weapon_id)
     death_clock_active = int(player_perk_counts[int(PerkId.DEATH_CLOCK)]) > 0
     flamethrower_id = int(WeaponId.FLAMETHROWER)
 
@@ -120,7 +120,7 @@ def perk_generate_choices(
         for source_player in source_players:
             if float(source_player.health) <= 0.0:
                 continue
-            if int(source_player.weapon_id) == flamethrower_id:
+            if int(source_player.weapon.weapon_id) == flamethrower_id:
                 pyromaniac_allowed = True
                 break
 

@@ -47,7 +47,7 @@ def player_take_damage(
         return 0.0
 
     damage_scaled = float(raw_damage)
-    if perk_active(player, PerkId.TOUGH_RELOADER) and player.reload_active:
+    if perk_active(player, PerkId.TOUGH_RELOADER) and player.weapon.reload_active:
         damage_scaled *= 0.5
     spread_heat_damage = float(damage_scaled)
 

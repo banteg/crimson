@@ -113,19 +113,19 @@ def player_fire_weapon(
 ) -> None:
     dt = float(dt)
 
-    weapon_id = int(player.weapon_id)
+    weapon_id = int(player.weapon.weapon_id)
     weapon = weapon_entry(weapon_id)
     if weapon is None:
         return
 
-    if not bool(force_pre_swap_fire_gate) and player.shot_cooldown > 0.0:
+    if not bool(force_pre_swap_fire_gate) and player.weapon.shot_cooldown > 0.0:
         return
     if not input_state.fire_down:
         return
 
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
-    if not bool(force_pre_swap_fire_gate) and player.reload_timer > 0.0:
+    if not bool(force_pre_swap_fire_gate) and player.weapon.reload_timer > 0.0:
         if player.experience <= 0:
             return
         if perk_active(player, PerkId.REGRESSION_BULLETS):
@@ -177,7 +177,7 @@ def player_fire_weapon(
         shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
     if perk_active(player, PerkId.SHARPSHOOTER):
         shot_cooldown = float(f32(float(shot_cooldown) * 1.05))
-    player.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
+    player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
     aim = input_state.aim
     aim_delta = aim - player.pos
@@ -265,7 +265,7 @@ def player_fire_weapon(
         )
     elif weapon_id == WeaponId.MINI_ROCKET_SWARMERS:
         # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
-        rocket_count = max(1, int(player.ammo))
+        rocket_count = max(1, int(player.weapon.ammo))
         if bool(state.preserve_bugs):
             # Native bug: step scales by ammo (`ammo * pi/3`), which aliases to identical headings
             # for some clip sizes (e.g. 6 rockets), causing visible clumping.
@@ -437,11 +437,11 @@ def player_fire_weapon(
     if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         # Native allows ammo to cross below zero for reload-time firing paths
         # (for example Regression Bullets), and replay checkpoints rely on that.
-        player.ammo = float(player.ammo) - float(ammo_cost)
-    reload_start_gate_open = bool(player.reload_timer <= 0.0)
+        player.weapon.ammo = float(player.weapon.ammo) - float(ammo_cost)
+    reload_start_gate_open = bool(player.weapon.reload_timer <= 0.0)
     if bool(force_pre_swap_fire_gate):
         # Alt-weapon same-tick fire uses the pre-swap gate (reload_timer==0) for
         # reload restart eligibility after ammo drains below zero.
         reload_start_gate_open = True
-    if player.ammo <= 0.0 and reload_start_gate_open:
+    if player.weapon.ammo <= 0.0 and reload_start_gate_open:
         player_start_reload(player, state)

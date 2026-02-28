@@ -7,7 +7,7 @@ from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -67,13 +67,13 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.experience = 100
-    player.reload_active = True
-    player.reload_timer = 1.0
-    player.reload_timer_max = 1.0
+    player.weapon.reload_active = True
+    player.weapon.reload_timer = 1.0
+    player.weapon.reload_timer_max = 1.0
     world.players.append(player)
 
     events = world.step(

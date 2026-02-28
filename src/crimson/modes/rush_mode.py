@@ -128,10 +128,10 @@ class RushMode(BaseGameplayMode):
 
     def _enforce_rush_loadout(self) -> None:
         for player in self.world.players:
-            if int(player.weapon_id) != RUSH_WEAPON_ID:
+            if int(player.weapon.weapon_id) != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
             # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-            player.ammo = float(max(0, int(player.clip_size)))
+            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
     def open(self) -> None:
         super().open()
@@ -295,7 +295,7 @@ class RushMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon_id),
+            fallback_weapon_id=int(self.player.weapon.weapon_id),
         )
         replay = replace(
             replay,

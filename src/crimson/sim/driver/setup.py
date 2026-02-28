@@ -110,7 +110,7 @@ def player0_shots(state: GameplayState) -> tuple[int, int]:
 def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]) -> int:
     fallback_weapon_id = 1
     if players:
-        fallback_weapon_id = int(players[0].weapon_id)
+        fallback_weapon_id = int(players[0].weapon.weapon_id)
     return most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=fallback_weapon_id)
 
 

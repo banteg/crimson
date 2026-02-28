@@ -191,7 +191,7 @@ class ArsenalDebugView:
 
         player_pos = player.pos
         rng = self._world.state.rng.rand
-        current_weapon_id = int(player.weapon_id)
+        current_weapon_id = int(player.weapon.weapon_id)
 
         for idx, bonus_id in enumerate(bonus_ids):
             angle = float(idx) / float(count) * math.tau
@@ -276,7 +276,7 @@ class ArsenalDebugView:
         if player is None:
             return ["Arsenal debug: missing player"]
 
-        weapon_id = int(player.weapon_id)
+        weapon_id = int(player.weapon.weapon_id)
         name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
         index_label = f"{self._weapon_index + 1}/{max(1, len(self._weapon_ids))}"
 
@@ -284,8 +284,8 @@ class ArsenalDebugView:
             "Arsenal",
             f"{name} (id {weapon_id})  [{index_label}]",
             f"projectile: {self._weapon_projectile_desc(weapon_id)}",
-            f"ammo {player.ammo:.1f}/{player.clip_size:.1f}  reload {player.reload_timer:.2f}/{player.reload_timer_max:.2f}",
-            f"shot_cd {player.shot_cooldown:.3f}  spread {player.spread_heat:.3f}  muzzle {player.muzzle_flash_alpha:.2f}",
+            f"ammo {player.weapon.ammo:.1f}/{player.weapon.clip_size:.1f}  reload {player.weapon.reload_timer:.2f}/{player.weapon.reload_timer_max:.2f}",
+            f"shot_cd {player.weapon.shot_cooldown:.3f}  spread {player.spread_heat:.3f}  muzzle {player.muzzle_flash_alpha:.2f}",
         ]
 
         if weapon is None:
@@ -385,7 +385,7 @@ class ArsenalDebugView:
         y = 12.0
         line = float(ui_line_height(self._small))
 
-        weapon = WEAPON_BY_ID.get(int(self._player.weapon_id)) if self._player is not None else None
+        weapon = WEAPON_BY_ID.get(int(self._player.weapon.weapon_id)) if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
             draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line

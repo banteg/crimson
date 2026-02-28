@@ -7,7 +7,7 @@ from ..runtime.hook_types import PerkHooks
 
 def apply_my_favourite_weapon(ctx: PerkApplyCtx) -> None:
     for player in ctx.players:
-        player.clip_size += 2
+        player.weapon.clip_size += 2
 
 
 HOOKS = PerkHooks(

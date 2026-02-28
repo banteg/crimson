@@ -19,7 +19,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
     player_fire_weapon,
     weapon_assign_player,
@@ -39,19 +39,23 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     state = GameplayState()
     state.bonuses.weapon_power_up = 1.0
 
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=1, shot_cooldown=1.0))
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
 
-    assert_float_close(player.shot_cooldown, 0.25)
+    assert_float_close(player.weapon.shot_cooldown, 0.25)
 
 
 def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=0.03400000000000056)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=1, shot_cooldown=0.03400000000000056),
+    )
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034, state)
 
-    assert player.shot_cooldown == 0.0
+    assert player.weapon.shot_cooldown == 0.0
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
@@ -131,89 +135,56 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
-        reload_active=True,
-        reload_timer=1.0,
-        reload_timer_max=1.0,
-        clip_size=10,
-        ammo=0,
+        weapon=WeaponSlot(
+            weapon_id=1,
+            clip_size=10,
+            ammo=0,
+            reload_active=True,
+            reload_timer=1.0,
+            reload_timer_max=1.0,
+        ),
     )
     player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
-    assert_float_close(player.reload_timer, f32(0.7))
+    assert_float_close(player.weapon.reload_timer, f32(0.7))
 
 
 def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=-1.0,
-        reload_active=True,
-        reload_timer=0.01,
-        reload_timer_max=3.0,
-        shot_cooldown=0.5,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=-1.0, reload_active=True, reload_timer=0.01, reload_timer_max=3.0, shot_cooldown=0.5),)
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
 
-    assert_float_close(player.ammo, 6.0)
+    assert_float_close(player.weapon.ammo, 6.0)
 
 
 def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=-1.0,
-        reload_active=True,
-        reload_timer=0.0,
-        reload_timer_max=3.0,
-        shot_cooldown=0.5,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=-1.0, reload_active=True, reload_timer=0.0, reload_timer_max=3.0, shot_cooldown=0.5),)
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
 
-    assert_float_close(player.ammo, -1.0)
+    assert_float_close(player.weapon.ammo, -1.0)
 
 
 def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=-1.0,
-        reload_active=True,
-        reload_timer=0.03199996426701546,
-        reload_timer_max=3.0,
-        shot_cooldown=0.5,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=-1.0, reload_active=True, reload_timer=0.03199996426701546, reload_timer_max=3.0, shot_cooldown=0.5),)
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844, state)
 
-    assert_float_close(player.ammo, -1.0)
+    assert_float_close(player.weapon.ammo, -1.0)
 
 
 def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reload() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=0.0,
-        reload_active=True,
-        reload_timer=0.0,
-        reload_timer_max=3.0,
-        shot_cooldown=0.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=0.0, reload_active=True, reload_timer=0.0, reload_timer_max=3.0, shot_cooldown=0.0),)
 
     player_update(
         player,
@@ -222,25 +193,16 @@ def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reloa
         state,
     )
 
-    assert_float_close(player.ammo, -1.0)
-    assert player.reload_active is True
-    assert player.reload_timer > 0.0
-    assert_float_close(player.reload_timer, player.reload_timer_max)
+    assert_float_close(player.weapon.ammo, -1.0)
+    assert player.weapon.reload_active is True
+    assert player.weapon.reload_timer > 0.0
+    assert_float_close(player.weapon.reload_timer, player.weapon.reload_timer_max)
 
 
 def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.SUBMACHINE_GUN),
-        clip_size=30,
-        ammo=0.0,
-        reload_active=True,
-        reload_timer=0.09999996426701546,
-        reload_timer_max=1.2,
-        shot_cooldown=0.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.SUBMACHINE_GUN), clip_size=30, ammo=0.0, reload_active=True, reload_timer=0.09999996426701546, reload_timer_max=1.2, shot_cooldown=0.0),)
 
     player_update(
         player,
@@ -249,24 +211,15 @@ def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() 
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0)
-    assert player.reload_active is False
-    assert_float_close(player.ammo, 29.0)
+    assert_float_close(player.weapon.reload_timer, 0.0)
+    assert player.weapon.reload_active is False
+    assert_float_close(player.weapon.ammo, 29.0)
 
 
 def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> None:
     state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=0.0,
-        reload_active=True,
-        reload_timer=0.06,
-        reload_timer_max=3.0,
-        shot_cooldown=0.5,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=0.0, reload_active=True, reload_timer=0.06, reload_timer_max=3.0, shot_cooldown=0.5),)
     player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(
@@ -276,24 +229,15 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0)
-    assert_float_close(player.ammo, 6.0)
-    assert player.reload_active is True
+    assert_float_close(player.weapon.reload_timer, 0.0)
+    assert_float_close(player.weapon.ammo, 6.0)
+    assert player.weapon.reload_active is True
 
 
 def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
     state = GameplayState(preserve_bugs=True)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(50.0, 50.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=0.0,
-        reload_active=True,
-        reload_timer=0.06,
-        reload_timer_max=3.0,
-        shot_cooldown=0.5,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=0.0, reload_active=True, reload_timer=0.06, reload_timer_max=3.0, shot_cooldown=0.5),)
     player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(
@@ -303,14 +247,14 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
         state,
     )
 
-    assert_float_close(player.reload_timer, 0.0)
-    assert_float_close(player.ammo, 0.0)
-    assert player.reload_active is True
+    assert_float_close(player.weapon.reload_timer, 0.0)
+    assert_float_close(player.weapon.ammo, 0.0)
+    assert player.weapon.reload_active is True
 
 
 def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=10)
+    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=1, clip_size=10, ammo=10))
 
     player_update(
         player,
@@ -323,13 +267,13 @@ def test_player_update_move_to_cursor_reload_key_does_not_start_reload() -> None
         state,
     )
 
-    assert player.reload_active is False
-    assert player.reload_timer == 0.0
+    assert player.weapon.reload_active is False
+    assert player.weapon.reload_timer == 0.0
 
 
 def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key_state() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=0.0)
+    player = PlayerState(index=0, pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=1, clip_size=10, ammo=0.0))
 
     player_update(
         player,
@@ -343,14 +287,14 @@ def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key
         state,
     )
 
-    assert player.reload_active is False
-    assert player.reload_timer == 0.0
+    assert player.weapon.reload_active is False
+    assert player.weapon.reload_timer == 0.0
 
 
 def test_player_update_manual_reload_requires_single_player() -> None:
     state = GameplayState()
-    player0 = PlayerState(index=0, pos=Vec2(50.0, 50.0), clip_size=10, ammo=0.0)
-    player1 = PlayerState(index=1, pos=Vec2(60.0, 50.0), clip_size=10, ammo=10.0)
+    player0 = PlayerState(index=0, pos=Vec2(50.0, 50.0), weapon=WeaponSlot(weapon_id=1, clip_size=10, ammo=0.0))
+    player1 = PlayerState(index=1, pos=Vec2(60.0, 50.0), weapon=WeaponSlot(weapon_id=1, clip_size=10, ammo=10.0))
 
     player_update(
         player0,
@@ -360,8 +304,8 @@ def test_player_update_manual_reload_requires_single_player() -> None:
         players=[player0, player1],
     )
 
-    assert player0.reload_active is False
-    assert player0.reload_timer == 0.0
+    assert player0.weapon.reload_active is False
+    assert player0.weapon.reload_timer == 0.0
 
 
 def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
@@ -393,11 +337,14 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
-        reload_active=True,
-        reload_timer=1.1,
-        reload_timer_max=2.0,
-        clip_size=10,
-        ammo=0,
+        weapon=WeaponSlot(
+            weapon_id=1,
+            clip_size=10,
+            ammo=0,
+            reload_active=True,
+            reload_timer=1.1,
+            reload_timer_max=2.0,
+        ),
     )
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
 
@@ -488,14 +435,9 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.SHOTGUN),
-        clip_size=10,
-        ammo=10,
-        fire_bullets_timer=1.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10),
+    fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
@@ -540,32 +482,22 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.SHOTGUN),
-        clip_size=10,
-        ammo=10,
-        fire_bullets_timer=1.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10),
+    fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
 
-    assert_float_close(player.ammo, 10.0)
+    assert_float_close(player.weapon.ammo, 10.0)
 
 
 def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.SHOTGUN),
-        clip_size=10,
-        ammo=0,
-        fire_bullets_timer=1.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=0),
+    fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
@@ -573,31 +505,24 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
     assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
-    assert player.reload_active
-    assert player.reload_timer > 0.0
+    assert player.weapon.reload_active
+    assert player.weapon.reload_timer > 0.0
 
 
 def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.ION_CANNON),
-        clip_size=6,
-        ammo=-1.0,
-        reload_active=False,
-        reload_timer=0.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ION_CANNON), clip_size=6, ammo=-1.0, reload_active=False, reload_timer=0.0),)
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016, state)
 
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTypeId.ION_CANNON)]
-    assert_float_close(player.ammo, -2.0)
-    assert player.reload_active
-    assert_float_close(player.reload_timer, 3.0)
+    assert_float_close(player.weapon.ammo, -2.0)
+    assert player.weapon.reload_active
+    assert_float_close(player.weapon.reload_timer, 3.0)
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
@@ -605,14 +530,9 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.SHOTGUN),
-        clip_size=10,
-        ammo=10,
-        fire_bullets_timer=1.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10),
+    fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -633,14 +553,9 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
 
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.ASSAULT_RIFLE),
-        clip_size=25,
-        ammo=25,
-        fire_bullets_timer=1.0,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE), clip_size=25, ammo=25),
+    fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
@@ -658,7 +573,11 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     pool = ProjectilePool(size=64)
     state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=int(WeaponId.SHOTGUN), clip_size=10, ammo=10),
+    )
     player.aim_dir = Vec2(1.0, 0.0)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
@@ -680,7 +599,7 @@ def test_player_update_tracks_aim_point() -> None:
 
 def test_player_update_sets_survival_fire_seen_when_fire_input_is_down() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shot_cooldown=1.0)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=1, shot_cooldown=1.0))
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
 
@@ -907,14 +826,9 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     seed = 0xBEEF
     state.rng.srand(seed)
 
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon_id=int(WeaponId.PISTOL),
-        clip_size=10,
-        ammo=10,
-        spread_heat=0.2,
-    )
+    player = PlayerState(index=0,
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL), clip_size=10, ammo=10),
+    spread_heat=0.2,)
 
     aim_x = 200.0
     aim_y = 100.0

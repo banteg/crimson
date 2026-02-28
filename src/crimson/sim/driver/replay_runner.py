@@ -44,10 +44,10 @@ RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
-        if int(player.weapon_id) != int(RUSH_WEAPON_ID):
+        if int(player.weapon.weapon_id) != int(RUSH_WEAPON_ID):
             weapon_assign_player(player, int(RUSH_WEAPON_ID))
         # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-        player.ammo = float(max(0, int(player.clip_size)))
+        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
 
 def run_survival_replay(
@@ -679,9 +679,9 @@ def run_quest_replay(
         for player in world.players:
             weapon_assign_player(player, int(quest_start_weapon_id))
             if int(quest_start_weapon_id) == int(WeaponId.PISTOL):
-                player.clip_size = max(12, int(player.clip_size))
-                if float(player.ammo) < 12.0:
-                    player.ammo = 12.0
+                player.weapon.clip_size = max(12, int(player.weapon.clip_size))
+                if float(player.weapon.ammo) < 12.0:
+                    player.weapon.ammo = 12.0
         world.spawn_env = replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
         world.creatures.env = world.spawn_env
         world.creatures.effects = world.state.effects

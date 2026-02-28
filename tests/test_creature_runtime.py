@@ -23,7 +23,7 @@ from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.perks import PerkId
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -154,7 +154,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
     owner.spawn_slot_index = 0
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     pool.spawn_slots.append(
         SpawnSlotInit(
@@ -198,7 +198,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
         difficulty_level=0,
     )
     pool = CreaturePool(env=env)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     owner = pool.entries[0]
     owner.active = True
@@ -239,7 +239,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
         difficulty_level=0,
     )
     pool = CreaturePool(env=env)
-    player = PlayerState(index=0, pos=Vec2(640.0, 700.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(640.0, 700.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     owner = pool.entries[0]
     owner.active = True
@@ -275,7 +275,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
 
 def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -296,7 +296,7 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
 
 def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     start_pos = Vec2(120.0, 160.0)
@@ -328,7 +328,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
 
 def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     link = pool.entries[0]
@@ -388,8 +388,8 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     state = GameplayState()
     pool = CreaturePool()
 
-    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
-    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
+    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     creature = pool.entries[0]
     creature.active = True
@@ -414,7 +414,7 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     state = GameplayState()
     pool = CreaturePool()
 
-    dead_player = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=0.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    dead_player = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=0.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     creature = pool.entries[0]
     creature.active = True
@@ -441,7 +441,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     state = GameplayState()
     pool = CreaturePool()
 
-    dead_player = PlayerState(index=0, pos=Vec2(400.0, 400.0), health=0.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    dead_player = PlayerState(index=0, pos=Vec2(400.0, 400.0), health=0.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     creature = pool.entries[0]
     creature.active = True
@@ -467,8 +467,8 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     state = GameplayState()
     pool = CreaturePool()
 
-    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
-    player1 = PlayerState(index=1, pos=Vec2(104.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
+    player1 = PlayerState(index=1, pos=Vec2(104.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     creature = pool.entries[0]
     creature.active = True
@@ -492,7 +492,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
 def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     state = GameplayState()
     pool = CreaturePool()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     far = pool.entries[0]
     far.active = True
@@ -526,7 +526,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
 def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -> None:
     state = GameplayState()
     pool = CreaturePool()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     dead_target = pool.entries[0]
     dead_target.active = True
@@ -561,7 +561,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
 def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> None:
     state = GameplayState()
     pool = CreaturePool()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     far = pool.entries[0]
     far.active = True
@@ -602,7 +602,7 @@ def test_small_creature_dies_on_contact() -> None:
     state = GameplayState()
     pool = CreaturePool()
 
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
 
     creature = pool.entries[0]
     creature.active = True
@@ -649,7 +649,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     # - points amount: (rand & 7) < 3 => 1000
     state.rng = _StubRand([1, 0, 0])  # type: ignore[assignment]
 
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -676,7 +676,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
 
 def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(mocker) -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -718,7 +718,7 @@ def test_bonus_on_death_still_runs_try_spawn_on_kill_and_burst_uses_try_result(m
 
 def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(mocker) -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -780,7 +780,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
     state = GameplayState()
     state.rng = _StubRand([0])  # type: ignore[assignment]
 
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     player.experience = 48_841
     pool = CreaturePool()
 
@@ -806,7 +806,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = True
@@ -833,7 +833,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = True
@@ -860,7 +860,7 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
     state = GameplayState()
     state.game_mode = int(GameMode.RUSH)
     state.bonuses.freeze = 1.0
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.ASSAULT_RIFLE))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.ASSAULT_RIFLE)))
     pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = False
@@ -1144,7 +1144,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
 
 def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> None:
     state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     pool = CreaturePool()
 
     corpse = pool.entries[42]
@@ -1208,7 +1208,7 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
 
 def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -1237,7 +1237,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
 
 def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     player.perk_counts[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
     pool = CreaturePool()
@@ -1264,7 +1264,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
 
 def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -1288,7 +1288,7 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
 
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -1314,7 +1314,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
 
 def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     player.perk_counts[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
     pool = CreaturePool()
@@ -1348,11 +1348,11 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
 def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
 
-    player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     player0.perk_counts[int(PerkId.EVIL_EYES)] = 1
     player0.evil_eyes_target_creature = 0
 
-    player1 = PlayerState(index=1, pos=Vec2(520.0, 512.0), weapon_id=int(WeaponId.PISTOL))
+    player1 = PlayerState(index=1, pos=Vec2(520.0, 512.0), weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
     player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
     player1.evil_eyes_target_creature = 1
 

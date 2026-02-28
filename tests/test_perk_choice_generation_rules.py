@@ -9,7 +9,7 @@ from crimson.perks import PerkId
 from crimson.perks.availability import perks_rebuild_available
 from crimson.perks.selection import PERK_ID_MAX, perk_generate_choices
 from crimson.persistence import save_status
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.helpers import assert_rng_progression
@@ -113,7 +113,7 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
     for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
         state.perk_available[int(perk_id)] = True
 
-    player = PlayerState(index=0, pos=Vec2(), weapon_id=1)
+    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=1))
     choices = perk_generate_choices(state, player, game_mode=int(GameMode.SURVIVAL), player_count=1)
     assert PerkId.PYROMANIAC not in choices
 
@@ -133,8 +133,8 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
     ):
         state.perk_available[int(perk_id)] = True
 
-    player0 = PlayerState(index=0, pos=Vec2(), weapon_id=1)
-    player1 = PlayerState(index=1, pos=Vec2(), weapon_id=int(WeaponId.FLAMETHROWER))
+    player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=1))
+    player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=int(WeaponId.FLAMETHROWER)))
     choices = perk_generate_choices(
         state,
         player0,
@@ -160,8 +160,8 @@ def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> 
     ):
         state.perk_available[int(perk_id)] = True
 
-    player0 = PlayerState(index=0, pos=Vec2(), weapon_id=1)
-    player1 = PlayerState(index=1, pos=Vec2(), weapon_id=int(WeaponId.FLAMETHROWER))
+    player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=1))
+    player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=int(WeaponId.FLAMETHROWER)))
     choices = perk_generate_choices(
         state,
         player0,

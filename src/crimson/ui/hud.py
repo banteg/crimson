@@ -487,7 +487,7 @@ def draw_hud_overlay(
             icon_step = Vec2(0.0, 16.0)
 
         for idx, hud_player in enumerate(hud_players):
-            icon_index = _weapon_icon_index(hud_player.weapon_id)
+            icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
             if icon_index is None:
                 continue
             src = _weapon_icon_src(assets.wicons, icon_index)
@@ -520,7 +520,7 @@ def draw_hud_overlay(
         base_alpha = alpha * HUD_ICON_ALPHA
         for player_idx, hud_player in enumerate(hud_players):
             ammo_tex = None
-            ammo_class = _weapon_ammo_class(hud_player.weapon_id)
+            ammo_class = _weapon_ammo_class(hud_player.weapon.weapon_id)
             if ammo_class == 1:
                 ammo_tex = assets.ind_fire
             elif ammo_class == 2:
@@ -533,10 +533,10 @@ def draw_hud_overlay(
                 continue
 
             player_ammo_base = ammo_base_pos + ammo_step * float(player_idx)
-            bars = max(0, int(hud_player.clip_size))
+            bars = max(0, int(hud_player.weapon.clip_size))
             if bars > HUD_AMMO_BAR_LIMIT:
                 bars = HUD_AMMO_BAR_CLAMP
-            ammo_count = max(0, int(hud_player.ammo))
+            ammo_count = max(0, int(hud_player.weapon.ammo))
             for idx in range(bars):
                 bar_alpha = base_alpha if idx < ammo_count else base_alpha * HUD_AMMO_DIM_ALPHA
                 bar_pos = player_ammo_base.offset(dx=float(idx) * HUD_AMMO_BAR_STEP)
@@ -951,7 +951,7 @@ def draw_hud_overlay(
             )
             max_y = max(max_y, dst.y + dst.height)
 
-            icon_index = _weapon_icon_index(hud_player.weapon_id)
+            icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
             if icon_index is not None:
                 src = _weapon_icon_src(assets.wicons, icon_index)
                 icon_pos = aux_icon_base_pos + aux_step * float(idx)
@@ -967,7 +967,7 @@ def draw_hud_overlay(
                 max_y = max(max_y, dst.y + dst.height)
 
             weapon_name = weapon_display_name(
-                int(hud_player.weapon_id),
+                int(hud_player.weapon.weapon_id),
                 preserve_bugs=bool(state.preserve_bugs),
             )
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)

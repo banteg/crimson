@@ -32,7 +32,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         player.spread_heat = 0.0
 
         weapon_assign_player(player, weapon_id)
-        start_ammo = float(player.ammo)
+        start_ammo = float(player.weapon.ammo)
 
         player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
@@ -46,7 +46,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         assert state.projectiles.iter_active() == []
         assert state.secondary_projectiles.iter_active() == []
 
-        assert_float_close(float(player.ammo), start_ammo - ammo_cost)
+        assert_float_close(float(player.weapon.ammo), start_ammo - ammo_cost)
         assert state.weapon_shots_fired[0][weapon_id] == 1
 
 

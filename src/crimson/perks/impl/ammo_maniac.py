@@ -11,7 +11,7 @@ def apply_ammo_maniac(ctx: PerkApplyCtx) -> None:
         for player in ctx.players[1:]:
             player.perk_counts[:] = ctx.owner.perk_counts
     for player in ctx.players:
-        weapon_assign_player(player, int(player.weapon_id), state=ctx.state)
+        weapon_assign_player(player, int(player.weapon.weapon_id), state=ctx.state)
 
 
 HOOKS = PerkHooks(

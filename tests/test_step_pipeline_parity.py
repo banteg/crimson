@@ -72,9 +72,9 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
 
 def _enforce_rush_loadout(world: GameWorld) -> None:
     for player in world.players:
-        if int(player.weapon_id) != int(WeaponId.ASSAULT_RIFLE):
+        if int(player.weapon.weapon_id) != int(WeaponId.ASSAULT_RIFLE):
             weapon_assign_player(player, int(WeaponId.ASSAULT_RIFLE))
-        player.ammo = float(max(0, int(player.clip_size)))
+        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
 
 def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:

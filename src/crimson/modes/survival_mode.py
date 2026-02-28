@@ -199,7 +199,7 @@ class SurvivalMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon_id),
+            fallback_weapon_id=int(self.player.weapon.weapon_id),
         )
         replay = replace(
             replay,
@@ -467,7 +467,7 @@ class SurvivalMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self.player.weapon_id)
+        current = int(self.player.weapon.weapon_id)
         try:
             idx = weapon_ids.index(current)
         except ValueError:

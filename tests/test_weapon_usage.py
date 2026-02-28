@@ -23,7 +23,7 @@ def test_weapon_usage_tracks_most_used_weapon() -> None:
 
     weapon_assign_player(player, 2)
     for _ in range(3):
-        player.shot_cooldown = 0.0
+        player.weapon.shot_cooldown = 0.0
         player.spread_heat = 0.0
         player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
     assert state.weapon_shots_fired[0][2] == 3

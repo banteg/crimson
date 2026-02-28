@@ -81,10 +81,10 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, int(WeaponId.PLASMA_SHOTGUN))
-    start_ammo = float(player.ammo)
+    start_ammo = float(player.weapon.ammo)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
-    assert_float_close(float(player.ammo), start_ammo - 1.0)
+    assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
 
 
 @pytest.mark.parametrize(

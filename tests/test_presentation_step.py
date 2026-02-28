@@ -133,7 +133,7 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
 def test_apply_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    player.weapon_id = int(ProjectileTypeId.PISTOL)
+    player.weapon.weapon_id = int(ProjectileTypeId.PISTOL)
     player.shot_seq = 1
 
     state.perk_selection.pending_count = 1

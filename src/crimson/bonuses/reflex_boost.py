@@ -19,10 +19,10 @@ def apply_reflex_boost(ctx: BonusApplyCtx) -> None:
 
     targets = ctx.players if ctx.players is not None else [ctx.player]
     for target in targets:
-        target.ammo = float(target.clip_size)
-        target.reload_active = False
-        target.reload_timer = 0.0
-        target.reload_timer_max = 0.0
+        target.weapon.ammo = float(target.weapon.clip_size)
+        target.weapon.reload_active = False
+        target.weapon.reload_timer = 0.0
+        target.weapon.reload_timer_max = 0.0
 
 
 def apply_reflex_boost_pickup_fx(*, state: GameplayState, pickup: BonusPickupEvent, detail_preset: int) -> None:

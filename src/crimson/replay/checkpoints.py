@@ -204,8 +204,8 @@ def build_checkpoint(
             ReplayPlayerCheckpoint(
                 pos=Vec2(round(player.pos.x, 4), round(player.pos.y, 4)),
                 health=round(player.health, 4),
-                weapon_id=int(player.weapon_id),
-                ammo=round(player.ammo, 4),
+                weapon_id=int(player.weapon.weapon_id),
+                ammo=round(player.weapon.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),
             ),

@@ -135,7 +135,7 @@ class AudioRouter:
     ) -> None:
         if self.audio is None:
             return
-        weapon = WEAPON_BY_ID.get(int(player.weapon_id))
+        weapon = WEAPON_BY_ID.get(int(player.weapon.weapon_id))
         if weapon is None:
             return
 
@@ -152,8 +152,8 @@ class AudioRouter:
             else:
                 self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 
-        reload_active = player.reload_active
-        reload_timer = float(player.reload_timer)
+        reload_active = player.weapon.reload_active
+        reload_timer = float(player.weapon.reload_timer)
         reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
         if reload_started:
             self.play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))

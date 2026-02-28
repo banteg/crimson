@@ -12,29 +12,29 @@ from tests.helpers import MockCrand, assert_rng_progression
 def test_random_weapon_assigns_a_non_pistol_weapon() -> None:
     state = GameplayState(rng=MockCrand(1))
     player = PlayerState(index=0, pos=Vec2())
-    player.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = int(WeaponId.PISTOL)
 
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)
 
-    assert player.weapon_id == int(WeaponId.ASSAULT_RIFLE)
+    assert player.weapon.weapon_id == int(WeaponId.ASSAULT_RIFLE)
 
 
 def test_random_weapon_skips_pistol_when_current_is_not_pistol() -> None:
     # First roll is pistol (0 % 33 + 1 = 1), second roll is Assault Rifle (1 % 33 + 1 = 2).
     state = GameplayState(rng=MockCrand([0, 1], fallback="repeat_last"))
     player = PlayerState(index=0, pos=Vec2())
-    player.weapon_id = int(WeaponId.SHOTGUN)
+    player.weapon.weapon_id = int(WeaponId.SHOTGUN)
 
     perk_apply(state, [player], PerkId.RANDOM_WEAPON)
 
-    assert player.weapon_id == int(WeaponId.ASSAULT_RIFLE)
+    assert player.weapon.weapon_id == int(WeaponId.ASSAULT_RIFLE)
 
 
 def test_random_weapon_uses_last_roll_after_100_retries() -> None:
     rng = MockCrand(0)  # 0 % 33 + 1 = pistol every time
     state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2())
-    player.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = int(WeaponId.PISTOL)
     before_calls = rng.calls
     before_state = rng.state
 
@@ -48,4 +48,4 @@ def test_random_weapon_uses_last_roll_after_100_retries() -> None:
         expected_draws=100,
         expected_after_state=0,
     )
-    assert player.weapon_id == int(WeaponId.PISTOL)
+    assert player.weapon.weapon_id == int(WeaponId.PISTOL)
