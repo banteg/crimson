@@ -29,8 +29,8 @@ check *args:
     uv run pytest {{args}}
 
 check-zig:
-    cd crimson-zig && zig build
-    cd crimson-zig && zig build test
+    cd crimson-zig && zig build test --summary all
+    cd crimson-zig && zig build -Doptimize=ReleaseFast
     cd crimson-zig && zig build wasm
 
 ty:
