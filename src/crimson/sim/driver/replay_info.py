@@ -101,7 +101,7 @@ def _resolve_quest_level(replay: Replay) -> str:
 def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if int(player.weapon.weapon_id) != int(RUSH_WEAPON_ID):
-            weapon_assign_player(player, int(RUSH_WEAPON_ID))
+            weapon_assign_player(player, WeaponId(int(RUSH_WEAPON_ID)))
         player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
 
@@ -775,7 +775,7 @@ def _run_quest_replay_info(
     )
 
     for player in world.players:
-        weapon_assign_player(player, int(quest_start_weapon_id))
+        weapon_assign_player(player, WeaponId(int(quest_start_weapon_id)))
 
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -855,8 +855,8 @@ def _run_quest_replay_info(
 
         reset_players(world.players, world_size=float(world_size), player_count=int(replay.header.player_count))
         for player in world.players:
-            weapon_assign_player(player, int(quest_start_weapon_id))
-            if int(quest_start_weapon_id) == int(WeaponId.PISTOL):
+            weapon_assign_player(player, WeaponId(int(quest_start_weapon_id)))
+            if int(quest_start_weapon_id) == WeaponId.PISTOL:
                 player.weapon.clip_size = max(12, int(player.weapon.clip_size))
                 if float(player.weapon.ammo) < 12.0:
                     player.weapon.ammo = 12.0

@@ -23,6 +23,7 @@ from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
     Weapon,
+    WeaponId,
     projectile_type_id_from_weapon_id,
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -129,10 +130,10 @@ class ArsenalDebugView:
         player.speed_multiplier = float(ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER)
         player.shield_timer = float(ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER)
 
-    def _selected_weapon_id(self) -> int:
+    def _selected_weapon_id(self) -> WeaponId:
         if not self._weapon_ids:
-            return 0
-        return int(self._weapon_ids[self._weapon_index % len(self._weapon_ids)])
+            return WeaponId.NONE
+        return WeaponId(int(self._weapon_ids[self._weapon_index % len(self._weapon_ids)]))
 
     def _apply_weapon(self) -> None:
         if self._player is None:

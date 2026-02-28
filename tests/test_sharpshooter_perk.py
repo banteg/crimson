@@ -9,7 +9,7 @@ from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import player_fire_weapon
-from crimson.weapons import WEAPON_BY_ID
+from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
 
@@ -18,7 +18,7 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)
     player = PlayerState(index=0,
-    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=int(ProjectileTypeId.ASSAULT_RIFLE), clip_size=10, ammo=10),
+    pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE, clip_size=10, ammo=10),
     spread_heat=0.48,)
     player.perk_counts[int(PerkId.SHARPSHOOTER)] = 1
 

@@ -32,6 +32,7 @@ from ..ui.perk_menu import (
     load_perk_menu_assets,
 )
 from ..weapon_runtime import weapon_assign_player
+from ..weapons import WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 
@@ -102,7 +103,7 @@ class TutorialMode(BaseGameplayMode):
         self.state.perk_selection.choices_dirty = True
 
         self.player.pos = Vec2(float(self.world.world_size) * 0.5, float(self.world.world_size) * 0.5)
-        weapon_assign_player(self.player, 1)
+        weapon_assign_player(self.player, WeaponId.PISTOL)
 
     def close(self) -> None:
         self._ui_assets = None

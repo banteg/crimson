@@ -41,8 +41,8 @@ _NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] =
 
 _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
     {
-        int(WeaponId.PISTOL),
-        int(WeaponId.SHRINKIFIER_5K),
+        WeaponId.PISTOL,
+        WeaponId.SHRINKIFIER_5K,
     },
 )
 
@@ -113,7 +113,7 @@ def player_fire_weapon(
 ) -> None:
     dt = float(dt)
 
-    weapon_id = int(player.weapon.weapon_id)
+    weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
     if weapon is None:
         return

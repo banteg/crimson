@@ -45,7 +45,7 @@ RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if int(player.weapon.weapon_id) != int(RUSH_WEAPON_ID):
-            weapon_assign_player(player, int(RUSH_WEAPON_ID))
+            weapon_assign_player(player, RUSH_WEAPON_ID)
         # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
         player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
@@ -586,10 +586,10 @@ def run_quest_replay(
     if quest_stage_minor is not None:
         world.state.quest_stage_minor = int(quest_stage_minor)
 
-    weapon_id = max(1, int(start_weapon_id or 1))
+    weapon_id = WeaponId(max(1, int(start_weapon_id or WeaponId.PISTOL)))
     for player in world.players:
         weapon_assign_player(player, weapon_id)
-    quest_start_weapon_id = int(weapon_id)
+    quest_start_weapon_id = weapon_id
 
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -677,8 +677,8 @@ def run_quest_replay(
             player_count=int(replay.header.player_count),
         )
         for player in world.players:
-            weapon_assign_player(player, int(quest_start_weapon_id))
-            if int(quest_start_weapon_id) == int(WeaponId.PISTOL):
+            weapon_assign_player(player, quest_start_weapon_id)
+            if quest_start_weapon_id == WeaponId.PISTOL:
                 player.weapon.clip_size = max(12, int(player.weapon.clip_size))
                 if float(player.weapon.ammo) < 12.0:
                     player.weapon.ammo = 12.0

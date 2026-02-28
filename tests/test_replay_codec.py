@@ -24,6 +24,7 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
 from crimson.sim.input import PlayerInput
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
@@ -115,7 +116,7 @@ def test_replay_codec_roundtrip_claimed_stats() -> None:
             elapsed_ms=16,
             score_xp=200,
             kills=3,
-            most_used_weapon_id=7,
+            most_used_weapon_id=WeaponId.MEAN_MINIGUN,
             shots_fired=9,
             shots_hit=8,
         ),

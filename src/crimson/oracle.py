@@ -19,6 +19,7 @@ from .sim.input import PlayerInput
 from .sim.sessions import SurvivalDeterministicSession
 from .sim.state_types import PlayerState
 from .sim.world_state import WorldState
+from .weapons import WeaponId
 
 
 class OutputMode:
@@ -301,7 +302,7 @@ def run_headless(config: OracleConfig) -> None:
         from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
 
         player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-        weapon_assign_player(player, 1)
+        weapon_assign_player(player, WeaponId.PISTOL)
         init_default_alt_weapon(player)
         players.append(player)
 

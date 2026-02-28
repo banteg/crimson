@@ -7,10 +7,10 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..persistence.save_status import WEAPON_USAGE_COUNT
 from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
-from ..weapons import WEAPON_BY_ID, Weapon
+from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
-def weapon_entry(weapon_id: int) -> Weapon | None:
+def weapon_entry(weapon_id: WeaponId) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
 
@@ -43,7 +43,7 @@ def init_default_alt_weapon(player: PlayerState) -> None:
     """Initialize native reset-time alternate weapon slot state."""
 
     player.alt_weapon = WeaponSlot(
-        weapon_id=1,
+        weapon_id=WeaponId.PISTOL,
         clip_size=12,
         ammo=12.0,
         reload_active=False,
@@ -53,17 +53,17 @@ def init_default_alt_weapon(player: PlayerState) -> None:
     )
 
 
-def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: GameplayState | None = None) -> None:
+def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: GameplayState | None = None) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
-    weapon_id = int(weapon_id)
+    weapon_id = WeaponId(int(weapon_id))
     if (
         state is not None
         and state.status is not None
         and not state.demo_mode_active
-        and 0 <= weapon_id < WEAPON_USAGE_COUNT
+        and 0 <= int(weapon_id) < WEAPON_USAGE_COUNT
     ):
-        state.status.increment_weapon_usage(weapon_id)
+        state.status.increment_weapon_usage(int(weapon_id))
 
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
@@ -89,8 +89,13 @@ def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: Gameplay
             state.sfx_queue.append(key)
 
 
-def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, fallback_weapon_id: int) -> int:
-    """Return a 1-based weapon id for the player's most-used weapon."""
+def most_used_weapon_id_for_player(
+    state: GameplayState,
+    *,
+    player_index: int,
+    fallback_weapon_id: WeaponId,
+) -> WeaponId:
+    """Return a weapon id for the player's most-used weapon."""
 
     idx = int(player_index)
     if 0 <= idx < len(state.weapon_shots_fired):
@@ -99,8 +104,8 @@ def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, f
             start = 1 if len(counts) > 1 else 0
             best = max(range(start, len(counts)), key=lambda i: int(counts[i]))
             if int(counts[best]) > 0:
-                return int(best)
-    return int(fallback_weapon_id)
+                return WeaponId(int(best))
+    return WeaponId(int(fallback_weapon_id))
 
 
 def player_swap_alt_weapon(player: PlayerState) -> bool:

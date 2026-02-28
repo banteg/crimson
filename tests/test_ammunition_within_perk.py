@@ -15,7 +15,7 @@ def test_ammunition_within_fires_during_reload_and_costs_health() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -32,7 +32,7 @@ def test_ammunition_within_fires_during_manual_reload_when_ammo_remaining() -> N
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 5
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -49,7 +49,7 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=0)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -64,7 +64,7 @@ def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon.weapon_id = int(WeaponId.FLAMETHROWER)
+    player.weapon.weapon_id = WeaponId.FLAMETHROWER
     player.weapon.ammo = 0
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -79,7 +79,7 @@ def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_amm
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), health=10.0, experience=1)
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
-    player.weapon.weapon_id = int(WeaponId.FLAMETHROWER)
+    player.weapon.weapon_id = WeaponId.FLAMETHROWER
     player.weapon.ammo = 5
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5

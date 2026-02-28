@@ -5,6 +5,7 @@ from typing import cast
 import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudAssets, HudRenderContext, HudState, draw_hud_overlay
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -47,12 +48,12 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
     )
 
     player0 = PlayerState(index=0, pos=Vec2(), health=80.0)
-    player0.weapon.weapon_id = 1
+    player0.weapon.weapon_id = WeaponId.PISTOL
     player0.weapon.clip_size = 1
     player0.weapon.ammo = 1
 
     player1 = PlayerState(index=1, pos=Vec2(), health=50.0)
-    player1.weapon.weapon_id = 1
+    player1.weapon.weapon_id = WeaponId.PISTOL
     player1.weapon.clip_size = 1
     player1.weapon.ammo = 1
 

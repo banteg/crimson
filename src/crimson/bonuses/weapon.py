@@ -4,15 +4,16 @@ from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..sim.state_types import WeaponSlot
 from ..weapon_runtime.assign import weapon_assign_player
+from ..weapons import WeaponId
 from .apply_context import BonusApplyCtx
 
 
 def apply_weapon(ctx: BonusApplyCtx) -> None:
-    weapon_id = int(ctx.amount)
+    weapon_id = WeaponId(int(ctx.amount))
     if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon is None:
         primary = ctx.player.weapon
         ctx.player.alt_weapon = WeaponSlot(
-            weapon_id=int(primary.weapon_id),
+            weapon_id=primary.weapon_id,
             clip_size=int(primary.clip_size),
             ammo=float(primary.ammo),
             reload_active=bool(primary.reload_active),

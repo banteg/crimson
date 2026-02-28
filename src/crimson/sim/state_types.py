@@ -5,18 +5,23 @@ from typing import TYPE_CHECKING, TypeAlias
 
 from grim.geom import Vec2
 
+from ..weapons import WeaponId
+
 PERK_COUNT_SIZE = 0x80
 
 
 @dataclass(slots=True)
 class WeaponSlot:
-    weapon_id: int
+    weapon_id: WeaponId
     clip_size: int = 0
     ammo: float = 0.0
     reload_active: bool = False
     reload_timer: float = 0.0
     reload_timer_max: float = 0.0
     shot_cooldown: float = 0.0
+
+    def __post_init__(self) -> None:
+        self.weapon_id = WeaponId(int(self.weapon_id))
 
 
 @dataclass(slots=True)
@@ -43,7 +48,7 @@ class PlayerState:
     bonus_aim_hover_index: int = -1
     bonus_aim_hover_timer_ms: float = 0.0
 
-    weapon: WeaponSlot = field(default_factory=lambda: WeaponSlot(weapon_id=1))
+    weapon: WeaponSlot = field(default_factory=lambda: WeaponSlot(weapon_id=WeaponId.PISTOL))
     alt_weapon: WeaponSlot | None = None
 
     shot_seq: int = 0

@@ -67,7 +67,7 @@ from ..weapon_runtime import (
     most_used_weapon_id_for_player,
     weapon_assign_player,
 )
-from ..weapons import WEAPON_BY_ID
+from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -304,7 +304,7 @@ class QuestMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon.weapon_id),
+            fallback_weapon_id=self.player.weapon.weapon_id,
         )
         replay = replace(
             replay,
@@ -316,7 +316,7 @@ class QuestMode(BaseGameplayMode):
                     elapsed_ms=int(self._quest.spawn_timeline_ms),
                     score_xp=int(self.player.experience),
                     kills=int(self.creatures.kill_count),
-                    most_used_weapon_id=int(most_used_weapon_id),
+                    most_used_weapon_id=most_used_weapon_id,
                     shots_fired=int(shots_fired),
                     shots_hit=int(shots_hit),
                 ),
@@ -434,7 +434,7 @@ class QuestMode(BaseGameplayMode):
             )
 
         # Quest metadata already stores native (1-based) weapon ids.
-        start_weapon_id = max(1, int(quest.start_weapon_id))
+        start_weapon_id = WeaponId(max(1, int(quest.start_weapon_id)))
         for player in self.world.players:
             weapon_assign_player(player, start_weapon_id, state=self.state)
 
@@ -565,7 +565,7 @@ class QuestMode(BaseGameplayMode):
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
-        weapon_id = int(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_id = WeaponId(int(weapon_ids[(idx + int(delta)) % len(weapon_ids)]))
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
@@ -595,7 +595,7 @@ class QuestMode(BaseGameplayMode):
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
                 player_index=int(self.player.index),
-                fallback_weapon_id=int(self.player.weapon.weapon_id),
+                fallback_weapon_id=self.player.weapon.weapon_id,
             )
             player_health_values = tuple(float(player.health) for player in self.world.players)
             player2_health = None
@@ -813,7 +813,7 @@ class QuestMode(BaseGameplayMode):
                     most_used_weapon_id = most_used_weapon_id_for_player(
                         self.state,
                         player_index=int(self.player.index),
-                        fallback_weapon_id=int(self.player.weapon.weapon_id),
+                        fallback_weapon_id=self.player.weapon.weapon_id,
                     )
                     player_health_values = tuple(float(player.health) for player in self.world.players)
                     player2_health = None
@@ -1015,7 +1015,7 @@ class QuestMode(BaseGameplayMode):
                         most_used_weapon_id = most_used_weapon_id_for_player(
                             self.state,
                             player_index=int(self.player.index),
-                            fallback_weapon_id=int(self.player.weapon.weapon_id),
+                            fallback_weapon_id=self.player.weapon.weapon_id,
                         )
                         player_health_values = tuple(float(player.health) for player in self.world.players)
                         player2_health = None

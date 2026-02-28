@@ -21,7 +21,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.MINI_ROCKET_SWARMERS))
+    weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS)
     assert player.weapon.ammo == player.weapon.clip_size
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
@@ -31,7 +31,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     assert player.weapon.ammo == 0
     assert player.weapon.reload_active is True
 
-    assert state.weapon_shots_fired[0][int(WeaponId.MINI_ROCKET_SWARMERS)] == player.weapon.clip_size
+    assert state.weapon_shots_fired[0][WeaponId.MINI_ROCKET_SWARMERS] == player.weapon.clip_size
 
     shot_angle = float(NATIVE_HALF_PI)
     spread = math.pi * (2.0 / 3.0)

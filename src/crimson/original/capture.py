@@ -48,7 +48,7 @@ from ..replay.types import (
     ReplayStatusSnapshot,
     pack_input_flags,
 )
-from ..sim.state_types import WeaponSlot
+from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
 from ..weapons import WeaponId, projectile_type_ids_from_weapon_id
 from .schema import (
     CAPTURE_FORMAT_VERSION,
@@ -92,10 +92,10 @@ _AIM_SCHEME_COMPUTER = 5
 _PROJECTILE_TYPE_FIRE_BULLETS = 45
 _FRACTIONAL_AMMO_DRAIN_WEAPON_IDS = frozenset(
     {
-        int(WeaponId.FLAMETHROWER),
-        int(WeaponId.BLOW_TORCH),
-        int(WeaponId.HR_FLAMER),
-        int(WeaponId.BUBBLEGUN),
+        WeaponId.FLAMETHROWER,
+        WeaponId.BLOW_TORCH,
+        WeaponId.HR_FLAMER,
+        WeaponId.BUBBLEGUN,
     },
 )
 _FRACTIONAL_WEAPON_FIRE_SFX_CALLER_SUFFIXES = frozenset({"+0x15f1c"})
@@ -209,7 +209,7 @@ class _CaptureBootstrapPlayerAimPayload(msgspec.Struct, forbid_unknown_fields=Tr
 
 
 class _CaptureBootstrapPlayerAltWeaponPayload(msgspec.Struct, forbid_unknown_fields=True):
-    weapon_id: int | None = None
+    weapon_id: WeaponId | None = None
     clip_size: int | None = None
     ammo: float | None = None
     reload_active: bool | None = None
@@ -219,7 +219,7 @@ class _CaptureBootstrapPlayerAltWeaponPayload(msgspec.Struct, forbid_unknown_fie
 
 
 class _CaptureBootstrapPlayerPayload(msgspec.Struct, forbid_unknown_fields=True):
-    weapon_id: int
+    weapon_id: WeaponId
     pos: CaptureVec2
     health: float
     ammo: float
@@ -407,7 +407,7 @@ def _replay_player(player: CapturePlayerCheckpoint) -> ReplayPlayerCheckpoint:
     return ReplayPlayerCheckpoint(
         pos=Vec2(float(player.pos.x), float(player.pos.y)),
         health=float(player.health),
-        weapon_id=int(player.weapon_id),
+        weapon_id=WeaponId(int(player.weapon_id)),
         ammo=float(player.ammo),
         experience=int(player.experience),
         level=int(player.level),
@@ -1870,7 +1870,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
         player_perk_timers = raw_player.perk_timers or {}
         players.append(
             CaptureBootstrapPlayer(
-                weapon_id=int(raw_player.weapon_id),
+                weapon_id=WeaponId(int(raw_player.weapon_id)),
                 pos_x=_conversion_f32(float(raw_player.pos.x)),
                 pos_y=_conversion_f32(float(raw_player.pos.y)),
                 health=_conversion_f32(float(raw_player.health)),
@@ -1901,7 +1901,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
                     else None
                 ),
                 alt_weapon_id=(
-                    int(raw_player.alt_weapon.weapon_id)
+                    WeaponId(int(raw_player.alt_weapon.weapon_id))
                     if raw_player.alt_weapon is not None and raw_player.alt_weapon.weapon_id is not None
                     else None
                 ),
@@ -2130,11 +2130,15 @@ def apply_capture_bootstrap_payload(
             break
         player = cast(_BootstrapPlayer, players[idx])
 
-        weapon_id = int(raw_player.weapon_id)
+        weapon_id = WeaponId(int(raw_player.weapon_id))
         if int(weapon_id) > 0:
             try:
                 if int(player.weapon.weapon_id) != int(weapon_id):
-                    weapon_assign_player(player, int(weapon_id), state=state)  # ty:ignore[invalid-argument-type]
+                    weapon_assign_player(
+                        cast(PlayerState, player),
+                        weapon_id,
+                        state=cast(GameplayState, state),
+                    )
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"invalid bootstrap weapon assignment payload for player[{idx}]") from exc
 
@@ -2167,10 +2171,11 @@ def apply_capture_bootstrap_payload(
         if raw_player.alt_weapon_id is not None:
             alt_weapon_id = int(raw_player.alt_weapon_id)
             if alt_weapon_id > 0:
+                alt_weapon = WeaponId(alt_weapon_id)
                 if player.alt_weapon is None:
-                    player.alt_weapon = WeaponSlot(weapon_id=alt_weapon_id)
+                    player.alt_weapon = WeaponSlot(weapon_id=alt_weapon)
                 else:
-                    player.alt_weapon.weapon_id = alt_weapon_id
+                    player.alt_weapon.weapon_id = alt_weapon
             else:
                 player.alt_weapon = None
         alt_slot = player.alt_weapon
@@ -2182,7 +2187,7 @@ def apply_capture_bootstrap_payload(
             or raw_player.alt_reload_timer_max is not None
             or raw_player.alt_shot_cooldown is not None
         ):
-            alt_slot = WeaponSlot(weapon_id=1)
+            alt_slot = WeaponSlot(weapon_id=WeaponId.PISTOL)
             player.alt_weapon = alt_slot
         if alt_slot is not None and raw_player.alt_clip_size is not None and int(raw_player.alt_clip_size) >= 0:
             alt_slot.clip_size = int(raw_player.alt_clip_size)

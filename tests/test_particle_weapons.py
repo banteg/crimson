@@ -19,10 +19,10 @@ from tests.helpers import MockCrand, assert_float_close
 
 def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     cases = (
-        (int(WeaponId.FLAMETHROWER), 0, 0.1),
-        (int(WeaponId.BLOW_TORCH), 1, 0.05),
-        (int(WeaponId.HR_FLAMER), 2, 0.1),
-        (int(WeaponId.BUBBLEGUN), 8, 0.15),
+        (WeaponId.FLAMETHROWER, 0, 0.1),
+        (WeaponId.BLOW_TORCH, 1, 0.05),
+        (WeaponId.HR_FLAMER, 2, 0.1),
+        (WeaponId.BUBBLEGUN, 8, 0.15),
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
@@ -56,7 +56,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     player.aim_dir = Vec2(0.0, 1.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
+    weapon_assign_player(player, WeaponId.FLAMETHROWER)
 
     aim_x = 200.0
     aim_y = 0.0
@@ -86,7 +86,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.48
 
-    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
+    weapon_assign_player(player, WeaponId.FLAMETHROWER)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.016, state=state)
 
     particles = [entry for entry in state.particles.entries if entry.active]
@@ -117,7 +117,7 @@ def test_particle_hits_damage_creatures() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.FLAMETHROWER))
+    weapon_assign_player(player, WeaponId.FLAMETHROWER)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()
@@ -141,7 +141,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, int(WeaponId.BUBBLEGUN))
+    weapon_assign_player(player, WeaponId.BUBBLEGUN)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     creature = CreatureState()

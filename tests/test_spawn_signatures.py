@@ -12,6 +12,7 @@ from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
@@ -41,14 +42,11 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
-        weapon=WeaponSlot(
-            weapon_id=1,
-            clip_size=10,
-            ammo=0,
-            reload_active=True,
-            reload_timer=1.1,
-            reload_timer_max=2.0,
-        ),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10,
+        ammo=0,
+        reload_active=True,
+        reload_timer=1.1,
+        reload_timer_max=2.0,),
     )
     player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)

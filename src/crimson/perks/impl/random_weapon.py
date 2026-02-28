@@ -9,12 +9,12 @@ from ..runtime.hook_types import PerkHooks
 
 
 def apply_random_weapon(ctx: PerkApplyCtx) -> None:
-    current = int(ctx.owner.weapon.weapon_id)
-    weapon_id = int(current)
+    current = ctx.owner.weapon.weapon_id
+    weapon_id = current
     for _ in range(100):
-        candidate = int(weapon_pick_random_available(ctx.state))
+        candidate = WeaponId(int(weapon_pick_random_available(ctx.state)))
         weapon_id = candidate
-        if candidate != int(WeaponId.PISTOL) and candidate != current:
+        if candidate != WeaponId.PISTOL and candidate != current:
             break
     weapon_assign_player(ctx.owner, weapon_id, state=ctx.state)
 

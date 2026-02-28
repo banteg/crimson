@@ -134,7 +134,7 @@ class GameplayState:
     player_death_hook_skip_indices: set[int] = field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
-    survival_reward_weapon_guard_id: int = int(WeaponId.PISTOL)
+    survival_reward_weapon_guard_id: int = WeaponId.PISTOL
     survival_reward_handout_enabled: bool = True
     survival_reward_fire_seen: bool = False
     survival_reward_damage_seen: bool = False
@@ -312,9 +312,9 @@ def survival_update_weapon_handouts(
         and int(float(survival_elapsed_ms)) > 64000
         and bool(state.survival_reward_handout_enabled)
     ):
-        if int(player.weapon.weapon_id) == int(WeaponId.PISTOL):
-            _weapon_assign_player(player, int(WeaponId.SHRINKIFIER_5K), state=state)
-            state.survival_reward_weapon_guard_id = int(WeaponId.SHRINKIFIER_5K)
+        if int(player.weapon.weapon_id) == WeaponId.PISTOL:
+            _weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
+            state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
         state.survival_reward_handout_enabled = False
         state.survival_reward_damage_seen = True
         state.survival_reward_fire_seen = True
@@ -326,8 +326,8 @@ def survival_update_weapon_handouts(
         dx = float(player.pos.x) - float(centroid_x)
         dy = float(player.pos.y) - float(centroid_y)
         if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
-            _weapon_assign_player(player, int(WeaponId.BLADE_GUN), state=state)
-            state.survival_reward_weapon_guard_id = int(WeaponId.BLADE_GUN)
+            _weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
+            state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
             state.survival_reward_fire_seen = True
             state.survival_reward_handout_enabled = False
 
@@ -338,10 +338,10 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
     guard_id = int(state.survival_reward_weapon_guard_id)
     for player in players:
         weapon_id = int(player.weapon.weapon_id)
-        if weapon_id == int(WeaponId.BLADE_GUN) and guard_id != int(WeaponId.BLADE_GUN):
-            _weapon_assign_player(player, int(WeaponId.PISTOL))
-        if weapon_id == int(WeaponId.SHRINKIFIER_5K) and guard_id != int(WeaponId.SHRINKIFIER_5K):
-            _weapon_assign_player(player, int(WeaponId.PISTOL))
+        if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:
+            _weapon_assign_player(player, WeaponId.PISTOL)
+        if weapon_id == WeaponId.SHRINKIFIER_5K and guard_id != WeaponId.SHRINKIFIER_5K:
+            _weapon_assign_player(player, WeaponId.PISTOL)
 
 
 def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:

@@ -295,7 +295,7 @@ class RushMode(BaseGameplayMode):
         most_used_weapon_id = most_used_weapon_id_for_player(
             self.state,
             player_index=int(self.player.index),
-            fallback_weapon_id=int(self.player.weapon.weapon_id),
+            fallback_weapon_id=self.player.weapon.weapon_id,
         )
         replay = replace(
             replay,
@@ -307,7 +307,7 @@ class RushMode(BaseGameplayMode):
                     elapsed_ms=int(self._rush.elapsed_ms),
                     score_xp=int(self.player.experience),
                     kills=int(self.creatures.kill_count),
-                    most_used_weapon_id=int(most_used_weapon_id),
+                    most_used_weapon_id=most_used_weapon_id,
                     shots_fired=int(shots_fired),
                     shots_hit=int(shots_hit),
                 ),

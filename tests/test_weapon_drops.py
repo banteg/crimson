@@ -40,11 +40,11 @@ def test_weapon_refresh_available_includes_survival_defaults() -> None:
 
     weapon_refresh_available(state)
 
-    assert state.weapon_available[int(WeaponId.PISTOL)]
-    assert state.weapon_available[int(WeaponId.ASSAULT_RIFLE)]
-    assert state.weapon_available[int(WeaponId.SHOTGUN)]
-    assert state.weapon_available[int(WeaponId.SUBMACHINE_GUN)]
-    assert not state.weapon_available[int(WeaponId.FLAMETHROWER)]
+    assert state.weapon_available[WeaponId.PISTOL]
+    assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
+    assert state.weapon_available[WeaponId.SHOTGUN]
+    assert state.weapon_available[WeaponId.SUBMACHINE_GUN]
+    assert not state.weapon_available[WeaponId.FLAMETHROWER]
 
 
 def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
@@ -57,9 +57,9 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
 
     weapon_refresh_available(state)
 
-    assert state.weapon_available[int(WeaponId.PISTOL)]
-    assert state.weapon_available[int(WeaponId.ASSAULT_RIFLE)]
-    assert not state.weapon_available[int(WeaponId.SHOTGUN)]
+    assert state.weapon_available[WeaponId.PISTOL]
+    assert state.weapon_available[WeaponId.ASSAULT_RIFLE]
+    assert not state.weapon_available[WeaponId.SHOTGUN]
 
 
 def test_weapon_pick_random_available_enforces_unlocked() -> None:
@@ -70,15 +70,15 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     state.status = status
     state.game_mode = int(GameMode.QUESTS)
 
-    assert weapon_pick_random_available(state) == int(WeaponId.PISTOL)
+    assert weapon_pick_random_available(state) == WeaponId.PISTOL
 
 
 def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     status = _status_default()
-    status.increment_weapon_usage(int(WeaponId.PISTOL))
+    status.increment_weapon_usage(WeaponId.PISTOL)
 
     state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status
     state.game_mode = int(GameMode.SURVIVAL)
 
-    assert weapon_pick_random_available(state) == int(WeaponId.ASSAULT_RIFLE)
+    assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE

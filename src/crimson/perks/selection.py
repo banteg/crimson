@@ -111,7 +111,7 @@ def perk_generate_choices(
     player_perk_counts = player.perk_counts
     player_weapon_id = int(player.weapon.weapon_id)
     death_clock_active = int(player_perk_counts[int(PerkId.DEATH_CLOCK)]) > 0
-    flamethrower_id = int(WeaponId.FLAMETHROWER)
+    flamethrower_id = WeaponId.FLAMETHROWER
 
     pyromaniac_allowed = player_weapon_id == flamethrower_id
     if not state.preserve_bugs and int(player_count) > 1:

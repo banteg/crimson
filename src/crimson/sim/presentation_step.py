@@ -93,8 +93,8 @@ def plan_player_audio_sfx(
 
     if int(player.shot_seq) > int(prev_shot_seq):
         if float(player.fire_bullets_timer) > 0.0:
-            fire_bullets = WEAPON_BY_ID.get(int(WeaponId.FIRE_BULLETS))
-            plasma_minigun = WEAPON_BY_ID.get(int(WeaponId.PLASMA_MINIGUN))
+            fire_bullets = WEAPON_BY_ID.get(WeaponId.FIRE_BULLETS)
+            plasma_minigun = WEAPON_BY_ID.get(WeaponId.PLASMA_MINIGUN)
             if fire_bullets is not None:
                 key = resolve_weapon_sfx_ref(fire_bullets.fire_sound)
                 if key is not None:

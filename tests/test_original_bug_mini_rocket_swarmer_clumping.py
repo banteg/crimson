@@ -14,7 +14,7 @@ def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[floa
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(
-            weapon_id=int(WeaponId.MINI_ROCKET_SWARMERS),
+            weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
             clip_size=int(ammo),
             ammo=float(ammo),
         ),

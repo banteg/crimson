@@ -232,7 +232,7 @@ class BonusPool:
 
         rng = state.rng
         # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
-        if players and any(int(player.weapon.weapon_id) == int(WeaponId.PISTOL) for player in players):
+        if players and any(int(player.weapon.weapon_id) == WeaponId.PISTOL for player in players):
             if (int(rng.rand()) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
@@ -245,7 +245,7 @@ class BonusPool:
                 entry.bonus_id = int(BonusId.WEAPON)
                 weapon_id = int(weapon_pick_random_available(state))
                 entry.amount = int(weapon_id)
-                if weapon_id == int(WeaponId.PISTOL):
+                if weapon_id == WeaponId.PISTOL:
                     weapon_id = int(weapon_pick_random_available(state))
                     entry.amount = int(weapon_id)
 
@@ -254,7 +254,7 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == int(WeaponId.PISTOL) or (
+                if entry.amount == WeaponId.PISTOL or (
                     players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
                 ):
                     self._clear_entry(entry)
@@ -270,9 +270,9 @@ class BonusPool:
             if players:
                 has_pistol = False
                 if bool(state.preserve_bugs):
-                    has_pistol = int(players[0].weapon.weapon_id) == int(WeaponId.PISTOL)
+                    has_pistol = int(players[0].weapon.weapon_id) == WeaponId.PISTOL
                 else:
-                    has_pistol = any(int(player.weapon.weapon_id) == int(WeaponId.PISTOL) for player in players)
+                    has_pistol = any(int(player.weapon.weapon_id) == WeaponId.PISTOL for player in players)
                 if has_pistol:
                     allow_without_magnet = int(rng.rand()) % 5 == 1
 

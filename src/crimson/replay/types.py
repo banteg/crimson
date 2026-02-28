@@ -8,6 +8,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, TypeAlias
 
+from ..weapons import WeaponId
+
 REPLAY_FORMAT_VERSION = 6
 ReplayFormatVersion: TypeAlias = Literal[6]
 
@@ -231,9 +233,12 @@ class ReplayClaimedStatsSnapshot:
     elapsed_ms: int = 0
     score_xp: int = 0
     kills: int = 0
-    most_used_weapon_id: int = 0
+    most_used_weapon_id: WeaponId = WeaponId.NONE
     shots_fired: int = 0
     shots_hit: int = 0
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "most_used_weapon_id", WeaponId(int(self.most_used_weapon_id)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -282,7 +287,7 @@ class CaptureBootstrapQuestSession:
 
 @dataclass(frozen=True, slots=True)
 class CaptureBootstrapPlayer:
-    weapon_id: int
+    weapon_id: WeaponId
     pos_x: float
     pos_y: float
     health: float
@@ -298,7 +303,7 @@ class CaptureBootstrapPlayer:
     aim_x: float | None
     aim_y: float | None
     aim_heading: float | None
-    alt_weapon_id: int | None
+    alt_weapon_id: WeaponId | None
     alt_clip_size: int | None
     alt_ammo: float | None
     alt_reload_active: bool | None
@@ -312,6 +317,11 @@ class CaptureBootstrapPlayer:
     man_bomb_timer: float | None
     living_fortress_timer: float | None
     fire_cough_timer: float | None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "weapon_id", WeaponId(int(self.weapon_id)))
+        if self.alt_weapon_id is not None:
+            object.__setattr__(self, "alt_weapon_id", WeaponId(int(self.alt_weapon_id)))
 
 
 @dataclass(frozen=True, slots=True)

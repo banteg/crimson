@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ...weapon_runtime.assign import weapon_assign_player
+from ...weapons import WeaponId
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
@@ -11,7 +12,7 @@ def apply_ammo_maniac(ctx: PerkApplyCtx) -> None:
         for player in ctx.players[1:]:
             player.perk_counts[:] = ctx.owner.perk_counts
     for player in ctx.players:
-        weapon_assign_player(player, int(player.weapon.weapon_id), state=ctx.state)
+        weapon_assign_player(player, WeaponId(int(player.weapon.weapon_id)), state=ctx.state)
 
 
 HOOKS = PerkHooks(

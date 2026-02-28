@@ -17,6 +17,7 @@ from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..sim.state_types import PlayerState
 from ..sim.world_state import WorldState
+from ..weapons import WeaponId
 
 
 class _DeathLike(Protocol):
@@ -45,10 +46,13 @@ class ReplayCheckpointsError(ValueError):
 class ReplayPlayerCheckpoint:
     pos: Vec2
     health: float
-    weapon_id: int
+    weapon_id: WeaponId
     ammo: float
     experience: int
     level: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "weapon_id", WeaponId(int(self.weapon_id)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -204,7 +208,7 @@ def build_checkpoint(
             ReplayPlayerCheckpoint(
                 pos=Vec2(round(player.pos.x, 4), round(player.pos.y, 4)),
                 health=round(player.health, 4),
-                weapon_id=int(player.weapon.weapon_id),
+                weapon_id=WeaponId(int(player.weapon.weapon_id)),
                 ammo=round(player.weapon.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),

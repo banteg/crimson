@@ -573,7 +573,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 if 0 <= weapon_id < len(available):
                     include = bool(available[weapon_id])
             else:
-                if weapon_id == int(WeaponId.PISTOL):
+                if weapon_id == WeaponId.PISTOL:
                     include = True
                 else:
                     try:

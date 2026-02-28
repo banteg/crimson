@@ -439,7 +439,7 @@ def _minimal_strict_bootstrap_payload() -> Any:
             player_nonzero_counts=[[]],
             players=[
                 CaptureBootstrapPlayer(
-                    weapon_id=1,
+                    weapon_id=WeaponId.PISTOL,
                     pos_x=0.0,
                     pos_y=0.0,
                     health=100.0,
@@ -2560,8 +2560,8 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
         build_capture_event_head_player_fire(
             player_index=0,
             owner_id=-100,
-            weapon_before=int(WeaponId.FLAMETHROWER),
-            weapon_after=int(WeaponId.FLAMETHROWER),
+            weapon_before=WeaponId.FLAMETHROWER,
+            weapon_after=WeaponId.FLAMETHROWER,
             ammo_before=29.4,
             ammo_after=29.4,
             requested_type_id=11,
@@ -2641,7 +2641,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 29.9
     tick0.input_player_keys = [
         _base_input_player_keys(**{
@@ -2656,14 +2656,14 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
             "player_index": 0,
             "aim_x": 520.0,
             "aim_y": 500.0,
-            "weapon_id": int(WeaponId.FLAMETHROWER),
+            "weapon_id": WeaponId.FLAMETHROWER,
             "fired_events": 0,
         }),
     ]
     tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
-                weapon_id=int(WeaponId.FLAMETHROWER),
+                weapon_id=WeaponId.FLAMETHROWER,
                 ammo_f32=30.0,
                 reload_active_i32=0,
                 reload_timer=0.0,
@@ -2689,7 +2689,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 29.9
     tick0.input_player_keys = [
         _base_input_player_keys(**{
@@ -2704,14 +2704,14 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
             "player_index": 0,
             "aim_x": 520.0,
             "aim_y": 500.0,
-            "weapon_id": int(WeaponId.FLAMETHROWER),
+            "weapon_id": WeaponId.FLAMETHROWER,
             "fired_events": 0,
         }),
     ]
     tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
-                weapon_id=int(WeaponId.FLAMETHROWER),
+                weapon_id=WeaponId.FLAMETHROWER,
                 ammo_f32=-7.8e-5,
                 clip_size_f32=30.0,
                 reload_active_i32=1,
@@ -2739,7 +2739,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
     tmp_path: Path,
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
-    _tick_player(tick0).weapon_id = int(WeaponId.FLAMETHROWER)
+    _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 30.0
     tick0.input_player_keys = [
         _base_input_player_keys(**{
@@ -2752,7 +2752,7 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
     tick0.before = _base_snapshot(
         players=[
             _base_snapshot_player(
-                weapon_id=int(WeaponId.FLAMETHROWER),
+                weapon_id=WeaponId.FLAMETHROWER,
                 ammo_f32=6.4,
                 reload_active_i32=0,
                 reload_timer=0.0,

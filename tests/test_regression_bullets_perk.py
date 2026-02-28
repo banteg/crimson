@@ -14,7 +14,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -30,7 +30,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 5
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -46,7 +46,7 @@ def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), experience=0)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon.weapon_id = int(WeaponId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5
@@ -60,7 +60,7 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
     player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-    player.weapon.weapon_id = int(WeaponId.FLAMETHROWER)
+    player.weapon.weapon_id = WeaponId.FLAMETHROWER
     player.weapon.ammo = 5
     player.weapon.reload_active = True
     player.weapon.reload_timer = 0.5

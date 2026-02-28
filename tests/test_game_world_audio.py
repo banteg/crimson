@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
+from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -36,7 +37,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     player = world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
-    player.weapon.weapon_id = 1
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.clip_size = 12
     player.weapon.ammo = 0
     player.weapon.reload_active = True
@@ -76,7 +77,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
 
     player = world.players[0]
 
-    player.weapon.weapon_id = 3  # Shotgun
+    player.weapon.weapon_id = WeaponId.SHOTGUN  # Shotgun
     player.weapon.clip_size = 12
     player.weapon.ammo = 12
     player.weapon.reload_active = False

@@ -67,7 +67,7 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
         difficulty_level=0,
     )
 
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon=WeaponSlot(weapon_id=int(WeaponId.PISTOL)))
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
     player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.experience = 100

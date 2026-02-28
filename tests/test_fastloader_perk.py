@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectileTypeId
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import player_start_reload
-from crimson.weapons import WEAPON_BY_ID
+from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
 
 
 def test_fastloader_scales_reload_timer() -> None:
-    weapon_id = int(ProjectileTypeId.ASSAULT_RIFLE)
-    reload_time = float(WEAPON_BY_ID[weapon_id].reload_time or 0.0)
+    weapon_id = WeaponId.ASSAULT_RIFLE
+    reload_time = float(WEAPON_BY_ID[int(weapon_id)].reload_time or 0.0)
     assert reload_time > 0.0
 
     base = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))

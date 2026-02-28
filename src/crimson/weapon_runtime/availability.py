@@ -36,7 +36,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
         available[idx] = False
 
     # Pistol is always available.
-    pistol_id = int(WeaponId.PISTOL)
+    pistol_id = WeaponId.PISTOL
     if 0 <= pistol_id < len(available):
         available[pistol_id] = True
 
@@ -58,7 +58,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
     # Secret unlock: Splitter Gun (weapon id 29) becomes available once the hardcore
     # unlock track reaches stage 5 (quest_unlock_index_full >= 40).
     if (not state.demo_mode_active) and unlock_index_full >= 0x28:
-        splitter_id = int(WeaponId.SPLITTER_GUN)
+        splitter_id = WeaponId.SPLITTER_GUN
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
 
@@ -96,10 +96,10 @@ def weapon_pick_random_available(state: GameplayState) -> int:
             int(state.game_mode) == int(GameMode.QUESTS)
             and int(state.quest_stage_major) == 5
             and int(state.quest_stage_minor) == 10
-            and weapon_id == int(WeaponId.ION_CANNON)
+            and weapon_id == WeaponId.ION_CANNON
         ):
             continue
 
         return weapon_id
 
-    return int(WeaponId.PISTOL)
+    return WeaponId.PISTOL

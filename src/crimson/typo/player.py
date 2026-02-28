@@ -7,7 +7,7 @@ from ..sim.state_types import PlayerState
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
-TYPO_WEAPON_ID = int(WeaponId.SAWED_OFF_SHOTGUN)
+TYPO_WEAPON_ID = WeaponId.SAWED_OFF_SHOTGUN
 
 
 def enforce_typo_player_frame(player: PlayerState) -> None:

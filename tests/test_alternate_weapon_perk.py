@@ -11,6 +11,7 @@ from crimson.sim.driver.setup import reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
 
@@ -67,7 +68,7 @@ def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> N
 def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
     alt = _alt(player)
@@ -88,7 +89,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
 def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
@@ -110,7 +111,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
 def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=11)
     alt = _alt(player)
@@ -134,13 +135,13 @@ def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
 def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 29)
+    weapon_assign_player(player, WeaponId.SPLITTER_GUN)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     player.weapon.ammo = 2.0
     player.weapon.reload_timer = 0.0
     player.weapon.reload_active = False
     player.alt_weapon = WeaponSlot(
-        weapon_id=11,
+        weapon_id=WeaponId.PLASMA_MINIGUN,
         clip_size=30,
         ammo=0.0,
         reload_active=True,
@@ -167,7 +168,7 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
 def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
@@ -188,7 +189,7 @@ def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
 def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, 1)
+    weapon_assign_player(player, WeaponId.PISTOL)
     player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(state, player, BonusId.WEAPON, amount=2)
 
@@ -209,7 +210,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
     player1 = PlayerState(index=1, pos=Vec2())
 
     for player in (player0, player1):
-        weapon_assign_player(player, 1)
+        weapon_assign_player(player, WeaponId.PISTOL)
         player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
         bonus_apply(state, player, BonusId.WEAPON, amount=2)
 

@@ -15,6 +15,7 @@ from crimson.sim.presentation_step import (
     queue_projectile_decals,
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
@@ -133,7 +134,7 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
 def test_apply_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    player.weapon.weapon_id = int(ProjectileTypeId.PISTOL)
+    player.weapon.weapon_id = WeaponId.PISTOL
     player.shot_seq = 1
 
     state.perk_selection.pending_count = 1
