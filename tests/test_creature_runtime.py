@@ -303,7 +303,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
     for idx, type_id in enumerate((CreatureTypeId.ZOMBIE, CreatureTypeId.SPIDER_SP2)):
         creature = pool.entries[idx]
         creature.active = True
-        creature.type_id = int(type_id)
+        creature.type_id = type_id
         creature.hp = 50.0
         creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         creature.flags = CreatureFlags(0)
@@ -333,7 +333,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     link = pool.entries[0]
     link.active = True
-    link.type_id = int(CreatureTypeId.ZOMBIE)
+    link.type_id = CreatureTypeId.ZOMBIE
     link.hp = 100.0
     link.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     link.flags = CreatureFlags(0)
@@ -344,7 +344,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     near = pool.entries[1]
     near.active = True
-    near.type_id = int(CreatureTypeId.ZOMBIE)
+    near.type_id = CreatureTypeId.ZOMBIE
     near.hp = 100.0
     near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
@@ -358,7 +358,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     far = pool.entries[2]
     far.active = True
-    far.type_id = int(CreatureTypeId.ZOMBIE)
+    far.type_id = CreatureTypeId.ZOMBIE
     far.hp = 100.0
     far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)

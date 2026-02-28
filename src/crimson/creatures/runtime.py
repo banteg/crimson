@@ -242,7 +242,7 @@ def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
 class CreatureState:
     # Core identity/alive flags.
     active: bool = False
-    type_id: int = 0
+    type_id: CreatureTypeId = CreatureTypeId.ZOMBIE
 
     # Movement / AI.
     pos: Vec2 = field(default_factory=Vec2)
@@ -303,7 +303,7 @@ class CreatureState:
 class CreatureDeath:
     index: int
     pos: Vec2
-    type_id: int
+    type_id: CreatureTypeId
     reward_value: float
     xp_awarded: int
     owner_id: int
@@ -439,14 +439,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
     # Native contact-damage path consumes one `crt_rand()` draw for attack SFX
     # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
-    try:
-        creature_type = CreatureTypeId(int(creature.type_id))
-    except ValueError:
-        creature_type = None
-    if creature_type is not None:
-        options = _CREATURE_CONTACT_SFX.get(creature_type)
-        if options is not None:
-            ctx.sfx.append(options[int(ctx.rand()) & 1])
+    options = _CREATURE_CONTACT_SFX.get(creature.type_id)
+    if options is not None:
+        ctx.sfx.append(options[int(ctx.rand()) & 1])
 
     mr_melee_killed = False
     if perk_active(ctx.player, PerkId.MR_MELEE):
@@ -1057,14 +1052,9 @@ class CreaturePool:
                         )
                         # Native plague-kill path consumes one rand draw for
                         # creature attack SFX bank-b selection after death side effects.
-                        try:
-                            creature_type = CreatureTypeId(int(creature.type_id))
-                        except ValueError:
-                            creature_type = None
-                        if creature_type is not None:
-                            contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature_type)
-                            if contact_sfx_options is not None:
-                                sfx.append(contact_sfx_options[int(rand()) & 1])
+                        contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
+                        if contact_sfx_options is not None:
+                            sfx.append(contact_sfx_options[int(rand()) & 1])
                         plague_killed = True
 
                     if fx_queue is not None:
@@ -1201,7 +1191,7 @@ class CreaturePool:
                             fx_queue.add_random(pos=creature.pos, rand=rand)
 
                         if creature.hp < 0.0:
-                            if creature.type_id == 1:
+                            if creature.type_id == CreatureTypeId.LIZARD:
                                 creature.hp = 1.0
                             else:
                                 radioactive_player.experience = int(
@@ -1345,7 +1335,7 @@ class CreaturePool:
             return CreatureDeath(
                 index=int(idx),
                 pos=creature.pos,
-                type_id=int(creature.type_id),
+                type_id=creature.type_id,
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
                 owner_id=creature.last_hit_owner.to_legacy(),
@@ -1399,7 +1389,7 @@ class CreaturePool:
 
     def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
         entry.active = True
-        entry.type_id = int(init.type_id.value) if init.type_id is not None else 0
+        entry.type_id = init.type_id if init.type_id is not None else CreatureTypeId.ZOMBIE
         entry.pos = f32_vec2(init.pos)
         if init.heading is not None:
             # Native spawn paths write heading but keep target_heading stale from
@@ -1641,7 +1631,7 @@ class CreaturePool:
         return CreatureDeath(
             index=int(idx),
             pos=creature.pos,
-            type_id=int(creature.type_id),
+            type_id=creature.type_id,
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
             owner_id=creature.last_hit_owner.to_legacy(),

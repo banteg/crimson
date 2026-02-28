@@ -197,13 +197,4 @@ class AudioRouter:
             return
         for idx in range(min(len(deaths), _MAX_DEATH_SFX_PER_FRAME)):
             death = deaths[idx]
-            type_id = death.type_id
-            if type_id is None:
-                continue
-            try:
-                creature_type = CreatureTypeId(int(type_id))
-            except ValueError:
-                continue
-            options = _CREATURE_DEATH_SFX.get(creature_type)
-            if options:
-                self.play_sfx(self._rand_choice(rand, options))
+            self.play_sfx(self._rand_choice(rand, _CREATURE_DEATH_SFX[death.type_id]))

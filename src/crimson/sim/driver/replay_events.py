@@ -5,7 +5,7 @@ from typing import cast
 
 from grim.geom import Vec2
 
-from ...creatures.spawn import CreatureFlags
+from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...game_modes import GameMode
 from ...math_parity import f32
 from ...original.capture import (
@@ -268,7 +268,7 @@ def apply_replay_tick_events(
                 if flags is not None:
                     entry.flags = CreatureFlags(int(flags))
                 if type_id is not None:
-                    entry.type_id = int(type_id)
+                    entry.type_id = CreatureTypeId(int(type_id))
             continue
 
         if isinstance(event, CaptureStateTransitionEvent):

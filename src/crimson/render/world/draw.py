@@ -227,10 +227,11 @@ def sorted_active_creatures(render_ctx: WorldRenderCtx) -> list[tuple[int, Creat
         CreatureTypeId.SPIDER_SP2: 2,
         CreatureTypeId.ALIEN: 3,
         CreatureTypeId.LIZARD: 4,
+        CreatureTypeId.TROOPER: 5,
     }
     creatures = [(idx, creature) for idx, creature in enumerate(render_ctx.creatures.entries) if creature.active]
     creatures.sort(
-        key=lambda item: (creature_type_order.get(int(item[1].type_id), 999), item[0]),
+        key=lambda item: (creature_type_order[item[1].type_id], item[0]),
     )
     return creatures
 
@@ -282,13 +283,9 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
         screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
 
-        try:
-            type_id = CreatureTypeId(int(creature.type_id))
-        except ValueError:
-            type_id = None
-
-        asset = CREATURE_ASSET.get(type_id) if type_id is not None else None
-        texture = render_ctx.creature_textures.get(asset) if asset is not None else None
+        type_id = creature.type_id
+        asset = CREATURE_ASSET[type_id]
+        texture = render_ctx.creature_textures.get(asset)
 
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
@@ -297,9 +294,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             rl.draw_circle(int(screen.x), int(screen.y), max(1.0, creature.size * 0.5 * ctx.scale), tint)
             continue
 
-        info = CREATURE_ANIM.get(type_id) if type_id is not None else None
-        if info is None:
-            continue
+        info = CREATURE_ANIM[type_id]
 
         tint_rgba = creature.tint
 

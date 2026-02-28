@@ -1,0 +1,25 @@
+id: no-creature-type-id-valueerror-fallbacks
+valid:
+  - |
+    creature_type = CreatureTypeId(raw_type_id)
+  - |
+    try:
+      value = int(raw)
+    except ValueError:
+      value = 0
+  - |
+    try:
+      creature_type = CreatureTypeId(raw_type_id)
+    except KeyError:
+      creature_type = CreatureTypeId.ZOMBIE
+invalid:
+  - |
+    try:
+      creature_type = CreatureTypeId(raw_type_id)
+    except ValueError:
+      creature_type = None
+  - |
+    try:
+      creature_type = CreatureTypeId(int(type_id))
+    except ValueError as exc:
+      continue

@@ -1,0 +1,30 @@
+id: no-creature-type-id-valueerror-fallbacks
+snapshots:
+  ? |
+    try:
+      creature_type = CreatureTypeId(raw_type_id)
+    except ValueError:
+      creature_type = None
+  : labels:
+    - source: |-
+        try:
+          creature_type = CreatureTypeId(raw_type_id)
+        except ValueError:
+          creature_type = None
+      style: primary
+      start: 0
+      end: 92
+  ? |
+    try:
+      creature_type = CreatureTypeId(int(type_id))
+    except ValueError as exc:
+      continue
+  : labels:
+    - source: |-
+        try:
+          creature_type = CreatureTypeId(int(type_id))
+        except ValueError as exc:
+          continue
+      style: primary
+      start: 0
+      end: 88

@@ -1,0 +1,21 @@
+id: no-creature-type-id-valueerror-fallbacks
+language: python
+severity: error
+message: Do not use try/except ValueError fallbacks around CreatureTypeId conversion in runtime domain code.
+files:
+  - src/crimson/audio_router.py
+  - src/crimson/creatures/**/*.py
+  - src/crimson/sim/**/*.py
+  - src/crimson/render/**/*.py
+rule:
+  any:
+    - pattern: |
+        try:
+          $VAR = CreatureTypeId($$$ARGS)
+        except ValueError:
+          $$$HANDLER
+    - pattern: |
+        try:
+          $VAR = CreatureTypeId($$$ARGS)
+        except ValueError as $ERR:
+          $$$HANDLER

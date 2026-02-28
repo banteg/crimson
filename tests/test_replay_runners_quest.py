@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from crimson.creatures.spawn import CreatureFlags, SpawnId
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnId
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.quests.types import SpawnEntry
@@ -216,7 +216,7 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
                 orbit_angle=0.25,
                 orbit_radius=0.75,
                 flags=17,
-                type_id=7,
+                type_id=int(CreatureTypeId.TROOPER),
                 pos_x=12.25,
                 pos_y=34.5,
             ),
@@ -241,7 +241,7 @@ def test_capture_creature_spawn_event_applies_added_head_overrides() -> None:
     assert_float_close(float(creature.orbit_angle), 0.25)
     assert_float_close(float(creature.orbit_radius), 0.75)
     assert int(creature.flags) == 17
-    assert int(creature.type_id) == 7
+    assert creature.type_id == CreatureTypeId.TROOPER
     assert_float_close(float(creature.pos.x), 12.25)
     assert_float_close(float(creature.pos.y), 34.5)
 
