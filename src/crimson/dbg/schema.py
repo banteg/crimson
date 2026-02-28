@@ -11,7 +11,7 @@ SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 _DEFAULT_CHANNEL_VERSION = 1
 _CHANNEL_VERSION_OVERRIDES = {
-    "zig_tick_trace": 5,
+    "zig_tick_trace": 6,
 }
 
 _CHUNK_KIND_META = b"META"

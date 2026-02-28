@@ -323,10 +323,9 @@ fn writeReplayTickTraceMsgpack(
     const out = &writer.interface;
     try out.writeAll(diagnostic_trace.replay_tick_trace_msgpack_magic);
     for (trace) |entry| {
-        const row = diagnostic_trace.toMsgpackRow(&entry);
         var row_writer: std.Io.Writer.Allocating = .init(allocator);
         defer row_writer.deinit();
-        try msgpack.encode(row, &row_writer.writer);
+        try msgpack.encode(entry, &row_writer.writer);
         const payload = row_writer.written();
         if (payload.len > std.math.maxInt(u32)) return error.TraceRowTooLarge;
         var len_buf: [4]u8 = undefined;

@@ -16,7 +16,7 @@ from grim.geom import Vec2
 from ..bonuses import BonusId
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint, ReplayEventSummary, ReplayPerkSnapshot, ReplayPlayerCheckpoint
-from ..replay.diagnostic_trace_schema import (
+from ..replay.diagnostic_trace_native import (
     ReplayTickRng,
     ReplayTickTraceRow,
     decode_replay_tick_trace_msgpack_stream,
@@ -119,6 +119,23 @@ def _require_int(value: object, *, field: str) -> int:
     if isinstance(value, int):
         return value
     raise TypeError(f"{field} must be int, got {type(value).__name__}")
+
+
+def _weapon_id_from_wire(value: int | str) -> WeaponId:
+    if isinstance(value, int):
+        return WeaponId(int(value))
+    key = str(value).strip()
+    try:
+        return WeaponId[str(key).upper()]
+    except KeyError as exc:
+        raise ValueError(f"unsupported zig weapon_id value: {value!r}") from exc
+
+
+def _bonus_timer_ms(value: float) -> int:
+    ms = int(round(float(value) * 1000.0))
+    if ms < 0:
+        return 0
+    return int(ms)
 
 
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
@@ -637,33 +654,31 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceRow, *, player_count: int) -> R
     timing = row.timing
     rng = row.rng
     summary = row.summary
-    player = row.player
-    bonuses = row.bonuses
-    debug = row.debug
+    gameplay_state = row.gameplay_state
+    player = row.player_state
 
-    player_pos_x = float(player.player_pos_x)
-    player_pos_y = float(player.player_pos_y)
-    player_health = float(player.player_health)
-    player_ammo = float(player.player_ammo)
-    player_weapon_id = int(player.player_weapon_id)
-    player_experience = int(player.player_experience)
-    player_level = int(player.player_level)
+    player_pos_x = float(player.pos.x)
+    player_pos_y = float(player.pos.y)
+    player_health = float(player.health)
+    player_ammo = float(player.weapon.ammo)
+    player_weapon_id = _weapon_id_from_wire(player.weapon.weapon_id)
+    player_experience = int(player.experience)
+    player_level = int(player.level)
 
-    bonus_timers = bonuses.bonus_timer_ms_by_id
-    bonus_weapon_power_up_ms = int(bonus_timers[int(BonusId.WEAPON_POWER_UP)])
-    bonus_reflex_boost_ms = int(bonus_timers[int(BonusId.REFLEX_BOOST)])
-    bonus_energizer_ms = int(bonus_timers[int(BonusId.ENERGIZER)])
-    bonus_double_experience_ms = int(bonus_timers[int(BonusId.DOUBLE_EXPERIENCE)])
-    bonus_freeze_ms = int(bonus_timers[int(BonusId.FREEZE)])
+    bonus_weapon_power_up_ms = _bonus_timer_ms(gameplay_state.bonuses.weapon_power_up)
+    bonus_reflex_boost_ms = _bonus_timer_ms(gameplay_state.bonuses.reflex_boost)
+    bonus_energizer_ms = _bonus_timer_ms(gameplay_state.bonuses.energizer)
+    bonus_double_experience_ms = _bonus_timer_ms(gameplay_state.bonuses.double_experience)
+    bonus_freeze_ms = _bonus_timer_ms(gameplay_state.bonuses.freeze)
     perk_pending = int(summary.perk_pending)
     player_slots = max(1, int(player_count))
 
-    _ = int(debug.debug_pending_nuke)
-    _ = int(debug.debug_nuke_kills_last)
-    _ = int(debug.debug_nuke_tick_last)
-    _ = int(debug.debug_nuke_kill_index_sum)
-    _ = int(debug.debug_last_picked_bonus_id)
-    _ = int(debug.debug_last_picked_bonus_amount)
+    _ = int(gameplay_state.pending_nuke_count)
+    _ = int(gameplay_state.debug_nuke_kills_last)
+    _ = int(gameplay_state.debug_nuke_tick_last)
+    _ = int(gameplay_state.debug_nuke_kill_index_sum)
+    _ = int(gameplay_state.debug_last_picked_bonus_id)
+    _ = int(gameplay_state.debug_last_picked_bonus_amount)
 
     return ReplayCheckpoint(
         tick_index=tick_index,
@@ -677,7 +692,7 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceRow, *, player_count: int) -> R
             ReplayPlayerCheckpoint(
                 pos=Vec2(float(player_pos_x), float(player_pos_y)),
                 health=float(player_health),
-                weapon_id=WeaponId(player_weapon_id),
+                weapon_id=player_weapon_id,
                 ammo=float(player_ammo),
                 experience=int(player_experience),
                 level=int(player_level),
