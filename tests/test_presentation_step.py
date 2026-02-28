@@ -22,13 +22,13 @@ from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 def _death(
     *,
-    type_id: int,
+    type_id: CreatureTypeId,
     suppress_death_sfx: bool = False,
 ) -> CreatureDeath:
     return CreatureDeath(
         index=0,
         pos=Vec2(),
-        type_id=int(type_id),
+        type_id=type_id,
         reward_value=0.0,
         xp_awarded=0,
         owner_id=-1,
@@ -97,7 +97,7 @@ def test_plan_death_sfx_allows_five_randomized_deaths() -> None:
     before_calls = rng.calls
     before_state = rng.state
 
-    deaths = tuple(_death(type_id=int(CreatureTypeId.ZOMBIE)) for _ in range(5))
+    deaths = tuple(_death(type_id=CreatureTypeId.ZOMBIE) for _ in range(5))
     keys = plan_death_sfx_keys(deaths, rand=rng)
 
     assert len(keys) == 5
@@ -116,8 +116,8 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
     before_state = rng.state
 
     deaths = (
-        _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=True),
-        _death(type_id=int(CreatureTypeId.ZOMBIE), suppress_death_sfx=False),
+        _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=True),
+        _death(type_id=CreatureTypeId.ZOMBIE, suppress_death_sfx=False),
     )
     keys = plan_death_sfx_keys(deaths, rand=rng)
 

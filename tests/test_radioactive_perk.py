@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
-from crimson.creatures.spawn import CreatureFlags
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
@@ -78,7 +78,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = True
-    creature.type_id = 1
+    creature.type_id = CreatureTypeId.LIZARD
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 5.0

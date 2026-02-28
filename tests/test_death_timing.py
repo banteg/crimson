@@ -3,10 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from typing import cast
 
+import pytest
+
 import crimson.sim.world_state as world_state_mod
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
-from crimson.creatures.spawn import CreatureFlags
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
@@ -63,6 +65,42 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     assert events.deaths[0].xp_awarded == 10
 
 
+def test_world_step_invalid_creature_type_id_fails_fast() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = cast("CreatureTypeId", 999)
+    creature.pos = Vec2(256.0, 256.0)
+    creature.flags = CreatureFlags(0)
+    creature.hp = 25.0
+    creature.max_hp = 25.0
+    creature.size = 50.0
+    creature.reward_value = 0.0
+    creature.lifecycle_stage = 16.0
+
+    with pytest.raises(KeyError):
+        world.step(
+            0.016,
+            inputs=None,
+            world_size=world_size,
+            damage_scale_by_type={},
+            detail_preset=5,
+            fx_queue=FxQueue(),
+            fx_queue_rotated=FxQueueRotated(),
+            auto_pick_perks=False,
+            game_mode=int(GameMode.SURVIVAL),
+            perk_progression_enabled=False,
+        )
+
+
 def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     world_size = 1024.0
     world = WorldState.build(
@@ -75,7 +113,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.type_id = 2
+    creature.type_id = CreatureTypeId.ALIEN
     creature.pos = Vec2(256.0, 256.0)
     creature.flags = CreatureFlags(0)
     creature.hp = 25.0
@@ -134,7 +172,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.type_id = 2
+    creature.type_id = CreatureTypeId.ALIEN
     creature.pos = Vec2(256.0, 256.0)
     creature.flags = CreatureFlags(0)
     creature.hp = 25.0
@@ -199,7 +237,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
     death = CreatureDeath(
         index=0,
         pos=Vec2(256.0, 256.0),
-        type_id=2,
+        type_id=CreatureTypeId.ALIEN,
         reward_value=0.0,
         xp_awarded=0,
         owner_id=-1,
@@ -259,7 +297,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.type_id = 2
+    creature.type_id = CreatureTypeId.ALIEN
     creature.pos = Vec2(256.0, 256.0)
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
     creature.hp = 25.0
@@ -326,7 +364,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         CreatureDeath(
             index=idx,
             pos=Vec2(200.0 + float(idx), 200.0),
-            type_id=2,
+            type_id=CreatureTypeId.ALIEN,
             reward_value=0.0,
             xp_awarded=0,
             owner_id=-1,

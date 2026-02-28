@@ -530,13 +530,8 @@ class WorldState:
         for creature in self.creatures.entries:
             if not (creature.active and creature.hp > 0.0):
                 continue
-            try:
-                type_id = CreatureTypeId(int(creature.type_id))
-            except ValueError:
-                continue
-            info = CREATURE_ANIM.get(type_id)
-            if info is None:
-                continue
+            type_id = creature.type_id
+            info = CREATURE_ANIM[type_id]
             creature.anim_phase, _ = creature_anim_advance_phase(
                 creature.anim_phase,
                 anim_rate=info.anim_rate,

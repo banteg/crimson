@@ -187,18 +187,9 @@ def plan_death_sfx_keys(
         death = deaths[idx]
         if death.suppress_death_sfx:
             continue
-        type_id = death.type_id
-        if type_id is None:
-            continue
-        try:
-            creature_type = CreatureTypeId(int(type_id))
-        except ValueError:
-            continue
-        options = _CREATURE_DEATH_SFX.get(creature_type)
-        if options:
-            key = _rand_choice(rand, options)
-            if key is not None:
-                keys.append(key)
+        key = _rand_choice(rand, _CREATURE_DEATH_SFX[death.type_id])
+        if key is not None:
+            keys.append(key)
     return keys
 
 
