@@ -56,15 +56,21 @@ def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
 # regardless of bonus type. In the rewrite, `amount` is used as the "effective"
 # duration/value for some bonuses, so `--preserve-bugs` compares against the
 # native amount domain (see docs/rewrite/original-bugs.md).
-_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, int] = {
+_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
     # Native default amount stored for Double Experience drops is 1.
-    BonusId.DOUBLE_EXPERIENCE: 1,
-    BonusId.FIRE_BULLETS: 4,
+    BonusId.DOUBLE_EXPERIENCE: WeaponId.PISTOL,
+    BonusId.FIRE_BULLETS: WeaponId.SAWED_OFF_SHOTGUN,
 }
 
 
-def _bonus_amount_for_weapon_id_suppression(*, bonus_id: BonusId, amount: int) -> int:
-    return int(_BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(bonus_id, int(amount)))
+def _bonus_weapon_id_for_suppression(*, bonus_id: BonusId, amount: int) -> WeaponId | None:
+    mapped = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(bonus_id)
+    if mapped is not None:
+        return mapped
+    weapon = WEAPON_BY_ID.get(int(amount))
+    if weapon is None:
+        return None
+    return weapon.weapon_id
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[int]:
@@ -318,8 +324,11 @@ class BonusPool:
         if players:
             if bool(state.preserve_bugs):
                 weapon_id = players[0].weapon.weapon_id
-                amount = _bonus_amount_for_weapon_id_suppression(bonus_id=entry.bonus_id, amount=int(entry.amount))
-                if amount == weapon_id:
+                suppression_weapon_id = _bonus_weapon_id_for_suppression(
+                    bonus_id=entry.bonus_id,
+                    amount=int(entry.amount),
+                )
+                if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
