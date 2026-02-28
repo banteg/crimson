@@ -84,13 +84,15 @@ pub fn playerSwapAltWeapon(player: *PlayerState) bool {
 
 pub fn initDefaultAltWeapon(player: *PlayerState) void {
     // Native reset preloads an alternate pistol slot before the perk is acquired.
-    player.alt_weapon_id = WeaponId.pistol;
-    player.alt_clip_size = 12;
-    player.alt_ammo = 12.0;
-    player.alt_reload_active = false;
-    player.alt_reload_timer = 0.0;
-    player.alt_reload_timer_max = 1.2;
-    player.alt_shot_cooldown = 0.0;
+    player.alt_weapon = .{
+        .weapon_id = WeaponId.pistol,
+        .clip_size = 12,
+        .ammo = 12.0,
+        .reload_active = false,
+        .reload_timer = 0.0,
+        .reload_timer_max = 1.2,
+        .shot_cooldown = 0.0,
+    };
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
@@ -210,9 +212,10 @@ test "reset players preloads alternate pistol slot" {
 
     resetPlayers(players[0..], 1024.0, null);
 
-    try std.testing.expectEqual(WeaponId.pistol, players[0].alt_weapon_id.?);
-    try std.testing.expectEqual(@as(i32, 12), players[0].alt_clip_size);
-    try std.testing.expectApproxEqAbs(@as(f32, 12.0), players[0].alt_ammo, 1e-6);
-    try std.testing.expect(!players[0].alt_reload_active);
-    try std.testing.expectApproxEqAbs(@as(f32, 1.2), players[0].alt_reload_timer_max, 1e-6);
+    try std.testing.expect(players[0].alt_weapon != null);
+    try std.testing.expectEqual(WeaponId.pistol, players[0].alt_weapon.?.weapon_id);
+    try std.testing.expectEqual(@as(i32, 12), players[0].alt_weapon.?.clip_size);
+    try std.testing.expectApproxEqAbs(@as(f32, 12.0), players[0].alt_weapon.?.ammo, 1e-6);
+    try std.testing.expect(!players[0].alt_weapon.?.reload_active);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.2), players[0].alt_weapon.?.reload_timer_max, 1e-6);
 }
