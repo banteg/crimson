@@ -19,7 +19,7 @@ from rich.text import Text
 
 from crimson.bonuses.ids import BonusId
 from crimson.replay import ReplayCodecError, load_replay
-from crimson.replay.diagnostic_trace_schema import (
+from crimson.replay.diagnostic_trace_native import (
     BONUS_ID_COUNT,
     PERK_COUNT_SIZE,
     REPLAY_TICK_TRACE_SCHEMA_VERSION,

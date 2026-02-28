@@ -11,7 +11,7 @@ const state_mod = @import("../state.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
-pub const replay_tick_trace_schema_version: i32 = 5;
+pub const replay_tick_trace_schema_version: i32 = 6;
 pub const perk_count_size: usize = state_mod.perk_count_size;
 pub const bonus_id_count: usize = @typeInfo(game_ids.BonusId).@"enum".fields.len;
 pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v3\n";
@@ -156,152 +156,63 @@ pub const ReplayTickDebug = struct {
 };
 
 pub const ReplayTickTrace = struct {
+    schema_version: i32 = replay_tick_trace_schema_version,
     tick: usize = 0,
     tick_index: usize,
     timing: ReplayTickTiming,
     rng: ReplayTickRng,
     summary: ReplayTickSummary,
+    gameplay_state: state_mod.GameplayState,
+    player_state: state_mod.PlayerState,
+    weapon_state: state_mod.WeaponSlotState,
     player: ReplayTickPlayer,
     bonuses: ReplayTickBonuses,
     projectiles: ReplayTickProjectiles,
     creatures: ReplayTickCreatures,
     debug: ReplayTickDebug,
 };
-
-pub const ReplayTickBonusesMsgpack = struct {
-    bonus_timer_ms_by_id: [bonus_id_count]i32,
-    bonus_active_count: usize,
-    active_entries: []const BonusActiveEntry,
+const empty_projectile_type_count_entry = ProjectileTypeCountEntry{
+    .type_id = 0,
+    .count = 0,
 };
 
-pub const ReplayTickProjectilesMsgpack = struct {
-    projectile_count: usize,
-    projectile_hit_count: i32,
-    projectile_first_hit_creature_index: i32,
-    projectile_first_hit_projectile_index: i32,
-    projectile_first_hit_type_id: i32,
-    projectile_first_hit_origin_x: f64,
-    projectile_first_hit_origin_y: f64,
-    projectile_first_hit_pos_x: f64,
-    projectile_first_hit_pos_y: f64,
-    projectile_first_hit_target_size: f64,
-    projectile_first_hit_target_x: f64,
-    projectile_first_hit_target_y: f64,
-    projectile_type_counts: []const ProjectileTypeCountEntry,
-    entries: []const ProjectileTraceEntry,
+const empty_projectile_trace_entry = ProjectileTraceEntry{
+    .index = 0,
+    .type_id = 0,
+    .pos_x = 0.0,
+    .pos_y = 0.0,
+    .origin_x = 0.0,
+    .origin_y = 0.0,
+    .life_timer = 0.0,
+    .damage_pool = 0.0,
+    .angle = 0.0,
+    .speed_scale = 0.0,
+    .owner_legacy = 0,
+    .hits_players = false,
 };
 
-pub const ReplayTickCreaturesMsgpack = struct {
-    entries: []const CreatureTraceEntry,
+const empty_creature_trace_entry = CreatureTraceEntry{
+    .index = 0,
+    .type_id = 0,
+    .flags = 0,
+    .ai_mode = 0,
+    .link_index = -1,
+    .pos_x = 0.0,
+    .pos_y = 0.0,
+    .target_x = 0.0,
+    .target_y = 0.0,
+    .heading = 0.0,
+    .target_heading = 0.0,
+    .hp = 0.0,
+    .lifecycle_stage = 0.0,
+    .size = 0.0,
+    .attack_cooldown = 0.0,
 };
 
-pub const ReplayTickSummaryMsgpack = struct {
-    score_xp: i32,
-    kills: i32,
-    shots_fired_p0: i32,
-    creature_count: usize,
-    perk_pending: i32,
+const empty_bonus_active_entry = BonusActiveEntry{
+    .bonus_id = 0,
+    .amount = 0,
 };
-
-pub const ReplayTickTraceMsgpackRow = struct {
-    schema_version: i32,
-    tick_index: usize,
-    timing: ReplayTickTiming,
-    rng: ReplayTickRng,
-    summary: ReplayTickSummaryMsgpack,
-    player: ReplayTickPlayer,
-    bonuses: ReplayTickBonusesMsgpack,
-    projectiles: ReplayTickProjectilesMsgpack,
-    creatures: ReplayTickCreaturesMsgpack,
-    debug: ReplayTickDebug,
-};
-
-pub fn toMsgpackRow(trace: anytype) ReplayTickTraceMsgpackRow {
-    const bonus_active_entries = trace.bonuses.active_entries[0..trace.bonuses.active_entries_len];
-    const projectile_type_counts = trace.projectiles.projectile_type_counts[0..trace.projectiles.projectile_type_counts_len];
-    const projectile_entries = trace.projectiles.entries[0..trace.projectiles.entries_len];
-    const creature_entries = trace.creatures.entries[0..trace.creatures.entries_len];
-    return .{
-        .schema_version = replay_tick_trace_schema_version,
-        .tick_index = traceTickIndex(trace),
-        .timing = .{
-            .elapsed_ms = traceElapsedMs(trace),
-        },
-        .rng = .{
-            .rng_state = trace.rng.rng_state,
-            .rng_after_perk_effects = trace.rng.rng_after_perk_effects,
-            .rng_after_creatures = trace.rng.rng_after_creatures,
-            .rng_after_projectiles = trace.rng.rng_after_projectiles,
-            .rng_after_secondary_projectiles = trace.rng.rng_after_secondary_projectiles,
-            .rng_after_particles = trace.rng.rng_after_particles,
-            .rng_after_player_update = trace.rng.rng_after_player_update,
-            .rng_after_stage_spawns = trace.rng.rng_after_stage_spawns,
-            .rng_after_wave_spawns = trace.rng.rng_after_wave_spawns,
-            .rng_after_spawns = trace.rng.rng_after_spawns,
-            .rng_after_bonus_update = trace.rng.rng_after_bonus_update,
-        },
-        .summary = .{
-            .score_xp = trace.summary.score_xp,
-            .kills = trace.summary.kills,
-            .shots_fired_p0 = trace.summary.shots_fired_p0,
-            .creature_count = trace.summary.creature_count,
-            .perk_pending = trace.summary.perk_pending,
-        },
-        .player = trace.player,
-        .bonuses = .{
-            .bonus_timer_ms_by_id = trace.bonuses.bonus_timer_ms_by_id,
-            .bonus_active_count = trace.bonuses.bonus_active_count,
-            .active_entries = @ptrCast(bonus_active_entries),
-        },
-        .projectiles = .{
-            .projectile_count = trace.projectiles.projectile_count,
-            .projectile_hit_count = trace.projectiles.projectile_hit_count,
-            .projectile_first_hit_creature_index = trace.projectiles.projectile_first_hit_creature_index,
-            .projectile_first_hit_projectile_index = trace.projectiles.projectile_first_hit_projectile_index,
-            .projectile_first_hit_type_id = trace.projectiles.projectile_first_hit_type_id,
-            .projectile_first_hit_origin_x = trace.projectiles.projectile_first_hit_origin_x,
-            .projectile_first_hit_origin_y = trace.projectiles.projectile_first_hit_origin_y,
-            .projectile_first_hit_pos_x = trace.projectiles.projectile_first_hit_pos_x,
-            .projectile_first_hit_pos_y = trace.projectiles.projectile_first_hit_pos_y,
-            .projectile_first_hit_target_size = trace.projectiles.projectile_first_hit_target_size,
-            .projectile_first_hit_target_x = trace.projectiles.projectile_first_hit_target_x,
-            .projectile_first_hit_target_y = trace.projectiles.projectile_first_hit_target_y,
-            .projectile_type_counts = @ptrCast(projectile_type_counts),
-            .entries = @ptrCast(projectile_entries),
-        },
-        .creatures = .{
-            .entries = @ptrCast(creature_entries),
-        },
-        .debug = .{
-            .debug_pending_nuke = trace.debug.debug_pending_nuke,
-            .debug_nuke_kills_last = trace.debug.debug_nuke_kills_last,
-            .debug_nuke_tick_last = trace.debug.debug_nuke_tick_last,
-            .debug_nuke_kill_index_sum = trace.debug.debug_nuke_kill_index_sum,
-            .debug_last_picked_bonus_id = trace.debug.debug_last_picked_bonus_id,
-            .debug_last_picked_bonus_amount = trace.debug.debug_last_picked_bonus_amount,
-        },
-    };
-}
-
-fn traceTickIndex(trace: anytype) usize {
-    const trace_type = @TypeOf(trace.*);
-    if (@hasField(trace_type, "tick_index") and @hasField(trace_type, "tick")) {
-        return if (trace.tick_index != 0) trace.tick_index else trace.tick;
-    }
-    if (@hasField(trace_type, "tick_index")) return trace.tick_index;
-    if (@hasField(trace_type, "tick")) return trace.tick;
-    @compileError("toMsgpackRow expects a trace with tick_index or tick");
-}
-
-fn traceElapsedMs(trace: anytype) i64 {
-    const trace_type = @TypeOf(trace.*);
-    if (@hasField(trace_type, "timing") and @hasField(@TypeOf(trace.summary), "elapsed_ms")) {
-        return if (trace.timing.elapsed_ms != 0) trace.timing.elapsed_ms else trace.summary.elapsed_ms;
-    }
-    if (@hasField(trace_type, "timing")) return trace.timing.elapsed_ms;
-    if (@hasField(trace_type, "summary")) return trace.summary.elapsed_ms;
-    @compileError("toMsgpackRow expects a trace with timing.elapsed_ms or summary.elapsed_ms");
-}
 
 pub fn buildReplayTickTrace(
     tick_index: usize,
@@ -324,9 +235,11 @@ pub fn buildReplayTickTrace(
     rng_after_bonus_update: u32,
 ) ReplayTickTrace {
     var projectile_count: usize = 0;
-    var projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry = undefined;
+    var projectile_type_counts: [projectiles_mod.main_projectile_pool_size]ProjectileTypeCountEntry =
+        [_]ProjectileTypeCountEntry{empty_projectile_type_count_entry} ** projectiles_mod.main_projectile_pool_size;
     var projectile_type_counts_len: usize = 0;
-    var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry = undefined;
+    var projectile_entries: [projectiles_mod.main_projectile_pool_size]ProjectileTraceEntry =
+        [_]ProjectileTraceEntry{empty_projectile_trace_entry} ** projectiles_mod.main_projectile_pool_size;
     var projectile_entries_len: usize = 0;
     for (projectiles.entries, 0..) |entry, idx| {
         if (!entry.active) continue;
@@ -352,7 +265,8 @@ pub fn buildReplayTickTrace(
         projectile_entries_len += 1;
     }
 
-    var creature_entries: [creatures_mod.max_creatures]CreatureTraceEntry = undefined;
+    var creature_entries: [creatures_mod.max_creatures]CreatureTraceEntry =
+        [_]CreatureTraceEntry{empty_creature_trace_entry} ** creatures_mod.max_creatures;
     var creature_entries_len: usize = 0;
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
@@ -378,7 +292,8 @@ pub fn buildReplayTickTrace(
     }
 
     var bonus_active_count: usize = 0;
-    var bonus_active_entries: [bonus_runtime.bonus_pool_size]BonusActiveEntry = undefined;
+    var bonus_active_entries: [bonus_runtime.bonus_pool_size]BonusActiveEntry =
+        [_]BonusActiveEntry{empty_bonus_active_entry} ** bonus_runtime.bonus_pool_size;
     var bonus_active_entries_len: usize = 0;
     for (bonuses.entries) |entry| {
         if (entry.bonus_id == .unused) continue;
@@ -407,6 +322,7 @@ pub fn buildReplayTickTrace(
     bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.freeze)] = bonusTimerMs(state.bonuses.freeze);
 
     return .{
+        .schema_version = replay_tick_trace_schema_version,
         .tick = tick_index,
         .tick_index = tick_index,
         .timing = .{
@@ -433,6 +349,9 @@ pub fn buildReplayTickTrace(
             .creature_count = creatures.activeCount(),
             .perk_pending = state.perk_selection.pending_count,
         },
+        .gameplay_state = state.*,
+        .player_state = player,
+        .weapon_state = player.weapon,
         .player = .{
             .player_weapon_id = @intFromEnum(player.weapon.weapon_id),
             .player_ammo = wireF64(player.weapon.ammo),

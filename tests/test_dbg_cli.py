@@ -168,7 +168,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
 
         def build_row(*, tick_index: int, elapsed_ms: int, rng_state: int, rng_base: int, score_xp: int, kills: int, player_ammo: float, player_health: float, player_pos_x: float, player_pos_y: float, player_experience: int, player_shot_seq: int, perk_pending: int, debug_pending_nuke: int) -> dict[str, object]:
             return {
-                "schema_version": 5,
+                "schema_version": 6,
                 "tick_index": tick_index,
                 "timing": {
                     "elapsed_ms": elapsed_ms,
@@ -192,6 +192,38 @@ def _write_fake_zig_bin(path: Path) -> Path:
                     "shots_fired_p0": player_shot_seq,
                     "creature_count": 0,
                     "perk_pending": perk_pending,
+                },
+                "gameplay_state": {
+                    "bonuses": {
+                        "weapon_power_up": 0.0,
+                        "reflex_boost": 0.0,
+                        "energizer": 0.0,
+                        "double_experience": 0.0,
+                        "freeze": 0.0,
+                    },
+                    "perk_selection": {
+                        "pending_count": perk_pending,
+                    },
+                    "pending_nuke_count": debug_pending_nuke,
+                    "debug_nuke_kills_last": 0,
+                    "debug_nuke_tick_last": -1,
+                    "debug_nuke_kill_index_sum": 0,
+                    "debug_last_picked_bonus_id": 0,
+                    "debug_last_picked_bonus_amount": 0,
+                },
+                "player_state": {
+                    "index": 0,
+                    "pos": {
+                        "x": wire_f32(player_pos_x),
+                        "y": wire_f32(player_pos_y),
+                    },
+                    "health": wire_f32(player_health),
+                    "weapon": {
+                        "weapon_id": 14,
+                        "ammo": wire_f32(player_ammo),
+                    },
+                    "experience": player_experience,
+                    "level": 1,
                 },
                 "player": {
                     "player_weapon_id": 14,
