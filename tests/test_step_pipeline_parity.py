@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import replace
 from pathlib import Path
 
+import msgspec
 import pytest
 
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
@@ -184,7 +184,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     dt_frame = 1.0 / float(replay.header.tick_rate)
     for tick_index in range(len(replay.inputs)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
-        rush_inputs = [replace(inp, reload_pressed=False) for inp in tick_inputs]
+        rush_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in tick_inputs]
         tick = session.step_tick(
             dt_frame=float(dt_frame),
             inputs=rush_inputs,

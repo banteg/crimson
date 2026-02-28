@@ -5,10 +5,10 @@ import random
 import sys
 import time
 from collections.abc import Callable, Mapping
-from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import msgspec
 import pytest
 from pytest_mock import MockerFixture
 
@@ -199,7 +199,7 @@ def default_spawn_env():
 @pytest.fixture
 def make_spawn_env(default_spawn_env):
     def _make(**overrides: object):
-        return replace(default_spawn_env, **overrides)
+        return msgspec.structs.replace(default_spawn_env, **overrides)
 
     return _make
 

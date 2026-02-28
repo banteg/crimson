@@ -4,10 +4,10 @@ import hashlib
 import json
 import os
 import re
-from dataclasses import replace
 from pathlib import Path
 from typing import cast
 
+import msgspec
 from click import unstyle
 from typer.testing import CliRunner
 
@@ -67,16 +67,13 @@ def _build_replay(
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):
         recorder.record_tick(
-            [
-                PlayerInput(aim=Vec2(512.0, 512.0))
-                for _ in range(int(player_count))
-            ],
+            [PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))],
         )
     replay = recorder.finish()
     result = run_replay(replay)
-    return replace(
+    return msgspec.structs.replace(
         replay,
-        header=replace(
+        header=msgspec.structs.replace(
             replay.header,
             claimed_stats=ReplayClaimedStatsSnapshot(
                 complete=True,
@@ -110,7 +107,7 @@ def _write_checkpoint_sidecar(
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
     if mutate_command_hash:
-        checkpoints[0] = replace(checkpoints[0], command_hash="deadbeef")
+        checkpoints[0] = msgspec.structs.replace(checkpoints[0], command_hash="deadbeef")
     replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
     payload = ReplayCheckpoints(
         version=int(FORMAT_VERSION),
@@ -122,7 +119,7 @@ def _write_checkpoint_sidecar(
         mismatch = "0" * 64
         if mismatch == str(replay_sha256):
             mismatch = "f" * 64
-        payload = replace(payload, replay_sha256=mismatch)
+        payload = msgspec.structs.replace(payload, replay_sha256=mismatch)
     sidecar_path = default_checkpoints_path(replay_path)
     dump_checkpoints_file(sidecar_path, payload)
     return sidecar_path
@@ -212,9 +209,9 @@ def test_replay_list_mode_collapses_quest_level_and_players(tmp_path: Path) -> N
 
 def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay = replace(
+    replay = msgspec.structs.replace(
         replay,
-        header=replace(
+        header=msgspec.structs.replace(
             replay.header,
             claimed_stats=ReplayClaimedStatsSnapshot(
                 complete=True,
@@ -232,9 +229,9 @@ def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path
     sidecar_path = _write_checkpoint_sidecar(replay_path, replay)
     payload = load_checkpoints_file(sidecar_path)
     assert payload.checkpoints
-    payload = replace(
+    payload = msgspec.structs.replace(
         payload,
-        checkpoints=[replace(payload.checkpoints[0], tick_index=99, score_xp=42, kills=7)],
+        checkpoints=[msgspec.structs.replace(payload.checkpoints[0], tick_index=99, score_xp=42, kills=7)],
     )
     dump_checkpoints_file(sidecar_path, payload)
     runner = CliRunner()
@@ -251,9 +248,9 @@ def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path
 
 def test_replay_list_uses_header_claimed_stats_without_sidecar(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay = replace(
+    replay = msgspec.structs.replace(
         replay,
-        header=replace(
+        header=msgspec.structs.replace(
             replay.header,
             claimed_stats=ReplayClaimedStatsSnapshot(
                 complete=True,
@@ -327,9 +324,9 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 def test_replay_verify_checks_header_claimed_stats_match(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     expected = run_replay(replay)
-    replay = replace(
+    replay = msgspec.structs.replace(
         replay,
-        header=replace(
+        header=msgspec.structs.replace(
             replay.header,
             claimed_stats=ReplayClaimedStatsSnapshot(
                 complete=True,
@@ -357,9 +354,9 @@ def test_replay_verify_checks_header_claimed_stats_match(tmp_path: Path) -> None
 
 def test_replay_verify_reports_header_claimed_stats_mismatch(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay = replace(
+    replay = msgspec.structs.replace(
         replay,
-        header=replace(
+        header=msgspec.structs.replace(
             replay.header,
             claimed_stats=ReplayClaimedStatsSnapshot(
                 complete=True,
@@ -696,9 +693,7 @@ def test_replay_info_emits_net_health_damage_from_tick_delta(tmp_path: Path) -> 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     damage_events = [
-        event
-        for event in payload["timeline"]
-        if event["kind"] == "health_damage" and int(event["player_index"]) == 0
+        event for event in payload["timeline"] if event["kind"] == "health_damage" and int(event["player_index"]) == 0
     ]
     assert len(damage_events) == 1
     data = damage_events[0]["data"]
@@ -735,9 +730,7 @@ def test_replay_info_player_death_is_core_event(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     death_events = [
-        event
-        for event in payload["timeline"]
-        if event["kind"] == "player_death" and int(event["player_index"]) == 0
+        event for event in payload["timeline"] if event["kind"] == "player_death" and int(event["player_index"]) == 0
     ]
     assert len(death_events) == 1
 

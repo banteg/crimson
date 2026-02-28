@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import gzip
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -406,6 +405,7 @@ def _replay_input_flags(replay: Replay, tick_index: int, player_index: int = 0) 
     assert isinstance(raw_flags, int | float)
     return int(raw_flags)
 
+
 def _replay_input_aim_xy(replay: Replay, tick_index: int, player_index: int = 0) -> tuple[float, float]:
     aim_x = replay.inputs[tick_index][player_index][2]
     aim_y = replay.inputs[tick_index][player_index][3]
@@ -775,21 +775,25 @@ def test_convert_capture_to_checkpoints_roundtrip(tmp_path: Path) -> None:
 def test_convert_capture_to_replay_from_ticks(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": True,
-            "fire_pressed": True,
-            "reload_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": True,
+                "fire_pressed": True,
+                "reload_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": 1.0,
-            "move_dy": -1.0,
-            "aim_x": 540.0,
-            "aim_y": 500.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": 1.0,
+                "move_dy": -1.0,
+                "aim_x": 540.0,
+                "aim_y": 500.0,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -818,13 +822,15 @@ def test_convert_capture_to_replay_quantizes_input_vectors_and_world_size_to_f32
 
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": raw_move_x,
-            "move_dy": raw_move_y,
-            "aim_x": raw_aim_x,
-            "aim_y": raw_aim_y,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": raw_move_x,
+                "move_dy": raw_move_y,
+                "aim_x": raw_aim_x,
+                "aim_y": raw_aim_y,
+            },
+        ),
     ]
 
     obj = _capture_obj(ticks=[tick0])
@@ -934,11 +940,7 @@ def test_convert_capture_to_replay_infers_pending_drop_events_from_perk_delta(tm
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    pending_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CapturePerkPendingEvent)
-    ]
+    pending_events = [event for event in replay.events if isinstance(event, CapturePerkPendingEvent)]
     assert [event.tick_index for event in pending_events] == [0, 1]
     assert [capture_perk_pending_from_event_payload(event) for event in pending_events] == [1, 0]
 
@@ -964,11 +966,7 @@ def test_convert_capture_to_replay_skips_menu_open_for_terminal_pending_drop_tra
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    pending_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CapturePerkPendingEvent)
-    ]
+    pending_events = [event for event in replay.events if isinstance(event, CapturePerkPendingEvent)]
     assert [event.tick_index for event in pending_events] == [0, 1]
     assert [capture_perk_pending_from_event_payload(event) for event in pending_events] == [2, 0]
     assert not any(isinstance(event, PerkMenuOpenEvent) for event in replay.events)
@@ -992,11 +990,7 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_perk_snapshot(tmp_
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.perk_pending == 3
@@ -1035,11 +1029,7 @@ def test_convert_capture_to_replay_bootstrap_payload_includes_quest_session_time
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.quest_session is not None
@@ -1067,11 +1057,7 @@ def test_convert_capture_to_replay_bootstrap_payload_quantizes_quest_session_tim
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.quest_session is not None
@@ -1143,11 +1129,7 @@ def test_convert_capture_to_replay_bootstrap_payload_prefers_before_player_runti
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.elapsed_ms == 6951
@@ -1299,11 +1281,7 @@ def test_convert_capture_to_replay_bootstrap_payload_infers_perk_intervals_from_
 
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
@@ -1414,11 +1392,7 @@ def test_convert_capture_to_replay_bootstrap_payload_ignores_inactive_timer_rese
 
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
@@ -1527,11 +1501,7 @@ def test_convert_capture_to_replay_bootstrap_payload_does_not_infer_man_bomb_fro
 
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
 
@@ -1542,16 +1512,16 @@ def test_apply_capture_bootstrap_payload_applies_perk_intervals_and_player_perk_
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     payload = _minimal_strict_bootstrap_payload()
-    payload = replace(payload, elapsed_ms=-1)
+    payload = msgspec.structs.replace(payload, elapsed_ms=-1)
     assert payload.players
-    payload.players[0] = replace(
+    payload.players[0] = msgspec.structs.replace(
         payload.players[0],
         hot_tempered_timer=1.36,
         man_bomb_timer=0.5,
         living_fortress_timer=0.25,
         fire_cough_timer=0.75,
     )
-    payload = replace(
+    payload = msgspec.structs.replace(
         payload,
         perk_interval_hot_tempered=1.4,
         perk_interval_man_bomb=6.0,
@@ -1585,11 +1555,7 @@ def test_convert_capture_to_replay_emits_perk_apply_events(tmp_path: Path) -> No
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    perk_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CapturePerkApplyEvent)
-    ]
+    perk_events = [event for event in replay.events if isinstance(event, CapturePerkApplyEvent)]
     assert len(perk_events) == 1
     assert perk_events[0].tick_index == 0
 
@@ -1614,11 +1580,7 @@ def test_convert_capture_to_replay_carries_outside_before_pending_bounds(tmp_pat
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    perk_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CapturePerkApplyEvent)
-    ]
+    perk_events = [event for event in replay.events if isinstance(event, CapturePerkApplyEvent)]
     assert len(perk_events) == 1
     assert capture_perk_apply_from_event_payload(perk_events[0]) == (16, True)
     assert capture_perk_apply_pending_bounds_from_event_payload(perk_events[0]) == (1, 4)
@@ -1662,11 +1624,7 @@ def test_convert_capture_to_replay_emits_quest_creature_spawn_events(
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    spawn_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CaptureCreatureSpawnEvent)
-    ]
+    spawn_events = [event for event in replay.events if isinstance(event, CaptureCreatureSpawnEvent)]
     assert len(spawn_events) == 1
     assert spawn_events[0].tick_index == 0
     assert capture_creature_spawns_from_event_payload(spawn_events[0]) == (
@@ -1717,11 +1675,7 @@ def test_convert_capture_to_replay_emits_quest_added_head_without_spawn_rows(tmp
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    spawn_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CaptureCreatureSpawnEvent)
-    ]
+    spawn_events = [event for event in replay.events if isinstance(event, CaptureCreatureSpawnEvent)]
     assert len(spawn_events) == 1
     assert capture_creature_spawns_from_event_payload(spawn_events[0]) == ()
     assert capture_creature_spawn_added_head_from_event_payload(spawn_events[0]) == (
@@ -1775,11 +1729,7 @@ def test_convert_capture_to_replay_quantizes_quest_spawn_event_float_payloads_to
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    spawn_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CaptureCreatureSpawnEvent)
-    ]
+    spawn_events = [event for event in replay.events if isinstance(event, CaptureCreatureSpawnEvent)]
     assert len(spawn_events) == 1
     assert capture_creature_spawns_from_event_payload(spawn_events[0]) == (
         (
@@ -1822,11 +1772,7 @@ def test_convert_capture_to_replay_emits_state_transition_events(tmp_path: Path)
     capture = load_capture(path)
     replay = convert_capture_to_replay(capture, seed=0)
 
-    state_events = [
-        event
-        for event in replay.events
-        if isinstance(event, CaptureStateTransitionEvent)
-    ]
+    state_events = [event for event in replay.events if isinstance(event, CaptureStateTransitionEvent)]
     assert len(state_events) == 1
     assert state_events[0].tick_index == 0
     assert capture_state_transitions_from_event_payload(state_events[0]) == ((12, 9, 12),)
@@ -2044,10 +1990,7 @@ def test_convert_capture_to_replay_raises_when_rng_state_before_missing(tmp_path
     rng_marks = _tick_rng_marks(tick0)
     rng_marks.rand_calls = 8
     rng_marks.rand_last = outputs[-1]
-    rng_marks.rand_head = [
-        _base_rng_head_entry(value=int(value), value_15=int(value))
-        for value in outputs
-    ]
+    rng_marks.rand_head = [_base_rng_head_entry(value=int(value), value_15=int(value)) for value in outputs]
 
     tick0.rng = _base_rng_summary(
         calls=8,
@@ -2107,10 +2050,7 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
     rng_marks = _tick_rng_marks(tick0)
     rng_marks.rand_calls = 8
     rng_marks.rand_last = outputs[-1]
-    rng_marks.rand_head = [
-        _base_rng_head_entry(value=int(value), value_15=int(value))
-        for value in outputs
-    ]
+    rng_marks.rand_head = [_base_rng_head_entry(value=int(value), value_15=int(value)) for value in outputs]
     tick0.rng = _base_rng_summary(
         calls=8,
         last_value=outputs[-1],
@@ -2130,27 +2070,31 @@ def test_convert_capture_to_replay_explicit_seed_overrides_inferred_seed(tmp_pat
 def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": True,
-            "move_backward_pressed": False,
-            "turn_left_pressed": True,
-            "turn_right_pressed": False,
-            "fire_down": False,
-            "fire_pressed": False,
-            "reload_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": True,
+                "move_backward_pressed": False,
+                "turn_left_pressed": True,
+                "turn_right_pressed": False,
+                "fire_down": False,
+                "fire_pressed": False,
+                "reload_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": -21.5,
-            "move_dy": -7.6,
-            "aim_x": 540.0,
-            "aim_y": 500.0,
-            "fired_events": 0,
-            "reload_active": False,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": -21.5,
+                "move_dy": -7.6,
+                "aim_x": 540.0,
+                "aim_y": 500.0,
+                "fired_events": 0,
+                "reload_active": False,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2173,11 +2117,7 @@ def test_convert_capture_to_replay_prefers_input_player_keys_for_digital_move(tm
     assert turn_left is True
     assert turn_right is False
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.digital_move_enabled_by_player == [True]
@@ -2187,20 +2127,22 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [_base_input_player_keys(**{"player_index": 0})]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": 0.25,
-            "move_dy": 0.5,
-            "move_mode": 1,
-            "move_forward_pressed": True,
-            "move_backward_pressed": False,
-            "turn_left_pressed": True,
-            "turn_right_pressed": False,
-            "aim_x": 540.0,
-            "aim_y": 500.0,
-            "fired_events": 0,
-            "reload_active": False,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": 0.25,
+                "move_dy": 0.5,
+                "move_mode": 1,
+                "move_forward_pressed": True,
+                "move_backward_pressed": False,
+                "turn_left_pressed": True,
+                "turn_right_pressed": False,
+                "aim_x": 540.0,
+                "aim_y": 500.0,
+                "fired_events": 0,
+                "reload_active": False,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0])
     path = tmp_path / "capture.json"
@@ -2219,11 +2161,7 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
     assert turn_left is None
     assert turn_right is None
 
-    bootstrap = next(
-        event
-        for event in replay.events
-        if isinstance(event, CaptureBootstrapEvent)
-    )
+    bootstrap = next(event for event in replay.events if isinstance(event, CaptureBootstrapEvent))
     payload = capture_bootstrap_payload_from_event_payload(bootstrap)
     assert payload is not None
     assert payload.digital_move_enabled_by_player == [False]
@@ -2232,41 +2170,49 @@ def test_convert_capture_to_replay_ignores_input_approx_for_digital_move_capabil
 def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_precedence(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": False,
-            "move_backward_pressed": False,
-            "turn_left_pressed": False,
-            "turn_right_pressed": True,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": False,
+                "move_backward_pressed": False,
+                "turn_left_pressed": False,
+                "turn_right_pressed": True,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": 98.0,
-            "move_dy": 5.0,
-            "aim_x": 306.0,
-            "aim_y": 309.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": 98.0,
+                "move_dy": 5.0,
+                "aim_x": 306.0,
+                "aim_y": 309.0,
+            },
+        ),
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": False,
-            "move_backward_pressed": True,
-            "turn_left_pressed": True,
-            "turn_right_pressed": True,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": False,
+                "move_backward_pressed": True,
+                "turn_left_pressed": True,
+                "turn_right_pressed": True,
+            },
+        ),
     ]
     tick1.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": -77.0,
-            "move_dy": 11.0,
-            "aim_x": 308.0,
-            "aim_y": 311.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": -77.0,
+                "move_dy": 11.0,
+                "aim_x": 308.0,
+                "aim_y": 311.0,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2290,41 +2236,49 @@ def test_convert_capture_to_replay_conflicting_turn_keys_use_contextual_preceden
 def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_precedence(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": False,
-            "move_backward_pressed": True,
-            "turn_left_pressed": False,
-            "turn_right_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": False,
+                "move_backward_pressed": True,
+                "turn_left_pressed": False,
+                "turn_right_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": 4.0,
-            "move_dy": 66.0,
-            "aim_x": 306.0,
-            "aim_y": 309.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": 4.0,
+                "move_dy": 66.0,
+                "aim_x": 306.0,
+                "aim_y": 309.0,
+            },
+        ),
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": True,
-            "move_backward_pressed": True,
-            "turn_left_pressed": True,
-            "turn_right_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": True,
+                "move_backward_pressed": True,
+                "turn_left_pressed": True,
+                "turn_right_pressed": False,
+            },
+        ),
     ]
     tick1.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": -8.0,
-            "move_dy": -55.0,
-            "aim_x": 307.0,
-            "aim_y": 310.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": -8.0,
+                "move_dy": -55.0,
+                "aim_x": 307.0,
+                "aim_y": 310.0,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2348,41 +2302,49 @@ def test_convert_capture_to_replay_conflicting_move_keys_use_contextual_preceden
 def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": False,
-            "move_backward_pressed": False,
-            "turn_left_pressed": True,
-            "turn_right_pressed": True,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": False,
+                "move_backward_pressed": False,
+                "turn_left_pressed": True,
+                "turn_right_pressed": True,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": -92.0,
-            "move_dy": 8.0,
-            "aim_x": 400.0,
-            "aim_y": 410.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": -92.0,
+                "move_dy": 8.0,
+                "aim_x": 400.0,
+                "aim_y": 410.0,
+            },
+        ),
     ]
     tick1 = _base_tick(tick_index=1, elapsed_ms=32)
     tick1.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "move_forward_pressed": True,
-            "move_backward_pressed": True,
-            "turn_left_pressed": False,
-            "turn_right_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "move_forward_pressed": True,
+                "move_backward_pressed": True,
+                "turn_left_pressed": False,
+                "turn_right_pressed": False,
+            },
+        ),
     ]
     tick1.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "move_dx": 12.0,
-            "move_dy": -73.0,
-            "aim_x": 402.0,
-            "aim_y": 412.0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "move_dx": 12.0,
+                "move_dy": -73.0,
+                "aim_x": 402.0,
+                "aim_y": 412.0,
+            },
+        ),
     ]
     obj = _capture_obj(ticks=[tick0, tick1])
     path = tmp_path / "capture.json"
@@ -2402,12 +2364,14 @@ def test_convert_capture_to_replay_conflicting_keys_ignore_sample_axis_sign(tmp_
 def test_convert_capture_to_replay_uses_player_key_fire_reload_edges(tmp_path: Path) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": True,
-            "fire_pressed": True,
-            "reload_pressed": True,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": True,
+                "fire_pressed": True,
+                "reload_pressed": True,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 512.0, "aim_y": 512.0, "fired_events": 0}),
@@ -2501,12 +2465,14 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_player_fire_event_
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
@@ -2546,12 +2512,14 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_down_from_zero_coold
 ) -> None:
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
@@ -2595,12 +2563,14 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_zero_co
     _tick_player(tick0).weapon_id = 11
     _tick_player(tick0).ammo = 21.0
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 11, "fired_events": 1}),
@@ -2644,21 +2614,25 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_ammo_dr
     _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 29.9
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "aim_x": 520.0,
-            "aim_y": 500.0,
-            "weapon_id": WeaponId.FLAMETHROWER,
-            "fired_events": 0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "aim_x": 520.0,
+                "aim_y": 500.0,
+                "weapon_id": WeaponId.FLAMETHROWER,
+                "fired_events": 0,
+            },
+        ),
     ]
     tick0.before = _base_snapshot(
         players=[
@@ -2692,21 +2666,25 @@ def test_convert_capture_to_replay_synthesizes_fire_down_when_fractional_weapon_
     _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 29.9
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "aim_x": 520.0,
-            "aim_y": 500.0,
-            "weapon_id": WeaponId.FLAMETHROWER,
-            "fired_events": 0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "aim_x": 520.0,
+                "aim_y": 500.0,
+                "weapon_id": WeaponId.FLAMETHROWER,
+                "fired_events": 0,
+            },
+        ),
     ]
     tick0.before = _base_snapshot(
         players=[
@@ -2742,12 +2720,14 @@ def test_convert_capture_to_replay_synthesizes_fire_down_from_fractional_weapon_
     _tick_player(tick0).weapon_id = WeaponId.FLAMETHROWER
     _tick_player(tick0).ammo = 30.0
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.before = _base_snapshot(
         players=[
@@ -2800,22 +2780,26 @@ def test_convert_capture_to_replay_synthesizes_fire_pressed_from_primary_edge_wh
     tick0.input_queries.stats.any_key.true_calls = 0
     tick0.input_queries.query_hash = ""
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": None,
-            "fire_pressed": None,
-            "reload_pressed": None,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": None,
+                "fire_pressed": None,
+                "reload_pressed": None,
+            },
+        ),
     ]
     tick0.input_approx = [
-        _base_input_approx(**{
-            "player_index": 0,
-            "aim_x": 520.0,
-            "aim_y": 500.0,
-            "aim_scheme": 5,
-            "reload_active": True,
-            "fired_events": 0,
-        }),
+        _base_input_approx(
+            **{
+                "player_index": 0,
+                "aim_x": 520.0,
+                "aim_y": 500.0,
+                "aim_scheme": 5,
+                "reload_active": True,
+                "fired_events": 0,
+            },
+        ),
     ]
 
     obj = _capture_obj(ticks=[tick0])
@@ -2835,12 +2819,14 @@ def test_convert_capture_to_replay_synthesizes_computer_aim_fire_down_from_proje
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": False,
-            "reload_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": False,
+                "reload_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
@@ -2873,12 +2859,14 @@ def test_convert_capture_to_replay_does_not_synthesize_computer_fire_for_non_wea
     tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[5]))
     _tick_player(tick0).weapon_id = 29
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": False,
-            "reload_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": False,
+                "reload_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "weapon_id": 29, "fired_events": 1}),
@@ -2913,12 +2901,14 @@ def test_convert_capture_to_replay_does_not_synthesize_non_computer_fire_down(tm
     tick0 = _base_tick(tick_index=0, elapsed_ms=16)
     tick0.before = _base_snapshot(globals=_base_snapshot_globals(config_aim_scheme=[0]))
     tick0.input_player_keys = [
-        _base_input_player_keys(**{
-            "player_index": 0,
-            "fire_down": False,
-            "fire_pressed": False,
-            "reload_pressed": False,
-        }),
+        _base_input_player_keys(
+            **{
+                "player_index": 0,
+                "fire_down": False,
+                "fire_pressed": False,
+                "reload_pressed": False,
+            },
+        ),
     ]
     tick0.input_approx = [
         _base_input_approx(**{"player_index": 0, "aim_x": 520.0, "aim_y": 500.0, "fired_events": 0}),
@@ -3247,7 +3237,9 @@ def test_convert_capture_to_replay_does_not_synthesize_fire_from_fired_events_on
     flags_default = _replay_input_flags(replay_default, 0, 0)
     flags_override = _replay_input_flags(replay_override, 0, 0)
     fire_down_default, _fire_pressed_default, _reload_pressed_default, _reload_down = unpack_input_flags(flags_default)
-    fire_down_override, _fire_pressed_override, _reload_pressed_override, _reload_down = unpack_input_flags(flags_override)
+    fire_down_override, _fire_pressed_override, _reload_pressed_override, _reload_down = unpack_input_flags(
+        flags_override,
+    )
     assert fire_down_default is False
     assert fire_down_override is False
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
-
+import msgspec
 import pytest
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnId
@@ -38,7 +37,9 @@ from tests.replay_runner_helpers import (
 def test_quest_runner_is_deterministic() -> None:
     _header, rec = _blank_quest_replay(ticks=10, seed=101, game_version="0.0.0")
     replay = rec.finish()
-    spawn_entries = _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed))
+    spawn_entries = _quest_spawn_entries(
+        "1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed),
+    )
 
     with pytest.warns(ReplayGameVersionWarning):
         result0 = run_quest_replay(
@@ -63,7 +64,7 @@ def test_quest_runner_applies_original_capture_bootstrap_session_timers() -> Non
     _header, rec = _blank_quest_replay(ticks=20, seed=101, game_version="0.0.0")
     replay_base = rec.finish()
     base_entry = _quest_spawn_entries("1.3", player_count=1, seed=int(replay_base.header.seed))[0]
-    spawn_entries = (replace(base_entry, trigger_ms=5000, count=1),)
+    spawn_entries = (msgspec.structs.replace(base_entry, trigger_ms=5000, count=1),)
     dt_overrides = {tick: 0.1 for tick in range(20)}
 
     baseline_checkpoints = []
