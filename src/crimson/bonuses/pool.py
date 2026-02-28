@@ -37,7 +37,7 @@ class BonusEntry(msgspec.Struct):
     picked: bool = False
     time_left: float = 0.0
     time_max: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
     amount: int = 0
 
 

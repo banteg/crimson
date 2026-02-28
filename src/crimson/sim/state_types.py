@@ -35,9 +35,9 @@ class PlayerState(msgspec.Struct):
     death_timer: float = 16.0
     low_health_timer: float = 100.0
 
-    aim: Vec2 = msgspec.field(default_factory=Vec2)
+    aim: Vec2 = Vec2()
     aim_heading: float = 0.0
-    aim_dir: Vec2 = msgspec.field(default_factory=lambda: Vec2(1.0, 0.0))
+    aim_dir: Vec2 = Vec2(1.0, 0.0)
     evil_eyes_target_creature: int = -1
     auto_target: int = -1
 

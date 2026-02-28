@@ -245,12 +245,12 @@ class CreatureState(msgspec.Struct):
     type_id: CreatureTypeId = CreatureTypeId.ZOMBIE
 
     # Movement / AI.
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     heading: float = 0.0
     target_heading: float = 0.0
     force_target: int = 0
-    target: Vec2 = msgspec.field(default_factory=Vec2)
+    target: Vec2 = Vec2()
     target_player: int = 0
     ai_mode: int = CreatureAiMode.ORBIT_PLAYER
     flags: CreatureFlags = CreatureFlags(0)

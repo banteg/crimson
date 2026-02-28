@@ -49,8 +49,8 @@ class PerkMenuLayout(msgspec.Struct):
     # Capture (1024x768) shows the perk menu panel uses the 3-slice variant:
     #   open bbox (-108,119) -> (402,497)
     # which corresponds to ui_element pos (-45,110) + geom (-63,-81) and size 510x378.
-    panel_pos: Vec2 = msgspec.field(default_factory=lambda: Vec2(-108.0, 29.0))
-    panel_size: Vec2 = msgspec.field(default_factory=lambda: Vec2(510.0, 378.0))
+    panel_pos: Vec2 = Vec2(-108.0, 29.0)
+    panel_size: Vec2 = Vec2(510.0, 378.0)
 
 
 class PerkMenuComputedLayout(msgspec.Struct):

@@ -6,8 +6,8 @@ from grim.geom import Vec2
 
 
 class PlayerInput(msgspec.Struct, frozen=True):
-    move: Vec2 = msgspec.field(default_factory=Vec2)
-    aim: Vec2 = msgspec.field(default_factory=Vec2)
+    move: Vec2 = Vec2()
+    aim: Vec2 = Vec2()
     move_mode: int | None = None
     aim_scheme: int | None = None
     fire_down: bool = False

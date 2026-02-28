@@ -33,8 +33,8 @@ if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
-    camera: Vec2 = msgspec.field(default_factory=Vec2)
-    view_scale: Vec2 = msgspec.field(default_factory=lambda: Vec2(1.0, 1.0))
+    camera: Vec2 = Vec2()
+    view_scale: Vec2 = Vec2(1.0, 1.0)
     scale: float = 1.0
     entity_alpha: float = 1.0
     trooper_texture: rl.Texture | None = None

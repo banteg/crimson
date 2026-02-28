@@ -158,9 +158,9 @@ class ProjectileHit(msgspec.Struct, frozen=True):
 class Projectile(msgspec.Struct):
     active: bool = False
     angle: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    origin: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    origin: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     type_id: int = 0
     life_timer: float = 0.0
     reserved: float = 0.0
@@ -184,8 +184,8 @@ class SecondaryProjectile(msgspec.Struct):
     active: bool = False
     angle: float = 0.0
     speed: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: int = 0
@@ -194,7 +194,7 @@ class SecondaryProjectile(msgspec.Struct):
     target_id: int = -1
     # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
     target_hint_active: bool = False
-    target_hint: Vec2 = msgspec.field(default_factory=Vec2)
+    target_hint: Vec2 = Vec2()
 
     @property
     def owner_id(self) -> int:

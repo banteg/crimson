@@ -139,7 +139,7 @@ class GameplayState(msgspec.Struct):
     survival_reward_damage_seen: bool = False
     survival_recent_death_pos: list[Vec2] = msgspec.field(default_factory=lambda: [Vec2(), Vec2(), Vec2()])
     survival_recent_death_count: int = 0
-    camera_shake_offset: Vec2 = msgspec.field(default_factory=Vec2)
+    camera_shake_offset: Vec2 = Vec2()
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
     shots_fired: list[int] = msgspec.field(default_factory=lambda: [0] * 4)

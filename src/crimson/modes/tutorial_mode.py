@@ -44,8 +44,8 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
 class _TutorialUiLayout(msgspec.Struct):
-    panel_pos: Vec2 = msgspec.field(default_factory=lambda: Vec2(0.0, 64.0))
-    panel_padding: Vec2 = msgspec.field(default_factory=lambda: Vec2(20.0, 8.0))
+    panel_pos: Vec2 = Vec2(0.0, 64.0)
+    panel_padding: Vec2 = Vec2(20.0, 8.0)
 
 
 class TutorialMode(BaseGameplayMode):

@@ -57,7 +57,7 @@ _AIM_POV_RIGHT_CODE = 0x134
 
 class _PerPlayerInputState(msgspec.Struct):
     aim_heading: float = 0.0
-    move_target: Vec2 = msgspec.field(default_factory=lambda: Vec2(-1.0, -1.0))
+    move_target: Vec2 = Vec2(-1.0, -1.0)
     computer_target_creature_index: int = -1
 
 

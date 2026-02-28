@@ -60,7 +60,7 @@ class GameWorld(msgspec.Struct):
     state: GameplayState = cast(GameplayState, None)
     players: list[PlayerState] = msgspec.field(default_factory=list)
     creatures: CreaturePool = cast(CreaturePool, None)
-    camera: Vec2 = msgspec.field(default_factory=lambda: Vec2(-1.0, -1.0))
+    camera: Vec2 = Vec2(-1.0, -1.0)
     _damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=dict)
     ground: GroundRenderer | None = None
     fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)

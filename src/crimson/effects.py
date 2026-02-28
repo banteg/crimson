@@ -75,8 +75,8 @@ CreatureKillHandler = Callable[[int, OwnerRef], None]
 class Particle(msgspec.Struct):
     active: bool = False
     render_flag: bool = False
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     scale_x: float = 1.0
     scale_y: float = 1.0
     scale_z: float = 1.0
@@ -380,8 +380,8 @@ class SpriteEffect(msgspec.Struct):
     active: bool = False
     color: RGBA = msgspec.field(default_factory=lambda: RGBA(a=0.0))
     rotation: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     scale: float = 1.0
 
 
@@ -444,7 +444,7 @@ class SpriteEffectPool:
 class FxQueueEntry(msgspec.Struct):
     effect_id: int = 0
     rotation: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
     height: float = 0.0
     width: float = 0.0
     color: RGBA = msgspec.field(default_factory=RGBA)
@@ -518,7 +518,7 @@ class FxQueue:
 
 
 class FxQueueRotatedEntry(msgspec.Struct):
-    top_left: Vec2 = msgspec.field(default_factory=Vec2)
+    top_left: Vec2 = Vec2()
     color: RGBA = msgspec.field(default_factory=RGBA)
     rotation: float = 0.0
     scale: float = 1.0
@@ -588,9 +588,9 @@ class FxQueueRotated:
 
 
 class EffectEntry(msgspec.Struct):
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
     effect_id: int = 0
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
+    vel: Vec2 = Vec2()
     rotation: float = 0.0
     scale: float = 1.0
     half_width: float = 0.0
