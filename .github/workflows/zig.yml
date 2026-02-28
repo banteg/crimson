@@ -34,7 +34,9 @@ jobs:
 
       - name: Build + test
         run: |
-          rm -rf .zig-cache
+          zig_cache_dir="$(mktemp -d)"
+          export ZIG_GLOBAL_CACHE_DIR="$zig_cache_dir"
+          export ZIG_LOCAL_CACHE_DIR="$zig_cache_dir"
           zig build test --summary all
           zig build -Doptimize=ReleaseFast
 
