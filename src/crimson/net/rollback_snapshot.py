@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar, cast
 
 import msgspec
@@ -9,13 +8,12 @@ import msgspec
 SnapshotT = TypeVar("SnapshotT")
 
 
-@dataclass(slots=True)
-class RollbackSnapshotCodec(Generic[SnapshotT]):
+class RollbackSnapshotCodec(msgspec.Struct, Generic[SnapshotT]):
     """Serialize rollback snapshots as deterministic msgpack blobs."""
 
     snapshot_type: type[SnapshotT]
-    _encoder: msgspec.msgpack.Encoder = field(init=False)
-    _decoder: msgspec.msgpack.Decoder = field(init=False)
+    _encoder: msgspec.msgpack.Encoder = cast(msgspec.msgpack.Encoder, None)
+    _decoder: msgspec.msgpack.Decoder = cast(msgspec.msgpack.Decoder, None)
 
     def __post_init__(self) -> None:
         self._encoder = msgspec.msgpack.Encoder()
@@ -28,14 +26,13 @@ class RollbackSnapshotCodec(Generic[SnapshotT]):
         return cast(SnapshotT, self._decoder.decode(blob))
 
 
-@dataclass(slots=True)
-class RollbackSnapshotRing(Generic[SnapshotT]):
+class RollbackSnapshotRing(msgspec.Struct, Generic[SnapshotT]):
     """Store periodic snapshots for rollback and reconnect restore."""
 
     max_ticks: int
     codec: RollbackSnapshotCodec[SnapshotT]
     interval_ticks: int = 4
-    _by_tick: OrderedDict[int, bytes] = field(default_factory=OrderedDict)
+    _by_tick: OrderedDict[int, bytes] = msgspec.field(default_factory=OrderedDict)
 
     def clear(self) -> None:
         self._by_tick.clear()

@@ -4,8 +4,9 @@ import socket
 import time
 import uuid
 from collections import OrderedDict, deque
-from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, cast
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
@@ -54,8 +55,7 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
-@dataclass(slots=True)
-class NetRuntimeConfig:
+class NetRuntimeConfig(msgspec.Struct):
     role: str
     mode_id: int
     player_count: int
@@ -75,62 +75,61 @@ class NetRuntimeConfig:
 ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
 
 
-@dataclass(slots=True)
-class NetRuntime:
+class NetRuntime(msgspec.Struct):
     cfg: NetRuntimeConfig
-    build_id: str = field(default_factory=current_build_id)
-    transport: RelayUdpTransport = field(init=False)
-    link: RelayReliableLink = field(init=False, default_factory=RelayReliableLink)
-    started: bool = field(init=False, default=False)
-    error: str = field(init=False, default="")
+    build_id: str = msgspec.field(default_factory=current_build_id)
+    transport: RelayUdpTransport = cast(RelayUdpTransport, None)
+    link: RelayReliableLink = msgspec.field(default_factory=RelayReliableLink)
+    started: bool = False
+    error: str = ""
 
-    lobby_state_latest: RoomState | None = field(init=False, default=None)
-    match_start_event: RoomStart | None = field(init=False, default=None)
+    lobby_state_latest: RoomState | None = None
+    match_start_event: RoomStart | None = None
 
-    _server_addr: PeerAddr | None = field(init=False, default=None)
-    _peer_id: str = field(init=False, default="")
-    _accepted: bool = field(init=False, default=False)
-    _created_room: bool = field(init=False, default=False)
-    _sent_join_request: bool = field(init=False, default=False)
-    _joined_room: bool = field(init=False, default=False)
-    _sent_ready: bool = field(init=False, default=False)
-    _last_hello_ms: int = field(init=False, default=0)
-    _last_seen_ms: int = field(init=False, default=0)
-    _last_send_ms: int = field(init=False, default=0)
-    _last_ping_ms: int = field(init=False, default=0)
-    _reconnect_token: str = field(init=False, default="")
-    _paused_for_reconnect: bool = field(init=False, default=False)
-    _announced_room_code: str = field(init=False, default="")
-    _reconnect_state: ReconnectState = field(init=False, default="idle")
+    _server_addr: PeerAddr | None = None
+    _peer_id: str = ""
+    _accepted: bool = False
+    _created_room: bool = False
+    _sent_join_request: bool = False
+    _joined_room: bool = False
+    _sent_ready: bool = False
+    _last_hello_ms: int = 0
+    _last_seen_ms: int = 0
+    _last_send_ms: int = 0
+    _last_ping_ms: int = 0
+    _reconnect_token: str = ""
+    _paused_for_reconnect: bool = False
+    _announced_room_code: str = ""
+    _reconnect_state: ReconnectState = "idle"
 
-    _rollback: RollbackController | None = field(init=False, default=None)
-    _frame_queue: deque[TickFrame] = field(init=False, default_factory=deque)
-    _remote_seen_slots: set[int] = field(init=False, default_factory=set)
-    _pending_rollback_from: int | None = field(init=False, default=None)
+    _rollback: RollbackController | None = None
+    _frame_queue: deque[TickFrame] = msgspec.field(default_factory=deque)
+    _remote_seen_slots: set[int] = msgspec.field(default_factory=set)
+    _pending_rollback_from: int | None = None
 
-    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = field(init=False, default_factory=deque)
+    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = msgspec.field(default_factory=deque)
 
-    _local_snapshot_blobs: OrderedDict[int, bytes] = field(init=False, default_factory=OrderedDict)
-    _pending_resync_snapshot: tuple[int, bytes] | None = field(init=False, default=None)
-    _pending_resync_snapshot_delivered: bool = field(init=False, default=False)
-    _resync_assembler: RbResyncAssemblerV5 | None = field(init=False, default=None)
-    _active_resync_request_id: str = field(init=False, default="")
-    _handled_resync_request_ids: set[str] = field(init=False, default_factory=set)
+    _local_snapshot_blobs: OrderedDict[int, bytes] = msgspec.field(default_factory=OrderedDict)
+    _pending_resync_snapshot: tuple[int, bytes] | None = None
+    _pending_resync_snapshot_delivered: bool = False
+    _resync_assembler: RbResyncAssemblerV5 | None = None
+    _active_resync_request_id: str = ""
+    _handled_resync_request_ids: set[str] = msgspec.field(default_factory=set)
 
-    desync_count: int = field(init=False, default=0)
-    last_desync_tick: int = field(init=False, default=-1)
-    last_desync_kind: str = field(init=False, default="")
-    last_desync_expected: str = field(init=False, default="")
-    last_desync_actual: str = field(init=False, default="")
+    desync_count: int = 0
+    last_desync_tick: int = -1
+    last_desync_kind: str = ""
+    last_desync_expected: str = ""
+    last_desync_actual: str = ""
 
-    rollback_count: int = field(init=False, default=0)
-    prediction_mismatches: int = field(init=False, default=0)
-    max_rollback_ticks_seen: int = field(init=False, default=0)
-    resync_count: int = field(init=False, default=0)
-    reconnect_count: int = field(init=False, default=0)
-    _reconnect_deadline_ms: int = field(init=False, default=0)
+    rollback_count: int = 0
+    prediction_mismatches: int = 0
+    max_rollback_ticks_seen: int = 0
+    resync_count: int = 0
+    reconnect_count: int = 0
+    _reconnect_deadline_ms: int = 0
 
-    _neutral_input: PackedPlayerInput = field(init=False, default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0])
+    _neutral_input: PackedPlayerInput = msgspec.field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0])
 
     def __post_init__(self) -> None:
         self.transport = RelayUdpTransport(bind_host="0.0.0.0", bind_port=0)

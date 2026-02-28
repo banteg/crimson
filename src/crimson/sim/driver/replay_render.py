@@ -6,9 +6,10 @@ import subprocess
 import tempfile
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
+
+import msgspec
 
 from ...replay import Replay
 from .replay_runner import run_replay
@@ -40,8 +41,7 @@ _AUDIO_INFERRED_SAMPLE_RATE_MAX = 384_000
 _AUDIO_OUTPUT_SAFETY_FILTER = "asoftclip=type=atan:threshold=1:output=1,volume=-1dB"
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderResult:
+class ReplayRenderResult(msgspec.Struct, frozen=True):
     output_path: Path
     frame_count: int
     fps: int
@@ -348,8 +348,7 @@ class _MixedAudioCapture:
             self._file.close()
 
 
-@dataclass(frozen=True, slots=True)
-class _CapturedAudioTrack:
+class _CapturedAudioTrack(msgspec.Struct, frozen=True):
     sample_rate: int
     channels: int
     captured_frames: int

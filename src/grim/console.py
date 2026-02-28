@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
 from pathlib import Path
+
+import msgspec
 
 from grim.color import RGBA
 from grim.fonts.grim_mono import (
@@ -140,8 +141,7 @@ def _rgba(r: float, g: float, b: float, a: float) -> rl.Color:
     )
 
 
-@dataclass(slots=True)
-class ConsoleCvar:
+class ConsoleCvar(msgspec.Struct):
     name: str
     value: str
     value_f: float
@@ -151,10 +151,9 @@ class ConsoleCvar:
         return cls(name=name, value=value, value_f=_parse_float(value))
 
 
-@dataclass(slots=True)
-class ConsoleLog:
+class ConsoleLog(msgspec.Struct):
     base_dir: Path
-    lines: list[str] = field(default_factory=list)
+    lines: list[str] = msgspec.field(default_factory=list)
     flushed_index: int = 0
 
     def log(self, message: str) -> None:
@@ -179,20 +178,19 @@ class ConsoleLog:
         self.flushed_index = len(self.lines)
 
 
-@dataclass(slots=True)
-class ConsoleState:
+class ConsoleState(msgspec.Struct):
     base_dir: Path
     log: ConsoleLog
     assets_dir: Path | None = None
-    script_dirs: tuple[Path, ...] = field(default_factory=tuple)
-    commands: dict[str, CommandHandler] = field(default_factory=dict)
-    cvars: dict[str, ConsoleCvar] = field(default_factory=dict)
+    script_dirs: tuple[Path, ...] = msgspec.field(default_factory=tuple)
+    commands: dict[str, CommandHandler] = msgspec.field(default_factory=dict)
+    cvars: dict[str, ConsoleCvar] = msgspec.field(default_factory=dict)
     open_flag: bool = False
     input_enabled: bool = False
     input_ready: bool = False
     input_buffer: str = ""
     input_caret: int = 0
-    history: list[str] = field(default_factory=list)
+    history: list[str] = msgspec.field(default_factory=list)
     history_index: int | None = None
     history_pending: str = ""
     scroll_offset: int = 0
@@ -200,10 +198,10 @@ class ConsoleState:
     echo_enabled: bool = True
     quit_requested: bool = False
     prompt_string: str = "> %s"
-    _mono_font: GrimMonoFont | None = field(default=None, init=False, repr=False)
-    _small_font: SmallFontData | None = field(default=None, init=False, repr=False)
+    _mono_font: GrimMonoFont | None = None
+    _small_font: SmallFontData | None = None
     _slide_t: float = 1.0
-    _offset_y: float = field(default=0.0, init=False)
+    _offset_y: float = 0.0
     _blink_time: float = 0.0
 
     def register_command(self, name: str, handler: CommandHandler) -> None:

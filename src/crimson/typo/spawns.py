@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -10,8 +11,7 @@ from grim.math import clamp
 from ..creatures.spawn import CreatureTypeId
 
 
-@dataclass(frozen=True, slots=True)
-class TypoSpawnCall:
+class TypoSpawnCall(msgspec.Struct, frozen=True):
     pos: Vec2
     type_id: CreatureTypeId
     tint_rgba: RGBA

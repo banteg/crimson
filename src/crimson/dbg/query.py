@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import ast
 import re
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
 from .schema import TickRecord
@@ -13,14 +14,12 @@ _QUERY_RE = re.compile(r"^\s*(ticks|entities)\s+where\s+(.+?)\s*$")
 _COND_RE = re.compile(r"^\s*(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+?)\s*$")
 
 
-@dataclass(frozen=True, slots=True)
-class _Operand:
+class _Operand(msgspec.Struct, frozen=True):
     kind: str
     value: object
 
 
-@dataclass(frozen=True, slots=True)
-class _Predicate:
+class _Predicate(msgspec.Struct, frozen=True):
     left: _Operand
     op: str
     right: _Operand

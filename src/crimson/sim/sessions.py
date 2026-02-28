@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
@@ -20,16 +21,14 @@ from .step_pipeline import (
 from .world_state import WorldState
 
 
-@dataclass(slots=True)
-class DeterministicSessionTick:
+class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
     rng_marks: dict[str, int]
     creature_count_world_step: int
 
 
-@dataclass(slots=True)
-class SurvivalDeterministicSession:
+class SurvivalDeterministicSession(msgspec.Struct):
     world: WorldState
     world_size: float
     damage_scale_by_type: dict[int, float]
@@ -161,8 +160,7 @@ class SurvivalDeterministicSession:
         )
 
 
-@dataclass(slots=True)
-class RushDeterministicSession:
+class RushDeterministicSession(msgspec.Struct):
     world: WorldState
     world_size: float
     damage_scale_by_type: dict[int, float]
@@ -260,8 +258,7 @@ class RushDeterministicSession:
         )
 
 
-@dataclass(slots=True)
-class QuestDeterministicSessionTick:
+class QuestDeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
     rng_marks: dict[str, int]
@@ -274,8 +271,7 @@ class QuestDeterministicSessionTick:
     play_completion_music: bool
 
 
-@dataclass(slots=True)
-class QuestDeterministicSession:
+class QuestDeterministicSession(msgspec.Struct):
     world: WorldState
     world_size: float
     damage_scale_by_type: dict[int, float]

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import socket
-from dataclasses import dataclass, field
 
 import msgspec
 
@@ -10,12 +9,11 @@ from .relay_protocol import Packet, decode_packet, encode_packet
 PeerAddr = tuple[str, int]
 
 
-@dataclass(slots=True)
-class RelayUdpTransport:
+class RelayUdpTransport(msgspec.Struct):
     bind_host: str
     bind_port: int
     recv_buffer_size: int = 65536
-    _sock: socket.socket | None = field(init=False, default=None)
+    _sock: socket.socket | None = None
 
     @property
     def bound_port(self) -> int:

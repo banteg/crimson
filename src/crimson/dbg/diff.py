@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 import msgspec
@@ -14,8 +13,7 @@ from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, Trac
 from .trace import TraceReader, write_trace
 
 
-@dataclass(frozen=True, slots=True)
-class TraceMismatch:
+class TraceMismatch(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
     field_diffs: tuple[ReplayFieldDiff, ...] = ()
@@ -23,8 +21,7 @@ class TraceMismatch:
     detail: dict[str, object] | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class TraceDiffReport:
+class TraceDiffReport(msgspec.Struct, frozen=True):
     ok: bool
     checked_count: int
     policy: str
@@ -33,8 +30,7 @@ class TraceDiffReport:
     mismatch: TraceMismatch | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class TraceBisectReport:
+class TraceBisectReport(msgspec.Struct, frozen=True):
     ok: bool
     policy: str
     first_bad_tick: int | None
@@ -43,8 +39,7 @@ class TraceBisectReport:
     repro_trace_path: Path | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class _TickPair:
+class _TickPair(msgspec.Struct, frozen=True):
     tick_index: int
     expected_row: TickRecord | None
     actual_row: TickRecord | None

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -31,10 +32,9 @@ if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
 
-@dataclass(frozen=True, slots=True)
-class WorldDrawContext:
-    camera: Vec2 = field(default_factory=Vec2)
-    view_scale: Vec2 = field(default_factory=lambda: Vec2(1.0, 1.0))
+class WorldDrawContext(msgspec.Struct, frozen=True):
+    camera: Vec2 = Vec2()
+    view_scale: Vec2 = Vec2(1.0, 1.0)
     scale: float = 1.0
     entity_alpha: float = 1.0
     trooper_texture: rl.Texture | None = None

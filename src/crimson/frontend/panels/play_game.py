@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -22,8 +22,7 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
 
-@dataclass(slots=True)
-class _PlayGameModeEntry:
+class _PlayGameModeEntry(msgspec.Struct):
     key: str
     label: str
     tooltip: str
@@ -32,15 +31,13 @@ class _PlayGameModeEntry:
     show_count: bool = False
 
 
-@dataclass(frozen=True, slots=True)
-class _PlayGameContentLayout:
+class _PlayGameContentLayout(msgspec.Struct, frozen=True):
     scale: float
     base_pos: Vec2
     drop_pos: Vec2
 
 
-@dataclass(frozen=True, slots=True)
-class _PlayerCountWidgetLayout:
+class _PlayerCountWidgetLayout(msgspec.Struct, frozen=True):
     pos: Vec2
     width: float
     header_h: float

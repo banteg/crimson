@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -19,8 +20,7 @@ class HasPos(Protocol):
     pos: Vec2
 
 
-@dataclass(slots=True)
-class BonusApplyCtx:
+class BonusApplyCtx(msgspec.Struct):
     state: GameplayState
     player: PlayerState
     bonus_id: BonusId

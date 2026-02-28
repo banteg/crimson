@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -40,8 +40,7 @@ QUEST_BACK_BUTTON_Y_OFFSET = 212.0
 QUEST_PANEL_HEIGHT = 378.0
 
 
-@dataclass(frozen=True, slots=True)
-class _QuestMenuLayout:
+class _QuestMenuLayout(msgspec.Struct, frozen=True):
     title_pos: Vec2
     icons_start_pos: Vec2
     list_pos: Vec2

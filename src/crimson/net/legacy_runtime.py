@@ -4,8 +4,10 @@ import datetime as dt
 import socket
 import time
 from collections import deque
-from dataclasses import dataclass, field
 from pathlib import Path
+from typing import cast
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
@@ -74,8 +76,7 @@ MAX_RECV_PACKETS_PER_UPDATE = 512
 IDLE_HEARTBEAT_MS = 250
 
 
-@dataclass(slots=True)
-class LanRuntimeConfig:
+class LanRuntimeConfig(msgspec.Struct):
     role: str
     mode_id: int
     player_count: int
@@ -89,76 +90,71 @@ class LanRuntimeConfig:
     sim_status_snapshot: StatusSnapshot | None = None
 
 
-@dataclass(slots=True)
-class _HostPeerLink:
+class _HostPeerLink(msgspec.Struct):
     addr: PeerAddr
-    link: ReliableLink = field(default_factory=ReliableLink)
+    link: ReliableLink = msgspec.field(default_factory=ReliableLink)
     last_seen_ms: int = 0
 
 
-@dataclass(slots=True)
-class LanRuntime:
+class LanRuntime(msgspec.Struct):
     """Drive LAN lobby handshake and keep socket state alive across views."""
 
     cfg: LanRuntimeConfig
-    build_id: str = field(default_factory=current_build_id)
-    transport: UdpTransport = field(init=False)
-    started: bool = field(init=False, default=False)
-    error: str = field(init=False, default="")
+    build_id: str = msgspec.field(default_factory=current_build_id)
+    transport: UdpTransport = cast(UdpTransport, None)
+    started: bool = False
+    error: str = ""
 
-    host_lobby: HostLobby | None = field(init=False, default=None)
-    host_peers: dict[PeerAddr, _HostPeerLink] = field(init=False, default_factory=dict)
-    host_seed: int = field(init=False, default=0)
-    host_match_start: MatchStart | None = field(init=False, default=None)
-    host_last_broadcast_ms: int = field(init=False, default=0)
-    host_lockstep: HostLockstepState | None = field(init=False, default=None)
-    host_capture_tick: int = field(init=False, default=0)
-    host_ready_frames: deque[TickFrame] = field(init=False, default_factory=deque)
-    _host_seen_input_slots: set[int] = field(init=False, default_factory=set)
+    host_lobby: HostLobby | None = None
+    host_peers: dict[PeerAddr, _HostPeerLink] = msgspec.field(default_factory=dict)
+    host_seed: int = 0
+    host_match_start: MatchStart | None = None
+    host_last_broadcast_ms: int = 0
+    host_lockstep: HostLockstepState | None = None
+    host_capture_tick: int = 0
+    host_ready_frames: deque[TickFrame] = msgspec.field(default_factory=deque)
+    _host_seen_input_slots: set[int] = msgspec.field(default_factory=set)
 
-    client_lobby: ClientLobby | None = field(init=False, default=None)
-    client_link: ReliableLink | None = field(init=False, default=None)
-    client_host_addr: PeerAddr | None = field(init=False, default=None)
-    client_last_hello_ms: int = field(init=False, default=0)
-    client_last_seen_ms: int = field(init=False, default=0)
-    _client_last_send_ms: int = field(init=False, default=0)
-    client_lockstep: ClientLockstepState | None = field(init=False, default=None)
-    client_pause_state: PauseState | None = field(init=False, default=None)
-    _client_seen_tick_frame: bool = field(init=False, default=False)
-    _last_send_ms: int = field(init=False, default=0)
+    client_lobby: ClientLobby | None = None
+    client_link: ReliableLink | None = None
+    client_host_addr: PeerAddr | None = None
+    client_last_hello_ms: int = 0
+    client_last_seen_ms: int = 0
+    _client_last_send_ms: int = 0
+    client_lockstep: ClientLockstepState | None = None
+    client_pause_state: PauseState | None = None
+    _client_seen_tick_frame: bool = False
+    _last_send_ms: int = 0
 
-    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = field(init=False, default_factory=deque)
+    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = msgspec.field(default_factory=deque)
 
     # Instrumentation (debug overlay + lan debug logs).
-    _metrics_last_log_ms: int = field(init=False, default=0)
-    _metrics_last_resends_total: int = field(init=False, default=0)
+    _metrics_last_log_ms: int = 0
+    _metrics_last_resends_total: int = 0
 
-    _host_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
-    _host_local_input_latency_ms: int = field(init=False, default=0)
-    _host_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+    _host_input_queued_at_ms: dict[int, int] = msgspec.field(default_factory=dict)
+    _host_local_input_latency_ms: int = 0
+    _host_local_input_latency_ewma_ms: float = 0.0
 
-    _client_input_queued_at_ms: dict[int, int] = field(init=False, default_factory=dict)
-    _client_local_input_latency_ms: int = field(init=False, default=0)
-    _client_local_input_latency_ewma_ms: float = field(init=False, default=0.0)
+    _client_input_queued_at_ms: dict[int, int] = msgspec.field(default_factory=dict)
+    _client_local_input_latency_ms: int = 0
+    _client_local_input_latency_ewma_ms: float = 0.0
 
-    desync_count: int = field(init=False, default=0)
-    last_desync_tick: int = field(init=False, default=-1)
-    last_desync_kind: str = field(init=False, default="")
-    last_desync_expected: str = field(init=False, default="")
-    last_desync_actual: str = field(init=False, default="")
-    _last_desync_notice_sent_tick: int = field(init=False, default=-10**9)
+    desync_count: int = 0
+    last_desync_tick: int = -1
+    last_desync_kind: str = ""
+    last_desync_expected: str = ""
+    last_desync_actual: str = ""
+    _last_desync_notice_sent_tick: int = -10**9
 
-    _client_log_forward_queue: deque[str] = field(init=False, default_factory=deque)
-    _client_log_forward_last_flush_ms: int = field(init=False, default=0)
-    _client_log_forward_dropped: int = field(init=False, default=0)
-    _client_log_forward_enabled: bool = field(init=False, default=False)
+    _client_log_forward_queue: deque[str] = msgspec.field(default_factory=deque)
+    _client_log_forward_last_flush_ms: int = 0
+    _client_log_forward_dropped: int = 0
+    _client_log_forward_enabled: bool = False
 
-    _host_remote_log_paths: dict[int, Path] = field(init=False, default_factory=dict)
+    _host_remote_log_paths: dict[int, Path] = msgspec.field(default_factory=dict)
 
-    _neutral_input: PackedPlayerInput = field(
-        init=False,
-        default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0],
-    )
+    _neutral_input: PackedPlayerInput = msgspec.field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0],)
 
     def __post_init__(self) -> None:
         bind_port = int(self.cfg.port) if str(self.cfg.role) == "host" else 0

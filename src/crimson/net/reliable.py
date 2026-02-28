@@ -1,27 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import msgspec
 
 from .protocol import RELIABLE_RESEND_MS, NetMessage, Packet
 
 
-@dataclass(slots=True)
-class _PendingReliable:
+class _PendingReliable(msgspec.Struct):
     packet: Packet
     sent_at_ms: int
 
 
-@dataclass(slots=True)
-class ReliableLink:
+class ReliableLink(msgspec.Struct):
     """Per-peer reliability state (sequence, ack, resend, de-dup)."""
 
     resend_ms: int = RELIABLE_RESEND_MS
     _next_seq: int = 1
     # Highest *contiguous* reliable sequence that has been received and delivered.
     _recv_highest_seq: int = 0
-    _pending: dict[int, _PendingReliable] = field(default_factory=dict)
+    _pending: dict[int, _PendingReliable] = msgspec.field(default_factory=dict)
     # Out-of-order reliable packets (seq > _recv_highest_seq + 1).
-    _recv_buffer: dict[int, Packet] = field(default_factory=dict)
+    _recv_buffer: dict[int, Packet] = msgspec.field(default_factory=dict)
     # Very rough RTT estimate based on ACK turnaround. Useful for debugging only.
     _rtt_last_ms: int = 0
     _rtt_ewma_ms: float = 0.0

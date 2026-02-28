@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
@@ -65,8 +66,7 @@ _RESET_LABEL = "Reset"
 _BACK_LABEL = "Back"
 
 
-@dataclass(slots=True)
-class _AzkLayout:
+class _AzkLayout(msgspec.Struct):
     scale: float
     panel_x: float
     panel_y: float

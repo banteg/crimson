@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 DEMO_TOTAL_PLAY_TIME_MS = 2_400_000
 DEMO_QUEST_GRACE_TIME_MS = 300_000
@@ -16,8 +16,7 @@ def format_demo_trial_time(ms: int) -> str:
     return f"{minutes}:{seconds:02d}.{centiseconds:02d}"
 
 
-@dataclass(frozen=True, slots=True)
-class DemoTrialOverlayInfo:
+class DemoTrialOverlayInfo(msgspec.Struct, frozen=True):
     visible: bool
     kind: str  # "none" | "quest_tier_limit" | "quest_grace_left" | "time_up"
     remaining_ms: int

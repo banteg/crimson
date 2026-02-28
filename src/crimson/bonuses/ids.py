@@ -2,8 +2,9 @@ from __future__ import annotations
 
 """Bonus ids extracted from bonus_metadata_init (bonus_meta_label)."""
 
-from dataclasses import dataclass
 from enum import IntEnum, unique
+
+import msgspec
 
 
 @unique
@@ -25,8 +26,7 @@ class BonusId(IntEnum):
     FIRE_BULLETS = 14
 
 
-@dataclass(frozen=True, slots=True)
-class BonusMeta:
+class BonusMeta(msgspec.Struct, frozen=True):
     bonus_id: BonusId
     name: str
     description: str | None

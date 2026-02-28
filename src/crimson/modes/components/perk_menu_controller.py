@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
@@ -37,8 +38,7 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-@dataclass(frozen=True, slots=True)
-class PerkMenuContext:
+class PerkMenuContext(msgspec.Struct, frozen=True):
     state: GameplayState
     perk_state: PerkSelectionState
     players: list[PlayerState]

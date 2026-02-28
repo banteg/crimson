@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.geom import Vec2
 from grim.math import clamp
@@ -122,8 +122,7 @@ void main() {{
 """
 
 
-@dataclass(frozen=True, slots=True)
-class _BeamFastStampedShader:
+class _BeamFastStampedShader(msgspec.Struct, frozen=True):
     shader: rl.Shader
     color_loc: int
     step_uv_loc: int

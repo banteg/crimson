@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Protocol
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -71,12 +72,11 @@ CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
 CreatureKillHandler = Callable[[int, OwnerRef], None]
 
 
-@dataclass(slots=True)
-class Particle:
+class Particle(msgspec.Struct):
     active: bool = False
     render_flag: bool = False
-    pos: Vec2 = field(default_factory=Vec2)
-    vel: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     scale_x: float = 1.0
     scale_y: float = 1.0
     scale_z: float = 1.0
@@ -86,7 +86,7 @@ class Particle:
     spin: float = 0.0
     style_id: int = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
-    owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
+    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
 
     @property
     def owner_id(self) -> int:
@@ -376,13 +376,12 @@ class ParticlePool:
         return expired
 
 
-@dataclass(slots=True)
-class SpriteEffect:
+class SpriteEffect(msgspec.Struct):
     active: bool = False
-    color: RGBA = field(default_factory=lambda: RGBA(a=0.0))
+    color: RGBA = msgspec.field(default_factory=lambda: RGBA(a=0.0))
     rotation: float = 0.0
-    pos: Vec2 = field(default_factory=Vec2)
-    vel: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
+    vel: Vec2 = Vec2()
     scale: float = 1.0
 
 
@@ -442,14 +441,13 @@ class SpriteEffectPool:
         return expired
 
 
-@dataclass(slots=True)
-class FxQueueEntry:
+class FxQueueEntry(msgspec.Struct):
     effect_id: int = 0
     rotation: float = 0.0
-    pos: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = Vec2()
     height: float = 0.0
     width: float = 0.0
-    color: RGBA = field(default_factory=RGBA)
+    color: RGBA = msgspec.field(default_factory=RGBA)
 
 
 class FxQueue:
@@ -519,10 +517,9 @@ class FxQueue:
         )
 
 
-@dataclass(slots=True)
-class FxQueueRotatedEntry:
-    top_left: Vec2 = field(default_factory=Vec2)
-    color: RGBA = field(default_factory=RGBA)
+class FxQueueRotatedEntry(msgspec.Struct):
+    top_left: Vec2 = Vec2()
+    color: RGBA = msgspec.field(default_factory=RGBA)
     rotation: float = 0.0
     scale: float = 1.0
     creature_type_id: int = 0
@@ -590,11 +587,10 @@ class FxQueueRotated:
         return True
 
 
-@dataclass(slots=True)
-class EffectEntry:
-    pos: Vec2 = field(default_factory=Vec2)
+class EffectEntry(msgspec.Struct):
+    pos: Vec2 = Vec2()
     effect_id: int = 0
-    vel: Vec2 = field(default_factory=Vec2)
+    vel: Vec2 = Vec2()
     rotation: float = 0.0
     scale: float = 1.0
     half_width: float = 0.0
@@ -602,7 +598,7 @@ class EffectEntry:
     age: float = 0.0
     lifetime: float = 0.0
     flags: int = 0
-    color: RGBA = field(default_factory=RGBA)
+    color: RGBA = msgspec.field(default_factory=RGBA)
     rotation_step: float = 0.0
     scale_step: float = 0.0
 

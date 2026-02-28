@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 import random
 from collections.abc import Iterator
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -11,8 +12,7 @@ from ..creatures.spawn import SpawnId
 from .types import SpawnEntry
 
 
-@dataclass(frozen=True, slots=True)
-class EdgePoints:
+class EdgePoints(msgspec.Struct, frozen=True):
     left: Vec2
     right: Vec2
     top: Vec2

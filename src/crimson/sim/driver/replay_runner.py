@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import replace
 from typing import cast
+
+import msgspec
 
 from ...game_modes import GameMode
 from ...gameplay import build_gameplay_state
@@ -401,7 +402,7 @@ def run_rush_replay(
         )
         rng_after_events = int(state.rng.state)
 
-        player_inputs = [replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])]
+        player_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])]
 
         tick = session.step_tick(
             dt_frame=float(dt_tick),
@@ -684,7 +685,7 @@ def run_quest_replay(
                 player.weapon.clip_size = max(12, int(player.weapon.clip_size))
                 if float(player.weapon.ammo) < 12.0:
                     player.weapon.ammo = 12.0
-        world.spawn_env = replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
+        world.spawn_env = msgspec.structs.replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
         world.creatures.env = world.spawn_env
         world.creatures.effects = world.state.effects
         world.creatures.reset()

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
+
+import msgspec
 
 from grim.raylib_api import rl
 
@@ -22,19 +23,18 @@ MUSIC_TRACKS: dict[str, tuple[str, ...]] = {
 }
 
 
-@dataclass(slots=True)
-class MusicState:
+class MusicState(msgspec.Struct):
     ready: bool
     enabled: bool
     volume: float
     tracks: dict[str, rl.Music]
     active_track: str | None
-    playbacks: dict[str, "TrackPlayback"] = field(default_factory=dict)
-    queue: list[str] = field(default_factory=list)
+    playbacks: dict[str, "TrackPlayback"] = msgspec.field(default_factory=dict)
+    queue: list[str] = msgspec.field(default_factory=list)
     # Mirrors the original game's "start a random game tune on first hit" gate.
     game_tune_started: bool = False
     game_tune_track: str | None = None
-    track_ids: dict[str, int] = field(default_factory=dict)
+    track_ids: dict[str, int] = msgspec.field(default_factory=dict)
     next_track_id: int = 0
     paq_entries: dict[str, bytes] | None = None
 
@@ -187,8 +187,7 @@ def queue_track(state: MusicState, track_key: str) -> None:
     state.queue.append(track_key)
 
 
-@dataclass(slots=True)
-class TrackPlayback:
+class TrackPlayback(msgspec.Struct):
     """Runtime playback state for a loaded music stream."""
 
     music: rl.Music

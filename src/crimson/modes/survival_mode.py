@@ -4,8 +4,9 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
 from typing import Protocol, cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -70,8 +71,7 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
 
-@dataclass(slots=True)
-class _SurvivalState:
+class _SurvivalState(msgspec.Struct):
     elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown: float = 0.0
@@ -201,9 +201,9 @@ class SurvivalMode(BaseGameplayMode):
             player_index=int(self.player.index),
             fallback_weapon_id=self.player.weapon.weapon_id,
         )
-        replay = replace(
+        replay = msgspec.structs.replace(
             replay,
-            header=replace(
+            header=msgspec.structs.replace(
                 replay.header,
                 claimed_stats=ReplayClaimedStatsSnapshot(
                     complete=bool(self._game_over_active),

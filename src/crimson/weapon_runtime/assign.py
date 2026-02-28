@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -14,8 +15,7 @@ def weapon_entry(weapon_id: WeaponId) -> Weapon | None:
     return WEAPON_BY_ID.get(weapon_id)
 
 
-@dataclass(slots=True)
-class _WeaponAssignCtx:
+class _WeaponAssignCtx(msgspec.Struct):
     player: PlayerState
     clip_size: int
 

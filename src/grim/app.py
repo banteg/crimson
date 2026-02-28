@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import shutil
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.raylib_api import rl
 
@@ -17,8 +18,7 @@ def _false_hook() -> bool:
     return False
 
 
-@dataclass(frozen=True, slots=True)
-class RunViewHooks:
+class RunViewHooks(msgspec.Struct, frozen=True):
     should_close: Callable[[], bool] = _false_hook
     consume_screenshot_request: Callable[[], bool] = _false_hook
 

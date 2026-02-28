@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Freeze bonus behavior shared by sim, apply, and presentation steps."""
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -13,8 +13,7 @@ from ..sim.state_types import BonusPickupEvent, GameplayState
 from .apply_context import BonusApplyCtx
 
 
-@dataclass(frozen=True, slots=True)
-class DeferredFreezeCorpseFx:
+class DeferredFreezeCorpseFx(msgspec.Struct, frozen=True):
     pos: Vec2
     detail_preset: int
 

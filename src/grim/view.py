@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+import msgspec
 
-@dataclass(frozen=True, slots=True)
-class ViewContext:
+
+class ViewContext(msgspec.Struct, frozen=True):
     assets_dir: Path = Path("artifacts") / "assets"
     preserve_bugs: bool = False
 

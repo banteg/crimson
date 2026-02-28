@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+
+import msgspec
 
 from ..replay.checkpoints import ReplayCheckpoint
 
@@ -36,8 +37,7 @@ DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
 )
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayDiffFailure:
+class ReplayDiffFailure(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
     expected: ReplayCheckpoint
@@ -45,16 +45,14 @@ class ReplayDiffFailure:
     first_rng_mark: str | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayDiffResult:
+class ReplayDiffResult(msgspec.Struct, frozen=True):
     ok: bool
     checked_count: int
     first_rng_only_tick: int | None = None
     failure: ReplayDiffFailure | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayFieldDiff:
+class ReplayFieldDiff(msgspec.Struct, frozen=True):
     field: str
     expected: object
     actual: object
@@ -66,7 +64,7 @@ def _checkpoint_to_obj(
     include_hash_fields: bool,
     include_rng_fields: bool,
 ) -> dict[str, object]:
-    obj = asdict(checkpoint)
+    obj = msgspec.to_builtins(checkpoint)
     if not include_hash_fields:
         for key in ("state_hash", "command_hash"):
             obj.pop(key, None)

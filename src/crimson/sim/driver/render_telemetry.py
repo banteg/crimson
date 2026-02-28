@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Any
+
+import msgspec
 
 from ...render.world import profile_hooks
 
 
-@dataclass(frozen=True, slots=True)
-class RenderTelemetryFrameSnapshot:
+class RenderTelemetryFrameSnapshot(msgspec.Struct, frozen=True):
     frame_index: int
     tick_index_before_update: int
     tick_index_after_update: int

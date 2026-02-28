@@ -16,7 +16,8 @@ See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -68,8 +69,7 @@ __all__ = [
 ]
 
 
-@dataclass(frozen=True, slots=True)
-class AlienSpawnerSpec:
+class AlienSpawnerSpec(msgspec.Struct, frozen=True):
     timer: float
     limit: int
     interval: float
@@ -173,8 +173,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
 }
 
 
-@dataclass(frozen=True, slots=True)
-class ConstantSpawnSpec:
+class ConstantSpawnSpec(msgspec.Struct, frozen=True):
     type_id: CreatureTypeId
     health: float
     move_speed: float
@@ -191,8 +190,7 @@ class ConstantSpawnSpec:
     bonus_duration_override: int | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class FormationChildSpec:
+class FormationChildSpec(msgspec.Struct, frozen=True):
     type_id: CreatureTypeId
     health: float
     move_speed: float
@@ -205,8 +203,7 @@ class FormationChildSpec:
     orbit_radius: float | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class GridFormationSpec:
+class GridFormationSpec(msgspec.Struct, frozen=True):
     parent: ConstantSpawnSpec
     child_ai_mode: int
     child_spec: FormationChildSpec
@@ -216,8 +213,7 @@ class GridFormationSpec:
     set_parent_max_health: bool = True
 
 
-@dataclass(frozen=True, slots=True)
-class RingFormationSpec:
+class RingFormationSpec(msgspec.Struct, frozen=True):
     parent: ConstantSpawnSpec
     child_ai_mode: int
     child_spec: FormationChildSpec
@@ -656,8 +652,7 @@ def spawn_id_label(spawn_id: SpawnId) -> str:
     return entry.creature
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SpawnEnv:
+class SpawnEnv(msgspec.Struct, frozen=True, kw_only=True):
     terrain_width: float
     terrain_height: float
     demo_mode_active: bool
@@ -665,14 +660,12 @@ class SpawnEnv:
     difficulty_level: int
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class BurstEffect:
+class BurstEffect(msgspec.Struct, frozen=True, kw_only=True):
     pos: Vec2
     count: int
 
 
-@dataclass(slots=True)
-class CreatureInit:
+class CreatureInit(msgspec.Struct):
     # Template id that produced this creature (not necessarily unique per creature in formations).
     origin_template_id: int
 
@@ -720,8 +713,7 @@ class CreatureInit:
     bonus_duration_override: int | None = None
 
 
-@dataclass(slots=True)
-class SpawnSlotInit:
+class SpawnSlotInit(msgspec.Struct):
     owner_creature: int
     timer: float
     count: int
@@ -730,8 +722,7 @@ class SpawnSlotInit:
     child_template_id: SpawnId
 
 
-@dataclass(frozen=True, slots=True)
-class SpawnPlan:
+class SpawnPlan(msgspec.Struct, frozen=True):
     creatures: tuple[CreatureInit, ...]
     spawn_slots: tuple[SpawnSlotInit, ...]
     effects: tuple[BurstEffect, ...]
@@ -929,8 +920,7 @@ def spawn_chain_children(
     return chain_prev
 
 
-@dataclass(slots=True)
-class PlanBuilder:
+class PlanBuilder(msgspec.Struct):
     template_id: SpawnId
     pos: Vec2
     rng: CrandLike
@@ -1307,8 +1297,7 @@ def tick_survival_wave_spawns(
     return float(cooldown), tuple(spawns)
 
 
-@dataclass(frozen=True, slots=True)
-class SpawnTemplateCall:
+class SpawnTemplateCall(msgspec.Struct, frozen=True):
     template_id: SpawnId
     pos: Vec2
     heading: float

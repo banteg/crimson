@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass, replace
 from typing import cast
+
+import msgspec
 
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
@@ -56,8 +57,7 @@ _CORE_EVENT_KINDS = frozenset(
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayInfoTimelineEvent:
+class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
     tick_index: int
     elapsed_ms: int
     kind: str
@@ -66,8 +66,7 @@ class ReplayInfoTimelineEvent:
     data: dict[str, object]
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayInfoResult:
+class ReplayInfoResult(msgspec.Struct, frozen=True):
     game_mode_id: int
     tick_rate: int
     ticks_simulated: int
@@ -76,8 +75,7 @@ class ReplayInfoResult:
     timeline: list[ReplayInfoTimelineEvent]
 
 
-@dataclass(frozen=True, slots=True)
-class _PlayerSnapshot:
+class _PlayerSnapshot(msgspec.Struct, frozen=True):
     health: float
     level: int
     experience: int
@@ -663,7 +661,7 @@ def _run_rush_replay_info(
         )
         tick = session.step_tick(
             dt_frame=float(dt_tick),
-            inputs=[replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])],
+            inputs=[msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])],
             trace_rng=False,
         )
         after = _capture_snapshots(world.players)
@@ -859,7 +857,7 @@ def _run_quest_replay_info(
                 player.weapon.clip_size = max(12, int(player.weapon.clip_size))
                 if float(player.weapon.ammo) < 12.0:
                     player.weapon.ammo = 12.0
-        world.spawn_env = replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
+        world.spawn_env = msgspec.structs.replace(world.spawn_env, difficulty_level=max(1, int(world.spawn_env.difficulty_level)))
         world.creatures.env = world.spawn_env
         world.creatures.effects = world.state.effects
         world.creatures.reset()

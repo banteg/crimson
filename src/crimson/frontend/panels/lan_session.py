@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -16,8 +16,7 @@ from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
-@dataclass(frozen=True, slots=True)
-class _SessionLayout:
+class _SessionLayout(msgspec.Struct, frozen=True):
     scale: float
     panel_top_left: Vec2
     base_pos: Vec2

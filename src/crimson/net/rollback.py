@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .relay_protocol import RbInputBatch, RbInputSample
@@ -11,15 +12,13 @@ _MAX_SENT_HISTORY_TICKS = 256
 _MAX_RESEND_SAMPLES = 64
 
 
-@dataclass(frozen=True, slots=True)
-class RollbackFrame:
+class RollbackFrame(msgspec.Struct, frozen=True):
     tick_index: int
     frame_inputs: list[PackedPlayerInput]
     predicted_slots: tuple[int, ...] = ()
 
 
-@dataclass(slots=True)
-class RollbackController:
+class RollbackController(msgspec.Struct):
     """Input timeline + prediction + rollback trigger bookkeeping.
 
     This controller does not mutate game state directly. It emits canonical tick
@@ -36,9 +35,9 @@ class RollbackController:
 
     _capture_tick: int = 0
     _next_emit_tick: int = 0
-    _known_by_slot: dict[int, dict[int, PackedPlayerInput]] = field(default_factory=dict)
-    _emitted_frames: dict[int, list[PackedPlayerInput]] = field(default_factory=dict)
-    _pending_frames: deque[RollbackFrame] = field(default_factory=deque)
+    _known_by_slot: dict[int, dict[int, PackedPlayerInput]] = msgspec.field(default_factory=dict)
+    _emitted_frames: dict[int, list[PackedPlayerInput]] = msgspec.field(default_factory=dict)
+    _pending_frames: deque[RollbackFrame] = msgspec.field(default_factory=deque)
     _pending_rollback_from: int | None = None
     _pending_resync_from: int | None = None
 

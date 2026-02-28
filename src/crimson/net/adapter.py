@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from typing import cast
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .lockstep import ClientLockstepState, HostLockstepState
 from .protocol import INPUT_DELAY_TICKS, InputBatch, PauseState, TickFrame
 
 
-@dataclass(slots=True)
-class ResyncFailureTracker:
+class ResyncFailureTracker(msgspec.Struct):
     max_failures_per_match: int = 2
     failures: int = 0
 
@@ -20,15 +21,14 @@ class ResyncFailureTracker:
         self.failures = 0
 
 
-@dataclass(slots=True)
-class HostLanAdapter:
+class HostLanAdapter(msgspec.Struct):
     player_count: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
     state_hash_period_ticks: int = 120
     local_slot_index: int = 0
-    lockstep: HostLockstepState = field(init=False)
-    resync_failures: ResyncFailureTracker = field(default_factory=ResyncFailureTracker)
+    lockstep: HostLockstepState = cast(HostLockstepState, None)
+    resync_failures: ResyncFailureTracker = msgspec.field(default_factory=ResyncFailureTracker)
 
     def __post_init__(self) -> None:
         self.lockstep = HostLockstepState(
@@ -65,13 +65,12 @@ class HostLanAdapter:
         return self.lockstep.update_pause_state(now_ms=int(now_ms))
 
 
-@dataclass(slots=True)
-class ClientLanAdapter:
+class ClientLanAdapter(msgspec.Struct):
     local_slot_index: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
-    lockstep: ClientLockstepState = field(init=False)
-    resync_failures: ResyncFailureTracker = field(default_factory=ResyncFailureTracker)
+    lockstep: ClientLockstepState = cast(ClientLockstepState, None)
+    resync_failures: ResyncFailureTracker = msgspec.field(default_factory=ResyncFailureTracker)
 
     def __post_init__(self) -> None:
         self.lockstep = ClientLockstepState(

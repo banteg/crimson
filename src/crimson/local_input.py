@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
 from typing import Protocol
+
+import msgspec
 
 from grim.config import CrimsonConfig, default_player_keybind_block
 from grim.geom import Vec2
@@ -54,10 +55,9 @@ _AIM_POV_LEFT_CODE = 0x133
 _AIM_POV_RIGHT_CODE = 0x134
 
 
-@dataclass(slots=True)
-class _PerPlayerInputState:
+class _PerPlayerInputState(msgspec.Struct):
     aim_heading: float = 0.0
-    move_target: Vec2 = field(default_factory=lambda: Vec2(-1.0, -1.0))
+    move_target: Vec2 = Vec2(-1.0, -1.0)
     computer_target_creature_index: int = -1
 
 

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, SupportsFloat
+
+import msgspec
 
 from .math import clamp
 
@@ -24,8 +25,7 @@ class SupportsRGBA(Protocol):
     def a(self) -> SupportsFloat: ...
 
 
-@dataclass(slots=True, frozen=True)
-class RGBA:
+class RGBA(msgspec.Struct, frozen=True):
     r: float = 1.0
     g: float = 1.0
     b: float = 1.0

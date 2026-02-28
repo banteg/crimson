@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from pathlib import Path
+
+import msgspec
 
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
@@ -87,8 +88,7 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
     return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
 
 
-@dataclass(slots=True)
-class GameOverAssets:
+class GameOverAssets(msgspec.Struct):
     menu_panel: rl.Texture | None
     text_reaper: rl.Texture | None
     text_well_done: rl.Texture | None
@@ -96,8 +96,7 @@ class GameOverAssets:
     perk_menu_assets: PerkMenuAssets
 
 
-@dataclass(frozen=True, slots=True)
-class _GameOverPanelLayout:
+class _GameOverPanelLayout(msgspec.Struct, frozen=True):
     panel: Rect
     top_left: Vec2
 
@@ -133,8 +132,7 @@ def _ease_out_cubic(t: float) -> float:
     return 1.0 - (1.0 - t) ** 3
 
 
-@dataclass(slots=True)
-class GameOverUi:
+class GameOverUi(msgspec.Struct):
     assets_root: Path
     base_dir: Path
 
@@ -162,10 +160,10 @@ class GameOverUi:
     _close_action: str | None = None
 
     # Buttons (rendered via existing ui_button implementation)
-    _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
-    _play_again_button: UiButtonState = field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
-    _high_scores_button: UiButtonState = field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
-    _main_menu_button: UiButtonState = field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
+    _ok_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("OK", force_wide=False))
+    _play_again_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
+    _high_scores_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
+    _main_menu_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
 
     _consume_enter: bool = False
     _defer_name_input_until_controls_released: bool = False

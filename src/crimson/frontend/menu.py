@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 import os
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
@@ -184,8 +185,7 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))
 
 
-@dataclass(slots=True)
-class MenuEntry:
+class MenuEntry(msgspec.Struct):
     slot: int
     row: int
     y: float

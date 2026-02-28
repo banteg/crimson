@@ -6,7 +6,6 @@ import platform
 import struct
 import subprocess
 import tempfile
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -60,11 +59,10 @@ _ZIG_RNG_MARK_KEYS: tuple[str, ...] = (
 )
 
 
-@dataclass(slots=True)
-class _EntityUidState:
-    generation_by_index: dict[int, int] = field(default_factory=dict)
-    active_indices: set[int] = field(default_factory=set)
-    _seen_in_tick: set[int] = field(default_factory=set)
+class _EntityUidState(msgspec.Struct):
+    generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
+    active_indices: set[int] = msgspec.field(default_factory=set)
+    _seen_in_tick: set[int] = msgspec.field(default_factory=set)
 
     def begin_tick(self) -> None:
         self._seen_in_tick.clear()

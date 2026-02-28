@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
+
+import msgspec
 
 from grim.geom import Vec2
 from grim.math import clamp
@@ -26,8 +27,7 @@ if TYPE_CHECKING:
     from ..rtx.mode import RtxRenderMode
 
 
-@dataclass(slots=True)
-class _ProjectileRendererAdapter:
+class _ProjectileRendererAdapter(msgspec.Struct):
     render_ctx: WorldRenderCtx
     camera: Vec2
     view_scale: Vec2

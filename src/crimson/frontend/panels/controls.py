@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
@@ -94,8 +94,7 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     return CONTROLS_RIGHT_PANEL_POS_Y
 
 
-@dataclass(frozen=True, slots=True)
-class _DropdownLayout:
+class _DropdownLayout(msgspec.Struct, frozen=True):
     pos: Vec2
     width: float
     header_h: float
@@ -108,8 +107,7 @@ class _DropdownLayout:
     text_scale: float
 
 
-@dataclass(frozen=True, slots=True)
-class _RebindRowLayout:
+class _RebindRowLayout(msgspec.Struct, frozen=True):
     label: str
     slot: int
     row_y: float

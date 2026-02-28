@@ -3,10 +3,11 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
-from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal, TypeAlias
+
+import msgspec
 
 from ..weapons import WeaponId
 
@@ -219,15 +220,13 @@ def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float,
     return mx, my, ax, ay, flags
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayStatusSnapshot:
+class ReplayStatusSnapshot(msgspec.Struct, frozen=True):
     quest_unlock_index: int = 0
     quest_unlock_index_full: int = 0
-    weapon_usage_counts: tuple[int, ...] = field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
+    weapon_usage_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayClaimedStatsSnapshot:
+class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     complete: bool = False
     ticks: int = 0
     elapsed_ms: int = 0
@@ -237,8 +236,7 @@ class ReplayClaimedStatsSnapshot:
     shots_fired: int = 0
     shots_hit: int = 0
 
-@dataclass(frozen=True, slots=True)
-class ReplayHeader:
+class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: int
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
@@ -247,7 +245,7 @@ class ReplayHeader:
     quest_level: str = ""
     bootstrap_kind: BootstrapKind = "none"
     bootstrap_seed: int = 0
-    game_version: str = field(default_factory=_default_game_version)
+    game_version: str = msgspec.field(default_factory=_default_game_version)
     tick_rate: int = 60
     difficulty_level: int = 0
     hardcore: bool = False
@@ -256,33 +254,29 @@ class ReplayHeader:
     fx_toggle: int = 0
     world_size: float = 1024.0
     player_count: int = 1
-    status: ReplayStatusSnapshot = field(default_factory=ReplayStatusSnapshot)
-    claimed_stats: ReplayClaimedStatsSnapshot = field(default_factory=ReplayClaimedStatsSnapshot)
+    status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
+    claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
 
 
-@dataclass(frozen=True, slots=True)
-class PerkPickEvent:
+class PerkPickEvent(msgspec.Struct, frozen=True):
     tick_index: int
     player_index: int
     choice_index: int
 
 
-@dataclass(frozen=True, slots=True)
-class PerkMenuOpenEvent:
+class PerkMenuOpenEvent(msgspec.Struct, frozen=True):
     tick_index: int
     player_index: int
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureBootstrapQuestSession:
+class CaptureBootstrapQuestSession(msgspec.Struct, frozen=True):
     spawn_timeline_ms: float | None
     no_creatures_timer_ms: float | None
     completion_transition_ms: float | None
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureBootstrapPlayer:
+class CaptureBootstrapPlayer(msgspec.Struct, frozen=True):
     weapon_id: WeaponId
     pos_x: float
     pos_y: float
@@ -314,8 +308,7 @@ class CaptureBootstrapPlayer:
     living_fortress_timer: float | None
     fire_cough_timer: float | None
 
-@dataclass(frozen=True, slots=True)
-class CaptureBootstrapEvent:
+class CaptureBootstrapEvent(msgspec.Struct, frozen=True):
     tick_index: int
     elapsed_ms: int
     score_xp: int
@@ -337,8 +330,7 @@ class CaptureBootstrapEvent:
     quest_session: CaptureBootstrapQuestSession | None
 
 
-@dataclass(frozen=True, slots=True)
-class CapturePerkApplyEvent:
+class CapturePerkApplyEvent(msgspec.Struct, frozen=True):
     tick_index: int
     perk_id: int
     outside_before: bool
@@ -346,22 +338,19 @@ class CapturePerkApplyEvent:
     pending_after: int | None
 
 
-@dataclass(frozen=True, slots=True)
-class CapturePerkPendingEvent:
+class CapturePerkPendingEvent(msgspec.Struct, frozen=True):
     tick_index: int
     perk_pending: int
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureCreatureSpawnRow:
+class CaptureCreatureSpawnRow(msgspec.Struct, frozen=True):
     template_id: int
     pos_x: float
     pos_y: float
     heading: float
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureCreatureSpawnAddedHeadRow:
+class CaptureCreatureSpawnAddedHeadRow(msgspec.Struct, frozen=True):
     index: int
     heading: float | None
     target_heading: float | None
@@ -377,22 +366,19 @@ class CaptureCreatureSpawnAddedHeadRow:
     pos_y: float | None
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureCreatureSpawnEvent:
+class CaptureCreatureSpawnEvent(msgspec.Struct, frozen=True):
     tick_index: int
     spawns: list[CaptureCreatureSpawnRow]
     added_head: list[CaptureCreatureSpawnAddedHeadRow]
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureStateTransitionRow:
+class CaptureStateTransitionRow(msgspec.Struct, frozen=True):
     target_state: int
     before_state: int | None
     after_state: int | None
 
 
-@dataclass(frozen=True, slots=True)
-class CaptureStateTransitionEvent:
+class CaptureStateTransitionEvent(msgspec.Struct, frozen=True):
     tick_index: int
     transitions: list[CaptureStateTransitionRow]
 
@@ -408,8 +394,7 @@ ReplayEvent: TypeAlias = (
 )
 
 
-@dataclass(slots=True)
-class Replay:
+class Replay(msgspec.Struct):
     header: ReplayHeader
     inputs: list[PackedTickInputs]
-    events: list[ReplayEvent] = field(default_factory=list)
+    events: list[ReplayEvent] = msgspec.field(default_factory=list)

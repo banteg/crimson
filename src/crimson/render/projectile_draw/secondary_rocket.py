@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -12,8 +12,7 @@ from ...projectiles import SecondaryProjectileTypeId
 from .types import SecondaryProjectileDrawCtx
 
 
-@dataclass(frozen=True, slots=True)
-class SecondaryRocketStyle:
+class SecondaryRocketStyle(msgspec.Struct, frozen=True):
     base_size: float
     glow_size: float
     glow_rgb: tuple[float, float, float]

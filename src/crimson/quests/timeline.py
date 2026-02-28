@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
+import msgspec
 
 from ..creatures.spawn import SpawnTemplateCall
 from ..math_parity import f32
@@ -64,7 +64,7 @@ def tick_quest_spawn_timeline(
             spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=f32(entry.heading)))
 
         if entry.count != 0:
-            updated_entries[idx] = replace(entry, count=0)
+            updated_entries[idx] = msgspec.structs.replace(entry, count=0)
 
     # After spawning, the original forces the "none active" flag off.
     creatures_none_active = False

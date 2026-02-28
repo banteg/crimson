@@ -3,9 +3,10 @@ from __future__ import annotations
 import random
 import struct
 from collections.abc import Iterable
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
+
+import msgspec
 
 from grim.raylib_api import rl
 
@@ -79,8 +80,7 @@ def _pitch_scale_from_rate_hz(rate_scale_hz: int) -> float:
     return float(_f32(float(rate_scale_hz) / float(_SFX_RATE_BASE_HZ)))
 
 
-@dataclass(slots=True)
-class SfxSample:
+class SfxSample(msgspec.Struct):
     entry_name: str
     source: rl.Sound
     aliases: list[rl.Sound]
@@ -100,8 +100,7 @@ class SfxSample:
         return voices[idx]
 
 
-@dataclass(slots=True)
-class SfxState:
+class SfxState(msgspec.Struct):
     ready: bool
     enabled: bool
     volume: float

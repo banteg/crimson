@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import IntEnum
+
+import msgspec
 
 __all__ = [
     "EFFECT_ID_ATLAS_TABLE",
@@ -21,8 +22,7 @@ SIZE_CODE_GRID: dict[int, int] = {
 }
 
 
-@dataclass(frozen=True, slots=True)
-class EffectAtlasEntry:
+class EffectAtlasEntry(msgspec.Struct, frozen=True):
     effect_id: int
     size_code: int
     frame: int

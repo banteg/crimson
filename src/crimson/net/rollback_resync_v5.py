@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import math
 import zlib
-from dataclasses import dataclass, field
 from typing import Any, Literal
 
 import msgspec
@@ -72,8 +71,7 @@ def decode_mode_snapshot(blob: bytes) -> ModeStateSnapshotV1:
     return snapshot
 
 
-@dataclass(frozen=True, slots=True)
-class RbResyncMessageSet:
+class RbResyncMessageSet(msgspec.Struct, frozen=True):
     begin: RbResyncBegin
     chunks: list[RbResyncChunk]
     commit: RbResyncCommit
@@ -127,11 +125,10 @@ def build_rb_resync_messages(
     return RbResyncMessageSet(begin=begin, chunks=chunks, commit=commit)
 
 
-@dataclass(slots=True)
-class RbResyncAssemblerV5:
+class RbResyncAssemblerV5(msgspec.Struct):
     max_snapshot_bytes: int = RESYNC_MAX_SNAPSHOT_BYTES
-    _begin: RbResyncBegin | None = field(init=False, default=None)
-    _chunks: dict[int, bytes] = field(init=False, default_factory=dict)
+    _begin: RbResyncBegin | None = None
+    _chunks: dict[int, bytes] = msgspec.field(default_factory=dict)
 
     @property
     def request_id(self) -> str:

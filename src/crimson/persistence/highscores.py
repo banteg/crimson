@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import datetime as dt
 import struct
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.config import CrimsonConfig
 
@@ -56,8 +57,7 @@ def highscore_date_checksum(year: int, month: int, day: int) -> int:
     return ((i_var2 - i_var1) % 0x16D + i_var1) // 7 + 1
 
 
-@dataclass(slots=True)
-class HighScoreRecord:
+class HighScoreRecord(msgspec.Struct):
     data: bytearray
 
     @classmethod

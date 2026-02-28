@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import io
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, cast
 
+import msgspec
 from PIL import Image
 
 from grim.raylib_api import rl
@@ -53,11 +53,10 @@ def resolve_asset_path(assets_root: Path, rel_path: str) -> Path | None:
     return None
 
 
-@dataclass(slots=True)
-class TextureLoader:
+class TextureLoader(msgspec.Struct):
     assets_root: Path
     cache: PaqTextureCache | None = None
-    _fs_textures: dict[str, rl.Texture] = field(default_factory=dict)
+    _fs_textures: dict[str, rl.Texture] = msgspec.field(default_factory=dict)
 
     @classmethod
     def from_assets_root(cls, assets_root: Path) -> TextureLoader:
@@ -110,8 +109,7 @@ class TextureLoader:
         return self.get_required(name=name, paq_rel=paq_rel, fs_rel=fs_rel)
 
 
-@dataclass(slots=True)
-class TextureAsset:
+class TextureAsset(msgspec.Struct):
     name: str
     rel_path: str
     texture: rl.Texture | None
@@ -124,8 +122,7 @@ class TextureAsset:
         self.texture = None
 
 
-@dataclass(slots=True)
-class LogoAssets:
+class LogoAssets(msgspec.Struct):
     backplasma: TextureAsset
     mockup: TextureAsset
     logo_esrb: TextureAsset
@@ -145,8 +142,7 @@ class LogoAssets:
         return sum(1 for asset in self.all() if asset.texture is not None)
 
 
-@dataclass(slots=True)
-class PaqTextureCache:
+class PaqTextureCache(msgspec.Struct):
     entries: dict[str, bytes]
     textures: dict[str, TextureAsset]
 

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 
-@dataclass(frozen=True, slots=True)
-class SmallFontData:
+class SmallFontData(msgspec.Struct, frozen=True):
     widths: list[int]
     texture: rl.Texture
     cell_size: int = 16

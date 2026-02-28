@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.view import View
 
 
-@dataclass(frozen=True, slots=True)
-class ViewDefinition:
+class ViewDefinition(msgspec.Struct, frozen=True):
     name: str
     title: str
     factory: Callable[..., View]

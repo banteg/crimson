@@ -3,9 +3,10 @@ from __future__ import annotations
 import math
 import random
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState
@@ -39,8 +40,7 @@ from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
 from .weapons import WEAPON_TABLE, WeaponId
 
 
-@dataclass(slots=True)
-class GameWorld:
+class GameWorld(msgspec.Struct):
     assets_dir: Path
     world_size: float = 1024.0
     demo_mode_active: bool = False
@@ -52,43 +52,45 @@ class GameWorld:
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
-    audio_router: AudioRouter = field(init=False)
-    renderer: WorldRenderer = field(init=False)
-    world_state: WorldState = field(init=False)
+    audio_router: AudioRouter = cast(AudioRouter, None)
+    renderer: WorldRenderer = cast(WorldRenderer, None)
+    world_state: WorldState = cast(WorldState, None)
 
-    spawn_env: SpawnEnv = field(init=False)
-    state: GameplayState = field(init=False)
-    players: list[PlayerState] = field(init=False)
-    creatures: CreaturePool = field(init=False)
-    camera: Vec2 = field(init=False, default_factory=lambda: Vec2(-1.0, -1.0))
-    _damage_scale_by_type: dict[int, float] = field(init=False, default_factory=dict)
-    ground: GroundRenderer | None = field(init=False, default=None)
-    fx_queue: FxQueue = field(init=False)
-    fx_queue_rotated: FxQueueRotated = field(init=False)
-    fx_textures: FxQueueTextures | None = field(init=False, default=None)
-    creature_textures: dict[str, rl.Texture] = field(init=False, default_factory=dict)
-    projs_texture: rl.Texture | None = field(init=False, default=None)
-    particles_texture: rl.Texture | None = field(init=False, default=None)
-    bullet_texture: rl.Texture | None = field(init=False, default=None)
-    bullet_trail_texture: rl.Texture | None = field(init=False, default=None)
-    arrow_texture: rl.Texture | None = field(init=False, default=None)
-    bonuses_texture: rl.Texture | None = field(init=False, default=None)
-    bodyset_texture: rl.Texture | None = field(init=False, default=None)
-    clock_table_texture: rl.Texture | None = field(init=False, default=None)
-    clock_pointer_texture: rl.Texture | None = field(init=False, default=None)
-    aim_texture: rl.Texture | None = field(init=False, default=None)
-    muzzle_flash_texture: rl.Texture | None = field(init=False, default=None)
-    wicons_texture: rl.Texture | None = field(init=False, default=None)
-    _elapsed_ms: float = field(init=False, default=0.0)
-    _bonus_anim_phase: float = field(init=False, default=0.0)
-    _game_tune_started: bool = field(init=False, default=False)
-    _texture_loader: TextureLoader | None = field(init=False, default=None)
-    last_events: WorldEvents = field(init=False)
-    last_presentation: PresentationStepCommands = field(init=False)
-    last_command_hash: str = field(init=False, default="")
-    lan_player_rings_enabled: bool = field(init=False, default=False)
-    lan_local_aim_indicators_only: bool = field(init=False, default=False)
-    lan_local_player_slot_index: int = field(init=False, default=0)
+    spawn_env: SpawnEnv = cast(SpawnEnv, None)
+    state: GameplayState = cast(GameplayState, None)
+    players: list[PlayerState] = msgspec.field(default_factory=list)
+    creatures: CreaturePool = cast(CreaturePool, None)
+    camera: Vec2 = Vec2(-1.0, -1.0)
+    _damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=dict)
+    ground: GroundRenderer | None = None
+    fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
+    fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
+    fx_textures: FxQueueTextures | None = None
+    creature_textures: dict[str, rl.Texture] = msgspec.field(default_factory=dict)
+    projs_texture: rl.Texture | None = None
+    particles_texture: rl.Texture | None = None
+    bullet_texture: rl.Texture | None = None
+    bullet_trail_texture: rl.Texture | None = None
+    arrow_texture: rl.Texture | None = None
+    bonuses_texture: rl.Texture | None = None
+    bodyset_texture: rl.Texture | None = None
+    clock_table_texture: rl.Texture | None = None
+    clock_pointer_texture: rl.Texture | None = None
+    aim_texture: rl.Texture | None = None
+    muzzle_flash_texture: rl.Texture | None = None
+    wicons_texture: rl.Texture | None = None
+    _elapsed_ms: float = 0.0
+    _bonus_anim_phase: float = 0.0
+    _game_tune_started: bool = False
+    _texture_loader: TextureLoader | None = None
+    last_events: WorldEvents = msgspec.field(
+        default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+    )
+    last_presentation: PresentationStepCommands = msgspec.field(default_factory=PresentationStepCommands)
+    last_command_hash: str = ""
+    lan_player_rings_enabled: bool = False
+    lan_local_aim_indicators_only: bool = False
+    lan_local_player_slot_index: int = 0
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(

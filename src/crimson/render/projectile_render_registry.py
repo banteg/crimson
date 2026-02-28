@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from ..projectiles import ProjectileTypeId
 
 
-@dataclass(frozen=True, slots=True)
-class PlasmaProjectileRenderConfig:
+class PlasmaProjectileRenderConfig(msgspec.Struct, frozen=True):
     rgb: tuple[float, float, float]
     spacing: float
     seg_limit: int

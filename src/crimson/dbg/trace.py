@@ -4,7 +4,6 @@ import hashlib
 import io
 import struct
 from collections.abc import Iterable, Iterator, Sequence
-from dataclasses import dataclass
 from pathlib import Path
 
 import msgspec
@@ -43,8 +42,7 @@ class TraceError(ValueError):
     pass
 
 
-@dataclass(frozen=True, slots=True)
-class TraceSummary:
+class TraceSummary(msgspec.Struct, frozen=True):
     meta: TraceMeta
     footer: TraceFooter
 

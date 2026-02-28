@@ -4,8 +4,9 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
 from typing import Protocol, cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
@@ -108,8 +109,7 @@ class QuestSessionLike(Protocol):
     ) -> QuestDeterministicSessionTick: ...
 
 
-@dataclass(slots=True)
-class _QuestRunState:
+class _QuestRunState(msgspec.Struct):
     quest: QuestDefinition | None = None
     level: str = ""
     spawn_entries: tuple[SpawnEntry, ...] = ()
@@ -121,8 +121,7 @@ class _QuestRunState:
     completion_transition_ms: float = -1.0
 
 
-@dataclass(frozen=True, slots=True)
-class QuestRunOutcome:
+class QuestRunOutcome(msgspec.Struct, frozen=True):
     kind: str  # "completed" | "failed"
     level: str
     base_time_ms: int
@@ -306,9 +305,9 @@ class QuestMode(BaseGameplayMode):
             player_index=int(self.player.index),
             fallback_weapon_id=self.player.weapon.weapon_id,
         )
-        replay = replace(
+        replay = msgspec.structs.replace(
             replay,
-            header=replace(
+            header=msgspec.structs.replace(
                 replay.header,
                 claimed_stats=ReplayClaimedStatsSnapshot(
                     complete=bool(self._outcome is not None),

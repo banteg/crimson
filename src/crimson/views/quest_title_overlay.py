@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 from grim.geom import Vec2
@@ -30,8 +30,7 @@ QUEST_NUMBER_FIXED_OFFSET = 4.0
 QUEST_NUMBER_Y_MULTIPLIER = 7.36
 
 
-@dataclass(frozen=True, slots=True)
-class QuestTitleOverlayLayout:
+class QuestTitleOverlayLayout(msgspec.Struct, frozen=True):
     title_pos: Vec2
     title_scale: float
     number_pos: Vec2

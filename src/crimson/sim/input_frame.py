@@ -3,13 +3,13 @@ from __future__ import annotations
 """Deterministic per-tick player input frame normalization."""
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+
+import msgspec
 
 from .input import PlayerInput
 
 
-@dataclass(frozen=True, slots=True)
-class InputFrame:
+class InputFrame(msgspec.Struct, frozen=True):
     players: tuple[PlayerInput, ...]
 
     def as_list(self) -> list[PlayerInput]:

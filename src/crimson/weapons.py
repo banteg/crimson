@@ -22,8 +22,9 @@ Reference material:
 - `docs/weapon-id-map.md` (native ids + names)
 """
 
-from dataclasses import dataclass
 from enum import IntEnum
+
+import msgspec
 
 MANUALLY_MAINTAINED = True
 
@@ -85,8 +86,7 @@ class WeaponId(IntEnum):
     NUKE_LAUNCHER = 53
 
 
-@dataclass(frozen=True)
-class Weapon:
+class Weapon(msgspec.Struct, frozen=True):
     weapon_id: WeaponId
     name: str | None
     ammo_class: int | None

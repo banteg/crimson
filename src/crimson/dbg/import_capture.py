@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
@@ -22,10 +21,9 @@ _ENTITY_KIND_CODES = {
 }
 
 
-@dataclass(slots=True)
-class _EntityUidState:
-    generation_by_index: dict[int, int] = field(default_factory=dict)
-    active_indices: set[int] = field(default_factory=set)
+class _EntityUidState(msgspec.Struct):
+    generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
+    active_indices: set[int] = msgspec.field(default_factory=set)
 
     def next_uid(self, *, kind: str, index: int, active: bool) -> tuple[int, int]:
         idx = int(index)

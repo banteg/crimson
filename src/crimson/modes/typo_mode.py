@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -44,8 +45,7 @@ TYPING_CURSOR = "_"
 TYPING_CURSOR_X_OFFSET = 14.0
 
 
-@dataclass(slots=True)
-class _TypoState:
+class _TypoState(msgspec.Struct):
     elapsed_ms: int = 0
     spawn_cooldown_ms: int = 0
 

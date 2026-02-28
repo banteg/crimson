@@ -4,8 +4,8 @@ import random
 import string
 import time
 import uuid
-from dataclasses import dataclass, field
 
+import msgspec
 import structlog
 
 from ..logging import ensure_structlog_stdlib_defaults
@@ -52,8 +52,7 @@ def _room_code(rand: random.Random) -> str:
     return "".join(rand.choice(alphabet) for _ in range(int(ROOM_CODE_LENGTH)))
 
 
-@dataclass(slots=True)
-class RelayServerConfig:
+class RelayServerConfig(msgspec.Struct):
     bind_host: str = "0.0.0.0"
     bind_port: int = 31993
     link_timeout_ms: int = LINK_TIMEOUT_MS
@@ -61,10 +60,9 @@ class RelayServerConfig:
     max_rooms: int = 2048
 
 
-@dataclass(slots=True)
-class _Peer:
+class _Peer(msgspec.Struct):
     addr: PeerAddr
-    link: RelayReliableLink = field(default_factory=RelayReliableLink)
+    link: RelayReliableLink = msgspec.field(default_factory=RelayReliableLink)
     peer_id: str = ""
     build_id: str = ""
     peer_name: str = ""
@@ -73,8 +71,7 @@ class _Peer:
     last_seen_ms: int = 0
 
 
-@dataclass(slots=True)
-class _RoomSlot:
+class _RoomSlot(msgspec.Struct):
     slot_index: int
     peer_id: str = ""
     peer_name: str = ""
@@ -87,8 +84,7 @@ class _RoomSlot:
         return bool(self.peer_id)
 
 
-@dataclass(slots=True)
-class _Room:
+class _Room(msgspec.Struct):
     room_code: str
     session_id: str
     mode_id: int
@@ -103,7 +99,7 @@ class _Room:
     started: bool = False
     seed: int = 0
     start_tick: int = 0
-    slots: list[_RoomSlot] = field(default_factory=list)
+    slots: list[_RoomSlot] = msgspec.field(default_factory=list)
 
     def all_ready(self) -> bool:
         for slot in self.slots:

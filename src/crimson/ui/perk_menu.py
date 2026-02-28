@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
+
+import msgspec
 
 from grim.assets import TextureLoader
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -43,18 +44,16 @@ MENU_BUTTON_Y = 276.0
 MENU_DESC_RIGHT_X = 480.0
 
 
-@dataclass(slots=True)
-class PerkMenuLayout:
+class PerkMenuLayout(msgspec.Struct):
     # Coordinates live in the original 640x480 UI space.
     # Capture (1024x768) shows the perk menu panel uses the 3-slice variant:
     #   open bbox (-108,119) -> (402,497)
     # which corresponds to ui_element pos (-45,110) + geom (-63,-81) and size 510x378.
-    panel_pos: Vec2 = field(default_factory=lambda: Vec2(-108.0, 29.0))
-    panel_size: Vec2 = field(default_factory=lambda: Vec2(510.0, 378.0))
+    panel_pos: Vec2 = Vec2(-108.0, 29.0)
+    panel_size: Vec2 = Vec2(510.0, 378.0)
 
 
-@dataclass(slots=True)
-class PerkMenuComputedLayout:
+class PerkMenuComputedLayout(msgspec.Struct):
     panel: Rect
     title: Rect
     sponsor_pos: Vec2
@@ -171,8 +170,7 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
     )
 
 
-@dataclass(slots=True)
-class PerkMenuAssets:
+class PerkMenuAssets(msgspec.Struct):
     menu_panel: rl.Texture | None
     title_pick_perk: rl.Texture | None
     title_level_up: rl.Texture | None
@@ -299,14 +297,12 @@ class UiButtonTextures(Protocol):
     button_md: rl.Texture | None
 
 
-@dataclass(slots=True)
-class UiButtonTextureSet:
+class UiButtonTextureSet(msgspec.Struct):
     button_sm: rl.Texture | None
     button_md: rl.Texture | None
 
 
-@dataclass(slots=True)
-class UiButtonState:
+class UiButtonState(msgspec.Struct):
     label: str
     enabled: bool = True
     hovered: bool = False

@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+
+import msgspec
 
 
-@dataclass(frozen=True, slots=True)
-class QuestFinalTime:
+class QuestFinalTime(msgspec.Struct, frozen=True):
     base_time_ms: int
     life_bonus_ms: int
     unpicked_perk_bonus_ms: int
     final_time_ms: int
 
 
-@dataclass(slots=True)
-class QuestResultsBreakdownAnim:
+class QuestResultsBreakdownAnim(msgspec.Struct):
     """Phase-based breakdown animation modeled after `quest_results_screen_update`.
 
     The native flow animates the breakdown in four steps:

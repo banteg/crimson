@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
@@ -15,8 +16,7 @@ from ..types import GameState
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
-@dataclass(frozen=True, slots=True)
-class _ModsContentLayout:
+class _ModsContentLayout(msgspec.Struct, frozen=True):
     scale: float
     base_pos: Vec2
     label_pos: Vec2

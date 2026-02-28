@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
@@ -23,8 +24,7 @@ if TYPE_CHECKING:
     from .renderer import WorldRenderer
 
 
-@dataclass(slots=True)
-class WorldRenderCtx:
+class WorldRenderCtx(msgspec.Struct):
     renderer: WorldRenderer
     frame: RenderFrame | None = None
 

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from ..creatures.spawn import CreatureTypeId
 from ..projectiles import ProjectileTypeId
 
 
-@dataclass(frozen=True, slots=True)
-class CreatureAnimInfo:
+class CreatureAnimInfo(msgspec.Struct, frozen=True):
     base: int
     anim_rate: float
     mirror: bool

@@ -7,8 +7,9 @@ Ported from `creature_update_all` (`FUN_00426220`).
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -47,8 +48,7 @@ class CreatureAIStateLike(CreatureLinkLike, Protocol):
     force_target: int
 
 
-@dataclass(frozen=True, slots=True)
-class CreatureAIUpdate:
+class CreatureAIUpdate(msgspec.Struct, frozen=True):
     move_scale: float
     self_damage: float | None = None
 

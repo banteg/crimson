@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.rand import CrandLike
 
@@ -169,8 +170,7 @@ def load_typo_dictionary(path: Path) -> list[str]:
     return words
 
 
-@dataclass(slots=True)
-class CreatureNameTable:
+class CreatureNameTable(msgspec.Struct):
     names: list[str]
 
     @classmethod

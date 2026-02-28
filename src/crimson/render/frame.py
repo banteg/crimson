@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -14,8 +15,7 @@ from ..sim.state_types import PlayerState
 from .rtx.mode import RtxRenderMode
 
 
-@dataclass(frozen=True, slots=True)
-class RenderFrame:
+class RenderFrame(msgspec.Struct, frozen=True):
     """Typed world snapshot consumed by render code.
 
     This intentionally carries references (not deep copies) so render can be
