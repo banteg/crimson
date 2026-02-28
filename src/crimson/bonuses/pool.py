@@ -63,13 +63,6 @@ _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
 }
 
 
-def _bonus_weapon_id_for_suppression(*, bonus_id: BonusId, amount: int) -> WeaponId | None:
-    mapped = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(bonus_id)
-    if mapped is not None:
-        return mapped
-    return _weapon_id_from_bonus_amount(amount)
-
-
 def _weapon_id_from_bonus_amount(amount: int) -> WeaponId | None:
     weapon = WEAPON_BY_ID.get(int(amount))
     if weapon is None:
@@ -328,10 +321,9 @@ class BonusPool:
         if players:
             if bool(state.preserve_bugs):
                 weapon_id = players[0].weapon.weapon_id
-                suppression_weapon_id = _bonus_weapon_id_for_suppression(
-                    bonus_id=entry.bonus_id,
-                    amount=entry.amount,
-                )
+                suppression_weapon_id = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(entry.bonus_id)
+                if suppression_weapon_id is None:
+                    suppression_weapon_id = _weapon_id_from_bonus_amount(entry.amount)
                 if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
