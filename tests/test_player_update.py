@@ -463,7 +463,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
         player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
-        weapon = WEAPON_BY_ID.get(int(weapon_id))
+        weapon = WEAPON_BY_ID.get(weapon_id)
         assert weapon is not None
         assert weapon.pellet_count is not None
 

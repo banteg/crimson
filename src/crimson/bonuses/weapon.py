@@ -9,7 +9,7 @@ from .apply_context import BonusApplyCtx
 
 
 def apply_weapon(ctx: BonusApplyCtx) -> None:
-    weapon_id = WeaponId(int(ctx.amount))
+    weapon_id = WeaponId(ctx.amount)
     if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon is None:
         primary = ctx.player.weapon
         ctx.player.alt_weapon = WeaponSlot(

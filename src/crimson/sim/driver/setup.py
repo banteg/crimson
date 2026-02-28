@@ -28,18 +28,21 @@ class RunResult:
     elapsed_ms: int
     score_xp: int
     creature_kill_count: int
-    most_used_weapon_id: int
+    most_used_weapon_id: WeaponId | int
     shots_fired: int
     shots_hit: int
     rng_state: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
 
 
 def build_damage_scale_by_type() -> dict[int, float]:
     damage_scale_by_type: dict[int, float] = {}
     for entry in WEAPON_TABLE:
-        if int(entry.weapon_id) <= 0:
+        if entry.weapon_id <= WeaponId.NONE:
             continue
-        damage_scale_by_type[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
+        damage_scale_by_type[entry.weapon_id] = float(cast(float, entry.damage_scale))
     return damage_scale_by_type
 
 
@@ -107,11 +110,11 @@ def player0_shots(state: GameplayState) -> tuple[int, int]:
     return fired, hit
 
 
-def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]) -> int:
+def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]) -> WeaponId:
     fallback_weapon_id = WeaponId.PISTOL
     if players:
         fallback_weapon_id = players[0].weapon.weapon_id
-    return int(most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=fallback_weapon_id))
+    return most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=fallback_weapon_id)
 
 
 def time_scale_reflex_boost_bonus(state: GameplayState, dt: float) -> float:

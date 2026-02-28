@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from ..weapons import WeaponId
 from .types import QuestBuilder, QuestDefinition, parse_level, terrain_ids_for
 
 _QUESTS: dict[tuple[int, int], QuestDefinition] = {}
@@ -12,9 +13,9 @@ def register_quest(
     level: str,
     title: str,
     time_limit_ms: int,
-    start_weapon_id: int,
+    start_weapon_id: WeaponId,
     unlock_perk_id: int | None = None,
-    unlock_weapon_id: int | None = None,
+    unlock_weapon_id: WeaponId | None = None,
     terrain_ids: tuple[int, int, int] | None = None,
     builder_address: int | None = None,
 ) -> Callable[[QuestBuilder], QuestBuilder]:
@@ -29,14 +30,14 @@ def register_quest(
             int(resolved_terrain_ids[1]),
             int(resolved_terrain_ids[2]),
         )
-        normalized_unlock_weapon_id = int(unlock_weapon_id) if unlock_weapon_id is not None else None
+        normalized_unlock_weapon_id = WeaponId(unlock_weapon_id) if unlock_weapon_id is not None else None
         quest = QuestDefinition(
             major=major,
             minor=minor,
             title=title,
             builder=builder,
             time_limit_ms=time_limit_ms,
-            start_weapon_id=int(start_weapon_id),
+            start_weapon_id=WeaponId(start_weapon_id),
             unlock_perk_id=unlock_perk_id,
             unlock_weapon_id=normalized_unlock_weapon_id,
             terrain_ids=normalized_terrain_ids,

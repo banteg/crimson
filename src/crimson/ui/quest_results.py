@@ -354,12 +354,12 @@ class QuestResultsUi:
 
         row_y = row_top
         if self.assets is not None and self.assets.wicons is not None:
-            src = _weapon_icon_src(self.assets.wicons, int(record.most_used_weapon_id))
+            src = _weapon_icon_src(self.assets.wicons, record.most_used_weapon_id)
             if src is not None:
                 dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
                 rl.draw_texture_pro(self.assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
-        weapon_id = int(record.most_used_weapon_id)
+        weapon_id = record.most_used_weapon_id
         weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
         name_w = self._text_width(weapon_name, 1.0 * scale)
         name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)

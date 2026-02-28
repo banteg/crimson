@@ -354,7 +354,7 @@ def _header_to_wire(header: ReplayHeader) -> _ReplayHeaderWire:
         elapsed_ms=int(header.claimed_stats.elapsed_ms),
         score_xp=int(header.claimed_stats.score_xp),
         kills=int(header.claimed_stats.kills),
-        most_used_weapon_id=WeaponId(int(header.claimed_stats.most_used_weapon_id)),
+        most_used_weapon_id=WeaponId(header.claimed_stats.most_used_weapon_id),
         shots_fired=int(header.claimed_stats.shots_fired),
         shots_hit=int(header.claimed_stats.shots_hit),
     )
@@ -414,7 +414,7 @@ def _header_from_wire(data: _ReplayHeaderWire) -> ReplayHeader:
         elapsed_ms=int(data.claimed_stats.elapsed_ms),
         score_xp=int(data.claimed_stats.score_xp),
         kills=int(data.claimed_stats.kills),
-        most_used_weapon_id=WeaponId(int(data.claimed_stats.most_used_weapon_id)),
+        most_used_weapon_id=WeaponId(data.claimed_stats.most_used_weapon_id),
         shots_fired=int(data.claimed_stats.shots_fired),
         shots_hit=int(data.claimed_stats.shots_hit),
     )
@@ -497,7 +497,7 @@ def _event_to_wire(event: ReplayEvent) -> _ReplayEventWire:
             ],
             players=[
                 _CaptureBootstrapPlayerWire(
-                    weapon_id=WeaponId(int(player.weapon_id)),
+                    weapon_id=WeaponId(player.weapon_id),
                     pos_x=float(player.pos_x),
                     pos_y=float(player.pos_y),
                     health=float(player.health),
@@ -513,7 +513,7 @@ def _event_to_wire(event: ReplayEvent) -> _ReplayEventWire:
                     aim_x=float(player.aim_x) if player.aim_x is not None else None,
                     aim_y=float(player.aim_y) if player.aim_y is not None else None,
                     aim_heading=float(player.aim_heading) if player.aim_heading is not None else None,
-                    alt_weapon_id=WeaponId(int(player.alt_weapon_id)) if player.alt_weapon_id is not None else None,
+                    alt_weapon_id=WeaponId(player.alt_weapon_id) if player.alt_weapon_id is not None else None,
                     alt_clip_size=int(player.alt_clip_size) if player.alt_clip_size is not None else None,
                     alt_ammo=float(player.alt_ammo) if player.alt_ammo is not None else None,
                     alt_reload_active=bool(player.alt_reload_active) if player.alt_reload_active is not None else None,
@@ -663,7 +663,7 @@ def _event_from_wire(event: _ReplayEventWire) -> ReplayEvent:
             ],
             players=[
                 CaptureBootstrapPlayer(
-                    weapon_id=WeaponId(int(player.weapon_id)),
+                    weapon_id=WeaponId(player.weapon_id),
                     pos_x=float(player.pos_x),
                     pos_y=float(player.pos_y),
                     health=float(player.health),
@@ -679,7 +679,7 @@ def _event_from_wire(event: _ReplayEventWire) -> ReplayEvent:
                     aim_x=float(player.aim_x) if player.aim_x is not None else None,
                     aim_y=float(player.aim_y) if player.aim_y is not None else None,
                     aim_heading=float(player.aim_heading) if player.aim_heading is not None else None,
-                    alt_weapon_id=WeaponId(int(player.alt_weapon_id)) if player.alt_weapon_id is not None else None,
+                    alt_weapon_id=WeaponId(player.alt_weapon_id) if player.alt_weapon_id is not None else None,
                     alt_clip_size=int(player.alt_clip_size) if player.alt_clip_size is not None else None,
                     alt_ammo=float(player.alt_ammo) if player.alt_ammo is not None else None,
                     alt_reload_active=bool(player.alt_reload_active) if player.alt_reload_active is not None else None,

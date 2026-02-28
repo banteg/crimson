@@ -11,7 +11,7 @@ from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
 def weapon_entry(weapon_id: WeaponId) -> Weapon | None:
-    return WEAPON_BY_ID.get(int(weapon_id))
+    return WEAPON_BY_ID.get(weapon_id)
 
 
 @dataclass(slots=True)
@@ -56,7 +56,7 @@ def init_default_alt_weapon(player: PlayerState) -> None:
 def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: GameplayState | None = None) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
-    weapon_id = WeaponId(int(weapon_id))
+    weapon_id = WeaponId(weapon_id)
     if (
         state is not None
         and state.status is not None
@@ -104,8 +104,8 @@ def most_used_weapon_id_for_player(
             start = 1 if len(counts) > 1 else 0
             best = max(range(start, len(counts)), key=lambda i: int(counts[i]))
             if int(counts[best]) > 0:
-                return WeaponId(int(best))
-    return WeaponId(int(fallback_weapon_id))
+                return WeaponId(best)
+    return WeaponId(fallback_weapon_id)
 
 
 def player_swap_alt_weapon(player: PlayerState) -> bool:

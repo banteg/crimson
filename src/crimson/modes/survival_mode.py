@@ -467,12 +467,12 @@ class SurvivalMode(BaseGameplayMode):
         weapon_ids = _DEBUG_WEAPON_IDS
         if not weapon_ids:
             return
-        current = int(self.player.weapon.weapon_id)
+        current = self.player.weapon.weapon_id
         try:
             idx = weapon_ids.index(current)
         except ValueError:
             idx = 0
-        weapon_id = WeaponId(int(weapon_ids[(idx + int(delta)) % len(weapon_ids)]))
+        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:

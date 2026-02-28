@@ -17,7 +17,7 @@ def enforce_typo_player_frame(player: PlayerState) -> None:
     cooldown) controls rate of fire.
     """
 
-    if int(player.weapon.weapon_id) != TYPO_WEAPON_ID:
+    if player.weapon.weapon_id != TYPO_WEAPON_ID:
         weapon_assign_player(player, TYPO_WEAPON_ID)
 
     player.weapon.shot_cooldown = 0.0

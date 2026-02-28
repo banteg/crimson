@@ -52,7 +52,7 @@ class ReplayPlayerCheckpoint:
     level: int
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "weapon_id", WeaponId(int(self.weapon_id)))
+        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
 
 
 @dataclass(frozen=True, slots=True)
@@ -208,7 +208,7 @@ def build_checkpoint(
             ReplayPlayerCheckpoint(
                 pos=Vec2(round(player.pos.x, 4), round(player.pos.y, 4)),
                 health=round(player.health, 4),
-                weapon_id=WeaponId(int(player.weapon.weapon_id)),
+                weapon_id=WeaponId(player.weapon.weapon_id),
                 ammo=round(player.weapon.ammo, 4),
                 experience=int(player.experience),
                 level=int(player.level),

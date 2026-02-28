@@ -87,7 +87,7 @@ def plan_player_audio_sfx(
 ) -> list[str]:
     keys: list[str] = []
 
-    weapon = WEAPON_BY_ID.get(int(player.weapon.weapon_id))
+    weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
     if weapon is None:
         return keys
 
@@ -133,7 +133,7 @@ def _hit_sfx_for_type(
     rand: Callable[[], int],
 ) -> str | None:
     _ = beam_types
-    weapon = WEAPON_BY_ID.get(int(type_id))
+    weapon = WEAPON_BY_ID.get(type_id)
     ammo_class = weapon.ammo_class if weapon is not None else None
     if ammo_class == 4:
         return "sfx_shock_hit_01"

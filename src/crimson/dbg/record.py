@@ -690,7 +690,7 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
             ReplayPlayerCheckpoint(
                 pos=Vec2(float(player_pos_x), float(player_pos_y)),
                 health=float(player_health),
-                weapon_id=WeaponId(int(player_weapon_id)),
+                weapon_id=WeaponId(player_weapon_id),
                 ammo=float(player_ammo),
                 experience=int(player_experience),
                 level=int(player_level),

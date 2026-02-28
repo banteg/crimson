@@ -108,7 +108,7 @@ def test_shotgun_family_fires_expected_pellets(
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId(int(weapon_id)))
+    weapon_assign_player(player, WeaponId(weapon_id))
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)

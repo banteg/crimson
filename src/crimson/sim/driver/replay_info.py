@@ -81,8 +81,11 @@ class _PlayerSnapshot:
     health: float
     level: int
     experience: int
-    weapon_id: int
+    weapon_id: WeaponId
     perk_counts: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
 
 
 def _resolve_quest_level(replay: Replay) -> str:
@@ -100,8 +103,8 @@ def _resolve_quest_level(replay: Replay) -> str:
 
 def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
-        if int(player.weapon.weapon_id) != int(RUSH_WEAPON_ID):
-            weapon_assign_player(player, WeaponId(int(RUSH_WEAPON_ID)))
+        if player.weapon.weapon_id != RUSH_WEAPON_ID:
+            weapon_assign_player(player, RUSH_WEAPON_ID)
         player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
 
 
@@ -113,7 +116,7 @@ def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
                 health=float(player.health),
                 level=int(player.level),
                 experience=int(player.experience),
-                weapon_id=int(player.weapon.weapon_id),
+                weapon_id=player.weapon.weapon_id,
                 perk_counts=tuple(int(value) for value in player.perk_counts),
             ),
         )
@@ -225,10 +228,10 @@ def _append_bonus_pickup_events(
             "amount": int(amount),
         }
         if int(bonus_id) == int(BonusId.WEAPON):
-            weapon_id = int(amount)
-            weapon_name = weapon_display_name(int(weapon_id), preserve_bugs=bool(preserve_bugs))
+            weapon_id = WeaponId(amount)
+            weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
             detail += f" -> {str(weapon_name)}"
-            data["weapon_id"] = int(weapon_id)
+            data["weapon_id"] = weapon_id
             data["weapon_name"] = str(weapon_name)
         _append_event(
             timeline,
@@ -261,9 +264,9 @@ def _append_snapshot_diff_events(
         post = after[idx]
         player_idx = int(idx)
 
-        if int(pre.weapon_id) != int(post.weapon_id):
-            weapon_before_name = weapon_display_name(int(pre.weapon_id), preserve_bugs=bool(preserve_bugs))
-            weapon_after_name = weapon_display_name(int(post.weapon_id), preserve_bugs=bool(preserve_bugs))
+        if pre.weapon_id != post.weapon_id:
+            weapon_before_name = weapon_display_name(pre.weapon_id, preserve_bugs=bool(preserve_bugs))
+            weapon_after_name = weapon_display_name(post.weapon_id, preserve_bugs=bool(preserve_bugs))
             _append_event(
                 timeline,
                 tick_index=int(tick_index),
@@ -272,9 +275,9 @@ def _append_snapshot_diff_events(
                 player_index=int(player_idx),
                 detail=f"p{int(player_idx)} weapon {weapon_before_name} -> {weapon_after_name}",
                 data={
-                    "weapon_id_before": int(pre.weapon_id),
+                    "weapon_id_before": pre.weapon_id,
                     "weapon_name_before": str(weapon_before_name),
-                    "weapon_id_after": int(post.weapon_id),
+                    "weapon_id_after": post.weapon_id,
                     "weapon_name_after": str(weapon_after_name),
                 },
                 player_filter=player_filter,
@@ -758,7 +761,7 @@ def _run_quest_replay_info(
     if quest is None:
         raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
     world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-    quest_start_weapon_id = int(quest.start_weapon_id)
+    quest_start_weapon_id = quest.start_weapon_id
     ctx = QuestContext(
         width=int(world_size),
         height=int(world_size),
@@ -775,7 +778,7 @@ def _run_quest_replay_info(
     )
 
     for player in world.players:
-        weapon_assign_player(player, WeaponId(int(quest_start_weapon_id)))
+        weapon_assign_player(player, quest_start_weapon_id)
 
     events_by_tick: dict[int, list[object]] = {}
     original_capture_replay = False
@@ -855,8 +858,8 @@ def _run_quest_replay_info(
 
         reset_players(world.players, world_size=float(world_size), player_count=int(replay.header.player_count))
         for player in world.players:
-            weapon_assign_player(player, WeaponId(int(quest_start_weapon_id)))
-            if int(quest_start_weapon_id) == WeaponId.PISTOL:
+            weapon_assign_player(player, quest_start_weapon_id)
+            if quest_start_weapon_id == WeaponId.PISTOL:
                 player.weapon.clip_size = max(12, int(player.weapon.clip_size))
                 if float(player.weapon.ammo) < 12.0:
                     player.weapon.ammo = 12.0

@@ -397,7 +397,7 @@ def _run_result_payload(run_result: object) -> _RunResultPayload:
         elapsed_ms=int(result.elapsed_ms),
         score_xp=int(result.score_xp),
         creature_kill_count=int(result.creature_kill_count),
-        most_used_weapon_id=int(result.most_used_weapon_id),
+        most_used_weapon_id=result.most_used_weapon_id,
         shots_fired=int(result.shots_fired),
         shots_hit=int(result.shots_hit),
         rng_state=int(result.rng_state),
@@ -847,7 +847,7 @@ def cmd_replay_verify(
             elapsed_ms=int(claimed_stats.elapsed_ms),
             score_xp=int(claimed_stats.score_xp),
             kills=int(claimed_stats.kills),
-            most_used_weapon_id=int(claimed_stats.most_used_weapon_id),
+            most_used_weapon_id=claimed_stats.most_used_weapon_id,
             shots_fired=int(claimed_stats.shots_fired),
             shots_hit=int(claimed_stats.shots_hit),
         )
@@ -857,7 +857,7 @@ def cmd_replay_verify(
             elapsed_ms=int(result.elapsed_ms),
             score_xp=int(result.score_xp),
             kills=int(result.creature_kill_count),
-            most_used_weapon_id=int(result.most_used_weapon_id),
+            most_used_weapon_id=result.most_used_weapon_id,
             shots_fired=int(result.shots_fired),
             shots_hit=int(result.shots_hit),
         )
@@ -870,7 +870,7 @@ def cmd_replay_verify(
             mismatched_fields.append("score_xp")
         if int(expected_claim.kills) != int(simulated_claim.kills):
             mismatched_fields.append("kills")
-        if int(expected_claim.most_used_weapon_id) != int(simulated_claim.most_used_weapon_id):
+        if expected_claim.most_used_weapon_id != simulated_claim.most_used_weapon_id:
             mismatched_fields.append("most_used_weapon_id")
         if int(expected_claim.shots_fired) != int(simulated_claim.shots_fired):
             mismatched_fields.append("shots_fired")

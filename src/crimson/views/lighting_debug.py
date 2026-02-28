@@ -2285,7 +2285,7 @@ class LightingDebugView:
     def _profile_auto_interval(profile: EmissiveProfile) -> float:
         weapon_id = profile.rate_weapon_id
         if weapon_id is not None:
-            entry = WEAPON_BY_ID.get(int(weapon_id))
+            entry = WEAPON_BY_ID.get(weapon_id)
             cooldown = None if entry is None else entry.shot_cooldown
             if cooldown is not None:
                 return max(0.001, float(cooldown))

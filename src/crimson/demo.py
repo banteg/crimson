@@ -72,7 +72,7 @@ class DemoState(Protocol):
 
 
 def _weapon_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
-    return weapon_display_name(int(weapon_id), preserve_bugs=bool(preserve_bugs))
+    return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
 
 
 class DemoView:
@@ -477,7 +477,7 @@ class DemoView:
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim = pos
-            weapon_assign_player(player, WeaponId(int(weapon_id)))
+            weapon_assign_player(player, WeaponId(weapon_id))
         self._demo_targets = [None] * len(self._world.players)
 
     def _apply_variant_ground(self, index: int) -> None:

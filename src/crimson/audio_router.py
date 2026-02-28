@@ -135,7 +135,7 @@ class AudioRouter:
     ) -> None:
         if self.audio is None:
             return
-        weapon = WEAPON_BY_ID.get(int(player.weapon.weapon_id))
+        weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
         if weapon is None:
             return
 
@@ -165,7 +165,7 @@ class AudioRouter:
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        weapon = WEAPON_BY_ID.get(int(type_id))
+        weapon = WEAPON_BY_ID.get(type_id)
         ammo_class = weapon.ammo_class if weapon is not None else None
         if ammo_class == 4:
             return "sfx_shock_hit_01"

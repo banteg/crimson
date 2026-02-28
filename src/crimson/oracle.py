@@ -93,7 +93,7 @@ def export_player_state(player: PlayerState) -> dict[str, Any]:
         "index": int(player.index),
         "pos": player.pos.to_dict(ndigits=4),
         "health": round(float(player.health), 4),
-        "weapon_id": int(player.weapon.weapon_id),
+        "weapon_id": player.weapon.weapon_id,
         "ammo": round(float(player.weapon.ammo), 4),
         "experience": int(player.experience),
         "level": int(player.level),
@@ -210,7 +210,7 @@ def export_game_state_summary(
             {
                 "pos": p.pos.to_dict(ndigits=2),
                 "health": round(float(p.health), 2),
-                "weapon_id": int(p.weapon.weapon_id),
+                "weapon_id": p.weapon.weapon_id,
                 "level": int(p.level),
             }
             for p in players

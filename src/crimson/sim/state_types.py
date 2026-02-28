@@ -21,7 +21,7 @@ class WeaponSlot:
     shot_cooldown: float = 0.0
 
     def __post_init__(self) -> None:
-        self.weapon_id = WeaponId(int(self.weapon_id))
+        self.weapon_id = WeaponId(self.weapon_id)
 
 
 @dataclass(slots=True)

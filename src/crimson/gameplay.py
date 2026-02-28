@@ -312,7 +312,7 @@ def survival_update_weapon_handouts(
         and int(float(survival_elapsed_ms)) > 64000
         and bool(state.survival_reward_handout_enabled)
     ):
-        if int(player.weapon.weapon_id) == WeaponId.PISTOL:
+        if player.weapon.weapon_id == WeaponId.PISTOL:
             _weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
             state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
         state.survival_reward_handout_enabled = False
@@ -337,7 +337,7 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
 
     guard_id = int(state.survival_reward_weapon_guard_id)
     for player in players:
-        weapon_id = int(player.weapon.weapon_id)
+        weapon_id = player.weapon.weapon_id
         if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:
             _weapon_assign_player(player, WeaponId.PISTOL)
         if weapon_id == WeaponId.SHRINKIFIER_5K and guard_id != WeaponId.SHRINKIFIER_5K:

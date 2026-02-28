@@ -133,7 +133,7 @@ class ArsenalDebugView:
     def _selected_weapon_id(self) -> WeaponId:
         if not self._weapon_ids:
             return WeaponId.NONE
-        return WeaponId(int(self._weapon_ids[self._weapon_index % len(self._weapon_ids)]))
+        return WeaponId(self._weapon_ids[self._weapon_index % len(self._weapon_ids)])
 
     def _apply_weapon(self) -> None:
         if self._player is None:
@@ -192,7 +192,7 @@ class ArsenalDebugView:
 
         player_pos = player.pos
         rng = self._world.state.rng.rand
-        current_weapon_id = int(player.weapon.weapon_id)
+        current_weapon_id = player.weapon.weapon_id
 
         for idx, bonus_id in enumerate(bonus_ids):
             angle = float(idx) / float(count) * math.tau
@@ -267,7 +267,7 @@ class ArsenalDebugView:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
         if special is not None:
             return special
-        type_id = projectile_type_id_from_weapon_id(int(weapon_id))
+        type_id = projectile_type_id_from_weapon_id(weapon_id)
         if type_id is None:
             return "particle/secondary"
         return _projectile_type_label(type_id)
@@ -277,7 +277,7 @@ class ArsenalDebugView:
         if player is None:
             return ["Arsenal debug: missing player"]
 
-        weapon_id = int(player.weapon.weapon_id)
+        weapon_id = player.weapon.weapon_id
         name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
         index_label = f"{self._weapon_index + 1}/{max(1, len(self._weapon_ids))}"
 
@@ -386,7 +386,7 @@ class ArsenalDebugView:
         y = 12.0
         line = float(ui_line_height(self._small))
 
-        weapon = WEAPON_BY_ID.get(int(self._player.weapon.weapon_id)) if self._player is not None else None
+        weapon = WEAPON_BY_ID.get(self._player.weapon.weapon_id) if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
             draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line

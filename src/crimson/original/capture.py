@@ -407,7 +407,7 @@ def _replay_player(player: CapturePlayerCheckpoint) -> ReplayPlayerCheckpoint:
     return ReplayPlayerCheckpoint(
         pos=Vec2(float(player.pos.x), float(player.pos.y)),
         health=float(player.health),
-        weapon_id=WeaponId(int(player.weapon_id)),
+        weapon_id=WeaponId(player.weapon_id),
         ammo=float(player.ammo),
         experience=int(player.experience),
         level=int(player.level),
@@ -1870,7 +1870,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
         player_perk_timers = raw_player.perk_timers or {}
         players.append(
             CaptureBootstrapPlayer(
-                weapon_id=WeaponId(int(raw_player.weapon_id)),
+                weapon_id=WeaponId(raw_player.weapon_id),
                 pos_x=_conversion_f32(float(raw_player.pos.x)),
                 pos_y=_conversion_f32(float(raw_player.pos.y)),
                 health=_conversion_f32(float(raw_player.health)),
@@ -1901,7 +1901,7 @@ def _capture_bootstrap_event_from_payload(payload: dict[str, object]) -> Capture
                     else None
                 ),
                 alt_weapon_id=(
-                    WeaponId(int(raw_player.alt_weapon.weapon_id))
+                    WeaponId(raw_player.alt_weapon.weapon_id)
                     if raw_player.alt_weapon is not None and raw_player.alt_weapon.weapon_id is not None
                     else None
                 ),
@@ -2130,10 +2130,10 @@ def apply_capture_bootstrap_payload(
             break
         player = cast(_BootstrapPlayer, players[idx])
 
-        weapon_id = WeaponId(int(raw_player.weapon_id))
+        weapon_id = WeaponId(raw_player.weapon_id)
         if int(weapon_id) > 0:
             try:
-                if int(player.weapon.weapon_id) != int(weapon_id):
+                if player.weapon.weapon_id != int(weapon_id):
                     weapon_assign_player(
                         cast(PlayerState, player),
                         weapon_id,

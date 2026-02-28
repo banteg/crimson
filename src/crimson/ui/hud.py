@@ -299,7 +299,7 @@ def draw_target_health_bar(*, pos: Vec2, width: float, ratio: float, alpha: floa
 
 
 def _weapon_icon_index(weapon_id: int) -> int | None:
-    entry = WEAPON_BY_ID.get(int(weapon_id))
+    entry = WEAPON_BY_ID.get(weapon_id)
     icon_index = entry.icon_index if entry is not None else None
     if icon_index is None or icon_index < 0 or icon_index > 31:
         return None
@@ -307,7 +307,7 @@ def _weapon_icon_index(weapon_id: int) -> int | None:
 
 
 def _weapon_ammo_class(weapon_id: int) -> int:
-    entry = WEAPON_BY_ID.get(int(weapon_id))
+    entry = WEAPON_BY_ID.get(weapon_id)
     value = entry.ammo_class if entry is not None else None
     return int(value) if value is not None else 0
 
@@ -967,7 +967,7 @@ def draw_hud_overlay(
                 max_y = max(max_y, dst.y + dst.height)
 
             weapon_name = weapon_display_name(
-                int(hud_player.weapon.weapon_id),
+                hud_player.weapon.weapon_id,
                 preserve_bugs=bool(state.preserve_bugs),
             )
             weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
