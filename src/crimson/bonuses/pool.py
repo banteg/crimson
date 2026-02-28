@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -31,13 +32,12 @@ BONUS_AIM_HOVER_RADIUS = 24.0
 BONUS_TELEKINETIC_PICKUP_MS = 650.0
 
 
-@dataclass(slots=True)
-class BonusEntry:
+class BonusEntry(msgspec.Struct):
     bonus_id: BonusId = BonusId.UNUSED
     picked: bool = False
     time_left: float = 0.0
     time_max: float = 0.0
-    pos: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = msgspec.field(default_factory=Vec2)
     amount: int = 0
 
 

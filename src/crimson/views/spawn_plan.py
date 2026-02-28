@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -48,8 +49,7 @@ def _type_color(type_id: CreatureTypeId | None) -> rl.Color:
     return rl.Color(200, 200, 200, 255)
 
 
-@dataclass(frozen=True, slots=True)
-class _PlanSummary:
+class _PlanSummary(msgspec.Struct, frozen=True):
     creature_count: int
     spawn_slot_count: int
     effect_count: int

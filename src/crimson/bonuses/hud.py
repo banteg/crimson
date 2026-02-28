@@ -1,20 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import msgspec
 
 from ..sim.state_types import GameplayState, PlayerState
 from .ids import BonusId
 
 
-@dataclass(frozen=True, slots=True)
-class _TimerRef:
+class _TimerRef(msgspec.Struct, frozen=True):
     kind: str  # "global" or "player"
     key: str
     player_index: int | None = None
 
 
-@dataclass(slots=True)
-class BonusHudSlot:
+class BonusHudSlot(msgspec.Struct):
     active: bool = False
     bonus_id: BonusId = BonusId.UNUSED
     label: str = ""
@@ -29,9 +27,8 @@ class BonusHudSlot:
 BONUS_HUD_SLOT_COUNT = 16
 
 
-@dataclass(slots=True)
-class BonusHudState:
-    slots: list[BonusHudSlot] = field(default_factory=lambda: [BonusHudSlot() for _ in range(BONUS_HUD_SLOT_COUNT)])
+class BonusHudState(msgspec.Struct):
+    slots: list[BonusHudSlot] = msgspec.field(default_factory=lambda: [BonusHudSlot() for _ in range(BONUS_HUD_SLOT_COUNT)])
 
     def register(
         self,

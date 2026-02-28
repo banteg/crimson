@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -20,8 +21,7 @@ class ReplayRunnerError(ValueError):
     pass
 
 
-@dataclass(frozen=True, slots=True)
-class RunResult:
+class RunResult(msgspec.Struct, frozen=True):
     game_mode_id: int
     tick_rate: int
     ticks: int

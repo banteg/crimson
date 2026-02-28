@@ -3,8 +3,9 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -21,15 +22,14 @@ def native_find_margin_for_size(size: float) -> float:
     return float(size) * _NATIVE_FIND_SIZE_SCALE + _NATIVE_FIND_BASE_MARGIN
 
 
-@dataclass(slots=True)
-class CreatureSpatialHash:
+class CreatureSpatialHash(msgspec.Struct):
     creatures: Sequence[CreatureState]
     is_collidable: Callable[[CreatureState], bool]
     bucket_size: float = _SPATIAL_BUCKET_SIZE
-    _bucket_size: float = field(init=False, default=_SPATIAL_BUCKET_SIZE)
-    _cells: dict[tuple[int, int], list[int]] = field(init=False, default_factory=dict)
-    _cell_by_index: list[tuple[int, int] | None] = field(init=False, default_factory=list)
-    _max_find_margin: float = field(init=False, default=0.0)
+    _bucket_size: float = msgspec.field(default=_SPATIAL_BUCKET_SIZE)
+    _cells: dict[tuple[int, int], list[int]] = msgspec.field(default_factory=dict)
+    _cell_by_index: list[tuple[int, int] | None] = msgspec.field(default_factory=list)
+    _max_find_margin: float = msgspec.field(default=0.0)
 
     def __post_init__(self) -> None:
         if float(self.bucket_size) > 0.0:

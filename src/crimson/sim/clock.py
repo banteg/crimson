@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 
-@dataclass(slots=True)
-class FixedStepClock:
+class FixedStepClock(msgspec.Struct):
     tick_rate: int = 60
     accum: float = 0.0
 

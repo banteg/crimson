@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable, MutableSequence
-from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Protocol
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -142,27 +143,24 @@ CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
 SecondaryDetonationKillHandler = Callable[[int], None]
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileCollisionProfile:
+class ProjectileCollisionProfile(msgspec.Struct, frozen=True):
     hit_radius: float
     initial_damage_pool: float
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileHit:
+class ProjectileHit(msgspec.Struct, frozen=True):
     type_id: int
     origin: Vec2
     hit: Vec2
     target: Vec2
 
 
-@dataclass(slots=True)
-class Projectile:
+class Projectile(msgspec.Struct):
     active: bool = False
     angle: float = 0.0
-    pos: Vec2 = field(default_factory=Vec2)
-    origin: Vec2 = field(default_factory=Vec2)
-    vel: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    origin: Vec2 = msgspec.field(default_factory=Vec2)
+    vel: Vec2 = msgspec.field(default_factory=Vec2)
     type_id: int = 0
     life_timer: float = 0.0
     reserved: float = 0.0
@@ -170,7 +168,7 @@ class Projectile:
     damage_pool: float = 1.0
     hit_radius: float = 1.0
     travel_budget: float = 0.0
-    owner: OwnerRef = field(default_factory=OwnerRef.none)
+    owner: OwnerRef = msgspec.field(default_factory=OwnerRef.none)
     hits_players: bool = False
 
     @property
@@ -182,22 +180,21 @@ class Projectile:
         self.owner = value
 
 
-@dataclass(slots=True)
-class SecondaryProjectile:
+class SecondaryProjectile(msgspec.Struct):
     active: bool = False
     angle: float = 0.0
     speed: float = 0.0
-    pos: Vec2 = field(default_factory=Vec2)
-    vel: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    vel: Vec2 = msgspec.field(default_factory=Vec2)
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: int = 0
-    owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
+    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
     trail_timer: float = 0.0
     target_id: int = -1
     # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
     target_hint_active: bool = False
-    target_hint: Vec2 = field(default_factory=Vec2)
+    target_hint: Vec2 = msgspec.field(default_factory=Vec2)
 
     @property
     def owner_id(self) -> int:

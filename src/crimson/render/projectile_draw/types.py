@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -78,8 +79,7 @@ class ProjectileRendererLike(Protocol):
     ) -> None: ...
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileDrawCtx:
+class ProjectileDrawCtx(msgspec.Struct, frozen=True):
     renderer: ProjectileRendererLike
     proj: Projectile
     proj_index: int
@@ -93,8 +93,7 @@ class ProjectileDrawCtx:
     alpha: float
 
 
-@dataclass(frozen=True, slots=True)
-class SecondaryProjectileDrawCtx:
+class SecondaryProjectileDrawCtx(msgspec.Struct, frozen=True):
     renderer: ProjectileRendererLike
     proj: SecondaryProjectile
     proj_type: int

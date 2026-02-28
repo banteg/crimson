@@ -3,7 +3,8 @@ from __future__ import annotations
 """Ordered projectile-decal hooks for presentation planning."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -12,8 +13,7 @@ from ...effects import FxQueue
 from ...projectiles import ProjectileHit, ProjectileTypeId
 
 
-@dataclass(slots=True)
-class ProjectileDecalCtx:
+class ProjectileDecalCtx(msgspec.Struct):
     hit: ProjectileHit
     base_angle: float
     fx_queue: FxQueue

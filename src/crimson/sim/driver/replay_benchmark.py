@@ -7,10 +7,10 @@ import pstats
 import statistics
 import time
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
 
+import msgspec
 from tqdm import tqdm
 
 from grim.config import CrimsonConfig
@@ -33,15 +33,13 @@ class ReplayBenchmarkError(ValueError):
     pass
 
 
-@dataclass(frozen=True, slots=True)
-class BenchmarkSample:
+class BenchmarkSample(msgspec.Struct, frozen=True):
     wall_ms: float
     ticks_per_second: float
     realtime_x: float
 
 
-@dataclass(frozen=True, slots=True)
-class BenchmarkAggregate:
+class BenchmarkAggregate(msgspec.Struct, frozen=True):
     min: float
     p50: float
     mean: float
@@ -50,8 +48,7 @@ class BenchmarkAggregate:
     stdev: float
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayProfileHotspot:
+class ReplayProfileHotspot(msgspec.Struct, frozen=True):
     file: str
     line: int
     function: str
@@ -61,23 +58,20 @@ class ReplayProfileHotspot:
     cumtime: float
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayProfileResult:
+class ReplayProfileResult(msgspec.Struct, frozen=True):
     sort: ProfileSortKey
     top: int
     source: HotspotSource
     hotspots: tuple[ReplayProfileHotspot, ...]
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderTelemetryTopTick:
+class ReplayRenderTelemetryTopTick(msgspec.Struct, frozen=True):
     tick_index: int
     frame_index: int
     value: float
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderTelemetryFrame:
+class ReplayRenderTelemetryFrame(msgspec.Struct, frozen=True):
     frame_index: int
     tick_index_before_update: int
     tick_index_after_update: int
@@ -90,8 +84,7 @@ class ReplayRenderTelemetryFrame:
     pass_ms: dict[str, float]
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderTelemetrySummary:
+class ReplayRenderTelemetrySummary(msgspec.Struct, frozen=True):
     frame_ms: BenchmarkAggregate
     update_ms: BenchmarkAggregate
     draw_ms: BenchmarkAggregate
@@ -101,8 +94,7 @@ class ReplayRenderTelemetrySummary:
     top_draw_calls_ticks: tuple[ReplayRenderTelemetryTopTick, ...]
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderTelemetryArtifacts:
+class ReplayRenderTelemetryArtifacts(msgspec.Struct, frozen=True):
     telemetry_json_path: str | None = None
     charts_dir: str | None = None
     frame_timing_svg: str | None = None
@@ -111,16 +103,14 @@ class ReplayRenderTelemetryArtifacts:
     report_md: str | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayRenderTelemetryResult:
+class ReplayRenderTelemetryResult(msgspec.Struct, frozen=True):
     frames: tuple[ReplayRenderTelemetryFrame, ...]
     summary: ReplayRenderTelemetrySummary
     artifacts: ReplayRenderTelemetryArtifacts | None = None
     preview: tuple[ReplayRenderTelemetryFrame, ...] = ()
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayBenchmarkResult:
+class ReplayBenchmarkResult(msgspec.Struct, frozen=True):
     run_result: RunResult
     samples: tuple[BenchmarkSample, ...]
     wall_ms: BenchmarkAggregate
@@ -130,8 +120,7 @@ class ReplayBenchmarkResult:
     render_telemetry: ReplayRenderTelemetryResult | None = None
 
 
-@dataclass(frozen=True, slots=True)
-class _RenderOnceResult:
+class _RenderOnceResult(msgspec.Struct, frozen=True):
     run_result: RunResult
     telemetry_frames: tuple[RenderTelemetryFrameSnapshot, ...] = ()
 
@@ -362,8 +351,8 @@ def run_replay_render_benchmark(
                 telemetry_json_path = Path(render_telemetry_out)
                 telemetry_json_path.parent.mkdir(parents=True, exist_ok=True)
                 payload = {
-                    "frames": [asdict(frame) for frame in frames],
-                    "summary": asdict(summary),
+                    "frames": [msgspec.to_builtins(frame) for frame in frames],
+                    "summary": msgspec.to_builtins(summary),
                 }
                 telemetry_json_path.write_text(
                     json.dumps(payload, indent=2, sort_keys=True) + "\n",

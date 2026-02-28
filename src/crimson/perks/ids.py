@@ -2,8 +2,9 @@ from __future__ import annotations
 
 """Perk ids and runtime metadata extracted from `perks_init_database` (FUN_0042fd90)."""
 
-from dataclasses import dataclass
 from enum import IntEnum, IntFlag, unique
+
+import msgspec
 
 
 class PerkFlags(IntFlag):
@@ -82,8 +83,7 @@ class PerkId(IntEnum):
     LIFELINE_50_50 = 57
 
 
-@dataclass(frozen=True, slots=True)
-class PerkMeta:
+class PerkMeta(msgspec.Struct, frozen=True):
     perk_id: PerkId
     name: str
     description: str

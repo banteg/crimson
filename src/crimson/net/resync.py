@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import secrets
 import zlib
-from dataclasses import dataclass, field
 
 import msgspec
 
@@ -68,10 +67,9 @@ def build_resync_messages(
     return begin, chunks, commit
 
 
-@dataclass(slots=True)
-class ResyncAssembler:
+class ResyncAssembler(msgspec.Struct):
     begin_message: ResyncBegin | None = None
-    _chunks: dict[int, bytes] = field(default_factory=dict)
+    _chunks: dict[int, bytes] = msgspec.field(default_factory=dict)
     _committed_tick: int | None = None
 
     @property

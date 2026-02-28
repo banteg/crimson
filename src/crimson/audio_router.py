@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.audio import AudioState, play_sfx, trigger_game_tune
 
@@ -69,8 +70,7 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 }
 
 
-@dataclass(slots=True)
-class AudioRouter:
+class AudioRouter(msgspec.Struct):
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
     demo_mode_active: bool = False

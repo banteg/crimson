@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from pathlib import Path
+
+import msgspec
 
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
@@ -85,8 +86,7 @@ COLOR_GREEN = rl.Color(25, 200, 25, 255)
 COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
 
 
-@dataclass(slots=True)
-class QuestResultsAssets:
+class QuestResultsAssets(msgspec.Struct):
     menu_panel: rl.Texture | None
     text_well_done: rl.Texture | None
     particles: rl.Texture | None
@@ -94,8 +94,7 @@ class QuestResultsAssets:
     perk_menu_assets: PerkMenuAssets
 
 
-@dataclass(frozen=True, slots=True)
-class _QuestResultsPanelLayout:
+class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
     panel: Rect
     top_left: Vec2
 
@@ -133,8 +132,7 @@ def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
     )
 
 
-@dataclass(slots=True)
-class QuestResultsUi:
+class QuestResultsUi(msgspec.Struct):
     assets_root: Path
     base_dir: Path
     config: CrimsonConfig
@@ -171,11 +169,11 @@ class QuestResultsUi:
     _consume_enter: bool = False
     _defer_name_input_until_controls_released: bool = False
 
-    _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
-    _play_next_button: UiButtonState = field(default_factory=lambda: UiButtonState("Play Next", force_wide=True))
-    _play_again_button: UiButtonState = field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
-    _high_scores_button: UiButtonState = field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
-    _main_menu_button: UiButtonState = field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
+    _ok_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("OK", force_wide=False))
+    _play_next_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Play Next", force_wide=True))
+    _play_again_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
+    _high_scores_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
+    _main_menu_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
 
     def open(
         self,

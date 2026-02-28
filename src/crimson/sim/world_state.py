@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import cast
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -40,14 +41,13 @@ from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import CREATURE_ANIM
 
 
-@dataclass(slots=True)
-class WorldEvents:
+class WorldEvents(msgspec.Struct):
     hits: list[ProjectileHit]
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
     sfx: list[str]
     trigger_game_tune: bool = False
-    hit_sfx: list[str] = field(default_factory=list)
+    hit_sfx: list[str] = msgspec.field(default_factory=list)
     death_sfx_preplanned: bool = False
 
 
@@ -55,8 +55,7 @@ _WORLD_DT_STEPS = WORLD_DT_STEPS
 _PLAYER_DEATH_HOOKS = PLAYER_DEATH_HOOKS
 
 
-@dataclass(slots=True)
-class WorldState:
+class WorldState(msgspec.Struct):
     spawn_env: SpawnEnv
     state: GameplayState
     players: list[PlayerState]

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
 from typing import cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -42,10 +43,9 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-@dataclass(slots=True)
-class _TutorialUiLayout:
-    panel_pos: Vec2 = field(default_factory=lambda: Vec2(0.0, 64.0))
-    panel_padding: Vec2 = field(default_factory=lambda: Vec2(20.0, 8.0))
+class _TutorialUiLayout(msgspec.Struct):
+    panel_pos: Vec2 = msgspec.field(default_factory=lambda: Vec2(0.0, 64.0))
+    panel_padding: Vec2 = msgspec.field(default_factory=lambda: Vec2(20.0, 8.0))
 
 
 class TutorialMode(BaseGameplayMode):

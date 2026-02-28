@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from ..game_modes import GameMode
 from ..perks import PerkId
@@ -52,8 +53,7 @@ def _bonus_id_from_roll(roll: int, rng: CrandLike) -> BonusId:
     return BonusId(v6)
 
 
-@dataclass(slots=True)
-class _BonusPickCtx:
+class _BonusPickCtx(msgspec.Struct):
     pool: BonusPool
     state: GameplayState
     players: list[PlayerState]

@@ -4,8 +4,9 @@ import math
 import os
 import random
 import time
-from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
@@ -115,14 +116,12 @@ SHADOW_DEBUG_MODE_NAMES: tuple[str, ...] = (
 AUTODIAG_DEBUG_MODE_SEQUENCE: tuple[int, ...] = (1, 2, 3, 4, 5, 6, 7, 0)
 
 
-@dataclass(frozen=True, slots=True)
-class CircleOccluder:
+class CircleOccluder(msgspec.Struct, frozen=True):
     pos: Vec2
     radius: float
 
 
-@dataclass(frozen=True, slots=True)
-class ShadowLight:
+class ShadowLight(msgspec.Struct, frozen=True):
     pos: Vec2
     radius: float
     strength: float
@@ -132,8 +131,7 @@ class ShadowLight:
     stretch: float = 1.0
 
 
-@dataclass(frozen=True, slots=True)
-class TransientLight:
+class TransientLight(msgspec.Struct, frozen=True):
     pos: Vec2
     radius: float
     strength: float
@@ -141,8 +139,7 @@ class TransientLight:
     age: float = 0.0
 
 
-@dataclass(frozen=True, slots=True)
-class EmissiveProfile:
+class EmissiveProfile(msgspec.Struct, frozen=True):
     name: str
     auto_interval: float
     rate_weapon_id: int | None = None
@@ -158,15 +155,13 @@ class EmissiveProfile:
     explosion_distance: float = 110.0
 
 
-@dataclass(frozen=True, slots=True)
-class SpawnPreset:
+class SpawnPreset(msgspec.Struct, frozen=True):
     name: str
     spawn_id: int
     ring_count: int = 10
 
 
-@dataclass(slots=True)
-class StaticEmitter:
+class StaticEmitter(msgspec.Struct):
     pos: Vec2
     angle: float
     radius: float
@@ -175,8 +170,7 @@ class StaticEmitter:
     stretch: float
 
 
-@dataclass(slots=True)
-class _StaticDragState:
+class _StaticDragState(msgspec.Struct):
     kind: str
     emitter_index: int
     mouse_start_world: Vec2
@@ -185,8 +179,7 @@ class _StaticDragState:
     value_start: float
 
 
-@dataclass(frozen=True, slots=True)
-class _ShadowUniforms:
+class _ShadowUniforms(msgspec.Struct, frozen=True):
     resolution: int
     rt_resolution: int
     camera: int
@@ -205,14 +198,12 @@ class _ShadowUniforms:
     debug_mode: int
 
 
-@dataclass(frozen=True, slots=True)
-class _TemporalUniforms:
+class _TemporalUniforms(msgspec.Struct, frozen=True):
     current_tex: int
     response: int
 
 
-@dataclass(frozen=True, slots=True)
-class _TuneParam:
+class _TuneParam(msgspec.Struct, frozen=True):
     key: str
     label: str
     minimum: float
@@ -221,8 +212,7 @@ class _TuneParam:
     coarse_step: float
 
 
-@dataclass(frozen=True, slots=True)
-class _AutoTunePreset:
+class _AutoTunePreset(msgspec.Struct, frozen=True):
     name: str
     ambient_darkness: float
     shadow_strength: float
@@ -250,8 +240,7 @@ class _AutoTunePreset:
         }
 
 
-@dataclass(frozen=True, slots=True)
-class _ShadowFrameMetrics:
+class _ShadowFrameMetrics(msgspec.Struct, frozen=True):
     mean_alpha: float
     std_alpha: float
     contrast: float
@@ -259,8 +248,7 @@ class _ShadowFrameMetrics:
     banding: float
 
 
-@dataclass(slots=True)
-class _AutoTuneAccumulator:
+class _AutoTuneAccumulator(msgspec.Struct):
     sample_count: int = 0
     flicker_count: int = 0
     shadow_ms_sum: float = 0.0
@@ -272,8 +260,7 @@ class _AutoTuneAccumulator:
     flicker_sum: float = 0.0
 
 
-@dataclass(frozen=True, slots=True)
-class _AutoTuneResult:
+class _AutoTuneResult(msgspec.Struct, frozen=True):
     preset: _AutoTunePreset
     score: float
     shadow_ms: float
@@ -1093,7 +1080,7 @@ def tick_transient_lights(lights: list[TransientLight], dt: float) -> list[Trans
         age = float(light.age) + float(dt)
         if age >= float(light.ttl):
             continue
-        next_lights.append(replace(light, age=age))
+        next_lights.append(msgspec.structs.replace(light, age=age))
     return next_lights
 
 

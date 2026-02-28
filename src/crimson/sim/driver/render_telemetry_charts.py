@@ -5,9 +5,10 @@ import importlib
 import json
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol, cast
+
+import msgspec
 
 
 class _TelemetryFrameLike(Protocol):
@@ -19,8 +20,7 @@ class _TelemetryFrameLike(Protocol):
     pass_ms: dict[str, float]
 
 
-@dataclass(frozen=True, slots=True)
-class _TelemetryFrame:
+class _TelemetryFrame(msgspec.Struct, frozen=True):
     tick_index_after_update: int
     frame_ms: float
     update_ms: float
@@ -57,8 +57,7 @@ _PASS_CHILDREN_BY_PARENT: dict[str, frozenset[str]] = {
 }
 
 
-@dataclass(frozen=True, slots=True)
-class _PassChartMeta:
+class _PassChartMeta(msgspec.Struct, frozen=True):
     pass_names: list[str]
     source_frames: int
     binned_points: int

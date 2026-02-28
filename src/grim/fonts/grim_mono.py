@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
+import msgspec
 from construct import ConstructError
 
 from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
@@ -15,8 +15,7 @@ GRIM_MONO_LINE_HEIGHT = 28.0
 GRIM_MONO_TEXTURE_FILTER = rl.TextureFilter.TEXTURE_FILTER_BILINEAR
 
 
-@dataclass(frozen=True, slots=True)
-class GrimMonoFont:
+class GrimMonoFont(msgspec.Struct, frozen=True):
     texture: rl.Texture
     grid: int = 16
     cell_width: float = 16.0

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
+
+import msgspec
 
 from grim.assets import TextureLoader
 from grim.color import RGBA
@@ -67,8 +68,7 @@ class SmallFontLike(Protocol):
     def cell_size(self) -> int: ...
 
 
-@dataclass(slots=True)
-class HudAssets:
+class HudAssets(msgspec.Struct):
     game_top: rl.Texture | None
     life_heart: rl.Texture | None
     ind_life: rl.Texture | None
@@ -83,8 +83,7 @@ class HudAssets:
     bonuses: rl.Texture | None
 
 
-@dataclass(frozen=True, slots=True)
-class HudRenderFlags:
+class HudRenderFlags(msgspec.Struct, frozen=True):
     show_health: bool
     show_weapon: bool
     show_xp: bool
@@ -92,8 +91,7 @@ class HudRenderFlags:
     show_quest_hud: bool
 
 
-@dataclass(frozen=True, slots=True)
-class HudRenderContext:
+class HudRenderContext(msgspec.Struct, frozen=True):
     assets: HudAssets
     state: HudState
     font: SmallFontData | None = None
@@ -106,8 +104,7 @@ class HudRenderContext:
     small_indicators: bool = False
 
 
-@dataclass(slots=True)
-class HudState:
+class HudState(msgspec.Struct):
     survival_xp_smoothed: int = 0
     preserve_bugs: bool = False
 
@@ -139,8 +136,7 @@ class HudState:
         return smoothed
 
 
-@dataclass(frozen=True, slots=True)
-class HudLayout:
+class HudLayout(msgspec.Struct, frozen=True):
     scale: float
     text_scale: float
     line_h: float

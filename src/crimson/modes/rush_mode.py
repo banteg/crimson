@@ -4,7 +4,8 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -53,8 +54,7 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 
-@dataclass(slots=True)
-class _RushState:
+class _RushState(msgspec.Struct):
     elapsed_ms: float = 0.0
     spawn_cooldown_ms: float = 0.0
 
@@ -297,9 +297,9 @@ class RushMode(BaseGameplayMode):
             player_index=int(self.player.index),
             fallback_weapon_id=self.player.weapon.weapon_id,
         )
-        replay = replace(
+        replay = msgspec.structs.replace(
             replay,
-            header=replace(
+            header=msgspec.structs.replace(
                 replay.header,
                 claimed_stats=ReplayClaimedStatsSnapshot(
                     complete=bool(self._game_over_active),

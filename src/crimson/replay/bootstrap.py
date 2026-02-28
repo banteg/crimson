@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from ..sim.bootstrap import (
     BOOTSTRAP_KIND_NONE,
@@ -25,8 +26,7 @@ class ReplayRng(Protocol):
     def rand(self) -> int: ...
 
 
-@dataclass(frozen=True, slots=True)
-class AppliedReplayBootstrap:
+class AppliedReplayBootstrap(msgspec.Struct, frozen=True):
     """Bootstrap data produced when applying a replay header."""
 
     terrain: TerrainBootstrapResult

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+import msgspec
 
 from grim.geom import Vec2
 
@@ -47,8 +47,7 @@ _TUTORIAL_HINT_TEXT_BUGS: tuple[str, ...] = (
 )
 
 
-@dataclass(slots=True)
-class TutorialState:
+class TutorialState(msgspec.Struct):
     stage_index: int = -1
     stage_timer_ms: int = 0
     stage_transition_timer_ms: int = -1000
@@ -60,15 +59,13 @@ class TutorialState:
     preserve_bugs: bool = False
 
 
-@dataclass(frozen=True, slots=True)
-class BonusSpawnCall:
+class BonusSpawnCall(msgspec.Struct, frozen=True):
     bonus_id: BonusId
     amount: int
     pos: Vec2
 
 
-@dataclass(frozen=True, slots=True)
-class TutorialFrameActions:
+class TutorialFrameActions(msgspec.Struct, frozen=True):
     prompt_text: str = ""
     prompt_alpha: float = 0.0
     hint_text: str = ""
@@ -211,7 +208,7 @@ def tick_tutorial_timeline(
       applied by this tick. The returned state reflects the post-trigger values for the next frame.
     """
     dt_ms = int(float(frame_dt_ms))
-    state = replace(state)
+    state = msgspec.structs.replace(state)
     state.stage_timer_ms = int(state.stage_timer_ms) + dt_ms
 
     stage_index, transition_timer_ms = _tick_stage_transition(state.stage_index, state.stage_transition_timer_ms, frame_dt_ms=dt_ms)

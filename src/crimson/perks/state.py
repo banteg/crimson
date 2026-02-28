@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -19,8 +20,7 @@ class CreatureForPerks(Protocol):
     size: float
 
 
-@dataclass(slots=True)
-class PerkEffectIntervals:
+class PerkEffectIntervals(msgspec.Struct):
     """Global thresholds used by perk timers in `player_update`.
 
     These are global (not per-player) in crimsonland.exe: `flt_473310`,
@@ -32,9 +32,8 @@ class PerkEffectIntervals:
     hot_tempered: float = 2.0
 
 
-@dataclass(slots=True)
-class PerkSelectionState:
+class PerkSelectionState(msgspec.Struct):
     pending_count: int = 0
-    choices: list[int] = field(default_factory=list)
+    choices: list[int] = msgspec.field(default_factory=list)
     choices_dirty: bool = True
     capture_player_perk_counts_known: bool = True

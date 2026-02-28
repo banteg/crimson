@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import IntEnum
+
+import msgspec
 
 LOCAL_PLAYER_OWNER_ID = -100
 
@@ -12,8 +13,7 @@ class OwnerKind(IntEnum):
     CREATURE = 2
 
 
-@dataclass(frozen=True, slots=True)
-class OwnerRef:
+class OwnerRef(msgspec.Struct, frozen=True):
     kind: OwnerKind
     index: int = 0
     local_host: bool = False

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from .spawn_ids import CreatureFlags, CreatureTypeId, SpawnId, Tint
 
 
-@dataclass(frozen=True, slots=True)
-class SpawnTemplate:
+class SpawnTemplate(msgspec.Struct, frozen=True):
     spawn_id: SpawnId
     type_id: CreatureTypeId | None
     flags: CreatureFlags | None

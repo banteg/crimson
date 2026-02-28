@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
@@ -22,15 +22,13 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
 
-@dataclass(slots=True)
-class SliderState:
+class SliderState(msgspec.Struct):
     value: int
     min_value: int
     max_value: int
 
 
-@dataclass(frozen=True, slots=True)
-class _OptionsContentLayout:
+class _OptionsContentLayout(msgspec.Struct, frozen=True):
     scale: float
     base_pos: Vec2
     label_pos: Vec2

@@ -1,25 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import msgspec
 
 from .relay_protocol import RELIABLE_RESEND_MS, NetMessage, Packet
 
 
-@dataclass(slots=True)
-class _PendingReliable:
+class _PendingReliable(msgspec.Struct):
     packet: Packet
     sent_at_ms: int
 
 
-@dataclass(slots=True)
-class RelayReliableLink:
+class RelayReliableLink(msgspec.Struct):
     """Per-peer reliability state for relay protocol packets."""
 
     resend_ms: int = RELIABLE_RESEND_MS
     _next_seq: int = 1
     _recv_highest_seq: int = 0
-    _pending: dict[int, _PendingReliable] = field(default_factory=dict)
-    _recv_buffer: dict[int, Packet] = field(default_factory=dict)
+    _pending: dict[int, _PendingReliable] = msgspec.field(default_factory=dict)
+    _recv_buffer: dict[int, Packet] = msgspec.field(default_factory=dict)
     _rtt_last_ms: int = 0
     _rtt_ewma_ms: float = 0.0
     _resend_count: int = 0

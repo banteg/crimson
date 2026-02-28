@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+import msgspec
 
 
-@dataclass(frozen=True, slots=True)
-class ParityPolicy:
+class ParityPolicy(msgspec.Struct, frozen=True):
     name: str
     float_abs_tol: float
     max_field_diffs: int
@@ -89,7 +88,7 @@ def resolve_parity_policy(
         raise ValueError(f"unknown parity policy {name!r}; available: {available}")
     policy = _POLICIES[key]
     if float_abs_tol is not None:
-        policy = replace(policy, float_abs_tol=max(0.0, float(float_abs_tol)))
+        policy = msgspec.structs.replace(policy, float_abs_tol=max(0.0, float(float_abs_tol)))
     if max_field_diffs is not None:
-        policy = replace(policy, max_field_diffs=max(1, int(max_field_diffs)))
+        policy = msgspec.structs.replace(policy, max_field_diffs=max(1, int(max_field_diffs)))
     return policy

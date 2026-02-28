@@ -12,8 +12,9 @@ See: `docs/creatures/update.md`.
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field, replace
 from typing import Protocol, cast
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -238,19 +239,18 @@ def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
     return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
 
 
-@dataclass(slots=True)
-class CreatureState:
+class CreatureState(msgspec.Struct):
     # Core identity/alive flags.
     active: bool = False
     type_id: CreatureTypeId = CreatureTypeId.ZOMBIE
 
     # Movement / AI.
-    pos: Vec2 = field(default_factory=Vec2)
-    vel: Vec2 = field(default_factory=Vec2)
+    pos: Vec2 = msgspec.field(default_factory=Vec2)
+    vel: Vec2 = msgspec.field(default_factory=Vec2)
     heading: float = 0.0
     target_heading: float = 0.0
     force_target: int = 0
-    target: Vec2 = field(default_factory=Vec2)
+    target: Vec2 = msgspec.field(default_factory=Vec2)
     target_player: int = 0
     ai_mode: int = CreatureAiMode.ORBIT_PLAYER
     flags: CreatureFlags = CreatureFlags(0)
@@ -282,8 +282,8 @@ class CreatureState:
     size: float = 50.0
     anim_phase: float = 0.0
     hit_flash_timer: float = 0.0
-    last_hit_owner: OwnerRef = field(default_factory=lambda: OwnerRef.from_local_player(0))
-    tint: RGBA = field(default_factory=RGBA)
+    last_hit_owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
+    tint: RGBA = msgspec.field(default_factory=RGBA)
 
     # Rewrite-only helpers (not in native struct, but derived from spawn plans).
     spawn_slot_index: int | None = None
@@ -299,8 +299,7 @@ class CreatureState:
         self.last_hit_owner = value
 
 
-@dataclass(frozen=True, slots=True)
-class CreatureDeath:
+class CreatureDeath(msgspec.Struct, frozen=True):
     index: int
     pos: Vec2
     type_id: CreatureTypeId
@@ -313,15 +312,13 @@ class CreatureDeath:
     plan_death_sfx: bool = True
 
 
-@dataclass(frozen=True, slots=True)
-class CreatureUpdateResult:
+class CreatureUpdateResult(msgspec.Struct, frozen=True):
     deaths: tuple[CreatureDeath, ...] = ()
     spawned: tuple[int, ...] = ()
     sfx: tuple[str, ...] = ()
 
 
-@dataclass(frozen=True, slots=True)
-class CreatureUpdateOptions:
+class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
     dt_ms_i32: int | None = None
@@ -335,8 +332,7 @@ class CreatureUpdateOptions:
     fx_queue_rotated: FxQueueRotated | None = None
 
 
-@dataclass(slots=True)
-class _CreatureInteractionCtx:
+class _CreatureInteractionCtx(msgspec.Struct):
     pool: CreaturePool
     creature_index: int
     creature: CreatureState
@@ -1383,7 +1379,7 @@ class CreaturePool:
             creature.active = False
 
         if not bool(plan_death_sfx):
-            death = replace(death, plan_death_sfx=False)
+            death = msgspec.structs.replace(death, plan_death_sfx=False)
 
         return death
 
@@ -1576,7 +1572,7 @@ class CreaturePool:
         if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
             for heading_offset in (-math.pi / 2.0, math.pi / 2.0):
                 child_idx = self._alloc_slot(rand=rand)
-                child = replace(creature)
+                child = msgspec.structs.replace(creature)
                 child.phase_seed = float(int(rand()) & 0xFF)
                 child.heading = _wrap_angle(float(creature.heading) + float(heading_offset))
                 child.target_heading = float(child.heading)

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import datetime as dt
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
 
+import msgspec
 from construct import Array, Bytes, ConstructError, Int16ul, Int32ul, Struct
 
 GAME_CFG_NAME = "game.cfg"
@@ -45,8 +45,7 @@ GAME_CFG_STRUCT = Struct(
 )
 
 
-@dataclass(slots=True)
-class StatusBlob:
+class StatusBlob(msgspec.Struct):
     decoded: bytes
     checksum: int
     checksum_expected: int
@@ -56,8 +55,7 @@ class StatusBlob:
         return (self.checksum & 0xFFFFFFFF) == (self.checksum_expected & 0xFFFFFFFF)
 
 
-@dataclass(slots=True)
-class GameStatus:
+class GameStatus(msgspec.Struct):
     path: Path
     data: dict
     dirty: bool = False

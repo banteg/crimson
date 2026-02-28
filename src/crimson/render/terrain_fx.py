@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import effect_src_rect
@@ -11,8 +12,7 @@ from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
 __all__ = ["bake_fx_queues", "FxQueueTextures"]
 
 
-@dataclass(frozen=True, slots=True)
-class FxQueueTextures:
+class FxQueueTextures(msgspec.Struct, frozen=True):
     particles: rl.Texture
     bodyset: rl.Texture
 

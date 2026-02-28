@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
+
+import msgspec
 
 from .math import clamp
 
@@ -22,8 +23,7 @@ class SupportsRect(Protocol):
     height: float
 
 
-@dataclass(slots=True, frozen=True)
-class Vec2:
+class Vec2(msgspec.Struct, frozen=True):
     x: float = 0.0
     y: float = 0.0
 
@@ -152,8 +152,7 @@ class Vec2:
         )
 
 
-@dataclass(slots=True, frozen=True)
-class Rect:
+class Rect(msgspec.Struct, frozen=True):
     x: float = 0.0
     y: float = 0.0
     w: float = 0.0

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import inspect
 import random
-from dataclasses import replace
+
+import msgspec
 
 from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
@@ -46,7 +47,7 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
                 count += 2
             else:
                 count += 8
-        adjusted.append(entry if count == entry.count else replace(entry, count=count))
+        adjusted.append(entry if count == entry.count else msgspec.structs.replace(entry, count=count))
     return adjusted
 
 

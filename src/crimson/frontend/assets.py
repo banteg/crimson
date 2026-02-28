@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path
 from grim.raylib_api import rl
@@ -8,8 +8,7 @@ from grim.raylib_api import rl
 from .types import GameState
 
 
-@dataclass(slots=True)
-class MenuAssets:
+class MenuAssets(msgspec.Struct):
     sign: rl.Texture
     item: rl.Texture
     panel: rl.Texture

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.raylib_api import rl
 
@@ -12,8 +13,7 @@ from .config import CrimsonConfig
 from .console import ConsoleState
 
 
-@dataclass(slots=True)
-class AudioState:
+class AudioState(msgspec.Struct):
     ready: bool
     music: music.MusicState
     sfx: sfx.SfxState

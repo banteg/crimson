@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, MutableSequence, Sequence
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -33,8 +34,7 @@ if TYPE_CHECKING:
     from .projectile_pool import ProjectilePool
 
 
-@dataclass(slots=True)
-class _ProjectileUpdateCtx:
+class _ProjectileUpdateCtx(msgspec.Struct):
     pool: ProjectilePool
     creatures: Sequence[CreatureState]
     dt: float
@@ -47,8 +47,7 @@ class _ProjectileUpdateCtx:
     apply_creature_damage: CreatureDamageApplier | None
 
 
-@dataclass(slots=True)
-class _ProjectileHitInfo:
+class _ProjectileHitInfo(msgspec.Struct):
     proj_index: int
     proj: Projectile
     hit_idx: int
@@ -56,8 +55,7 @@ class _ProjectileHitInfo:
     target: Vec2
 
 
-@dataclass(slots=True)
-class _ProjectileHitPerkCtx:
+class _ProjectileHitPerkCtx(msgspec.Struct):
     proj: Projectile
     creature: CreatureState
     rng: Callable[[], int]
@@ -81,8 +79,7 @@ ProjectilePreHitCreatureHandler = Callable[[_ProjectileUpdateCtx, Projectile, in
 ProjectilePostHitCreatureHandler = Callable[[_ProjectileUpdateCtx, _ProjectileHitInfo], None]
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileBehavior:
+class ProjectileBehavior(msgspec.Struct, frozen=True):
     linger: ProjectileLingerHandler
     pre_hit_creature: ProjectilePreHitCreatureHandler | None = None
     post_hit_creature: ProjectilePostHitCreatureHandler | None = None

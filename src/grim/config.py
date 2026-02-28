@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+import msgspec
 from construct import Byte, Bytes, Float32l, Int32ul, Struct
 
 CRIMSON_CFG_NAME = "crimson.cfg"
@@ -509,8 +509,7 @@ def set_hud_indicator_for_player(config_data: dict, *, player_index: int, enable
     config_data["unknown_248"] = bytes(blob)
 
 
-@dataclass(slots=True)
-class CrimsonConfig:
+class CrimsonConfig(msgspec.Struct):
     path: Path
     data: dict
 

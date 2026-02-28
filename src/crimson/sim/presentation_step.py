@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -72,10 +73,9 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 }
 
 
-@dataclass(slots=True)
-class PresentationStepCommands:
+class PresentationStepCommands(msgspec.Struct):
     trigger_game_tune: bool = False
-    sfx_keys: list[str] = field(default_factory=list)
+    sfx_keys: list[str] = msgspec.field(default_factory=list)
 
 
 def plan_player_audio_sfx(
@@ -193,8 +193,7 @@ def plan_death_sfx_keys(
     return keys
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileDecalPostCtx:
+class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
     hit: ProjectileHit
     base_angle: float
     type_id: int

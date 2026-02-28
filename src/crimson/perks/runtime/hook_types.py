@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
+
+import msgspec
 
 from ..ids import PerkId
 from .apply_context import PerkApplyHandler
@@ -39,8 +40,7 @@ PlayerPerkTickStep = Callable[[PlayerPerkTickCtx], None]
 PerksUpdateEffectsStep = Callable[[PerksUpdateEffectsCtx], None]
 
 
-@dataclass(frozen=True, slots=True)
-class PerkHooks:
+class PerkHooks(msgspec.Struct, frozen=True):
     perk_id: PerkId
     apply_handler: PerkApplyHandler | None = None
     world_dt_step: WorldDtStep | None = None

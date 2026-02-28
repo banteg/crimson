@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable, Iterator, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+
+import msgspec
 
 from grim.raylib_api import rd, rl
 
@@ -147,8 +148,7 @@ def _maybe_alpha_test(enabled: bool) -> Iterator[None]:
         rl.end_shader_mode()
 
 
-@dataclass(slots=True)
-class GroundDecal:
+class GroundDecal(msgspec.Struct):
     texture: rl.Texture
     src: rl.Rectangle
     pos: Vec2
@@ -159,8 +159,7 @@ class GroundDecal:
     centered: bool = True
 
 
-@dataclass(slots=True)
-class GroundCorpseDecal:
+class GroundCorpseDecal(msgspec.Struct):
     bodyset_frame: int
     top_left: Vec2
     size: float
@@ -168,8 +167,7 @@ class GroundCorpseDecal:
     tint: rl.Color = rl.WHITE
 
 
-@dataclass(slots=True)
-class GroundRenderer:
+class GroundRenderer(msgspec.Struct):
     texture: rl.Texture
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
@@ -183,19 +181,19 @@ class GroundRenderer:
     overlay_detail: rl.Texture | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
-    _debug_stamp_log: list[dict[str, object]] = field(default_factory=list, init=False, repr=False)
-    _render_target_ready: bool = field(default=False, init=False, repr=False)
-    _pending_generate: bool = field(default=False, init=False, repr=False)
-    _pending_generate_seed: int | None = field(default=None, init=False, repr=False)
-    _pending_generate_layers: int = field(default=3, init=False, repr=False)
-    _render_target_warmup_passes: int = field(default=0, init=False, repr=False)
-    _fallback_seed: int | None = field(default=None, init=False, repr=False)
-    _fallback_layers: int = field(default=0, init=False, repr=False)
-    _fallback_patches: list[GroundDecal] = field(default_factory=list, init=False, repr=False)
-    _fallback_decals: list[GroundDecal] = field(default_factory=list, init=False, repr=False)
-    _fallback_corpse_decals: list[GroundCorpseDecal] = field(default_factory=list, init=False, repr=False)
-    _fallback_bodyset_texture: rl.Texture | None = field(default=None, init=False, repr=False)
-    _fallback_corpse_shadow: bool = field(default=True, init=False, repr=False)
+    _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
+    _render_target_ready: bool = msgspec.field(default=False)
+    _pending_generate: bool = msgspec.field(default=False)
+    _pending_generate_seed: int | None = msgspec.field(default=None)
+    _pending_generate_layers: int = msgspec.field(default=3)
+    _render_target_warmup_passes: int = msgspec.field(default=0)
+    _fallback_seed: int | None = msgspec.field(default=None)
+    _fallback_layers: int = msgspec.field(default=0)
+    _fallback_patches: list[GroundDecal] = msgspec.field(default_factory=list)
+    _fallback_decals: list[GroundDecal] = msgspec.field(default_factory=list)
+    _fallback_corpse_decals: list[GroundCorpseDecal] = msgspec.field(default_factory=list)
+    _fallback_bodyset_texture: rl.Texture | None = msgspec.field(default=None)
+    _fallback_corpse_shadow: bool = msgspec.field(default=True)
 
     def debug_clear_stamp_log(self) -> None:
         self._debug_stamp_log.clear()

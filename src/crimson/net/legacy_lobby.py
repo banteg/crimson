@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+
+import msgspec
 
 from .protocol import (
     PROTOCOL_VERSION,
@@ -17,16 +18,14 @@ from .protocol import (
 from .transport import PeerAddr
 
 
-@dataclass(slots=True)
-class HostPeer:
+class HostPeer(msgspec.Struct):
     addr: PeerAddr
     slot_index: int
     ready: bool = False
     peer_name: str = ""
 
 
-@dataclass(slots=True)
-class HostLobby:
+class HostLobby(msgspec.Struct):
     mode_id: int
     player_count: int
     build_id: str
@@ -34,10 +33,10 @@ class HostLobby:
     input_delay_ticks: int
     quest_level: str = ""
     preserve_bugs: bool = False
-    session_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+    session_id: str = msgspec.field(default_factory=lambda: uuid.uuid4().hex[:12])
     started: bool = False
     host_ready: bool = True
-    peers_by_addr: dict[PeerAddr, HostPeer] = field(default_factory=dict)
+    peers_by_addr: dict[PeerAddr, HostPeer] = msgspec.field(default_factory=dict)
 
     def _next_free_slot(self) -> int | None:
         used = {0}
@@ -179,8 +178,7 @@ class HostLobby:
         )
 
 
-@dataclass(slots=True)
-class ClientLobby:
+class ClientLobby(msgspec.Struct):
     build_id: str
     hello: Hello
     welcome: Welcome | None = None

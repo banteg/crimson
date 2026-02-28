@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol
+
+import msgspec
 
 from ..paths import default_runtime_dir
 from ..render.rtx.mode import RtxRenderMode
@@ -26,9 +27,8 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
 
 
-@dataclass(frozen=True, slots=True)
-class GameConfig:
-    base_dir: Path = field(default_factory=default_runtime_dir)
+class GameConfig(msgspec.Struct, frozen=True):
+    base_dir: Path = msgspec.field(default_factory=default_runtime_dir)
     assets_dir: Path | None = None
     width: int | None = None
     height: int | None = None
@@ -50,8 +50,7 @@ NetSessionRole = LanSessionRole
 NetcodeMode = Literal["rollback", "lockstep_legacy"]
 
 
-@dataclass(frozen=True, slots=True)
-class LanSessionConfig:
+class LanSessionConfig(msgspec.Struct, frozen=True):
     mode: LanSessionMode
     player_count: int = 1
     quest_level: str = ""
@@ -83,8 +82,7 @@ class LanSessionConfig:
         return int(self.port)
 
 
-@dataclass(slots=True)
-class PendingLanSession:
+class PendingLanSession(msgspec.Struct):
     role: LanSessionRole
     config: LanSessionConfig
     auto_start: bool = False
@@ -96,8 +94,7 @@ NetSessionConfig = LanSessionConfig
 PendingNetSession = PendingLanSession
 
 
-@dataclass(slots=True)
-class HighScoresRequest:
+class HighScoresRequest(msgspec.Struct):
     game_mode_id: int
     quest_stage_major: int = 0
     quest_stage_minor: int = 0
@@ -120,8 +117,7 @@ class PauseBackground(Protocol):
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
 
 
-@dataclass(slots=True)
-class GameState:
+class GameState(msgspec.Struct):
     base_dir: Path
     assets_dir: Path
     rng: random.Random
@@ -135,7 +131,7 @@ class GameState:
     audio: AudioState | None
     resource_paq: Path
     session_start: float
-    rtx_mode: RtxRenderMode = field(default_factory=_default_rtx_render_mode)
+    rtx_mode: RtxRenderMode = msgspec.field(default_factory=_default_rtx_render_mode)
     skip_intro: bool = False
     gamma_ramp: float = 1.0
     snd_freq_adjustment_enabled: bool = True

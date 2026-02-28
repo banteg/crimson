@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 from typing import Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -50,14 +51,13 @@ def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2,
     return -1
 
 
-@dataclass(slots=True)
-class PerksUpdateEffectsCtx:
+class PerksUpdateEffectsCtx(msgspec.Struct):
     state: GameplayState
     players: list[PlayerState]
     dt: float
     creatures: Sequence[CreatureForPerks] | None
     fx_queue: FxQueue | None
-    _aim_target_by_player_index: dict[int, int] = field(default_factory=dict)
+    _aim_target_by_player_index: dict[int, int] = msgspec.field(default_factory=dict)
 
     def aim_target_for_player(self, player_index: int) -> int:
         player_index = int(player_index)

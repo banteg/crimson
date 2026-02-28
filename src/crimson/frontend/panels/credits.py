@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
@@ -81,8 +81,7 @@ _CREDITS_SECRET_LINES = (
 assert len(_CREDITS_SECRET_LINES) == _CREDITS_SECRET_LINE_COUNT
 
 
-@dataclass(slots=True)
-class _CreditsLine:
+class _CreditsLine(msgspec.Struct):
     text: str = ""
     flags: int = 0
 

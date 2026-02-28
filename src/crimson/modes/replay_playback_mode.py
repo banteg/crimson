@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import random
-from dataclasses import replace
 from pathlib import Path
+
+import msgspec
 
 from grim import music as grim_music
 from grim.assets import TextureLoader
@@ -590,7 +591,7 @@ class ReplayPlaybackMode:
         self._apply_tick_events(self._events_by_tick.get(int(tick_index), []), tick_index=tick_index, dt_frame=dt_frame)
 
         player_inputs = [
-            replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])
+            msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])
         ]
         tick = session.step_tick(
             dt_frame=float(dt_frame),

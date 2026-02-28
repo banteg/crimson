@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import msgspec
 
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
@@ -69,8 +69,7 @@ from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
 
 
-@dataclass(frozen=True, slots=True)
-class _DropdownLayout:
+class _DropdownLayout(msgspec.Struct, frozen=True):
     pos: Vec2
     width: float
     header_h: float

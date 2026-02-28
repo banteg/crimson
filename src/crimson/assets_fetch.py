@@ -5,8 +5,9 @@ import shutil
 import tempfile
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
 from pathlib import Path
+
+import msgspec
 
 from grim.console import ConsoleState
 
@@ -14,8 +15,7 @@ ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93"
 DEFAULT_PAQ_FILES = ("crimson.paq", "music.paq", "sfx.paq")
 
 
-@dataclass(frozen=True, slots=True)
-class DownloadResult:
+class DownloadResult(msgspec.Struct, frozen=True):
     name: str
     ok: bool
     error: str | None = None

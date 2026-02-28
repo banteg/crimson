@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass
 from pathlib import Path
 
+import msgspec
 from construct import ConstructError
 
 from grim.audio import AudioState, init_audio_state
@@ -14,8 +14,7 @@ from ..assets_fetch import download_missing_paqs
 from ..paths import default_runtime_dir
 
 
-@dataclass(slots=True)
-class ViewAudioBootstrap:
+class ViewAudioBootstrap(msgspec.Struct):
     config: CrimsonConfig | None
     console: ConsoleState | None
     audio: AudioState | None

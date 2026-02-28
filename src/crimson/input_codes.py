@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+
+import msgspec
 
 from grim.config import CrimsonConfig, default_player_keybind_block, player_keybind_block
 from grim.raylib_api import rl
@@ -161,11 +162,10 @@ _RIM_BUTTON_CODES: dict[int, tuple[int, int]] = {
 }
 
 
-@dataclass(slots=True)
-class _PressedState:
-    prev_down: dict[tuple[int, int], bool] = field(default_factory=dict)
-    down: dict[tuple[int, int], bool] = field(default_factory=dict)
-    pressed_cache: dict[tuple[int, int], bool] = field(default_factory=dict)
+class _PressedState(msgspec.Struct):
+    prev_down: dict[tuple[int, int], bool] = msgspec.field(default_factory=dict)
+    down: dict[tuple[int, int], bool] = msgspec.field(default_factory=dict)
+    pressed_cache: dict[tuple[int, int], bool] = msgspec.field(default_factory=dict)
     wheel_up: bool = False
     wheel_down: bool = False
 

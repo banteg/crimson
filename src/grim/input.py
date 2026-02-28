@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import msgspec
 
 from grim.raylib_api import rl
 
 
-@dataclass(slots=True)
-class ActionMap:
-    bindings: dict[str, tuple[int, ...]] = field(default_factory=dict)
+class ActionMap(msgspec.Struct):
+    bindings: dict[str, tuple[int, ...]] = msgspec.field(default_factory=dict)
 
     def bind(self, action: str, *keys: int) -> None:
         if not keys:

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -13,8 +14,7 @@ OwnerRefForPlayerFn = Callable[[int], OwnerRef]
 OwnerRefForPlayerProjectilesFn = Callable[[GameplayState, int], OwnerRef]
 
 
-@dataclass(slots=True)
-class PlayerPerkTickCtx:
+class PlayerPerkTickCtx(msgspec.Struct):
     state: GameplayState
     player: PlayerState
     player_pos_before_move: Vec2

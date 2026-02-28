@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from ..terrain_assets import TerrainTextureId
 
@@ -70,8 +71,7 @@ def terrain_stamping_draws(*, width: int, height: int, layers: int = 3) -> int:
     return int(stamps * TERRAIN_RAND_DRAWS_PER_STAMP)
 
 
-@dataclass(frozen=True, slots=True)
-class TerrainBootstrapResult:
+class TerrainBootstrapResult(msgspec.Struct, frozen=True):
     kind: str
     seed_before: int
     seed_after: int

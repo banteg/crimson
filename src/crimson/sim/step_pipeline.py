@@ -3,7 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable
-from dataclasses import dataclass, field
+
+import msgspec
 
 from ..effects import FxQueue, FxQueueRotated
 from ..math_parity import f32
@@ -15,14 +16,12 @@ from .presentation_step import PresentationStepCommands, apply_world_presentatio
 from .world_state import WorldEvents, WorldState
 
 
-@dataclass(slots=True)
-class PresentationRngTrace:
+class PresentationRngTrace(msgspec.Struct):
     draws_total: int = 0
-    draws_by_consumer: dict[str, int] = field(default_factory=dict)
+    draws_by_consumer: dict[str, int] = msgspec.field(default_factory=dict)
 
 
-@dataclass(slots=True)
-class DeterministicStepResult:
+class DeterministicStepResult(msgspec.Struct):
     dt_sim: float
     events: WorldEvents
     presentation: PresentationStepCommands
@@ -30,8 +29,7 @@ class DeterministicStepResult:
     presentation_rng_trace: PresentationRngTrace
 
 
-@dataclass(frozen=True, slots=True)
-class StepPipelineOptions:
+class StepPipelineOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float]
     detail_preset: int

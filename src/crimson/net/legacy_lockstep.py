@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass, field
+
+import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .protocol import (
@@ -19,13 +20,12 @@ CLIENT_MAX_RESEND_SAMPLES = 64
 CLIENT_MAX_SENT_HISTORY_TICKS = 256
 
 
-@dataclass(slots=True)
-class HostLockstepState:
+class HostLockstepState(msgspec.Struct):
     player_count: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = INPUT_STALL_TIMEOUT_MS
     state_hash_period_ticks: int = STATE_HASH_PERIOD_TICKS
-    _inputs_by_tick: dict[int, dict[int, PackedPlayerInput]] = field(default_factory=dict)
+    _inputs_by_tick: dict[int, dict[int, PackedPlayerInput]] = msgspec.field(default_factory=dict)
     _next_emit_tick: int = 0
     _last_progress_ms: int = 0
     _paused: bool = False
@@ -120,20 +120,19 @@ class HostLockstepState:
         return PauseState(paused=False, reason="")
 
 
-@dataclass(slots=True)
-class ClientLockstepState:
+class ClientLockstepState(msgspec.Struct):
     local_slot_index: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = INPUT_STALL_TIMEOUT_MS
     max_resend_samples: int = CLIENT_MAX_RESEND_SAMPLES
     max_sent_history_ticks: int = CLIENT_MAX_SENT_HISTORY_TICKS
     _capture_tick: int = 0
-    _sent_inputs: dict[int, PackedPlayerInput] = field(default_factory=dict)
-    _canonical_by_tick: dict[int, TickFrame] = field(default_factory=dict)
+    _sent_inputs: dict[int, PackedPlayerInput] = msgspec.field(default_factory=dict)
+    _canonical_by_tick: dict[int, TickFrame] = msgspec.field(default_factory=dict)
     _next_consume_tick: int = 0
     _last_progress_ms: int = 0
     _paused: bool = False
-    _pending_desync: deque[tuple[int, str, str]] = field(default_factory=deque)
+    _pending_desync: deque[tuple[int, str, str]] = msgspec.field(default_factory=deque)
 
     @property
     def next_consume_tick(self) -> int:

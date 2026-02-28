@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -23,8 +24,7 @@ def _any_player_has_perk(players: list[PlayerState], perk_id: PerkId) -> bool:
     return any(perk_active(player, perk_id) for player in players)
 
 
-@dataclass(slots=True)
-class _CreatureDamageCtx:
+class _CreatureDamageCtx(msgspec.Struct):
     creature: CreatureState
     damage: float
     damage_type: int

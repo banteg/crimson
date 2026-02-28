@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+
+import msgspec
 
 TYPING_MAX_CHARS = 17
 
 
-@dataclass(frozen=True, slots=True)
-class TypingEnterResult:
+class TypingEnterResult(msgspec.Struct, frozen=True):
     fire_requested: bool = False
     reload_requested: bool = False
     target_creature_idx: int | None = None
 
 
-@dataclass(slots=True)
-class TypingBuffer:
+class TypingBuffer(msgspec.Struct):
     text: str = ""
     shots_fired: int = 0
     shots_hit: int = 0

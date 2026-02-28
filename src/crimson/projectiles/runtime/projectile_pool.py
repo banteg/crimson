@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, MutableSequence, Sequence
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -40,8 +41,7 @@ if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectileUpdateOptions:
+class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float] | None = None
     ion_aoe_scale: float = 1.0

@@ -6,7 +6,6 @@ import io
 import json
 import os
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, cast
 
@@ -42,8 +41,7 @@ class ReplayCheckpointsError(ValueError):
     pass
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayPlayerCheckpoint:
+class ReplayPlayerCheckpoint(msgspec.Struct, frozen=True):
     pos: Vec2
     health: float
     weapon_id: WeaponId
@@ -51,8 +49,7 @@ class ReplayPlayerCheckpoint:
     experience: int
     level: int
 
-@dataclass(frozen=True, slots=True)
-class ReplayCheckpoint:
+class ReplayCheckpoint(msgspec.Struct, frozen=True):
     tick_index: int
     rng_state: int
     elapsed_ms: int
@@ -64,14 +61,13 @@ class ReplayCheckpoint:
     bonus_timers: dict[str, int]
     state_hash: str = ""
     command_hash: str = ""
-    rng_marks: dict[str, int] = field(default_factory=dict)
-    deaths: list["ReplayDeathLedgerEntry"] = field(default_factory=list)
-    perk: "ReplayPerkSnapshot" = field(default_factory=lambda: ReplayPerkSnapshot())
-    events: "ReplayEventSummary" = field(default_factory=lambda: ReplayEventSummary())
+    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
+    deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
+    perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
+    events: "ReplayEventSummary" = msgspec.field(default_factory=lambda: ReplayEventSummary())
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayDeathLedgerEntry:
+class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     creature_index: int
     type_id: int
     reward_value: float
@@ -79,29 +75,26 @@ class ReplayDeathLedgerEntry:
     owner_id: int
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayPerkSnapshot:
+class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
     pending_count: int = 0
     choices_dirty: bool = False
-    choices: list[int] = field(default_factory=list)
-    player_nonzero_counts: list[list[list[int]]] = field(default_factory=list)
+    choices: list[int] = msgspec.field(default_factory=list)
+    player_nonzero_counts: list[list[list[int]]] = msgspec.field(default_factory=list)
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayEventSummary:
+class ReplayEventSummary(msgspec.Struct, frozen=True):
     # Legacy sidecars may omit this block; -1 marks "unknown/not recorded".
     hit_count: int = 0
     pickup_count: int = 0
     sfx_count: int = 0
-    sfx_head: list[str] = field(default_factory=list)
+    sfx_head: list[str] = msgspec.field(default_factory=list)
 
 
-@dataclass(frozen=True, slots=True)
-class ReplayCheckpoints:
+class ReplayCheckpoints(msgspec.Struct, frozen=True):
     version: int
     replay_sha256: str
     sample_rate: int
-    checkpoints: list[ReplayCheckpoint] = field(default_factory=list)
+    checkpoints: list[ReplayCheckpoint] = msgspec.field(default_factory=list)
 
 
 def _replay_player_checkpoint_to_obj(player: ReplayPlayerCheckpoint) -> dict[str, object]:

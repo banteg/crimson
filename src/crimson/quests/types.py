@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Protocol
+
+import msgspec
 
 from grim.geom import Vec2
 
@@ -10,15 +11,13 @@ from ..terrain_assets import TerrainTextureId
 from ..weapons import WeaponId
 
 
-@dataclass(frozen=True, slots=True)
-class QuestContext:
+class QuestContext(msgspec.Struct, frozen=True):
     width: int
     height: int
     player_count: int
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SpawnEntry:
+class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):
     pos: Vec2
     heading: float
     spawn_id: SpawnId
@@ -61,8 +60,7 @@ def terrain_ids_for(level_or_major: str | int, minor: int | None = None) -> tupl
     return quest & 0x3, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q2_OVERLAY
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class QuestDefinition:
+class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):
     major: int
     minor: int
     title: str

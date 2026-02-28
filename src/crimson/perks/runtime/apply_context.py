@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+
+import msgspec
 
 from ...sim.state_types import GameplayState, PlayerState
 from ..ids import PerkId
 from ..state import CreatureForPerks, PerkSelectionState
 
 
-@dataclass(slots=True)
-class PerkApplyCtx:
+class PerkApplyCtx(msgspec.Struct):
     state: GameplayState
     players: list[PlayerState]
     owner: PlayerState
