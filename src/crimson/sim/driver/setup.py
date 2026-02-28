@@ -28,14 +28,10 @@ class RunResult:
     elapsed_ms: int
     score_xp: int
     creature_kill_count: int
-    most_used_weapon_id: WeaponId | int
+    most_used_weapon_id: WeaponId
     shots_fired: int
     shots_hit: int
     rng_state: int
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
-
 
 def build_damage_scale_by_type() -> dict[int, float]:
     damage_scale_by_type: dict[int, float] = {}

@@ -237,10 +237,6 @@ class ReplayClaimedStatsSnapshot:
     shots_fired: int = 0
     shots_hit: int = 0
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "most_used_weapon_id", WeaponId(self.most_used_weapon_id))
-
-
 @dataclass(frozen=True, slots=True)
 class ReplayHeader:
     game_mode_id: int
@@ -317,12 +313,6 @@ class CaptureBootstrapPlayer:
     man_bomb_timer: float | None
     living_fortress_timer: float | None
     fire_cough_timer: float | None
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "weapon_id", WeaponId(self.weapon_id))
-        if self.alt_weapon_id is not None:
-            object.__setattr__(self, "alt_weapon_id", WeaponId(self.alt_weapon_id))
-
 
 @dataclass(frozen=True, slots=True)
 class CaptureBootstrapEvent:

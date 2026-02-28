@@ -20,7 +20,7 @@ from ..persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from ..weapons import WEAPON_BY_ID, weapon_display_name
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .cursor import draw_menu_cursor
 from .formatting import format_ordinal, format_time_mm_ss
 from .hud import HudAssets
@@ -567,8 +567,11 @@ class GameOverUi:
                     hud_assets.wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, int(255 * alpha)),
                 )
 
-            weapon_id = record.most_used_weapon_id
-            weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(self.preserve_bugs))
+            weapon_id = int(record.most_used_weapon_id)
+            if weapon_id in WEAPON_BY_ID:
+                weapon_name = weapon_display_name(WeaponId(weapon_id), preserve_bugs=bool(self.preserve_bugs))
+            else:
+                weapon_name = f"weapon_{weapon_id}"
             name_w = self._text_width(weapon_name, 1.0 * scale)
             name_pos = Vec2(card_origin.x + max(0.0, (32.0 * scale - name_w * 0.5)), row_pos.y + 32.0 * scale)
             self._draw_small(weapon_name, name_pos, 1.0 * scale, hint_color)

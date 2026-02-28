@@ -72,7 +72,10 @@ class DemoState(Protocol):
 
 
 def _weapon_name(weapon_id: int, *, preserve_bugs: bool = False) -> str:
-    return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
+    raw_weapon_id = int(weapon_id)
+    if raw_weapon_id in WeaponId._value2member_map_:
+        return weapon_display_name(WeaponId(raw_weapon_id), preserve_bugs=bool(preserve_bugs))
+    return f"weapon_{raw_weapon_id}"
 
 
 class DemoView:

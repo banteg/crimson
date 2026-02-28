@@ -263,7 +263,7 @@ class ArsenalDebugView:
             reload_pressed=reload_pressed,
         )
 
-    def _weapon_projectile_desc(self, weapon_id: int) -> str:
+    def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
         if special is not None:
             return special
