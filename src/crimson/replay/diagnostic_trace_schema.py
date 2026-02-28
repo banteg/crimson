@@ -9,8 +9,8 @@ import msgspec
 from ..bonuses.ids import BonusId
 from ..perks.ids import PerkId
 
-REPLAY_TICK_TRACE_SCHEMA_VERSION = 4
-REPLAY_TICK_TRACE_MSGPACK_MAGIC = b"crimson_replay_tick_trace_msgpack_v2\n"
+REPLAY_TICK_TRACE_SCHEMA_VERSION = 5
+REPLAY_TICK_TRACE_MSGPACK_MAGIC = b"crimson_replay_tick_trace_msgpack_v3\n"
 PERK_COUNT_SIZE = len(PerkId)
 BONUS_ID_COUNT = len(BonusId)
 
@@ -210,7 +210,7 @@ def decode_replay_tick_trace_msgpack_row(payload: bytes, *, field: str) -> Repla
     try:
         row = _ROW_DECODER.decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ValueError(f"{field} must be a valid replay tick trace v4 msgpack row") from exc
+        raise ValueError(f"{field} must be a valid replay tick trace v5 msgpack row") from exc
     if int(row.schema_version) != int(REPLAY_TICK_TRACE_SCHEMA_VERSION):
         raise ValueError(
             f"{field}.schema_version must be {int(REPLAY_TICK_TRACE_SCHEMA_VERSION)}, got {int(row.schema_version)}",

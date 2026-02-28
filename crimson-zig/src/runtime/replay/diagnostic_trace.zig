@@ -11,10 +11,10 @@ const state_mod = @import("../state.zig");
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
-pub const replay_tick_trace_schema_version: i32 = 4;
+pub const replay_tick_trace_schema_version: i32 = 5;
 pub const perk_count_size: usize = state_mod.perk_count_size;
 pub const bonus_id_count: usize = @typeInfo(game_ids.BonusId).@"enum".fields.len;
-pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v2\n";
+pub const replay_tick_trace_msgpack_magic = "crimson_replay_tick_trace_msgpack_v3\n";
 
 pub const ProjectileTraceEntry = struct {
     index: usize,

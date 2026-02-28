@@ -168,7 +168,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
 
         def build_row(*, tick_index: int, elapsed_ms: int, rng_state: int, rng_base: int, score_xp: int, kills: int, player_ammo: float, player_health: float, player_pos_x: float, player_pos_y: float, player_experience: int, player_shot_seq: int, perk_pending: int, debug_pending_nuke: int) -> dict[str, object]:
             return {
-                "schema_version": 4,
+                "schema_version": 5,
                 "tick_index": tick_index,
                 "timing": {
                     "elapsed_ms": elapsed_ms,
@@ -290,7 +290,7 @@ def _write_fake_zig_bin(path: Path) -> Path:
                 debug_pending_nuke=1,
             ),
         ]
-        magic = b"crimson_replay_tick_trace_msgpack_v2\\n"
+        magic = b"crimson_replay_tick_trace_msgpack_v3\\n"
         with trace_path.open("wb") as handle:
             handle.write(magic)
             for row in rows:
