@@ -64,19 +64,19 @@ def weapon_assign_player(player: PlayerState, weapon_id: int, *, state: Gameplay
         state.status.increment_weapon_usage(weapon_id)
 
     weapon = weapon_entry(weapon_id)
-    player.weapon_id = weapon_id
+    player.weapon.weapon_id = weapon_id
 
     clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
     clip_ctx = _WeaponAssignCtx(player=player, clip_size=max(0, clip_size))
     for modifier in _WEAPON_ASSIGN_CLIP_MODIFIERS:
         modifier(clip_ctx)
-    player.clip_size = max(0, int(clip_ctx.clip_size))
-    player.ammo = float(player.clip_size)
+    player.weapon.clip_size = max(0, int(clip_ctx.clip_size))
+    player.weapon.ammo = float(player.weapon.clip_size)
     player.weapon_reset_latch = 0
-    player.reload_active = False
-    player.reload_timer = 0.0
-    player.reload_timer_max = 0.0
-    player.shot_cooldown = 0.0
+    player.weapon.reload_active = False
+    player.weapon.reload_timer = 0.0
+    player.weapon.reload_timer_max = 0.0
+    player.weapon.shot_cooldown = 0.0
     player.aux_timer = 2.0
 
     if state is not None and weapon is not None:
@@ -104,60 +104,30 @@ def most_used_weapon_id_for_player(state: GameplayState, *, player_index: int, f
 def player_swap_alt_weapon(player: PlayerState) -> bool:
     """Swap primary and alternate weapon runtime blocks (Alternate Weapon perk)."""
 
-    if player.alt_weapon_id is None:
+    if player.alt_weapon is None:
         return False
-    (
-        player.weapon_id,
-        player.clip_size,
-        player.reload_active,
-        player.ammo,
-        player.reload_timer,
-        player.shot_cooldown,
-        player.reload_timer_max,
-        player.alt_weapon_id,
-        player.alt_clip_size,
-        player.alt_reload_active,
-        player.alt_ammo,
-        player.alt_reload_timer,
-        player.alt_shot_cooldown,
-        player.alt_reload_timer_max,
-    ) = (
-        player.alt_weapon_id,
-        player.alt_clip_size,
-        player.alt_reload_active,
-        player.alt_ammo,
-        player.alt_reload_timer,
-        player.alt_shot_cooldown,
-        player.alt_reload_timer_max,
-        player.weapon_id,
-        player.clip_size,
-        player.reload_active,
-        player.ammo,
-        player.reload_timer,
-        player.shot_cooldown,
-        player.reload_timer_max,
-    )
+    player.weapon, player.alt_weapon = player.alt_weapon, player.weapon
     return True
 
 
 def player_start_reload(player: PlayerState, state: GameplayState) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
 
-    if player.reload_active and (
+    if player.weapon.reload_active and (
         perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)
     ):
         return
 
-    weapon = weapon_entry(player.weapon_id)
+    weapon = weapon_entry(player.weapon.weapon_id)
     reload_time = float(weapon.reload_time) if weapon is not None and weapon.reload_time is not None else 0.0
 
-    if not player.reload_active:
-        player.reload_active = True
+    if not player.weapon.reload_active:
+        player.weapon.reload_active = True
 
     if perk_active(player, PerkId.FASTLOADER):
         reload_time *= 0.7
     if state.bonuses.weapon_power_up > 0.0:
         reload_time *= 0.6
 
-    player.reload_timer = max(0.0, reload_time)
-    player.reload_timer_max = player.reload_timer
+    player.weapon.reload_timer = max(0.0, reload_time)
+    player.weapon.reload_timer_max = player.weapon.reload_timer

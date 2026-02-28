@@ -122,26 +122,26 @@ pub fn stepPlayerForTick(
         @as(f64, @floatCast(dt)) * @as(f64, @floatCast(cooldown_scale)),
     );
     const next_shot_cooldown = narrowF32(
-        @as(f64, @floatCast(player.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
+        @as(f64, @floatCast(player.weapon.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
     );
-    player.shot_cooldown = @max(0.0, next_shot_cooldown);
-    if (player.shot_cooldown > 0.0 and player.shot_cooldown < 1e-6) {
-        player.shot_cooldown = 0.0;
+    player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
+    if (player.weapon.shot_cooldown > 0.0 and player.weapon.shot_cooldown < 1e-6) {
+        player.weapon.shot_cooldown = 0.0;
     }
 
     const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(player, PerkId.stationary_reloader))
         3.0
     else
         1.0;
-    if (perks.perkActive(player, PerkId.anxious_loader) and input_flags.fire_pressed and player.reload_timer > 0.0) {
-        const anxious_next = narrowF32(player.reload_timer - 0.05);
-        player.reload_timer = anxious_next;
+    if (perks.perkActive(player, PerkId.anxious_loader) and input_flags.fire_pressed and player.weapon.reload_timer > 0.0) {
+        const anxious_next = narrowF32(player.weapon.reload_timer - 0.05);
+        player.weapon.reload_timer = anxious_next;
         if (anxious_next <= 0.0) {
-            player.reload_timer = dt * 0.8;
+            player.weapon.reload_timer = dt * 0.8;
         }
     }
 
-    const reload_timer_now = narrowF32(player.reload_timer);
+    const reload_timer_now = narrowF32(player.weapon.reload_timer);
     var preload_dt = dt;
     if (!state.preserve_bugs) {
         preload_dt = narrowF32(reload_scale * dt);
@@ -149,20 +149,20 @@ pub fn stepPlayerForTick(
     const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
     const preload_crossed = reload_preload_underflow < -reload_preload_underflow_eps;
     const preload_fire_boundary = input_flags.fire_down and reload_preload_underflow <= reload_preload_underflow_eps;
-    if (player.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary)) {
-        player.ammo = @floatFromInt(@max(0, player.clip_size));
+    if (player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary)) {
+        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 
-    if (player.reload_timer > 0.0) {
+    if (player.weapon.reload_timer > 0.0) {
         if (perks.perkActive(player, PerkId.angry_reloader) and
-            player.reload_timer_max > 0.5 and
-            player.reload_timer > player.reload_timer_max * 0.5)
+            player.weapon.reload_timer_max > 0.5 and
+            player.weapon.reload_timer > player.weapon.reload_timer_max * 0.5)
         {
-            const half_reload = narrowF32(player.reload_timer_max * 0.5);
-            const next_timer = narrowF32(player.reload_timer - narrowF32(reload_scale * dt));
-            player.reload_timer = next_timer;
+            const half_reload = narrowF32(player.weapon.reload_timer_max * 0.5);
+            const next_timer = narrowF32(player.weapon.reload_timer - narrowF32(reload_scale * dt));
+            player.weapon.reload_timer = next_timer;
             if (next_timer <= half_reload) {
-                const count = 7 + @as(i32, @intFromFloat(player.reload_timer_max * 4.0));
+                const count = 7 + @as(i32, @intFromFloat(player.weapon.reload_timer_max * 4.0));
                 const prev_spawn_guard = state.bonus_spawn_guard;
                 state.bonus_spawn_guard = true;
                 defer state.bonus_spawn_guard = prev_spawn_guard;
@@ -182,10 +182,10 @@ pub fn stepPlayerForTick(
                 }
             }
         } else {
-            player.reload_timer = narrowF32(player.reload_timer - narrowF32(reload_scale * dt));
+            player.weapon.reload_timer = narrowF32(player.weapon.reload_timer - narrowF32(reload_scale * dt));
         }
-        if (player.reload_timer < 0.0) {
-            player.reload_timer = 0.0;
+        if (player.weapon.reload_timer < 0.0) {
+            player.weapon.reload_timer = 0.0;
         }
     }
 
@@ -196,7 +196,7 @@ pub fn stepPlayerForTick(
         !has_alt_weapon_perk and
         input_flags.move_mode != movement_control_mouse_point_click and
         input_flags.single_player_mode and
-        player.reload_timer == 0.0;
+        player.weapon.reload_timer == 0.0;
     if (manual_reload_allowed) {
         player_runtime.playerStartReload(player, state);
     }
@@ -207,11 +207,11 @@ pub fn stepPlayerForTick(
         player.spread_heat = @max(0.01, player.spread_heat - dt * 0.4);
     }
 
-    if (player.shot_cooldown <= 0.0 and player.reload_timer == 0.0) {
-        player.reload_active = false;
+    if (player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0) {
+        player.weapon.reload_active = false;
     }
 
-    const fire_gate_open_pre_reload = player.shot_cooldown <= 0.0 and player.reload_timer == 0.0;
+    const fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0;
     var swapped_alt_weapon = false;
     const reload_key_active = input_flags.reload_pressed;
     const reload_key_released = !input_flags.reload_active_any;
@@ -227,7 +227,7 @@ pub fn stepPlayerForTick(
         if (cooldown_ms < 1 and reload_key_active) {
             if (player_runtime.playerSwapAltWeapon(player)) {
                 swapped_alt_weapon = true;
-                player.shot_cooldown = narrowF32(player.shot_cooldown + 0.1);
+                player.weapon.shot_cooldown = narrowF32(player.weapon.shot_cooldown + 0.1);
                 state.player_alt_weapon_swap_cooldown_ms = 200;
             } else {
                 state.player_alt_weapon_swap_cooldown_ms = 0;
@@ -242,7 +242,7 @@ pub fn stepPlayerForTick(
 
     const force_pre_swap_fire_gate = swapped_alt_weapon and fire_gate_open_pre_reload and input_flags.fire_down;
     if (force_pre_swap_fire_gate) {
-        player.shot_cooldown = 0.0;
+        player.weapon.shot_cooldown = 0.0;
     }
 
     if (input_flags.fire_down) {
@@ -286,9 +286,9 @@ fn tryFireWeaponWithForce(
     particles: *particles_mod.ParticlePool,
     force_pre_swap_fire_gate: bool,
 ) WeaponRuntimeError!bool {
-    if (player.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
-    const weapon_id = player.weapon_id;
-    if (player.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
+    if (player.weapon.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
+    const weapon_id = player.weapon.weapon_id;
+    if (player.weapon.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
         if (player.experience <= 0) return false;
 
         if (perks.perkActive(player, PerkId.regression_bullets)) {
@@ -324,7 +324,7 @@ fn tryFireWeaponWithForce(
     var shot_cooldown = shot_cooldown_base;
 
     const is_fire_bullets = player.fire_bullets_timer > 0.0;
-    var shot_count = computeShotCount(player.weapon_id, player.ammo);
+    var shot_count = computeShotCount(player.weapon.weapon_id, player.weapon.ammo);
     if (is_fire_bullets) {
         shot_count = pellet_count;
     }
@@ -348,9 +348,9 @@ fn tryFireWeaponWithForce(
     if (perks.perkActive(player, PerkId.sharpshooter)) {
         shot_cooldown = narrowF32(shot_cooldown * 1.05);
     }
-    player.shot_cooldown = @max(0.0, shot_cooldown);
+    player.weapon.shot_cooldown = @max(0.0, shot_cooldown);
 
-    const weapon_flags = weapon_data.weapon_stats.get(player.weapon_id).flags;
+    const weapon_flags = weapon_data.weapon_stats.get(player.weapon.weapon_id).flags;
 
     if ((weapon_flags & 0x1) != 0) {
         // spawn_shell_casing randoms: angle speed rotation rotation_step.
@@ -370,7 +370,7 @@ fn tryFireWeaponWithForce(
     const aim_jitter = state_mod.Vec2.add(player.aim, state_mod.Vec2.fromAngle(dir_angle).mul(offset));
     const shot_angle = state_mod.Vec2.sub(aim_jitter, player.pos).toHeading();
     var particle_angle = directionFromHeading(shot_angle).toAngle();
-    if (player.weapon_id == .flamethrower or player.weapon_id == .blow_torch or player.weapon_id == .hr_flamer) {
+    if (player.weapon.weapon_id == .flamethrower or player.weapon.weapon_id == .blow_torch or player.weapon.weapon_id == .hr_flamer) {
         particle_angle = directionFromHeading(aim_heading).toAngle();
     }
 
@@ -380,10 +380,10 @@ fn tryFireWeaponWithForce(
     }
 
     const spawn_muzzle_after_projectile = is_fire_bullets or
-        player.weapon_id == WeaponId.pistol or
-        player.weapon_id == WeaponId.shrinkifier_5k;
+        player.weapon.weapon_id == WeaponId.pistol or
+        player.weapon.weapon_id == WeaponId.shrinkifier_5k;
     if (!spawn_muzzle_after_projectile) {
-        consumeMuzzleSpriteRng(state, player.weapon_id, is_fire_bullets);
+        consumeMuzzleSpriteRng(state, player.weapon.weapon_id, is_fire_bullets);
     }
 
     if (is_fire_bullets) {
@@ -400,7 +400,7 @@ fn tryFireWeaponWithForce(
                 false,
             );
         }
-    } else switch (player.weapon_id) {
+    } else switch (player.weapon.weapon_id) {
         .multi_plasma => {
             const spread_small = std.math.pi / 10.0;
             const spread_large = std.math.pi / 6.0;
@@ -547,14 +547,14 @@ fn tryFireWeaponWithForce(
             );
         },
         else => {
-            const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon_id) orelse return error.UnsupportedWeaponFirePath;
+            const type_id = weapon_data.projectileTypeIdFromWeaponId(player.weapon.weapon_id) orelse return error.UnsupportedWeaponFirePath;
             const type_id_i32 = @intFromEnum(type_id);
             const meta = projectileTravelBudgetFromTypeId(type_id);
-            const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon_id).pellet_count);
+            const pellets = @max(1, weapon_data.weapon_stats.get(player.weapon.weapon_id).pellet_count);
             for (0..@as(usize, @intCast(pellets))) |_| {
                 var angle = shot_angle;
                 if (pellets > 1) {
-                    const jitter_step = pelletJitterStep(player.weapon_id);
+                    const jitter_step = pelletJitterStep(player.weapon.weapon_id);
                     angle += narrowF32(@as(f32, @floatFromInt(@as(i32, @intCast(state.rng.rand() % 200)) - 100)) * jitter_step);
                 }
                 const id = projectiles.spawn(
@@ -566,7 +566,7 @@ fn tryFireWeaponWithForce(
                     false,
                 );
                 if (pellets > 1 and
-                    (player.weapon_id == .shotgun or player.weapon_id == .sawed_off_shotgun or player.weapon_id == .jackhammer))
+                    (player.weapon.weapon_id == .shotgun or player.weapon.weapon_id == .sawed_off_shotgun or player.weapon.weapon_id == .jackhammer))
                 {
                     projectiles.entries[id].speed_scale = narrowF32(1.0 + @as(f32, @floatFromInt(state.rng.rand() % 100)) * 0.01);
                 }
@@ -575,23 +575,23 @@ fn tryFireWeaponWithForce(
     }
 
     if (spawn_muzzle_after_projectile) {
-        consumeMuzzleSpriteRng(state, player.weapon_id, is_fire_bullets);
+        consumeMuzzleSpriteRng(state, player.weapon.weapon_id, is_fire_bullets);
     }
 
     const player_idx = player.index;
     if (player_idx >= 0 and player_idx < state.shots_fired.len) {
         const idx: usize = @intCast(player_idx);
         state.shots_fired[idx] += shot_count;
-        const weapon_idx: usize = @intCast(@intFromEnum(player.weapon_id));
+        const weapon_idx: usize = @intCast(@intFromEnum(player.weapon.weapon_id));
         if (weapon_idx < state.weapon_shots_fired[idx].len) {
             state.weapon_shots_fired[idx][weapon_idx] += shot_count;
         }
     }
     state.shots_fired_total += shot_count;
 
-    const ammo_cost = computeAmmoCost(player.weapon_id, shot_count);
+    const ammo_cost = computeAmmoCost(player.weapon.weapon_id, shot_count);
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
-        player.ammo -= ammo_cost;
+        player.weapon.ammo -= ammo_cost;
     }
 
     player.shot_seq += 1;
@@ -606,7 +606,7 @@ fn tryFireWeaponWithForce(
         );
     }
 
-    if (player.ammo <= 0.0 and (force_pre_swap_fire_gate or player.reload_timer <= 0.0)) {
+    if (player.weapon.ammo <= 0.0 and (force_pre_swap_fire_gate or player.weapon.reload_timer <= 0.0)) {
         player_runtime.playerStartReload(player, state);
     }
 
@@ -983,7 +983,7 @@ test "weapon usage tracks most used weapon" {
 
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
     for (0..3) |_| {
-        player.shot_cooldown = 0.0;
+        player.weapon.shot_cooldown = 0.0;
         try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     }
     try std.testing.expectEqual(@as(i32, 3), state.weapon_shots_fired[0][2]);
@@ -1003,14 +1003,14 @@ test "weapon runtime starts reload when ammo is depleted" {
         .pos = .{},
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.ammo = 1.0;
+    player.weapon.ammo = 1.0;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
-    try std.testing.expect(player.reload_active);
-    try std.testing.expect(player.reload_timer > 0.0);
+    try std.testing.expect(player.weapon.reload_active);
+    try std.testing.expect(player.weapon.reload_timer > 0.0);
     try std.testing.expectEqual(@as(i32, 1), state.shots_fired[0]);
 
-    const reload_time = player.reload_timer;
+    const reload_time = player.weapon.reload_timer;
     try stepPlayerForTick(
         &state,
         &player,
@@ -1021,8 +1021,8 @@ test "weapon runtime starts reload when ammo is depleted" {
         .{},
         reload_time * 0.5,
     );
-    try std.testing.expect(player.reload_active);
-    try std.testing.expect(player.reload_timer > 0.0);
+    try std.testing.expect(player.weapon.reload_active);
+    try std.testing.expect(player.weapon.reload_timer > 0.0);
 
     try stepPlayerForTick(
         &state,
@@ -1034,8 +1034,8 @@ test "weapon runtime starts reload when ammo is depleted" {
         .{},
         reload_time * 0.5 + 0.001,
     );
-    try std.testing.expect(!player.reload_active);
-    try std.testing.expectEqual(@as(f32, @floatFromInt(player.clip_size)), player.ammo);
+    try std.testing.expect(!player.weapon.reload_active);
+    try std.testing.expectEqual(@as(f32, @floatFromInt(player.weapon.clip_size)), player.weapon.ammo);
 }
 
 test "manual reload starts even when clip is full" {
@@ -1049,7 +1049,7 @@ test "manual reload starts even when clip is full" {
         .pos = .{},
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.ammo = @floatFromInt(player.clip_size);
+    player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
 
     try stepPlayerForTick(
         &state,
@@ -1062,8 +1062,8 @@ test "manual reload starts even when clip is full" {
         1.0 / 60.0,
     );
 
-    try std.testing.expect(player.reload_active);
-    try std.testing.expect(player.reload_timer > 0.0);
+    try std.testing.expect(player.weapon.reload_active);
+    try std.testing.expect(player.weapon.reload_timer > 0.0);
 }
 
 test "manual reload requires single player mode" {
@@ -1077,7 +1077,7 @@ test "manual reload requires single player mode" {
         .pos = .{},
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
-    player.ammo = 0.0;
+    player.weapon.ammo = 0.0;
 
     try stepPlayerForTick(
         &state,
@@ -1090,8 +1090,8 @@ test "manual reload requires single player mode" {
         1.0 / 60.0,
     );
 
-    try std.testing.expect(!player.reload_active);
-    try expectFloatClose(0.0, player.reload_timer);
+    try std.testing.expect(!player.weapon.reload_active);
+    try expectFloatClose(0.0, player.weapon.reload_timer);
 }
 
 test "anxious loader reduces reload timer on fire press" {
@@ -1104,18 +1104,22 @@ test "anxious loader reduces reload timer on fire press" {
     var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 1.0,
-        .reload_timer_max = 1.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 1.0,
+            .reload_timer_max = 1.0,
+        },
     };
     var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{},
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 1.0,
-        .reload_timer_max = 1.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 1.0,
+            .reload_timer_max = 1.0,
+        },
     };
     perk_player.perk_counts.set(PerkId.anxious_loader, 1);
 
@@ -1140,8 +1144,8 @@ test "anxious loader reduces reload timer on fire press" {
         0.1,
     );
 
-    try expectFloatClose(0.9, base_player.reload_timer);
-    try expectFloatClose(0.85, perk_player.reload_timer);
+    try expectFloatClose(0.9, base_player.weapon.reload_timer);
+    try expectFloatClose(0.85, perk_player.weapon.reload_timer);
 }
 
 test "angry reloader spawns plasma ring at half reload" {
@@ -1153,12 +1157,14 @@ test "angry reloader spawns plasma ring at half reload" {
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 1.1,
-        .reload_timer_max = 2.0,
-        .clip_size = 10,
-        .ammo = 0.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 1.1,
+            .reload_timer_max = 2.0,
+            .clip_size = 10,
+            .ammo = 0.0,
+        },
     };
     player.perk_counts.set(PerkId.angry_reloader, 1);
 
@@ -1173,7 +1179,7 @@ test "angry reloader spawns plasma ring at half reload" {
         0.2,
     );
 
-    try expectFloatClose(0.9, player.reload_timer);
+    try expectFloatClose(0.9, player.weapon.reload_timer);
     try std.testing.expectEqual(@as(usize, 15), activeProjectileCount(&projectiles));
     try std.testing.expect(!state.bonus_spawn_guard);
     try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
@@ -1193,10 +1199,12 @@ test "angry reloader does not trigger once reload is below half" {
     var player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 0.95,
-        .reload_timer_max = 2.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 0.95,
+            .reload_timer_max = 2.0,
+        },
     };
     player.perk_counts.set(PerkId.angry_reloader, 1);
 
@@ -1211,7 +1219,7 @@ test "angry reloader does not trigger once reload is below half" {
         0.1,
     );
 
-    try expectFloatClose(0.85, player.reload_timer);
+    try expectFloatClose(0.85, player.weapon.reload_timer);
     try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
 }
 
@@ -1269,18 +1277,22 @@ test "stationary reloader triples reload speed" {
     var base_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 1.0,
-        .reload_timer_max = 1.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 1.0,
+            .reload_timer_max = 1.0,
+        },
     };
     var perk_player = state_mod.PlayerState{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
-        .weapon_id = game_ids.WeaponId.pistol,
-        .reload_active = true,
-        .reload_timer = 1.0,
-        .reload_timer_max = 1.0,
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .reload_active = true,
+            .reload_timer = 1.0,
+            .reload_timer_max = 1.0,
+        },
     };
     perk_player.perk_counts.set(PerkId.stationary_reloader, 1);
 
@@ -1305,8 +1317,8 @@ test "stationary reloader triples reload speed" {
         0.1,
     );
 
-    try expectFloatClose(0.9, base_player.reload_timer);
-    try expectFloatClose(0.7, perk_player.reload_timer);
+    try expectFloatClose(0.9, base_player.weapon.reload_timer);
+    try expectFloatClose(0.7, perk_player.weapon.reload_timer);
 }
 
 test "alternate weapon reload press swaps and adds cooldown" {
@@ -1322,14 +1334,16 @@ test "alternate weapon reload press swaps and adds cooldown" {
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
-    player.alt_weapon_id = game_ids.WeaponId.pistol;
-    player.alt_clip_size = 10;
-    player.alt_ammo = 10.0;
-    player.alt_reload_active = false;
-    player.alt_reload_timer = 0.0;
-    player.alt_reload_timer_max = 0.0;
-    player.alt_shot_cooldown = 0.0;
-    player.shot_cooldown = 0.0;
+    player.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+        .reload_active = false,
+        .reload_timer = 0.0,
+        .reload_timer_max = 0.0,
+        .shot_cooldown = 0.0,
+    };
+    player.weapon.shot_cooldown = 0.0;
 
     try stepPlayerForTick(
         &state,
@@ -1342,9 +1356,10 @@ test "alternate weapon reload press swaps and adds cooldown" {
         0.1,
     );
 
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon_id);
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.alt_weapon_id.?);
-    try expectFloatClose(0.1, player.shot_cooldown);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expect(player.alt_weapon != null);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.alt_weapon.?.weapon_id);
+    try expectFloatClose(0.1, player.weapon.shot_cooldown);
     try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
 }
 
@@ -1361,9 +1376,11 @@ test "alternate weapon held reload uses cooldown gate" {
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
-    player.alt_weapon_id = game_ids.WeaponId.pistol;
-    player.alt_clip_size = 10;
-    player.alt_ammo = 10.0;
+    player.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+    };
 
     try stepPlayerForTick(
         &state,
@@ -1375,7 +1392,7 @@ test "alternate weapon held reload uses cooldown gate" {
         .{ .reload_pressed = true, .reload_active_any = true },
         0.05,
     );
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
     try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
 
     for (0..3) |_| {
@@ -1389,7 +1406,7 @@ test "alternate weapon held reload uses cooldown gate" {
             .{ .reload_pressed = true, .reload_active_any = true },
             0.05,
         );
-        try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon_id);
+        try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
     }
 
     try stepPlayerForTick(
@@ -1402,7 +1419,7 @@ test "alternate weapon held reload uses cooldown gate" {
         .{ .reload_pressed = true, .reload_active_any = true },
         0.05,
     );
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
     try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
 }
 
@@ -1419,9 +1436,11 @@ test "alternate weapon release resets cooldown gate" {
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.assault_rifle);
-    player.alt_weapon_id = game_ids.WeaponId.pistol;
-    player.alt_clip_size = 10;
-    player.alt_ammo = 10.0;
+    player.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+    };
 
     try stepPlayerForTick(
         &state,
@@ -1433,7 +1452,7 @@ test "alternate weapon release resets cooldown gate" {
         .{ .reload_pressed = true, .reload_active_any = true },
         0.05,
     );
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
 
     try stepPlayerForTick(
         &state,
@@ -1457,7 +1476,7 @@ test "alternate weapon release resets cooldown gate" {
         .{ .reload_pressed = true, .reload_active_any = true },
         0.05,
     );
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
 }
 
 test "alternate weapon multiplayer hold is not cleared by other player" {
@@ -1479,13 +1498,17 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
     player0.perk_counts.set(PerkId.alternate_weapon, 1);
     player1.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player0, game_ids.WeaponId.assault_rifle);
-    player0.alt_weapon_id = game_ids.WeaponId.pistol;
-    player0.alt_clip_size = 10;
-    player0.alt_ammo = 10.0;
+    player0.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+    };
     player_runtime.weaponAssignPlayer(&player1, game_ids.WeaponId.assault_rifle);
-    player1.alt_weapon_id = game_ids.WeaponId.pistol;
-    player1.alt_clip_size = 10;
-    player1.alt_ammo = 10.0;
+    player1.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+    };
 
     try stepPlayerForTick(
         &state,
@@ -1497,7 +1520,7 @@ test "alternate weapon multiplayer hold is not cleared by other player" {
         .{ .reload_pressed = true, .reload_active_any = true },
         0.05,
     );
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player0.weapon_id);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player0.weapon.weapon_id);
     try std.testing.expectEqual(@as(i32, 200), state.player_alt_weapon_swap_cooldown_ms);
 
     try stepPlayerForTick(
@@ -1526,12 +1549,14 @@ test "alternate weapon swap preserves same-tick fire gate" {
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player, weaponId(11));
-    player.alt_weapon_id = game_ids.WeaponId.pistol;
-    player.alt_clip_size = 10;
-    player.alt_ammo = 10.0;
-    const starting_alt_ammo = player.alt_ammo;
+    player.alt_weapon = .{
+        .weapon_id = game_ids.WeaponId.pistol,
+        .clip_size = 10,
+        .ammo = 10.0,
+    };
+    const starting_alt_ammo = player.alt_weapon.?.ammo;
 
-    player.shot_cooldown = 0.05;
+    player.weapon.shot_cooldown = 0.05;
     try stepPlayerForTick(
         &state,
         &player,
@@ -1543,8 +1568,8 @@ test "alternate weapon swap preserves same-tick fire gate" {
         0.06,
     );
 
-    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon_id);
-    try std.testing.expect(player.ammo < starting_alt_ammo);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expect(player.weapon.ammo < starting_alt_ammo);
 }
 
 test "alternate weapon swap allows same-tick fire with swapped reload timer" {
@@ -1560,18 +1585,20 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
     };
     player.perk_counts.set(PerkId.alternate_weapon, 1);
     player_runtime.weaponAssignPlayer(&player, weaponId(29));
-    player.ammo = 2.0;
-    player.reload_active = false;
-    player.reload_timer = 0.0;
-    player.alt_weapon_id = weaponId(11);
-    player.alt_ammo = 0.0;
-    player.alt_clip_size = 30;
-    player.alt_reload_active = true;
-    player.alt_reload_timer = 0.85;
-    player.alt_reload_timer_max = 1.3;
-    player.alt_shot_cooldown = 0.0;
+    player.weapon.ammo = 2.0;
+    player.weapon.reload_active = false;
+    player.weapon.reload_timer = 0.0;
+    player.alt_weapon = .{
+        .weapon_id = weaponId(11),
+        .clip_size = 30,
+        .ammo = 0.0,
+        .reload_active = true,
+        .reload_timer = 0.85,
+        .reload_timer_max = 1.3,
+        .shot_cooldown = 0.0,
+    };
 
-    player.shot_cooldown = 0.05;
+    player.weapon.shot_cooldown = 0.05;
     try stepPlayerForTick(
         &state,
         &player,
@@ -1583,10 +1610,10 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
         0.06,
     );
 
-    try std.testing.expectEqual(weaponId(11), player.weapon_id);
-    try std.testing.expect(player.reload_timer > 0.0);
-    try expectFloatClose(player.reload_timer_max, player.reload_timer);
-    try std.testing.expect(player.ammo < 0.0);
+    try std.testing.expectEqual(weaponId(11), player.weapon.weapon_id);
+    try std.testing.expect(player.weapon.reload_timer > 0.0);
+    try expectFloatClose(player.weapon.reload_timer_max, player.weapon.reload_timer);
+    try std.testing.expect(player.weapon.ammo < 0.0);
     try std.testing.expect(player.shot_seq >= 1);
 }
 
@@ -1606,8 +1633,8 @@ test "multi plasma and mini rocket use special shot counts" {
     try std.testing.expectEqual(@as(i32, 5), state.shots_fired[0]);
 
     player_runtime.weaponAssignPlayer(&player, weaponId(17));
-    player.ammo = 4.0;
-    player.shot_cooldown = 0.0;
+    player.weapon.ammo = 4.0;
+    player.weapon.shot_cooldown = 0.0;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expectEqual(@as(i32, 9), state.shots_fired[0]);
 }
@@ -1711,9 +1738,9 @@ test "plasma shotgun consumes one ammo per shot" {
     };
 
     player_runtime.weaponAssignPlayer(&player, weaponId(14));
-    const start_ammo = player.ammo;
+    const start_ammo = player.weapon.ammo;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
-    try expectFloatClose(start_ammo - 1.0, player.ammo);
+    try expectFloatClose(start_ammo - 1.0, player.weapon.ammo);
 }
 
 test "shotgun family fires expected pellet counts and formulas" {
@@ -1821,13 +1848,13 @@ test "fire bullets on shotgun spawns pellet count projectiles and keeps ammo" {
     };
     player_runtime.weaponAssignPlayer(&player, weaponId(3));
     player.fire_bullets_timer = 1.0;
-    const start_ammo = player.ammo;
+    const start_ammo = player.weapon.ammo;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
     try std.testing.expectEqual(@as(usize, 12), activeProjectileCount(&projectiles));
     try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
-    try expectFloatClose(start_ammo, player.ammo);
+    try expectFloatClose(start_ammo, player.weapon.ammo);
     try expectFloatClose(0.296, player.spread_heat);
     for (projectiles.entries[0..12]) |proj| {
         try std.testing.expect(proj.active);
@@ -1879,7 +1906,7 @@ test "fire bullets can fire at zero ammo and then trigger reload" {
         .aim_dir = .{ .x = 1.0, .y = 0.0 },
     };
     player_runtime.weaponAssignPlayer(&player, weaponId(3));
-    player.ammo = 0.0;
+    player.weapon.ammo = 0.0;
     player.fire_bullets_timer = 1.0;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
@@ -1889,8 +1916,8 @@ test "fire bullets can fire at zero ammo and then trigger reload" {
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets), proj.type_id);
     }
-    try std.testing.expect(player.reload_active);
-    try std.testing.expect(player.reload_timer > 0.0);
+    try std.testing.expect(player.weapon.reload_active);
+    try std.testing.expect(player.weapon.reload_timer > 0.0);
 }
 
 test "negative ammo still fires then enters reload for non fire bullets" {
@@ -1904,19 +1931,22 @@ test "negative ammo still fires then enters reload for non fire bullets" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .aim = .{ .x = 200.0, .y = 100.0 },
         .aim_dir = .{ .x = 1.0, .y = 0.0 },
-        .reload_active = false,
-        .reload_timer = 0.0,
+        .weapon = .{
+            .weapon_id = .pistol,
+            .reload_active = false,
+            .reload_timer = 0.0,
+        },
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.ion_cannon);
-    player.ammo = -1.0;
+    player.weapon.ammo = -1.0;
 
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
     try std.testing.expect(projectiles.entries[0].active);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.ion_cannon), projectiles.entries[0].type_id);
-    try expectFloatClose(-2.0, player.ammo);
-    try std.testing.expect(player.reload_active);
-    try expectFloatClose(3.0, player.reload_timer);
+    try expectFloatClose(-2.0, player.weapon.ammo);
+    try std.testing.expect(player.weapon.reload_active);
+    try expectFloatClose(3.0, player.weapon.reload_timer);
 }
 
 test "pistol fire consumes native casing+jitter+sfx rng draws" {
@@ -1946,7 +1976,7 @@ test "fastshot scales shot cooldown" {
         .aim = .{ .x = 10.0, .y = 0.0 },
     };
     player_runtime.weaponAssignPlayer(&base_player, game_ids.WeaponId.pistol);
-    base_player.ammo = 2.0;
+    base_player.weapon.ammo = 2.0;
     try std.testing.expect(try tryFireWeapon(
         &base_state,
         &base_player,
@@ -1955,7 +1985,7 @@ test "fastshot scales shot cooldown" {
         &base_creatures,
         &base_particles,
     ));
-    const base_cooldown = base_player.shot_cooldown;
+    const base_cooldown = base_player.weapon.shot_cooldown;
 
     var perk_state = state_mod.GameplayState.init(1);
     var perk_projectiles = projectiles_mod.ProjectilePool{};
@@ -1968,7 +1998,7 @@ test "fastshot scales shot cooldown" {
         .aim = .{ .x = 10.0, .y = 0.0 },
     };
     player_runtime.weaponAssignPlayer(&perk_player, game_ids.WeaponId.pistol);
-    perk_player.ammo = 2.0;
+    perk_player.weapon.ammo = 2.0;
     perk_player.perk_counts.set(PerkId.fastshot, 1);
     try std.testing.expect(try tryFireWeapon(
         &perk_state,
@@ -1979,7 +2009,7 @@ test "fastshot scales shot cooldown" {
         &perk_particles,
     ));
 
-    try expectFloatClose(narrowF32(base_cooldown * 0.88), perk_player.shot_cooldown);
+    try expectFloatClose(narrowF32(base_cooldown * 0.88), perk_player.weapon.shot_cooldown);
 }
 
 test "sharpshooter forces spread heat and slows firing" {
@@ -2009,7 +2039,7 @@ test "sharpshooter forces spread heat and slows firing" {
     );
     try expectFloatClose(0.02, player.spread_heat);
 
-    player.shot_cooldown = 0.0;
+    player.weapon.shot_cooldown = 0.0;
     try std.testing.expect(try tryFireWeapon(
         &state,
         &player,
@@ -2020,7 +2050,7 @@ test "sharpshooter forces spread heat and slows firing" {
     ));
     try expectFloatClose(
         narrowF32(weapon_data.weapon_stats.get(game_ids.WeaponId.assault_rifle).shot_cooldown * 1.05),
-        player.shot_cooldown,
+        player.weapon.shot_cooldown,
     );
     try expectFloatClose(0.02, player.spread_heat);
 }
@@ -2039,9 +2069,9 @@ test "regression bullets fires during reload and costs experience" {
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.regression_bullets, 1);
-    player.ammo = 0.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 0.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(try tryFireWeapon(
         &state,
@@ -2054,7 +2084,7 @@ test "regression bullets fires during reload and costs experience" {
 
     try std.testing.expectEqual(@as(i32, 760), player.experience);
     try std.testing.expect(projectiles.entries[0].active);
-    try expectFloatClose(-1.0, player.ammo);
+    try expectFloatClose(-1.0, player.weapon.ammo);
 }
 
 test "regression bullets blocks fire when experience is zero" {
@@ -2071,9 +2101,9 @@ test "regression bullets blocks fire when experience is zero" {
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.regression_bullets, 1);
-    player.ammo = 0.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 0.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(!(try tryFireWeapon(
         &state,
@@ -2100,9 +2130,9 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
     player.perk_counts.set(PerkId.regression_bullets, 1);
-    player.ammo = 5.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 5.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(try tryFireWeapon(
         &state,
@@ -2115,7 +2145,7 @@ test "regression bullets fire ammo class drains reduced xp and spends fractional
 
     try std.testing.expectEqual(@as(i32, 992), player.experience);
     try std.testing.expect(particles.entries[0].active);
-    try expectFloatClose(4.9, player.ammo);
+    try expectFloatClose(4.9, player.weapon.ammo);
 }
 
 test "ammunition within fires during reload and costs health" {
@@ -2133,9 +2163,9 @@ test "ammunition within fires during reload and costs health" {
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.ammunition_within, 1);
-    player.ammo = 0.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 0.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(try tryFireWeapon(
         &state,
@@ -2149,7 +2179,7 @@ test "ammunition within fires during reload and costs health" {
     try expectFloatClose(9.0, player.health);
     try std.testing.expectEqual(@as(i32, 1), player.experience);
     try std.testing.expect(projectiles.entries[0].active);
-    try expectFloatClose(-1.0, player.ammo);
+    try expectFloatClose(-1.0, player.weapon.ammo);
 }
 
 test "ammunition within blocks fire when experience is zero" {
@@ -2167,9 +2197,9 @@ test "ammunition within blocks fire when experience is zero" {
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     player.perk_counts.set(PerkId.ammunition_within, 1);
-    player.ammo = 0.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 0.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(!(try tryFireWeapon(
         &state,
@@ -2198,9 +2228,9 @@ test "ammunition within fire ammo class costs less health and spends fractional 
     };
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.flamethrower);
     player.perk_counts.set(PerkId.ammunition_within, 1);
-    player.ammo = 5.0;
-    player.reload_active = true;
-    player.reload_timer = 0.5;
+    player.weapon.ammo = 5.0;
+    player.weapon.reload_active = true;
+    player.weapon.reload_timer = 0.5;
 
     try std.testing.expect(try tryFireWeapon(
         &state,
@@ -2213,5 +2243,5 @@ test "ammunition within fire ammo class costs less health and spends fractional 
 
     try expectFloatClose(narrowF32(9.85), player.health);
     try std.testing.expect(particles.entries[0].active);
-    try expectFloatClose(4.9, player.ammo);
+    try expectFloatClose(4.9, player.weapon.ammo);
 }

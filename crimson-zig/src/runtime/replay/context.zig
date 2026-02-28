@@ -200,7 +200,7 @@ pub const SimulationContext = struct {
             const player0 = self.players_storage[0];
             player_level = player0.level;
             player_experience = player0.experience;
-            player_weapon_id = @intFromEnum(player0.weapon_id);
+            player_weapon_id = @intFromEnum(player0.weapon.weapon_id);
         }
 
         const elapsed_ms_sim_i64: i64 = if (self.game_mode == .rush)

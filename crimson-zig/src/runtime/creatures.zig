@@ -3645,7 +3645,7 @@ pub fn applyPlayerContactDamage(
     if (perkActive(player, PerkId.death_clock)) return;
 
     var damage_scaled: f32 = damage;
-    if (perkActive(player, PerkId.tough_reloader) and player.reload_active) {
+    if (perkActive(player, PerkId.tough_reloader) and player.weapon.reload_active) {
         damage_scaled = narrowF32(damage_scaled * 0.5);
     }
     const spread_heat_damage = damage_scaled;
@@ -5636,7 +5636,7 @@ test "tough reloader halves damage while reloading" {
         .index = 0,
         .pos = .{},
         .health = 100.0,
-        .reload_active = true,
+        .weapon = .{ .weapon_id = .pistol, .reload_active = true },
     };
     player.perk_counts.set(PerkId.tough_reloader, 1);
 
@@ -5714,7 +5714,7 @@ test "tough reloader spread heat uses post-reload damage before thick skinned" {
         .index = 0,
         .pos = .{},
         .health = 100.0,
-        .reload_active = true,
+        .weapon = .{ .weapon_id = .pistol, .reload_active = true },
         .spread_heat = 0.1,
     };
     player.perk_counts.set(PerkId.tough_reloader, 1);

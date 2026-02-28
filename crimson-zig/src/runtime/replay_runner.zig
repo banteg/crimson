@@ -392,7 +392,7 @@ pub fn runReplayScaffoldWithTrace(
     const most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(
         context.state,
         0,
-        player0.weapon_id,
+        player0.weapon.weapon_id,
     );
 
     return .{
@@ -408,7 +408,7 @@ pub fn runReplayScaffoldWithTrace(
         .wave_spawn_rng_state = context.state.rng.state,
         .player_level = player0.level,
         .player_experience = player0.experience,
-        .player_weapon_id = @intFromEnum(player0.weapon_id),
+        .player_weapon_id = @intFromEnum(player0.weapon.weapon_id),
         .most_used_weapon_id = @intFromEnum(most_used_weapon_id),
         .shots_fired = shots.fired,
         .shots_hit = shots.hit,
@@ -610,10 +610,10 @@ fn resolveQuestLevelKey(header: replay_codec.ReplayHeader) ?i32 {
 
 fn enforceRushLoadout(players: []state_mod.PlayerState) void {
     for (players) |*player| {
-        if (player.weapon_id != game_ids.WeaponId.assault_rifle) {
+        if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
-        player.ammo = @floatFromInt(@max(0, player.clip_size));
+        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 }
 

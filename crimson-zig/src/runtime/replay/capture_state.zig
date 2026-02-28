@@ -69,10 +69,10 @@ pub fn applyQuestStageFromHeader(
 
 pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {
     for (players) |*player| {
-        if (player.weapon_id != game_ids.WeaponId.assault_rifle) {
+        if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
-        player.ammo = @floatFromInt(@max(0, player.clip_size));
+        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 }
 
@@ -89,32 +89,32 @@ pub fn applyCaptureBootstrapEvent(
         const payload = bootstrap.players[idx];
         if (payload.weapon_id > 0) {
             const weapon_id = weapon_data.weaponIdFromInt(payload.weapon_id);
-            if (players[idx].weapon_id != weapon_id) {
+            if (players[idx].weapon.weapon_id != weapon_id) {
                 player_runtime.weaponAssignPlayer(&players[idx], weapon_id);
             }
         }
         players[idx].pos.x = payload.pos_x;
         players[idx].pos.y = payload.pos_y;
         players[idx].health = payload.health;
-        players[idx].ammo = payload.ammo;
+        players[idx].weapon.ammo = payload.ammo;
         players[idx].experience = payload.experience;
         if (payload.level > 0) {
             players[idx].level = payload.level;
         }
         if (payload.clip_size) |clip_size| {
-            if (clip_size >= 0) players[idx].clip_size = clip_size;
+            if (clip_size >= 0) players[idx].weapon.clip_size = clip_size;
         }
         if (payload.reload_active) |reload_active| {
-            players[idx].reload_active = reload_active;
+            players[idx].weapon.reload_active = reload_active;
         }
         if (payload.reload_timer) |reload_timer| {
-            players[idx].reload_timer = @max(0.0, reload_timer);
+            players[idx].weapon.reload_timer = @max(0.0, reload_timer);
         }
         if (payload.reload_timer_max) |reload_timer_max| {
-            players[idx].reload_timer_max = @max(0.0, reload_timer_max);
+            players[idx].weapon.reload_timer_max = @max(0.0, reload_timer_max);
         }
         if (payload.shot_cooldown) |shot_cooldown| {
-            players[idx].shot_cooldown = @max(0.0, shot_cooldown);
+            players[idx].weapon.shot_cooldown = @max(0.0, shot_cooldown);
         }
         if (payload.spread_heat) |spread_heat| {
             players[idx].spread_heat = @max(0.0, spread_heat);
@@ -130,25 +130,48 @@ pub fn applyCaptureBootstrapEvent(
             players[idx].aim_dir = state_mod.Vec2.fromAngle(players[idx].aim_heading);
         }
         if (payload.alt_weapon_id) |alt_weapon_id| {
-            players[idx].alt_weapon_id = if (alt_weapon_id > 0) weapon_data.weaponIdFromInt(alt_weapon_id) else null;
+            players[idx].alt_weapon = if (alt_weapon_id > 0)
+                .{ .weapon_id = weapon_data.weaponIdFromInt(alt_weapon_id) }
+            else
+                null;
         }
         if (payload.alt_clip_size) |alt_clip_size| {
-            if (alt_clip_size >= 0) players[idx].alt_clip_size = alt_clip_size;
+            if (alt_clip_size >= 0) {
+                if (players[idx].alt_weapon == null) {
+                    players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+                }
+                players[idx].alt_weapon.?.clip_size = alt_clip_size;
+            }
         }
         if (payload.alt_ammo) |alt_ammo| {
-            players[idx].alt_ammo = alt_ammo;
+            if (players[idx].alt_weapon == null) {
+                players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+            }
+            players[idx].alt_weapon.?.ammo = alt_ammo;
         }
         if (payload.alt_reload_active) |alt_reload_active| {
-            players[idx].alt_reload_active = alt_reload_active;
+            if (players[idx].alt_weapon == null) {
+                players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+            }
+            players[idx].alt_weapon.?.reload_active = alt_reload_active;
         }
         if (payload.alt_reload_timer) |alt_reload_timer| {
-            players[idx].alt_reload_timer = @max(0.0, alt_reload_timer);
+            if (players[idx].alt_weapon == null) {
+                players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+            }
+            players[idx].alt_weapon.?.reload_timer = @max(0.0, alt_reload_timer);
         }
         if (payload.alt_reload_timer_max) |alt_reload_timer_max| {
-            players[idx].alt_reload_timer_max = @max(0.0, alt_reload_timer_max);
+            if (players[idx].alt_weapon == null) {
+                players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+            }
+            players[idx].alt_weapon.?.reload_timer_max = @max(0.0, alt_reload_timer_max);
         }
         if (payload.alt_shot_cooldown) |alt_shot_cooldown| {
-            players[idx].alt_shot_cooldown = @max(0.0, alt_shot_cooldown);
+            if (players[idx].alt_weapon == null) {
+                players[idx].alt_weapon = .{ .weapon_id = players[idx].weapon.weapon_id };
+            }
+            players[idx].alt_weapon.?.shot_cooldown = @max(0.0, alt_shot_cooldown);
         }
         if (payload.shield_ms) |shield_ms| {
             players[idx].shield_timer = @max(0.0, @as(f32, @floatFromInt(shield_ms)) / 1000.0);
@@ -376,9 +399,9 @@ pub fn applyCaptureStateReset(
         const quest_weapon = weapon_data.weaponIdFromInt(quest_start_weapon_id);
         player_runtime.weaponAssignPlayer(player, quest_weapon);
         if (quest_start_weapon_id == @intFromEnum(game_ids.WeaponId.pistol)) {
-            player.clip_size = @max(12, player.clip_size);
-            if (player.ammo < 12.0) {
-                player.ammo = 12.0;
+            player.weapon.clip_size = @max(12, player.weapon.clip_size);
+            if (player.weapon.ammo < 12.0) {
+                player.weapon.ammo = 12.0;
             }
         }
     }
