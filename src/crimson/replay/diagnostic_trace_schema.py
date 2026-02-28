@@ -8,7 +8,6 @@ import msgspec
 
 from ..bonuses.ids import BonusId
 from ..perks.ids import PerkId
-from ..wire.float32_wire import assert_wire_f32
 
 REPLAY_TICK_TRACE_SCHEMA_VERSION = 4
 REPLAY_TICK_TRACE_MSGPACK_MAGIC = b"crimson_replay_tick_trace_msgpack_v2\n"
@@ -168,38 +167,6 @@ class ReplayTickTraceRow(msgspec.Struct, forbid_unknown_fields=True):
 
 _ROW_DECODER = msgspec.msgpack.Decoder(type=ReplayTickTraceRow)
 
-
-def _validate_wire_float(value: float, *, field: str) -> None:
-    try:
-        assert_wire_f32(float(value), field=field)
-    except ValueError as exc:
-        raise ValueError(f"{field} is invalid: {exc}") from exc
-
-
-def _validate_projectile_entry(entry: ProjectileTraceEntry, *, field: str) -> None:
-    _validate_wire_float(entry.pos_x, field=f"{field}.pos_x")
-    _validate_wire_float(entry.pos_y, field=f"{field}.pos_y")
-    _validate_wire_float(entry.origin_x, field=f"{field}.origin_x")
-    _validate_wire_float(entry.origin_y, field=f"{field}.origin_y")
-    _validate_wire_float(entry.life_timer, field=f"{field}.life_timer")
-    _validate_wire_float(entry.damage_pool, field=f"{field}.damage_pool")
-    _validate_wire_float(entry.angle, field=f"{field}.angle")
-    _validate_wire_float(entry.speed_scale, field=f"{field}.speed_scale")
-
-
-def _validate_creature_entry(entry: CreatureTraceEntry, *, field: str) -> None:
-    _validate_wire_float(entry.pos_x, field=f"{field}.pos_x")
-    _validate_wire_float(entry.pos_y, field=f"{field}.pos_y")
-    _validate_wire_float(entry.target_x, field=f"{field}.target_x")
-    _validate_wire_float(entry.target_y, field=f"{field}.target_y")
-    _validate_wire_float(entry.heading, field=f"{field}.heading")
-    _validate_wire_float(entry.target_heading, field=f"{field}.target_heading")
-    _validate_wire_float(entry.hp, field=f"{field}.hp")
-    _validate_wire_float(entry.lifecycle_stage, field=f"{field}.lifecycle_stage")
-    _validate_wire_float(entry.size, field=f"{field}.size")
-    _validate_wire_float(entry.attack_cooldown, field=f"{field}.attack_cooldown")
-
-
 def _validate_trace_row(row: ReplayTickTraceRow, *, field: str) -> None:
     if len(row.player.player_perk_counts) != int(PERK_COUNT_SIZE):
         raise ValueError(
@@ -237,42 +204,6 @@ def _validate_trace_row(row: ReplayTickTraceRow, *, field: str) -> None:
                 f"{field}.projectiles.projectile_type_counts must be strictly sorted by type_id",
             )
         last_type_id = type_id
-
-    player = row.player
-    _validate_wire_float(player.player_ammo, field=f"{field}.player.player_ammo")
-    _validate_wire_float(player.player_health, field=f"{field}.player.player_health")
-    _validate_wire_float(player.player_pos_x, field=f"{field}.player.player_pos_x")
-    _validate_wire_float(player.player_pos_y, field=f"{field}.player.player_pos_y")
-    _validate_wire_float(player.player_aim_x, field=f"{field}.player.player_aim_x")
-    _validate_wire_float(player.player_aim_y, field=f"{field}.player.player_aim_y")
-    _validate_wire_float(player.player_heading, field=f"{field}.player.player_heading")
-    _validate_wire_float(player.player_aim_heading, field=f"{field}.player.player_aim_heading")
-    _validate_wire_float(player.player_move_speed, field=f"{field}.player.player_move_speed")
-    _validate_wire_float(player.player_turn_speed, field=f"{field}.player.player_turn_speed")
-    _validate_wire_float(player.player_reload_timer, field=f"{field}.player.player_reload_timer")
-    _validate_wire_float(player.player_shot_cooldown, field=f"{field}.player.player_shot_cooldown")
-    _validate_wire_float(player.player_hot_tempered_timer, field=f"{field}.player.player_hot_tempered_timer")
-    _validate_wire_float(player.player_shield_timer, field=f"{field}.player.player_shield_timer")
-    _validate_wire_float(player.player_man_bomb_timer, field=f"{field}.player.player_man_bomb_timer")
-    _validate_wire_float(player.player_fire_cough_timer, field=f"{field}.player.player_fire_cough_timer")
-    _validate_wire_float(player.player_living_fortress_timer, field=f"{field}.player.player_living_fortress_timer")
-    _validate_wire_float(player.perk_interval_hot_tempered, field=f"{field}.player.perk_interval_hot_tempered")
-    _validate_wire_float(player.perk_interval_man_bomb, field=f"{field}.player.perk_interval_man_bomb")
-    _validate_wire_float(player.perk_interval_fire_cough, field=f"{field}.player.perk_interval_fire_cough")
-
-    projectiles = row.projectiles
-    _validate_wire_float(projectiles.projectile_first_hit_origin_x, field=f"{field}.projectiles.projectile_first_hit_origin_x")
-    _validate_wire_float(projectiles.projectile_first_hit_origin_y, field=f"{field}.projectiles.projectile_first_hit_origin_y")
-    _validate_wire_float(projectiles.projectile_first_hit_pos_x, field=f"{field}.projectiles.projectile_first_hit_pos_x")
-    _validate_wire_float(projectiles.projectile_first_hit_pos_y, field=f"{field}.projectiles.projectile_first_hit_pos_y")
-    _validate_wire_float(projectiles.projectile_first_hit_target_size, field=f"{field}.projectiles.projectile_first_hit_target_size")
-    _validate_wire_float(projectiles.projectile_first_hit_target_x, field=f"{field}.projectiles.projectile_first_hit_target_x")
-    _validate_wire_float(projectiles.projectile_first_hit_target_y, field=f"{field}.projectiles.projectile_first_hit_target_y")
-
-    for idx, entry in enumerate(row.projectiles.entries):
-        _validate_projectile_entry(entry, field=f"{field}.projectiles.entries[{idx}]")
-    for idx, entry in enumerate(row.creatures.entries):
-        _validate_creature_entry(entry, field=f"{field}.creatures.entries[{idx}]")
 
 
 def decode_replay_tick_trace_msgpack_row(payload: bytes, *, field: str) -> ReplayTickTraceRow:

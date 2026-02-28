@@ -323,7 +323,7 @@ fn writeReplayTickTraceMsgpack(
     const out = &writer.interface;
     try out.writeAll(diagnostic_trace.replay_tick_trace_msgpack_magic);
     for (trace) |entry| {
-        const row = try diagnostic_trace.toMsgpackRow(&entry);
+        const row = diagnostic_trace.toMsgpackRow(&entry);
         var row_writer: std.Io.Writer.Allocating = .init(allocator);
         defer row_writer.deinit();
         try msgpack.encode(row, &row_writer.writer);

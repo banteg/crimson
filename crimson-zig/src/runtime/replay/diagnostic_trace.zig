@@ -216,49 +216,11 @@ pub const ReplayTickTraceMsgpackRow = struct {
     debug: ReplayTickDebug,
 };
 
-pub const TraceMsgpackError = error{
-    NonFiniteWireFloat,
-};
-
-pub fn toMsgpackRow(trace: anytype) TraceMsgpackError!ReplayTickTraceMsgpackRow {
+pub fn toMsgpackRow(trace: anytype) ReplayTickTraceMsgpackRow {
     const bonus_active_entries = trace.bonuses.active_entries[0..trace.bonuses.active_entries_len];
     const projectile_type_counts = trace.projectiles.projectile_type_counts[0..trace.projectiles.projectile_type_counts_len];
     const projectile_entries = trace.projectiles.entries[0..trace.projectiles.entries_len];
     const creature_entries = trace.creatures.entries[0..trace.creatures.entries_len];
-    for (projectile_entries, 0..) |entry, idx| {
-        if (!std.math.isFinite(entry.pos_x) or !std.math.isFinite(entry.pos_y)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.origin_x) or !std.math.isFinite(entry.origin_y)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.life_timer) or !std.math.isFinite(entry.damage_pool)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.angle) or !std.math.isFinite(entry.speed_scale)) return error.NonFiniteWireFloat;
-        _ = idx;
-    }
-    for (creature_entries, 0..) |entry, idx| {
-        if (!std.math.isFinite(entry.pos_x) or !std.math.isFinite(entry.pos_y)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.target_x) or !std.math.isFinite(entry.target_y)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.heading) or !std.math.isFinite(entry.target_heading)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.hp) or !std.math.isFinite(entry.lifecycle_stage)) return error.NonFiniteWireFloat;
-        if (!std.math.isFinite(entry.size) or !std.math.isFinite(entry.attack_cooldown)) return error.NonFiniteWireFloat;
-        _ = idx;
-    }
-    if (!std.math.isFinite(trace.player.player_ammo) or !std.math.isFinite(trace.player.player_health)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_pos_x) or !std.math.isFinite(trace.player.player_pos_y)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_aim_x) or !std.math.isFinite(trace.player.player_aim_y)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_heading) or !std.math.isFinite(trace.player.player_aim_heading)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_move_speed) or !std.math.isFinite(trace.player.player_turn_speed)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_reload_timer) or !std.math.isFinite(trace.player.player_shot_cooldown)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_hot_tempered_timer) or !std.math.isFinite(trace.player.player_shield_timer)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_man_bomb_timer) or !std.math.isFinite(trace.player.player_fire_cough_timer)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.player_living_fortress_timer)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.perk_interval_hot_tempered)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.perk_interval_man_bomb)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.player.perk_interval_fire_cough)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_origin_x)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_origin_y)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_pos_x)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_pos_y)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_size)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_x)) return error.NonFiniteWireFloat;
-    if (!std.math.isFinite(trace.projectiles.projectile_first_hit_target_y)) return error.NonFiniteWireFloat;
     return .{
         .schema_version = replay_tick_trace_schema_version,
         .tick_index = traceTickIndex(trace),
