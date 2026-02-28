@@ -148,14 +148,14 @@ def test_replay_codec_rejects_invalid_claimed_stats() -> None:
 
 def test_replay_codec_validates_event_tick_index_bounds() -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [{"kind": "perk_menu_open", "tick_index": 2, "player_index": 0}]
+    replay_obj["events"] = [{"type": "perk_menu_open", "tick_index": 2, "player_index": 0}]
     with pytest.raises(ReplayCodecError, match="out of bounds"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 
 def test_replay_codec_rejects_negative_event_tick_index() -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [{"kind": "perk_menu_open", "tick_index": -1, "player_index": 0}]
+    replay_obj["events"] = [{"type": "perk_menu_open", "tick_index": -1, "player_index": 0}]
     with pytest.raises(ReplayCodecError, match="non-negative"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 

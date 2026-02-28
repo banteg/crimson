@@ -259,13 +259,13 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     input_quantization: InputQuantization = "f32"
 
 
-class PerkPickEvent(msgspec.Struct, frozen=True):
+class PerkPickEvent(msgspec.Struct, tag="perk_pick", frozen=True):
     tick_index: int
     player_index: int
     choice_index: int
 
 
-class PerkMenuOpenEvent(msgspec.Struct, frozen=True):
+class PerkMenuOpenEvent(msgspec.Struct, tag="perk_menu_open", frozen=True):
     tick_index: int
     player_index: int
 
@@ -308,7 +308,11 @@ class CaptureBootstrapPlayer(msgspec.Struct, frozen=True):
     living_fortress_timer: float | None
     fire_cough_timer: float | None
 
-class CaptureBootstrapEvent(msgspec.Struct, frozen=True):
+class CaptureBootstrapEvent(
+    msgspec.Struct,
+    tag=CAPTURE_BOOTSTRAP_EVENT_KIND,
+    frozen=True,
+):
     tick_index: int
     elapsed_ms: int
     score_xp: int
@@ -330,7 +334,11 @@ class CaptureBootstrapEvent(msgspec.Struct, frozen=True):
     quest_session: CaptureBootstrapQuestSession | None
 
 
-class CapturePerkApplyEvent(msgspec.Struct, frozen=True):
+class CapturePerkApplyEvent(
+    msgspec.Struct,
+    tag=CAPTURE_PERK_APPLY_EVENT_KIND,
+    frozen=True,
+):
     tick_index: int
     perk_id: int
     outside_before: bool
@@ -338,7 +346,11 @@ class CapturePerkApplyEvent(msgspec.Struct, frozen=True):
     pending_after: int | None
 
 
-class CapturePerkPendingEvent(msgspec.Struct, frozen=True):
+class CapturePerkPendingEvent(
+    msgspec.Struct,
+    tag=CAPTURE_PERK_PENDING_EVENT_KIND,
+    frozen=True,
+):
     tick_index: int
     perk_pending: int
 
@@ -366,7 +378,11 @@ class CaptureCreatureSpawnAddedHeadRow(msgspec.Struct, frozen=True):
     pos_y: float | None
 
 
-class CaptureCreatureSpawnEvent(msgspec.Struct, frozen=True):
+class CaptureCreatureSpawnEvent(
+    msgspec.Struct,
+    tag=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
+    frozen=True,
+):
     tick_index: int
     spawns: list[CaptureCreatureSpawnRow]
     added_head: list[CaptureCreatureSpawnAddedHeadRow]
@@ -378,7 +394,11 @@ class CaptureStateTransitionRow(msgspec.Struct, frozen=True):
     after_state: int | None
 
 
-class CaptureStateTransitionEvent(msgspec.Struct, frozen=True):
+class CaptureStateTransitionEvent(
+    msgspec.Struct,
+    tag=CAPTURE_STATE_TRANSITION_EVENT_KIND,
+    frozen=True,
+):
     tick_index: int
     transitions: list[CaptureStateTransitionRow]
 
