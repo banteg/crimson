@@ -13,7 +13,7 @@ class RelayUdpTransport(msgspec.Struct):
     bind_host: str
     bind_port: int
     recv_buffer_size: int = 65536
-    _sock: socket.socket | None = msgspec.field(default=None)
+    _sock: socket.socket | None = None
 
     @property
     def bound_port(self) -> int:

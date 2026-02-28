@@ -182,18 +182,18 @@ class GroundRenderer(msgspec.Struct):
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
     _debug_stamp_log: list[dict[str, object]] = msgspec.field(default_factory=list)
-    _render_target_ready: bool = msgspec.field(default=False)
-    _pending_generate: bool = msgspec.field(default=False)
-    _pending_generate_seed: int | None = msgspec.field(default=None)
-    _pending_generate_layers: int = msgspec.field(default=3)
-    _render_target_warmup_passes: int = msgspec.field(default=0)
-    _fallback_seed: int | None = msgspec.field(default=None)
-    _fallback_layers: int = msgspec.field(default=0)
+    _render_target_ready: bool = False
+    _pending_generate: bool = False
+    _pending_generate_seed: int | None = None
+    _pending_generate_layers: int = 3
+    _render_target_warmup_passes: int = 0
+    _fallback_seed: int | None = None
+    _fallback_layers: int = 0
     _fallback_patches: list[GroundDecal] = msgspec.field(default_factory=list)
     _fallback_decals: list[GroundDecal] = msgspec.field(default_factory=list)
     _fallback_corpse_decals: list[GroundCorpseDecal] = msgspec.field(default_factory=list)
-    _fallback_bodyset_texture: rl.Texture | None = msgspec.field(default=None)
-    _fallback_corpse_shadow: bool = msgspec.field(default=True)
+    _fallback_bodyset_texture: rl.Texture | None = None
+    _fallback_corpse_shadow: bool = True
 
     def debug_clear_stamp_log(self) -> None:
         self._debug_stamp_log.clear()

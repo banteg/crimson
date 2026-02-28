@@ -27,7 +27,7 @@ class HostLanAdapter(msgspec.Struct):
     input_stall_timeout_ms: int = 250
     state_hash_period_ticks: int = 120
     local_slot_index: int = 0
-    lockstep: HostLockstepState = msgspec.field(default=cast(HostLockstepState, None))
+    lockstep: HostLockstepState = cast(HostLockstepState, None)
     resync_failures: ResyncFailureTracker = msgspec.field(default_factory=ResyncFailureTracker)
 
     def __post_init__(self) -> None:
@@ -69,7 +69,7 @@ class ClientLanAdapter(msgspec.Struct):
     local_slot_index: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
-    lockstep: ClientLockstepState = msgspec.field(default=cast(ClientLockstepState, None))
+    lockstep: ClientLockstepState = cast(ClientLockstepState, None)
     resync_failures: ResyncFailureTracker = msgspec.field(default_factory=ResyncFailureTracker)
 
     def __post_init__(self) -> None:

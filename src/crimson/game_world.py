@@ -52,45 +52,45 @@ class GameWorld(msgspec.Struct):
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
-    audio_router: AudioRouter = msgspec.field(default=cast(AudioRouter, None))
-    renderer: WorldRenderer = msgspec.field(default=cast(WorldRenderer, None))
-    world_state: WorldState = msgspec.field(default=cast(WorldState, None))
+    audio_router: AudioRouter = cast(AudioRouter, None)
+    renderer: WorldRenderer = cast(WorldRenderer, None)
+    world_state: WorldState = cast(WorldState, None)
 
-    spawn_env: SpawnEnv = msgspec.field(default=cast(SpawnEnv, None))
-    state: GameplayState = msgspec.field(default=cast(GameplayState, None))
+    spawn_env: SpawnEnv = cast(SpawnEnv, None)
+    state: GameplayState = cast(GameplayState, None)
     players: list[PlayerState] = msgspec.field(default_factory=list)
-    creatures: CreaturePool = msgspec.field(default=cast(CreaturePool, None))
+    creatures: CreaturePool = cast(CreaturePool, None)
     camera: Vec2 = msgspec.field(default_factory=lambda: Vec2(-1.0, -1.0))
     _damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=dict)
-    ground: GroundRenderer | None = msgspec.field(default=None)
+    ground: GroundRenderer | None = None
     fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
     fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
-    fx_textures: FxQueueTextures | None = msgspec.field(default=None)
+    fx_textures: FxQueueTextures | None = None
     creature_textures: dict[str, rl.Texture] = msgspec.field(default_factory=dict)
-    projs_texture: rl.Texture | None = msgspec.field(default=None)
-    particles_texture: rl.Texture | None = msgspec.field(default=None)
-    bullet_texture: rl.Texture | None = msgspec.field(default=None)
-    bullet_trail_texture: rl.Texture | None = msgspec.field(default=None)
-    arrow_texture: rl.Texture | None = msgspec.field(default=None)
-    bonuses_texture: rl.Texture | None = msgspec.field(default=None)
-    bodyset_texture: rl.Texture | None = msgspec.field(default=None)
-    clock_table_texture: rl.Texture | None = msgspec.field(default=None)
-    clock_pointer_texture: rl.Texture | None = msgspec.field(default=None)
-    aim_texture: rl.Texture | None = msgspec.field(default=None)
-    muzzle_flash_texture: rl.Texture | None = msgspec.field(default=None)
-    wicons_texture: rl.Texture | None = msgspec.field(default=None)
-    _elapsed_ms: float = msgspec.field(default=0.0)
-    _bonus_anim_phase: float = msgspec.field(default=0.0)
-    _game_tune_started: bool = msgspec.field(default=False)
-    _texture_loader: TextureLoader | None = msgspec.field(default=None)
+    projs_texture: rl.Texture | None = None
+    particles_texture: rl.Texture | None = None
+    bullet_texture: rl.Texture | None = None
+    bullet_trail_texture: rl.Texture | None = None
+    arrow_texture: rl.Texture | None = None
+    bonuses_texture: rl.Texture | None = None
+    bodyset_texture: rl.Texture | None = None
+    clock_table_texture: rl.Texture | None = None
+    clock_pointer_texture: rl.Texture | None = None
+    aim_texture: rl.Texture | None = None
+    muzzle_flash_texture: rl.Texture | None = None
+    wicons_texture: rl.Texture | None = None
+    _elapsed_ms: float = 0.0
+    _bonus_anim_phase: float = 0.0
+    _game_tune_started: bool = False
+    _texture_loader: TextureLoader | None = None
     last_events: WorldEvents = msgspec.field(
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
     last_presentation: PresentationStepCommands = msgspec.field(default_factory=PresentationStepCommands)
-    last_command_hash: str = msgspec.field(default="")
-    lan_player_rings_enabled: bool = msgspec.field(default=False)
-    lan_local_aim_indicators_only: bool = msgspec.field(default=False)
-    lan_local_player_slot_index: int = msgspec.field(default=0)
+    last_command_hash: str = ""
+    lan_player_rings_enabled: bool = False
+    lan_local_aim_indicators_only: bool = False
+    lan_local_player_slot_index: int = 0
 
     def __post_init__(self) -> None:
         self.world_state = WorldState.build(

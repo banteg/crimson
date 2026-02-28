@@ -127,7 +127,7 @@ def build_rb_resync_messages(
 
 class RbResyncAssemblerV5(msgspec.Struct):
     max_snapshot_bytes: int = RESYNC_MAX_SNAPSHOT_BYTES
-    _begin: RbResyncBegin | None = msgspec.field(default=None)
+    _begin: RbResyncBegin | None = None
     _chunks: dict[int, bytes] = msgspec.field(default_factory=dict)
 
     @property

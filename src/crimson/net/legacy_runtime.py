@@ -101,56 +101,56 @@ class LanRuntime(msgspec.Struct):
 
     cfg: LanRuntimeConfig
     build_id: str = msgspec.field(default_factory=current_build_id)
-    transport: UdpTransport = msgspec.field(default=cast(UdpTransport, None))
-    started: bool = msgspec.field(default=False)
-    error: str = msgspec.field(default="")
+    transport: UdpTransport = cast(UdpTransport, None)
+    started: bool = False
+    error: str = ""
 
-    host_lobby: HostLobby | None = msgspec.field(default=None)
+    host_lobby: HostLobby | None = None
     host_peers: dict[PeerAddr, _HostPeerLink] = msgspec.field(default_factory=dict)
-    host_seed: int = msgspec.field(default=0)
-    host_match_start: MatchStart | None = msgspec.field(default=None)
-    host_last_broadcast_ms: int = msgspec.field(default=0)
-    host_lockstep: HostLockstepState | None = msgspec.field(default=None)
-    host_capture_tick: int = msgspec.field(default=0)
+    host_seed: int = 0
+    host_match_start: MatchStart | None = None
+    host_last_broadcast_ms: int = 0
+    host_lockstep: HostLockstepState | None = None
+    host_capture_tick: int = 0
     host_ready_frames: deque[TickFrame] = msgspec.field(default_factory=deque)
     _host_seen_input_slots: set[int] = msgspec.field(default_factory=set)
 
-    client_lobby: ClientLobby | None = msgspec.field(default=None)
-    client_link: ReliableLink | None = msgspec.field(default=None)
-    client_host_addr: PeerAddr | None = msgspec.field(default=None)
-    client_last_hello_ms: int = msgspec.field(default=0)
-    client_last_seen_ms: int = msgspec.field(default=0)
-    _client_last_send_ms: int = msgspec.field(default=0)
-    client_lockstep: ClientLockstepState | None = msgspec.field(default=None)
-    client_pause_state: PauseState | None = msgspec.field(default=None)
-    _client_seen_tick_frame: bool = msgspec.field(default=False)
-    _last_send_ms: int = msgspec.field(default=0)
+    client_lobby: ClientLobby | None = None
+    client_link: ReliableLink | None = None
+    client_host_addr: PeerAddr | None = None
+    client_last_hello_ms: int = 0
+    client_last_seen_ms: int = 0
+    _client_last_send_ms: int = 0
+    client_lockstep: ClientLockstepState | None = None
+    client_pause_state: PauseState | None = None
+    _client_seen_tick_frame: bool = False
+    _last_send_ms: int = 0
 
     _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = msgspec.field(default_factory=deque)
 
     # Instrumentation (debug overlay + lan debug logs).
-    _metrics_last_log_ms: int = msgspec.field(default=0)
-    _metrics_last_resends_total: int = msgspec.field(default=0)
+    _metrics_last_log_ms: int = 0
+    _metrics_last_resends_total: int = 0
 
     _host_input_queued_at_ms: dict[int, int] = msgspec.field(default_factory=dict)
-    _host_local_input_latency_ms: int = msgspec.field(default=0)
-    _host_local_input_latency_ewma_ms: float = msgspec.field(default=0.0)
+    _host_local_input_latency_ms: int = 0
+    _host_local_input_latency_ewma_ms: float = 0.0
 
     _client_input_queued_at_ms: dict[int, int] = msgspec.field(default_factory=dict)
-    _client_local_input_latency_ms: int = msgspec.field(default=0)
-    _client_local_input_latency_ewma_ms: float = msgspec.field(default=0.0)
+    _client_local_input_latency_ms: int = 0
+    _client_local_input_latency_ewma_ms: float = 0.0
 
-    desync_count: int = msgspec.field(default=0)
-    last_desync_tick: int = msgspec.field(default=-1)
-    last_desync_kind: str = msgspec.field(default="")
-    last_desync_expected: str = msgspec.field(default="")
-    last_desync_actual: str = msgspec.field(default="")
-    _last_desync_notice_sent_tick: int = msgspec.field(default=-10**9)
+    desync_count: int = 0
+    last_desync_tick: int = -1
+    last_desync_kind: str = ""
+    last_desync_expected: str = ""
+    last_desync_actual: str = ""
+    _last_desync_notice_sent_tick: int = -10**9
 
     _client_log_forward_queue: deque[str] = msgspec.field(default_factory=deque)
-    _client_log_forward_last_flush_ms: int = msgspec.field(default=0)
-    _client_log_forward_dropped: int = msgspec.field(default=0)
-    _client_log_forward_enabled: bool = msgspec.field(default=False)
+    _client_log_forward_last_flush_ms: int = 0
+    _client_log_forward_dropped: int = 0
+    _client_log_forward_enabled: bool = False
 
     _host_remote_log_paths: dict[int, Path] = msgspec.field(default_factory=dict)
 

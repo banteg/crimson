@@ -99,8 +99,8 @@ class _SpawnSlotLike(Protocol):
 class GameplayState(msgspec.Struct):
     rng: CrandLike = msgspec.field(default_factory=lambda: Crand(0xBEEF))
     effects: EffectPool = msgspec.field(default_factory=EffectPool)
-    particles: ParticlePool = msgspec.field(default=cast(ParticlePool, None))
-    sprite_effects: SpriteEffectPool = msgspec.field(default=cast(SpriteEffectPool, None))
+    particles: ParticlePool = cast(ParticlePool, None)
+    sprite_effects: SpriteEffectPool = cast(SpriteEffectPool, None)
     projectiles: ProjectilePool = msgspec.field(default_factory=ProjectilePool)
     secondary_projectiles: SecondaryProjectilePool = msgspec.field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = msgspec.field(default_factory=BonusTimers)

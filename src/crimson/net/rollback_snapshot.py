@@ -12,8 +12,8 @@ class RollbackSnapshotCodec(msgspec.Struct, Generic[SnapshotT]):
     """Serialize rollback snapshots as deterministic msgpack blobs."""
 
     snapshot_type: type[SnapshotT]
-    _encoder: msgspec.msgpack.Encoder = msgspec.field(default=cast(msgspec.msgpack.Encoder, None))
-    _decoder: msgspec.msgpack.Decoder = msgspec.field(default=cast(msgspec.msgpack.Decoder, None))
+    _encoder: msgspec.msgpack.Encoder = cast(msgspec.msgpack.Encoder, None)
+    _decoder: msgspec.msgpack.Decoder = cast(msgspec.msgpack.Decoder, None)
 
     def __post_init__(self) -> None:
         self._encoder = msgspec.msgpack.Encoder()

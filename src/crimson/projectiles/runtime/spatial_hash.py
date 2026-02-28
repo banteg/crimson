@@ -26,10 +26,10 @@ class CreatureSpatialHash(msgspec.Struct):
     creatures: Sequence[CreatureState]
     is_collidable: Callable[[CreatureState], bool]
     bucket_size: float = _SPATIAL_BUCKET_SIZE
-    _bucket_size: float = msgspec.field(default=_SPATIAL_BUCKET_SIZE)
+    _bucket_size: float = _SPATIAL_BUCKET_SIZE
     _cells: dict[tuple[int, int], list[int]] = msgspec.field(default_factory=dict)
     _cell_by_index: list[tuple[int, int] | None] = msgspec.field(default_factory=list)
-    _max_find_margin: float = msgspec.field(default=0.0)
+    _max_find_margin: float = 0.0
 
     def __post_init__(self) -> None:
         if float(self.bucket_size) > 0.0:

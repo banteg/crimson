@@ -198,10 +198,10 @@ class ConsoleState(msgspec.Struct):
     echo_enabled: bool = True
     quit_requested: bool = False
     prompt_string: str = "> %s"
-    _mono_font: GrimMonoFont | None = msgspec.field(default=None)
-    _small_font: SmallFontData | None = msgspec.field(default=None)
+    _mono_font: GrimMonoFont | None = None
+    _small_font: SmallFontData | None = None
     _slide_t: float = 1.0
-    _offset_y: float = msgspec.field(default=0.0)
+    _offset_y: float = 0.0
     _blink_time: float = 0.0
 
     def register_command(self, name: str, handler: CommandHandler) -> None:
