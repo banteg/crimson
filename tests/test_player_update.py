@@ -10,7 +10,6 @@ from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     GameplayState,
-    _player_aim_point_from_heading,
     _player_heading_approach_target_with_delta,
     player_update,
 )

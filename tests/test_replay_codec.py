@@ -21,8 +21,8 @@ from crimson.replay import (
     load_replay,
     warn_on_game_version_mismatch,
 )
-from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
 from crimson.replay import types as replay_types
+from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 

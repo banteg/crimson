@@ -651,7 +651,6 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceJsonRow, *, player_count: int) 
     summary = row.summary
     player = row.player
     bonuses = row.bonuses
-    projectiles = row.projectiles
     debug = row.debug
 
     player_pos_x = _f32_from_bits(int(player.player_pos_x_bits))
