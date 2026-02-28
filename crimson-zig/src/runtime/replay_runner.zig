@@ -3,7 +3,6 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
-const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
@@ -136,8 +135,6 @@ pub const ReplayScaffoldResult = struct {
     quest_play_completion_music: bool,
 };
 
-pub const ProjectileTraceEntry = replay_diagnostic_trace.ProjectileTraceEntry;
-pub const CreatureTraceEntry = replay_diagnostic_trace.CreatureTraceEntry;
 pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTrace;
 
 pub const DtFrameOverride = struct {
@@ -325,9 +322,6 @@ pub fn runReplayScaffoldWithTrace(
                     &context.state,
                     player0,
                     &context.creatures,
-                    &context.bonuses,
-                    &context.projectiles,
-                    step_result.projectile_tick_stats,
                     step_result.rng_after_perk_effects,
                     step_result.rng_after_creatures,
                     step_result.rng_after_projectiles,
@@ -433,9 +427,6 @@ fn buildTickTrace(
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
-    bonuses: *const bonus_runtime.BonusPool,
-    projectiles: *const projectiles_mod.ProjectilePool,
-    projectile_tick_stats: projectiles_mod.ProjectileTickStats,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
     rng_after_projectiles: u32,
@@ -453,9 +444,6 @@ fn buildTickTrace(
         state,
         player,
         creatures,
-        bonuses,
-        projectiles,
-        projectile_tick_stats,
         rng_after_perk_effects,
         rng_after_creatures,
         rng_after_projectiles,
@@ -1091,7 +1079,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
                 .shots_fired = result.shots_fired,
-                .ammo_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_ammo))),
+                .ammo_bits = f32Bits(trace.items[0].player_state.weapon.ammo),
             };
         }
     }.runCase;
@@ -1497,7 +1485,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
         .{},
     );
     try std.testing.expectEqual(@as(usize, 1), trace.items.len);
-    try std.testing.expect(f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_x))) > f32Bits(512.0));
+    try std.testing.expect(f32Bits(trace.items[0].player_state.pos.x) > f32Bits(512.0));
 }
 
 test "rush scaffold supports multiplayer replays" {
@@ -2240,13 +2228,14 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     try std.testing.expectEqual(@as(i32, 1), result.player_level);
     try std.testing.expectEqual(@as(usize, 0), result.creature_active_count);
     try std.testing.expectEqual(@as(usize, 2), trace.items.len);
-    try std.testing.expectEqual(
-        @as(i32, 0),
-        trace.items[1].bonuses.bonus_timer_ms_by_id[@intFromEnum(game_ids.BonusId.reflex_boost)],
+    try std.testing.expectApproxEqAbs(
+        @as(f32, 0.0),
+        trace.items[1].gameplay_state.bonuses.reflex_boost,
+        @as(f32, 1e-6),
     );
     try std.testing.expectEqual(
         @as(i32, 0),
-        trace.items[1].player.player_perk_counts[@intFromEnum(PerkId.fire_caugh)],
+        trace.items[1].player_state.perk_counts.get(PerkId.fire_caugh),
     );
 }
 
@@ -2376,8 +2365,8 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             );
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
             return .{
-                .x_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_x))),
-                .y_bits = f32Bits(@as(f32, @floatCast(trace.items[0].player.player_pos_y))),
+                .x_bits = f32Bits(trace.items[0].player_state.pos.x),
+                .y_bits = f32Bits(trace.items[0].player_state.pos.y),
             };
         }
     }.runCase;
