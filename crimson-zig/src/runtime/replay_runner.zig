@@ -253,7 +253,6 @@ pub fn runReplayScaffoldWithTrace(
             quest_spawn_entries = quest_spawn_entries_storage[0..0];
         }
     }
-
     var context = replay_context_mod.SimulationContext.initFromReplayHeader(
         header,
         .{
@@ -275,6 +274,7 @@ pub fn runReplayScaffoldWithTrace(
         error.UnsupportedGameMode => return error.UnsupportedGameMode,
         error.UnsupportedQuestSpawnTable => return error.UnsupportedQuestSpawnTable,
     };
+    context.rebindQuestSpawnEntries();
 
     if (game_mode == .quests) {
         const weapon_id = @max(1, quest_start_weapon_id_for_reset);
