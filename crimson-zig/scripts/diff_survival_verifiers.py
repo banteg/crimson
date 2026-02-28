@@ -17,29 +17,14 @@ from deepdiff import DeepDiff
 from rich.console import Console
 from rich.text import Text
 
-from crimson.bonuses.ids import BonusId
 from crimson.replay import ReplayCodecError, load_replay
 from crimson.replay.diagnostic_trace_native import (
-    BONUS_ID_COUNT,
-    PERK_COUNT_SIZE,
     REPLAY_TICK_TRACE_SCHEMA_VERSION,
-    ReplayTickTraceJsonRow,
-    decode_replay_tick_trace_json_row,
-    decode_replay_tick_trace_jsonl,
+    ReplayTickTraceRow,
+    decode_replay_tick_trace_msgpack_row,
+    decode_replay_tick_trace_msgpack_stream,
 )
 from crimson.sim.driver.replay_runner import ReplayRunnerError, run_survival_replay
-
-# Python currently cannot observe these natively in replay_runner world callbacks.
-_UNSUPPORTED_COMPARE_PATHS: set[str] = {
-    "debug.debug_pending_nuke",
-    "debug.debug_nuke_kills_last",
-    "debug.debug_nuke_tick_last",
-    "debug.debug_nuke_kill_index_sum",
-    "debug.debug_last_picked_bonus_id",
-    "debug.debug_last_picked_bonus_amount",
-    "projectiles.projectile_first_hit_creature_index",
-    "projectiles.projectile_first_hit_projectile_index",
-}
 
 
 def _default_runtime_dir() -> Path:
@@ -76,34 +61,8 @@ def _resolve_replay_path(replay_arg: str, *, base_dir: Path) -> Path:
     raise FileNotFoundError(replay_arg)
 
 
-def _f32_bits(value: float) -> int:
-    return int(struct.unpack("<I", struct.pack("<f", float(value)))[0])
-
-
-def _add_projectile_type_count(entries: list[dict[str, int]], type_id: int) -> None:
-    idx = 0
-    while idx < len(entries) and int(entries[idx]["type_id"]) < int(type_id):
-        idx += 1
-    if idx < len(entries) and int(entries[idx]["type_id"]) == int(type_id):
-        entries[idx]["count"] = int(entries[idx]["count"]) + 1
-        return
-    entries.insert(idx, {"type_id": int(type_id), "count": 1})
-
-
-def _add_bonus_active_entry(entries: list[dict[str, int]], bonus_id: int, amount: int) -> None:
-    idx = 0
-    while idx < len(entries) and int(entries[idx]["bonus_id"]) < int(bonus_id):
-        idx += 1
-    entries.insert(idx, {"bonus_id": int(bonus_id), "amount": int(amount)})
-
-
-def _bonus_timer_ms(seconds: float) -> int:
-    if not (float(seconds) > 0.0):
-        return 0
-    value = int(round(float(seconds) * 1000.0))
-    if value < 0:
-        return 0
-    return int(value)
+def _wire_f32(value: object) -> float:
+    return float(struct.unpack("<f", struct.pack("<f", float(value)))[0])
 
 
 def _build_python_row(
@@ -111,190 +70,69 @@ def _build_python_row(
     tick_index: int,
     elapsed_ms: float,
     world: object,
-    events: object,
     rng_marks: dict[str, int],
-) -> ReplayTickTraceJsonRow:
+) -> ReplayTickTraceRow:
     state = getattr(world, "state")
     players = list(getattr(world, "players"))
     creatures_pool = getattr(world, "creatures")
     creatures_entries = list(getattr(creatures_pool, "entries"))
-    projectiles_entries = list(getattr(state.projectiles, "entries"))
-    bonus_pool_entries = list(getattr(state.bonus_pool, "entries"))
 
     player = players[0] if players else None
 
-    projectile_count = 0
-    projectile_type_counts: list[dict[str, int]] = []
-    projectile_entries: list[dict[str, object]] = []
-
-    for idx, entry in enumerate(projectiles_entries):
-        if not bool(getattr(entry, "active")):
-            continue
-
-        projectile_count += 1
-
-        type_id = int(getattr(entry, "type_id"))
-        owner_legacy = int(entry.owner.to_legacy())
-
-        _add_projectile_type_count(projectile_type_counts, type_id)
-
-        projectile_entries.append(
-            {
-                "index": int(idx),
-                "type_id": int(type_id),
-                "pos_x_bits": _f32_bits(float(getattr(entry.pos, "x"))),
-                "pos_y_bits": _f32_bits(float(getattr(entry.pos, "y"))),
-                "origin_x_bits": _f32_bits(float(getattr(entry.origin, "x"))),
-                "origin_y_bits": _f32_bits(float(getattr(entry.origin, "y"))),
-                "life_timer_bits": _f32_bits(float(getattr(entry, "life_timer"))),
-                "damage_pool_bits": _f32_bits(float(getattr(entry, "damage_pool"))),
-                "angle_bits": _f32_bits(float(getattr(entry, "angle"))),
-                "speed_scale_bits": _f32_bits(float(getattr(entry, "speed_scale"))),
-                "owner_legacy": int(owner_legacy),
-                "hits_players": bool(getattr(entry, "hits_players")),
-            },
-        )
-
-    creature_entries: list[dict[str, object]] = []
-
-    for idx, creature in enumerate(creatures_entries):
-        if not bool(getattr(creature, "active")):
-            continue
-
-        type_id = int(getattr(creature, "type_id"))
-        creature_flags = int(getattr(creature, "flags"))
-
-        creature_entries.append(
-            {
-                "index": int(idx),
-                "type_id": int(type_id),
-                "flags": int(creature_flags),
-                "ai_mode": int(getattr(creature, "ai_mode")),
-                "link_index": int(getattr(creature, "link_index")),
-                "pos_x_bits": _f32_bits(float(getattr(creature.pos, "x"))),
-                "pos_y_bits": _f32_bits(float(getattr(creature.pos, "y"))),
-                "target_x_bits": _f32_bits(float(getattr(creature.target, "x"))),
-                "target_y_bits": _f32_bits(float(getattr(creature.target, "y"))),
-                "heading_bits": _f32_bits(float(getattr(creature, "heading"))),
-                "target_heading_bits": _f32_bits(float(getattr(creature, "target_heading"))),
-                "hp_bits": _f32_bits(float(getattr(creature, "hp"))),
-                "lifecycle_stage_bits": _f32_bits(float(getattr(creature, "lifecycle_stage"))),
-                "size_bits": _f32_bits(float(getattr(creature, "size"))),
-                "attack_cooldown_bits": _f32_bits(float(getattr(creature, "attack_cooldown"))),
-            },
-        )
-
-    bonus_active_entries: list[dict[str, int]] = []
-    bonus_active_count = 0
-    for entry in bonus_pool_entries:
-        bonus_id = int(getattr(entry, "bonus_id"))
-        if bonus_id == int(BonusId.UNUSED):
-            continue
-        bonus_active_count += 1
-        _add_bonus_active_entry(bonus_active_entries, bonus_id, int(getattr(entry, "amount")))
-
-    bonus_timer_ms_by_id = [0] * int(BONUS_ID_COUNT)
-    bonus_timer_ms_by_id[int(BonusId.WEAPON_POWER_UP)] = _bonus_timer_ms(float(state.bonuses.weapon_power_up))
-    bonus_timer_ms_by_id[int(BonusId.REFLEX_BOOST)] = _bonus_timer_ms(float(state.bonuses.reflex_boost))
-    bonus_timer_ms_by_id[int(BonusId.ENERGIZER)] = _bonus_timer_ms(float(state.bonuses.energizer))
-    bonus_timer_ms_by_id[int(BonusId.DOUBLE_EXPERIENCE)] = _bonus_timer_ms(float(state.bonuses.double_experience))
-    bonus_timer_ms_by_id[int(BonusId.FREEZE)] = _bonus_timer_ms(float(state.bonuses.freeze))
-
     if player is None:
-        player_perk_counts = [0] * int(PERK_COUNT_SIZE)
-        player_payload = {
-            "player_weapon_id": 0,
-            "player_ammo_bits": _f32_bits(0.0),
-            "player_health_bits": _f32_bits(0.0),
-            "player_pos_x_bits": _f32_bits(0.0),
-            "player_pos_y_bits": _f32_bits(0.0),
-            "player_aim_x_bits": _f32_bits(0.0),
-            "player_aim_y_bits": _f32_bits(0.0),
-            "player_heading_bits": _f32_bits(0.0),
-            "player_aim_heading_bits": _f32_bits(0.0),
-            "player_move_speed_bits": _f32_bits(0.0),
-            "player_turn_speed_bits": _f32_bits(0.0),
-            "player_level": 0,
-            "player_experience": 0,
-            "player_reload_active": False,
-            "player_reload_timer_bits": _f32_bits(0.0),
-            "player_shot_cooldown_bits": _f32_bits(0.0),
-            "player_shot_seq": 0,
-            "player_perk_counts": player_perk_counts,
-            "player_hot_tempered_timer_bits": _f32_bits(0.0),
-            "player_shield_timer_bits": _f32_bits(0.0),
-            "player_man_bomb_timer_bits": _f32_bits(0.0),
-            "player_fire_cough_timer_bits": _f32_bits(0.0),
-            "player_living_fortress_timer_bits": _f32_bits(0.0),
-            "perk_interval_hot_tempered_bits": _f32_bits(float(state.perk_intervals.hot_tempered)),
-            "perk_interval_man_bomb_bits": _f32_bits(float(state.perk_intervals.man_bomb)),
-            "perk_interval_fire_cough_bits": _f32_bits(float(state.perk_intervals.fire_cough)),
+        player_state_payload: dict[str, object] = {
+            "index": 0,
+            "pos": {"x": _wire_f32(0.0), "y": _wire_f32(0.0)},
+            "health": _wire_f32(0.0),
+            "weapon": {
+                "weapon_id": 0,
+                "ammo": _wire_f32(0.0),
+                "reload_active": False,
+                "reload_timer": _wire_f32(0.0),
+                "reload_timer_max": _wire_f32(0.0),
+                "shot_cooldown": _wire_f32(0.0),
+            },
+            "experience": 0,
+            "level": 0,
         }
         score_xp = 0
     else:
-        player_perk_counts = [int(value) for value in list(player.perk_counts)[0 : int(PERK_COUNT_SIZE)]]
-        if len(player_perk_counts) < int(PERK_COUNT_SIZE):
-            player_perk_counts += [0] * (int(PERK_COUNT_SIZE) - len(player_perk_counts))
-        player_payload = {
-            "player_weapon_id": int(player.weapon_id),
-            "player_ammo_bits": _f32_bits(float(player.ammo)),
-            "player_health_bits": _f32_bits(float(player.health)),
-            "player_pos_x_bits": _f32_bits(float(player.pos.x)),
-            "player_pos_y_bits": _f32_bits(float(player.pos.y)),
-            "player_aim_x_bits": _f32_bits(float(player.aim.x)),
-            "player_aim_y_bits": _f32_bits(float(player.aim.y)),
-            "player_heading_bits": _f32_bits(float(player.heading)),
-            "player_aim_heading_bits": _f32_bits(float(player.aim_heading)),
-            "player_move_speed_bits": _f32_bits(float(player.move_speed)),
-            "player_turn_speed_bits": _f32_bits(float(player.turn_speed)),
-            "player_level": int(player.level),
-            "player_experience": int(player.experience),
-            "player_reload_active": bool(player.reload_active),
-            "player_reload_timer_bits": _f32_bits(float(player.reload_timer)),
-            "player_shot_cooldown_bits": _f32_bits(float(player.shot_cooldown)),
-            "player_shot_seq": int(player.shot_seq),
-            "player_perk_counts": player_perk_counts,
-            "player_hot_tempered_timer_bits": _f32_bits(float(player.hot_tempered_timer)),
-            "player_shield_timer_bits": _f32_bits(float(player.shield_timer)),
-            "player_man_bomb_timer_bits": _f32_bits(float(player.man_bomb_timer)),
-            "player_fire_cough_timer_bits": _f32_bits(float(player.fire_cough_timer)),
-            "player_living_fortress_timer_bits": _f32_bits(float(player.living_fortress_timer)),
-            "perk_interval_hot_tempered_bits": _f32_bits(float(state.perk_intervals.hot_tempered)),
-            "perk_interval_man_bomb_bits": _f32_bits(float(state.perk_intervals.man_bomb)),
-            "perk_interval_fire_cough_bits": _f32_bits(float(state.perk_intervals.fire_cough)),
+        weapon = getattr(player, "weapon", None)
+        if weapon is None:
+            weapon_id = int(getattr(player, "weapon_id", 0))
+            ammo = _wire_f32(getattr(player, "ammo", 0.0))
+            reload_active = bool(getattr(player, "reload_active", False))
+            reload_timer = _wire_f32(getattr(player, "reload_timer", 0.0))
+            reload_timer_max = _wire_f32(getattr(player, "reload_timer_max", 0.0))
+            shot_cooldown = _wire_f32(getattr(player, "shot_cooldown", 0.0))
+        else:
+            weapon_id = int(getattr(weapon, "weapon_id"))
+            ammo = _wire_f32(getattr(weapon, "ammo", 0.0))
+            reload_active = bool(getattr(weapon, "reload_active", False))
+            reload_timer = _wire_f32(getattr(weapon, "reload_timer", 0.0))
+            reload_timer_max = _wire_f32(getattr(weapon, "reload_timer_max", 0.0))
+            shot_cooldown = _wire_f32(getattr(weapon, "shot_cooldown", 0.0))
+
+        player_state_payload = {
+            "index": int(getattr(player, "index", 0)),
+            "pos": {
+                "x": _wire_f32(getattr(getattr(player, "pos"), "x", 0.0)),
+                "y": _wire_f32(getattr(getattr(player, "pos"), "y", 0.0)),
+            },
+            "health": _wire_f32(getattr(player, "health", 0.0)),
+            "weapon": {
+                "weapon_id": weapon_id,
+                "ammo": ammo,
+                "reload_active": reload_active,
+                "reload_timer": reload_timer,
+                "reload_timer_max": reload_timer_max,
+                "shot_cooldown": shot_cooldown,
+            },
+            "experience": int(getattr(player, "experience", 0)),
+            "level": int(getattr(player, "level", 0)),
         }
-        score_xp = int(player.experience)
+        score_xp = int(getattr(player, "experience", 0))
 
-    hits = list(getattr(events, "hits"))
-    first_hit_creature_index = -1
-    first_hit_projectile_index = -1
-    first_hit_type_id = 0
-    first_hit_origin_x_bits = _f32_bits(0.0)
-    first_hit_origin_y_bits = _f32_bits(0.0)
-    first_hit_pos_x_bits = _f32_bits(0.0)
-    first_hit_pos_y_bits = _f32_bits(0.0)
-    first_hit_target_size_bits = _f32_bits(0.0)
-    first_hit_target_x_bits = _f32_bits(0.0)
-    first_hit_target_y_bits = _f32_bits(0.0)
-    if hits:
-        first = hits[0]
-        first_hit_type_id = int(first.type_id)
-        first_hit_origin_x_bits = _f32_bits(float(first.origin.x))
-        first_hit_origin_y_bits = _f32_bits(float(first.origin.y))
-        first_hit_pos_x_bits = _f32_bits(float(first.hit.x))
-        first_hit_pos_y_bits = _f32_bits(float(first.hit.y))
-        first_hit_target_x_bits = _f32_bits(float(first.target.x))
-        first_hit_target_y_bits = _f32_bits(float(first.target.y))
-        target_size = 0.0
-        for creature in creatures_entries:
-            if not bool(getattr(creature, "active")):
-                continue
-            if abs(float(creature.pos.x) - float(first.target.x)) < 1e-4 and abs(float(creature.pos.y) - float(first.target.y)) < 1e-4:
-                target_size = float(creature.size)
-                break
-        first_hit_target_size_bits = _f32_bits(target_size)
-
-    rng_state = int(state.rng.state)
     row_payload = {
         "schema_version": int(REPLAY_TICK_TRACE_SCHEMA_VERSION),
         "tick_index": int(tick_index),
@@ -302,7 +140,7 @@ def _build_python_row(
             "elapsed_ms": int(round(float(elapsed_ms))),
         },
         "rng": {
-            "rng_state": int(rng_state),
+            "rng_state": int(getattr(state.rng, "state")),
             "rng_after_perk_effects": int(rng_marks["ws_after_perk_effects"]),
             "rng_after_creatures": int(rng_marks["ws_after_creatures"]),
             "rng_after_projectiles": int(rng_marks["ws_after_projectiles"]),
@@ -316,66 +154,45 @@ def _build_python_row(
         },
         "summary": {
             "score_xp": int(score_xp),
-            "kills": int(creatures_pool.kill_count),
+            "kills": int(getattr(creatures_pool, "kill_count")),
             "shots_fired_p0": int(state.shots_fired[0] if len(state.shots_fired) > 0 else 0),
             "creature_count": int(sum(1 for creature in creatures_entries if bool(getattr(creature, "active")))),
             "perk_pending": int(state.perk_selection.pending_count),
         },
-        "player": player_payload,
-        "bonuses": {
-            "bonus_timer_ms_by_id": bonus_timer_ms_by_id,
-            "bonus_active_count": int(bonus_active_count),
-            "active_entries": bonus_active_entries,
+        "gameplay_state": {
+            "bonuses": {
+                "weapon_power_up": _wire_f32(state.bonuses.weapon_power_up),
+                "reflex_boost": _wire_f32(state.bonuses.reflex_boost),
+                "energizer": _wire_f32(state.bonuses.energizer),
+                "double_experience": _wire_f32(state.bonuses.double_experience),
+                "freeze": _wire_f32(state.bonuses.freeze),
+            },
+            "perk_selection": {
+                "pending_count": int(state.perk_selection.pending_count),
+            },
         },
-        "projectiles": {
-            "projectile_count": int(projectile_count),
-            "projectile_hit_count": int(len(hits)),
-            "projectile_first_hit_creature_index": int(first_hit_creature_index),
-            "projectile_first_hit_projectile_index": int(first_hit_projectile_index),
-            "projectile_first_hit_type_id": int(first_hit_type_id),
-            "projectile_first_hit_origin_x_bits": int(first_hit_origin_x_bits),
-            "projectile_first_hit_origin_y_bits": int(first_hit_origin_y_bits),
-            "projectile_first_hit_pos_x_bits": int(first_hit_pos_x_bits),
-            "projectile_first_hit_pos_y_bits": int(first_hit_pos_y_bits),
-            "projectile_first_hit_target_size_bits": int(first_hit_target_size_bits),
-            "projectile_first_hit_target_x_bits": int(first_hit_target_x_bits),
-            "projectile_first_hit_target_y_bits": int(first_hit_target_y_bits),
-            "projectile_type_counts": projectile_type_counts,
-            "entries": projectile_entries,
-        },
-        "creatures": {
-            "entries": creature_entries,
-        },
-        "debug": {
-            "debug_pending_nuke": 0,
-            "debug_nuke_kills_last": 0,
-            "debug_nuke_tick_last": -1,
-            "debug_nuke_kill_index_sum": 0,
-            "debug_last_picked_bonus_id": 0,
-            "debug_last_picked_bonus_amount": 0,
-        },
+        "player_state": player_state_payload,
     }
 
-    payload = json.dumps(row_payload, separators=(",", ":")).encode("utf-8")
-    return decode_replay_tick_trace_json_row(payload, field=f"python trace row {int(tick_index) + 1}")
+    payload = msgspec.msgpack.encode(row_payload)
+    return decode_replay_tick_trace_msgpack_row(payload, field=f"python trace row {int(tick_index) + 1}")
 
 
-def _build_python_trace_rows(replay_path: Path) -> list[ReplayTickTraceJsonRow]:
+def _build_python_trace_rows(replay_path: Path) -> list[ReplayTickTraceRow]:
     replay = load_replay(replay_path.read_bytes())
-    rows: list[ReplayTickTraceJsonRow] = []
+    rows: list[ReplayTickTraceRow] = []
 
     def _on_tick_trace(
         tick_index: int,
         world: object,
         elapsed_ms: float,
-        events: object,
+        _events: object,
         rng_marks: dict[str, int],
     ) -> None:
         row = _build_python_row(
             tick_index=int(tick_index),
             elapsed_ms=float(elapsed_ms),
             world=world,
-            events=events,
             rng_marks=rng_marks,
         )
         rows.append(row)
@@ -391,11 +208,30 @@ def _build_python_trace_rows(replay_path: Path) -> list[ReplayTickTraceJsonRow]:
     return rows
 
 
-def _load_trace_jsonl(trace_path: Path) -> list[ReplayTickTraceJsonRow]:
-    return decode_replay_tick_trace_jsonl(trace_path)
+def _load_trace_jsonl(trace_path: Path) -> list[ReplayTickTraceRow]:
+    rows: list[ReplayTickTraceRow] = []
+    raw_lines = trace_path.read_text(encoding="utf-8").splitlines()
+    for idx, line in enumerate(raw_lines):
+        line = str(line).strip()
+        if not line:
+            continue
+        try:
+            payload = msgspec.json.decode(line)
+        except msgspec.DecodeError as exc:
+            raise ValueError(f"{trace_path}.lines[{idx}] must be valid json") from exc
+        if not isinstance(payload, dict):
+            raise TypeError(f"{trace_path}.lines[{idx}] must be a JSON object")
+        row_bytes = msgspec.msgpack.encode(payload)
+        rows.append(
+            decode_replay_tick_trace_msgpack_row(
+                row_bytes,
+                field=f"{trace_path}.lines[{idx}]",
+            ),
+        )
+    return rows
 
 
-def _write_trace_jsonl(trace_path: Path, rows: list[ReplayTickTraceJsonRow]) -> None:
+def _write_trace_jsonl(trace_path: Path, rows: list[ReplayTickTraceRow]) -> None:
     trace_path.parent.mkdir(parents=True, exist_ok=True)
     with trace_path.open("w", encoding="utf-8") as handle:
         for row in rows:
@@ -417,7 +253,7 @@ def _run_zig_trace(
         str(replay_path),
         "--base-dir",
         str(base_dir),
-        "--debug-trace-jsonl",
+        "--debug-trace-msgpack",
         str(trace_path),
     ]
     return subprocess.run(command, check=False, text=True, capture_output=True)
@@ -429,9 +265,6 @@ def _first_mismatch_value(
     *,
     path: str,
 ) -> tuple[str, object, object] | None:
-    if path in _UNSUPPORTED_COMPARE_PATHS:
-        return None
-
     if isinstance(expected, dict) and isinstance(actual, dict):
         if set(expected.keys()) != set(actual.keys()):
             return path, sorted(expected.keys()), sorted(actual.keys())
@@ -458,8 +291,8 @@ def _first_mismatch_value(
 
 
 def _first_mismatch(
-    expected_rows: list[ReplayTickTraceJsonRow],
-    actual_rows: list[ReplayTickTraceJsonRow],
+    expected_rows: list[ReplayTickTraceRow],
+    actual_rows: list[ReplayTickTraceRow],
 ) -> tuple[int, str, object, object] | None:
     limit = min(len(expected_rows), len(actual_rows))
     for index in range(limit):
@@ -486,8 +319,8 @@ def _deepdiff_path_to_dotted(path: str) -> str:
 
 
 def _print_state_diff(
-    python_row: ReplayTickTraceJsonRow,
-    zig_row: ReplayTickTraceJsonRow,
+    python_row: ReplayTickTraceRow,
+    zig_row: ReplayTickTraceRow,
 ) -> None:
     python_obj = msgspec.to_builtins(python_row)
     zig_obj = msgspec.to_builtins(zig_row)
@@ -495,7 +328,6 @@ def _print_state_diff(
     diff = DeepDiff(
         python_obj,
         zig_obj,
-        exclude_paths=[f"root['{p.split('.')[0]}']['{p.split('.')[1]}']" for p in _UNSUPPORTED_COMPARE_PATHS if '.' in p],
     )
     if not diff:
         return
@@ -619,7 +451,7 @@ def main() -> int:
             print(f"wrote python trace cache: {args.python_trace_jsonl}")
 
     with tempfile.TemporaryDirectory(prefix="crimson-zig-trace-") as temp_dir:
-        zig_trace_path = Path(temp_dir) / "zig_trace.jsonl"
+        zig_trace_path = Path(temp_dir) / "zig_trace.msgpack"
         zig_run = _run_zig_trace(
             zig_bin=zig_bin,
             replay_path=replay_path,
@@ -631,7 +463,7 @@ def main() -> int:
             if zig_run.stderr.strip():
                 print(zig_run.stderr.strip(), file=sys.stderr)
             return 1
-        zig_trace_rows = _load_trace_jsonl(zig_trace_path)
+        zig_trace_rows = decode_replay_tick_trace_msgpack_stream(zig_trace_path)
 
     mismatch = _first_mismatch(python_trace_rows, zig_trace_rows)
     if mismatch is None:
