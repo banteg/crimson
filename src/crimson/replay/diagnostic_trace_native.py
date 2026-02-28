@@ -2,18 +2,11 @@ from __future__ import annotations
 
 import struct
 from pathlib import Path
-from typing import TypeAlias
 
 import msgspec
 
-from ..bonuses.ids import BonusId
-from ..perks.ids import PerkId
-
 REPLAY_TICK_TRACE_SCHEMA_VERSION = 6
 REPLAY_TICK_TRACE_MSGPACK_MAGIC = b"crimson_replay_tick_trace_msgpack_v3\n"
-PERK_COUNT_SIZE = len(PerkId)
-BONUS_ID_COUNT = len(BonusId)
-ReplayTickTraceJsonRow: TypeAlias = dict[str, object]
 
 _ROW_LEN_STRUCT = struct.Struct("<I")
 
@@ -147,34 +140,3 @@ def decode_replay_tick_trace_msgpack_stream_bytes(data: bytes, *, field: str) ->
 def decode_replay_tick_trace_msgpack_stream(path: Path) -> list[ReplayTickTraceRow]:
     payload = Path(path).read_bytes()
     return decode_replay_tick_trace_msgpack_stream_bytes(payload, field=str(path))
-
-
-def decode_replay_tick_trace_json_row(payload: object, *, field: str) -> ReplayTickTraceJsonRow:
-    if not isinstance(payload, dict):
-        raise TypeError(f"{field} must be a JSON object")
-    out: dict[str, object] = {}
-    for key, value in payload.items():
-        if not isinstance(key, str):
-            raise TypeError(f"{field} contains non-string key")
-        out[key] = value
-    return out
-
-
-def decode_replay_tick_trace_jsonl(path: Path) -> list[ReplayTickTraceJsonRow]:
-    rows: list[ReplayTickTraceJsonRow] = []
-    raw_lines = Path(path).read_text(encoding="utf-8").splitlines()
-    for idx, line in enumerate(raw_lines):
-        line = str(line).strip()
-        if not line:
-            continue
-        try:
-            payload = msgspec.json.decode(line)
-        except msgspec.DecodeError as exc:
-            raise ValueError(f"{path}.lines[{idx}] must be valid json") from exc
-        rows.append(
-            decode_replay_tick_trace_json_row(
-                payload,
-                field=f"{path}.lines[{idx}]",
-            ),
-        )
-    return rows
