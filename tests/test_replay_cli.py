@@ -1623,7 +1623,7 @@ def test_replay_verify_checkpoints_preserves_success_behavior(tmp_path: Path) ->
     assert "kills=" in result.output
 
 
-def test_replay_verify_checkpoints_falls_back_to_legacy_sidecar_name(tmp_path: Path) -> None:
+def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     checkpoint_ticks = {0}
@@ -1643,8 +1643,8 @@ def test_replay_verify_checkpoints_falls_back_to_legacy_sidecar_name(tmp_path: P
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
 
-    assert result.exit_code == 0, result.output
-    assert "checkpoints match" in result.output
+    assert result.exit_code == 1
+    assert "checkpoints file not found" in result.output
 
 
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
