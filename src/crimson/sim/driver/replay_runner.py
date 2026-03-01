@@ -380,7 +380,7 @@ def run_rush_replay(
 
         rng_before_events = int(state.rng.state)
         apply_replay_tick_events(
-            cast("list[object]", events_by_tick.get(int(tick_index), [])),
+            events_by_tick.get(int(tick_index), []),
             tick_index=int(tick_index),
             dt_frame=float(dt_tick),
             world=world,
@@ -434,7 +434,7 @@ def run_rush_replay(
 
     rng_before_events = int(world.state.rng.state)
     apply_replay_tick_events(
-        cast("list[object]", events_by_tick.get(int(tick_index), [])),
+        events_by_tick.get(int(tick_index), []),
         tick_index=int(tick_index),
         dt_frame=float(dt_frame),
         world=world,

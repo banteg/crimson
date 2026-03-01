@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -98,8 +99,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_deletes_raw(tmp_path: P
     assert "checkpoint" in meta.channels
     assert "entity_samples" in meta.channels
 
-    creatures0 = ticks[0].channels["entity_samples"]["creatures"]
-    creatures1 = ticks[1].channels["entity_samples"]["creatures"]
+    creatures0 = cast("dict[str, list[dict[str, object]]]", ticks[0].channels["entity_samples"])["creatures"]
+    creatures1 = cast("dict[str, list[dict[str, object]]]", ticks[1].channels["entity_samples"])["creatures"]
     assert isinstance(creatures0[0]["uid"], int)
     assert creatures0[0]["generation"] == 1
     assert creatures1[0]["generation"] == 1

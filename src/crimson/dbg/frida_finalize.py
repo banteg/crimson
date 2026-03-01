@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -43,8 +42,7 @@ class FinalizeResult(msgspec.Struct, frozen=True):
     deleted_raw: bool
 
 
-@dataclass
-class _OpenRun:
+class _OpenRun(msgspec.Struct):
     run_id: int
     mode_id: int
     quest_stage_major: int
@@ -53,19 +51,18 @@ class _OpenRun:
     stream: BinaryIO
     tick_count: int = 0
     next_local_tick: int = 0
-    channels_seen: set[str] = field(default_factory=set)
+    channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
-    creature_state: "_EntityUidState" = field(default_factory=lambda: _EntityUidState())
-    projectile_state: "_EntityUidState" = field(default_factory=lambda: _EntityUidState())
-    secondary_state: "_EntityUidState" = field(default_factory=lambda: _EntityUidState())
-    bonus_state: "_EntityUidState" = field(default_factory=lambda: _EntityUidState())
+    creature_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
+    projectile_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
+    secondary_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
+    bonus_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
 
 
-@dataclass
-class _EntityUidState:
-    generation_by_index: dict[int, int] = field(default_factory=dict)
-    active_indices: set[int] = field(default_factory=set)
+class _EntityUidState(msgspec.Struct):
+    generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
+    active_indices: set[int] = msgspec.field(default_factory=set)
 
     def next_uid(self, *, kind: str, index: int, active: bool) -> tuple[int, int]:
         idx = int(index)

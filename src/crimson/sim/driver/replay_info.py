@@ -608,7 +608,7 @@ def _run_rush_replay_info(
             default_dt_frame=float(dt_frame),
             dt_frame_overrides=None,
         )
-        tick_events = cast("list[object]", events_by_tick.get(int(tick_index), []))
+        tick_events = events_by_tick.get(int(tick_index), [])
         apply_replay_tick_events(
             tick_events,
             tick_index=int(tick_index),
@@ -663,7 +663,7 @@ def _run_rush_replay_info(
         tick_index = tick_limit
 
     apply_replay_tick_events(
-        cast("list[object]", events_by_tick.get(int(tick_index), [])),
+        events_by_tick.get(int(tick_index), []),
         tick_index=int(tick_index),
         dt_frame=float(dt_frame),
         world=world,
