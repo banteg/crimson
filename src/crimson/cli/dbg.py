@@ -28,11 +28,6 @@ def cmd_dbg_record(
         "standard", "--profile", help="minimal|standard|full",
     ),
     max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
 ) -> None:
     """Run replay simulation and record a CDT trace."""
@@ -47,7 +42,7 @@ def cmd_dbg_record(
             out_path=Path(out),
             profile=profile,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             chunk_ticks=chunk_ticks,
             impl=impl,
         )

@@ -783,11 +783,6 @@ def cmd_replay_verify(
         help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -831,7 +826,7 @@ def cmd_replay_verify(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
         )
     except (ReplayCodecError, ReplayRunnerError) as exc:
@@ -948,11 +943,6 @@ def cmd_replay_info(
         help="optional JSON output path for replay info payload",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     verbose: bool = typer.Option(
         False,
         "--verbose",
@@ -992,7 +982,7 @@ def cmd_replay_info(
         result = run_replay_info(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
@@ -1088,11 +1078,6 @@ def cmd_replay_benchmark(
         help="enable non-canonical RTX render mode (render mode only)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -1191,7 +1176,7 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=bool(strict_events),
+                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1209,7 +1194,7 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=bool(strict_events),
+                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1288,7 +1273,7 @@ def cmd_replay_benchmark(
             runs=int(resolved_runs),
             warmup_runs=int(resolved_warmup_runs),
             max_ticks=(int(max_ticks) if max_ticks is not None else None),
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             profile=bool(profile),
             profile_sort=str(profile_sort),
@@ -1407,11 +1392,6 @@ def cmd_replay_render(
     height: int | None = typer.Option(None, help="render height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, "--fps", min=1, help="output video fps"),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -1502,7 +1482,7 @@ def cmd_replay_render(
             height=height,
             fps=int(fps),
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             ffmpeg_bin=(Path(ffmpeg_bin) if ffmpeg_bin is not None else None),
             crf=int(crf),
@@ -1541,11 +1521,6 @@ def cmd_replay_verify_checkpoints(
         help="checkpoint sidecar path (default: <replay>.chk)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     strict_integrity: bool = typer.Option(
         True,
         "--strict-integrity/--lenient-integrity",
@@ -1620,7 +1595,7 @@ def cmd_replay_verify_checkpoints(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
