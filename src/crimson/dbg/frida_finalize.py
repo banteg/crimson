@@ -20,6 +20,10 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
+_GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
+_GAME_MODE_RUSH = int(GameMode.RUSH)
+_TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
+_BOOTSTRAP_KINDS = {"none", "terrain_v1"}
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -63,6 +67,8 @@ class _OpenRun(msgspec.Struct):
     quest_stage_major: int
     quest_stage_minor: int
     replay_seed: int
+    replay_bootstrap_kind: str
+    replay_bootstrap_seed: int
     replay_player_count: int
     temp_path: Path
     stream: BinaryIO
@@ -131,6 +137,17 @@ def _as_optional_int(value: object, *, field: str) -> int | None:
     if value is None:
         return None
     return _as_int(value, field=field)
+
+
+def _as_bootstrap_kind(value: object, *, field: str) -> str:
+    if not isinstance(value, str):
+        raise FridaFinalizeError(f"{field} must be a string")
+    kind = str(value)
+    if kind not in _BOOTSTRAP_KINDS:
+        raise FridaFinalizeError(
+            f"{field} must be one of {sorted(_BOOTSTRAP_KINDS)!r}, got {kind!r}",
+        )
+    return kind
 
 
 def _as_float(value: object, *, field: str) -> float:
@@ -246,6 +263,20 @@ def _validate_checkpoint_channel(
         msgspec.convert(checkpoint, type=ReplayCheckpoint)
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
+
+
+def _rebase_checkpoint_tick_index(
+    *,
+    channels: dict[str, object],
+    local_tick: int,
+    field: str,
+) -> None:
+    checkpoint_obj = channels.get("checkpoint")
+    if not isinstance(checkpoint_obj, dict):
+        return
+    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
+    checkpoint["tick_index"] = int(local_tick)
+    channels["checkpoint"] = checkpoint
 
 
 def _as_replay_tick_inputs(
@@ -445,6 +476,8 @@ def _write_run_trace(
         quest_level=(
             f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""
         ),
+        bootstrap_kind=str(run.replay_bootstrap_kind),
+        bootstrap_seed=int(run.replay_bootstrap_seed),
         player_count=int(run.replay_player_count),
         status=run.replay_status,
     )
@@ -529,6 +562,24 @@ def finalize_frida_jsonl_to_traces(
                             "to emit a concrete run_start seed and recapture",
                         )
                     seed = _as_int(seed_obj, field=f"{raw_path}.lines[{line_no}].seed")
+                    bootstrap_kind = _as_bootstrap_kind(
+                        row.get("bootstrap_kind", "none"),
+                        field=f"{raw_path}.lines[{line_no}].bootstrap_kind",
+                    )
+                    bootstrap_seed = _as_int(
+                        row.get("bootstrap_seed", 0),
+                        field=f"{raw_path}.lines[{line_no}].bootstrap_seed",
+                    )
+                    if int(mode_id) in _TERRAIN_BOOTSTRAP_MODES:
+                        if str(bootstrap_kind) != "terrain_v1":
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] mode_id={mode_id} requires "
+                                "bootstrap_kind='terrain_v1'; recapture with updated gameplay_diff_capture.js",
+                            )
+                    else:
+                        bootstrap_kind = "none"
+                    if int(bootstrap_seed) < 0:
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].bootstrap_seed must be >= 0")
                     player_count = _as_int(row.get("player_count"), field=f"{raw_path}.lines[{line_no}].player_count")
                     if int(player_count) <= 0:
                         raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
@@ -547,6 +598,8 @@ def finalize_frida_jsonl_to_traces(
                         quest_stage_major=int(quest_stage_major),
                         quest_stage_minor=int(quest_stage_minor),
                         replay_seed=int(seed),
+                        replay_bootstrap_kind=str(bootstrap_kind),
+                        replay_bootstrap_seed=int(bootstrap_seed),
                         replay_player_count=int(player_count),
                         temp_path=spool_path,
                         stream=spool_path.open("wb"),
@@ -581,6 +634,11 @@ def finalize_frida_jsonl_to_traces(
                     )
                     _validate_checkpoint_channel(
                         channels=channels,
+                        field=f"{raw_path}.lines[{line_no}].channels",
+                    )
+                    _rebase_checkpoint_tick_index(
+                        channels=channels,
+                        local_tick=int(active_run.next_local_tick),
                         field=f"{raw_path}.lines[{line_no}].channels",
                     )
                     active_run.replay_status = _replay_status_from_checkpoint(channels.get("checkpoint"))

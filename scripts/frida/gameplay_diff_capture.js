@@ -25,6 +25,8 @@ const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
+const GAME_MODE_SURVIVAL = 1;
+const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
 const CRT_THREAD_DATA_RNG_OFFSET = 0x14;
 const REPLAY_FIRE_DOWN_FLAG = 1 << 0;
@@ -483,6 +485,7 @@ const outState = {
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
   lastSeed: null,
+  lastSrandSeed: null,
   crtGetThreadDataFn: null,
   crtGetThreadDataFnInit: false,
   lastTickElapsedMs: null,
@@ -630,6 +633,35 @@ function requireRunStartSeedU32(tickObj) {
   return null;
 }
 
+function requireRunBootstrap(modeId, tickObj) {
+  const mode = modeId | 0;
+  if (mode === GAME_MODE_SURVIVAL || mode === GAME_MODE_RUSH) {
+    if (outState.lastSrandSeed == null) {
+      const tickIndex =
+        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
+      const errorRow = {
+        event: "error",
+        error: "missing_bootstrap_seed",
+        mode_id: mode,
+        run_id: (outState.currentRunId | 0) + 1,
+        tick_index_global: tickIndex,
+      };
+      _captureWriteJsonLine(errorRow, true);
+      writeLine(errorRow);
+      shutdownCapture("missing_bootstrap_seed");
+      return null;
+    }
+    return {
+      kind: "terrain_v1",
+      seed: outState.lastSrandSeed >>> 0,
+    };
+  }
+  return {
+    kind: "none",
+    seed: 0,
+  };
+}
+
 function openOutFile() {
   if (outState.outFile) return;
   const outPath = outState.currentOutPath || CONFIG.outPath;
@@ -737,14 +769,20 @@ function closeActiveRun(reason, tickObj) {
 
 function startRunForTick(tickObj, reason) {
   const startReason = reason || "run_start";
+  const modeId = tickModeId(tickObj);
+  const questMajor = tickQuestMajor(tickObj);
+  const questMinor = tickQuestMinor(tickObj);
+  const runKey = runKeyForTick(tickObj);
   const runSeed = requireRunStartSeedU32(tickObj);
   if (runSeed == null) return false;
+  const runBootstrap = requireRunBootstrap(modeId, tickObj);
+  if (!runBootstrap) return false;
   outState.currentRunId = (outState.currentRunId | 0) + 1;
   outState.currentRunTickCount = 0;
-  outState.currentRunModeId = tickModeId(tickObj);
-  outState.currentRunQuestMajor = tickQuestMajor(tickObj);
-  outState.currentRunQuestMinor = tickQuestMinor(tickObj);
-  outState.currentRunKey = runKeyForTick(tickObj);
+  outState.currentRunModeId = modeId;
+  outState.currentRunQuestMajor = questMajor;
+  outState.currentRunQuestMinor = questMinor;
+  outState.currentRunKey = runKey;
   outState.currentRunBootstrapQuestAttemptPending =
     startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
   outState.runActive = true;
@@ -757,6 +795,8 @@ function startRunForTick(tickObj, reason) {
       quest_stage_major: outState.currentRunQuestMajor | 0,
       quest_stage_minor: outState.currentRunQuestMinor | 0,
       seed: runSeed >>> 0,
+      bootstrap_kind: String(runBootstrap.kind),
+      bootstrap_seed: runBootstrap.seed >>> 0,
       player_count: runPlayerCountFromTick(tickObj),
       tick_index_global:
         tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
@@ -3234,10 +3274,16 @@ function finalizeTick() {
   const checkpointPlayers = checkpointPlayersFromCompact(afterPlayers);
   const perkPendingCount = globals.perk_pending_count == null ? -1 : globals.perk_pending_count;
   const perkChoicesDirty = readDataI32("perk_choices_dirty");
+  const perkPendingForCheckpoint = perkPendingCount > 0 ? perkPendingCount : 0;
+  const perkChoices =
+    perkPendingForCheckpoint > 0 ? readPerkChoicesCompact() : [];
   const perkSnapshot = {
-    pending_count: perkPendingCount,
-    choices_dirty: perkChoicesDirty != null ? perkChoicesDirty !== 0 : false,
-    choices: readPerkChoicesCompact(),
+    pending_count: perkPendingForCheckpoint,
+    choices_dirty:
+      perkPendingForCheckpoint > 0
+        ? (perkChoicesDirty != null ? perkChoicesDirty !== 0 : false)
+        : true,
+    choices: perkChoices,
     player_nonzero_counts: readPlayerPerkNonzeroCountsCompact(),
   };
   const killCount = globals.creature_kill_count == null ? -1 : globals.creature_kill_count;
@@ -3366,7 +3412,7 @@ function finalizeTick() {
     score_xp: scoreXp,
     kills: killCount,
     creature_count: globals.creature_active_count == null ? -1 : globals.creature_active_count,
-    perk_pending: perkPendingCount,
+    perk_pending: perkPendingForCheckpoint,
     players: checkpointPlayers,
     status: {
       quest_unlock_index:
@@ -3906,6 +3952,7 @@ function installHooks() {
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
         outState.lastSeed = ctx.seed_u32 >>> 0;
+        outState.lastSrandSeed = ctx.seed_u32 >>> 0;
         outState.rngSeedEpoch += 1;
         if (CONFIG.enableRngStateMirror) {
           outState.rngMirrorStateU32 = ctx.seed_u32 >>> 0;

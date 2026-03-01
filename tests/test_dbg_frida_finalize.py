@@ -46,12 +46,23 @@ def _run_start_row(
     player_count: int = 1,
     quest_stage_major: int = -1,
     quest_stage_minor: int = -1,
+    bootstrap_kind: str | None = None,
+    bootstrap_seed: int | None = None,
 ) -> dict[str, object]:
+    mode = int(mode_id)
+    kind = bootstrap_kind
+    if kind is None:
+        kind = "terrain_v1" if mode in (1, 2) else "none"
+    seed_val = bootstrap_seed
+    if seed_val is None:
+        seed_val = int(seed) if str(kind) == "terrain_v1" else 0
     return {
         "event": "run_start",
         "run_id": int(run_id),
-        "mode_id": int(mode_id),
+        "mode_id": mode,
         "seed": int(seed),
+        "bootstrap_kind": str(kind),
+        "bootstrap_seed": int(seed_val),
         "player_count": int(player_count),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
@@ -80,7 +91,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "phase_markers": ["a"],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0),
+                    "checkpoint": _checkpoint_stub(tick_index=100, elapsed_ms=0),
                     "entity_samples": {
                         "creatures": [{"index": 5, "active": True}],
                         "projectiles": [],
@@ -99,7 +110,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=1, elapsed_ms=16),
+                    "checkpoint": _checkpoint_stub(tick_index=101, elapsed_ms=16),
                     "entity_samples": {
                         "creatures": [{"index": 5, "active": False}],
                         "projectiles": [],
@@ -126,6 +137,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     replay = load_replay_file(out_trace.replay_path)
     assert replay.header.game_mode_id == 1
     assert replay.header.seed == 777
+    assert replay.header.bootstrap_kind == "terrain_v1"
+    assert replay.header.bootstrap_seed == 777
     assert replay.header.player_count == 1
     assert len(replay.inputs) == 2
 
@@ -134,6 +147,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert meta.producer["impl"] == "frida_original"
     assert "checkpoint" in meta.channels
     assert "entity_samples" in meta.channels
+    assert cast("dict[str, object]", ticks[0].channels["checkpoint"])["tick_index"] == 0
+    assert cast("dict[str, object]", ticks[1].channels["checkpoint"])["tick_index"] == 1
 
     creatures0 = cast("dict[str, list[dict[str, object]]]", ticks[0].channels["entity_samples"])["creatures"]
     creatures1 = cast("dict[str, list[dict[str, object]]]", ticks[1].channels["entity_samples"])["creatures"]
@@ -331,4 +346,27 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
     )
 
     with pytest.raises(FridaFinalizeError, match="seed is null; update gameplay_diff_capture.js"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_metadata(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            {
+                "event": "run_start",
+                "run_id": 1,
+                "mode_id": 1,
+                "seed": 7,
+                "bootstrap_kind": "none",
+                "bootstrap_seed": 0,
+                "player_count": 1,
+                "quest_stage_major": -1,
+                "quest_stage_minor": -1,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="requires bootstrap_kind='terrain_v1'"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
