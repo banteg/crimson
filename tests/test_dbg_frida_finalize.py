@@ -9,6 +9,8 @@ import pytest
 from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_to_traces
 from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
+from crimson.sim.bootstrap import run_terrain_bootstrap
+from grim.rand import CrtRand
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -34,6 +36,18 @@ def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
     }
 
 
+def _terrain_seed_after(*, bootstrap_seed: int, quest_unlock_index: int = 0, world_size: int = 1024) -> int:
+    rng = CrtRand(seed=int(bootstrap_seed))
+    terrain = run_terrain_bootstrap(
+        rng,
+        quest_unlock_index=int(quest_unlock_index),
+        width=int(world_size),
+        height=int(world_size),
+        layers=3,
+    )
+    return int(terrain.seed_after)
+
+
 def _replay_inputs_stub(*, player_count: int = 1) -> list[list[float | int]]:
     return [[0.0, 0.0, 0.0, 0.0, 0] for _ in range(max(1, int(player_count)))]
 
@@ -56,13 +70,17 @@ def _run_start_row(
     seed_val = bootstrap_seed
     if seed_val is None:
         seed_val = int(seed) if str(kind) == "terrain_v1" else 0
+    run_seed = int(seed)
+    if str(kind) == "terrain_v1":
+        run_seed = _terrain_seed_after(bootstrap_seed=int(seed_val), quest_unlock_index=0)
     return {
         "event": "run_start",
         "run_id": int(run_id),
         "mode_id": mode,
-        "seed": int(seed),
+        "seed": int(run_seed),
         "bootstrap_kind": str(kind),
         "bootstrap_seed": int(seed_val),
+        "seed_source": "terrain_bootstrap_sim" if str(kind) == "terrain_v1" else "crt_srand",
         "player_count": int(player_count),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
@@ -136,7 +154,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     replay = load_replay_file(out_trace.replay_path)
     assert replay.header.game_mode_id == 1
-    assert replay.header.seed == 777
+    assert replay.header.seed == _terrain_seed_after(bootstrap_seed=777)
     assert replay.header.bootstrap_kind == "terrain_v1"
     assert replay.header.bootstrap_seed == 777
     assert replay.header.player_count == 1
@@ -369,4 +387,40 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
     )
 
     with pytest.raises(FridaFinalizeError, match="requires bootstrap_kind='terrain_v1'"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            {
+                "event": "run_start",
+                "run_id": 1,
+                "mode_id": 1,
+                "seed": 7,
+                "bootstrap_kind": "terrain_v1",
+                "bootstrap_seed": 7,
+                "seed_source": "thread_rng_sample",
+                "player_count": 1,
+                "quest_stage_major": -1,
+                "quest_stage_minor": -1,
+            },
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 0,
+                "dt_ms_i32": 16,
+                "mode_id": 1,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
+            },
+            {"event": "run_end", "run_id": 1},
+            {"event": "session_end"},
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="terrain bootstrap seed mismatch"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

@@ -9,10 +9,13 @@ from typing import BinaryIO
 
 import msgspec
 
+from grim.rand import CrtRand
+
 from ..game_modes import GameMode
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot
+from ..sim.bootstrap import run_terrain_bootstrap
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace_iter
 
@@ -72,6 +75,8 @@ class _OpenRun(msgspec.Struct):
     replay_player_count: int
     temp_path: Path
     stream: BinaryIO
+    replay_seed_source: str = "unknown"
+    replay_seed_debug: dict[str, object] = msgspec.field(default_factory=dict)
     tick_count: int = 0
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
@@ -79,6 +84,10 @@ class _OpenRun(msgspec.Struct):
     channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
+    terrain_expected_seed_after: int | None = None
+    terrain_expected_selection_draws: int | None = None
+    terrain_expected_stamping_draws: int | None = None
+    terrain_expected_quest_unlock_index: int | None = None
     creature_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
     projectile_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
     secondary_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
@@ -380,6 +389,36 @@ def _run_output_path(
     return Path(output_dir) / name
 
 
+def _validate_run_seed_for_replay(run: _OpenRun) -> None:
+    if int(run.mode_id) not in _TERRAIN_BOOTSTRAP_MODES:
+        return
+    bootstrap_seed = int(run.replay_bootstrap_seed)
+    world_size = 1024
+    quest_unlock_index = int(run.replay_status.quest_unlock_index)
+    rng = CrtRand(seed=int(bootstrap_seed))
+    terrain = run_terrain_bootstrap(
+        rng,
+        quest_unlock_index=int(quest_unlock_index),
+        width=int(world_size),
+        height=int(world_size),
+        layers=3,
+    )
+    run.terrain_expected_seed_after = int(terrain.seed_after)
+    run.terrain_expected_selection_draws = int(terrain.selection_draws)
+    run.terrain_expected_stamping_draws = int(terrain.stamping_draws)
+    run.terrain_expected_quest_unlock_index = int(quest_unlock_index)
+    if int(run.replay_seed) != int(terrain.seed_after):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: terrain bootstrap seed mismatch "
+            f"mode_id={run.mode_id} "
+            f"bootstrap_seed={bootstrap_seed} "
+            f"quest_unlock_index={quest_unlock_index} "
+            f"expected_seed_after={int(terrain.seed_after)} "
+            f"run_start.seed={int(run.replay_seed)} "
+            f"seed_source={run.replay_seed_source!r}",
+        )
+
+
 def _build_meta(
     *,
     raw_fingerprint: dict[str, object],
@@ -400,6 +439,17 @@ def _build_meta(
     source["quest_stage_minor"] = int(run.quest_stage_minor)
     source["global_tick_first"] = None if run.global_tick_first is None else int(run.global_tick_first)
     source["global_tick_last"] = None if run.global_tick_last is None else int(run.global_tick_last)
+    source["run_start_seed_source"] = str(run.replay_seed_source)
+    if run.replay_seed_debug:
+        source["run_start_seed_debug"] = dict(run.replay_seed_debug)
+    if run.terrain_expected_seed_after is not None:
+        source["terrain_expected_seed_after"] = int(run.terrain_expected_seed_after)
+    if run.terrain_expected_selection_draws is not None:
+        source["terrain_expected_selection_draws"] = int(run.terrain_expected_selection_draws)
+    if run.terrain_expected_stamping_draws is not None:
+        source["terrain_expected_stamping_draws"] = int(run.terrain_expected_stamping_draws)
+    if run.terrain_expected_quest_unlock_index is not None:
+        source["terrain_expected_quest_unlock_index"] = int(run.terrain_expected_quest_unlock_index)
 
     sorted_channels = sorted(str(channel) for channel in channels_seen)
     tick_end = int(tick_count) - 1
@@ -437,6 +487,13 @@ def _write_run_trace(
 ) -> FinalizedTrace:
     run.stream.flush()
     run.stream.close()
+    if int(run.replay_player_count) <= 0:
+        raise FridaFinalizeError(f"run {run.run_id}: invalid replay player_count={run.replay_player_count}")
+    if len(run.replay_inputs) != int(run.tick_count):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: replay_inputs count {len(run.replay_inputs)} does not match tick_count {run.tick_count}",
+        )
+    _validate_run_seed_for_replay(run)
     out_path = _run_output_path(
         raw_path=raw_path,
         output_dir=output_dir,
@@ -458,12 +515,6 @@ def _write_run_trace(
         ticks=_tick_iter_from_spool(run.temp_path),
         chunk_ticks=max(1, int(chunk_ticks)),
     )
-    if int(run.replay_player_count) <= 0:
-        raise FridaFinalizeError(f"run {run.run_id}: invalid replay player_count={run.replay_player_count}")
-    if len(run.replay_inputs) != int(run.tick_count):
-        raise FridaFinalizeError(
-            f"run {run.run_id}: replay_inputs count {len(run.replay_inputs)} does not match tick_count {run.tick_count}",
-        )
     replay_path = Path(out_path).with_suffix(".crd")
     is_quest_run = (
         int(run.mode_id) == int(_GAME_MODE_QUESTS)
@@ -562,6 +613,19 @@ def finalize_frida_jsonl_to_traces(
                             "to emit a concrete run_start seed and recapture",
                         )
                     seed = _as_int(seed_obj, field=f"{raw_path}.lines[{line_no}].seed")
+                    seed_source_obj = row.get("seed_source")
+                    seed_source = "unknown"
+                    if seed_source_obj is not None:
+                        if not isinstance(seed_source_obj, str):
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].seed_source must be a string")
+                        seed_source = str(seed_source_obj)
+                    seed_debug_obj = row.get("seed_debug")
+                    seed_debug: dict[str, object] = {}
+                    if seed_debug_obj is not None:
+                        seed_debug = _as_dict(
+                            seed_debug_obj,
+                            field=f"{raw_path}.lines[{line_no}].seed_debug",
+                        )
                     bootstrap_kind = _as_bootstrap_kind(
                         row.get("bootstrap_kind", "none"),
                         field=f"{raw_path}.lines[{line_no}].bootstrap_kind",
@@ -603,6 +667,8 @@ def finalize_frida_jsonl_to_traces(
                         replay_player_count=int(player_count),
                         temp_path=spool_path,
                         stream=spool_path.open("wb"),
+                        replay_seed_source=str(seed_source),
+                        replay_seed_debug=dict(seed_debug),
                     )
                     continue
 
