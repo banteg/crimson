@@ -536,8 +536,8 @@ def _record_replay_to_trace_python(
                 channels["entity_samples"] = entity_samples
         if include_full_event_channels:
             channels["event_heads"] = _event_heads_from_checkpoint(checkpoint)
-            channels["event_summary"] = msgspec.to_builtins(checkpoint.events)
-            channels["perk_snapshot"] = msgspec.to_builtins(checkpoint.perk)
+            channels["event_summary"] = checkpoint.events
+            channels["perk_snapshot"] = checkpoint.perk
             channels["micro_traces"] = _micro_traces_from_entities(
                 previous_samples=previous_entity_samples,
                 current_samples=entity_samples,
@@ -749,15 +749,15 @@ def _record_replay_to_trace_zig(
             continue
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
-            "zig_tick_trace": msgspec.to_builtins(row),
+            "zig_tick_trace": row,
         }
         if include_rng:
             channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
             channels["rng_stream_head"] = []
         if include_full_event_channels:
             channels["event_heads"] = []
-            channels["event_summary"] = msgspec.to_builtins(checkpoint.events)
-            channels["perk_snapshot"] = msgspec.to_builtins(checkpoint.perk)
+            channels["event_summary"] = checkpoint.events
+            channels["perk_snapshot"] = checkpoint.perk
             channels["micro_traces"] = []
 
         channels_seen.update(channels.keys())
