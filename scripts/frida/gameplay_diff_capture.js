@@ -461,6 +461,9 @@ const outState = {
   currentRunQuestMinor: -1,
   currentRunKey: "",
   currentRunBootstrapQuestAttemptPending: false,
+  currentRunElapsedRawStartMs: null,
+  currentRunElapsedRawLastMs: null,
+  currentRunElapsedNormalizedMs: null,
   lastTickIndexGlobal: null,
   shutdownComplete: false,
   gameplayFrame: 0,
@@ -803,6 +806,9 @@ function closeActiveRun(reason, tickObj) {
   outState.currentRunQuestMinor = -1;
   outState.currentRunKey = "";
   outState.currentRunBootstrapQuestAttemptPending = false;
+  outState.currentRunElapsedRawStartMs = null;
+  outState.currentRunElapsedRawLastMs = null;
+  outState.currentRunElapsedNormalizedMs = null;
 }
 
 function startRunForTick(tickObj, reason) {
@@ -823,6 +829,9 @@ function startRunForTick(tickObj, reason) {
   outState.currentRunKey = runKey;
   outState.currentRunBootstrapQuestAttemptPending =
     startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
+  outState.currentRunElapsedRawStartMs = null;
+  outState.currentRunElapsedRawLastMs = null;
+  outState.currentRunElapsedNormalizedMs = null;
   outState.runActive = true;
   _captureWriteJsonLine(
     {
@@ -1017,6 +1026,25 @@ function entitySamplesFromTick(tickObj) {
   };
 }
 
+function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
+  const dt = dtMsI32 == null ? null : dtMsI32 | 0;
+  if (dt == null || dt <= 0) return intOr(rawElapsedMs, -1);
+
+  const raw = intOr(rawElapsedMs, -1);
+  const isFirstRunTick =
+    (outState.currentRunTickCount | 0) <= 0 || outState.currentRunElapsedNormalizedMs == null;
+  if (isFirstRunTick) {
+    outState.currentRunElapsedRawStartMs = raw;
+    outState.currentRunElapsedRawLastMs = raw;
+    outState.currentRunElapsedNormalizedMs = dt;
+    return outState.currentRunElapsedNormalizedMs | 0;
+  }
+
+  outState.currentRunElapsedRawLastMs = raw;
+  outState.currentRunElapsedNormalizedMs = (outState.currentRunElapsedNormalizedMs | 0) + dt;
+  return outState.currentRunElapsedNormalizedMs | 0;
+}
+
 function buildTraceTickRow(tickObj) {
   const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
   const eventHeads = Array.isArray(tickObj.event_heads) ? tickObj.event_heads : [];
@@ -1030,12 +1058,15 @@ function buildTraceTickRow(tickObj) {
           tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
         ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
         : null;
+  const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
+  const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
+  checkpoint.elapsed_ms = elapsedMs;
 
   return {
     event: "tick",
     run_id: outState.currentRunId | 0,
     tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
-    elapsed_ms: intOr(checkpoint.elapsed_ms, -1),
+    elapsed_ms: elapsedMs,
     dt_ms_i32: dtMsI32,
     mode_id: modeId,
     quest_stage_major: tickQuestMajor(tickObj),
