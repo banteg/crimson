@@ -343,20 +343,30 @@ def _canonicalize_checkpoint_events_and_deaths(
     *,
     channels: dict[str, object],
     field: str,
+    capture_format_version: int,
 ) -> None:
     checkpoint_obj = channels.get("checkpoint")
     if not isinstance(checkpoint_obj, dict):
         return
     checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
+    legacy_format = int(capture_format_version) < 7
 
     deaths_obj = checkpoint.get("deaths")
     if isinstance(deaths_obj, list):
-        filtered_deaths: list[object] = []
-        for row in deaths_obj:
-            if _is_unknown_death_row(row):
-                continue
-            filtered_deaths.append(row)
-        checkpoint["deaths"] = filtered_deaths
+        if legacy_format:
+            filtered_deaths: list[object] = []
+            for row in deaths_obj:
+                if _is_unknown_death_row(row):
+                    continue
+                filtered_deaths.append(row)
+            checkpoint["deaths"] = filtered_deaths
+        else:
+            for idx, row in enumerate(deaths_obj):
+                if _is_unknown_death_row(row):
+                    raise FridaFinalizeError(
+                        f"{field}.checkpoint.deaths[{idx}] contains legacy unknown death sentinel; "
+                        "update gameplay_diff_capture.js capture output",
+                    )
 
     events_obj = checkpoint.get("events")
     if isinstance(events_obj, dict):
@@ -366,10 +376,27 @@ def _canonicalize_checkpoint_events_and_deaths(
             if isinstance(value, bool):
                 continue
             if isinstance(value, (int, float)) and int(value) < 0:
-                events[key] = 0
+                if legacy_format:
+                    events[key] = 0
+                else:
+                    raise FridaFinalizeError(
+                        f"{field}.checkpoint.events.{key} must be >= 0 for capture_format_version "
+                        f"{int(capture_format_version)}, got {int(value)}",
+                    )
         checkpoint["events"] = events
 
     channels["checkpoint"] = checkpoint
+
+
+def _session_capture_format_version(session_meta: dict[str, object]) -> int:
+    raw = session_meta.get("capture_format_version")
+    if isinstance(raw, bool):
+        return 0
+    if isinstance(raw, int):
+        return int(raw)
+    if isinstance(raw, float):
+        return int(raw)
+    return 0
 
 
 def _validate_first_tick_elapsed_for_replay(
@@ -865,6 +892,7 @@ def finalize_frida_jsonl_to_traces(
                     _canonicalize_checkpoint_events_and_deaths(
                         channels=channels,
                         field=f"{raw_path}.lines[{line_no}].channels",
+                        capture_format_version=_session_capture_format_version(session_meta),
                     )
                     _validate_first_tick_elapsed_for_replay(
                         run=active_run,

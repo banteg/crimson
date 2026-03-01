@@ -432,7 +432,7 @@ def test_finalize_frida_jsonl_to_traces_canonicalizes_unknown_death_and_negative
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 6},
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -504,4 +504,81 @@ def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(t
     )
 
     with pytest.raises(FridaFinalizeError, match="run likely started mid-session"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_unknown_death_sentinel_in_new_capture_format(
+    tmp_path: Path,
+) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start", "capture_format_version": 7},
+            _run_start_row(run_id=1, mode_id=3, seed=93, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "mode_id": 3,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": {
+                    "checkpoint": {
+                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
+                        "deaths": [
+                            {
+                                "creature_index": -1,
+                                "type_id": -1,
+                                "reward_value": 0,
+                                "xp_awarded": -1,
+                                "owner_id": -1,
+                            },
+                        ],
+                    },
+                },
+            },
+            {"event": "run_end", "run_id": 1},
+            {"event": "session_end"},
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="legacy unknown death sentinel"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_negative_event_counts_in_new_capture_format(
+    tmp_path: Path,
+) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start", "capture_format_version": 7},
+            _run_start_row(run_id=1, mode_id=3, seed=94, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "mode_id": 3,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": {
+                    "checkpoint": {
+                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
+                        "events": {
+                            "hit_count": -1,
+                            "pickup_count": 0,
+                            "sfx_count": 0,
+                            "sfx_head": [],
+                        },
+                    },
+                },
+            },
+            {"event": "run_end", "run_id": 1},
+            {"event": "session_end"},
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="checkpoint.events.hit_count must be >= 0"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

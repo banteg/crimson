@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 6;
+const CAPTURE_FORMAT_VERSION = 7;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -496,14 +496,6 @@ const outState = {
   lastCreatureDigest: null,
   questAttemptPendingByLevel: {},
   questAttemptStartsByLevel: {},
-};
-
-const UNKNOWN_DEATH = {
-  creature_index: -1,
-  type_id: -1,
-  reward_value: 0,
-  xp_awarded: -1,
-  owner_id: -1,
 };
 
 function questLevelKey(major, minor) {
@@ -3179,6 +3171,27 @@ function checkpointPlayersFromCompact(players) {
   return out;
 }
 
+function checkpointDeathsFromEventHeads(eventHeadsByKind) {
+  const byKind = asObject(eventHeadsByKind);
+  const rows = Array.isArray(byKind.creature_death) ? byKind.creature_death : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const payload = asObject(rows[i]);
+    const before = asObject(payload.before);
+    const creatureIndex = intOr(payload.creature_index, -1);
+    const typeId = intOr(payload.type_id, intOr(before.type_id, -1));
+    if (creatureIndex < 0 && typeId < 0) continue;
+    out.push({
+      creature_index: creatureIndex,
+      type_id: typeId,
+      reward_value: intOr(payload.reward_value, 0),
+      xp_awarded: intOr(payload.xp_awarded, 0),
+      owner_id: intOr(payload.owner_id, -1),
+    });
+  }
+  return out;
+}
+
 function buildInputApprox(afterPlayers, tick) {
   const out = [];
   const keyRows = tick && Array.isArray(tick.input_player_keys) ? tick.input_player_keys : [];
@@ -3375,8 +3388,8 @@ function finalizeTick() {
     (tick.input_queries.any_key.true_calls || 0);
 
   const eventSummary = {
-    hit_count: -1,
-    pickup_count: -1,
+    hit_count: tick.event_counts.projectile_find_hit || 0,
+    pickup_count: tick.event_counts.bonus_apply || 0,
     sfx_count: tick.event_counts.sfx || 0,
     sfx_head: tick.sfx_ids.slice(0, 4),
     rng_call_count: tick.rng.calls,
@@ -3490,7 +3503,7 @@ function finalizeTick() {
     },
     bonus_timers: bonusTimers,
     rng_marks: checkpointRngMarksFromTick(tick),
-    deaths: [UNKNOWN_DEATH],
+    deaths: checkpointDeathsFromEventHeads(tick.event_heads),
     perk: perkSnapshot,
     events: eventSummary,
     debug: {
