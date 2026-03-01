@@ -209,7 +209,8 @@ pub fn runReplayScaffoldWithTrace(
         }
     }
     const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
-    const apply_world_dt_steps = !(original_capture_replay and options.dt_frame_overrides != null);
+    const has_dt_frame_overrides = options.dt_frame_overrides != null or replay.dt_ms_i32.len != 0;
+    const apply_world_dt_steps = !(original_capture_replay and has_dt_frame_overrides);
     const defer_menu_open_events = original_capture_replay;
 
     var quest_start_weapon_id_for_reset: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
@@ -286,7 +287,12 @@ pub fn runReplayScaffoldWithTrace(
             return error.UnsupportedEventOrdering;
         }
 
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, tick_index, context.dt_nominal);
+        const dt_tick = resolveDtFrame(
+            options.dt_frame_overrides,
+            replay.dt_ms_i32,
+            tick_index,
+            context.dt_nominal,
+        );
         const tick_event_start = context.event_index;
         var tick_event_end = tick_event_start;
         while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
@@ -343,7 +349,12 @@ pub fn runReplayScaffoldWithTrace(
     }
     var terminal_menu_open_seen = false;
     while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, terminal_tick, context.dt_nominal);
+        const dt_tick = resolveDtFrame(
+            options.dt_frame_overrides,
+            replay.dt_ms_i32,
+            terminal_tick,
+            context.dt_nominal,
+        );
         const outcome = try replay_events.applyReplayEvent(
             events[context.event_index],
             &context.state,
@@ -542,12 +553,19 @@ fn hashMix(seed: u64, value: u64) u64 {
 
 fn resolveDtFrame(
     overrides: ?[]const DtFrameOverride,
+    replay_dt_ms_i32: []const i32,
     tick_index: usize,
     default_dt: f32,
 ) f32 {
     if (overrides) |entries| {
         for (entries) |entry| {
             if (entry.tick_index == tick_index) return entry.dt_frame;
+        }
+    }
+    if (tick_index < replay_dt_ms_i32.len) {
+        const dt_ms = replay_dt_ms_i32[tick_index];
+        if (dt_ms > 0) {
+            return @as(f32, @floatFromInt(dt_ms)) / 1000.0;
         }
     }
     return default_dt;
@@ -2507,6 +2525,7 @@ fn buildTestReplay(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
+    const dt_ms_i32 = try allocator.alloc(i32, 0);
 
     return .{
         .header = .{
@@ -2533,6 +2552,7 @@ fn buildTestReplay(
             .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
+        .dt_ms_i32 = dt_ms_i32,
         .events = events,
     };
 }
@@ -2564,6 +2584,7 @@ fn buildTestReplayMulti(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
+    const dt_ms_i32 = try allocator.alloc(i32, 0);
 
     return .{
         .header = .{
@@ -2590,6 +2611,7 @@ fn buildTestReplayMulti(
             .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
+        .dt_ms_i32 = dt_ms_i32,
         .events = events,
     };
 }

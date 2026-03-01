@@ -424,3 +424,84 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
 
     with pytest.raises(FridaFinalizeError, match="terrain bootstrap seed mismatch"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_canonicalizes_unknown_death_and_negative_event_counts(
+    tmp_path: Path,
+) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 16,
+                "dt_ms_i32": 16,
+                "mode_id": 3,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": {
+                    "checkpoint": {
+                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
+                        "deaths": [
+                            {
+                                "creature_index": -1,
+                                "type_id": -1,
+                                "xp_awarded": -1,
+                                "owner_id": -1,
+                                "reward_value": 0,
+                            },
+                        ],
+                        "events": {
+                            "hit_count": -1,
+                            "pickup_count": -1,
+                            "sfx_count": 0,
+                            "sfx_head": [],
+                        },
+                    },
+                },
+            },
+            {"event": "run_end", "run_id": 1},
+            {"event": "session_end"},
+        ],
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    _, ticks, _ = load_trace(result.traces[0].out_path)
+    checkpoint = cast("dict[str, object]", ticks[0].channels["checkpoint"])
+    events = cast("dict[str, object]", checkpoint["events"])
+    event_heads = cast("list[dict[str, object]]", ticks[0].channels["event_heads"])
+    event_head_types = [str(row.get("type")) for row in event_heads]
+
+    assert checkpoint["deaths"] == []
+    assert events["hit_count"] == 0
+    assert events["pickup_count"] == 0
+    assert "event_summary" in event_head_types
+    assert "creature_death" not in event_head_types
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 25_000,
+                "dt_ms_i32": 16,
+                "mode_id": 3,
+                "phase_markers": [],
+                "replay_inputs": _replay_inputs_stub(player_count=1),
+                "channels": {
+                    "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=25_000),
+                },
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="run likely started mid-session"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

@@ -515,6 +515,7 @@ def _record_replay_to_trace_python(
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
     previous_entity_samples: dict[str, object] | None = None
+    replay_dt_rows = list(replay.dt_ms_i32)
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = checkpoint.tick_index
         channels: dict[str, object] = {
@@ -543,12 +544,18 @@ def _record_replay_to_trace_python(
                 current_samples=entity_samples,
             )
 
+        tick_dt_ms_i32: int | None = None
+        if 0 <= int(tick_index) < len(replay_dt_rows):
+            dt_raw = int(replay_dt_rows[int(tick_index)])
+            if dt_raw > 0:
+                tick_dt_ms_i32 = int(dt_raw)
+
         channels_seen.update(channels.keys())
         tick_rows.append(
             TickRecord(
                 tick_index=tick_index,
                 elapsed_ms=checkpoint.elapsed_ms,
-                dt_ms_i32=None,
+                dt_ms_i32=tick_dt_ms_i32,
                 mode_id=replay.header.game_mode_id,
                 phase_markers=[],
                 channels=channels,
@@ -741,12 +748,18 @@ def _record_replay_to_trace_zig(
     sorted_rows = sorted(zig_rows, key=lambda row: int(row.tick_index))
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
+    replay_dt_rows = list(replay.dt_ms_i32)
     include_rng = profile in {"standard", "full"}
     include_full_event_channels = profile == "full"
     for row in sorted_rows:
         checkpoint = _zig_checkpoint_from_row(row, player_count=int(replay.header.player_count))
         if tick_limit is not None and int(checkpoint.tick_index) >= int(tick_limit):
             continue
+        tick_dt_ms_i32: int | None = None
+        if 0 <= int(checkpoint.tick_index) < len(replay_dt_rows):
+            dt_raw = int(replay_dt_rows[int(checkpoint.tick_index)])
+            if dt_raw > 0:
+                tick_dt_ms_i32 = int(dt_raw)
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
             "zig_tick_trace": row,
@@ -765,7 +778,7 @@ def _record_replay_to_trace_zig(
             TickRecord(
                 tick_index=checkpoint.tick_index,
                 elapsed_ms=checkpoint.elapsed_ms,
-                dt_ms_i32=None,
+                dt_ms_i32=tick_dt_ms_i32,
                 mode_id=replay.header.game_mode_id,
                 phase_markers=[],
                 channels=channels,

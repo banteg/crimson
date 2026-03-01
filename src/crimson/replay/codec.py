@@ -181,10 +181,31 @@ def dump_replay(replay: Replay) -> bytes:
         ]
         inputs.append(normalized_tick)
 
+    dt_ms_i32: list[int] = []
+    if replay.dt_ms_i32:
+        if len(replay.dt_ms_i32) != len(inputs):
+            raise ReplayCodecError(
+                f"replay dt_ms_i32 length {len(replay.dt_ms_i32)} must match input ticks {len(inputs)}",
+            )
+        for tick_idx, dt_row in enumerate(replay.dt_ms_i32):
+            if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
+                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be numeric")
+            dt_ms = int(dt_row)
+            if dt_ms <= 0:
+                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be > 0, got {dt_ms}")
+            dt_ms_i32.append(int(dt_ms))
+
     for event in replay.events:
         _validate_event(event)
 
-    raw = msgspec.msgpack.encode(Replay(header=replay.header, inputs=inputs, events=list(replay.events)))
+    raw = msgspec.msgpack.encode(
+        Replay(
+            header=replay.header,
+            inputs=inputs,
+            dt_ms_i32=dt_ms_i32,
+            events=list(replay.events),
+        ),
+    )
     return gzip.compress(raw, compresslevel=9, mtime=0)
 
 
@@ -231,6 +252,20 @@ def load_replay(data: bytes) -> Replay:
             )
         inputs.append(normalized_tick)
 
+    dt_ms_i32: list[int] = []
+    if replay.dt_ms_i32:
+        if len(replay.dt_ms_i32) != len(inputs):
+            raise ReplayCodecError(
+                f"replay dt_ms_i32 length {len(replay.dt_ms_i32)} must match input ticks {len(inputs)}",
+            )
+        for tick_idx, dt_row in enumerate(replay.dt_ms_i32):
+            if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
+                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be numeric")
+            dt_ms = int(dt_row)
+            if dt_ms <= 0:
+                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be > 0, got {dt_ms}")
+            dt_ms_i32.append(int(dt_ms))
+
     events = list(replay.events)
     input_len = len(inputs)
     for event in events:
@@ -241,7 +276,7 @@ def load_replay(data: bytes) -> Replay:
         if tick_index > input_len:
             raise ReplayCodecError(f"replay event tick_index out of bounds: {tick_index} > {input_len}")
 
-    return Replay(header=replay.header, inputs=inputs, events=events)
+    return Replay(header=replay.header, inputs=inputs, dt_ms_i32=dt_ms_i32, events=events)
 
 
 def dump_replay_file(path: Path, replay: Replay) -> None:

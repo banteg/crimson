@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 import msgspec
 
@@ -34,6 +33,19 @@ from .setup import (
 )
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+
+
+def _dt_ms_overrides_from_replay(replay: Replay) -> dict[int, int] | None:
+    dt_rows = replay.dt_ms_i32
+    if not dt_rows:
+        return None
+    out: dict[int, int] = {}
+    for tick_index, dt_ms in enumerate(dt_rows):
+        dt_i32 = int(dt_ms)
+        if dt_i32 <= 0:
+            continue
+        out[int(tick_index)] = int(dt_i32)
+    return out if out else None
 
 
 def _enforce_rush_loadout(world: WorldState) -> None:
@@ -770,6 +782,7 @@ def run_replay(
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
 ) -> RunResult:
+    dt_frame_ms_i32_overrides = _dt_ms_overrides_from_replay(replay)
     mode = int(replay.header.game_mode_id)
     if mode == int(GameMode.SURVIVAL):
         return run_survival_replay(
@@ -781,6 +794,7 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
         )
@@ -793,6 +807,7 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
         )
@@ -806,6 +821,7 @@ def run_replay(
             checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
             checkpoints_out=checkpoints_out,
             checkpoint_ticks=checkpoint_ticks,
+            dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
         )

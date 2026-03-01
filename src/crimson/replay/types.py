@@ -270,4 +270,5 @@ ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent
 class Replay(msgspec.Struct):
     header: ReplayHeader
     inputs: list[PackedTickInputs]
+    dt_ms_i32: list[int] = msgspec.field(default_factory=list)
     events: list[ReplayEvent] = msgspec.field(default_factory=list)

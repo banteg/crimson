@@ -28,7 +28,6 @@ const GRIM_MODULE = "grim.dll";
 const GAME_MODE_SURVIVAL = 1;
 const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
-const CRT_THREAD_DATA_RNG_OFFSET = 0x14;
 const TERRAIN_DENSITY_BASE = 800;
 const TERRAIN_DENSITY_OVERLAY = 0x23;
 const TERRAIN_DENSITY_DETAIL = 0x0f;
@@ -165,7 +164,6 @@ const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_CREATURE_MICRO_TICK_START",
   "CRIMSON_FRIDA_CREATURE_MICRO_TICK_END",
   "CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK",
-  "CRIMSON_FRIDA_TERRAIN_BOOTSTRAP_WORLD_SIZE",
 ];
 
 function collectConfigEnvOverrides() {
@@ -246,10 +244,6 @@ const CONFIG = {
   creatureMicroTickStart: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_START", -1),
   creatureMicroTickEnd: parseIntEnv("CRIMSON_FRIDA_CREATURE_MICRO_TICK_END", -1),
   creatureMicroMaxHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_CREATURE_MICRO_MAX_HEAD_PER_TICK", -1, 0),
-  terrainBootstrapWorldSize: Math.max(
-    1,
-    parseIntEnv("CRIMSON_FRIDA_TERRAIN_BOOTSTRAP_WORLD_SIZE", TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT)
-  ),
 };
 
 const FN = {
@@ -285,7 +279,6 @@ const FN = {
   input_any_key_pressed: 0x00446000,
   input_primary_just_pressed: 0x00446030,
   input_primary_is_down: 0x004460f0,
-  crt_get_thread_data: 0x004654b8,
   crt_srand: 0x00461739,
   crt_rand: 0x00461746,
   sfx_play: 0x0043d120,
@@ -497,10 +490,7 @@ const outState = {
   perkApplyOutsideTickPendingHead: [],
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
-  lastSeed: null,
   lastSrandSeed: null,
-  crtGetThreadDataFn: null,
-  crtGetThreadDataFnInit: false,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
   lastCreatureDigest: null,
@@ -591,43 +581,7 @@ function runKeyForTick(tickObj) {
   );
 }
 
-function resolveCrtGetThreadDataFn() {
-  if (outState.crtGetThreadDataFnInit) return outState.crtGetThreadDataFn;
-  outState.crtGetThreadDataFnInit = true;
-  const ptrVal = fnPtrs.crt_get_thread_data;
-  if (!ptrVal) {
-    outState.crtGetThreadDataFn = null;
-    return null;
-  }
-  try {
-    outState.crtGetThreadDataFn = new NativeFunction(ptrVal, "pointer", []);
-  } catch (_) {
-    outState.crtGetThreadDataFn = null;
-  }
-  return outState.crtGetThreadDataFn;
-}
-
-function readThreadRngSeedU32() {
-  const getThreadData = resolveCrtGetThreadDataFn();
-  if (!getThreadData) return null;
-  try {
-    const threadData = getThreadData();
-    if (!threadData || threadData.isNull()) return null;
-    const seed = safeReadU32(threadData.add(CRT_THREAD_DATA_RNG_OFFSET));
-    return seed == null ? null : seed >>> 0;
-  } catch (_) {
-    return null;
-  }
-}
-
 function requireRunStartSeedU32(tickObj) {
-  const sampledSeed = readThreadRngSeedU32();
-  if (sampledSeed != null) {
-    outState.lastSeed = sampledSeed >>> 0;
-    if (CONFIG.enableRngStateMirror) {
-      outState.rngMirrorStateU32 = sampledSeed >>> 0;
-    }
-  }
   if (outState.lastSrandSeed != null) return outState.lastSrandSeed >>> 0;
   const tickIndex =
     tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
@@ -730,13 +684,12 @@ function simulateTerrainBootstrapSeedAfter(seedBeforeU32, questUnlockIndex, worl
 }
 
 function resolveRunStartSeed(modeId, tickObj, runBootstrap) {
-  const threadSeed = readThreadRngSeedU32();
   const runSeedFromSrand = requireRunStartSeedU32(tickObj);
   if (runSeedFromSrand == null) return null;
 
   if (modeId === GAME_MODE_SURVIVAL || modeId === GAME_MODE_RUSH) {
     const questUnlock = questUnlockIndexFromTick(tickObj);
-    const worldSize = CONFIG.terrainBootstrapWorldSize | 0;
+    const worldSize = TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT;
     const sim = simulateTerrainBootstrapSeedAfter(
       runBootstrap.seed >>> 0,
       questUnlock | 0,
@@ -746,30 +699,12 @@ function resolveRunStartSeed(modeId, tickObj, runBootstrap) {
     return {
       seed: sim.seed_after_u32 >>> 0,
       source: "terrain_bootstrap_sim",
-      debug: {
-        sampled_thread_seed_u32: threadSeed == null ? null : threadSeed >>> 0,
-        srand_seed_u32: runSeedFromSrand >>> 0,
-        bootstrap_seed_u32: runBootstrap.seed >>> 0,
-        expected_seed_after_u32: sim.seed_after_u32 >>> 0,
-        terrain_seed_u32: sim.terrain_seed_u32 >>> 0,
-        selection_draws: sim.selection_draws | 0,
-        stamping_draws: sim.stamping_draws | 0,
-        quest_unlock_index: sim.quest_unlock_index | 0,
-        world_size: sim.world_size | 0,
-        layers: sim.layers | 0,
-        seed_epoch: outState.rngSeedEpoch >>> 0,
-      },
     };
   }
 
   return {
     seed: runSeedFromSrand >>> 0,
     source: "crt_srand",
-    debug: {
-      sampled_thread_seed_u32: threadSeed == null ? null : threadSeed >>> 0,
-      srand_seed_u32: runSeedFromSrand >>> 0,
-      seed_epoch: outState.rngSeedEpoch >>> 0,
-    },
   };
 }
 
@@ -909,7 +844,6 @@ function startRunForTick(tickObj, reason) {
       bootstrap_kind: String(runBootstrap.kind),
       bootstrap_seed: runBootstrap.seed >>> 0,
       seed_source: String(runSeed.source),
-      seed_debug: runSeed.debug,
       player_count: runPlayerCountFromTick(tickObj),
       tick_index_global:
         tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
@@ -2518,7 +2452,7 @@ function ownerIdToPlayerIndex(ownerId) {
 }
 
 function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStaticHex) {
-  if (!tick || !isPlayerUpdateCaller(callerStaticHex)) return;
+  if (!tick) return;
   if (!Number.isFinite(keyCode)) return;
   const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
   const altBindings =
@@ -3252,6 +3186,14 @@ function buildInputApprox(afterPlayers, tick) {
     const p = afterPlayers[i];
     const fired = tick.fire_by_player[i] || 0;
     const keyRow = keyRows[i] && typeof keyRows[i] === "object" ? keyRows[i] : null;
+    let fireDown = keyRow ? keyRow.fire_down : null;
+    let firePressed = keyRow ? keyRow.fire_pressed : null;
+    if (fired > 0) {
+      // Fire hooks are authoritative. If a shot happened this tick, keep replay
+      // fire intent active so reconstructed inputs cannot silently drop shots.
+      fireDown = true;
+      firePressed = true;
+    }
     const moving =
       p.move_dx != null &&
       p.move_dy != null &&
@@ -3273,8 +3215,8 @@ function buildInputApprox(afterPlayers, tick) {
       move_backward_pressed: keyRow ? keyRow.move_backward_pressed : null,
       turn_left_pressed: keyRow ? keyRow.turn_left_pressed : null,
       turn_right_pressed: keyRow ? keyRow.turn_right_pressed : null,
-      fire_down: keyRow ? keyRow.fire_down : null,
-      fire_pressed: keyRow ? keyRow.fire_pressed : null,
+      fire_down: fireDown,
+      fire_pressed: firePressed,
       reload_pressed: keyRow ? keyRow.reload_pressed : null,
     });
   }
@@ -3515,6 +3457,14 @@ function finalizeTick() {
   };
   const perkApplyOutsideBefore = tick.perk_apply_outside_before || { calls: 0, dropped: 0, head: [] };
   const creatureLifecycleDiagnostics = creatureLifecycle || null;
+  const creatureCountForCheckpoint =
+    creatureLifecycle &&
+    typeof creatureLifecycle.after_count === "number" &&
+    Number.isFinite(creatureLifecycle.after_count)
+      ? creatureLifecycle.after_count | 0
+      : globals.creature_active_count == null
+        ? -1
+        : globals.creature_active_count;
 
   const checkpoint = {
     tick_index: tick.tick_index,
@@ -3524,7 +3474,7 @@ function finalizeTick() {
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
     kills: killCount,
-    creature_count: globals.creature_active_count == null ? -1 : globals.creature_active_count,
+    creature_count: creatureCountForCheckpoint,
     perk_pending: perkPendingForCheckpoint,
     players: checkpointPlayers,
     status: {
@@ -3927,6 +3877,18 @@ function installHooks() {
             console_open: readDataU32("console_open_flag"),
             primary_latch: readDataU32("input_primary_latch"),
           };
+          const tick = outState.currentTick;
+          if (tick) {
+            const state = ensurePlayerKeyState(tick, 0);
+            if (state) {
+              if (ctx.query_key === "primary_down") {
+                state.fire_down = state.fire_down === true ? true : !!pressed;
+              }
+              if (ctx.query_key === "primary_edge") {
+                state.fire_pressed = state.fire_pressed === true ? true : !!pressed;
+              }
+            }
+          }
           registerInputQuery(ctx.query_key, pressed, ctx.token, payload);
           emitRawEvent(Object.assign({ event: name }, payload));
         },
@@ -4064,7 +4026,6 @@ function installHooks() {
         const ctx = srandContextByTid[this.threadId];
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
-        outState.lastSeed = ctx.seed_u32 >>> 0;
         outState.lastSrandSeed = ctx.seed_u32 >>> 0;
         outState.rngSeedEpoch += 1;
         if (CONFIG.enableRngStateMirror) {
