@@ -93,6 +93,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
         [
             {
                 "event": "session_start",
+                "capture_format_version": 7,
                 "platform": "windows",
                 "arch": "x86",
                 "script_version": "5",
@@ -179,7 +180,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
             {
                 "event": "tick",
@@ -205,7 +206,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
             {
                 "event": "tick",
@@ -228,7 +229,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start"}])
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": 7}])
 
     with pytest.raises(FridaFinalizeError, match="missing session_end"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
@@ -238,7 +239,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
@@ -299,7 +300,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             _run_start_row(run_id=1, mode_id=1, seed=51, player_count=1),
             {
                 "event": "tick",
@@ -350,7 +351,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -371,7 +372,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -394,7 +395,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -426,7 +427,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_canonicalizes_unknown_death_and_negative_event_counts(
+def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
     tmp_path: Path,
 ) -> None:
     raw_path = _write_jsonl(
@@ -443,24 +444,7 @@ def test_finalize_frida_jsonl_to_traces_canonicalizes_unknown_death_and_negative
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
-                    "checkpoint": {
-                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
-                        "deaths": [
-                            {
-                                "creature_index": -1,
-                                "type_id": -1,
-                                "xp_awarded": -1,
-                                "owner_id": -1,
-                                "reward_value": 0,
-                            },
-                        ],
-                        "events": {
-                            "hit_count": -1,
-                            "pickup_count": -1,
-                            "sfx_count": 0,
-                            "sfx_head": [],
-                        },
-                    },
+                    "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=16),
                 },
             },
             {"event": "run_end", "run_id": 1},
@@ -468,25 +452,15 @@ def test_finalize_frida_jsonl_to_traces_canonicalizes_unknown_death_and_negative
         ],
     )
 
-    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
-    _, ticks, _ = load_trace(result.traces[0].out_path)
-    checkpoint = cast("dict[str, object]", ticks[0].channels["checkpoint"])
-    events = cast("dict[str, object]", checkpoint["events"])
-    event_heads = cast("list[dict[str, object]]", ticks[0].channels["event_heads"])
-    event_head_types = [str(row.get("type")) for row in event_heads]
-
-    assert checkpoint["deaths"] == []
-    assert events["hit_count"] == 0
-    assert events["pickup_count"] == 0
-    assert "event_summary" in event_head_types
-    assert "creature_death" not in event_head_types
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 7"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start"},
+            {"event": "session_start", "capture_format_version": 7},
             _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -581,4 +555,16 @@ def test_finalize_frida_jsonl_to_traces_rejects_negative_event_counts_in_new_cap
     )
 
     with pytest.raises(FridaFinalizeError, match="checkpoint.events.hit_count must be >= 0"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_missing_capture_format_version(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="missing capture_format_version; expected 7"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
