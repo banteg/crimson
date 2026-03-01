@@ -744,6 +744,13 @@ function _captureWriteJsonLine(obj, flushNow) {
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
 }
 
+function _captureForceFlush() {
+  try {
+    if (!outState.outFile) return;
+    outState.outFile.flush();
+  } catch (_) {}
+}
+
 function emitSessionStartRow(meta, outPath) {
   const processObj = meta && meta.process ? meta.process : {};
   return {
@@ -771,6 +778,7 @@ function startCaptureFile(meta, outPath) {
     emitSessionStartRow(meta || {}, targetOutPath),
     true,
   );
+  if (started) _captureForceFlush();
   outState.captureStarted = started;
   outState.captureClosed = !started;
   if (!started && !outState.outWarned) {
@@ -781,7 +789,7 @@ function startCaptureFile(meta, outPath) {
 
 function closeActiveRun(reason, tickObj) {
   if (!outState.runActive) return;
-  _captureWriteJsonLine(
+  const wrote = _captureWriteJsonLine(
     {
       event: "run_end",
       run_id: outState.currentRunId | 0,
@@ -799,6 +807,7 @@ function closeActiveRun(reason, tickObj) {
     },
     true,
   );
+  if (wrote) _captureForceFlush();
   outState.runActive = false;
   outState.currentRunTickCount = 0;
   outState.currentRunModeId = -1;
@@ -833,7 +842,7 @@ function startRunForTick(tickObj, reason) {
   outState.currentRunElapsedRawLastMs = null;
   outState.currentRunElapsedNormalizedMs = null;
   outState.runActive = true;
-  _captureWriteJsonLine(
+  const wrote = _captureWriteJsonLine(
     {
       event: "run_start",
       run_id: outState.currentRunId | 0,
@@ -851,6 +860,7 @@ function startRunForTick(tickObj, reason) {
     },
     true,
   );
+  if (wrote) _captureForceFlush();
   return true;
 }
 
@@ -1136,7 +1146,7 @@ function shutdownCapture(reason) {
     closeActiveRun("shutdown", null);
   } catch (_) {}
   try {
-    _captureWriteJsonLine(
+    const wroteSessionEnd = _captureWriteJsonLine(
       {
         event: "session_end",
         session_id: outState.sessionId,
@@ -1144,6 +1154,7 @@ function shutdownCapture(reason) {
       },
       true,
     );
+    if (wroteSessionEnd) _captureForceFlush();
   } catch (_) {}
   try {
     closeCaptureFile();
