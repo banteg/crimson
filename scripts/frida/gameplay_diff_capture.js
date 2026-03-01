@@ -26,6 +26,7 @@ const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
 const GAME_MODE_QUESTS = 3;
+const CRT_THREAD_DATA_RNG_OFFSET = 0x14;
 const REPLAY_FIRE_DOWN_FLAG = 1 << 0;
 const REPLAY_FIRE_PRESSED_FLAG = 1 << 1;
 const REPLAY_RELOAD_PRESSED_FLAG = 1 << 2;
@@ -269,6 +270,7 @@ const FN = {
   input_any_key_pressed: 0x00446000,
   input_primary_just_pressed: 0x00446030,
   input_primary_is_down: 0x004460f0,
+  crt_get_thread_data: 0x004654b8,
   crt_srand: 0x00461739,
   crt_rand: 0x00461746,
   sfx_play: 0x0043d120,
@@ -481,6 +483,8 @@ const outState = {
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
   lastSeed: null,
+  crtGetThreadDataFn: null,
+  crtGetThreadDataFnInit: false,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
   lastCreatureDigest: null,
@@ -569,6 +573,61 @@ function runKeyForTick(tickObj) {
     "|" +
     String(tickQuestMinor(tickObj))
   );
+}
+
+function resolveCrtGetThreadDataFn() {
+  if (outState.crtGetThreadDataFnInit) return outState.crtGetThreadDataFn;
+  outState.crtGetThreadDataFnInit = true;
+  const ptrVal = fnPtrs.crt_get_thread_data;
+  if (!ptrVal) {
+    outState.crtGetThreadDataFn = null;
+    return null;
+  }
+  try {
+    outState.crtGetThreadDataFn = new NativeFunction(ptrVal, "pointer", []);
+  } catch (_) {
+    outState.crtGetThreadDataFn = null;
+  }
+  return outState.crtGetThreadDataFn;
+}
+
+function readThreadRngSeedU32() {
+  const getThreadData = resolveCrtGetThreadDataFn();
+  if (!getThreadData) return null;
+  try {
+    const threadData = getThreadData();
+    if (!threadData || threadData.isNull()) return null;
+    const seed = safeReadU32(threadData.add(CRT_THREAD_DATA_RNG_OFFSET));
+    return seed == null ? null : seed >>> 0;
+  } catch (_) {
+    return null;
+  }
+}
+
+function requireRunStartSeedU32(tickObj) {
+  const sampledSeed = readThreadRngSeedU32();
+  if (sampledSeed != null) {
+    outState.lastSeed = sampledSeed >>> 0;
+    if (CONFIG.enableRngStateMirror) {
+      outState.rngMirrorStateU32 = sampledSeed >>> 0;
+    }
+    return sampledSeed >>> 0;
+  }
+  if (outState.lastSeed != null) {
+    return outState.lastSeed >>> 0;
+  }
+  const tickIndex =
+    tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
+  const errorRow = {
+    event: "error",
+    error: "missing_rng_seed",
+    run_id: (outState.currentRunId | 0) + 1,
+    tick_index_global: tickIndex,
+  };
+  _captureWriteJsonLine(errorRow, true);
+  writeLine(errorRow);
+  shutdownCapture("missing_rng_seed");
+  return null;
 }
 
 function openOutFile() {
@@ -678,6 +737,8 @@ function closeActiveRun(reason, tickObj) {
 
 function startRunForTick(tickObj, reason) {
   const startReason = reason || "run_start";
+  const runSeed = requireRunStartSeedU32(tickObj);
+  if (runSeed == null) return false;
   outState.currentRunId = (outState.currentRunId | 0) + 1;
   outState.currentRunTickCount = 0;
   outState.currentRunModeId = tickModeId(tickObj);
@@ -695,20 +756,20 @@ function startRunForTick(tickObj, reason) {
       mode_id: outState.currentRunModeId | 0,
       quest_stage_major: outState.currentRunQuestMajor | 0,
       quest_stage_minor: outState.currentRunQuestMinor | 0,
-      seed: outState.lastSeed == null ? null : outState.lastSeed >>> 0,
+      seed: runSeed >>> 0,
       player_count: runPlayerCountFromTick(tickObj),
       tick_index_global:
         tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
     },
     true,
   );
+  return true;
 }
 
 function ensureRunForTick(tickObj) {
   let needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
   if (!outState.runActive) {
-    startRunForTick(tickObj, "first_tick");
-    return;
+    return startRunForTick(tickObj, "first_tick");
   }
   const nextRunKey = runKeyForTick(tickObj);
   if (
@@ -723,8 +784,9 @@ function ensureRunForTick(tickObj) {
   }
   if (needsRollover || nextRunKey !== outState.currentRunKey) {
     closeActiveRun(needsRollover ? "quest_attempt" : "mode_or_stage_change", tickObj);
-    startRunForTick(tickObj, needsRollover ? "quest_attempt" : "mode_or_stage_change");
+    return startRunForTick(tickObj, needsRollover ? "quest_attempt" : "mode_or_stage_change");
   }
+  return true;
 }
 
 function phaseMarkerNames(markers) {
@@ -917,7 +979,7 @@ function buildTraceTickRow(tickObj) {
 function writeCaptureTick(tickObj) {
   if (!tickObj) return;
   if (!outState.captureStarted || outState.captureClosed) return;
-  ensureRunForTick(tickObj);
+  if (!ensureRunForTick(tickObj)) return;
   const wrote = _captureWriteJsonLine(buildTraceTickRow(tickObj), true);
   if (wrote) {
     outState.captureTickCount += 1;
@@ -3821,8 +3883,21 @@ function installHooks() {
   if (CONFIG.enableRngHooks) {
     attachHook("crt_srand", fnPtrs.crt_srand, {
       onEnter(args) {
+        let seedU32 = null;
+        try {
+          seedU32 = args[0].toUInt32() >>> 0;
+        } catch (_) {
+          seedU32 = null;
+        }
+        if (seedU32 == null) {
+          const errorRow = { event: "hook_error", name: "crt_srand", error: "missing_seed_arg" };
+          _captureWriteJsonLine(errorRow, true);
+          writeLine(errorRow);
+          shutdownCapture("crt_srand_missing_seed");
+          return;
+        }
         srandContextByTid[this.threadId] = {
-          seed_u32: args[0] ? args[0].toUInt32() >>> 0 : null,
+          seed_u32: seedU32 >>> 0,
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
         };
       },
@@ -3830,9 +3905,9 @@ function installHooks() {
         const ctx = srandContextByTid[this.threadId];
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
-        outState.lastSeed = ctx.seed_u32;
+        outState.lastSeed = ctx.seed_u32 >>> 0;
         outState.rngSeedEpoch += 1;
-        if (CONFIG.enableRngStateMirror && ctx.seed_u32 != null) {
+        if (CONFIG.enableRngStateMirror) {
           outState.rngMirrorStateU32 = ctx.seed_u32 >>> 0;
         }
         emitRawEvent({

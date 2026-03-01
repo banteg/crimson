@@ -522,7 +522,13 @@ def finalize_frida_jsonl_to_traces(
                         raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
                     run_id = _as_int(row.get("run_id"), field=f"{raw_path}.lines[{line_no}].run_id")
                     mode_id = _as_int(row.get("mode_id"), field=f"{raw_path}.lines[{line_no}].mode_id")
-                    seed = _as_int(row.get("seed"), field=f"{raw_path}.lines[{line_no}].seed")
+                    seed_obj = row.get("seed")
+                    if seed_obj is None:
+                        raise FridaFinalizeError(
+                            f"{raw_path}.lines[{line_no}].seed is null; update gameplay_diff_capture.js "
+                            "to emit a concrete run_start seed and recapture",
+                        )
+                    seed = _as_int(seed_obj, field=f"{raw_path}.lines[{line_no}].seed")
                     player_count = _as_int(row.get("player_count"), field=f"{raw_path}.lines[{line_no}].player_count")
                     if int(player_count) <= 0:
                         raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")

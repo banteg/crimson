@@ -311,3 +311,24 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
 
     with pytest.raises(FridaFinalizeError, match="valid ReplayCheckpoint payload"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actionable_error(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            {
+                "event": "run_start",
+                "run_id": 1,
+                "mode_id": 1,
+                "seed": None,
+                "player_count": 1,
+                "quest_stage_major": -1,
+                "quest_stage_minor": -1,
+            },
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="seed is null; update gameplay_diff_capture.js"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
