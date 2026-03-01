@@ -15,6 +15,7 @@ from .trace import TraceSummary, write_trace_iter
 _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
+_GAME_MODE_QUESTS = 3
 _ENTITY_KIND_CODES = {
     "creature": 1,
     "projectile": 2,
@@ -236,7 +237,12 @@ def _run_output_path(
     counters: dict[str, int],
 ) -> Path:
     base = Path(raw_path).stem
-    if int(quest_stage_major) > 0 and int(quest_stage_minor) > 0:
+    is_quest_run = (
+        int(mode_id) == int(_GAME_MODE_QUESTS)
+        and int(quest_stage_major) > 0
+        and int(quest_stage_minor) > 0
+    )
+    if is_quest_run:
         key = f"quest_{int(quest_stage_major)}_{int(quest_stage_minor)}"
         idx = counters.get(key, 0) + 1
         counters[key] = idx
