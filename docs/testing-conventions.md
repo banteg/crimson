@@ -43,9 +43,9 @@ This project prioritizes deterministic parity with the original executable. The 
 
 ## Capture Test Data
 
-- Prefer typed capture builders from `tests.builders.capture` for creating capture fixtures.
-- Keep serialization to dict/JSON at API/file boundaries.
-- For negative validation tests, it is acceptable to inject malformed raw rows directly at the boundary layer.
+- Use trace/replay fixtures (`.cdt` / `.crd`) for differential and replay tests.
+- Keep serialization at API/file boundaries.
+- For negative validation tests, it is acceptable to inject malformed rows directly at the boundary layer.
 
 ## Guardrails
 
@@ -55,4 +55,3 @@ Ast-grep rules enforce key constraints:
 - no string-target `mocker.patch("...")` in tests
 - no string-target Raylib `monkeypatch.setattr("...rl...")` in tests
 - no list-append side-effect spies inside patch hooks
-- no raw dict payload assignment to typed capture fields in migrated capture tests

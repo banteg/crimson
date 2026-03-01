@@ -227,12 +227,6 @@ frida-gameplay-diff-capture process="crimsonland.exe":
     uv run scripts/frida/gameplay_diff_capture_host.py --process {{process}} --script scripts\\frida\\gameplay_diff_capture.js --output-dir $env:CRIMSON_FRIDA_DIR
 
 [windows]
-frida-gameplay-diff-capture-postpack process="crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    uv run scripts/frida/gameplay_diff_capture_postpack.py --process {{process}} --script scripts\\frida\\gameplay_diff_capture.js --output-dir $env:CRIMSON_FRIDA_DIR
-
-[windows]
 frida-survival-autoplay process="crimsonland.exe":
     $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
     New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null

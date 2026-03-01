@@ -4,31 +4,24 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
-// - emits capture stream rows (`capture_meta` + `tick`) either to JSON files
-//   (default) or to host messaging when sink=host
+// - emits a single JSONL stream with explicit run markers:
+//   session_start, run_start, tick, run_end, session_end
 //
 // Attach:
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
-//   or via scripts/frida/gameplay_diff_capture_host.py for msgpack output
+//   or via scripts/frida/gameplay_diff_capture_host.py for stop+finalize orchestration
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture.json (default non-quest fallback)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (default quests)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
-//   Host launcher writes:
-//   C:\share\frida\gameplay_diff_capture.msgpack.zst (non-quest fallback)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.msgpack.zst (quests)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.msgpack.zst (repeat attempts)
-//   Default sink is direct JSON file writes.
-//   Set CRIMSON_FRIDA_CAPTURE_SINK=host to force Frida message streaming.
+//   C:\share\frida\gameplay_diff_capture.jsonl
+//   (one continuous stream; host finalizer splits into per-run .cdt outputs)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
-const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
-const DEFAULT_QUEST_OUT_PREFIX = "gameplay_diff_capture.quest_";
+const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
 const CAPTURE_FORMAT_VERSION = 5;
+const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
@@ -101,31 +94,9 @@ function parseStringSet(raw, fallbackCsv) {
   return out;
 }
 
-function parseCaptureSink(raw, fallback) {
-  const value = raw == null ? "" : String(raw).trim().toLowerCase();
-  if (value === "file" || value === "host") return value;
-  return fallback;
-}
-
-function resolveCaptureSink() {
-  let injectedSink = null;
-  try {
-    injectedSink = parseCaptureSink(globalThis.__CRIMSON_FRIDA_CAPTURE_SINK, null);
-  } catch (_) {
-    injectedSink = null;
-  }
-  if (injectedSink != null) return injectedSink;
-  const envSink = parseCaptureSink(getEnv("CRIMSON_FRIDA_CAPTURE_SINK"), null);
-  if (envSink != null) return envSink;
-  return "file";
-}
-
 const CONFIG_ENV_KEYS = [
-  "CRIMSON_FRIDA_CAPTURE_SINK",
   "CRIMSON_FRIDA_DIR",
   "CRIMSON_FRIDA_OUT_PATH",
-  "CRIMSON_FRIDA_QUEST_OUT_DIR",
-  "CRIMSON_FRIDA_QUEST_OUT_PREFIX",
   "CRIMSON_FRIDA_APPEND",
   "CRIMSON_FRIDA_CONSOLE_ALL_EVENTS",
   "CRIMSON_FRIDA_CONSOLE_EVENTS",
@@ -204,11 +175,7 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  captureSink: resolveCaptureSink(),
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
-  splitQuestFiles: true,
-  questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
-  questOutPrefix: getEnv("CRIMSON_FRIDA_QUEST_OUT_PREFIX") || DEFAULT_QUEST_OUT_PREFIX,
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
   consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
@@ -461,8 +428,14 @@ const outState = {
   captureStarted: false,
   captureClosed: false,
   captureTickCount: 0,
-  captureTickCountCurrentFile: 0,
-  captureFilesWritten: [],
+  runActive: false,
+  currentRunId: 0,
+  currentRunTickCount: 0,
+  currentRunModeId: -1,
+  currentRunQuestMajor: -1,
+  currentRunQuestMinor: -1,
+  currentRunKey: "",
+  lastTickIndexGlobal: null,
   shutdownComplete: false,
   gameplayFrame: 0,
   currentStatePrev: null,
@@ -541,7 +514,7 @@ function noteQuestAttemptStart(source, gameModeId, major, minor) {
 }
 
 function consumeQuestAttemptRolloverForTick(tickObj) {
-  if (!CONFIG.splitQuestFiles || !tickObj) return false;
+  if (!tickObj) return false;
   const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
   if (gameModeId !== GAME_MODE_QUESTS) return false;
   const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
@@ -557,32 +530,29 @@ function consumeQuestAttemptRolloverForTick(tickObj) {
   return true;
 }
 
-function resolveCaptureOutPathForTick(tickObj) {
-  if (!CONFIG.splitQuestFiles || !tickObj) return CONFIG.outPath;
-  const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
-  if (gameModeId !== GAME_MODE_QUESTS) return CONFIG.outPath;
-  const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
-  if (!levelKey) return CONFIG.outPath;
-  return joinPath(CONFIG.questOutDir, CONFIG.questOutPrefix + levelKey + ".json");
+function tickModeId(tickObj) {
+  if (!tickObj || tickObj.game_mode_id == null) return -1;
+  return tickObj.game_mode_id | 0;
 }
 
-function appendRunSuffix(path, runIndex) {
-  const idx = String(path).lastIndexOf(".");
-  if (idx <= 0) return String(path) + ".run" + String(runIndex);
-  return String(path).slice(0, idx) + ".run" + String(runIndex) + String(path).slice(idx);
+function tickQuestMajor(tickObj) {
+  if (!tickObj || tickObj.quest_stage_major == null) return -1;
+  return tickObj.quest_stage_major | 0;
 }
 
-function ensureUniqueCaptureOutPath(path) {
-  if (!CONFIG.splitQuestFiles || CONFIG.logMode === "append") return String(path);
-  const used = outState.captureFilesWritten || [];
-  if (used.indexOf(path) < 0) return String(path);
-  let runIndex = 2;
-  let candidate = appendRunSuffix(path, runIndex);
-  while (used.indexOf(candidate) >= 0) {
-    runIndex += 1;
-    candidate = appendRunSuffix(path, runIndex);
-  }
-  return candidate;
+function tickQuestMinor(tickObj) {
+  if (!tickObj || tickObj.quest_stage_minor == null) return -1;
+  return tickObj.quest_stage_minor | 0;
+}
+
+function runKeyForTick(tickObj) {
+  return (
+    String(tickModeId(tickObj)) +
+    "|" +
+    String(tickQuestMajor(tickObj)) +
+    "|" +
+    String(tickQuestMinor(tickObj))
+  );
 }
 
 function openOutFile() {
@@ -623,15 +593,23 @@ function _captureWrite(text, flushNow) {
 
 function _captureWriteJsonLine(obj, flushNow) {
   if (!obj) return false;
-  if (CONFIG.captureSink === "host") {
-    try {
-      send({ kind: "capture_row", row: obj });
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
+}
+
+function emitSessionStartRow(meta, outPath) {
+  const processObj = meta && meta.process ? meta.process : {};
+  return {
+    event: "session_start",
+    schema_version: FRIDA_JSONL_SCHEMA_VERSION,
+    capture_format_version: CAPTURE_FORMAT_VERSION,
+    session_id: outState.sessionId,
+    out_path: outPath || CONFIG.outPath,
+    platform: processObj.platform == null ? "" : String(processObj.platform),
+    arch: processObj.arch == null ? "" : String(processObj.arch),
+    script_version: String(CAPTURE_FORMAT_VERSION),
+    config: meta && meta.config ? meta.config : {},
+    session_fingerprint: meta && meta.session_fingerprint ? meta.session_fingerprint : {},
+  };
 }
 
 function startCaptureFile(meta, outPath) {
@@ -641,66 +619,195 @@ function startCaptureFile(meta, outPath) {
   outState.outWarned = false;
   outState.captureStarted = false;
   outState.captureClosed = false;
-  outState.captureTickCountCurrentFile = 0;
-  const captureMeta = Object.assign({}, meta || {}, { out_path: targetOutPath });
-  const started = _captureWriteJsonLine({ event: "capture_meta", capture: captureMeta }, true);
+  const started = _captureWriteJsonLine(
+    emitSessionStartRow(meta || {}, targetOutPath),
+    true,
+  );
   outState.captureStarted = started;
   outState.captureClosed = !started;
-  if (started) {
-    outState.captureFilesWritten.push(targetOutPath);
-  }
   if (!started && !outState.outWarned) {
     outState.outWarned = true;
     console.log("gameplay_diff_capture: file logging unavailable; capture file not writable");
   }
 }
 
-function switchCaptureFile(outPath, reason, tickObj) {
-  const requestedOutPath = outPath || CONFIG.outPath;
-  const samePath = outState.currentOutPath === requestedOutPath;
-  if (samePath && outState.captureStarted && !outState.captureClosed) return;
-  const prevOutPath = outState.currentOutPath;
-  if (outState.captureStarted && !outState.captureClosed) {
-    closeCaptureFile();
+function closeActiveRun(reason, tickObj) {
+  if (!outState.runActive) return;
+  _captureWriteJsonLine(
+    {
+      event: "run_end",
+      run_id: outState.currentRunId | 0,
+      reason: reason || "run_end",
+      mode_id: outState.currentRunModeId | 0,
+      quest_stage_major: outState.currentRunQuestMajor | 0,
+      quest_stage_minor: outState.currentRunQuestMinor | 0,
+      tick_index_global:
+        tickObj && tickObj.tick_index != null
+          ? tickObj.tick_index | 0
+          : outState.lastTickIndexGlobal == null
+            ? null
+            : outState.lastTickIndexGlobal | 0,
+      ticks_written: outState.currentRunTickCount | 0,
+    },
+    true,
+  );
+  outState.runActive = false;
+  outState.currentRunTickCount = 0;
+  outState.currentRunModeId = -1;
+  outState.currentRunQuestMajor = -1;
+  outState.currentRunQuestMinor = -1;
+  outState.currentRunKey = "";
+}
+
+function startRunForTick(tickObj, reason) {
+  outState.currentRunId = (outState.currentRunId | 0) + 1;
+  outState.currentRunTickCount = 0;
+  outState.currentRunModeId = tickModeId(tickObj);
+  outState.currentRunQuestMajor = tickQuestMajor(tickObj);
+  outState.currentRunQuestMinor = tickQuestMinor(tickObj);
+  outState.currentRunKey = runKeyForTick(tickObj);
+  outState.runActive = true;
+  _captureWriteJsonLine(
+    {
+      event: "run_start",
+      run_id: outState.currentRunId | 0,
+      reason: reason || "run_start",
+      mode_id: outState.currentRunModeId | 0,
+      quest_stage_major: outState.currentRunQuestMajor | 0,
+      quest_stage_minor: outState.currentRunQuestMinor | 0,
+      tick_index_global:
+        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+    },
+    true,
+  );
+}
+
+function ensureRunForTick(tickObj) {
+  const needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
+  if (!outState.runActive) {
+    startRunForTick(tickObj, "first_tick");
+    return;
   }
-  const targetOutPath = ensureUniqueCaptureOutPath(requestedOutPath);
-  startCaptureFile(outState.captureMetaTemplate || {}, targetOutPath);
-  if (!samePath || targetOutPath !== requestedOutPath) {
-    writeLine({
-      event: "capture_file_switch",
-      reason: reason || "switch",
-      from_out_path: prevOutPath,
-      requested_out_path: requestedOutPath,
-      to_out_path: targetOutPath,
-      tick_index: tickObj && tickObj.tick_index != null ? tickObj.tick_index : null,
-      game_mode_id: tickObj && tickObj.game_mode_id != null ? tickObj.game_mode_id : null,
-      quest_stage_major: tickObj && tickObj.quest_stage_major != null ? tickObj.quest_stage_major : null,
-      quest_stage_minor: tickObj && tickObj.quest_stage_minor != null ? tickObj.quest_stage_minor : null,
-    });
+  const nextRunKey = runKeyForTick(tickObj);
+  if (needsRollover || nextRunKey !== outState.currentRunKey) {
+    closeActiveRun(needsRollover ? "quest_attempt" : "mode_or_stage_change", tickObj);
+    startRunForTick(tickObj, needsRollover ? "quest_attempt" : "mode_or_stage_change");
   }
 }
 
-function ensureCaptureFileForTick(tickObj) {
-  const outPath = resolveCaptureOutPathForTick(tickObj);
-  const forceQuestAttemptRollover = consumeQuestAttemptRolloverForTick(tickObj);
-  if (
-    !outState.captureStarted ||
-    outState.captureClosed ||
-    outState.currentOutPath !== outPath ||
-    forceQuestAttemptRollover
-  ) {
-    switchCaptureFile(outPath, forceQuestAttemptRollover ? "quest_attempt" : "tick_route", tickObj);
+function phaseMarkerNames(markers) {
+  if (!Array.isArray(markers)) return [];
+  const out = [];
+  for (let i = 0; i < markers.length; i++) {
+    const marker = markers[i];
+    if (marker && typeof marker.type === "string") {
+      out.push(String(marker.type));
+      continue;
+    }
+    out.push(String(marker));
   }
+  return out;
+}
+
+function eventHeadKind(head) {
+  if (head && typeof head === "object" && typeof head.type === "string") {
+    return String(head.type);
+  }
+  return String(head);
+}
+
+function microTracesFromEventHeads(eventHeads) {
+  if (!Array.isArray(eventHeads)) return [];
+  const out = [];
+  for (let i = 0; i < eventHeads.length; i++) {
+    const head = eventHeads[i];
+    if (String(eventHeadKind(head)).indexOf("creature_update_micro") >= 0) {
+      out.push(head);
+    }
+  }
+  return out;
+}
+
+function intOr(value, fallback) {
+  if (value == null) return fallback;
+  if (typeof value === "number" && Number.isFinite(value)) return value | 0;
+  return fallback;
+}
+
+function rngMarksFromCheckpoint(checkpoint) {
+  const marks = checkpoint && checkpoint.rng_marks ? checkpoint.rng_marks : {};
+  return {
+    rand_calls: intOr(marks.rand_calls, 0),
+    rand_last: intOr(marks.rand_last, -1),
+    rand_seq_first: intOr(marks.rand_seq_first, -1),
+    rand_seq_last: intOr(marks.rand_seq_last, -1),
+    rand_seed_epoch_enter: intOr(marks.rand_seed_epoch_enter, -1),
+    rand_seed_epoch_last: intOr(marks.rand_seed_epoch_last, -1),
+    rand_outside_before_calls: intOr(marks.rand_outside_before_calls, 0),
+    rand_outside_before_dropped: intOr(marks.rand_outside_before_dropped, 0),
+    rand_mirror_mismatch_total: intOr(marks.rand_mirror_mismatch_total, 0),
+    rand_mirror_unknown_total: intOr(marks.rand_mirror_unknown_total, 0),
+  };
+}
+
+function entitySamplesFromTick(tickObj) {
+  const samples = tickObj && tickObj.samples ? tickObj.samples : {};
+  return {
+    creatures: Array.isArray(samples.creatures) ? samples.creatures : [],
+    projectiles: Array.isArray(samples.projectiles) ? samples.projectiles : [],
+    secondary_projectiles: Array.isArray(samples.secondary_projectiles)
+      ? samples.secondary_projectiles
+      : [],
+    bonuses: Array.isArray(samples.bonuses) ? samples.bonuses : [],
+  };
+}
+
+function buildTraceTickRow(tickObj) {
+  const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
+  const eventHeads = Array.isArray(tickObj.event_heads) ? tickObj.event_heads : [];
+  const modeId = tickModeId(tickObj);
+  const dtMsI32 =
+    tickObj.frame_dt_ms_i32 != null
+      ? intOr(tickObj.frame_dt_ms_i32, null)
+      : tickObj &&
+          tickObj.diagnostics &&
+          tickObj.diagnostics.timing &&
+          tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
+        ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
+        : null;
+
+  return {
+    event: "tick",
+    run_id: outState.currentRunId | 0,
+    tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+    elapsed_ms: intOr(checkpoint.elapsed_ms, -1),
+    dt_ms_i32: dtMsI32,
+    mode_id: modeId,
+    quest_stage_major: tickQuestMajor(tickObj),
+    quest_stage_minor: tickQuestMinor(tickObj),
+    phase_markers: phaseMarkerNames(tickObj.phase_markers),
+    channels: {
+      checkpoint: checkpoint,
+      rng_marks: rngMarksFromCheckpoint(checkpoint),
+      rng_stream_head:
+        tickObj && tickObj.rng && Array.isArray(tickObj.rng.head) ? tickObj.rng.head : [],
+      entity_samples: entitySamplesFromTick(tickObj),
+      event_heads: eventHeads,
+      event_counts: tickObj && tickObj.event_counts ? tickObj.event_counts : {},
+      micro_traces: microTracesFromEventHeads(eventHeads),
+    },
+  };
 }
 
 function writeCaptureTick(tickObj) {
   if (!tickObj) return;
-  ensureCaptureFileForTick(tickObj);
   if (!outState.captureStarted || outState.captureClosed) return;
-  const wrote = _captureWriteJsonLine({ event: "tick", tick: tickObj }, true);
+  ensureRunForTick(tickObj);
+  const wrote = _captureWriteJsonLine(buildTraceTickRow(tickObj), true);
   if (wrote) {
     outState.captureTickCount += 1;
-    outState.captureTickCountCurrentFile += 1;
+    outState.currentRunTickCount += 1;
+    outState.lastTickIndexGlobal = tickObj.tick_index == null ? null : tickObj.tick_index | 0;
     return;
   }
   if (!outState.outWarned) {
@@ -736,6 +843,19 @@ function shutdownCapture(reason) {
     finalizeTick();
   } catch (_) {}
   try {
+    closeActiveRun("shutdown", null);
+  } catch (_) {}
+  try {
+    _captureWriteJsonLine(
+      {
+        event: "session_end",
+        session_id: outState.sessionId,
+        ticks_written: outState.captureTickCount | 0,
+      },
+      true,
+    );
+  } catch (_) {}
+  try {
     closeCaptureFile();
   } catch (_) {}
   try {
@@ -743,11 +863,10 @@ function shutdownCapture(reason) {
       event: "capture_shutdown",
       reason: why,
       ticks_written: outState.captureTickCount,
-      ticks_written_current_file: outState.captureTickCountCurrentFile,
       capture_started: outState.captureStarted,
       capture_closed: outState.captureClosed,
       out_path: outState.currentOutPath || CONFIG.outPath,
-      capture_files_written: outState.captureFilesWritten,
+      run_id: outState.currentRunId | 0,
     });
   } catch (_) {}
 }
@@ -4653,11 +4772,8 @@ function main() {
   outState.sessionId = outState.sessionFingerprint.session_id;
 
   const captureConfig = {
-    capture_sink: CONFIG.captureSink,
     out_path: CONFIG.outPath,
-    split_quest_files: CONFIG.splitQuestFiles,
-    quest_out_dir: CONFIG.questOutDir,
-    quest_out_prefix: CONFIG.questOutPrefix,
+    jsonl_schema_version: FRIDA_JSONL_SCHEMA_VERSION,
     capture_profile: "exhaustive_default",
     config_env_overrides: collectConfigEnvOverrides(),
     log_mode: CONFIG.logMode,
@@ -4731,9 +4847,7 @@ function main() {
     pointers_resolved: ptrs,
   };
   outState.captureMetaTemplate = captureMeta;
-  if (!CONFIG.splitQuestFiles) {
-    startCaptureFile(captureMeta, CONFIG.outPath);
-  }
+  startCaptureFile(captureMeta, CONFIG.outPath);
 
   writeLine({
     event: "start",
@@ -4761,7 +4875,8 @@ function main() {
       return {
         capture_started: !!outState.captureStarted,
         capture_closed: !!outState.captureClosed,
-        capture_sink: CONFIG.captureSink,
+        run_active: !!outState.runActive,
+        run_id: outState.currentRunId | 0,
         ticks_written: outState.captureTickCount | 0,
         out_path: outState.currentOutPath || CONFIG.outPath,
       };

@@ -8,8 +8,8 @@ tags:
 # Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
-`artifacts/frida/share/gameplay_diff_capture.msgpack.zst` or a quest-split file like
-`artifacts/frida/share/gameplay_diff_capture.quest_1_1.msgpack.zst`) and needs to
+`artifacts/frida/share/gameplay_diff_capture.mode_*.cdt` or
+`artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt`) and needs to
 continue cross-implementation investigation.
 
 This runbook is updated for the decoupled `dbg` trace suite which unifies telemetry
@@ -17,37 +17,28 @@ difﬁng for Original vs Python vs Zig.
 
 ## 1) Identify the capture artifact
 
-Convert the original Native Frida capture into a uniform `dbg` trace first:
+Frida host capture now finalizes directly to `.cdt` traces.
+If only raw JSONL exists, re-run the host finalize flow:
 
 ```bash
-uv run crimson dbg import-capture \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  --out analysis/frida/traces/capture_<sha8>.cdt
+uv run scripts/frida/gameplay_diff_capture_host.py \
+  --raw-path artifacts/frida/share/gameplay_diff_capture.jsonl \
+  --output-dir analysis/frida/traces
 ```
 
-Then check the health of the capture:
+Then check health of the finalized trace:
 
 ```bash
-uv run crimson dbg health analysis/frida/traces/capture_<sha8>.cdt
+uv run crimson dbg health analysis/frida/traces/gameplay_diff_capture.mode_<id>.run<k>.cdt
 ```
 
-Record the SHA256 of the trace (or the original messagepack) first. Session tracking is by capture SHA family.
+Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA family.
 
-## 2) Convert capture to replay and record candidate trace
-
-Generate the replay payload:
-
-```bash
-uv run crimson replay convert-capture \
-  artifacts/frida/share/gameplay_diff_capture.msgpack.zst \
-  analysis/frida/replays/capture_<sha8>.crd.chk
-```
-
-Then record the rewrite execution via your target implementation (`python` or `zig`) to generate a candidate `dbg` trace:
+## 2) Record rewrite candidate trace
 
 ```bash
 uv run crimson dbg record \
-  analysis/frida/replays/capture_<sha8>.crd \
+  <rewrite_replay.crd> \
   --impl zig \
   --out analysis/frida/traces/capture_<sha8>_zig.cdt
 ```
@@ -138,7 +129,7 @@ hotspot packs under `analysis/ghidra/derived/hotspots/`:
 
 ## 7) Completion checklist
 
-1. Add targeted tests for every replay/conversion behavior change.
+1. Add targeted tests for every replay/trace-finalization behavior change.
 2. Run `just check`.
 3. Update differential session docs (`docs/frida/differential-sessions.md` index
    plus the relevant `docs/frida/differential-sessions/session-*.md` file) with:

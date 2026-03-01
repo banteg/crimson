@@ -60,12 +60,11 @@ The reducer also emits `gameplay_state_capture_sfx_candidates.json` containing
 high-confidence `event|function -> id` mappings for promotion into
 `name_map.json` comments/docs.
 
-For deterministic replay-side verification (`convert-capture`,
-`verify-capture`, divergence/focus tooling), use
-`artifacts/frida/share/gameplay_diff_capture.json` from
-`scripts/frida/gameplay_diff_capture.js`. The differential pipeline now expects
-the canonical gameplay-diff capture schema and no longer consumes raw
-`gameplay_state_capture.jsonl` logs directly.
+For deterministic replay-side verification, use finalized `.cdt` traces from
+`scripts/frida/gameplay_diff_capture.js` +
+`scripts/frida/gameplay_diff_capture_host.py`.
+The differential pipeline no longer consumes `gameplay_state_capture.jsonl`
+for parity checks.
 
 Notes:
 

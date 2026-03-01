@@ -11,11 +11,6 @@ from ..math_parity import f32
 from .types import (
     REPLAY_FORMAT_VERSION,
     WEAPON_USAGE_COUNT,
-    CaptureBootstrapEvent,
-    CaptureCreatureSpawnEvent,
-    CapturePerkApplyEvent,
-    CapturePerkPendingEvent,
-    CaptureStateTransitionEvent,
     PackedPlayerInput,
     PackedTickInputs,
     PerkMenuOpenEvent,
@@ -34,11 +29,6 @@ _REPLAY_DECODER = msgspec.msgpack.Decoder(type=Replay)
 _REPLAY_EVENT_TYPES = (
     PerkPickEvent,
     PerkMenuOpenEvent,
-    CaptureBootstrapEvent,
-    CapturePerkApplyEvent,
-    CapturePerkPendingEvent,
-    CaptureCreatureSpawnEvent,
-    CaptureStateTransitionEvent,
 )
 
 

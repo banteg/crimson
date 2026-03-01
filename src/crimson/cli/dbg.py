@@ -19,43 +19,14 @@ def _as_dict(value: object) -> dict[str, object]:
     return out
 
 
-@dbg_app.command("import-capture")
-def cmd_dbg_import_capture(
-    capture_file: Path = typer.Argument(..., help="capture file (.json/.json.gz/.msgpack.zst)"),
-    out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
-) -> None:
-    """Convert an original capture into Crimson Debug Trace (CDT)."""
-    from ..dbg.import_capture import import_capture_to_trace
-    from ..dbg.trace import TraceError
-
-    try:
-        summary = import_capture_to_trace(
-            capture_path=Path(capture_file),
-            out_path=Path(out),
-            chunk_ticks=chunk_ticks,
-        )
-    except (TraceError, ValueError) as exc:
-        typer.echo(f"dbg import-capture failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
-
-    tick_range = summary.meta.tick_range
-    typer.echo(f"trace={out}")
-    typer.echo(
-        "ticks "
-        f"start={tick_range.get('start_tick')} "
-        f"end={tick_range.get('end_tick')} "
-        f"count={tick_range.get('tick_count')}",
-    )
-    typer.echo("channels=" + ",".join(summary.meta.channels))
-
-
 @dbg_app.command("record")
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
     impl: str = typer.Option("python", "--impl", help="trace producer implementation id (supported: python, zig)"),
-    profile: Literal["minimal", "standard", "full"] = typer.Option("standard", "--profile", help="minimal|standard|full"),
+    profile: Literal["minimal", "standard", "full"] = typer.Option(
+        "standard", "--profile", help="minimal|standard|full",
+    ),
     max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
     strict_events: bool = typer.Option(
         True,
@@ -143,14 +114,7 @@ def cmd_dbg_health(
     )
     typer.echo(
         "channels="
-        + (
-            ",".join(
-                f"{str(key)}:{value}"
-                for key, value in sorted(channels.items())
-            )
-            if channels
-            else "(none)"
-        ),
+        + (",".join(f"{str(key)}:{value}" for key, value in sorted(channels.items())) if channels else "(none)"),
     )
     metric_keys = (
         "ticks_with_dt_ms_i32",

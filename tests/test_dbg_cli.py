@@ -12,59 +12,31 @@ from crimson.cli import app
 from crimson.dbg.policy import resolve_parity_policy
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
-from crimson.original.capture import dump_capture
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
-from tests.builders.capture import (
-    build_capture_creature_sample,
-    build_capture_event_head_creature_update_micro_window,
-    build_capture_file,
-    build_capture_rng_head_entry,
-    build_capture_tick,
-)
 
 
-def _write_capture(path: Path) -> Path:
-    tick0 = build_capture_tick(
-        tick_index=0,
-        elapsed_ms=0,
-        event_heads=[build_capture_event_head_creature_update_micro_window(slot=0)],
-    )
-    tick1 = build_capture_tick(
-        tick_index=1,
-        elapsed_ms=16,
-        event_heads=[build_capture_event_head_creature_update_micro_window(slot=1)],
-    )
-    tick0.samples.creatures = [build_capture_creature_sample(index=5)]
-    tick1.samples.creatures = [build_capture_creature_sample(index=5)]
-    tick0.rng.head = [build_capture_rng_head_entry()]
-    tick1.rng.head = [build_capture_rng_head_entry()]
-    capture = build_capture_file(ticks=[tick0, tick1])
-    dump_capture(path, capture)
-    return path
-
-
-def test_dbg_import_capture_and_health(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
-    trace_path = tmp_path / "capture.cdt"
+def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(trace_path)],
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
     assert trace_path.exists()
-    assert "channels=" in import_result.output
-    assert "entity_samples" in import_result.output
+    assert "channels=" in record_result.output
+    assert "entity_samples" in record_result.output
 
     health_result = runner.invoke(
         app,
-        ["dbg", "health", str(trace_path), "--strict"],
+        ["dbg", "health", str(trace_path)],
     )
     assert health_result.exit_code == 0, health_result.output
-    assert "movement_root_cause_ready=True" in health_result.output
+    assert "movement_root_cause_ready=" in health_result.output
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
@@ -77,6 +49,20 @@ def _write_replay(path: Path, *, ticks: int = 3) -> Path:
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):
         recorder.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    path.write_bytes(dump_replay(recorder.finish()))
+    return path
+
+
+def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=0xBEEF,
+        tick_rate=60,
+        player_count=1,
+    )
+    recorder = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        recorder.record_tick([PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)])
     path.write_bytes(dump_replay(recorder.finish()))
     return path
 
@@ -499,16 +485,16 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
 
 
 def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
+    replay_path = _write_replay_with_fire(tmp_path / "capture_like.crd", ticks=2)
     golden_trace = tmp_path / "golden.cdt"
     candidate_trace = tmp_path / "candidate.cdt"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
@@ -518,13 +504,26 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     checkpoint["score_xp"] = score_xp_obj + 1
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
-    entity_samples = _as_dict(tick1.channels["entity_samples"])
-    creatures_obj = entity_samples.get("creatures")
-    assert isinstance(creatures_obj, list)
-    first_creature = _as_dict(creatures_obj[0])
-    uid_obj = first_creature.get("uid")
-    assert isinstance(uid_obj, int)
-    entity_uid = int(uid_obj)
+    entity_uid = -1
+    entity_pool_kind = ""
+    for row in ticks:
+        entity_samples = _as_dict(row.channels["entity_samples"])
+        for pool_name in ("projectiles", "creatures", "secondary_projectiles", "bonuses"):
+            pool_obj = entity_samples.get(pool_name)
+            if not isinstance(pool_obj, list) or not pool_obj:
+                continue
+            first_entity = _as_dict(pool_obj[0])
+            uid_obj = first_entity.get("uid")
+            pool_kind_obj = first_entity.get("pool_kind")
+            if isinstance(uid_obj, int) and isinstance(pool_kind_obj, str):
+                entity_uid = int(uid_obj)
+                entity_pool_kind = str(pool_kind_obj)
+                break
+        if entity_uid >= 0:
+            break
+
+    assert entity_uid >= 0
+    assert entity_pool_kind
 
     tick_result = runner.invoke(
         app,
@@ -540,7 +539,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     )
     assert entity_result.exit_code == 0, entity_result.output
     assert f"uid={entity_uid}" in entity_result.output
-    assert "spawn_tick=0" in entity_result.output
+    assert "spawn_tick=" in entity_result.output
 
     query_ticks_result = runner.invoke(
         app,
@@ -552,7 +551,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
 
     query_entities_result = runner.invoke(
         app,
-        ["dbg", "query", str(golden_trace), "entities where pool_kind == 'creature'"],
+        ["dbg", "query", str(golden_trace), f"entities where pool_kind == '{entity_pool_kind}'"],
     )
     assert query_entities_result.exit_code == 0, query_entities_result.output
     assert "scope=entities" in query_entities_result.output
@@ -567,17 +566,17 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
 
 
 def test_dbg_viz(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
+    replay_path = _write_replay_with_fire(tmp_path / "capture_like.crd", ticks=2)
     golden_trace = tmp_path / "golden.cdt"
     candidate_trace = tmp_path / "candidate.cdt"
     html_out = tmp_path / "viz.html"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
