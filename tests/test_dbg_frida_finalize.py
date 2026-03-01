@@ -106,7 +106,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_deletes_raw(tmp_path: P
     assert creatures1[0]["generation"] == 1
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_closed(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -130,6 +130,44 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end(tmp_path: Pa
             {"event": "run_end", "run_id": 1},
         ],
     )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    assert len(result.traces) == 1
+    assert result.traces[0].tick_count == 1
+
+
+def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abruptly_ends(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            {
+                "event": "run_start",
+                "run_id": 4,
+                "mode_id": 2,
+                "quest_stage_major": -1,
+                "quest_stage_minor": -1,
+            },
+            {
+                "event": "tick",
+                "run_id": 4,
+                "elapsed_ms": 33,
+                "dt_ms_i32": 33,
+                "mode_id": 2,
+                "phase_markers": [],
+                "channels": {"checkpoint": {"elapsed_ms": 33}},
+            },
+        ],
+    )
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    assert len(result.traces) == 1
+    assert result.traces[0].run_id == 4
+    assert result.traces[0].tick_count == 1
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start"}])
 
     with pytest.raises(FridaFinalizeError, match="missing session_end"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

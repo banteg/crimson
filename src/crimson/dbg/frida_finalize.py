@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -358,8 +359,9 @@ def finalize_frida_jsonl_to_traces(
     session_ended = False
     active_run: _OpenRun | None = None
 
-    with TemporaryDirectory(prefix="crimson-frida-finalize-") as temp_dir:
-        temp_root = Path(temp_dir)
+    temp_dir_obj = TemporaryDirectory(prefix="crimson-frida-finalize-")
+    temp_root = Path(temp_dir_obj.name)
+    try:
         with raw_path.open("rb") as handle:
             for line_no, raw_line in enumerate(handle, start=1):
                 line = bytes(raw_line).strip()
@@ -487,11 +489,30 @@ def finalize_frida_jsonl_to_traces(
         if not session_started:
             raise FridaFinalizeError(f"{raw_path} missing session_start")
         if active_run is not None:
-            raise FridaFinalizeError(f"{raw_path} ended with active run_id={active_run.run_id}")
-        if not session_ended:
+            # Allow abrupt host/process shutdown to still produce a usable run.
+            # We already validated all parsed rows and can finalize the in-flight spool.
+            traces.append(
+                _write_run_trace(
+                    raw_path=raw_path,
+                    output_dir=output_root,
+                    raw_fingerprint=raw_fingerprint,
+                    session_meta=session_meta,
+                    run=active_run,
+                    chunk_ticks=max(1, int(chunk_ticks)),
+                    counters=run_counters,
+                ),
+            )
+            active_run = None
+        if not session_ended and not traces:
             raise FridaFinalizeError(f"{raw_path} missing session_end")
         if not traces:
             raise FridaFinalizeError(f"{raw_path} had no finalized runs")
+    finally:
+        if active_run is not None:
+            with suppress(Exception):
+                active_run.stream.close()
+        with suppress(OSError):
+            temp_dir_obj.cleanup()
 
     deleted = False
     if bool(delete_raw):
