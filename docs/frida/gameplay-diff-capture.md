@@ -17,7 +17,8 @@ It now writes a single JSONL stream with explicit lifecycle markers:
 - `session_end`
 
 The host (`scripts/frida/gameplay_diff_capture_host.py`) finalizes that JSONL
-into one or more native `.cdt` traces via `crimson.dbg.frida_finalize`.
+into one or more native `.cdt` traces plus matching `.crd` replay files via
+`crimson.dbg.frida_finalize`.
 
 ## Attach via host (recommended)
 
@@ -44,14 +45,19 @@ Default raw output:
 
 - `C:\share\frida\gameplay_diff_capture.jsonl`
 
-If you direct-attach, run the host once afterwards with `--raw-path` to finalize to `.cdt`.
+If you direct-attach, run the host once afterwards with `--raw-path` to finalize to `.cdt/.crd`.
 
 ## Finalized output
 
-Finalizer emits one `.cdt` per run boundary:
+Finalizer emits one `.cdt` + `.crd` pair per run boundary:
 
-- mode runs: `gameplay_diff_capture.survival.run<k>.cdt`, `gameplay_diff_capture.rush.run<k>.cdt` (unknown modes fall back to `mode_<id>`)
-- quest runs: `gameplay_diff_capture.quest_<major>_<minor>.run<k>.cdt`
+- mode runs:
+  - `gameplay_diff_capture.survival.run<k>.cdt` + `gameplay_diff_capture.survival.run<k>.crd`
+  - `gameplay_diff_capture.rush.run<k>.cdt` + `gameplay_diff_capture.rush.run<k>.crd`
+  - unknown modes fall back to `mode_<id>`
+- quest runs:
+  - `gameplay_diff_capture.quest_<major>_<minor>.run<k>.cdt`
+  - `gameplay_diff_capture.quest_<major>_<minor>.run<k>.crd`
 
 These traces are directly consumable by:
 
@@ -65,4 +71,5 @@ These traces are directly consumable by:
 
 - Legacy `dbg import-capture`, `replay convert-capture`, and postpack flow are removed.
 - JSONL rows contain already-normalized trace channels (`checkpoint`, `rng_marks`, `rng_stream_head`, `entity_samples`, `event_heads`, `event_counts`, `micro_traces`).
+- JSONL tick rows also carry replay-grade packed inputs (`replay_inputs`) and run metadata (`seed`, `player_count`) so replay sidecars can be generated losslessly.
 - Finalization normalizes entity UID/generation tracking so entity timelines are stable across runs.

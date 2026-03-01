@@ -21,7 +21,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Attach to gameplay_diff_capture.js, stop capture on shutdown, then "
-            "finalize raw JSONL capture into one or more .cdt traces."
+            "finalize raw JSONL capture into one or more .cdt/.crd run artifacts."
         ),
     )
     target_group = parser.add_mutually_exclusive_group()
@@ -45,7 +45,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--output-dir",
         type=Path,
         default=None,
-        help="directory for finalized .cdt files (default: raw capture parent)",
+        help="directory for finalized .cdt/.crd files (default: raw capture parent)",
     )
     parser.add_argument(
         "--chunk-ticks",
@@ -192,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
         for trace in result.traces:
             print(
                 f"[capture-host] trace={trace.out_path} run_id={trace.run_id} "
+                f"replay={trace.replay_path} "
                 f"ticks={trace.tick_count} mode={trace.mode_id} "
                 f"quest={trace.quest_stage_major}.{trace.quest_stage_minor}",
                 flush=True,

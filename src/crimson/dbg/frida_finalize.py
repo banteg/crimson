@@ -11,6 +11,8 @@ import msgspec
 
 from ..game_modes import GameMode
 from ..replay.checkpoints import ReplayCheckpoint
+from ..replay.codec import dump_replay_file
+from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace_iter
 
@@ -41,6 +43,7 @@ class FridaFinalizeError(ValueError):
 class FinalizedTrace(msgspec.Struct, frozen=True):
     run_id: int
     out_path: Path
+    replay_path: Path
     tick_count: int
     mode_id: int
     quest_stage_major: int
@@ -59,10 +62,14 @@ class _OpenRun(msgspec.Struct):
     mode_id: int
     quest_stage_major: int
     quest_stage_minor: int
+    replay_seed: int
+    replay_player_count: int
     temp_path: Path
     stream: BinaryIO
     tick_count: int = 0
     next_local_tick: int = 0
+    replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
+    replay_status: ReplayStatusSnapshot = msgspec.field(default_factory=lambda: ReplayStatusSnapshot())
     channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
@@ -124,6 +131,14 @@ def _as_optional_int(value: object, *, field: str) -> int | None:
     if value is None:
         return None
     return _as_int(value, field=field)
+
+
+def _as_float(value: object, *, field: str) -> float:
+    if isinstance(value, bool):
+        raise FridaFinalizeError(f"{field} must be numeric, got bool")
+    if isinstance(value, (int, float)):
+        return float(value)
+    raise FridaFinalizeError(f"{field} must be numeric")
 
 
 def _fingerprint(path: Path) -> dict[str, object]:
@@ -231,6 +246,58 @@ def _validate_checkpoint_channel(
         msgspec.convert(checkpoint, type=ReplayCheckpoint)
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
+
+
+def _as_replay_tick_inputs(
+    value: object,
+    *,
+    expected_players: int,
+    field: str,
+) -> list[list[float | int]]:
+    if not isinstance(value, list):
+        raise FridaFinalizeError(f"{field} must be a list")
+    if len(value) != int(expected_players):
+        raise FridaFinalizeError(f"{field} must contain {int(expected_players)} player rows, got {len(value)}")
+    out: list[list[float | int]] = []
+    for player_idx, row in enumerate(value):
+        if not isinstance(row, list):
+            raise FridaFinalizeError(f"{field}[{player_idx}] must be a list")
+        if len(row) != 5:
+            raise FridaFinalizeError(f"{field}[{player_idx}] must have 5 fields")
+        out.append(
+            [
+                _as_float(row[0], field=f"{field}[{player_idx}][0]"),
+                _as_float(row[1], field=f"{field}[{player_idx}][1]"),
+                _as_float(row[2], field=f"{field}[{player_idx}][2]"),
+                _as_float(row[3], field=f"{field}[{player_idx}][3]"),
+                _as_int(row[4], field=f"{field}[{player_idx}][4]"),
+            ],
+        )
+    return out
+
+
+def _replay_status_from_checkpoint(checkpoint_obj: object) -> ReplayStatusSnapshot:
+    if not isinstance(checkpoint_obj, dict):
+        return ReplayStatusSnapshot()
+    checkpoint = _as_dict(checkpoint_obj, field="tick.channels.checkpoint")
+    status_obj = checkpoint.get("status")
+    if not isinstance(status_obj, dict):
+        return ReplayStatusSnapshot()
+    status = _as_dict(status_obj, field="tick.channels.checkpoint.status")
+    quest_unlock_index = _as_int_default(status.get("quest_unlock_index"), default=0)
+    quest_unlock_index_full = _as_int_default(status.get("quest_unlock_index_full"), default=0)
+    usage_obj = status.get("weapon_usage_counts")
+    usage_list = usage_obj if isinstance(usage_obj, list) else []
+    counts: list[int] = []
+    for item in usage_list[: int(WEAPON_USAGE_COUNT)]:
+        counts.append(int(_as_int_default(item, default=0)))
+    while len(counts) < int(WEAPON_USAGE_COUNT):
+        counts.append(0)
+    return ReplayStatusSnapshot(
+        quest_unlock_index=int(quest_unlock_index),
+        quest_unlock_index_full=int(quest_unlock_index_full),
+        weapon_usage_counts=tuple(int(value) for value in counts),
+    )
 
 
 def _tick_iter_from_spool(path: Path):
@@ -360,9 +427,39 @@ def _write_run_trace(
         ticks=_tick_iter_from_spool(run.temp_path),
         chunk_ticks=max(1, int(chunk_ticks)),
     )
+    if int(run.replay_player_count) <= 0:
+        raise FridaFinalizeError(f"run {run.run_id}: invalid replay player_count={run.replay_player_count}")
+    if len(run.replay_inputs) != int(run.tick_count):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: replay_inputs count {len(run.replay_inputs)} does not match tick_count {run.tick_count}",
+        )
+    replay_path = Path(out_path).with_suffix(".crd")
+    is_quest_run = (
+        int(run.mode_id) == int(_GAME_MODE_QUESTS)
+        and int(run.quest_stage_major) > 0
+        and int(run.quest_stage_minor) > 0
+    )
+    replay_header = ReplayHeader(
+        game_mode_id=int(run.mode_id),
+        seed=int(run.replay_seed),
+        quest_level=(
+            f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""
+        ),
+        player_count=int(run.replay_player_count),
+        status=run.replay_status,
+    )
+    dump_replay_file(
+        replay_path,
+        Replay(
+            header=replay_header,
+            inputs=list(run.replay_inputs),
+            events=[],
+        ),
+    )
     return FinalizedTrace(
         run_id=int(run.run_id),
         out_path=Path(out_path),
+        replay_path=Path(replay_path),
         tick_count=int(run.tick_count),
         mode_id=int(run.mode_id),
         quest_stage_major=int(run.quest_stage_major),
@@ -425,6 +522,10 @@ def finalize_frida_jsonl_to_traces(
                         raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
                     run_id = _as_int(row.get("run_id"), field=f"{raw_path}.lines[{line_no}].run_id")
                     mode_id = _as_int(row.get("mode_id"), field=f"{raw_path}.lines[{line_no}].mode_id")
+                    seed = _as_int(row.get("seed"), field=f"{raw_path}.lines[{line_no}].seed")
+                    player_count = _as_int(row.get("player_count"), field=f"{raw_path}.lines[{line_no}].player_count")
+                    if int(player_count) <= 0:
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
                     quest_stage_major = _as_int(
                         row.get("quest_stage_major", -1),
                         field=f"{raw_path}.lines[{line_no}].quest_stage_major",
@@ -439,6 +540,8 @@ def finalize_frida_jsonl_to_traces(
                         mode_id=int(mode_id),
                         quest_stage_major=int(quest_stage_major),
                         quest_stage_minor=int(quest_stage_minor),
+                        replay_seed=int(seed),
+                        replay_player_count=int(player_count),
                         temp_path=spool_path,
                         stream=spool_path.open("wb"),
                     )
@@ -465,10 +568,17 @@ def finalize_frida_jsonl_to_traces(
                         row.get("channels"),
                         field=f"{raw_path}.lines[{line_no}].channels",
                     )
+                    replay_inputs = _as_replay_tick_inputs(
+                        row.get("replay_inputs"),
+                        expected_players=int(active_run.replay_player_count),
+                        field=f"{raw_path}.lines[{line_no}].replay_inputs",
+                    )
                     _validate_checkpoint_channel(
                         channels=channels,
                         field=f"{raw_path}.lines[{line_no}].channels",
                     )
+                    active_run.replay_status = _replay_status_from_checkpoint(channels.get("checkpoint"))
+                    active_run.replay_inputs.append(list(replay_inputs))
                     _normalize_entity_samples(run=active_run, channels=channels)
                     tick = TickRecord(
                         tick_index=int(active_run.next_local_tick),

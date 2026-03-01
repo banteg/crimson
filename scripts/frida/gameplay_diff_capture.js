@@ -26,6 +26,21 @@ const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
 const GAME_MODE_QUESTS = 3;
+const REPLAY_FIRE_DOWN_FLAG = 1 << 0;
+const REPLAY_FIRE_PRESSED_FLAG = 1 << 1;
+const REPLAY_RELOAD_PRESSED_FLAG = 1 << 2;
+const REPLAY_MOVE_KEYS_PRESENT_FLAG = 1 << 3;
+const REPLAY_MOVE_FORWARD_FLAG = 1 << 4;
+const REPLAY_MOVE_BACKWARD_FLAG = 1 << 5;
+const REPLAY_TURN_LEFT_FLAG = 1 << 6;
+const REPLAY_TURN_RIGHT_FLAG = 1 << 7;
+const REPLAY_MOVE_MODE_PRESENT_FLAG = 1 << 8;
+const REPLAY_MOVE_MODE_SHIFT = 9;
+const REPLAY_MOVE_MODE_MASK = 0x7;
+const REPLAY_AIM_SCHEME_PRESENT_FLAG = 1 << 12;
+const REPLAY_AIM_SCHEME_SHIFT = 13;
+const REPLAY_AIM_SCHEME_MASK = 0x7;
+const REPLAY_RELOAD_DOWN_FLAG = 1 << 16;
 
 function getEnv(key) {
   try {
@@ -680,6 +695,8 @@ function startRunForTick(tickObj, reason) {
       mode_id: outState.currentRunModeId | 0,
       quest_stage_major: outState.currentRunQuestMajor | 0,
       quest_stage_minor: outState.currentRunQuestMinor | 0,
+      seed: outState.lastSeed == null ? null : outState.lastSeed >>> 0,
+      player_count: runPlayerCountFromTick(tickObj),
       tick_index_global:
         tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
     },
@@ -747,6 +764,72 @@ function intOr(value, fallback) {
   if (value == null) return fallback;
   if (typeof value === "number" && Number.isFinite(value)) return value | 0;
   return fallback;
+}
+
+function asReplayF32(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return captureNumber(value);
+  }
+  return 0;
+}
+
+function packReplayInputFlags(inputRow) {
+  const row = inputRow && typeof inputRow === "object" ? inputRow : {};
+  let flags = 0;
+  if (row.fire_down === true) flags |= REPLAY_FIRE_DOWN_FLAG;
+  if (row.fire_pressed === true) flags |= REPLAY_FIRE_PRESSED_FLAG;
+  if (row.reload_pressed === true) flags |= REPLAY_RELOAD_PRESSED_FLAG;
+  if (row.reload_active === true) flags |= REPLAY_RELOAD_DOWN_FLAG;
+
+  const hasMoveKeys =
+    row.move_forward_pressed != null ||
+    row.move_backward_pressed != null ||
+    row.turn_left_pressed != null ||
+    row.turn_right_pressed != null;
+  if (hasMoveKeys) {
+    flags |= REPLAY_MOVE_KEYS_PRESENT_FLAG;
+    if (row.move_forward_pressed === true) flags |= REPLAY_MOVE_FORWARD_FLAG;
+    if (row.move_backward_pressed === true) flags |= REPLAY_MOVE_BACKWARD_FLAG;
+    if (row.turn_left_pressed === true) flags |= REPLAY_TURN_LEFT_FLAG;
+    if (row.turn_right_pressed === true) flags |= REPLAY_TURN_RIGHT_FLAG;
+  }
+
+  if (typeof row.move_mode === "number" && Number.isFinite(row.move_mode)) {
+    flags |= REPLAY_MOVE_MODE_PRESENT_FLAG;
+    flags |= ((row.move_mode | 0) & REPLAY_MOVE_MODE_MASK) << REPLAY_MOVE_MODE_SHIFT;
+  }
+  if (typeof row.aim_scheme === "number" && Number.isFinite(row.aim_scheme)) {
+    flags |= REPLAY_AIM_SCHEME_PRESENT_FLAG;
+    flags |= ((row.aim_scheme | 0) & REPLAY_AIM_SCHEME_MASK) << REPLAY_AIM_SCHEME_SHIFT;
+  }
+  return flags | 0;
+}
+
+function replayInputsFromTick(tickObj) {
+  const rows = tickObj && Array.isArray(tickObj.input_approx) ? tickObj.input_approx : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
+    out.push([
+      asReplayF32(row.move_dx),
+      asReplayF32(row.move_dy),
+      asReplayF32(row.aim_x),
+      asReplayF32(row.aim_y),
+      packReplayInputFlags(row),
+    ]);
+  }
+  return out;
+}
+
+function runPlayerCountFromTick(tickObj) {
+  const checkpointPlayers =
+    tickObj &&
+    tickObj.checkpoint &&
+    Array.isArray(tickObj.checkpoint.players)
+      ? tickObj.checkpoint.players
+      : [];
+  if (checkpointPlayers.length > 0) return checkpointPlayers.length | 0;
+  return Math.max(1, outState.playerCountResolved | 0);
 }
 
 function rngMarksFromCheckpoint(checkpoint) {
@@ -817,6 +900,7 @@ function buildTraceTickRow(tickObj) {
     quest_stage_major: tickQuestMajor(tickObj),
     quest_stage_minor: tickQuestMinor(tickObj),
     phase_markers: phaseMarkerNames(tickObj.phase_markers),
+    replay_inputs: replayInputsFromTick(tickObj),
     channels: {
       checkpoint: checkpoint,
       rng_marks: rngMarksFromCheckpoint(checkpoint),

@@ -7,10 +7,10 @@ tags:
 
 # Differential Playbook
 
-Use this when an agent is only given a new capture file (typically
-`artifacts/frida/share/gameplay_diff_capture.survival*.cdt`,
-`artifacts/frida/share/gameplay_diff_capture.rush*.cdt`, or
-`artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt`) and needs to
+Use this when an agent is given a new capture run artifact (typically
+`artifacts/frida/share/gameplay_diff_capture.survival*.cdt` + `.crd`,
+`artifacts/frida/share/gameplay_diff_capture.rush*.cdt` + `.crd`, or
+`artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt` + `.crd`) and needs to
 continue cross-implementation investigation.
 
 This runbook is updated for the decoupled `dbg` trace suite which unifies telemetry
@@ -18,7 +18,7 @@ difﬁng for Original vs Python vs Zig.
 
 ## 1) Identify the capture artifact
 
-Frida host capture now finalizes directly to `.cdt` traces.
+Frida host capture now finalizes directly to `.cdt` traces plus matching `.crd` replay sidecars.
 If only raw JSONL exists, re-run the host finalize flow:
 
 ```bash
@@ -35,13 +35,13 @@ uv run crimson dbg health analysis/frida/traces/gameplay_diff_capture.survival.r
 
 Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA family.
 
-## 2) Record rewrite candidate trace
+## 2) Record rewrite candidate trace from matching `.crd`
 
 ```bash
 uv run crimson dbg record \
-  <rewrite_replay.crd> \
+  analysis/frida/traces/gameplay_diff_capture.<run>.crd \
   --impl zig \
-  --out analysis/frida/traces/capture_<sha8>_zig.cdt
+  --out analysis/frida/traces/gameplay_diff_capture.<run>.zig.cdt
 ```
 *(Use `--impl python` to test the Python path).*
 
