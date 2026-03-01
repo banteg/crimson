@@ -435,6 +435,7 @@ const outState = {
   currentRunQuestMajor: -1,
   currentRunQuestMinor: -1,
   currentRunKey: "",
+  currentRunBootstrapQuestAttemptPending: false,
   lastTickIndexGlobal: null,
   shutdownComplete: false,
   gameplayFrame: 0,
@@ -657,21 +658,25 @@ function closeActiveRun(reason, tickObj) {
   outState.currentRunQuestMajor = -1;
   outState.currentRunQuestMinor = -1;
   outState.currentRunKey = "";
+  outState.currentRunBootstrapQuestAttemptPending = false;
 }
 
 function startRunForTick(tickObj, reason) {
+  const startReason = reason || "run_start";
   outState.currentRunId = (outState.currentRunId | 0) + 1;
   outState.currentRunTickCount = 0;
   outState.currentRunModeId = tickModeId(tickObj);
   outState.currentRunQuestMajor = tickQuestMajor(tickObj);
   outState.currentRunQuestMinor = tickQuestMinor(tickObj);
   outState.currentRunKey = runKeyForTick(tickObj);
+  outState.currentRunBootstrapQuestAttemptPending =
+    startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
   outState.runActive = true;
   _captureWriteJsonLine(
     {
       event: "run_start",
       run_id: outState.currentRunId | 0,
-      reason: reason || "run_start",
+      reason: startReason,
       mode_id: outState.currentRunModeId | 0,
       quest_stage_major: outState.currentRunQuestMajor | 0,
       quest_stage_minor: outState.currentRunQuestMinor | 0,
@@ -683,12 +688,22 @@ function startRunForTick(tickObj, reason) {
 }
 
 function ensureRunForTick(tickObj) {
-  const needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
+  let needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
   if (!outState.runActive) {
     startRunForTick(tickObj, "first_tick");
     return;
   }
   const nextRunKey = runKeyForTick(tickObj);
+  if (
+    needsRollover &&
+    nextRunKey === outState.currentRunKey &&
+    outState.currentRunBootstrapQuestAttemptPending
+  ) {
+    // First quest tick can inherit a pre-game quest_attempt marker that belongs
+    // to the current attempt, not a true run rollover.
+    needsRollover = false;
+    outState.currentRunBootstrapQuestAttemptPending = false;
+  }
   if (needsRollover || nextRunKey !== outState.currentRunKey) {
     closeActiveRun(needsRollover ? "quest_attempt" : "mode_or_stage_change", tickObj);
     startRunForTick(tickObj, needsRollover ? "quest_attempt" : "mode_or_stage_change");
@@ -807,6 +822,9 @@ function writeCaptureTick(tickObj) {
   if (wrote) {
     outState.captureTickCount += 1;
     outState.currentRunTickCount += 1;
+    if (outState.currentRunBootstrapQuestAttemptPending && (outState.currentRunTickCount | 0) > 1) {
+      outState.currentRunBootstrapQuestAttemptPending = false;
+    }
     outState.lastTickIndexGlobal = tickObj.tick_index == null ? null : tickObj.tick_index | 0;
     return;
   }
