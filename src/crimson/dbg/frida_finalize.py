@@ -9,6 +9,7 @@ from typing import BinaryIO
 
 import msgspec
 
+from ..game_modes import GameMode
 from ..replay.checkpoints import ReplayCheckpoint
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace_iter
@@ -17,6 +18,14 @@ _FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
+_MODE_LABEL_BY_ID = {
+    int(GameMode.DEMO): "demo",
+    int(GameMode.SURVIVAL): "survival",
+    int(GameMode.RUSH): "rush",
+    int(GameMode.QUESTS): "quests",
+    int(GameMode.TYPO): "typo",
+    int(GameMode.TUTORIAL): "tutorial",
+}
 _ENTITY_KIND_CODES = {
     "creature": 1,
     "projectile": 2,
@@ -265,10 +274,11 @@ def _run_output_path(
         counters[key] = idx
         name = f"{base}.quest_{int(quest_stage_major)}_{int(quest_stage_minor)}.run{idx}.cdt"
     else:
-        key = f"mode_{int(mode_id)}"
+        mode_label = str(_MODE_LABEL_BY_ID.get(int(mode_id), f"mode_{int(mode_id)}"))
+        key = mode_label
         idx = counters.get(key, 0) + 1
         counters[key] = idx
-        name = f"{base}.mode_{int(mode_id)}.run{idx}.cdt"
+        name = f"{base}.{mode_label}.run{idx}.cdt"
     return Path(output_dir) / name
 
 

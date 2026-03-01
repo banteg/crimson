@@ -8,7 +8,8 @@ tags:
 # Differential Playbook
 
 Use this when an agent is only given a new capture file (typically
-`artifacts/frida/share/gameplay_diff_capture.mode_*.cdt` or
+`artifacts/frida/share/gameplay_diff_capture.survival*.cdt`,
+`artifacts/frida/share/gameplay_diff_capture.rush*.cdt`, or
 `artifacts/frida/share/gameplay_diff_capture.quest_*_*.cdt`) and needs to
 continue cross-implementation investigation.
 
@@ -29,7 +30,7 @@ uv run scripts/frida/gameplay_diff_capture_host.py \
 Then check health of the finalized trace:
 
 ```bash
-uv run crimson dbg health analysis/frida/traces/gameplay_diff_capture.mode_<id>.run<k>.cdt
+uv run crimson dbg health analysis/frida/traces/gameplay_diff_capture.survival.run<k>.cdt
 ```
 
 Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA family.

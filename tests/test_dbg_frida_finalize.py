@@ -233,9 +233,9 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     assert len(result.traces) == 3
     names = sorted(trace.out_path.name for trace in result.traces)
     assert names == [
-        "capture.mode_1.run1.cdt",
-        "capture.mode_2.run1.cdt",
         "capture.quest_1_5.run1.cdt",
+        "capture.rush.run1.cdt",
+        "capture.survival.run1.cdt",
     ]
 
 

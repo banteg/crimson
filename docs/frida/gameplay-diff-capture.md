@@ -50,7 +50,7 @@ If you direct-attach, run the host once afterwards with `--raw-path` to finalize
 
 Finalizer emits one `.cdt` per run boundary:
 
-- mode runs: `gameplay_diff_capture.mode_<mode_id>.run<k>.cdt`
+- mode runs: `gameplay_diff_capture.survival.run<k>.cdt`, `gameplay_diff_capture.rush.run<k>.cdt` (unknown modes fall back to `mode_<id>`)
 - quest runs: `gameplay_diff_capture.quest_<major>_<minor>.run<k>.cdt`
 
 These traces are directly consumable by:
