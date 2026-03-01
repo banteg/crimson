@@ -19,6 +19,20 @@ def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
     return path
 
 
+def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
+    return {
+        "tick_index": int(tick_index),
+        "rng_state": 0,
+        "elapsed_ms": int(elapsed_ms),
+        "score_xp": 0,
+        "kills": 0,
+        "creature_count": 0,
+        "perk_pending": 0,
+        "players": [],
+        "bonus_timers": {},
+    }
+
+
 def test_finalize_frida_jsonl_to_traces_writes_trace_and_deletes_raw(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
@@ -40,18 +54,18 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_deletes_raw(tmp_path: P
             {
                 "event": "tick",
                 "run_id": 1,
-                "tick_index_global": 100,
-                "elapsed_ms": 0,
-                "dt_ms_i32": 16,
-                "mode_id": 1,
-                "phase_markers": ["a"],
-                "channels": {
-                    "checkpoint": {"elapsed_ms": 0},
-                    "entity_samples": {
-                        "creatures": [{"index": 5, "active": True}],
-                        "projectiles": [],
-                        "secondary_projectiles": [],
-                        "bonuses": [],
+                    "tick_index_global": 100,
+                    "elapsed_ms": 0,
+                    "dt_ms_i32": 16,
+                    "mode_id": 1,
+                    "phase_markers": ["a"],
+                    "channels": {
+                        "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0),
+                        "entity_samples": {
+                            "creatures": [{"index": 5, "active": True}],
+                            "projectiles": [],
+                            "secondary_projectiles": [],
+                            "bonuses": [],
                     },
                 },
             },
@@ -59,17 +73,17 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_deletes_raw(tmp_path: P
                 "event": "tick",
                 "run_id": 1,
                 "tick_index_global": 101,
-                "elapsed_ms": 16,
-                "dt_ms_i32": 16,
-                "mode_id": 1,
-                "phase_markers": [],
-                "channels": {
-                    "checkpoint": {"elapsed_ms": 16},
-                    "entity_samples": {
-                        "creatures": [{"index": 5, "active": False}],
-                        "projectiles": [],
-                        "secondary_projectiles": [],
-                        "bonuses": [],
+                    "elapsed_ms": 16,
+                    "dt_ms_i32": 16,
+                    "mode_id": 1,
+                    "phase_markers": [],
+                    "channels": {
+                        "checkpoint": _checkpoint_stub(tick_index=1, elapsed_ms=16),
+                        "entity_samples": {
+                            "creatures": [{"index": 5, "active": False}],
+                            "projectiles": [],
+                            "secondary_projectiles": [],
+                            "bonuses": [],
                     },
                 },
             },
@@ -125,7 +139,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
                 "dt_ms_i32": 16,
                 "mode_id": 1,
                 "phase_markers": [],
-                "channels": {"checkpoint": {"elapsed_ms": 0}},
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
             },
             {"event": "run_end", "run_id": 1},
         ],
@@ -155,7 +169,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
                 "dt_ms_i32": 33,
                 "mode_id": 2,
                 "phase_markers": [],
-                "channels": {"checkpoint": {"elapsed_ms": 33}},
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=33)},
             },
         ],
     )
@@ -186,7 +200,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 16,
                 "mode_id": 3,
                 "phase_markers": [],
-                "channels": {"checkpoint": {"elapsed_ms": 0}},
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
             },
             {"event": "run_end", "run_id": 1},
             {"event": "run_start", "run_id": 2, "mode_id": 2, "quest_stage_major": 1, "quest_stage_minor": 5},
@@ -197,7 +211,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 16,
                 "mode_id": 2,
                 "phase_markers": [],
-                "channels": {"checkpoint": {"elapsed_ms": 16}},
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=1, elapsed_ms=16)},
             },
             {"event": "run_end", "run_id": 2},
             {"event": "run_start", "run_id": 3, "mode_id": 1, "quest_stage_major": 1, "quest_stage_minor": 5},
@@ -208,7 +222,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "dt_ms_i32": 33,
                 "mode_id": 1,
                 "phase_markers": [],
-                "channels": {"checkpoint": {"elapsed_ms": 33}},
+                "channels": {"checkpoint": _checkpoint_stub(tick_index=2, elapsed_ms=33)},
             },
             {"event": "run_end", "run_id": 3},
             {"event": "session_end"},
@@ -223,3 +237,59 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
         "capture.mode_2.run1.cdt",
         "capture.quest_1_5.run1.cdt",
     ]
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            {"event": "session_start"},
+            {
+                "event": "run_start",
+                "run_id": 1,
+                "mode_id": 1,
+                "quest_stage_major": -1,
+                "quest_stage_minor": -1,
+            },
+            {
+                "event": "tick",
+                "run_id": 1,
+                "elapsed_ms": 0,
+                "dt_ms_i32": 16,
+                "mode_id": 1,
+                "phase_markers": [],
+                "channels": {
+                    "checkpoint": {
+                        "tick_index": 123,
+                        "rng_state": 777,
+                        "elapsed_ms": 0,
+                        "score_xp": 0,
+                        "kills": 0,
+                        "creature_count": 0,
+                        "perk_pending": 0,
+                        "players": [],
+                        "bonus_timers": {},
+                        "state_hash": "",
+                        "command_hash": "",
+                        "rng_marks": {
+                            "rand_calls": 3,
+                            "rand_last": 99,
+                            "rand_hash": "0xdeadbeef",
+                            "rand_head": [],
+                        },
+                    },
+                    "rng_marks": {
+                        "rand_calls": 3,
+                        "rand_last": 99,
+                        "rand_seq_first": 1,
+                        "rand_seq_last": 3,
+                    },
+                },
+            },
+            {"event": "run_end", "run_id": 1},
+            {"event": "session_end"},
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="valid ReplayCheckpoint payload"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

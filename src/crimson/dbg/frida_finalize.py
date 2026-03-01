@@ -9,6 +9,7 @@ from typing import BinaryIO
 
 import msgspec
 
+from ..replay.checkpoints import ReplayCheckpoint
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace_iter
 
@@ -205,6 +206,22 @@ def _normalize_entity_samples(
             active_fn=lambda payload: _as_int_default(payload.get("state"), default=0) != 0,
         ),
     }
+
+
+def _validate_checkpoint_channel(
+    *,
+    channels: dict[str, object],
+    field: str,
+) -> None:
+    checkpoint_obj = channels.get("checkpoint")
+    if not isinstance(checkpoint_obj, dict):
+        return
+    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
+    channels["checkpoint"] = checkpoint
+    try:
+        msgspec.convert(checkpoint, type=ReplayCheckpoint)
+    except (msgspec.ValidationError, TypeError, ValueError) as exc:
+        raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
 
 
 def _tick_iter_from_spool(path: Path):
@@ -436,6 +453,10 @@ def finalize_frida_jsonl_to_traces(
                     )
                     channels = _as_dict(
                         row.get("channels"),
+                        field=f"{raw_path}.lines[{line_no}].channels",
+                    )
+                    _validate_checkpoint_channel(
+                        channels=channels,
                         field=f"{raw_path}.lines[{line_no}].channels",
                     )
                     _normalize_entity_samples(run=active_run, channels=channels)

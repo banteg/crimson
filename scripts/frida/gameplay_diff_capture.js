@@ -765,6 +765,22 @@ function rngMarksFromCheckpoint(checkpoint) {
   };
 }
 
+function checkpointRngMarksFromTick(tick) {
+  const rng = tick && tick.rng ? tick.rng : {};
+  return {
+    rand_calls: intOr(rng.calls, 0),
+    rand_last: intOr(rng.last_value, -1),
+    rand_seq_first: intOr(rng.first_seq, -1),
+    rand_seq_last: intOr(rng.last_seq, -1),
+    rand_seed_epoch_enter: intOr(rng.seed_epoch_enter, -1),
+    rand_seed_epoch_last: intOr(rng.seed_epoch_last, -1),
+    rand_outside_before_calls: intOr(rng.outside_before_calls, 0),
+    rand_outside_before_dropped: intOr(rng.outside_before_dropped, 0),
+    rand_mirror_mismatch_total: intOr(outState.rngMirrorMismatchCount, 0),
+    rand_mirror_unknown_total: intOr(outState.rngMirrorUnknownCalls, 0),
+  };
+}
+
 function entitySamplesFromTick(tickObj) {
   const samples = tickObj && tickObj.samples ? tickObj.samples : {};
   return {
@@ -3218,23 +3234,7 @@ function finalizeTick() {
         : [],
     },
     bonus_timers: bonusTimers,
-    rng_marks: {
-      rand_calls: tick.rng.calls,
-      rand_hash: toHex(tick.rng.hash_state >>> 0, 8),
-      rand_last: tick.rng.last_value,
-      rand_head: tick.rng.head,
-      rand_callers: rngCallers,
-      rand_caller_overflow: tick.rng.caller_overflow,
-      rand_seq_first: tick.rng.first_seq,
-      rand_seq_last: tick.rng.last_seq,
-      rand_seed_epoch_enter: tick.rng.seed_epoch_enter,
-      rand_seed_epoch_last: tick.rng.seed_epoch_last,
-      rand_outside_before_calls: tick.rng.outside_before_calls,
-      rand_outside_before_dropped: tick.rng.outside_before_dropped,
-      rand_outside_before_head: tick.rng.outside_before_head,
-      rand_mirror_mismatch_total: outState.rngMirrorMismatchCount,
-      rand_mirror_unknown_total: outState.rngMirrorUnknownCalls,
-    },
+    rng_marks: checkpointRngMarksFromTick(tick),
     deaths: [UNKNOWN_DEATH],
     perk: perkSnapshot,
     events: eventSummary,
