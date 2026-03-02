@@ -10,6 +10,7 @@ from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
@@ -22,7 +23,6 @@ from ..types import (
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
-    _EffectsLike,
     _rng_zero,
 )
 from .behaviors import (
@@ -202,7 +202,7 @@ class ProjectilePool:
         if rng is None:
             rng = _rng_zero
 
-        effects: _EffectsLike | None = None
+        effects: EffectPool | None = None
         sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:
             effects = runtime_state.effects

@@ -8,43 +8,15 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
+from ..effects import EffectPool
 from ..owner_ref import OwnerRef
-
-
-class _RngLike(Protocol):
-    def rand(self) -> int: ...
 
 
 class _BonusesLike(Protocol):
     freeze: float
-
-
-class _EffectsLike(Protocol):
-    def spawn(
-        self,
-        *,
-        effect_id: int,
-        pos: Vec2,
-        vel: Vec2,
-        rotation: float,
-        scale: float,
-        half_width: float,
-        half_height: float,
-        age: float,
-        lifetime: float,
-        flags: int,
-        color: RGBA,
-        rotation_step: float,
-        scale_step: float,
-        detail_preset: int,
-    ) -> int | None: ...
-
-    def spawn_freeze_shard(self, *, pos: Vec2, angle: float, rand: Callable[[], int], detail_preset: int) -> None: ...
-
-    def spawn_explosion_burst(self, *, pos: Vec2, scale: float, rand: Callable[[], int], detail_preset: int) -> None: ...
-
 
 class _SpriteEffectsLike(Protocol):
     def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int: ...
@@ -57,13 +29,13 @@ class ProjectileRuntimeState(Protocol):
     shock_chain_projectile_id: int
 
     @property
-    def effects(self) -> _EffectsLike: ...
+    def effects(self) -> EffectPool: ...
 
     @property
     def sprite_effects(self) -> _SpriteEffectsLike: ...
 
     @property
-    def rng(self) -> _RngLike: ...
+    def rng(self) -> CrandLike: ...
 
     @property
     def bonuses(self) -> _BonusesLike: ...
@@ -139,7 +111,10 @@ def _rng_zero() -> int:
     return 0
 
 
-CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
+class CreatureDamageApplier(Protocol):
+    def __call__(self, creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef, /) -> None: ...
+
+
 SecondaryDetonationKillHandler = Callable[[int], None]
 
 
@@ -204,7 +179,5 @@ __all__ = [
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
     "_CREATURE_LIFECYCLE_ALIVE",
-    "_EffectsLike",
     "_rng_zero",
-    "_SpriteEffectsLike",
 ]

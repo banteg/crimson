@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
+from ...effects import EffectPool
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -25,7 +26,6 @@ from ..types import (
     Projectile,
     ProjectileRuntimeState,
     ProjectileTypeId,
-    _EffectsLike,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for
 
@@ -42,7 +42,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     detail_preset: int
     rng: Callable[[], int]
     runtime_state: ProjectileRuntimeState | None
-    effects: _EffectsLike | None
+    effects: EffectPool | None
     sfx_queue: MutableSequence[str] | None
     apply_creature_damage: CreatureDamageApplier | None
 

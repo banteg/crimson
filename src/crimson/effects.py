@@ -68,8 +68,12 @@ class _CreatureForParticles(Protocol):
     tint: RGBA
 
 
-CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
-CreatureKillHandler = Callable[[int, OwnerRef], None]
+class CreatureDamageApplier(Protocol):
+    def __call__(self, creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef, /) -> None: ...
+
+
+class CreatureKillHandler(Protocol):
+    def __call__(self, creature_index: int, owner: OwnerRef, /) -> None: ...
 
 
 class Particle(msgspec.Struct):

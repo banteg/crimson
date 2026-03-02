@@ -9,6 +9,7 @@ from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...effects import EffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
@@ -20,7 +21,6 @@ from ..types import (
     SecondaryDetonationKillHandler,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
-    _EffectsLike,
     _rng_zero,
     _SpriteEffectsLike,
 )
@@ -144,7 +144,7 @@ class SecondaryProjectilePool:
 
         rand = _rng_zero
         freeze_active = False
-        effects: _EffectsLike | None = None
+        effects: EffectPool | None = None
         sprite_effects: _SpriteEffectsLike | None = None
         sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:
