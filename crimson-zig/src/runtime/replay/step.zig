@@ -159,7 +159,14 @@ pub fn stepTick(
     tick_events: []const replay_codec.ReplayEvent,
     dt_tick: f32,
     options: StepOptions,
-) anyerror!StepResult {
+) (events.EventError ||
+    creatures_mod.CreatureRuntimeError ||
+    bonus_runtime.BonusRuntimeError ||
+    weapons_runtime.WeaponRuntimeError ||
+    error{
+        UnsupportedDemoMode,
+        UnsupportedPreserveBugs,
+    })!StepResult {
     var frame: StepFrame = .{
         .tick_index = tick_index,
         .dt_tick = narrowF32(dt_tick),
