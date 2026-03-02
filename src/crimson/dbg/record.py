@@ -11,9 +11,10 @@ import msgspec
 
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
-from ..replay.types import WEAPON_USAGE_COUNT, Replay
+from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
 from ..sim.world_state import WorldState
+from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status
 from .canonical_channels import (
     BonusEntitySample,
     CreatureEntitySample,
@@ -214,19 +215,7 @@ def _status_snapshot_from_world(world: WorldState) -> SnapshotStatus:
     gameplay = world.state
     if gameplay.status is None:
         raise ValueError("gameplay status missing while recording trace")
-    raw_counts = gameplay.status.data["weapon_usage_counts"]
-    counts = [int(value) for value in list(raw_counts)]
-    expected_usage_count = int(WEAPON_USAGE_COUNT)
-    if len(counts) != expected_usage_count:
-        raise ValueError(
-            "gameplay status weapon_usage_counts length mismatch: "
-            f"expected {expected_usage_count}, got {len(counts)}",
-        )
-    return SnapshotStatus(
-        quest_unlock_index=int(gameplay.status.quest_unlock_index),
-        quest_unlock_index_full=int(gameplay.status.quest_unlock_index_full),
-        weapon_usage_counts=counts,
-    )
+    return debug_snapshot_from_progress_status(progress_status_from_game_status(gameplay.status))
 
 
 def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnapshot:

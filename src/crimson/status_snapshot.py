@@ -17,6 +17,7 @@ from .persistence.save_status import (
 from .replay.types import ReplayStatusSnapshot
 
 if TYPE_CHECKING:
+    from .dbg.canonical_channels import SnapshotStatus
     from .net.lockstep_protocol import StatusSnapshot
 
 _ZERO_WEAPON_USAGE_COUNTS: tuple[int, ...] = tuple(0 for _ in range(int(WEAPON_USAGE_COUNT)))
@@ -157,6 +158,26 @@ def replay_status_from_progress(snapshot: ProgressStatusSnapshot) -> ReplayStatu
         quest_unlock_index=int(snapshot.quest_unlock_index) & 0xFFFF,
         quest_unlock_index_full=int(snapshot.quest_unlock_index_full) & 0xFFFF,
         weapon_usage_counts=tuple(snapshot.weapon_usage_counts),
+    )
+
+
+def progress_status_from_debug_snapshot(snapshot: SnapshotStatus | None) -> ProgressStatusSnapshot:
+    if snapshot is None:
+        return ProgressStatusSnapshot()
+    return ProgressStatusSnapshot(
+        quest_unlock_index=_mask_u16(snapshot.quest_unlock_index),
+        quest_unlock_index_full=_mask_u16(snapshot.quest_unlock_index_full),
+        weapon_usage_counts=_normalize_u32_seq(snapshot.weapon_usage_counts, size=int(WEAPON_USAGE_COUNT)),
+    )
+
+
+def debug_snapshot_from_progress_status(snapshot: ProgressStatusSnapshot) -> SnapshotStatus:
+    from .dbg.canonical_channels import SnapshotStatus
+
+    return SnapshotStatus(
+        quest_unlock_index=int(snapshot.quest_unlock_index) & 0xFFFF,
+        quest_unlock_index_full=int(snapshot.quest_unlock_index_full) & 0xFFFF,
+        weapon_usage_counts=list(snapshot.weapon_usage_counts),
     )
 
 

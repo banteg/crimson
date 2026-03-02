@@ -36,7 +36,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
-from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -49,11 +49,11 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSession
+from ..status_snapshot import progress_status_from_game_status, replay_status_from_progress
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -370,16 +370,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        weapon_usage_counts = normalize_weapon_usage_counts(
-            status.data.get("weapon_usage_counts") if status is not None else None,
-        )
-        status_snapshot = ReplayStatusSnapshot(
-            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
-            quest_unlock_index_full=int(status.quest_unlock_index_full)
-            if status is not None
-            else 0,
-            weapon_usage_counts=weapon_usage_counts,
-        )
+        status_snapshot = replay_status_from_progress(progress_status_from_game_status(status))
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
             self._replay_recorder = ReplayRecorder(

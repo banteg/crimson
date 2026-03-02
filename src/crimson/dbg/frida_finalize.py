@@ -17,6 +17,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayHeader, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
+from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .rng import canonical_rng_marks
 from .schema import (
@@ -271,18 +272,14 @@ def _replay_tick_inputs_from_row(
 
 def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
     status = channels.sim_state.gameplay.status
-    counts = [int(value) for value in status.weapon_usage_counts]
     expected_usage_count = int(WEAPON_USAGE_COUNT)
-    if len(counts) != expected_usage_count:
+    if len(status.weapon_usage_counts) != expected_usage_count:
         raise FridaFinalizeError(
             "sim_state.gameplay.status.weapon_usage_counts length mismatch: "
-            f"expected {expected_usage_count}, got {len(counts)}",
+            f"expected {expected_usage_count}, got {len(status.weapon_usage_counts)}",
         )
-    return ReplayStatusSnapshot(
-        quest_unlock_index=int(status.quest_unlock_index),
-        quest_unlock_index_full=int(status.quest_unlock_index_full),
-        weapon_usage_counts=tuple(int(value) for value in counts),
-    )
+    progress = progress_status_from_debug_snapshot(status)
+    return replay_status_from_progress(progress)
 
 
 def _tick_iter_from_spool(path: Path):

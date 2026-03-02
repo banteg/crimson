@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.dbg.canonical_channels import SnapshotStatus
 from crimson.net.deterministic_status import hash_status_snapshot
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, UNKNOWN_TAIL_SIZE, WEAPON_USAGE_COUNT, GameStatus
 from crimson.status_snapshot import (
     ProgressStatusSnapshot,
+    debug_snapshot_from_progress_status,
     game_status_from_progress_status,
     hash_progress_status,
     lockstep_status_from_progress,
+    progress_status_from_debug_snapshot,
     progress_status_from_game_status,
     progress_status_from_lockstep,
     progress_status_from_replay,
@@ -123,3 +126,35 @@ def test_progress_hash_matches_lockstep_hash() -> None:
     )
     wire = lockstep_status_from_progress(snapshot)
     assert hash_progress_status(snapshot) == hash_status_snapshot(wire)
+
+
+def test_debug_progress_adapter_drops_non_debug_fields() -> None:
+    snapshot = ProgressStatusSnapshot(
+        quest_unlock_index=2,
+        quest_unlock_index_full=4,
+        weapon_usage_counts=tuple([7] * int(WEAPON_USAGE_COUNT)),
+        quest_play_counts=tuple([8] * int(QUEST_PLAY_COUNT)),
+        mode_play_survival=11,
+        game_sequence_id=22,
+    )
+    debug_snapshot = debug_snapshot_from_progress_status(snapshot)
+    restored = progress_status_from_debug_snapshot(debug_snapshot)
+
+    assert restored.quest_unlock_index == snapshot.quest_unlock_index
+    assert restored.quest_unlock_index_full == snapshot.quest_unlock_index_full
+    assert restored.weapon_usage_counts == snapshot.weapon_usage_counts
+    assert restored.quest_play_counts == tuple(0 for _ in range(int(QUEST_PLAY_COUNT)))
+    assert restored.mode_play_survival == 0
+    assert restored.game_sequence_id == 0
+
+
+def test_progress_status_from_debug_snapshot_normalizes_counts() -> None:
+    debug_snapshot = SnapshotStatus(
+        quest_unlock_index=5,
+        quest_unlock_index_full=9,
+        weapon_usage_counts=[1, -1],
+    )
+    restored = progress_status_from_debug_snapshot(debug_snapshot)
+    assert len(restored.weapon_usage_counts) == int(WEAPON_USAGE_COUNT)
+    assert restored.weapon_usage_counts[0] == 1
+    assert restored.weapon_usage_counts[1] == 0xFFFFFFFF
