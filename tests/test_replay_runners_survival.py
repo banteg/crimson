@@ -128,6 +128,30 @@ def test_survival_runner_trace_rng_captures_presentation_marks() -> None:
     assert checkpoints[0].rng_marks["ps_draws_total"] >= 0
 
 
+def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
+    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
+    replay = rec.finish()
+    rows_by_tick: dict[int, list[tuple[int, int, int]]] = {}
+
+    def _observer(tick_index: int, draws: list[tuple[int, int, int]]) -> None:
+        rows_by_tick[int(tick_index)] = list(draws)
+
+    with pytest.warns(ReplayGameVersionWarning):
+        run_survival_replay(
+            replay,
+            strict_events=False,
+            trace_rng=True,
+            tick_rng_trace_observer=_observer,
+        )
+
+    assert sorted(rows_by_tick.keys()) == [0, 1, 2]
+    for draws in rows_by_tick.values():
+        for state_before_u32, value_15, state_after_u32 in draws:
+            expected_after = (int(state_before_u32) * 214013 + 2531011) & 0xFFFFFFFF
+            assert int(state_after_u32) == int(expected_after)
+            assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
+
+
 def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234, game_version="0.0.0")
     rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)

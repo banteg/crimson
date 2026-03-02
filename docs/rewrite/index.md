@@ -121,6 +121,7 @@ See also:
 - [Float parity policy](float-parity-policy.md)
 - [Float expression precision map](float-expression-precision-map.md)
 - [Beam rendering (classic + RTX)](beam-rendering.md)
+- [CDT trace format (rewrite tooling)](cdt-trace-format.md)
 - [Terrain (rewrite)](terrain.md)
 - [Perks architecture (rewrite)](perks-architecture.md)
 - [Original bugs (and rewrite fixes)](original-bugs.md)

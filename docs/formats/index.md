@@ -1,11 +1,12 @@
 ---
 tags:
-  - status-parity
+  - reverse-engineering
+  - formats
 ---
 
-# File formats
+# Original file formats
 
-Crimsonland uses custom container and texture formats for game assets.
+These pages document original Crimsonland (Windows binary) file and asset formats.
 
 ## Formats
 

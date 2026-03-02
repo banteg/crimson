@@ -40,10 +40,10 @@ Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA 
 ```bash
 uv run crimson dbg record \
   analysis/frida/traces/gameplay_diff_capture.<run>.crd \
-  --impl zig \
-  --out analysis/frida/traces/gameplay_diff_capture.<run>.zig.cdt
+  --out analysis/frida/traces/gameplay_diff_capture.<run>.py.cdt
 ```
-*(Use `--impl python` to test the Python path).*
+
+Record Zig traces from Zig-native tooling, then compare `.cdt` artifacts directly.
 
 ## 3) Decide session bookkeeping
 
@@ -64,16 +64,12 @@ anchors, not exact absolute tick equality across different recordings.
 
 ## 4) Baseline triage commands
 
-Unlike the legacy process, `dbg` diffing is extremely fast because playback and difﬁng are decoupled. Run the standard trace-based reports:
-
-Find the first structural divergence depending on the exact policy (`original_vs_python_default` vs `python_vs_zig_core`):
+Unlike the legacy process, `dbg` diffing is extremely fast because playback and difﬁng are decoupled. Run the strict trace-based reports:
 
 ```bash
 uv run crimson dbg diff \
   analysis/frida/traces/capture_<sha8>.cdt \
-  analysis/frida/traces/capture_<sha8>_zig.cdt \
-  --policy python_vs_zig_core \
-  --float-abs-tol 1e-3
+  analysis/frida/traces/capture_<sha8>_zig.cdt
 ```
 
 Extract a focused trace repro bundle spanning across the first divergence point:
@@ -82,7 +78,6 @@ Extract a focused trace repro bundle spanning across the first divergence point:
 uv run crimson dbg bisect \
   analysis/frida/traces/capture_<sha8>.cdt \
   analysis/frida/traces/capture_<sha8>_zig.cdt \
-  --policy python_vs_zig_core \
   --window-before 12 \
   --window-after 6 \
   --out analysis/frida/traces/capture_<sha8>_repro.cdt
@@ -94,8 +89,7 @@ For surgical detail at exactly the focus mismatch tick, inspect the state across
 uv run crimson dbg focus \
   analysis/frida/traces/capture_<sha8>.cdt \
   analysis/frida/traces/capture_<sha8>_zig.cdt \
-  --tick <focus_tick> \
-  --policy python_vs_zig_core
+  --tick <focus_tick>
 ```
 
 For visual context and movement trajectory overlaps, use the visualizer:

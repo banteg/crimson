@@ -86,31 +86,11 @@ def _checkpoint_to_obj(
     return obj
 
 
-def _path_matches_ignored_prefix(path: str, prefixes: Sequence[str]) -> bool:
-    for prefix in prefixes:
-        target = f"root.{prefix}"
-        if path == target:
-            return True
-        if path.startswith(f"{target}."):
-            return True
-        if path.startswith(f"{target}["):
-            return True
-    return False
-
-
-def _normalize_deepdiff_payload(
-    raw_payload: dict[str, object],
-    *,
-    ignore_field_prefixes: Sequence[str],
-    max_diffs: int | None,
-) -> tuple[dict[str, object], int]:
+def _normalize_deepdiff_payload(raw_payload: dict[str, object]) -> tuple[dict[str, object], int]:
     out: dict[str, object] = {}
     total = 0
-    limit = (None if max_diffs is None else max(1, int(max_diffs)))
 
     for category in _DEEPDIFF_CATEGORY_ORDER:
-        if limit is not None and total >= limit:
-            break
         payload = raw_payload.get(category)
         if payload is None:
             continue
@@ -122,10 +102,6 @@ def _normalize_deepdiff_payload(
                     if not isinstance(key, str):
                         raise TypeError(f"deepdiff dict category {category} had non-string key")
                     path = str(key)
-                    if limit is not None and total >= limit:
-                        break
-                    if _path_matches_ignored_prefix(path, ignore_field_prefixes):
-                        continue
                     row = mapping[key]
                     category_out[path] = row
                     total += 1
@@ -134,13 +110,9 @@ def _normalize_deepdiff_payload(
             case list() as paths:
                 category_out_list: list[str] = []
                 for path in paths:
-                    if limit is not None and total >= limit:
-                        break
                     if not isinstance(path, str):
                         raise TypeError(f"deepdiff list category {category} had non-string path value")
                     path_text = str(path)
-                    if _path_matches_ignored_prefix(path_text, ignore_field_prefixes):
-                        continue
                     category_out_list.append(path_text)
                     total += 1
                 if category_out_list:
@@ -154,17 +126,12 @@ def _normalize_deepdiff_payload(
 def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
-    *,
-    ignore_field_prefixes: Sequence[str] = (),
-    max_diffs: int | None = None,
-    float_abs_tol: float = 0.0,
 ) -> CheckpointDeepDiff | None:
     deep = DeepDiff(
         expected,
         actual,
         ignore_order=False,
         verbose_level=2,
-        math_epsilon=max(0.0, float(float_abs_tol)),
     )
 
     raw_json = json.loads(str(deep.to_json()))
@@ -172,11 +139,7 @@ def checkpoint_deepdiff(
         raw_payload = cast("dict[str, object]", raw_json)
     else:
         raise TypeError("deepdiff payload must decode to object")
-    payload, diff_count = _normalize_deepdiff_payload(
-        raw_payload,
-        ignore_field_prefixes=tuple(str(prefix) for prefix in ignore_field_prefixes),
-        max_diffs=max_diffs,
-    )
+    payload, diff_count = _normalize_deepdiff_payload(raw_payload)
     if int(diff_count) <= 0:
         return None
 

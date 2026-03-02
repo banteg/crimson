@@ -11,7 +11,7 @@ from .channel_helpers import (
     rng_stream_channel_required,
     sim_state_channel_required,
 )
-from .checkpoint_diff import CheckpointDeepDiff, checkpoint_deepdiff
+from .checkpoint_diff import checkpoint_deepdiff
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS_V3,
@@ -26,7 +26,6 @@ from .trace import TraceError, TraceReader, write_trace
 class TraceMismatch(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
-    checkpoint_diff: CheckpointDeepDiff | None = None
     detail: dict[str, object] | None = None
 
 
@@ -52,12 +51,17 @@ class _TickPair(msgspec.Struct, frozen=True):
     actual_row: TickRecord | None
 
 
+def _tick_mismatch_row(*, kind: str, channel: str, detail: dict[str, object] | None) -> dict[str, object]:
+    return {
+        "kind": str(kind),
+        "channel": str(channel),
+        "detail": (None if detail is None else msgspec.to_builtins(detail)),
+    }
+
+
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
-    float_abs_tol: float,
-    max_field_diffs: int | None,
-    ignore_field_prefixes: tuple[str, ...],
     tick_end: int | None = None,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
@@ -74,35 +78,33 @@ def _first_mismatch(
                     tick_index=tick,
                 ),
             )
+        tick_mismatches: list[dict[str, object]] = []
+
         expected = checkpoint_channel_required(pair.expected_row)
         actual = checkpoint_channel_required(pair.actual_row)
         exp_rng_stream = rng_stream_channel_required(pair.expected_row)
         act_rng_stream = rng_stream_channel_required(pair.actual_row)
 
-        checkpoint_diff = checkpoint_deepdiff(
-            expected,
-            actual,
-            ignore_field_prefixes=ignore_field_prefixes,
-            max_diffs=max_field_diffs,
-            float_abs_tol=float_abs_tol,
-        )
+        checkpoint_diff = checkpoint_deepdiff(expected, actual)
         if checkpoint_diff is not None:
-            return (
-                checked_count,
-                TraceMismatch(
+            tick_mismatches.append(
+                _tick_mismatch_row(
                     kind="checkpoint_field_mismatch",
-                    tick_index=tick,
-                    checkpoint_diff=checkpoint_diff,
+                    channel="checkpoint",
+                    detail={
+                        "diff_count": int(checkpoint_diff.diff_count),
+                        "payload": msgspec.to_builtins(checkpoint_diff.payload),
+                        "pretty": str(checkpoint_diff.pretty),
+                    },
                 ),
             )
 
         rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
         if not rng_ok:
-            return (
-                checked_count,
-                TraceMismatch(
+            tick_mismatches.append(
+                _tick_mismatch_row(
                     kind="rng_stream_mismatch",
-                    tick_index=tick,
+                    channel="rng_stream",
                     detail=rng_detail,
                 ),
             )
@@ -114,11 +116,10 @@ def _first_mismatch(
             actual_sim_state,
         )
         if not sim_ok:
-            return (
-                checked_count,
-                TraceMismatch(
+            tick_mismatches.append(
+                _tick_mismatch_row(
                     kind="sim_state_mismatch",
-                    tick_index=tick,
+                    channel="sim_state",
                     detail=sim_detail,
                 ),
             )
@@ -130,12 +131,24 @@ def _first_mismatch(
             actual_entity_samples,
         )
         if not entities_ok:
+            tick_mismatches.append(
+                _tick_mismatch_row(
+                    kind="entity_sample_mismatch",
+                    channel="entity_samples",
+                    detail=entities_detail,
+                ),
+            )
+
+        if tick_mismatches:
             return (
                 checked_count,
                 TraceMismatch(
-                    kind="entity_sample_mismatch",
+                    kind="tick_mismatch",
                     tick_index=tick,
-                    detail=entities_detail,
+                    detail={
+                        "mismatch_count": len(tick_mismatches),
+                        "mismatches": tick_mismatches,
+                    },
                 ),
             )
 
@@ -170,9 +183,6 @@ def diff_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    float_abs_tol: float = 0.0,
-    max_field_diffs: int | None = None,
-    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
 ) -> TraceDiffReport:
@@ -206,9 +216,6 @@ def diff_traces(
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
-                float_abs_tol=float(float_abs_tol),
-                max_field_diffs=max_field_diffs,
-                ignore_field_prefixes=tuple(ignore_field_prefixes),
                 tick_end=tick_end,
             )
         except TraceError as exc:
@@ -226,9 +233,6 @@ def bisect_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    float_abs_tol: float = 0.0,
-    max_field_diffs: int | None = None,
-    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
     window_before: int = 12,
@@ -255,9 +259,6 @@ def bisect_traces(
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
-                float_abs_tol=float(float_abs_tol),
-                max_field_diffs=max_field_diffs,
-                ignore_field_prefixes=tuple(ignore_field_prefixes),
                 tick_end=end_tick_bound,
             )
         except TraceError as exc:
@@ -353,19 +354,9 @@ def bisect_traces(
 def mismatch_to_json(mismatch: TraceMismatch | None) -> dict[str, object] | None:
     if mismatch is None:
         return None
-    checkpoint_diff = mismatch.checkpoint_diff
     return {
         "kind": mismatch.kind,
         "tick_index": mismatch.tick_index,
-        "checkpoint_diff": (
-            None
-            if checkpoint_diff is None
-            else {
-                "diff_count": int(checkpoint_diff.diff_count),
-                "payload": msgspec.to_builtins(checkpoint_diff.payload),
-                "pretty": str(checkpoint_diff.pretty),
-            }
-        ),
         "detail": (None if mismatch.detail is None else msgspec.to_builtins(mismatch.detail)),
     }
 

@@ -31,7 +31,7 @@ Last reviewed: **2026-02-24**
   - `uv run crimson replay diff-checkpoints <expected> <actual>`
 - Original/capture differential tooling (via structural traces):
   - `uv run scripts/frida/gameplay_diff_capture_host.py --raw-path <capture.jsonl> --output-dir <dir>`
-  - `uv run crimson dbg record <replay.crd> --out <trace.cdt> --impl <python|zig>`
+  - `uv run crimson dbg record <replay.crd> --out <trace.cdt>`
   - `uv run crimson dbg health <trace.cdt>`
   - `uv run crimson dbg diff <expected.cdt> <actual.cdt>`
   - `uv run crimson dbg bisect <expected.cdt> <actual.cdt>`

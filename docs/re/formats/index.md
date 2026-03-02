@@ -6,7 +6,7 @@ tags:
 
 # Formats
 
-File and asset format reverse engineering used by extraction and rendering parity.
+Original game file and asset format reverse engineering used by extraction and rendering parity.
 
 - [Formats overview](../../formats/index.md)
 - [PAQ](../../formats/paq.md)
