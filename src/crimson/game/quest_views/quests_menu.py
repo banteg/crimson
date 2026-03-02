@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from crimson.quest_level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -403,18 +404,19 @@ class QuestsMenuView:
         unlock = int(status.quest_unlock_index)
         if config.hardcore:
             unlock = int(status.quest_unlock_index_full)
-        global_index = (int(stage) - 1) * 10 + int(row)
-        return unlock >= global_index
+        level = QuestLevel.from_stage_row(stage, row)
+        return unlock >= int(level.global_index)
 
     def _try_start_quest(self, stage: int, row: int) -> None:
         if not self._quest_unlocked(stage, row):
             return
-        level = f"{int(stage)}.{int(row) + 1}"
-        self.state.pending_quest_level = level
+        level = QuestLevel.from_stage_row(stage, row)
+        level_text = level.to_string()
+        self.state.pending_quest_level = level_text
         self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level = level
-        self.state.config.quest_stage_major = int(stage)
-        self.state.config.quest_stage_minor = int(row) + 1
+        self.state.config.quest_level = level_text
+        self.state.config.quest_stage_major = int(level.major)
+        self.state.config.quest_stage_minor = int(level.minor)
         self._dirty = True
         self._begin_close_transition("start_quest")
 
@@ -448,14 +450,12 @@ class QuestsMenuView:
         #   the decoded payload.
         #
         # We emulate this layout so the debug `F1` overlay matches the classic build.
-        global_index = (int(stage) - 1) * 10 + int(row)
-        if not (0 <= global_index < 50):
-            return None
-        count_index = global_index + 10
+        level = QuestLevel.from_stage_row(stage, row)
+        global_index = int(level.global_index)
 
         status = self.state.status
-        games_idx = 1 + count_index
-        completed_idx = 41 + count_index
+        games_idx = int(level.games_counter_index)
+        completed_idx = int(level.completed_counter_index)
         try:
             games = int(status.quest_play_count(games_idx))
         except IndexError:
@@ -467,7 +467,7 @@ class QuestsMenuView:
             # Stage-5 completed reads into trailing fields (and beyond).
             if int(stage) != 5:
                 return None
-            tail_slot = int(count_index) - 50
+            tail_slot = int(global_index) - 40
             if tail_slot == 0:
                 completed = int(status.mode_play_count("survival"))
             elif tail_slot == 1:

@@ -6,8 +6,8 @@ import msgspec
 
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..persistence.save_status import WEAPON_USAGE_COUNT
 from ..sim.state_types import GameplayState, PlayerState, WeaponSlot
+from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
@@ -57,13 +57,10 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
     weapon_id = WeaponId(weapon_id)
-    if (
-        state is not None
-        and state.status is not None
-        and not state.demo_mode_active
-        and 0 <= int(weapon_id) < WEAPON_USAGE_COUNT
-    ):
-        state.status.increment_weapon_usage(int(weapon_id))
+    if state is not None and state.status is not None and not state.demo_mode_active:
+        usage_slot = weapon_usage_slot_for_weapon_id(int(weapon_id))
+        if usage_slot is not None:
+            state.status.increment_weapon_usage_slot(usage_slot)
 
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id

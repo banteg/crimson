@@ -4,6 +4,7 @@ from typing import Protocol
 
 import msgspec
 
+from crimson.quest_level import QuestLevel
 from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId
@@ -33,12 +34,11 @@ class QuestBuilder(Protocol):
 
 
 def parse_level(level: str) -> tuple[int, int]:
-    major_text, minor_text = level.split(".", 1)
-    return int(major_text), int(minor_text)
+    return QuestLevel.parse(level).to_stage_pair()
 
 
 def format_level(major: int, minor: int) -> str:
-    return f"{int(major)}.{int(minor)}"
+    return QuestLevel.from_parts(major, minor).to_string()
 
 
 def _level_parts(level_or_major: str | int, minor: int | None = None) -> tuple[int, int]:

@@ -8,6 +8,7 @@ from typing import TypeAlias
 
 import msgspec
 
+from crimson.quest_level import QuestLevel
 from grim.rand import CrtRand, RngTraceSink
 
 from ...effects import FxQueue, FxQueueRotated
@@ -56,9 +57,9 @@ TickBeginObserver: TypeAlias = Callable[[int, WorldState, float, list[object], l
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
-    quest_level = str(replay.header.quest_level)
-    if quest_level:
-        return str(quest_level)
+    quest_level = QuestLevel.try_parse(str(replay.header.quest_level))
+    if quest_level is not None:
+        return quest_level.to_string()
 
     # Legacy replays (e.g. capture-derived) may not encode the quest id. Classic quest RNG
     # seeding uses `major*100 + minor`, so we can often recover the level from `header.seed`.
@@ -66,7 +67,7 @@ def resolve_quest_level_from_replay(replay: Replay) -> str:
     major = seed // 100
     minor = seed % 100
     if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
-        return f"{major}.{minor}"
+        return QuestLevel.from_parts(major, minor).to_string()
     return ""
 
 
@@ -522,10 +523,8 @@ class PlaybackDriver:
                     quest_config,
                 )
 
-                if quest_stage_major is not None:
-                    self.world.state.quest_stage_major = int(quest_stage_major)
-                if quest_stage_minor is not None:
-                    self.world.state.quest_stage_minor = int(quest_stage_minor)
+                if quest_stage_major is not None and quest_stage_minor is not None:
+                    self.world.state.quest_level = QuestLevel.from_parts(quest_stage_major, quest_stage_minor)
 
                 weapon_id = start_weapon_id or WeaponId.PISTOL
                 if weapon_id <= WeaponId.NONE:

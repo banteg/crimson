@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.quest_level import QuestLevel
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -88,9 +89,7 @@ def draw_main_panel(
         if arrow is not None:
             major = max(1, min(5, int(quest_major)))
             minor = max(1, min(10, int(quest_minor)))
-            global_index = (major - 1) * 10 + (minor - 1)
-            if global_index < 0:
-                global_index = 0
+            global_index = int(QuestLevel.from_parts(major, minor).global_index)
             unlock = (
                 int(view.state.status.quest_unlock_index_full)
                 if view.state.config.hardcore

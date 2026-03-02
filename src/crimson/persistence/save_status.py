@@ -7,12 +7,14 @@ from pathlib import Path
 import msgspec
 from construct import Array, Bytes, ConstructError, Int16ul, Int32ul, Struct
 
+from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT, weapon_usage_slot_for_weapon_id
+
 GAME_CFG_NAME = "game.cfg"
 
 BLOB_SIZE = 0x268
 FILE_SIZE = BLOB_SIZE + 4
 
-WEAPON_USAGE_COUNT = 53
+WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
 # Quest play count length inferred from known trailing fields in the blob (0xD8..0x244).
 QUEST_PLAY_COUNT = 91
@@ -102,21 +104,39 @@ class GameStatus(msgspec.Struct):
                 return value
         raise KeyError(f"unknown mode: {name}")
 
-    def weapon_usage_count(self, weapon_id: int) -> int:
-        weapon_id = int(weapon_id)
-        if not (0 <= weapon_id < WEAPON_USAGE_COUNT):
-            raise IndexError(f"weapon_id out of range: {weapon_id}")
-        return int(self.data["weapon_usage_counts"][weapon_id])
+    def weapon_usage_count_slot(self, slot: int) -> int:
+        slot = int(slot)
+        if not (0 <= slot < WEAPON_USAGE_COUNT):
+            raise IndexError(f"weapon usage slot out of range: {slot}")
+        return int(self.data["weapon_usage_counts"][slot])
 
-    def increment_weapon_usage(self, weapon_id: int, delta: int = 1) -> int:
-        weapon_id = int(weapon_id)
-        if not (0 <= weapon_id < WEAPON_USAGE_COUNT):
-            raise IndexError(f"weapon_id out of range: {weapon_id}")
+    def increment_weapon_usage_slot(self, slot: int, delta: int = 1) -> int:
+        slot = int(slot)
+        if not (0 <= slot < WEAPON_USAGE_COUNT):
+            raise IndexError(f"weapon usage slot out of range: {slot}")
         counts = self.data["weapon_usage_counts"]
-        value = (int(counts[weapon_id]) + int(delta)) & 0xFFFFFFFF
-        counts[weapon_id] = value
+        value = (int(counts[slot]) + int(delta)) & 0xFFFFFFFF
+        counts[slot] = value
         self.dirty = True
         return value
+
+    def weapon_usage_count_for_weapon_id(self, weapon_id: int) -> int:
+        slot = weapon_usage_slot_for_weapon_id(weapon_id)
+        if slot is None:
+            return 0
+        return self.weapon_usage_count_slot(slot)
+
+    def increment_weapon_usage_for_weapon_id(self, weapon_id: int, delta: int = 1) -> int | None:
+        slot = weapon_usage_slot_for_weapon_id(weapon_id)
+        if slot is None:
+            return None
+        return self.increment_weapon_usage_slot(slot, delta=delta)
+
+    def weapon_usage_count(self, slot: int) -> int:
+        return self.weapon_usage_count_slot(slot)
+
+    def increment_weapon_usage(self, slot: int, delta: int = 1) -> int:
+        return self.increment_weapon_usage_slot(slot, delta=delta)
 
     def quest_play_count(self, index: int) -> int:
         index = int(index)

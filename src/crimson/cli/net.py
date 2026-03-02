@@ -4,6 +4,8 @@ from pathlib import Path
 
 import typer
 
+from crimson.quest_level import QuestLevel
+
 from ..paths import default_runtime_dir
 from .session import _parse_netcode_mode, _parse_session_mode, _run_game_with_pending_session
 
@@ -47,7 +49,6 @@ def cmd_net_host(
 ) -> None:
     """Host a network session (rollback default)."""
     from ..game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
-    from ..quests.types import parse_level
 
     resolved_netcode = _parse_netcode_mode(netcode)
     resolved_mode = _parse_session_mode(mode)
@@ -55,10 +56,10 @@ def cmd_net_host(
     if resolved_mode == "quests":
         if not normalized_quest_level:
             raise typer.BadParameter("quest level is required for quests mode", param_hint="--quest-level")
-        try:
-            parse_level(normalized_quest_level)
-        except ValueError as exc:
-            raise typer.BadParameter(str(exc), param_hint="--quest-level") from exc
+        parsed_level = QuestLevel.try_parse(normalized_quest_level)
+        if parsed_level is None:
+            raise typer.BadParameter(f"invalid quest level: {normalized_quest_level!r}", param_hint="--quest-level")
+        normalized_quest_level = parsed_level.to_string()
 
     if resolved_netcode == "lockstep":
         if str(room_code).strip():
@@ -153,6 +154,10 @@ def cmd_net_join(
     resolved_netcode = _parse_netcode_mode(netcode)
     normalized_host = str(host).strip()
     room_code = str(code).strip().upper()
+    normalized_quest_level = ""
+    parsed_level = QuestLevel.try_parse(quest_level)
+    if parsed_level is not None:
+        normalized_quest_level = parsed_level.to_string()
 
     if resolved_netcode == "lockstep":
         if not normalized_host:
@@ -189,7 +194,7 @@ def cmd_net_join(
             netcode_mode=resolved_netcode,
             endpoint=endpoint,
             player_count=1,
-            quest_level=str(quest_level).strip(),
+            quest_level=normalized_quest_level,
             rollback_max_ticks=int(rollback_max_ticks),
             reconnect_timeout_ms=int(reconnect_timeout_ms),
             input_delay_ticks=int(input_delay_ticks),

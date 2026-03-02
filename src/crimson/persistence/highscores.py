@@ -6,10 +6,10 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.quest_level import QuestLevel
 from grim.config import CrimsonConfig
 
 from ..game_modes import GameMode
-from ..quests.types import parse_level
 from ..weapons import WeaponId
 
 RECORD_SIZE = 0x48
@@ -145,6 +145,19 @@ class HighScoreRecord(msgspec.Struct):
     @quest_stage_minor.setter
     def quest_stage_minor(self, value: int) -> None:
         self.data[0x2A] = int(value) & 0xFF
+
+    @property
+    def quest_level(self) -> QuestLevel | None:
+        return QuestLevel.from_parts_or_none(self.quest_stage_major, self.quest_stage_minor)
+
+    @quest_level.setter
+    def quest_level(self, value: QuestLevel | None) -> None:
+        if value is None:
+            self.quest_stage_major = 0
+            self.quest_stage_minor = 0
+            return
+        self.quest_stage_major = int(value.major)
+        self.quest_stage_minor = int(value.minor)
 
     @property
     def most_used_weapon_id(self) -> WeaponId:
@@ -298,13 +311,9 @@ def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage
                 major = config.quest_stage_major
                 minor = config.quest_stage_minor
                 if major == 0 and minor == 0:
-                    level = config.quest_level
-                    if isinstance(level, str):
-                        try:
-                            major, minor = parse_level(level)
-                        except ValueError:
-                            major = 0
-                            minor = 0
+                    level = QuestLevel.try_parse(config.quest_level)
+                    if level is not None:
+                        major, minor = level.to_stage_pair()
                 quest_stage_major = major
                 quest_stage_minor = minor
             path = _scores_path_for_mode_root(

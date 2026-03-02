@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from crimson.persistence import save_status
+from crimson.weapons import WeaponId
 
 
 def test_game_cfg_roundtrip(tmp_path) -> None:
@@ -37,7 +40,7 @@ def test_game_status_edit_persists(tmp_path) -> None:
     status.quest_unlock_index_full = 34
     status.game_sequence_id = 0x12345678
     status.increment_mode_play_count("survival")
-    status.increment_weapon_usage(5)
+    status.increment_weapon_usage_slot(5)
     status.increment_quest_play_count(7, delta=2)
     status.save_if_dirty()
 
@@ -48,5 +51,14 @@ def test_game_status_edit_persists(tmp_path) -> None:
     assert status2.quest_unlock_index_full == 34
     assert status2.game_sequence_id == 0x12345678
     assert status2.mode_play_count("survival") == 1
-    assert status2.weapon_usage_count(5) == 1
+    assert status2.weapon_usage_count_slot(5) == 1
     assert status2.quest_play_count(7) == 2
+
+
+def test_game_status_weapon_usage_for_weapon_id_handles_untracked_ids() -> None:
+    status = save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
+
+    assert status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL) == 1
+    assert status.weapon_usage_count_for_weapon_id(WeaponId.PISTOL) == 1
+    assert status.increment_weapon_usage_for_weapon_id(WeaponId.NUKE_LAUNCHER) is None
+    assert status.weapon_usage_count_for_weapon_id(WeaponId.NUKE_LAUNCHER) == 0

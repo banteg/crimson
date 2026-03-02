@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.quest_level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -8,13 +9,8 @@ from ...frontend.menu import ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ...quests.types import parse_level
 from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
-
-
-def _parse_level_pair(level: str) -> tuple[int, int]:
-    return parse_level(str(level))
 
 
 class QuestResultsView:
@@ -49,13 +45,13 @@ class QuestResultsView:
         self._ui = None
         if outcome is None:
             return
-        self._quest_level = str(outcome.level or "")
-
-        major, minor = _parse_level_pair(str(outcome.level))
+        level = QuestLevel.parse(str(outcome.level))
+        self._quest_level = level.to_string()
+        major, minor = level.to_stage_pair()
         self._quest_stage_major = int(major)
         self._quest_stage_minor = int(minor)
 
-        quest = quest_by_level(str(outcome.level or ""))
+        quest = quest_by_level(self._quest_level)
 
         self._quest_title = str(quest.title or "") if quest is not None else ""
         if quest is not None:
@@ -113,11 +109,11 @@ class QuestResultsView:
         player_name_default = _player_name_default(self.state.config) or "Player"
         record.set_name(player_name_default)
 
-        global_index = (int(major) - 1) * 10 + (int(minor) - 1)
-        if 0 <= global_index < 40:
+        global_index = int(level.global_index)
+        completed_idx = level.tracked_completed_counter_index
+        if completed_idx is not None:
             try:
-                # `sub_447d40` reads completed counts from indices 51..90.
-                self.state.status.increment_quest_play_count(global_index + 51)
+                self.state.status.increment_quest_play_count(completed_idx)
             except (IndexError, KeyError, TypeError, ValueError) as exc:
                 self._log_nonfatal("failed to increment quest play count", exc)
 
@@ -246,13 +242,12 @@ class QuestResultsView:
         self._action = "open_high_scores"
 
     def _set_pending_quest_level(self, level: str) -> None:
-        self.state.pending_quest_level = str(level or "")
+        parsed = QuestLevel.parse(str(level))
+        level_text = parsed.to_string()
+        self.state.pending_quest_level = level_text
         self.state.config.game_mode = int(GameMode.QUESTS)
-        self.state.config.quest_level = str(level or "")
-        try:
-            major, minor = parse_level(str(level or ""))
-        except ValueError:
-            major, minor = 0, 0
+        self.state.config.quest_level = level_text
+        major, minor = parsed.to_stage_pair()
         self.state.config.quest_stage_major = int(major)
         self.state.config.quest_stage_minor = int(minor)
         try:

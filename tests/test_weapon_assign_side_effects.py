@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from crimson.gameplay import GameplayState
+from crimson.persistence import save_status
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
@@ -16,3 +19,15 @@ def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
     assert player.weapon_reset_latch == 0
     assert player.aux_timer == 2.0
     assert state.sfx_queue == ["sfx_shotgun_reload"]
+
+
+def test_weapon_assign_player_skips_untracked_weapon_usage_ids() -> None:
+    status = save_status.GameStatus(path=Path("game.cfg"), data=save_status.default_status_data(), dirty=False)
+    state = GameplayState(status=status)
+    player = PlayerState(index=0, pos=Vec2())
+
+    weapon_assign_player(player, WeaponId.SHOTGUN, state=state)
+    weapon_assign_player(player, WeaponId.NUKE_LAUNCHER, state=state)
+
+    assert status.weapon_usage_count_for_weapon_id(WeaponId.SHOTGUN) == 1
+    assert status.weapon_usage_count_for_weapon_id(WeaponId.NUKE_LAUNCHER) == 0

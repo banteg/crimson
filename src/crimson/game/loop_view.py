@@ -3,6 +3,7 @@ from __future__ import annotations
 import webbrowser
 from typing import cast
 
+from crimson.quest_level import QuestLevel
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -29,7 +30,6 @@ from ..frontend.transitions import _update_screen_fade
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
-from ..quests.types import parse_level
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
@@ -341,7 +341,7 @@ class GameLoopView:
                     bind_host=str(endpoint.bind_host),
                     host_ip=str(endpoint.host),
                     port=int(endpoint.port),
-                    quest_level=str(cfg.quest_level),
+                    quest_level=str(cfg.quest_level or ""),
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
@@ -357,7 +357,7 @@ class GameLoopView:
                     relay_host=str(endpoint.relay_host),
                     relay_port=int(endpoint.relay_port),
                     room_code=str(endpoint.room_code).strip().upper(),
-                    quest_level=str(cfg.quest_level),
+                    quest_level=str(cfg.quest_level or ""),
                     preserve_bugs=False,
                     netcode_mode="rollback",
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
@@ -381,20 +381,19 @@ class GameLoopView:
         )
 
         if expected_mode == "quests":
-            level = str(cfg.quest_level).strip()
-            if not level:
+            raw_level = str(cfg.quest_level or "").strip()
+            if not raw_level:
                 self.state.network_last_error = "Quest LAN mode requires --quest-level."
                 pending.error = self.state.network_last_error
                 lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
                 return None
-            try:
-                parse_level(level)
-            except ValueError as exc:
-                self.state.network_last_error = f"Invalid quest level for LAN: {level!r} ({exc})"
+            level = QuestLevel.try_parse(raw_level)
+            if level is None:
+                self.state.network_last_error = f"Invalid quest level for LAN: {raw_level!r}"
                 pending.error = self.state.network_last_error
                 lan_debug_log("lan_action_error", action=action, reason=str(self.state.network_last_error))
                 return None
-            self.state.pending_quest_level = level
+            self.state.pending_quest_level = level.to_string()
 
         return forward_action
 
@@ -679,12 +678,10 @@ class GameLoopView:
         quest_major, quest_minor = 0, 0
         match mode_id:
             case GameMode.QUESTS:
-                level = self.state.pending_quest_level or ""
-                if level:
-                    try:
-                        quest_major, quest_minor = parse_level(level)
-                    except ValueError:
-                        quest_major, quest_minor = 0, 0
+                level_text = str(self.state.pending_quest_level or "")
+                if level_text:
+                    level = QuestLevel.parse(level_text)
+                    quest_major, quest_minor = level.to_stage_pair()
             case _:
                 pass
 

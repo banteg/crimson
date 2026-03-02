@@ -9,6 +9,8 @@ from typing import cast
 
 import msgspec
 
+from crimson.quest_level import normalize_quest_level_text
+
 from ..replay.types import PackedPlayerInput
 from ..sim.timing import ftol_ms_i32
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
@@ -52,6 +54,10 @@ from .transport import PeerAddr, UdpTransport
 
 def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
+
+
+def _normalized_quest_level(value: str | None) -> str:
+    return normalize_quest_level_text(value)
 
 
 # The host is authoritative and doesn't need to queue inputs far ahead. Keeping
@@ -165,6 +171,7 @@ class LockstepRuntime(msgspec.Struct):
     _neutral_input: PackedPlayerInput = msgspec.field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0],)
 
     def __post_init__(self) -> None:
+        self.cfg.quest_level = _normalized_quest_level(self.cfg.quest_level)
         bind_port = int(self.cfg.port) if str(self.cfg.role) == "host" else 0
         self.transport = UdpTransport(bind_host=str(self.cfg.bind_host), bind_port=int(bind_port))
 
@@ -1269,7 +1276,7 @@ class LockstepRuntime(msgspec.Struct):
             self.cfg.player_count = int(welcome_settings.player_count)
             self.cfg.tick_rate = int(welcome_settings.tick_rate)
             self.cfg.input_delay_ticks = int(welcome_settings.input_delay_ticks)
-            self.cfg.quest_level = str(welcome_settings.quest_level)
+            self.cfg.quest_level = _normalized_quest_level(str(welcome_settings.quest_level))
             self.cfg.preserve_bugs = bool(welcome_settings.preserve_bugs)
             ready = Ready(slot_index=int(message.slot_index), ready=True)
             self._client_send(ready, reliable=True, now_ms=int(now_ms))

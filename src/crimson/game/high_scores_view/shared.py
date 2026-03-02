@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.quest_level import QuestLevel
+
 from ...game_modes import GameMode
-from ...quests.types import parse_level
 
 if TYPE_CHECKING:
     from ...persistence.highscores import HighScoreRecord
@@ -36,12 +37,10 @@ def format_score_date(entry: "HighScoreRecord") -> str:
 
 
 def parse_quest_level(level: str | None) -> tuple[int, int]:
-    if not level:
+    parsed = QuestLevel.try_parse(level)
+    if parsed is None:
         return (0, 0)
-    try:
-        return parse_level(str(level))
-    except ValueError:
-        return (0, 0)
+    return parsed.to_stage_pair()
 
 
 def mode_label(mode_id: GameMode, quest_major: int, quest_minor: int) -> str:
