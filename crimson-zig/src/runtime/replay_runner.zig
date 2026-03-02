@@ -2493,7 +2493,15 @@ fn buildTestReplay(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
-    const dt = try allocator.alloc(f32, 0);
+    const dt = try allocator.alloc(f32, cfg.inputs.len);
+    const nominal_dt: f32 = if (cfg.tick_rate > 0)
+        @as(f32, 1.0 / @as(f32, @floatFromInt(cfg.tick_rate)))
+    else
+        0.0;
+    for (dt, 0..) |*entry, idx| {
+        _ = idx;
+        entry.* = nominal_dt;
+    }
 
     return .{
         .header = .{
@@ -2552,7 +2560,15 @@ fn buildTestReplayMulti(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
-    const dt = try allocator.alloc(f32, 0);
+    const dt = try allocator.alloc(f32, cfg.inputs.len);
+    const nominal_dt: f32 = if (cfg.tick_rate > 0)
+        @as(f32, 1.0 / @as(f32, @floatFromInt(cfg.tick_rate)))
+    else
+        0.0;
+    for (dt, 0..) |*entry, idx| {
+        _ = idx;
+        entry.* = nominal_dt;
+    }
 
     return .{
         .header = .{
