@@ -14,7 +14,7 @@ def _blank_survival_replay(
     *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         seed=int(seed),
         tick_rate=60,
         player_count=1,
@@ -30,7 +30,7 @@ def _blank_rush_replay(
     *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.RUSH),
+        game_mode_id=GameMode.RUSH,
         seed=int(seed),
         tick_rate=60,
         player_count=1,
@@ -46,7 +46,7 @@ def _blank_quest_replay(
     *, ticks: int, seed: int = 101, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.QUESTS),
+        game_mode_id=GameMode.QUESTS,
         seed=int(seed),
         tick_rate=60,
         player_count=1,

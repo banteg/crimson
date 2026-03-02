@@ -143,49 +143,50 @@ class HudLayout(msgspec.Struct, frozen=True):
     hud_y_shift: float
 
 
-def hud_flags_for_game_mode(game_mode_id: int) -> HudRenderFlags:
+def hud_flags_for_game_mode(game_mode_id: GameMode | int) -> HudRenderFlags:
     """Match `hud_update_and_render` (0x0041ca90) flag mapping."""
 
-    mode = int(game_mode_id)
-    if mode == int(GameMode.QUESTS):
-        return HudRenderFlags(
-            show_health=True,
-            show_weapon=True,
-            show_xp=True,
-            show_time=False,
-            show_quest_hud=True,
-        )
-    if mode == int(GameMode.SURVIVAL):
-        return HudRenderFlags(
-            show_health=True,
-            show_weapon=True,
-            show_xp=True,
-            show_time=False,
-            show_quest_hud=False,
-        )
-    if mode == int(GameMode.RUSH):
-        return HudRenderFlags(
-            show_health=True,
-            show_weapon=False,
-            show_xp=False,
-            show_time=True,
-            show_quest_hud=False,
-        )
-    if mode == int(GameMode.TYPO):
-        return HudRenderFlags(
-            show_health=True,
-            show_weapon=False,
-            show_xp=True,
-            show_time=True,
-            show_quest_hud=False,
-        )
-    return HudRenderFlags(
-        show_health=False,
-        show_weapon=False,
-        show_xp=False,
-        show_time=False,
-        show_quest_hud=False,
-    )
+    match game_mode_id:
+        case GameMode.QUESTS:
+            return HudRenderFlags(
+                show_health=True,
+                show_weapon=True,
+                show_xp=True,
+                show_time=False,
+                show_quest_hud=True,
+            )
+        case GameMode.SURVIVAL:
+            return HudRenderFlags(
+                show_health=True,
+                show_weapon=True,
+                show_xp=True,
+                show_time=False,
+                show_quest_hud=False,
+            )
+        case GameMode.RUSH:
+            return HudRenderFlags(
+                show_health=True,
+                show_weapon=False,
+                show_xp=False,
+                show_time=True,
+                show_quest_hud=False,
+            )
+        case GameMode.TYPO:
+            return HudRenderFlags(
+                show_health=True,
+                show_weapon=False,
+                show_xp=True,
+                show_time=True,
+                show_quest_hud=False,
+            )
+        case _:
+            return HudRenderFlags(
+                show_health=False,
+                show_weapon=False,
+                show_xp=False,
+                show_time=False,
+                show_quest_hud=False,
+            )
 
 
 def hud_ui_scale(screen_w: float, screen_h: float) -> float:

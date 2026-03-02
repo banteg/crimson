@@ -50,7 +50,7 @@ class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
 
 
 class ReplayInfoResult(msgspec.Struct, frozen=True):
-    game_mode_id: int
+    game_mode_id: GameMode
     tick_rate: int
     ticks_simulated: int
     elapsed_ms: int
@@ -341,9 +341,11 @@ def _run_replay_info(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> ReplayInfoResult:
-    mode = int(replay.header.game_mode_id)
-    if mode not in (int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)):
-        raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
+    mode_raw = int(replay.header.game_mode_id)
+    try:
+        mode = GameMode(mode_raw)
+    except ValueError as exc:
+        raise ReplayRunnerError(f"unsupported replay game_mode_id={mode_raw}") from exc
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -356,7 +358,7 @@ def _run_replay_info(
             strict_events=bool(strict_events),
             defer_menu_open=False,
             apply_terminal_tick_events=True,
-            terminal_events_use_resolved_dt=(mode != int(GameMode.RUSH)),
+            terminal_events_use_resolved_dt=(mode != GameMode.RUSH),
         ),
         session_defaults=PlaybackSessionDefaults(
             clear_fx_queues_each_tick=True,
@@ -400,7 +402,7 @@ def _run_replay_info(
         before_snapshots = None
 
         elapsed_ms = int(outcome.elapsed_ms)
-        if int(mode) != int(GameMode.RUSH):
+        if mode != GameMode.RUSH:
             _append_extra_replay_events(
                 tick_events=outcome.pre_step_events,
                 tick_index=int(outcome.tick_index),
@@ -433,7 +435,7 @@ def _run_replay_info(
                 include_extra_events=include_extra_events,
             )
 
-        if int(mode) != int(GameMode.RUSH):
+        if mode != GameMode.RUSH:
             _append_extra_replay_events(
                 tick_events=outcome.post_step_events,
                 tick_index=int(outcome.tick_index),
@@ -456,7 +458,7 @@ def _run_replay_info(
         )
 
     def _on_terminal(terminal: PlaybackTerminalOutcome) -> None:
-        if int(mode) == int(GameMode.RUSH):
+        if mode == GameMode.RUSH:
             return
         session_elapsed = int(float(driver.session.elapsed_ms))
         _append_extra_replay_events(
@@ -475,7 +477,7 @@ def _run_replay_info(
     )
 
     return ReplayInfoResult(
-        game_mode_id=int(mode),
+        game_mode_id=mode,
         tick_rate=int(replay.header.tick_rate),
         ticks_simulated=int(driver.tick_limit),
         elapsed_ms=int(run_result.elapsed_ms),

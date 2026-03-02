@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Protocol, cast
@@ -188,18 +189,20 @@ def _render_checkpoint_diff_failure(diff: object) -> None:
     raise typer.Exit(code=1)
 
 
-def _replay_mode_label(game_mode_id: int) -> str:
-    if int(game_mode_id) == int(GameMode.SURVIVAL):
-        return "survival"
-    if int(game_mode_id) == int(GameMode.RUSH):
-        return "rush"
-    if int(game_mode_id) == int(GameMode.QUESTS):
-        return "quests"
-    return f"mode_{int(game_mode_id)}"
+def _replay_mode_label(game_mode_id: GameMode | int) -> str:
+    match game_mode_id:
+        case GameMode.SURVIVAL:
+            return "survival"
+        case GameMode.RUSH:
+            return "rush"
+        case GameMode.QUESTS:
+            return "quests"
+        case _:
+            return f"mode_{int(game_mode_id)}"
 
 
 class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
-    game_mode_id: int
+    game_mode_id: GameMode
     tick_rate: int
     ticks: int
     elapsed_ms: int
@@ -247,7 +250,7 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
 
 
 class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
-    game_mode_id: int
+    game_mode_id: GameMode
     tick_rate: int
     ticks_simulated: int
     elapsed_ms: int
@@ -391,7 +394,7 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
 def _run_result_payload(run_result: object) -> _RunResultPayload:
     result = cast("Any", run_result)
     return _RunResultPayload(
-        game_mode_id=int(result.game_mode_id),
+        game_mode_id=GameMode(int(result.game_mode_id)),
         tick_rate=int(result.tick_rate),
         ticks=int(result.ticks),
         elapsed_ms=int(result.elapsed_ms),
@@ -454,10 +457,11 @@ def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
     )
 
 
-class _ReplayListRow(msgspec.Struct, forbid_unknown_fields=True):
+@dataclass(frozen=True, slots=True)
+class _ReplayListRow:
     replay: str
     mode: str
-    game_mode_id: int
+    game_mode_id: GameMode | int
     game_version: str
     ticks: str
     duration: str
@@ -503,31 +507,34 @@ def _is_version_older(*, replay_version: str, current_version: str) -> bool:
     return replay_norm < current_norm
 
 
-def _replay_list_mode_label(*, game_mode_id: int, player_count: int, quest_level: str) -> str:
-    if int(game_mode_id) == int(GameMode.QUESTS):
-        label = "quest"
-        level = str(quest_level).strip()
-        if level:
-            label = f"{label} {level}"
-    else:
-        label = _replay_mode_label(int(game_mode_id))
+def _replay_list_mode_label(*, game_mode_id: GameMode | int, player_count: int, quest_level: str) -> str:
+    match game_mode_id:
+        case GameMode.QUESTS:
+            label = "quest"
+            level = str(quest_level).strip()
+            if level:
+                label = f"{label} {level}"
+        case _:
+            label = _replay_mode_label(game_mode_id)
     if int(player_count) > 1:
         label = f"{label} {int(player_count)}p"
     return label
 
 
-def _replay_list_mode_style(game_mode_id: int) -> str:
-    if int(game_mode_id) == int(GameMode.SURVIVAL):
-        return "green"
-    if int(game_mode_id) == int(GameMode.RUSH):
-        return "magenta"
-    if int(game_mode_id) == int(GameMode.QUESTS):
-        return "cyan"
-    if int(game_mode_id) == int(GameMode.TYPO):
-        return "blue"
-    if int(game_mode_id) == int(GameMode.TUTORIAL):
-        return "white"
-    return "white"
+def _replay_list_mode_style(game_mode_id: GameMode | int) -> str:
+    match game_mode_id:
+        case GameMode.SURVIVAL:
+            return "green"
+        case GameMode.RUSH:
+            return "magenta"
+        case GameMode.QUESTS:
+            return "cyan"
+        case GameMode.TYPO:
+            return "blue"
+        case GameMode.TUTORIAL:
+            return "white"
+        case _:
+            return "white"
 
 
 def _replay_list_score_kills(
@@ -592,13 +599,14 @@ def _build_replay_list_row(
         )
 
     header = replay.header
+    game_mode_id = header.game_mode_id
     tick_rate = int(header.tick_rate)
     ticks = int(len(replay.inputs))
     game_version = str(header.game_version).strip() or "-"
     player_count = int(header.player_count)
     quest_level = str(header.quest_level)
     mode_label = _replay_list_mode_label(
-        game_mode_id=int(header.game_mode_id),
+        game_mode_id=game_mode_id,
         player_count=player_count,
         quest_level=quest_level,
     )
@@ -610,7 +618,7 @@ def _build_replay_list_row(
         _ReplayListRow(
             replay=rel,
             mode=mode_label,
-            game_mode_id=int(header.game_mode_id),
+            game_mode_id=game_mode_id,
             game_version=game_version,
             ticks=str(ticks),
             duration=_fmt_replay_list_duration(ticks=ticks, tick_rate=tick_rate),
@@ -746,7 +754,7 @@ def cmd_replay_list(
     table.add_column("kills", justify="right")
     table.add_column("modified", style="dim")
     for row in rows:
-        mode_style = _replay_list_mode_style(int(row.game_mode_id))
+        mode_style = _replay_list_mode_style(row.game_mode_id)
         mode_cell = f"[{mode_style}]{row.mode}[/{mode_style}]"
         version_cell = row.game_version
         if row.mode in {"invalid", "error"}:
@@ -1003,7 +1011,7 @@ def cmd_replay_info(
         for event in result.timeline
     ]
     summary_payload = _ReplayInfoSummaryPayload(
-        game_mode_id=int(result.game_mode_id),
+        game_mode_id=GameMode(int(result.game_mode_id)),
         tick_rate=int(result.tick_rate),
         ticks_simulated=int(result.ticks_simulated),
         elapsed_ms=int(result.elapsed_ms),
@@ -1032,7 +1040,7 @@ def cmd_replay_info(
     typer.echo(
         "ok: "
         f"replay={replay_path} "
-        f"mode={_replay_mode_label(int(summary_payload.game_mode_id))} "
+        f"mode={_replay_mode_label(summary_payload.game_mode_id)} "
         f"ticks={int(summary_payload.ticks_simulated)} "
         f"elapsed_ms={int(summary_payload.elapsed_ms)} "
         f"events={int(summary_payload.event_count)}",

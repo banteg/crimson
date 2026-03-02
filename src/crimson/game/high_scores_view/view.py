@@ -60,6 +60,7 @@ from ...frontend.menu import (
 from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.transitions import _draw_screen_fade
+from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
@@ -491,9 +492,13 @@ class HighScoresView:
 
         # Dropdown: game mode (config.game_mode / request.game_mode_id).
         # Typ-o shooter entry is unlocked at quest_unlock_index>=40 in the native.
-        mode_items: list[tuple[str, int]] = [("Quests", 3), ("Rush", 2), ("Survival", 1)]
+        mode_items: list[tuple[str, GameMode]] = [
+            ("Quests", GameMode.QUESTS),
+            ("Rush", GameMode.RUSH),
+            ("Survival", GameMode.SURVIVAL),
+        ]
         if int(self.state.status.quest_unlock_index) >= 0x28:
-            mode_items.append(("Typ'o'Shooter", 4))
+            mode_items.append(("Typ'o'Shooter", GameMode.TYPO))
         game_mode_pos = shifted_right_top_left + Vec2(HS_RIGHT_GAME_MODE_WIDGET_X * scale, HS_RIGHT_GAME_MODE_WIDGET_Y * scale)
         game_mode_layout = self._dropdown_layout(
             pos=game_mode_pos,
@@ -511,17 +516,19 @@ class HighScoresView:
         )
         if game_mode_selected is not None:
             _label, mode_id = mode_items[max(0, min(int(game_mode_selected), len(mode_items) - 1))]
-            mode_id = int(mode_id)
-            self.state.config.game_mode = mode_id
+            self.state.config.game_mode = int(mode_id)
             request.game_mode_id = mode_id
-            if mode_id == 4:
-                # Native forces Typ-o shooter scores to 1 player.
-                self.state.config.player_count = 1
-            if mode_id == 3:
-                # Ensure quest selection exists when switching into quests.
-                if int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0:
-                    request.quest_stage_major = max(1, int(self.state.config.quest_stage_major or 1))
-                    request.quest_stage_minor = max(1, int(self.state.config.quest_stage_minor or 1))
+            match mode_id:
+                case GameMode.TYPO:
+                    # Native forces Typ-o shooter scores to 1 player.
+                    self.state.config.player_count = 1
+                case GameMode.QUESTS:
+                    # Ensure quest selection exists when switching into quests.
+                    if int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0:
+                        request.quest_stage_major = max(1, int(self.state.config.quest_stage_major or 1))
+                        request.quest_stage_minor = max(1, int(self.state.config.quest_stage_minor or 1))
+                case _:
+                    pass
             self._dirty = True
             self._reload_records()
         if consumed:
@@ -573,7 +580,7 @@ class HighScoresView:
         arrow = self._arrow_tex
         if request is None or arrow is None:
             return False
-        if int(request.game_mode_id) != 3:
+        if request.game_mode_id != GameMode.QUESTS:
             return False
 
         major = int(request.quest_stage_major)
@@ -638,7 +645,7 @@ class HighScoresView:
 
         font = self._ensure_small_font()
         request = self._request
-        mode_id = int(request.game_mode_id) if request is not None else self.state.config.game_mode
+        mode_id: GameMode | int = request.game_mode_id if request is not None else self.state.config.game_mode
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
 

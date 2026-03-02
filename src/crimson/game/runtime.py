@@ -30,6 +30,7 @@ from ..demo_trial import (
     format_demo_trial_time,
 )
 from ..frontend.assets import _ensure_texture_cache
+from ..game_modes import GameMode
 from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..quests.types import parse_level
@@ -230,16 +231,23 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         console.log.log("demo trial: timers reset")
 
     def cmd_demo_trial_info(_args: list[str]) -> None:
-        mode_id = state.config.game_mode
+        mode_raw = state.config.game_mode
+        try:
+            mode_id: GameMode | int = GameMode(mode_raw)
+        except ValueError:
+            mode_id = mode_raw
         quest_major = 0
         quest_minor = 0
-        if mode_id == 3:
-            level = state.pending_quest_level or ""
-            if level:
-                try:
-                    quest_major, quest_minor = parse_level(level)
-                except ValueError:
-                    quest_major, quest_minor = 0, 0
+        match mode_id:
+            case GameMode.QUESTS:
+                level = state.pending_quest_level or ""
+                if level:
+                    try:
+                        quest_major, quest_minor = parse_level(level)
+                    except ValueError:
+                        quest_major, quest_minor = 0, 0
+            case _:
+                pass
         info = demo_trial_overlay_info(
             demo_build=bool(state.demo_enabled),
             game_mode_id=mode_id,
@@ -252,7 +260,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         console.log.log(
             "demo trial: "
             f"demo={int(state.demo_enabled)} "
-            f"mode={mode_id} "
+            f"mode={int(mode_id)} "
             f"quest={quest_major}.{quest_minor} "
             f"playtime={int(state.status.game_sequence_id)}ms "
             f"grace={int(state.demo_trial_elapsed_ms)}ms "

@@ -19,7 +19,6 @@ from .playback_driver import (
     RushSessionConfig,
     SurvivalSessionConfig,
     TickRngTraceObserver,
-    resolve_quest_level_from_replay,
 )
 from .setup import ReplayRunnerError, RunResult
 
@@ -28,13 +27,7 @@ __all__ = [
     "RunResult",
     "TickRngTraceObserver",
     "run_replay",
-    "_resolve_quest_level",
 ]
-
-
-# Back-compat alias used by replay playback mode.
-def _resolve_quest_level(replay: Replay) -> str:
-    return resolve_quest_level_from_replay(replay)
 
 
 def run_replay(
@@ -60,7 +53,16 @@ def run_replay(
 ) -> RunResult:
     if not bool(strict_events):
         raise ReplayRunnerError("strict_events=False is unsupported; replay execution is always strict")
-    mode_id = int(replay.header.game_mode_id)
+    mode_raw = int(replay.header.game_mode_id)
+    try:
+        mode_id: GameMode | int = GameMode(mode_raw)
+    except ValueError:
+        mode_id = mode_raw
+    match mode_id:
+        case GameMode.RUSH:
+            terminal_events_use_resolved_dt = False
+        case _:
+            terminal_events_use_resolved_dt = True
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -76,7 +78,7 @@ def run_replay(
             strict_events=bool(strict_events),
             defer_menu_open=False,
             apply_terminal_tick_events=True,
-            terminal_events_use_resolved_dt=(mode_id != int(GameMode.RUSH)),
+            terminal_events_use_resolved_dt=terminal_events_use_resolved_dt,
         ),
         session_defaults=PlaybackSessionDefaults(
             clear_fx_queues_each_tick=True,

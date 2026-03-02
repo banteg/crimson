@@ -56,7 +56,7 @@ def _build_replay(
     quest_level: str = "",
 ) -> Replay:
     header = ReplayHeader(
-        game_mode_id=int(mode),
+        game_mode_id=mode,
         seed=int(seed),
         tick_rate=60,
         player_count=int(player_count),
@@ -729,7 +729,7 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -796,7 +796,7 @@ def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path:
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -851,7 +851,7 @@ def test_replay_benchmark_render_mode_passes_rtx_flag(tmp_path: Path, mocker) ->
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -904,7 +904,7 @@ def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, 
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -958,7 +958,7 @@ def test_replay_benchmark_headless_human_format_enables_progress(tmp_path: Path,
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -1051,7 +1051,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -1156,7 +1156,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=3,
         elapsed_ms=50,
@@ -1285,7 +1285,7 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker)
     ffmpeg_path = tmp_path / "bin" / "ffmpeg"
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=2,
         elapsed_ms=33,
@@ -1338,7 +1338,7 @@ def test_replay_render_supports_mute_audio_flag(tmp_path: Path, mocker) -> None:
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
     run_result = RunResult(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         tick_rate=60,
         ticks=2,
         elapsed_ms=33,

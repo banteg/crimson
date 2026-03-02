@@ -7,6 +7,7 @@ import msgspec
 import pytest
 
 import crimson
+from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.replay import (
     PerkMenuOpenEvent,
@@ -58,7 +59,7 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
 
 def test_replay_codec_roundtrip() -> None:
     header = ReplayHeader(
-        game_mode_id=1,
+        game_mode_id=GameMode.SURVIVAL,
         seed=0x1234,
         tick_rate=60,
         difficulty_level=2,
@@ -95,7 +96,7 @@ def test_replay_codec_roundtrip() -> None:
 
 
 def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=0x1234, tick_rate=60, player_count=1)
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0x1234, tick_rate=60, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput()])
     rec.record_perk_menu_open(player_index=0, tick_index=1)
@@ -108,7 +109,7 @@ def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
 
 def test_replay_codec_roundtrip_claimed_stats() -> None:
     header = ReplayHeader(
-        game_mode_id=1,
+        game_mode_id=GameMode.SURVIVAL,
         seed=0x1234,
         tick_rate=60,
         player_count=1,
@@ -188,7 +189,7 @@ def test_replay_codec_rejects_gzip_payload_over_size_limit(monkeypatch: pytest.M
 
 
 def test_replay_dump_is_stable() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
@@ -197,7 +198,7 @@ def test_replay_dump_is_stable() -> None:
 
 
 def test_replay_load_accepts_plain_msgpack_bytes() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1)
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])
     replay = rec.finish()
@@ -259,14 +260,14 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
 
 
 def test_replay_recorder_validates_player_count() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=1, player_count=2)
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2)
     rec = ReplayRecorder(header)
     with pytest.raises(ValueError, match="expected 2 player inputs"):
         rec.record_tick([PlayerInput()])
 
 
 def test_replay_version_mismatch_raises() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1, game_version="0.0.0")
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1, game_version="0.0.0")
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput()])
     replay = rec.finish()

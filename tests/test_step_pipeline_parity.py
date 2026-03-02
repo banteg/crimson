@@ -30,7 +30,7 @@ from grim.geom import Vec2
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
     header = ReplayHeader(
-        game_mode_id=int(mode),
+        game_mode_id=GameMode(int(mode)),
         seed=int(seed),
         tick_rate=60,
         player_count=1,

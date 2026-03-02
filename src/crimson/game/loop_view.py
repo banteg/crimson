@@ -26,6 +26,7 @@ from ..frontend.panels.play_game import PlayGameMenuView
 from ..frontend.panels.stats import StatisticsMenuView
 from ..frontend.pause_menu import PauseMenuView
 from ..frontend.transitions import _update_screen_fade
+from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..quests.types import parse_level
@@ -670,15 +671,22 @@ class GameLoopView:
         if not self.state.demo_enabled:
             return False
 
-        mode_id = self.state.config.game_mode
+        mode_raw = self.state.config.game_mode
+        try:
+            mode_id: GameMode | int = GameMode(mode_raw)
+        except ValueError:
+            mode_id = mode_raw
         quest_major, quest_minor = 0, 0
-        if mode_id == 3:
-            level = self.state.pending_quest_level or ""
-            if level:
-                try:
-                    quest_major, quest_minor = parse_level(level)
-                except ValueError:
-                    quest_major, quest_minor = 0, 0
+        match mode_id:
+            case GameMode.QUESTS:
+                level = self.state.pending_quest_level or ""
+                if level:
+                    try:
+                        quest_major, quest_minor = parse_level(level)
+                    except ValueError:
+                        quest_major, quest_minor = 0, 0
+            case _:
+                pass
 
         current = demo_trial_overlay_info(
             demo_build=True,
@@ -693,7 +701,7 @@ class GameLoopView:
         dt_ms = int(frame_dt * 1000.0)
         used_ms, grace_ms = tick_demo_trial_timers(
             demo_build=True,
-            game_mode_id=int(mode_id),
+            game_mode_id=mode_id,
             overlay_visible=bool(current.visible),
             global_playtime_ms=int(self.state.status.game_sequence_id),
             quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),

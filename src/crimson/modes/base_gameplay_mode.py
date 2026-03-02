@@ -17,6 +17,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -31,7 +32,7 @@ from ..net.rollback_resync_v5 import (
 )
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
-from ..perks.runtime.effects import _creature_find_in_radius
+from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..replay.types import PackedPlayerInput
@@ -130,7 +131,7 @@ class BaseGameplayMode:
         ctx: ViewContext,
         *,
         world_size: float,
-        default_game_mode_id: int,
+        default_game_mode_id: GameMode | int,
         demo_mode_active: bool = False,
         difficulty_level: int = 0,
         hardcore: bool = False,
@@ -283,7 +284,7 @@ class BaseGameplayMode:
                 continue
             if perk_count_get(target_player, PerkId.DOCTOR) <= 0:
                 continue
-            target_idx = _creature_find_in_radius(
+            target_idx = creature_find_in_radius(
                 creatures,
                 pos=target_player.aim,
                 radius=12.0,

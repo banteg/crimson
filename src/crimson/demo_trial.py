@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import msgspec
 
+from .game_modes import GameMode
+
 DEMO_TOTAL_PLAY_TIME_MS = 2_400_000
 DEMO_QUEST_GRACE_TIME_MS = 300_000
 
@@ -26,7 +28,7 @@ class DemoTrialOverlayInfo(msgspec.Struct, frozen=True):
 def tick_demo_trial_timers(
     *,
     demo_build: bool,
-    game_mode_id: int,
+    game_mode_id: GameMode | int,
     overlay_visible: bool,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
@@ -43,8 +45,11 @@ def tick_demo_trial_timers(
     if not demo_build:
         return int(global_playtime_ms), int(quest_grace_elapsed_ms)
 
-    if int(game_mode_id) == 8:
-        return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+    match game_mode_id:
+        case GameMode.TUTORIAL:
+            return int(global_playtime_ms), int(quest_grace_elapsed_ms)
+        case _:
+            pass
 
     used_ms = max(0, int(global_playtime_ms))
     grace_ms = max(0, int(quest_grace_elapsed_ms))
@@ -63,8 +68,12 @@ def tick_demo_trial_timers(
     if used_ms >= DEMO_TOTAL_PLAY_TIME_MS and grace_ms < 1:
         grace_ms = 1
 
-    if grace_ms > 0 and int(game_mode_id) == 3:
-        grace_ms += delta_ms
+    if grace_ms > 0:
+        match game_mode_id:
+            case GameMode.QUESTS:
+                grace_ms += delta_ms
+            case _:
+                pass
 
     return int(used_ms), int(grace_ms)
 
@@ -72,7 +81,7 @@ def tick_demo_trial_timers(
 def demo_trial_overlay_info(
     *,
     demo_build: bool,
-    game_mode_id: int,
+    game_mode_id: GameMode | int,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
     quest_stage_major: int,
@@ -90,9 +99,11 @@ def demo_trial_overlay_info(
     if not demo_build:
         return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
 
-    mode_id = int(game_mode_id)
-    if mode_id == 8:  # tutorial
-        return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+    match game_mode_id:
+        case GameMode.TUTORIAL:  # tutorial
+            return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+        case _:
+            pass
 
     used_ms = max(0, int(global_playtime_ms))
     grace_ms = max(0, int(quest_grace_elapsed_ms))
@@ -100,7 +111,7 @@ def demo_trial_overlay_info(
     global_remaining_ms = max(0, DEMO_TOTAL_PLAY_TIME_MS - used_ms)
     grace_remaining_ms = max(0, DEMO_QUEST_GRACE_TIME_MS - grace_ms)
 
-    tier_locked = mode_id == 3 and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
+    tier_locked = game_mode_id == GameMode.QUESTS and (int(quest_stage_major) > 1 or int(quest_stage_minor) > 10)
 
     if grace_ms > 0:
         if grace_remaining_ms <= 0:
@@ -114,7 +125,7 @@ def demo_trial_overlay_info(
             )
         # During the quest-only grace period, the classic demo blocks other modes
         # and points the player back to Quests.
-        if mode_id != 3:
+        if game_mode_id != GameMode.QUESTS:
             return DemoTrialOverlayInfo(
                 True,
                 "quest_grace_left",

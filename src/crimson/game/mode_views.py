@@ -216,7 +216,7 @@ class _BaseModeGameView:
 
 
 class _ArcadeModeGameView(_BaseModeGameView):
-    def __init__(self, state: GameState, mode: _ModeRuntime, *, game_mode_id: int) -> None:
+    def __init__(self, state: GameState, mode: _ModeRuntime, *, game_mode_id: GameMode) -> None:
         super().__init__(state, mode)
         self._game_mode_id = game_mode_id
 
@@ -248,7 +248,7 @@ class SurvivalGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.SURVIVAL))
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=GameMode.SURVIVAL)
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
         cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
@@ -268,7 +268,7 @@ class RushGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.RUSH))
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=GameMode.RUSH)
 
     def adopt_menu_ground(self, ground: GroundRenderer | None) -> None:
         cast(_ModeSupportsAdoptGround, self._mode).adopt_ground_from_menu(ground)
@@ -288,7 +288,7 @@ class TypoShooterGameView(_ArcadeModeGameView):
             audio=state.audio,
             audio_rng=state.rng,
         )
-        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=int(GameMode.TYPO))
+        super().__init__(state, cast(_ModeRuntime, mode), game_mode_id=GameMode.TYPO)
 
 
 class TutorialGameView(_BaseModeGameView):

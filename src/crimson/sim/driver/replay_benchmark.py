@@ -647,16 +647,23 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
     if world is None:
         raise ReplayBenchmarkError("render benchmark failed: replay playback world was not available")
 
-    if replay.header.game_mode_id == int(GameMode.QUESTS):
-        elapsed_ms = int(mode._quest_spawn_timeline_ms)
-    else:
-        elapsed_ms = int(world._elapsed_ms)
+    mode_raw = int(replay.header.game_mode_id)
+    try:
+        game_mode_id = GameMode(mode_raw)
+    except ValueError as exc:
+        raise ReplayBenchmarkError(f"render benchmark failed: unsupported game_mode_id={mode_raw}") from exc
+
+    match game_mode_id:
+        case GameMode.QUESTS:
+            elapsed_ms = int(mode._quest_spawn_timeline_ms)
+        case _:
+            elapsed_ms = int(world._elapsed_ms)
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
     score_xp = int(world.players[0].experience) if world.players else 0
     return RunResult(
-        game_mode_id=int(replay.header.game_mode_id),
+        game_mode_id=game_mode_id,
         tick_rate=int(replay.header.tick_rate),
         ticks=int(mode.tick_index),
         elapsed_ms=int(elapsed_ms),

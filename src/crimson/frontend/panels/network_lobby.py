@@ -8,6 +8,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
+from ...game_modes import GameMode
 from ...net.lockstep_protocol import LobbyState
 from ...net.lockstep_runtime import LockstepRuntime
 from ...net.relay_protocol import RoomState
@@ -106,7 +107,12 @@ class NetworkLobbyPanelView(PanelMenuView):
         if event is None:
             return
 
-        mode_id = int(event.mode_id)
+        mode_raw = int(event.mode_id)
+        try:
+            mode_id = GameMode(mode_raw)
+        except ValueError:
+            self._error = f"Unsupported network mode id: {mode_raw}"
+            return
         player_count = int(event.player_count)
         quest_level = str(event.quest_level)
 
@@ -116,13 +122,22 @@ class NetworkLobbyPanelView(PanelMenuView):
         self.state.network_connected_players = int(self.state.network_expected_players)
         self.state.config.player_count = int(self.state.network_expected_players)
         self.state.config.game_mode = int(mode_id)
-        if mode_id == 3:
-            self.state.pending_quest_level = quest_level
+        match mode_id:
+            case GameMode.QUESTS:
+                self.state.pending_quest_level = quest_level
+            case _:
+                pass
 
-        action = {1: "start_survival", 2: "start_rush", 3: "start_quest"}.get(mode_id)
-        if action is None:
-            self._error = f"Unsupported network mode id: {mode_id}"
-            return
+        match mode_id:
+            case GameMode.SURVIVAL:
+                action = "start_survival"
+            case GameMode.RUSH:
+                action = "start_rush"
+            case GameMode.QUESTS:
+                action = "start_quest"
+            case _:
+                self._error = f"Unsupported network mode id: {int(mode_id)}"
+                return
         self._begin_close_transition(action)
 
     def _draw_entry(self, entry: MenuEntry) -> None:

@@ -125,7 +125,7 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         seed=0xBEEF,
         tick_rate=60,
         player_count=1,
@@ -139,7 +139,7 @@ def _write_replay(path: Path, *, ticks: int = 3) -> Path:
 
 def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         seed=0xBEEF,
         tick_rate=60,
         player_count=1,
