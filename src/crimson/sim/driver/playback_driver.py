@@ -574,7 +574,6 @@ class PlaybackDriver:
         if not math.isfinite(dt_tick) or dt_tick < 0.0:
             raise ReplayRunnerError(f"invalid replay dt row at tick {int(tick_index)}: {dt_tick!r}")
         dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(dt_tick))))
-        step_timing = self.session.timing_for_dt(float(dt_tick))
 
         tick_events = self.events_by_tick.get(int(tick_index), [])
         defer_menu_open_value = (
@@ -601,6 +600,7 @@ class PlaybackDriver:
                 strict_events=bool(strict_events),
             )
             rng_after_events = int(state.rng.state)
+            step_timing = self.session.timing_for_dt(float(dt_tick))
 
             player_inputs = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
             tick = self.session.step_tick(

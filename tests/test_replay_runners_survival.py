@@ -58,6 +58,58 @@ def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
         run_replay(replay)
 
 
+def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
+    import crimson.sim.driver.playback_driver as playback_driver_module
+    import crimson.sim.sessions as sessions_module
+
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    order: list[str] = []
+
+    original_apply = playback_driver_module.apply_replay_tick_events
+
+    def _traced_apply(
+        events,
+        *,
+        tick_index: int,
+        dt: float,
+        world,
+        game_mode_id: int,
+        strict_events: bool,
+        on_capture_state_transition=None,
+    ):
+        order.append("events")
+        return original_apply(
+            events,
+            tick_index=int(tick_index),
+            dt=float(dt),
+            world=world,
+            game_mode_id=int(game_mode_id),
+            strict_events=bool(strict_events),
+            on_capture_state_transition=on_capture_state_transition,
+        )
+
+    original_timing = sessions_module.SurvivalDeterministicSession.timing_for_dt
+
+    def _traced_timing(self, dt: float):
+        order.append("timing")
+        return original_timing(self, float(dt))
+
+    mocker.patch.object(playback_driver_module, "apply_replay_tick_events", side_effect=_traced_apply)
+    mocker.patch.object(
+        sessions_module.SurvivalDeterministicSession,
+        "timing_for_dt",
+        autospec=True,
+        side_effect=_traced_timing,
+    )
+
+    run_replay(replay, max_ticks=1)
+
+    assert "events" in order
+    assert "timing" in order
+    assert order.index("events") < order.index("timing")
+
+
 def test_survival_runner_checkpoints_capture_rng_marks() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
