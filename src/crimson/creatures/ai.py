@@ -25,12 +25,9 @@ __all__ = [
 _FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
 
-class CreatureLinkLike(Protocol):
+class CreatureAIStateLike(Protocol):
     pos: Vec2
     hp: float
-
-
-class CreatureAIStateLike(CreatureLinkLike, Protocol):
     flags: CreatureFlags
     ai_mode: int
     link_index: int
@@ -72,7 +69,7 @@ def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, r
         creature.link_index = -700 - (rand() & 0x3FF)
 
 
-def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) -> CreatureLinkLike | None:
+def resolve_live_link(creatures: Sequence[CreatureAIStateLike], link_index: int) -> CreatureAIStateLike | None:
     if 0 <= link_index < len(creatures) and creatures[link_index].hp > 0.0:
         return creatures[link_index]
     return None
@@ -111,7 +108,7 @@ def creature_ai_update_target(
     creature: CreatureAIStateLike,
     *,
     player_pos: Vec2,
-    creatures: Sequence[CreatureLinkLike],
+    creatures: Sequence[CreatureAIStateLike],
     dt: float,
 ) -> CreatureAIUpdate:
     """Compute the target position + heading for one creature.
