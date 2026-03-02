@@ -4,12 +4,13 @@ from pathlib import Path
 
 import msgspec
 
-from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
+from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state, compare_timing_samples
 from .channel_helpers import (
     checkpoint_channel_required,
     entity_samples_channel_required,
     rng_stream_channel_required,
     sim_state_channel_required,
+    timing_samples_channel_required,
 )
 from .checkpoint_diff import checkpoint_deepdiff
 from .schema import (
@@ -136,6 +137,21 @@ def _first_mismatch(
                     kind="entity_sample_mismatch",
                     channel="entity_samples",
                     detail=entities_detail,
+                ),
+            )
+
+        expected_timing_samples = timing_samples_channel_required(pair.expected_row)
+        actual_timing_samples = timing_samples_channel_required(pair.actual_row)
+        timing_ok, timing_detail = compare_timing_samples(
+            expected_timing_samples,
+            actual_timing_samples,
+        )
+        if not timing_ok:
+            tick_mismatches.append(
+                _tick_mismatch_row(
+                    kind="timing_samples_mismatch",
+                    channel="timing_samples",
+                    detail=timing_detail,
                 ),
             )
 

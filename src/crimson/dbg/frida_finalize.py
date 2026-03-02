@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
@@ -16,7 +17,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayHeader, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
-from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
+from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -35,7 +36,7 @@ _GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
 _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
 _BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 8
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 9
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -56,6 +57,7 @@ class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     entity_samples: EntitySamplesSnapshot
     rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
+    timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
 
 
 class _SessionStartRow(
@@ -105,6 +107,7 @@ class _TickRow(
 ):
     run_id: int
     elapsed_ms: int
+    dt: float
     dt_ms_i32: int
     mode_id: int
     channels: _TickChannels
@@ -180,7 +183,7 @@ class _OpenRun(msgspec.Struct):
     tick_count: int = 0
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
-    replay_dt_ms_i32: list[int] = msgspec.field(default_factory=list)
+    replay_dt: list[float] = msgspec.field(default_factory=list)
     replay_status: ReplayStatusSnapshot = msgspec.field(default_factory=lambda: ReplayStatusSnapshot())
     channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
@@ -244,6 +247,7 @@ def _canonical_channels_payload(
         entity_samples=channels.entity_samples,
         rng_marks=dict(expected_rng_marks),
         rng_stream=list(channels.rng_stream),
+        timing_samples=list(channels.timing_samples),
     )
     built = msgspec.to_builtins(normalized)
     return checkpoint, cast("dict[str, object]", built)
@@ -419,9 +423,9 @@ def _write_run_trace(
         raise FridaFinalizeError(
             f"run {run.run_id}: replay_inputs count {len(run.replay_inputs)} does not match tick_count {run.tick_count}",
         )
-    if len(run.replay_dt_ms_i32) != int(run.tick_count):
+    if len(run.replay_dt) != int(run.tick_count):
         raise FridaFinalizeError(
-            f"run {run.run_id}: replay_dt_ms_i32 count {len(run.replay_dt_ms_i32)} "
+            f"run {run.run_id}: replay_dt count {len(run.replay_dt)} "
             f"does not match tick_count {run.tick_count}",
         )
     _validate_run_seed_for_replay(run)
@@ -468,7 +472,7 @@ def _write_run_trace(
         Replay(
             header=replay_header,
             inputs=list(run.replay_inputs),
-            dt=[float(value) / 1000.0 for value in run.replay_dt_ms_i32],
+            dt=list(run.replay_dt),
             events=[],
         ),
     )
@@ -575,8 +579,12 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] tick run_id={int(tick_row.run_id)} "
                                 f"does not match active run {active_run.run_id}",
                             )
-                        if int(tick_row.dt_ms_i32) <= 0:
-                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].dt_ms_i32 must be > 0")
+                        if not math.isfinite(float(tick_row.dt)) or float(tick_row.dt) < 0.0:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].dt must be finite and >= 0",
+                            )
+                        if int(tick_row.dt_ms_i32) < 0:
+                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].dt_ms_i32 must be >= 0")
                         replay_inputs = _replay_tick_inputs_from_row(
                             tick_row.replay_inputs,
                             expected_players=int(active_run.replay_player_count),
@@ -589,7 +597,7 @@ def finalize_frida_jsonl_to_traces(
                         )
                         active_run.replay_status = _replay_status_from_channels(tick_row.channels)
                         active_run.replay_inputs.append(list(replay_inputs))
-                        active_run.replay_dt_ms_i32.append(int(tick_row.dt_ms_i32))
+                        active_run.replay_dt.append(float(tick_row.dt))
                         tick = TickRecord(
                             tick_index=int(active_run.next_local_tick),
                             elapsed_ms=int(tick_row.elapsed_ms),

@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 8;
+const CAPTURE_FORMAT_VERSION = 9;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -1312,6 +1312,78 @@ function rngStreamFromTick(tickObj) {
   return out;
 }
 
+function timingSamplesFromTick(tickObj) {
+  const out = [];
+  const tickIndex = tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : -1;
+  const gameplayFrame = tickObj && tickObj.gameplay_frame != null ? tickObj.gameplay_frame | 0 : null;
+  const diagnostics = tickObj && tickObj.diagnostics && typeof tickObj.diagnostics === "object" ? tickObj.diagnostics : {};
+  const timing = diagnostics && diagnostics.timing && typeof diagnostics.timing === "object" ? diagnostics.timing : {};
+  const frameDtBefore = timing.frame_dt_before == null ? null : captureNumber(timing.frame_dt_before);
+  const frameDtAfter = timing.frame_dt_after == null ? null : captureNumber(timing.frame_dt_after);
+  const frameDtMsBeforeI32 =
+    timing.frame_dt_ms_before_i32 == null ? null : intOr(timing.frame_dt_ms_before_i32, null);
+  const frameDtMsAfterI32 =
+    timing.frame_dt_ms_after_i32 == null ? null : intOr(timing.frame_dt_ms_after_i32, null);
+  const frameDtMsBeforeF32 =
+    timing.frame_dt_ms_before_f32 == null ? null : captureNumber(timing.frame_dt_ms_before_f32);
+  const frameDtMsAfterF32 =
+    timing.frame_dt_ms_after_f32 == null ? null : captureNumber(timing.frame_dt_ms_after_f32);
+
+  out.push({
+    tick_index: tickIndex,
+    gameplay_frame: gameplayFrame,
+    phase: "gpur_enter",
+    write_kind: "snapshot",
+    frame_dt_f32: frameDtBefore,
+    frame_dt_ms_i32: frameDtMsBeforeI32,
+    frame_dt_ms_f32: frameDtMsBeforeF32,
+    time_scale_active_entry: null,
+    time_scale_active_current: null,
+    time_scale_factor: null,
+    bonus_reflex_boost_timer: null,
+    mode_fn: null,
+    player_index: null,
+  });
+
+  const markers = tickObj && Array.isArray(tickObj.phase_markers) ? tickObj.phase_markers : [];
+  for (let i = 0; i < markers.length; i++) {
+    const marker = markers[i] && typeof markers[i] === "object" ? markers[i] : {};
+    out.push({
+      tick_index: tickIndex,
+      gameplay_frame: gameplayFrame,
+      phase: marker.kind == null ? "phase_marker" : String(marker.kind),
+      write_kind: "snapshot",
+      frame_dt_f32: null,
+      frame_dt_ms_i32: null,
+      frame_dt_ms_f32: null,
+      time_scale_active_entry: null,
+      time_scale_active_current: null,
+      time_scale_factor: null,
+      bonus_reflex_boost_timer: null,
+      mode_fn: marker.mode_fn == null ? null : String(marker.mode_fn),
+      player_index: marker.player_index == null ? null : intOr(marker.player_index, null),
+    });
+  }
+
+  out.push({
+    tick_index: tickIndex,
+    gameplay_frame: gameplayFrame,
+    phase: "post_gameplay_update_and_render",
+    write_kind: "snapshot",
+    frame_dt_f32: frameDtAfter,
+    frame_dt_ms_i32: frameDtMsAfterI32,
+    frame_dt_ms_f32: frameDtMsAfterF32,
+    time_scale_active_entry: null,
+    time_scale_active_current: null,
+    time_scale_factor: null,
+    bonus_reflex_boost_timer: null,
+    mode_fn: null,
+    player_index: null,
+  });
+
+  return out;
+}
+
 function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   const dt = dtMsI32 == null ? null : dtMsI32 | 0;
   if (dt == null || dt <= 0) return intOr(rawElapsedMs, -1);
@@ -1348,6 +1420,15 @@ function buildTraceTickRow(tickObj) {
           tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
         ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
         : null;
+  const dtSeconds =
+    tickObj &&
+    tickObj.diagnostics &&
+    tickObj.diagnostics.timing &&
+    tickObj.diagnostics.timing.frame_dt_before != null
+      ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
+      : dtMsI32 == null
+        ? 0.0
+        : captureNumber(dtMsI32 / 1000.0);
   const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
   const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
   checkpoint.elapsed_ms = elapsedMs;
@@ -1358,6 +1439,7 @@ function buildTraceTickRow(tickObj) {
     run_id: outState.currentRunId | 0,
     tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
     elapsed_ms: elapsedMs,
+    dt: dtSeconds,
     dt_ms_i32: dtMsI32,
     mode_id: modeId,
     quest_stage_major: tickQuestMajor(tickObj),
@@ -1368,6 +1450,7 @@ function buildTraceTickRow(tickObj) {
       checkpoint: checkpoint,
       rng_marks: rngMarks,
       rng_stream: rngStream,
+      timing_samples: timingSamplesFromTick(tickObj),
       sim_state: simState,
       entity_samples: entitySamplesFromTick(tickObj),
     },

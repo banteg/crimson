@@ -392,12 +392,13 @@ def _record_replay_to_trace_python(
             "entity_samples": cast("dict[str, object]", msgspec.to_builtins(entity_samples_obj)),
             "rng_marks": dict(trace_rng_marks),
             "rng_stream": msgspec.to_builtins(rng_stream),
+            "timing_samples": [],
         }
 
         if not (0 <= tick_index < len(replay_dt_rows)):
             raise ValueError(f"missing replay dt_ms_i32 row for tick {tick_index}")
         tick_dt_ms_i32 = int(replay_dt_rows[tick_index])
-        if tick_dt_ms_i32 <= 0:
+        if tick_dt_ms_i32 < 0:
             raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
         channels_seen.update(channels.keys())
