@@ -13,6 +13,22 @@ Reduce schema drift across net/replay/debug/CLI without breaking wire compatibil
 3. No implicit shape changes: every boundary change gets tests and explicit migration.
 4. Prefer additive refactors first; destructive removals only after callsites are migrated.
 
+## Metrics and Targets
+
+Baseline measured on 2026-03-03 via AST scan of `src/**/*.py`:
+
+| Metric | Before cleanup | Expected after cleanup (Phase 4) |
+| --- | ---: | ---: |
+| Total `msgspec.Struct` classes in `src/` | 389 | 360-372 |
+| `msgspec.Struct` classes in primary cleanup areas (`net`, `sim`, `dbg`, `replay`, `cli`, `ui`, `frontend`) | 241 | 218-232 |
+| CLI replay payload structs in `src/crimson/cli/replay.py` (`class _*Payload`) | 20 | 6-10 |
+| Known duplicate class names (current: `Packet`, `_DropdownLayout`, `_PendingReliable`) | 3 | 0-1 |
+| Status snapshot representations (`lockstep`, `replay`, `dbg`, persistence blob schema) | 4 | 2-3 |
+
+Progress gates:
+- Phase 1 should remove at least 2 direct duplicate definitions without changing behavior.
+- Phase 4 should reduce CLI payload struct count by at least 50% while preserving CLI schema compatibility/versioning rules.
+
 ## Hotspots (Validated)
 
 ### 1) Net protocol split-brain (lockstep vs relay)
