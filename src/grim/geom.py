@@ -16,13 +16,6 @@ class SupportsXY(Protocol):
     y: float
 
 
-class SupportsRect(Protocol):
-    x: float
-    y: float
-    width: float
-    height: float
-
-
 class Vec2(msgspec.Struct, frozen=True):
     x: float = 0.0
     y: float = 0.0
@@ -159,7 +152,7 @@ class Rect(msgspec.Struct, frozen=True):
     h: float = 0.0
 
     @classmethod
-    def from_xywh(cls, value: SupportsRect) -> Rect:
+    def from_xywh(cls, value: Rect | rl.Rectangle) -> Rect:
         return cls(
             x=value.x,
             y=value.y,
