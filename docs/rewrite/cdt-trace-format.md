@@ -1,12 +1,14 @@
 ---
 tags:
-  - status-parity
+  - rewrite
   - formats
 ---
 
-# CDT trace format
+# CDT trace format (rewrite)
 
 `CDT` is the debug trace container used by `crimson dbg record|diff|bisect|focus|viz`.
+It is rewrite tooling format, not an original Crimsonland asset/container format.
+
 This spec describes the current on-disk contract implemented by `src/crimson/dbg/schema.py`
 and `src/crimson/dbg/trace.py`.
 

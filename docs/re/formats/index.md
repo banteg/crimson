@@ -6,7 +6,7 @@ tags:
 
 # Formats
 
-File and asset format reverse engineering used by extraction and rendering parity.
+Original game file and asset format reverse engineering used by extraction and rendering parity.
 
 - [Formats overview](../../formats/index.md)
 - [PAQ](../../formats/paq.md)
@@ -15,6 +15,5 @@ File and asset format reverse engineering used by extraction and rendering parit
 - [Sprite atlas cutting](../../formats/atlas.md)
 - [Extraction pipeline](../../formats/pipeline.md)
 - [Python executable spec](../../formats/python-executable-spec.md)
-- [CDT debug trace](../../formats/cdt.md)
 - [Save/status format](../../formats/save-status-format.md)
 - [Config blob (crimson.cfg)](../../formats/crimson-cfg.md)
