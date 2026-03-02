@@ -11,6 +11,7 @@ import msgspec
 
 from .. import __version__
 from ..replay.types import PackedPlayerInput
+from .schema_shared import PacketHeader, SlotState
 
 PROTOCOL_VERSION = 3
 DEFAULT_PORT = 31993
@@ -146,12 +147,8 @@ class Welcome(msgspec.Struct, tag="welcome", forbid_unknown_fields=True):
     started: bool = False
 
 
-class LobbySlot(msgspec.Struct, forbid_unknown_fields=True):
-    slot_index: int = -1
-    connected: bool = False
-    ready: bool = False
-    is_host: bool = False
-    peer_name: str = ""
+class LobbySlot(SlotState, forbid_unknown_fields=True):
+    pass
 
 
 class LobbyState(msgspec.Struct, tag="lobby_state", forbid_unknown_fields=True):
@@ -308,10 +305,7 @@ NetMessage: TypeAlias = (
 )
 
 
-class Packet(msgspec.Struct, forbid_unknown_fields=True):
-    seq: int = 0
-    ack: int = 0
-    reliable: bool = False
+class Packet(PacketHeader, forbid_unknown_fields=True):
     message: NetMessage = msgspec.field(default_factory=PauseState)
 
 
