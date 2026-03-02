@@ -18,6 +18,7 @@ from crimson.replay import (
     unpack_packed_player_input,
 )
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from crimson.sim.driver.playback_driver import resolve_quest_level_from_replay
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
@@ -234,6 +235,14 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
+    quest_level = resolve_quest_level_from_replay(replay)
+    quest = quest_by_level(quest_level) if quest_level else None
+    if quest is not None:
+        world.state.quest_stage_major = int(quest.level_key[0])
+        world.state.quest_stage_minor = int(quest.level_key[1])
+    weapon_id = quest.start_weapon_id if quest is not None else WeaponId.PISTOL
+    for player in world.players:
+        weapon_assign_player(player, weapon_id, state=world.state)
 
     session = QuestDeterministicSession(
         world=world.world_state,
