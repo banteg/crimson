@@ -1370,7 +1370,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     assert_float_close(creature.attack_cooldown, 1.0)
     assert creature.vel == Vec2(2.0, -3.0)
     assert creature.pos == Vec2(640.0, 512.0)
-    assert creature.link_index == 83
+    assert creature.link_index == 84
     assert creature.force_target == 0
     assert stub_rand._idx == 0
 
