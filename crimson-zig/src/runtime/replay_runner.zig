@@ -66,6 +66,7 @@ const ai7_link_timer_rollover_max: i32 = -700;
 pub const ReplayRunnerError = error{
     OutOfMemory,
     InvalidHeaderValue,
+    InvalidReplayTimingRows,
     InvalidCaptureEnumValue,
     UnsupportedGameMode,
     UnsupportedPlayerCount,
@@ -144,15 +145,9 @@ pub fn deinitReplayTickTraceRows(
     replay_diagnostic_trace.deinitReplayTickTraceSlice(allocator, rows);
 }
 
-pub const DtFrameOverride = struct {
-    tick_index: usize,
-    dt_frame: f32,
-};
-
 pub const ReplayScaffoldOptions = struct {
     strict_events: bool = true,
     inter_tick_rand_draws: i32 = 0,
-    dt_frame_overrides: ?[]const DtFrameOverride = null,
     quest_spawn_entries: ?[]const spawn_mod.QuestSpawnEntry = null,
     quest_start_weapon_id: ?i32 = null,
 };
@@ -204,6 +199,9 @@ pub fn runReplayScaffoldWithTrace(
     if (!std.math.isFinite(header.world_size) or header.world_size <= 0.0 or header.world_size > max_world_size_i32_f32) {
         return error.InvalidHeaderValue;
     }
+    if (replay.dt.len != replay.tickCount()) {
+        return error.InvalidReplayTimingRows;
+    }
 
     const events = replay.events;
     var original_capture_replay = false;
@@ -216,8 +214,7 @@ pub fn runReplayScaffoldWithTrace(
         }
     }
     const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
-    const has_dt_frame_overrides = options.dt_frame_overrides != null or replay.dt.len != 0;
-    const apply_world_dt_steps = !(original_capture_replay and has_dt_frame_overrides);
+    const apply_world_dt_steps = !original_capture_replay;
     const defer_menu_open_events = original_capture_replay;
 
     var quest_start_weapon_id_for_reset: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
@@ -294,12 +291,7 @@ pub fn runReplayScaffoldWithTrace(
             return error.UnsupportedEventOrdering;
         }
 
-        const dt_tick = resolveDtFrame(
-            options.dt_frame_overrides,
-            replay.dt,
-            tick_index,
-            context.dt_nominal,
-        );
+        const dt_tick = replay.dt[tick_index];
         const tick_event_start = context.event_index;
         var tick_event_end = tick_event_start;
         while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
@@ -360,12 +352,10 @@ pub fn runReplayScaffoldWithTrace(
     }
     var terminal_menu_open_seen = false;
     while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
-        const dt_tick = resolveDtFrame(
-            options.dt_frame_overrides,
-            replay.dt,
-            terminal_tick,
-            context.dt_nominal,
-        );
+        const dt_tick = if (replay.dt.len > 0)
+            replay.dt[replay.dt.len - 1]
+        else
+            context.dt_nominal;
         const outcome = try replay_events.applyReplayEvent(
             events[context.event_index],
             &context.state,
@@ -568,26 +558,6 @@ fn hashMix(seed: u64, value: u64) u64 {
     var h = seed ^ value;
     h *%= 1099511628211;
     return h;
-}
-
-fn resolveDtFrame(
-    overrides: ?[]const DtFrameOverride,
-    replay_dt: []const f32,
-    tick_index: usize,
-    default_dt: f32,
-) f32 {
-    if (overrides) |entries| {
-        for (entries) |entry| {
-            if (entry.tick_index == tick_index) return entry.dt_frame;
-        }
-    }
-    if (tick_index < replay_dt.len) {
-        const dt_value = replay_dt[tick_index];
-        if (std.math.isFinite(dt_value) and dt_value >= 0.0) {
-            return narrowF32(dt_value);
-        }
-    }
-    return default_dt;
 }
 
 fn applyQuestStageFromHeader(
@@ -966,7 +936,7 @@ test "survival scaffold tracks weapon runtime counters" {
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.pistol), result.most_used_weapon_id);
 }
 
-test "survival scaffold honors dt overrides for elapsed_ms" {
+test "survival scaffold consumes replay dt rows for elapsed_ms" {
     const allocator = std.testing.allocator;
 
     var replay = try buildTestReplay(allocator, .{
@@ -976,11 +946,8 @@ test "survival scaffold honors dt overrides for elapsed_ms" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runReplayScaffoldWithOptions(replay, .{
-        .dt_frame_overrides = &.{
-            .{ .tick_index = 0, .dt_frame = 0.5 },
-        },
-    });
+    replay.dt[0] = 0.5;
+    const result = try runReplayScaffoldWithOptions(replay, .{});
     try std.testing.expectEqual(@as(i64, 500), result.elapsed_ms_sim);
 }
 
@@ -1371,10 +1338,10 @@ test "rush scaffold is deterministic and enforces assault rifle loadout" {
     try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.assault_rifle), result0.most_used_weapon_id);
 }
 
-test "rush scaffold honors dt overrides for elapsed_ms" {
+test "rush scaffold consumes replay dt rows for elapsed_ms" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.rush),
         .tick_rate = 60,
         .inputs = &.{0},
@@ -1382,11 +1349,8 @@ test "rush scaffold honors dt overrides for elapsed_ms" {
     });
     defer replay.deinit(allocator);
 
-    const result = try runReplayScaffoldWithOptions(replay, .{
-        .dt_frame_overrides = &.{
-            .{ .tick_index = 0, .dt_frame = 0.5 },
-        },
-    });
+    replay.dt[0] = 0.5;
+    const result = try runReplayScaffoldWithOptions(replay, .{});
     try std.testing.expectEqual(@as(i64, 500), result.elapsed_ms_sim);
 }
 
@@ -1732,7 +1696,7 @@ test "quest scaffold timeline uses frame dt even when reflex boost is active" {
 test "quest scaffold advances spawn timeline and fires entries" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
@@ -1750,11 +1714,9 @@ test "quest scaffold advances spawn timeline and fires entries" {
             .count = 1,
         },
     };
+    replay.dt[0] = 0.5;
     const result = try runReplayScaffoldWithOptions(replay, .{
         .quest_spawn_entries = quest_entries[0..],
-        .dt_frame_overrides = &.{
-            .{ .tick_index = 0, .dt_frame = 0.5 },
-        },
     });
     try std.testing.expectEqual(@as(i64, 500), result.elapsed_ms_sim);
     try std.testing.expect(result.wave_spawn_count > 0);
@@ -1790,7 +1752,7 @@ test "quest scaffold supports multiplayer replays with explicit start weapon" {
 test "quest scaffold resolves native quest preset and start weapon from replay header" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 205,
         .tick_rate = 60,
@@ -1800,11 +1762,8 @@ test "quest scaffold resolves native quest preset and start weapon from replay h
     });
     defer replay.deinit(allocator);
 
-    const result = try runReplayScaffoldWithOptions(replay, .{
-        .dt_frame_overrides = &.{
-            .{ .tick_index = 0, .dt_frame = 3.0 },
-        },
-    });
+    replay.dt[0] = 3.0;
+    const result = try runReplayScaffoldWithOptions(replay, .{});
     try std.testing.expectEqual(@as(i32, 6), result.player_weapon_id);
     try std.testing.expect(result.wave_spawn_count > 0);
 }
@@ -1812,7 +1771,7 @@ test "quest scaffold resolves native quest preset and start weapon from replay h
 test "quest scaffold supports dynamic quest seed variants when no spawn entries are provided" {
     const allocator = std.testing.allocator;
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 999,
         .tick_rate = 60,
@@ -1822,11 +1781,8 @@ test "quest scaffold supports dynamic quest seed variants when no spawn entries 
     });
     defer replay.deinit(allocator);
 
-    const result = try runReplayScaffoldWithOptions(replay, .{
-        .dt_frame_overrides = &.{
-            .{ .tick_index = 0, .dt_frame = 3.0 },
-        },
-    });
+    replay.dt[0] = 3.0;
+    const result = try runReplayScaffoldWithOptions(replay, .{});
     try std.testing.expectEqual(@as(i32, 6), result.player_weapon_id);
     try std.testing.expect(result.wave_spawn_count > 0);
 }
@@ -1867,7 +1823,7 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             const row_storage = [_]u32{0} ** state_mod.max_players;
             const rows = [_][]const u32{row_storage[0..players_len]};
 
-            const replay = try buildTestReplayMulti(allocator, .{
+            var replay = try buildTestReplayMulti(allocator, .{
                 .game_mode_id = @intFromEnum(GameModeId.quests),
                 .seed = case.seed,
                 .tick_rate = 60,
@@ -1878,11 +1834,8 @@ test "quest scaffold supports player counts 1 through 4 across static and dynami
             });
             defer replay.deinit(allocator);
 
-            const result = try runReplayScaffoldWithOptions(replay, .{
-                .dt_frame_overrides = &.{
-                    .{ .tick_index = 0, .dt_frame = 3.0 },
-                },
-            });
+            replay.dt[0] = 3.0;
+            const result = try runReplayScaffoldWithOptions(replay, .{});
             try std.testing.expectEqual(@as(usize, 1), result.ticks);
             try std.testing.expectEqual(case.expected_start_weapon, result.player_weapon_id);
             try std.testing.expect(result.wave_spawn_count > 0);
@@ -1894,7 +1847,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     const allocator = std.testing.allocator;
 
     const inputs = [_]u32{0} ** 20;
-    const replay_baseline = try buildTestReplay(allocator, .{
+    var replay_baseline = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
@@ -1913,12 +1866,9 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         },
     };
 
-    var dt_overrides: [20]DtFrameOverride = undefined;
-    for (&dt_overrides, 0..) |*entry, idx| {
-        entry.* = .{
-            .tick_index = idx,
-            .dt_frame = 0.1,
-        };
+    for (replay_baseline.dt, 0..) |*entry, idx| {
+        _ = idx;
+        entry.* = 0.1;
     }
 
     var baseline_trace: std.ArrayList(ReplayTickTrace) = .empty;
@@ -1930,7 +1880,6 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         allocator,
         .{
             .quest_spawn_entries = quest_entries[0..],
-            .dt_frame_overrides = dt_overrides[0..],
         },
     );
     try std.testing.expectEqual(@as(usize, 20), baseline_trace.items.len);
@@ -1957,7 +1906,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     const events = [_]replay_codec.ReplayEvent{
         .{ .capture_bootstrap = bootstrap },
     };
-    const replay_bootstrapped = try buildTestReplay(allocator, .{
+    var replay_bootstrapped = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
@@ -1965,6 +1914,10 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         .events = events[0..],
     });
     defer replay_bootstrapped.deinit(allocator);
+    for (replay_bootstrapped.dt, 0..) |*entry, idx| {
+        _ = idx;
+        entry.* = 0.1;
+    }
 
     var bootstrapped_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer bootstrapped_trace.deinit(allocator);
@@ -1975,7 +1928,6 @@ test "quest scaffold applies capture bootstrap quest session timers" {
         allocator,
         .{
             .quest_spawn_entries = quest_entries[0..],
-            .dt_frame_overrides = dt_overrides[0..],
         },
     );
     try std.testing.expectEqual(@as(usize, 20), bootstrapped_trace.items.len);
@@ -2020,7 +1972,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         .{ .capture_creature_spawn = capture_spawn },
     };
 
-    const replay = try buildTestReplay(allocator, .{
+    var replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.quests),
         .seed = 101,
         .tick_rate = 60,
@@ -2028,13 +1980,9 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         .events = events[0..],
     });
     defer replay.deinit(allocator);
-
-    var dt_overrides: [40]DtFrameOverride = undefined;
-    for (&dt_overrides, 0..) |*entry, idx| {
-        entry.* = .{
-            .tick_index = idx,
-            .dt_frame = 0.1,
-        };
+    for (replay.dt, 0..) |*entry, idx| {
+        _ = idx;
+        entry.* = 0.1;
     }
 
     const empty_entries = [_]spawn_mod.QuestSpawnEntry{};
@@ -2047,7 +1995,6 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         allocator,
         .{
             .quest_spawn_entries = empty_entries[0..],
-            .dt_frame_overrides = dt_overrides[0..],
         },
     );
     try std.testing.expectEqual(@as(usize, 40), trace.items.len);
@@ -2259,10 +2206,6 @@ test "quest scaffold resets run state on capture transition to terminal state" {
         &trace,
         allocator,
         .{
-            .dt_frame_overrides = &.{
-                .{ .tick_index = 0, .dt_frame = 0.1 },
-                .{ .tick_index = 1, .dt_frame = 0.1 },
-            },
             .quest_spawn_entries = &.{},
         },
     );
@@ -2379,7 +2322,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             bootstrap: replay_codec.ReplayEvent,
             reflex_apply: replay_codec.ReplayEvent,
             include_reflex_boosted: bool,
-            dt_overrides: ?[]const DtFrameOverride,
+            dt_override: ?f32,
         ) !struct { x_bits: u32, y_bits: u32 } {
             const events = [_]replay_codec.ReplayEvent{ bootstrap, reflex_apply };
             var replay = try buildTestReplay(allocator_inner, .{
@@ -2395,6 +2338,9 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             replay.inputs[0][0].move_y = 0.0;
             replay.inputs[0][0].aim_x = 700.0;
             replay.inputs[0][0].aim_y = 512.0;
+            if (dt_override) |dt_value| {
+                replay.dt[0] = dt_value;
+            }
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
@@ -2405,7 +2351,6 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
                 allocator_inner,
                 .{
                     .quest_spawn_entries = &.{},
-                    .dt_frame_overrides = dt_overrides,
                 },
             );
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
@@ -2432,22 +2377,19 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
     );
     try std.testing.expect(no_override_with_perk.x_bits != no_override_without_perk.x_bits);
 
-    const dt_override_rows = [_]DtFrameOverride{
-        .{ .tick_index = 0, .dt_frame = 0.1 },
-    };
     const override_without_perk = try run(
         allocator,
         bootstrap_event,
         reflex_apply_event,
         false,
-        dt_override_rows[0..],
+        0.1,
     );
     const override_with_perk = try run(
         allocator,
         bootstrap_event,
         reflex_apply_event,
         true,
-        dt_override_rows[0..],
+        0.1,
     );
     try std.testing.expectEqual(override_without_perk.x_bits, override_with_perk.x_bits);
     try std.testing.expectEqual(override_without_perk.y_bits, override_with_perk.y_bits);
