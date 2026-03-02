@@ -224,9 +224,9 @@ uv run scripts/frida/gameplay_diff_capture_host.py --raw-path gameplay_diff_capt
 Then compare original-vs-rewrite traces directly:
 
 ```bash
-uv run crimson dbg diff traces/original.cdt traces/rewrite.cdt --policy python_vs_zig_core
-uv run crimson dbg bisect traces/original.cdt traces/rewrite.cdt --policy python_vs_zig_core
-uv run crimson dbg focus traces/original.cdt traces/rewrite.cdt --tick <n> --policy python_vs_zig_core
+uv run crimson dbg diff traces/original.cdt traces/rewrite.cdt
+uv run crimson dbg bisect traces/original.cdt traces/rewrite.cdt
+uv run crimson dbg focus traces/original.cdt traces/rewrite.cdt --tick <n>
 ```
 
 This removes replay-side conversion bridges and keeps all implementations on one structural trace format.

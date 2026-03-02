@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import cast
 
 import msgspec
 
@@ -20,9 +20,6 @@ from .trace import TraceError
 ENTITY_SAMPLE_KINDS = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
 
 EntitySampleRow = CreatureEntitySample | ProjectileEntitySample | SecondaryProjectileEntitySample | BonusEntitySample
-
-_T = TypeVar("_T")
-
 
 def _decode_channel(value: object, *, channel_name: str, target: object) -> object:
     try:
@@ -92,27 +89,9 @@ def entity_samples_channel_required(row: TickRecord | None) -> EntitySamplesSnap
     )
 
 
-def rng_stream_channel(row: TickRecord | None) -> list[RngStreamRow]:
-    if row is None:
-        return []
-    payload = row.channels.get("rng_stream")
-    if payload is None:
-        return []
-    return cast("list[RngStreamRow]", _decode_channel(payload, channel_name="rng_stream", target=list[RngStreamRow]))
-
-
 def rng_stream_channel_required(row: TickRecord | None) -> list[RngStreamRow]:
     payload = _require_channel_payload(row, channel_name="rng_stream")
     return cast("list[RngStreamRow]", _decode_channel(payload, channel_name="rng_stream", target=list[RngStreamRow]))
-
-
-def rng_marks_channel(row: TickRecord | None) -> dict[str, int]:
-    if row is None:
-        return {}
-    payload = row.channels.get("rng_marks")
-    if payload is None:
-        return {}
-    return cast("dict[str, int]", _decode_channel(payload, channel_name="rng_marks", target=dict[str, int]))
 
 
 def rng_marks_channel_required(row: TickRecord | None) -> dict[str, int]:

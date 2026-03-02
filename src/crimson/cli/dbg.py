@@ -138,13 +138,6 @@ def cmd_dbg_health(
 def cmd_dbg_diff(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
-    max_field_diffs: int | None = typer.Option(
-        None,
-        "--max-field-diffs",
-        min=1,
-        help="override max field-level diffs in mismatch payloads (default: all fields)",
-    ),
     tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
@@ -156,8 +149,6 @@ def cmd_dbg_diff(
         report = diff_traces(
             expected_trace_path=Path(golden_trace),
             actual_trace_path=Path(candidate_trace),
-            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
-            max_field_diffs=max_field_diffs,
             tick_start=tick_start,
             tick_end=tick_end,
         )
@@ -191,13 +182,6 @@ def cmd_dbg_diff(
 def cmd_dbg_bisect(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
-    max_field_diffs: int | None = typer.Option(
-        None,
-        "--max-field-diffs",
-        min=1,
-        help="override max field-level diffs in mismatch payloads (default: all fields)",
-    ),
     tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
     window_before: int = typer.Option(12, "--window-before", min=0, help="ticks before first bad tick in repro trace"),
@@ -212,8 +196,6 @@ def cmd_dbg_bisect(
         report = bisect_traces(
             expected_trace_path=Path(golden_trace),
             actual_trace_path=Path(candidate_trace),
-            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
-            max_field_diffs=max_field_diffs,
             tick_start=tick_start,
             tick_end=tick_end,
             window_before=window_before,
@@ -429,13 +411,6 @@ def cmd_dbg_focus(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick: int = typer.Option(..., "--tick", help="focus tick index"),
-    float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
-    max_field_diffs: int | None = typer.Option(
-        None,
-        "--max-field-diffs",
-        min=1,
-        help="override max field-level diffs in checkpoint payload (default: all fields)",
-    ),
     json_mode: bool = typer.Option(False, "--json", help="print JSON payload to stdout"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
@@ -447,8 +422,6 @@ def cmd_dbg_focus(
             golden_trace=Path(golden_trace),
             candidate_trace=Path(candidate_trace),
             tick_index=tick,
-            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
-            max_field_diffs=max_field_diffs,
         )
     except ValueError as exc:
         typer.echo(f"dbg focus failed: {exc}", err=True)

@@ -62,9 +62,6 @@ def _tick_mismatch_row(*, kind: str, channel: str, detail: dict[str, object] | N
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
-    float_abs_tol: float,
-    max_field_diffs: int | None,
-    ignore_field_prefixes: tuple[str, ...],
     tick_end: int | None = None,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
@@ -88,13 +85,7 @@ def _first_mismatch(
         exp_rng_stream = rng_stream_channel_required(pair.expected_row)
         act_rng_stream = rng_stream_channel_required(pair.actual_row)
 
-        checkpoint_diff = checkpoint_deepdiff(
-            expected,
-            actual,
-            ignore_field_prefixes=ignore_field_prefixes,
-            max_diffs=max_field_diffs,
-            float_abs_tol=float_abs_tol,
-        )
+        checkpoint_diff = checkpoint_deepdiff(expected, actual)
         if checkpoint_diff is not None:
             tick_mismatches.append(
                 _tick_mismatch_row(
@@ -192,9 +183,6 @@ def diff_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    float_abs_tol: float = 0.0,
-    max_field_diffs: int | None = None,
-    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
 ) -> TraceDiffReport:
@@ -228,9 +216,6 @@ def diff_traces(
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
-                float_abs_tol=float(float_abs_tol),
-                max_field_diffs=max_field_diffs,
-                ignore_field_prefixes=tuple(ignore_field_prefixes),
                 tick_end=tick_end,
             )
         except TraceError as exc:
@@ -248,9 +233,6 @@ def bisect_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    float_abs_tol: float = 0.0,
-    max_field_diffs: int | None = None,
-    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
     window_before: int = 12,
@@ -277,9 +259,6 @@ def bisect_traces(
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
-                float_abs_tol=float(float_abs_tol),
-                max_field_diffs=max_field_diffs,
-                ignore_field_prefixes=tuple(ignore_field_prefixes),
                 tick_end=end_tick_bound,
             )
         except TraceError as exc:

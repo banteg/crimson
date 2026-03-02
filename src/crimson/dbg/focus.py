@@ -29,8 +29,6 @@ def focus_tick(
     golden_trace: Path,
     candidate_trace: Path,
     tick_index: int,
-    float_abs_tol: float = 0.0,
-    max_field_diffs: int | None = None,
 ) -> dict[str, object]:
     tick = int(tick_index)
     with TraceReader(Path(golden_trace)) as expected, TraceReader(Path(candidate_trace)) as candidate:
@@ -43,12 +41,7 @@ def focus_tick(
     expected_checkpoint = checkpoint_channel_required(expected_row)
     candidate_checkpoint = checkpoint_channel_required(candidate_row)
 
-    checkpoint_diff = checkpoint_deepdiff(
-        expected_checkpoint,
-        candidate_checkpoint,
-        max_diffs=max_field_diffs,
-        float_abs_tol=float(float_abs_tol),
-    )
+    checkpoint_diff = checkpoint_deepdiff(expected_checkpoint, candidate_checkpoint)
 
     expected_rng = {str(key): int(value) for key, value in expected_checkpoint.rng_marks.items()}
     candidate_rng = {str(key): int(value) for key, value in candidate_checkpoint.rng_marks.items()}

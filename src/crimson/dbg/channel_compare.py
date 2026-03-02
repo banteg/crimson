@@ -28,8 +28,6 @@ def _to_builtin_obj(value: object) -> dict[str, object]:
 def _deepdiff_payload(
     expected: object,
     actual: object,
-    *,
-    max_rows: int | None,
 ) -> tuple[dict[str, object], int]:
     deep = DeepDiff(
         expected,
@@ -44,10 +42,7 @@ def _deepdiff_payload(
 
     out: dict[str, object] = {}
     total = 0
-    limit = (None if max_rows is None else max(1, int(max_rows)))
     for category in _DEEPDIFF_CATEGORY_ORDER:
-        if limit is not None and total >= limit:
-            break
         payload = raw.get(category)
         if payload is None:
             continue
@@ -57,8 +52,6 @@ def _deepdiff_payload(
                 for key in sorted(mapping.keys(), key=str):
                     if not isinstance(key, str):
                         raise TypeError(f"deepdiff dict category {category} had non-string key")
-                    if limit is not None and total >= limit:
-                        break
                     keep[str(key)] = mapping[key]
                     total += 1
                 if keep:
@@ -66,8 +59,6 @@ def _deepdiff_payload(
             case list() as rows:
                 keep_rows: list[object] = []
                 for item in rows:
-                    if limit is not None and total >= limit:
-                        break
                     keep_rows.append(item)
                     total += 1
                 if keep_rows:
@@ -119,16 +110,10 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
 def compare_sim_state(
     expected_obj: SimStateSnapshot,
     actual_obj: SimStateSnapshot,
-    *,
-    max_diff_rows: int | None = None,
 ) -> tuple[bool, dict[str, object] | None]:
     if expected_obj == actual_obj:
         return True, None
-    payload, diff_count = _deepdiff_payload(
-        expected_obj,
-        actual_obj,
-        max_rows=max_diff_rows,
-    )
+    payload, diff_count = _deepdiff_payload(expected_obj, actual_obj)
     return False, {
         "diff_count": int(diff_count),
         "payload": payload,
@@ -150,15 +135,12 @@ def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow
 def compare_entity_samples(
     expected_obj: EntitySamplesSnapshot,
     actual_obj: EntitySamplesSnapshot,
-    *,
-    max_diff_rows: int | None = None,
 ) -> tuple[bool, dict[str, object] | None]:
     if expected_obj == actual_obj:
         return True, None
 
     detail: dict[str, object] = {}
     row_diffs: list[dict[str, object]] = []
-    row_limit = (None if max_diff_rows is None else max(1, int(max_diff_rows)))
     for kind in ENTITY_SAMPLE_KINDS:
         exp_map, exp_total, exp_dupes = _rows_by_uid(entity_rows(expected_obj, kind=kind))
         act_map, act_total, act_dupes = _rows_by_uid(entity_rows(actual_obj, kind=kind))
@@ -179,13 +161,11 @@ def compare_entity_samples(
             }
 
         for uid in sorted(set(exp_map) & set(act_map)):
-            if row_limit is not None and len(row_diffs) >= row_limit:
-                break
             expected_row = exp_map[uid]
             actual_row = act_map[uid]
             if expected_row == actual_row:
                 continue
-            payload, diff_count = _deepdiff_payload(expected_row, actual_row, max_rows=row_limit)
+            payload, diff_count = _deepdiff_payload(expected_row, actual_row)
             row_diffs.append(
                 {
                     "path": f"entity_samples.{kind}[uid={uid}]",

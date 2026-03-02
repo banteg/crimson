@@ -12,7 +12,7 @@ from .channel_helpers import (
     checkpoint_channel,
     entity_rows,
     entity_samples_channel,
-    rng_marks_channel,
+    rng_marks_channel_required,
 )
 from .schema import TickRecord
 from .trace import TraceReader
@@ -185,7 +185,7 @@ def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
         if checkpoint_obj is not None
         else {}
     )
-    rng_marks = dict(rng_marks_channel(row))
+    rng_marks = dict(rng_marks_channel_required(row))
     samples = entity_samples_channel(row)
     if samples is None:
         entity_counts = {kind: 0 for kind in ENTITY_SAMPLE_KINDS}

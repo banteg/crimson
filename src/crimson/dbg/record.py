@@ -415,8 +415,7 @@ def _record_replay_to_trace_python(
         tick_dt_ms_i32: int | None = None
         if 0 <= tick_index < len(replay_dt_rows):
             dt_raw = int(replay_dt_rows[tick_index])
-            if dt_raw > 0:
-                tick_dt_ms_i32 = int(dt_raw)
+            tick_dt_ms_i32 = int(dt_raw)
 
         channels_seen.update(channels.keys())
         tick_rows.append(

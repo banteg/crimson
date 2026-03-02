@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
+from .channel_helpers import entity_samples_channel, rng_stream_channel_required, sim_state_channel
 from .schema import TRACE_REQUIRED_CHANNELS_V3
 from .trace import TraceReader
 
@@ -33,7 +33,7 @@ def summarize_trace_health(
                 channels_present[channel_name] = int(channels_present.get(channel_name, 0)) + 1
                 _ = channel_value
                 if channel_name == "rng_stream":
-                    rng_stream_rows += len(rng_stream_channel(tick))
+                    rng_stream_rows += len(rng_stream_channel_required(tick))
                 elif channel_name == "sim_state":
                     if sim_state_channel(tick) is not None:
                         sim_state_rows += 1
