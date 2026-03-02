@@ -156,9 +156,6 @@ zig-test:
 zig-wasm:
     cd crimson-zig && zig build wasm
 
-zig-diff replay="survival_20260224_041009_score76661.crd":
-    replay_arg="{{replay}}" && replay_arg="${replay_arg#replay=}" && uv run python crimson-zig/scripts/diff_survival_verifiers.py "$replay_arg"
-
 # WinDbg
 windbg-server:
     cdb.exe -server tcp:port=5005,password=secret -logo C:\games\crimsonland_1.9.93\windbg.log -pn crimsonland.exe -noio

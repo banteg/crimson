@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import platform
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -32,7 +33,11 @@ from .canonical_channels import (
 from .checkpoint_codec import checkpoint_to_channel
 from .rng import canonical_rng_marks
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
-from .trace import TraceSummary, write_trace
+from .trace import TraceError, TraceReader, TraceSummary, write_trace
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_ZIG_ROOT = _REPO_ROOT / "crimson-zig"
+_ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
 
 
 class _EntityGenerationState(msgspec.Struct):
@@ -281,19 +286,26 @@ def _build_trace_meta(
     replay: Replay,
     tick_rows: list[TickRecord],
     channels_seen: set[str],
+    impl: Literal["python", "zig"],
     strict_events: bool,
-    max_ticks: int | None,
+    config_extra: dict[str, object] | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
     tick_end = max((row.tick_index for row in tick_rows), default=-1)
     replay_fingerprint = _build_replay_fingerprint(replay_path=replay_path, replay=replay)
     channels_sorted = sorted(channels_seen)
+    config = {
+        "strict_events": bool(strict_events),
+        "impl": str(impl),
+    }
+    if config_extra is not None:
+        config.update(config_extra)
     return TraceMeta(
         trace_format_version=TRACE_FORMAT_VERSION,
         trace_schema_version=TRACE_SCHEMA_VERSION,
         created_utc=datetime.now(tz=UTC).isoformat(),
         producer={
-            "impl": "python",
+            "impl": str(impl),
             "impl_version": "",
             "platform": str(platform.system()),
             "arch": str(platform.machine()),
@@ -306,10 +318,7 @@ def _build_trace_meta(
             "end_tick": tick_end,
             "tick_count": len(tick_rows),
         },
-        config={
-            "strict_events": bool(strict_events),
-            "max_ticks": max_ticks,
-        },
+        config=config,
     )
 
 
@@ -317,15 +326,13 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    max_ticks: int | None,
     strict_events: bool,
     chunk_ticks: int,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
     replay_tick_count = len(replay.inputs)
-    tick_count = replay_tick_count if max_ticks is None else min(replay_tick_count, int(max_ticks))
-    checkpoint_ticks = set(range(tick_count))
+    checkpoint_ticks = set(range(replay_tick_count))
     checkpoints: list[ReplayCheckpoint] = []
 
     entity_samples_by_tick: dict[int, EntitySamplesSnapshot] = {}
@@ -351,7 +358,7 @@ def _record_replay_to_trace_python(
 
     run_replay(
         replay,
-        max_ticks=max_ticks,
+        max_ticks=None,
         strict_events=bool(strict_events),
         trace_rng=True,
         checkpoints_out=checkpoints,
@@ -418,8 +425,9 @@ def _record_replay_to_trace_python(
         replay=replay,
         tick_rows=tick_rows,
         channels_seen=channels_seen,
+        impl="python",
         strict_events=strict_events,
-        max_ticks=max_ticks,
+        config_extra=None,
     )
     return write_trace(
         out_path,
@@ -429,20 +437,119 @@ def _record_replay_to_trace_python(
     )
 
 
+def _command_detail(run: subprocess.CompletedProcess[str]) -> str:
+    stderr = str(run.stderr).strip()
+    stdout = str(run.stdout).strip()
+    if stderr:
+        return stderr
+    if stdout:
+        return stdout
+    return "(no command output)"
+
+
+def _run_process(command: list[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            text=True,
+            capture_output=True,
+        )
+    except OSError as exc:
+        joined = " ".join(command)
+        raise ValueError(f"failed to run command: {joined}: {exc}") from exc
+
+
+def _record_replay_to_trace_zig(
+    *,
+    replay_path: Path,
+    out_path: Path,
+    strict_events: bool,
+    chunk_ticks: int,
+) -> tuple[TraceSummary, list[str]]:
+    if not bool(strict_events):
+        raise ValueError("strict_events=False is unsupported for zig dbg record")
+
+    replay = load_replay_file(replay_path)
+    if int(replay.header.player_count) != 1:
+        raise ValueError(
+            "zig dbg record currently supports only single-player replays; "
+            f"got player_count={int(replay.header.player_count)}",
+        )
+
+    build_run = _run_process(["zig", "build"], cwd=_ZIG_ROOT)
+    if int(build_run.returncode) != 0:
+        raise ValueError(
+            "zig build failed: "
+            f"exit={int(build_run.returncode)} detail={_command_detail(build_run)}",
+        )
+
+    warnings: list[str] = []
+    verify_cmd = [
+        str(_ZIG_BIN),
+        "replay",
+        "verify",
+        str(replay_path),
+        "--debug-trace-cdt",
+        str(out_path),
+        "--debug-trace-cdt-chunk-ticks",
+        str(max(1, int(chunk_ticks))),
+        "--format",
+        "json",
+    ]
+    verify_run = _run_process(verify_cmd, cwd=_REPO_ROOT)
+    if not out_path.is_file():
+        raise ValueError(
+            "zig trace generation failed: replay verify did not produce CDT output; "
+            f"exit={int(verify_run.returncode)} detail={_command_detail(verify_run)}",
+        )
+    if int(verify_run.returncode) != 0:
+        warning = (
+            f"warning: zig replay verify exited {int(verify_run.returncode)}; "
+            "continuing with emitted trace"
+        )
+        stderr = str(verify_run.stderr).strip()
+        if stderr:
+            warning = f"{warning}: {stderr.splitlines()[0]}"
+        warnings.append(warning)
+
+    try:
+        with TraceReader(out_path) as trace:
+            summary = TraceSummary(meta=trace.meta, footer=trace.footer)
+    except TraceError as exc:
+        raise ValueError(f"zig trace validation failed: {exc}") from exc
+    return summary, warnings
+
+
 def record_replay_to_trace(
     *,
     replay_path: Path,
     out_path: Path,
-    max_ticks: int | None = None,
+    impl: Literal["python", "zig"] = "python",
     strict_events: bool = True,
     chunk_ticks: int = 256,
+    warnings_out: list[str] | None = None,
 ) -> TraceSummary:
     replay_path = Path(replay_path)
     out_path = Path(out_path)
-    return _record_replay_to_trace_python(
-        replay_path=replay_path,
-        out_path=out_path,
-        max_ticks=max_ticks,
-        strict_events=strict_events,
-        chunk_ticks=chunk_ticks,
-    )
+    if warnings_out is None:
+        warnings_out = []
+    if str(impl) == "python":
+        summary = _record_replay_to_trace_python(
+            replay_path=replay_path,
+            out_path=out_path,
+            strict_events=strict_events,
+            chunk_ticks=chunk_ticks,
+        )
+        return summary
+    if str(impl) == "zig":
+        summary, warnings = _record_replay_to_trace_zig(
+            replay_path=replay_path,
+            out_path=out_path,
+            strict_events=strict_events,
+            chunk_ticks=chunk_ticks,
+        )
+        warnings_out.extend(warnings)
+        return summary
+    raise ValueError(f"unsupported dbg record impl: {impl!r}")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import cast
+from typing import Literal, cast
 
 import typer
 
@@ -23,7 +23,11 @@ def _as_dict(value: object) -> dict[str, object]:
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
+    impl: Literal["python", "zig"] = typer.Option(
+        "python",
+        "--impl",
+        help="recording backend implementation",
+    ),
     chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
 ) -> None:
     """Run replay simulation and record a CDT trace."""
@@ -31,18 +35,22 @@ def cmd_dbg_record(
     from ..dbg.trace import TraceError
     from ..sim.driver.setup import ReplayRunnerError
 
+    warnings_out: list[str] = []
     try:
         summary = record_replay_to_trace(
             replay_path=Path(replay_file),
             out_path=Path(out),
-            max_ticks=max_ticks,
+            impl=impl,
             strict_events=True,
             chunk_ticks=chunk_ticks,
+            warnings_out=warnings_out,
         )
     except (TraceError, ValueError, ReplayRunnerError) as exc:
         typer.echo(f"dbg record failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
+    for warning in warnings_out:
+        typer.echo(str(warning), err=True)
     tick_range = summary.meta.tick_range
     typer.echo(f"trace={out}")
     typer.echo(

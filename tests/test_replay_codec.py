@@ -14,6 +14,7 @@ from crimson.replay import (
     ReplayClaimedStatsSnapshot,
     ReplayCodecError,
     ReplayGameVersionError,
+    ReplayGameVersionWarning,
     ReplayHeader,
     ReplayRecorder,
     ReplayStatusSnapshot,
@@ -272,6 +273,16 @@ def test_replay_version_mismatch_raises() -> None:
 
     with pytest.raises(ReplayGameVersionError, match="mismatch"):
         warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
+
+
+def test_replay_version_build_metadata_mismatch_warns() -> None:
+    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1, game_version="1.0.0+gabc123")
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput()])
+    replay = rec.finish()
+
+    with pytest.warns(ReplayGameVersionWarning, match="build metadata differs"):
+        warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0+gdef456")
 
 
 def test_current_replay_game_version_appends_git_sha_for_non_release_head(monkeypatch: pytest.MonkeyPatch) -> None:

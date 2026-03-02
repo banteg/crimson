@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import cast
 
 from typer.testing import CliRunner
@@ -48,6 +49,78 @@ def test_dbg_record_rejects_removed_profile_option(tmp_path: Path) -> None:
 
     assert result.exit_code == 2
     assert "No such option" in result.output
+
+
+def test_dbg_record_rejects_removed_max_ticks_option(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--max-ticks", "2"],
+    )
+
+    assert result.exit_code == 2
+    assert "No such option" in result.output
+
+
+def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatch) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
+    runner = CliRunner()
+
+    captured: dict[str, object] = {}
+
+    def _fake_record_replay_to_trace(
+        *,
+        replay_path: Path,
+        out_path: Path,
+        impl: str,
+        strict_events: bool,
+        chunk_ticks: int,
+        warnings_out: list[str],
+    ) -> object:
+        captured["replay_path"] = replay_path
+        captured["out_path"] = out_path
+        captured["impl"] = impl
+        captured["strict_events"] = strict_events
+        captured["chunk_ticks"] = chunk_ticks
+        warnings_out.append("warning: zig replay verify exited 1; continuing with emitted trace")
+        return SimpleNamespace(
+            meta=SimpleNamespace(
+                tick_range={"start_tick": 0, "end_tick": 1, "tick_count": 2},
+                channels=["checkpoint", "sim_state"],
+            ),
+        )
+
+    import crimson.dbg.record as dbg_record_mod
+
+    monkeypatch.setattr(dbg_record_mod, "record_replay_to_trace", _fake_record_replay_to_trace)
+    result = runner.invoke(
+        app,
+        [
+            "dbg",
+            "record",
+            str(replay_path),
+            "--out",
+            str(trace_path),
+            "--impl",
+            "zig",
+            "--chunk-ticks",
+            "8",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "warning: zig replay verify exited 1; continuing with emitted trace" in result.output
+    assert "trace=" in result.output
+    assert "channels=checkpoint,sim_state" in result.output
+    assert captured["replay_path"] == replay_path
+    assert captured["out_path"] == trace_path
+    assert captured["impl"] == "zig"
+    assert captured["strict_events"] is True
+    assert captured["chunk_ticks"] == 8
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
