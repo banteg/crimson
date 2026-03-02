@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Protocol, cast
+from typing import Any, Literal, cast
 
 import msgspec
 import typer
@@ -26,16 +26,6 @@ _REPLAY_VERIFY_SCHEMA_VERSION = 1
 _REPLAY_INFO_SCHEMA_VERSION = 1
 _REPLAY_BENCHMARK_SCHEMA_VERSION = 2
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
-
-
-class _ProgressBarLike(Protocol):
-    total: int
-
-    def update(self, value: int) -> None: ...
-
-    def set_postfix(self, *, refresh: bool = True, **kwargs: Any) -> None: ...
-
-    def close(self) -> None: ...
 
 
 def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tuple[Path, ...]]:
@@ -74,7 +64,7 @@ def _replay_render_progress_callback(
         return None, None
 
     video_bar = cast(
-        _ProgressBarLike,
+        Any,
         tqdm_factory(
             total=int(total_ticks),
             unit="tick",
@@ -82,16 +72,16 @@ def _replay_render_progress_callback(
             leave=True,
         ),
     )
-    audio_bar: _ProgressBarLike | None = None
+    audio_bar: Any | None = None
     video_last_tick = 0
     audio_last_tick = 0
 
-    def _ensure_audio_bar(total: int) -> _ProgressBarLike:
+    def _ensure_audio_bar(total: int) -> Any:
         nonlocal audio_bar
         if audio_bar is not None:
             return audio_bar
         audio_bar = cast(
-            _ProgressBarLike,
+            Any,
             tqdm_factory(
                 total=int(total),
                 unit="tick",
