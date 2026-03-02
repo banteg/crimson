@@ -104,7 +104,7 @@ pub fn applyReplayEvent(
     quest_completion_transition_ms: *f32,
     options: ApplyEventOptions,
 ) EventError!EventOutcome {
-    var outcome = EventOutcome{};
+    var outcome: EventOutcome = .{};
     switch (event) {
         .perk_menu_open => |open| {
             outcome.menu_open_seen_this_tick = true;
@@ -257,7 +257,7 @@ fn consumeSpawnBurstRng(
 }
 
 test "tick event classification defers state transition then spawn then menu in capture mode" {
-    var transition = replay_codec.CaptureStateTransitionEvent{
+    var transition: replay_codec.CaptureStateTransitionEvent = .{
         .tick_index = 0,
     };
     transition.transition_count = 1;
@@ -301,14 +301,14 @@ test "tick event classification defers state transition then spawn then menu in 
 
 test "capture state transition event returns reset request through event outcome" {
     var state = state_mod.GameplayState.init(42);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players = players_storage[0..0];
     var quest_spawn_timeline_ms: f32 = 0.0;
     var quest_no_creatures_timer_ms: f32 = 0.0;
     var quest_completion_transition_ms: f32 = -1.0;
 
-    var transition = replay_codec.CaptureStateTransitionEvent{
+    var transition: replay_codec.CaptureStateTransitionEvent = .{
         .tick_index = 1,
     };
     transition.transition_count = 1;
@@ -342,7 +342,7 @@ test "capture state transition event returns reset request through event outcome
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {
     var state = state_mod.GameplayState.init(1);
     const before_rng = state.rng.state;
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
 
     for (0..8) |idx| {
         creatures.entries[idx].active = true;

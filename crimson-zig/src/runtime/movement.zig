@@ -54,7 +54,7 @@ pub fn updatePlayerFromGameInput(
     const move_mode = resolveMoveModeForUpdate(flags);
     const aim_scheme = resolveAimSchemeForUpdate(flags);
 
-    var raw_move = state_mod.Vec2{
+    var raw_move: state_mod.Vec2 = .{
         .x = narrowF32(input.move_x),
         .y = narrowF32(input.move_y),
     };
@@ -337,7 +337,7 @@ fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32)
     };
 }
 
-fn distanceF32XY(
+fn distanceF32Xy(
     ax: f32,
     ay: f32,
     bx: f32,
@@ -373,21 +373,21 @@ fn playerApplyMoveWithSpawnAvoidance(
             const owner = creature_pool.entries[owner_idx];
             const owner_pos = owner.pos;
             const radius = narrowF32((owner.size + player.size) * 0.33333334);
-            if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) > radius) continue;
+            if (distanceF32Xy(owner_pos.x, owner_pos.y, pos_x, pos_y) > radius) continue;
 
             const old_x = narrowF32(pos_x - dx);
             const old_y = narrowF32(pos_y - dy);
-            const old_dist = distanceF32XY(owner_pos.x, owner_pos.y, old_x, old_y);
+            const old_dist = distanceF32Xy(owner_pos.x, owner_pos.y, old_x, old_y);
             const x_candidate = narrowF32(old_x + dx);
             const y_candidate = narrowF32(old_y + dy);
 
             if (radius < old_dist) {
                 pos_x = x_candidate;
                 pos_y = old_y;
-                if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
+                if (distanceF32Xy(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
                     pos_x = narrowF32(x_candidate - dx);
                     pos_y = y_candidate;
-                    if (distanceF32XY(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
+                    if (distanceF32Xy(owner_pos.x, owner_pos.y, pos_x, pos_y) <= radius) {
                         pos_y = narrowF32(y_candidate - dy);
                     }
                 }
@@ -548,19 +548,19 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     const dt = 0.1;
     const steps: usize = 12;
     var state = state_mod.GameplayState.init(1);
-    var base_player = state_mod.PlayerState{
+    var base_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
     };
-    var perk_player = state_mod.PlayerState{
+    var perk_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading(),
     };
     perk_player.perk_counts.set(PerkId.long_distance_runner, 1);
 
-    const move_input = GameInput{
+    const move_input: GameInput = .{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 101.0,
@@ -596,7 +596,7 @@ test "long distance runner ramps speed above base cap and coasts on release" {
     try std.testing.expect(perk_player.pos.x > base_player.pos.x);
 
     const prev_x = perk_player.pos.x;
-    const coast_input = GameInput{
+    const coast_input: GameInput = .{
         .move_x = 0.0,
         .move_y = 0.0,
         .aim_x = perk_player.pos.x + 1.0,
@@ -618,13 +618,13 @@ test "long distance runner ramps speed above base cap and coasts on release" {
 test "alternate weapon slows movement by 20 percent" {
     var state = state_mod.GameplayState.init(1);
     const move_heading = (state_mod.Vec2{ .x = 1.0, .y = 0.0 }).toHeading();
-    var base_player = state_mod.PlayerState{
+    var base_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .move_speed = 2.0,
         .heading = move_heading,
     };
-    var perk_player = state_mod.PlayerState{
+    var perk_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .move_speed = 2.0,
@@ -632,7 +632,7 @@ test "alternate weapon slows movement by 20 percent" {
     };
     perk_player.perk_counts.set(PerkId.alternate_weapon, 1);
 
-    const input = GameInput{
+    const input: GameInput = .{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 0.0,
@@ -668,8 +668,8 @@ test "reflex boosted perk scales world dt by 0.9" {
 }
 
 test "aim heading from aim point matches native fpatan rounding path" {
-    const player_pos = state_mod.Vec2{ .x = 512.0, .y = 512.0 };
-    const aim_pos = state_mod.Vec2{ .x = 333.0390625, .y = 391.1640625 };
+    const player_pos: state_mod.Vec2 = .{ .x = 512.0, .y = 512.0 };
+    const aim_pos: state_mod.Vec2 = .{ .x = 333.0390625, .y = 391.1640625 };
     const heading = aimHeadingFromAimPointNative(player_pos, aim_pos);
     try std.testing.expectEqual(@as(u32, 0xbf7a1659), @as(u32, @bitCast(heading)));
 }

@@ -31,7 +31,7 @@ export fn crimson_last_error_json(out_ptr: usize, out_len: usize) i32 {
     }
     const out: [*]u8 = @ptrFromInt(out_ptr);
     @memcpy(out[0..last_error_len], last_error[0..last_error_len]);
-    return @as(i32, @intCast(last_error_len));
+    return @intCast(last_error_len);
 }
 
 export fn crimson_verify_replay_json(

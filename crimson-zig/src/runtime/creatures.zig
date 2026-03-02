@@ -2209,7 +2209,7 @@ pub const CreaturePool = struct {
             aim_dir = player.aim_dir;
         }
 
-        var result = ShotResolutionResult{};
+        var result: ShotResolutionResult = .{};
         const weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
         const projectile_type_id: i32 = if (weapon_data.projectileTypeIdFromWeaponId(weapon_enum)) |type_id|
             @intFromEnum(type_id)
@@ -3747,9 +3747,9 @@ fn findSeedForFirstTwoRandMods(
 }
 
 test "spawn init and shot resolution award xp on kill" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1234);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3790,10 +3790,10 @@ test "spawn init and shot resolution award xp on kill" {
 }
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3842,7 +3842,7 @@ test "split-on-death children use original source when first child reuses source
         2_000_000,
     ) orelse return error.TestExpectedEqual;
 
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     for (&pool.entries) |*entry| {
         entry.* = .{
             .active = true,
@@ -3882,7 +3882,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         2_000_000,
     ) orelse return error.TestExpectedEqual;
 
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     for (&pool.entries) |*entry| {
         entry.* = .{
             .active = true,
@@ -3904,7 +3904,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
     };
 
     var state = state_mod.GameplayState.init(seed);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3929,7 +3929,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
 }
 
 test "applyDamage skips death side effects when lifecycle is already below alive sentinel" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     pool.entries[0] = .{
         .active = true,
         .flags = spawn_mod.CreatureFlags.split_on_death,
@@ -3941,7 +3941,7 @@ test "applyDamage skips death side effects when lifecycle is already below alive
     };
 
     var state = state_mod.GameplayState.init(1234);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -3971,7 +3971,7 @@ test "applyDamage skips death side effects when lifecycle is already below alive
 }
 
 test "applyExplosionDamage skips first death side effects when lifecycle is below alive sentinel" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     pool.entries[0] = .{
         .active = true,
         .flags = spawn_mod.CreatureFlags.split_on_death,
@@ -3983,7 +3983,7 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
     };
 
     var state = state_mod.GameplayState.init(1234);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -4017,7 +4017,7 @@ test "applyExplosionDamage skips first death side effects when lifecycle is belo
 
 test "projectile pre-hit rng counts include bloody spread draw per splatter" {
     var state = state_mod.GameplayState.init(1234);
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -4035,7 +4035,7 @@ test "projectile pre-hit rng counts include bloody spread draw per splatter" {
 test "projectile pre-hit rng counts include blade-gun angle draws under freeze" {
     var state = state_mod.GameplayState.init(1234);
     state.bonuses.freeze = 1.0;
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -4050,7 +4050,7 @@ test "projectile pre-hit rng counts include blade-gun angle draws under freeze" 
 }
 
 test "template spawn supports survival early-stage templates" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var rng = spawn_mod.Crand.init(7);
 
     try pool.spawnTemplateCall(
@@ -4065,7 +4065,7 @@ test "template spawn supports survival early-stage templates" {
 }
 
 test "template spawn supports survival late-stage templates" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var rng = spawn_mod.Crand.init(1);
 
     try pool.spawnTemplateCall(
@@ -4132,7 +4132,7 @@ test "template spawn supports survival late-stage templates" {
 
 test "template spawn supports quest random and ai7 templates" {
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4155,7 +4155,7 @@ test "template spawn supports quest random and ai7 templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4176,7 +4176,7 @@ test "template spawn supports quest random and ai7 templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4197,7 +4197,7 @@ test "template spawn supports quest random and ai7 templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4218,7 +4218,7 @@ test "template spawn supports quest random and ai7 templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4243,7 +4243,7 @@ test "template spawn supports quest random and ai7 templates" {
 
 test "template spawn supports quest spider and zombie late templates" {
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4265,7 +4265,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4287,7 +4287,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4309,7 +4309,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4331,7 +4331,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4353,7 +4353,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4375,7 +4375,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4397,7 +4397,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4418,7 +4418,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4439,7 +4439,7 @@ test "template spawn supports quest spider and zombie late templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4462,7 +4462,7 @@ test "template spawn supports quest spider and zombie late templates" {
 
 test "template spawn supports quest mid-tier random templates" {
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4483,7 +4483,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4506,7 +4506,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4527,7 +4527,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4547,7 +4547,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4567,7 +4567,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4587,7 +4587,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4607,7 +4607,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4627,7 +4627,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4647,7 +4647,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4669,7 +4669,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4691,7 +4691,7 @@ test "template spawn supports quest mid-tier random templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4737,7 +4737,7 @@ test "template spawn supports quest constant alien templates" {
     };
 
     for (template_ids, 0..) |template_id, idx| {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4768,7 +4768,7 @@ test "template spawn supports quest constant lizard templates" {
     const expected_contact = [_]f32{ 4.0, 10.0 };
 
     for (template_ids, 0..) |template_id, idx| {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4792,7 +4792,7 @@ test "template spawn supports quest constant lizard templates" {
 
 test "template spawn supports quest formation templates" {
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4811,7 +4811,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4830,7 +4830,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4852,7 +4852,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4871,7 +4871,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4889,7 +4889,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4907,7 +4907,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4924,7 +4924,7 @@ test "template spawn supports quest formation templates" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -4972,7 +4972,7 @@ test "template spawn supports quest spawner templates and slot ticks" {
     };
 
     for (spawners) |spawner| {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -5001,7 +5001,7 @@ test "template spawn supports quest spawner templates and slot ticks" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(1);
         try pool.spawnTemplateCall(
             .{
@@ -5019,9 +5019,9 @@ test "template spawn supports quest spawner templates and slot ticks" {
     }
 
     {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var state = state_mod.GameplayState.init(1);
-        var bonuses = bonus_runtime.BonusPool{};
+        var bonuses: bonus_runtime.BonusPool = .{};
         var players = [_]state_mod.PlayerState{
             .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
         };
@@ -5044,7 +5044,7 @@ test "template spawn supports quest spawner templates and slot ticks" {
 }
 
 test "template spawn rejects unsupported template ids" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var rng = spawn_mod.Crand.init(1);
 
     try std.testing.expectError(
@@ -5061,9 +5061,9 @@ test "template spawn rejects unsupported template ids" {
 }
 
 test "creature update fails on unsupported spawn slot child template" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
@@ -5092,7 +5092,7 @@ test "creature update fails on unsupported spawn slot child template" {
 test "template spawn supports all documented template ids except unused 0x02" {
     var template_id: i32 = 0;
     while (template_id < 0x44) : (template_id += 1) {
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(0xBEEF);
         if (template_id == 0x02) {
             try std.testing.expectError(
@@ -5123,7 +5123,7 @@ test "template spawn child references resolve to known template ids" {
     var template_id: i32 = 0;
     while (template_id < 0x44) : (template_id += 1) {
         if (template_id == 0x02) continue;
-        var pool = CreaturePool{};
+        var pool: CreaturePool = .{};
         var rng = spawn_mod.Crand.init(0xBEEF);
         try pool.spawnTemplateCall(
             .{
@@ -5146,9 +5146,9 @@ fn isKnownTemplateId(template_id: i32) bool {
 }
 
 test "creature update applies contact damage and movement" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5173,13 +5173,13 @@ test "creature update applies contact damage and movement" {
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
-    try expectFloatClose(@as(f32, 1.0), pool.entries[0].attack_cooldown);
+    try expectFloatClose(1.0, pool.entries[0].attack_cooldown);
 }
 
 test "veins of poison sets self-damage flag on contact hit" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5210,9 +5210,9 @@ test "veins of poison sets self-damage flag on contact hit" {
 }
 
 test "veins of poison skips self-damage flag when shielded" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5244,9 +5244,9 @@ test "veins of poison skips self-damage flag when shielded" {
 }
 
 test "toxic avenger sets strong self-damage flags on contact hit" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5278,9 +5278,9 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
 }
 
 test "toxic avenger strong self-damage tick overrides weak tick" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5311,9 +5311,9 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5346,9 +5346,9 @@ test "toxic avenger skips strong self-damage flag when shielded" {
 
 test "radioactive tick deals damage and wraps collision timer" {
     const dt = 0.2;
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5384,10 +5384,10 @@ test "radioactive tick deals damage and wraps collision timer" {
 
 test "radioactive kill awards base xp without death multipliers" {
     const dt = 0.2;
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonuses.double_experience = 5.0;
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5424,9 +5424,9 @@ test "radioactive kill awards base xp without death multipliers" {
 
 test "radioactive sets hp to one for lizard type creatures" {
     const dt = 0.2;
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5462,9 +5462,9 @@ test "radioactive sets hp to one for lizard type creatures" {
 }
 
 test "mr melee damages attacking creature on contact tick" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5494,9 +5494,9 @@ test "mr melee damages attacking creature on contact tick" {
 }
 
 test "mr melee does not prevent player damage when attacker dies" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5526,9 +5526,9 @@ test "mr melee does not prevent player damage when attacker dies" {
 }
 
 test "mr melee is inert when perk is not active" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5557,9 +5557,9 @@ test "mr melee is inert when perk is not active" {
 }
 
 test "evil eyes freezes targeted creature movement" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5593,9 +5593,9 @@ test "evil eyes freezes targeted creature movement" {
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(99);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5633,7 +5633,7 @@ test "ai7 link timer consumes rng when timer crosses zero" {
 
 test "tough reloader halves damage while reloading" {
     var state = state_mod.GameplayState.init(1);
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5656,7 +5656,7 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
     const lethal_seed = findSeedForNthRandMod(1, 10, 0, 200_000) orelse unreachable;
 
     var safe_state = state_mod.GameplayState.init(safe_seed);
-    var safe_player = state_mod.PlayerState{
+    var safe_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5667,7 +5667,7 @@ test "highlander prevents contact damage except 1-in-10 lethal roll" {
     try expectFloatClose(100.0, safe_player.health);
 
     var lethal_state = state_mod.GameplayState.init(lethal_seed);
-    var lethal_player = state_mod.PlayerState{
+    var lethal_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5682,7 +5682,7 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
     const jitter_seed = findSeedForNthRandMod(2, 100, 0, 200_000) orelse unreachable;
 
     var base_state = state_mod.GameplayState.init(jitter_seed);
-    var base_player = state_mod.PlayerState{
+    var base_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5695,7 +5695,7 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
     try expectFloatClose(0.2, base_player.spread_heat);
 
     var perk_state = state_mod.GameplayState.init(jitter_seed);
-    var perk_player = state_mod.PlayerState{
+    var perk_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5711,7 +5711,7 @@ test "unstoppable suppresses heading jitter and spread heat on damage" {
 
 test "tough reloader spread heat uses post-reload damage before thick skinned" {
     var state = state_mod.GameplayState.init(1);
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -5732,9 +5732,9 @@ test "tough reloader spread heat uses post-reload damage before thick skinned" {
 }
 
 test "doctor increases projectile damage by 20 percent" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -5769,9 +5769,9 @@ test "doctor increases projectile damage by 20 percent" {
 }
 
 test "pyromaniac increases fire damage and consumes rng" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5812,9 +5812,9 @@ test "pyromaniac increases fire damage and consumes rng" {
 }
 
 test "fire damage without pyromaniac keeps base damage and rng state" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -5854,9 +5854,9 @@ test "fire damage without pyromaniac keeps base damage and rng state" {
 }
 
 test "living fortress scales projectile damage by alive player timers" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{} },
@@ -5894,9 +5894,9 @@ test "living fortress scales projectile damage by alive player timers" {
 }
 
 test "barrel greaser increases projectile damage by 40 percent" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -5931,9 +5931,9 @@ test "barrel greaser increases projectile damage by 40 percent" {
 }
 
 test "ion gun master increases ion damage by 20 percent" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -5968,9 +5968,9 @@ test "ion gun master increases ion damage by 20 percent" {
 }
 
 test "uranium filled bullets doubles projectile damage" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6005,9 +6005,9 @@ test "uranium filled bullets doubles projectile damage" {
 }
 
 test "split on death spawns two smaller children" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(0);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6059,9 +6059,9 @@ test "split on death spawns two smaller children" {
 }
 
 test "kill no corpse does not award xp for non-player owner" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };
@@ -6095,9 +6095,9 @@ test "kill no corpse does not award xp for non-player owner" {
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6137,9 +6137,9 @@ test "ranged shock creature queues projectile along heading not direct aim" {
 }
 
 test "ranged shock creature does not fire when too close" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6169,9 +6169,9 @@ test "ranged shock creature does not fire when too close" {
 }
 
 test "ranged variant uses orbit radius as projectile type and random cooldown" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(3);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6205,9 +6205,9 @@ test "ranged variant uses orbit radius as projectile type and random cooldown" {
 }
 
 test "freeze stops creature movement" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6242,9 +6242,9 @@ test "freeze stops creature movement" {
 }
 
 test "plaguebearer infects weak creatures near player" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6273,9 +6273,9 @@ test "plaguebearer infects weak creatures near player" {
 }
 
 test "plaguebearer infection timer wrap applies damage" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6306,9 +6306,9 @@ test "plaguebearer infection timer wrap applies damage" {
 }
 
 test "plaguebearer spreads between nearby creatures" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6352,10 +6352,10 @@ test "plaguebearer spreads between nearby creatures" {
 }
 
 test "plaguebearer infection kill increments global count" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6386,10 +6386,10 @@ test "plaguebearer infection kill increments global count" {
 }
 
 test "plague timer kill preserves split-on-death child spawn behavior" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6437,10 +6437,10 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
 }
 
 test "plaguebearer infection kill does not apply immediate dead decay" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6471,9 +6471,9 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
 }
 
 test "single-player dead player uses dead-target AI position" {
-    var pool = CreaturePool{};
+    var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -6500,7 +6500,7 @@ test "single-player dead player uses dead-target AI position" {
     const start_pos = pool.entries[0].pos;
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
 
-    const expected_dead_target = state_mod.Vec2{
+    const expected_dead_target: state_mod.Vec2 = .{
         .x = 1024.0 * (27.0 / 64.0),
         .y = 1024.0 * (27.0 / 64.0),
     };

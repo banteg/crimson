@@ -115,7 +115,7 @@ pub const InputFlags = struct {
 };
 
 pub fn unpackInputFlags(flags: u32) InputFlags {
-    var decoded = InputFlags{
+    var decoded: InputFlags = .{
         .fire_down = (flags & fire_down_flag) != 0,
         .fire_pressed = (flags & fire_pressed_flag) != 0,
         .reload_pressed = (flags & reload_pressed_flag) != 0,
@@ -359,7 +359,7 @@ pub const Replay = struct {
     }
 
     pub fn summarizeEvents(self: Replay) ReplayEventSummary {
-        var summary = ReplayEventSummary{
+        var summary: ReplayEventSummary = .{
             .total_count = self.events.len,
         };
         for (self.events) |event| {
@@ -719,7 +719,7 @@ pub fn validateReplayBootstrap(header: ReplayHeader) ReplayCodecError!void {
         return error.UnsupportedBootstrapKind;
     }
 
-    var rng = Crand{};
+    var rng: Crand = .{};
     rng.srand(header.bootstrap_seed);
     _ = chooseTerrainIds(header.status.quest_unlock_index, &rng);
 
@@ -739,7 +739,7 @@ fn parseEventSummary(
     wire_events: []const ReplayEventWire,
     input_len: usize,
 ) ReplayCodecError!ReplayEventSummary {
-    var summary = ReplayEventSummary{
+    var summary: ReplayEventSummary = .{
         .total_count = wire_events.len,
     };
     for (wire_events) |wire_event| {
@@ -892,7 +892,7 @@ fn parseCaptureBootstrapEvent(
     tick_index: usize,
     payload: CaptureBootstrapEventWire,
 ) ReplayCodecError!CaptureBootstrapEvent {
-    var event = CaptureBootstrapEvent{
+    var event: CaptureBootstrapEvent = .{
         .tick_index = tick_index,
     };
 
@@ -1041,7 +1041,7 @@ fn parseCaptureCreatureSpawnEvent(
     tick_index: usize,
     payload: CaptureCreatureSpawnEventWire,
 ) ReplayCodecError!CaptureCreatureSpawnEvent {
-    var event = CaptureCreatureSpawnEvent{
+    var event: CaptureCreatureSpawnEvent = .{
         .tick_index = tick_index,
     };
     if (payload.spawns.len > event.spawns.len) return error.UnsupportedEventShape;
@@ -1097,7 +1097,7 @@ fn parseCaptureStateTransitionEvent(
     tick_index: usize,
     payload: CaptureStateTransitionEventWire,
 ) ReplayCodecError!CaptureStateTransitionEvent {
-    var event = CaptureStateTransitionEvent{
+    var event: CaptureStateTransitionEvent = .{
         .tick_index = tick_index,
     };
     if (payload.transitions.len > event.transitions.len) return error.UnsupportedEventShape;
@@ -1167,7 +1167,7 @@ fn buildHeader(
         usage_counts[idx] = try parseU32(value);
     }
 
-    const claimed_stats = ReplayClaimedStats{
+    const claimed_stats: ReplayClaimedStats = .{
         .complete = wire.claimed_stats.complete,
         .ticks = try parseI32(wire.claimed_stats.ticks),
         .elapsed_ms = try parseI64(wire.claimed_stats.elapsed_ms),
@@ -1297,7 +1297,7 @@ test "unpack input flags decodes packed fields" {
 
 test "validate terrain bootstrap matches known latest survival header" {
     const allocator = std.testing.allocator;
-    const header = ReplayHeader{
+    const header: ReplayHeader = .{
         .game_mode_id = 1,
         .seed = 1_764_335_965,
         .replay_format_version = replay_format_version,
@@ -1327,7 +1327,7 @@ test "validate terrain bootstrap matches known latest survival header" {
 
 test "bootstrap mismatch is rejected" {
     const allocator = std.testing.allocator;
-    const header = ReplayHeader{
+    const header: ReplayHeader = .{
         .game_mode_id = 1,
         .seed = 1234,
         .replay_format_version = replay_format_version,
@@ -1356,7 +1356,7 @@ test "bootstrap mismatch is rejected" {
 }
 
 test "parse replay event supports capture payload kinds" {
-    const empty_pairs = [_][]const i32{};
+    const empty_pairs: [0][]const i32 = .{};
     const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
     const bootstrap_players = [_]CaptureBootstrapPlayerWire{
         .{
@@ -1465,7 +1465,7 @@ test "parse replay event supports capture payload kinds" {
 }
 
 test "parse replay event rejects invalid perk pick indexes" {
-    const wire = ReplayEventWire{
+    const wire: ReplayEventWire = .{
         .perk_pick = .{
             .tick_index = 0,
             .player_index = -1,
@@ -1478,7 +1478,7 @@ test "parse replay event rejects invalid perk pick indexes" {
 test "build header rejects world_size above i32 range" {
     const usage_counts = [_]u32{0} ** weapon_usage_count;
     const too_large_world_size: f32 = @as(f32, @floatFromInt(std.math.maxInt(i32))) + 1024.0;
-    const wire = ReplayHeaderWire{
+    const wire: ReplayHeaderWire = .{
         .game_mode_id = 1,
         .seed = 1,
         .replay_format_version = replay_format_version,
@@ -1507,7 +1507,7 @@ test "build header rejects world_size above i32 range" {
 
 test "build header parses claimed stats snapshot" {
     const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire = ReplayHeaderWire{
+    const wire: ReplayHeaderWire = .{
         .game_mode_id = 1,
         .seed = 1,
         .replay_format_version = replay_format_version,
@@ -1556,7 +1556,7 @@ test "build header parses claimed stats snapshot" {
 
 test "build header rejects invalid claimed stats snapshot" {
     const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire = ReplayHeaderWire{
+    const wire: ReplayHeaderWire = .{
         .game_mode_id = 1,
         .seed = 1,
         .replay_format_version = replay_format_version,
@@ -1618,7 +1618,7 @@ test "build events frees allocation on parse error" {
 }
 
 test "parse replay decode errors preserve oom and map invalid msgpack" {
-    const empty_payload = [_]u8{};
+    const empty_payload: [0]u8 = .{};
 
     var no_mem_summary: [0]u8 = .{};
     var summary_allocator = std.heap.FixedBufferAllocator.init(no_mem_summary[0..]);
@@ -1634,9 +1634,9 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
 }
 
 test "capture bootstrap rejects perk nonzero counts above max players" {
-    const empty_pairs = [_][]const i32{};
+    const empty_pairs: [0][]const i32 = .{};
     const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
-    const wire = ReplayEventWire{
+    const wire: ReplayEventWire = .{
         .orig_capture_bootstrap = .{
             .tick_index = 0,
             .elapsed_ms = 0,
@@ -1663,7 +1663,7 @@ test "capture bootstrap rejects perk nonzero counts above max players" {
 }
 
 test "capture bootstrap rejects players above max players" {
-    const player = CaptureBootstrapPlayerWire{
+    const player: CaptureBootstrapPlayerWire = .{
         .weapon_id = 1,
         .pos_x = 0.0,
         .pos_y = 0.0,
@@ -1696,9 +1696,9 @@ test "capture bootstrap rejects players above max players" {
         .fire_cough_timer = null,
     };
     const players = [_]CaptureBootstrapPlayerWire{player} ** (max_players + 1);
-    const empty_pairs = [_][]const i32{};
+    const empty_pairs: [0][]const i32 = .{};
     const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
-    const wire = ReplayEventWire{
+    const wire: ReplayEventWire = .{
         .orig_capture_bootstrap = .{
             .tick_index = 0,
             .elapsed_ms = 0,
@@ -1726,9 +1726,9 @@ test "capture bootstrap rejects players above max players" {
 
 test "capture bootstrap rejects digital move flags above max players" {
     const digital_move_enabled_by_player = [_]bool{false} ** (max_players + 1);
-    const empty_pairs = [_][]const i32{};
+    const empty_pairs: [0][]const i32 = .{};
     const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
-    const wire = ReplayEventWire{
+    const wire: ReplayEventWire = .{
         .orig_capture_bootstrap = .{
             .tick_index = 0,
             .elapsed_ms = 0,

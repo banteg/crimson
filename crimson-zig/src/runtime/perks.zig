@@ -852,7 +852,7 @@ test "perk menu open consumes rng and caches choices" {
 
 test "antiperk is never offerable" {
     var state = state_mod.GameplayState.init(1);
-    const player = state_mod.PlayerState{
+    const player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };

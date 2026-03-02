@@ -189,13 +189,13 @@ fn expectFloatClose(expected: f32, actual: f32) !void {
 }
 
 test "survival level up advances one threshold per tick" {
-    var player = PlayerState{
+    var player: PlayerState = .{
         .index = 0,
         .pos = .{},
         .level = 1,
         .experience = 5000,
     };
-    var perks = PerkSelectionState{};
+    var perks: PerkSelectionState = .{};
 
     const advanced_0 = survivalCheckLevelUp(&player, &perks);
     try std.testing.expectEqual(@as(i32, 1), advanced_0);

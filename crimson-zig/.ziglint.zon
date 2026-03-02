@@ -5,6 +5,9 @@
     },
 
     .rules = .{
+        .Z001 = .{ .enabled = false },
+        .Z011 = .{ .enabled = false },
+        .Z015 = .{ .enabled = false },
         .Z024 = .{ .enabled = false },
     },
 }

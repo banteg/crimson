@@ -453,20 +453,20 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     const players = players_storage[0..1];
     player_runtime.resetPlayers(players, 1024.0, null);
 
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = creature_lifecycle.alive;
 
-    var particles = particles_mod.ParticlePool{};
+    var particles: particles_mod.ParticlePool = .{};
     particles.entries[0].active = true;
 
-    var projectiles = projectiles_mod.ProjectilePool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
     projectiles.entries[0].active = true;
 
-    var secondary_projectiles = secondary_projectiles_mod.SecondaryProjectilePool{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
     secondary_projectiles.entries[0].active = true;
 
-    var bonuses = bonus_runtime.BonusPool{};
+    var bonuses: bonus_runtime.BonusPool = .{};
     bonuses.entries[0].bonus_id = .weapon;
     bonuses.entries[0].amount = 12;
 
@@ -508,9 +508,9 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
 test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {
     var base_state = state_mod.GameplayState.init(0x1234ABCD);
-    var base_creatures = creatures_mod.CreaturePool{};
+    var base_creatures: creatures_mod.CreaturePool = .{};
     base_creatures.reset();
-    var base_event = replay_codec.CaptureCreatureSpawnEvent{
+    var base_event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     base_event.spawn_count = 1;
@@ -524,7 +524,7 @@ test "capture creature spawn event backfills ai7 rollover rng draw for spawned r
     const rng_after_base = base_state.rng.state;
 
     var rollover_state = state_mod.GameplayState.init(0x1234ABCD);
-    var rollover_creatures = creatures_mod.CreaturePool{};
+    var rollover_creatures: creatures_mod.CreaturePool = .{};
     rollover_creatures.reset();
     var rollover_event = base_event;
     rollover_event.added_head_count = 1;

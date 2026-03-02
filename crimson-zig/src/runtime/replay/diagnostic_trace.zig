@@ -174,7 +174,7 @@ pub fn buildReplayTickTraceWithEntities(
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
 ) !ReplayTickTrace {
-    const entities = ReplayTickEntitySamples{
+    const entities: ReplayTickEntitySamples = .{
         .creatures = try collectCreatureSamples(allocator, creatures),
         .projectiles = try collectProjectileSamples(allocator, projectiles),
         .secondary_projectiles = try collectSecondaryProjectileSamples(allocator, secondary_projectiles),
@@ -245,7 +245,7 @@ fn collectCreatureSamples(
             .lifecycle_stage = creature.lifecycle_stage,
         });
     }
-    return try rows.toOwnedSlice(allocator);
+    return rows.toOwnedSlice(allocator);
 }
 
 fn collectProjectileSamples(
@@ -270,7 +270,7 @@ fn collectProjectileSamples(
             .owner_id = owner_ref.OwnerRef.toLegacy(projectile.owner),
         });
     }
-    return try rows.toOwnedSlice(allocator);
+    return rows.toOwnedSlice(allocator);
 }
 
 fn collectSecondaryProjectileSamples(
@@ -293,7 +293,7 @@ fn collectSecondaryProjectileSamples(
             .target_id = projectile.target_id,
         });
     }
-    return try rows.toOwnedSlice(allocator);
+    return rows.toOwnedSlice(allocator);
 }
 
 fn collectBonusSamples(
@@ -314,5 +314,5 @@ fn collectBonusSamples(
             .amount = bonus.amount,
         });
     }
-    return try rows.toOwnedSlice(allocator);
+    return rows.toOwnedSlice(allocator);
 }

@@ -281,7 +281,7 @@ pub const PythonRandom = struct {
     index: usize = n,
 
     pub fn init(seed_value: u32) PythonRandom {
-        var rng = PythonRandom{};
+        var rng: PythonRandom = .{};
         rng.seed(seed_value);
         return rng;
     }
@@ -340,7 +340,8 @@ pub const PythonRandom = struct {
     }
 
     fn getRandBits(self: *PythonRandom, bits: u32) u32 {
-        std.debug.assert(bits > 0 and bits <= 32);
+        std.debug.assert(bits > 0);
+        std.debug.assert(bits <= 32);
         if (bits == 32) return self.rand32();
         return self.rand32() >> @as(u5, @intCast(32 - bits));
     }

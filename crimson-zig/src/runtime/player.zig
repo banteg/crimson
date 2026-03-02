@@ -164,12 +164,12 @@ test "fastloader scales reload timer" {
 
     var base_state = GameplayState.init(1);
     var perk_state = GameplayState.init(1);
-    var base_player = PlayerState{
+    var base_player: PlayerState = .{
         .index = 0,
         .pos = .{},
         .weapon = .{ .weapon_id = weapon_id },
     };
-    var perk_player = PlayerState{
+    var perk_player: PlayerState = .{
         .index = 0,
         .pos = .{},
         .weapon = .{ .weapon_id = weapon_id },
@@ -188,7 +188,7 @@ test "fastloader scales reload timer" {
 
 test "weapon assign with state resets latch, sets aux timer, and records usage" {
     var state = GameplayState.init(1);
-    var player = PlayerState{
+    var player: PlayerState = .{
         .index = 0,
         .pos = .{},
     };
