@@ -32,7 +32,6 @@ from .relay_protocol import (
     RbResyncCommit,
     RbResyncRequest,
     RelayError,
-    RoomCreate,
     RoomJoin,
     RoomReady,
     RoomStart,
@@ -49,6 +48,7 @@ from .rollback_resync_v5 import (
     build_rb_resync_messages,
     decode_mode_snapshot,
 )
+from .session_settings import room_create_from_session_settings, session_settings_for_relay
 
 
 def _now_ms() -> int:
@@ -401,16 +401,19 @@ class RollbackRuntime(msgspec.Struct):
 
             if str(self.cfg.role) == "host" and (not self._created_room):
                 self._created_room = True
+                settings = session_settings_for_relay(
+                    mode_id=int(self.cfg.mode_id),
+                    player_count=int(self.cfg.player_count),
+                    quest_level=str(self.cfg.quest_level),
+                    preserve_bugs=bool(self.cfg.preserve_bugs),
+                    tick_rate=int(self.cfg.tick_rate),
+                    input_delay_ticks=int(self.cfg.input_delay_ticks),
+                    rollback_max_ticks=int(self.cfg.rollback_max_ticks),
+                    netcode_mode=self.cfg.netcode_mode,
+                )
                 self._send(
-                    RoomCreate(
-                        mode_id=int(self.cfg.mode_id),
-                        player_count=int(self.cfg.player_count),
-                        quest_level=str(self.cfg.quest_level),
-                        preserve_bugs=bool(self.cfg.preserve_bugs),
-                        tick_rate=int(self.cfg.tick_rate),
-                        input_delay_ticks=int(self.cfg.input_delay_ticks),
-                        rollback_max_ticks=int(self.cfg.rollback_max_ticks),
-                        netcode_mode=self.cfg.netcode_mode,
+                    room_create_from_session_settings(
+                        settings,
                         status_snapshot=self.cfg.sim_status_snapshot,
                     ),
                     reliable=True,

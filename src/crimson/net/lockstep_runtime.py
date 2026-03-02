@@ -40,6 +40,7 @@ from .lockstep_protocol import (
 )
 from .lockstep_state import ClientLockstepState, HostLockstepState
 from .reliable import ReliableLink
+from .session_settings import hello_from_session_settings, session_settings_for_lockstep
 from .transport import PeerAddr, UdpTransport
 
 
@@ -229,15 +230,18 @@ class LockstepRuntime(msgspec.Struct):
             self.client_link = ReliableLink()
             set_lan_debug_forwarder(self._client_forward_log_line)
             self._client_log_forward_enabled = True
-            hello = Hello(
-                protocol_version=int(PROTOCOL_VERSION),
-                build_id=str(self.build_id),
+            settings = session_settings_for_lockstep(
                 mode_id=int(self.cfg.mode_id),
                 player_count=int(self.cfg.player_count),
-                tick_rate=int(self.cfg.tick_rate),
-                input_delay_ticks=int(self.cfg.input_delay_ticks),
                 quest_level=str(self.cfg.quest_level),
                 preserve_bugs=bool(self.cfg.preserve_bugs),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
+            )
+            hello = hello_from_session_settings(
+                settings,
+                protocol_version=int(PROTOCOL_VERSION),
+                build_id=str(self.build_id),
                 host=False,
             )
             self.client_lobby = ClientLobby(build_id=str(self.build_id), hello=hello)
