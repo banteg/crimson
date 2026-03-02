@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import json
-import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
+from typing import cast
 
 import msgspec
 from deepdiff import DeepDiff
@@ -87,28 +87,6 @@ def _checkpoint_to_obj(
     return obj
 
 
-def _is_numeric_value(value: object) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
-
-
-def _numbers_match_tolerance(
-    expected_value: object,
-    actual_value: object,
-    *,
-    float_abs_tol: float,
-) -> bool:
-    if not _is_numeric_value(expected_value) or not _is_numeric_value(actual_value):
-        return False
-    expected_float = float(expected_value)
-    actual_float = float(actual_value)
-    if math.isnan(expected_float) and math.isnan(actual_float):
-        return True
-    if expected_float == actual_float:
-        return True
-    abs_tol = max(0.0, float(float_abs_tol))
-    return math.isclose(expected_float, actual_float, rel_tol=0.0, abs_tol=abs_tol)
-
-
 def _path_matches_ignored_prefix(path: str, prefixes: Sequence[str]) -> bool:
     for prefix in prefixes:
         target = f"root.{prefix}"
@@ -121,44 +99,11 @@ def _path_matches_ignored_prefix(path: str, prefixes: Sequence[str]) -> bool:
     return False
 
 
-def _is_value_change_payload_category(category: str) -> bool:
-    return category in {"type_changes", "values_changed"}
-
-
-def _to_jsonable(value: object) -> object:
-    match value:
-        case dict() as mapping:
-            return {str(k): _to_jsonable(v) for k, v in mapping.items()}
-        case list() as items:
-            return [_to_jsonable(v) for v in items]
-        case tuple() as items:
-            return [_to_jsonable(v) for v in items]
-        case set() as items:
-            return [_to_jsonable(v) for v in sorted(items, key=repr)]
-        case type() as t:
-            return t.__name__
-        case _:
-            if isinstance(value, Iterable) and not isinstance(value, (str, bytes, bytearray, dict)):
-                return [_to_jsonable(v) for v in value]
-            return value
-
-
-def _iter_paths(category_payload: object) -> list[str]:
-    match category_payload:
-        case dict() as mapping:
-            return sorted((str(k) for k in mapping.keys()), key=str)
-        case _:
-            if isinstance(category_payload, Iterable) and not isinstance(category_payload, (str, bytes, bytearray, dict)):
-                return sorted((str(v) for v in category_payload), key=str)
-            return []
-
-
 def _normalize_deepdiff_payload(
     raw_payload: dict[str, object],
     *,
     ignore_field_prefixes: Sequence[str],
     max_diffs: int | None,
-    float_abs_tol: float,
 ) -> tuple[dict[str, object], int]:
     out: dict[str, object] = {}
     total = 0
@@ -174,39 +119,35 @@ def _normalize_deepdiff_payload(
         match payload:
             case dict() as mapping:
                 category_out: dict[str, object] = {}
-                for path in sorted((str(k) for k in mapping.keys()), key=str):
+                for key in sorted(mapping.keys(), key=str):
+                    if not isinstance(key, str):
+                        raise TypeError(f"deepdiff dict category {category} had non-string key")
+                    path = str(key)
                     if limit is not None and total >= limit:
                         break
                     if _path_matches_ignored_prefix(path, ignore_field_prefixes):
                         continue
-                    row = mapping[path]
-                    if _is_value_change_payload_category(category) and isinstance(row, dict):
-                        old_value = row.get("old_value", "<missing>")
-                        new_value = row.get("new_value", "<missing>")
-                        if _numbers_match_tolerance(
-                            old_value,
-                            new_value,
-                            float_abs_tol=float_abs_tol,
-                        ):
-                            continue
-                    category_out[path] = _to_jsonable(row)
+                    row = mapping[key]
+                    category_out[path] = row
                     total += 1
                 if category_out:
                     out[category] = category_out
-            case _:
-                paths = _iter_paths(payload)
-                if not paths:
-                    continue
+            case list() as paths:
                 category_out_list: list[str] = []
                 for path in paths:
                     if limit is not None and total >= limit:
                         break
-                    if _path_matches_ignored_prefix(path, ignore_field_prefixes):
+                    if not isinstance(path, str):
+                        raise TypeError(f"deepdiff list category {category} had non-string path value")
+                    path_text = str(path)
+                    if _path_matches_ignored_prefix(path_text, ignore_field_prefixes):
                         continue
-                    category_out_list.append(path)
+                    category_out_list.append(path_text)
                     total += 1
                 if category_out_list:
                     out[category] = category_out_list
+            case _:
+                raise TypeError(f"unsupported deepdiff category payload for {category}: {type(payload).__name__}")
 
     return out, total
 
@@ -227,12 +168,15 @@ def checkpoint_deepdiff(
         math_epsilon=max(0.0, float(float_abs_tol)),
     )
 
-    raw_payload = dict(deep.to_dict())
+    raw_json = json.loads(str(deep.to_json()))
+    if isinstance(raw_json, dict):
+        raw_payload = cast("dict[str, object]", raw_json)
+    else:
+        raise TypeError("deepdiff payload must decode to object")
     payload, diff_count = _normalize_deepdiff_payload(
         raw_payload,
         ignore_field_prefixes=tuple(str(prefix) for prefix in ignore_field_prefixes),
         max_diffs=max_diffs,
-        float_abs_tol=float_abs_tol,
     )
     if int(diff_count) <= 0:
         return None

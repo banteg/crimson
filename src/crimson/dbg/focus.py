@@ -5,24 +5,20 @@ from pathlib import Path
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
 from .channel_helpers import (
     ENTITY_SAMPLE_KINDS,
+    checkpoint_channel_required,
     entity_rows,
-    entity_samples_channel,
-    rng_stream_channel,
-    sim_state_channel,
+    entity_samples_channel_required,
+    rng_stream_channel_required,
+    sim_state_channel_required,
 )
-from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
 
 
-def _entity_uid_set(row: TickRecord | None, kind: str) -> set[int]:
-    if row is None:
-        return set()
-    samples = entity_samples_channel(row)
-    if samples is None:
-        return set()
+def _entity_uid_set(row: TickRecord, kind: str) -> set[int]:
+    samples = entity_samples_channel_required(row)
     out: set[int] = set()
     for item in entity_rows(samples, kind=kind):
         out.add(int(item.uid))
@@ -44,8 +40,8 @@ def focus_tick(
     if expected_row is None or candidate_row is None:
         raise ValueError(f"tick {tick} missing in one of the traces")
 
-    expected_checkpoint = channel_to_checkpoint(expected_row.channels.get("checkpoint"))
-    candidate_checkpoint = channel_to_checkpoint(candidate_row.channels.get("checkpoint"))
+    expected_checkpoint = checkpoint_channel_required(expected_row)
+    candidate_checkpoint = checkpoint_channel_required(candidate_row)
 
     checkpoint_diff = checkpoint_deepdiff(
         expected_checkpoint,
@@ -63,8 +59,8 @@ def focus_tick(
         first_rng_mark = mismatching_rng[0]
 
     rng_ok, rng_stream_detail = compare_rng_stream(
-        rng_stream_channel(expected_row),
-        rng_stream_channel(candidate_row),
+        rng_stream_channel_required(expected_row),
+        rng_stream_channel_required(candidate_row),
     )
     rng_stream = dict(rng_stream_detail or {})
     rng_stream["ok"] = bool(rng_ok)
@@ -86,12 +82,12 @@ def focus_tick(
             "extra_uids": extra[:32],
         }
     entity_samples_ok, entity_samples_detail = compare_entity_samples(
-        entity_samples_channel(expected_row),
-        entity_samples_channel(candidate_row),
+        entity_samples_channel_required(expected_row),
+        entity_samples_channel_required(candidate_row),
     )
     sim_state_ok, sim_state_detail = compare_sim_state(
-        sim_state_channel(expected_row),
-        sim_state_channel(candidate_row),
+        sim_state_channel_required(expected_row),
+        sim_state_channel_required(candidate_row),
     )
 
     diverged = bool(

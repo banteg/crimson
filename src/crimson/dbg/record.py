@@ -386,19 +386,13 @@ def _to_builtin_dict(value: object, *, field: str) -> dict[str, object]:
     return cast("dict[str, object]", msgspec.to_builtins(value))
 
 
-def _to_builtin_list(value: object, *, field: str) -> list[object]:
-    _ = field
-    return cast("list[object]", msgspec.to_builtins(value))
-
-
 def _canonical_entity_samples(payload: dict[str, object]) -> dict[str, object]:
     validated = msgspec.convert(payload, type=EntitySamplesSnapshot)
     return _to_builtin_dict(validated, field="entity_samples")
 
 
-def _canonical_rng_stream(rows: list[dict[str, object]]) -> list[object]:
-    validated = msgspec.convert(rows, type=list[RngStreamRow])
-    return _to_builtin_list(validated, field="rng_stream")
+def _canonical_rng_stream(rows: list[dict[str, object]]) -> list[RngStreamRow]:
+    return msgspec.convert(rows, type=list[RngStreamRow])
 
 
 def _sim_state_from_world(world: WorldState, *, replay: Replay) -> dict[str, object]:

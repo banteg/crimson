@@ -1,128 +1,79 @@
 from __future__ import annotations
 
+import json
 from typing import cast
 
 import msgspec
+from deepdiff import DeepDiff
 
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
 
 _DEFAULT_MAX_DIFF_ROWS = 16
-
-
-def _record_diff(
-    *,
-    out: list[dict[str, object]],
-    path: str,
-    expected: object,
-    actual: object,
-    max_rows: int,
-) -> None:
-    if len(out) >= int(max_rows):
-        return
-    out.append(
-        {
-            "path": str(path),
-            "expected": expected,
-            "actual": actual,
-        },
-    )
-
-
-def _collect_value_diffs(
-    *,
-    expected: object,
-    actual: object,
-    path: str,
-    out: list[dict[str, object]],
-    max_rows: int,
-) -> None:
-    if len(out) >= int(max_rows):
-        return
-
-    match (expected, actual):
-        case (dict() as expected_map, dict() as actual_map):
-            for key in sorted(set(expected_map) | set(actual_map)):
-                if len(out) >= int(max_rows):
-                    return
-                child_path = f"{path}.{key}"
-                if key not in expected_map:
-                    _record_diff(
-                        out=out,
-                        path=child_path,
-                        expected=None,
-                        actual=actual_map.get(key),
-                        max_rows=max_rows,
-                    )
-                    continue
-                if key not in actual_map:
-                    _record_diff(
-                        out=out,
-                        path=child_path,
-                        expected=expected_map.get(key),
-                        actual=None,
-                        max_rows=max_rows,
-                    )
-                    continue
-                _collect_value_diffs(
-                    expected=expected_map[key],
-                    actual=actual_map[key],
-                    path=child_path,
-                    out=out,
-                    max_rows=max_rows,
-                )
-            return
-        case (dict(), _) | (_, dict()):
-            _record_diff(
-                out=out,
-                path=path,
-                expected=expected,
-                actual=actual,
-                max_rows=max_rows,
-            )
-            return
-        case (list() as expected_list, list() as actual_list):
-            if len(expected_list) != len(actual_list):
-                _record_diff(
-                    out=out,
-                    path=f"{path}.length",
-                    expected=len(expected_list),
-                    actual=len(actual_list),
-                    max_rows=max_rows,
-                )
-            for idx, (exp_value, act_value) in enumerate(zip(expected_list, actual_list, strict=False)):
-                if len(out) >= int(max_rows):
-                    return
-                _collect_value_diffs(
-                    expected=exp_value,
-                    actual=act_value,
-                    path=f"{path}[{idx}]",
-                    out=out,
-                    max_rows=max_rows,
-                )
-            return
-        case (list(), _) | (_, list()):
-            _record_diff(
-                out=out,
-                path=path,
-                expected=expected,
-                actual=actual,
-                max_rows=max_rows,
-            )
-            return
-        case _:
-            if expected != actual:
-                _record_diff(
-                    out=out,
-                    path=path,
-                    expected=expected,
-                    actual=actual,
-                    max_rows=max_rows,
-                )
+_DEEPDIFF_CATEGORY_ORDER: tuple[str, ...] = (
+    "type_changes",
+    "values_changed",
+    "dictionary_item_removed",
+    "iterable_item_removed",
+    "set_item_removed",
+    "dictionary_item_added",
+    "iterable_item_added",
+    "set_item_added",
+)
 
 
 def _to_builtin_obj(value: object) -> dict[str, object]:
     return cast("dict[str, object]", msgspec.to_builtins(value))
+
+
+def _deepdiff_payload(
+    expected: object,
+    actual: object,
+    *,
+    max_rows: int,
+) -> tuple[dict[str, object], int]:
+    deep = DeepDiff(
+        expected,
+        actual,
+        ignore_order=False,
+        verbose_level=2,
+    )
+    raw_json = json.loads(str(deep.to_json()))
+    if not isinstance(raw_json, dict):
+        raise TypeError("deepdiff payload must decode to object")
+    raw = cast("dict[str, object]", raw_json)
+
+    out: dict[str, object] = {}
+    total = 0
+    limit = max(1, int(max_rows))
+    for category in _DEEPDIFF_CATEGORY_ORDER:
+        if total >= limit:
+            break
+        payload = raw.get(category)
+        match payload:
+            case dict() as mapping:
+                keep: dict[str, object] = {}
+                for key in sorted(mapping.keys(), key=str):
+                    if not isinstance(key, str):
+                        raise TypeError(f"deepdiff dict category {category} had non-string key")
+                    if total >= limit:
+                        break
+                    keep[str(key)] = mapping[key]
+                    total += 1
+                if keep:
+                    out[category] = keep
+            case list() as rows:
+                keep_rows: list[object] = []
+                for item in rows:
+                    if total >= limit:
+                        break
+                    keep_rows.append(item)
+                    total += 1
+                if keep_rows:
+                    out[category] = keep_rows
+            case _:
+                raise TypeError(f"unsupported deepdiff category payload for {category}: {type(payload).__name__}")
+    return out, total
 
 
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, dict[str, object] | None]:
@@ -165,55 +116,48 @@ def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngS
 
 
 def compare_sim_state(
-    expected_obj: SimStateSnapshot | None,
-    actual_obj: SimStateSnapshot | None,
+    expected_obj: SimStateSnapshot,
+    actual_obj: SimStateSnapshot,
     *,
     max_diff_rows: int = _DEFAULT_MAX_DIFF_ROWS,
 ) -> tuple[bool, dict[str, object] | None]:
-    if expected_obj is None or actual_obj is None:
-        return False, {"error": "sim_state must be present in both traces"}
     if expected_obj == actual_obj:
         return True, None
-    expected = _to_builtin_obj(expected_obj)
-    actual = _to_builtin_obj(actual_obj)
-    diffs: list[dict[str, object]] = []
-    _collect_value_diffs(
-        expected=expected,
-        actual=actual,
-        path="sim_state",
-        out=diffs,
-        max_rows=max(1, int(max_diff_rows)),
+    payload, diff_count = _deepdiff_payload(
+        expected_obj,
+        actual_obj,
+        max_rows=max_diff_rows,
     )
     return False, {
-        "diff_count": len(diffs),
-        "first_diffs": diffs,
+        "diff_count": int(diff_count),
+        "payload": payload,
+        "pretty": json.dumps(payload, sort_keys=True, indent=2),
     }
 
 
-def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, dict[str, object]], int, list[int]]:
-    by_uid: dict[int, dict[str, object]] = {}
+def _rows_by_uid(rows: list[EntitySampleRow]) -> tuple[dict[int, EntitySampleRow], int, list[int]]:
+    by_uid: dict[int, EntitySampleRow] = {}
     duplicate_uids: list[int] = []
     for row in rows:
         uid = int(row.uid)
         if uid in by_uid:
             duplicate_uids.append(uid)
-        by_uid[uid] = _to_builtin_obj(row)
+        by_uid[uid] = row
     return by_uid, len(rows), duplicate_uids
 
 
 def compare_entity_samples(
-    expected_obj: EntitySamplesSnapshot | None,
-    actual_obj: EntitySamplesSnapshot | None,
+    expected_obj: EntitySamplesSnapshot,
+    actual_obj: EntitySamplesSnapshot,
     *,
     max_diff_rows: int = _DEFAULT_MAX_DIFF_ROWS,
 ) -> tuple[bool, dict[str, object] | None]:
-    if expected_obj is None or actual_obj is None:
-        return False, {"error": "entity_samples must be present in both traces"}
     if expected_obj == actual_obj:
         return True, None
 
     detail: dict[str, object] = {}
-    diffs: list[dict[str, object]] = []
+    row_diffs: list[dict[str, object]] = []
+    row_limit = max(1, int(max_diff_rows))
     for kind in ENTITY_SAMPLE_KINDS:
         exp_map, exp_total, exp_dupes = _rows_by_uid(entity_rows(expected_obj, kind=kind))
         act_map, act_total, act_dupes = _rows_by_uid(entity_rows(actual_obj, kind=kind))
@@ -234,20 +178,22 @@ def compare_entity_samples(
             }
 
         for uid in sorted(set(exp_map) & set(act_map)):
-            if len(diffs) >= int(max_diff_rows):
+            if len(row_diffs) >= row_limit:
                 break
-            exp_row = exp_map[uid]
-            act_row = act_map[uid]
-            if exp_row == act_row:
+            expected_row = exp_map[uid]
+            actual_row = act_map[uid]
+            if expected_row == actual_row:
                 continue
-            _collect_value_diffs(
-                expected=exp_row,
-                actual=act_row,
-                path=f"entity_samples.{kind}[uid={uid}]",
-                out=diffs,
-                max_rows=max(1, int(max_diff_rows)),
+            payload, diff_count = _deepdiff_payload(expected_row, actual_row, max_rows=row_limit)
+            row_diffs.append(
+                {
+                    "path": f"entity_samples.{kind}[uid={uid}]",
+                    "diff_count": int(diff_count),
+                    "payload": payload,
+                    "pretty": json.dumps(payload, sort_keys=True, indent=2),
+                },
             )
 
-    if diffs:
-        detail["first_diffs"] = diffs
+    if row_diffs:
+        detail["row_diffs"] = row_diffs
     return (len(detail) == 0), (None if len(detail) == 0 else detail)

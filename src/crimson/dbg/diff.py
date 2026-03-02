@@ -4,10 +4,13 @@ from pathlib import Path
 
 import msgspec
 
-from ..replay.checkpoints import ReplayCheckpoint
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
-from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
-from .checkpoint_codec import channel_to_checkpoint
+from .channel_helpers import (
+    checkpoint_channel_required,
+    entity_samples_channel_required,
+    rng_stream_channel_required,
+    sim_state_channel_required,
+)
 from .checkpoint_diff import CheckpointDeepDiff, checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import (
@@ -18,7 +21,7 @@ from .schema import (
     TraceMeta,
     channel_versions_for,
 )
-from .trace import TraceReader, write_trace
+from .trace import TraceError, TraceReader, write_trace
 
 
 class TraceMismatch(msgspec.Struct, frozen=True):
@@ -50,30 +53,6 @@ class _TickPair(msgspec.Struct, frozen=True):
     tick_index: int
     expected_row: TickRecord | None
     actual_row: TickRecord | None
-    expected_checkpoint: ReplayCheckpoint | None
-    actual_checkpoint: ReplayCheckpoint | None
-
-
-def _trace_has_channel(
-    pairs: list[_TickPair],
-    *,
-    side: str,
-    channel_name: str,
-) -> bool:
-    for pair in pairs:
-        row = pair.expected_row if side == "expected" else pair.actual_row
-        if row is not None and channel_name in row.channels:
-            return True
-    return False
-
-
-def _extract_checkpoint(row: TickRecord | None) -> ReplayCheckpoint | None:
-    if row is None:
-        return None
-    payload = row.channels.get("checkpoint")
-    if payload is None:
-        return None
-    return channel_to_checkpoint(payload)
 
 
 def _first_mismatch(
@@ -83,29 +62,23 @@ def _first_mismatch(
     tick_end: int | None = None,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
-    compare_sim_state_channels = (
-        _trace_has_channel(pairs, side="expected", channel_name="sim_state")
-        and _trace_has_channel(pairs, side="actual", channel_name="sim_state")
-    )
-    compare_entity_channels = (
-        _trace_has_channel(pairs, side="expected", channel_name="entity_samples")
-        and _trace_has_channel(pairs, side="actual", channel_name="entity_samples")
-    )
     for pair in pairs:
         tick = pair.tick_index
         if tick_end is not None and tick > tick_end:
             break
         checked_count += 1
-        expected = pair.expected_checkpoint
-        actual = pair.actual_checkpoint
-        if expected is None or actual is None:
+        if pair.expected_row is None or pair.actual_row is None:
             return (
                 checked_count,
                 TraceMismatch(
-                    kind="missing_checkpoint",
+                    kind="missing_tick",
                     tick_index=tick,
                 ),
             )
+        expected = checkpoint_channel_required(pair.expected_row)
+        actual = checkpoint_channel_required(pair.actual_row)
+        exp_rng_stream = rng_stream_channel_required(pair.expected_row)
+        act_rng_stream = rng_stream_channel_required(pair.actual_row)
 
         checkpoint_diff = checkpoint_deepdiff(
             expected,
@@ -124,8 +97,6 @@ def _first_mismatch(
                 ),
             )
 
-        act_rng_stream = rng_stream_channel(pair.actual_row)
-        exp_rng_stream = rng_stream_channel(pair.expected_row)
         rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
         if not rng_ok:
             return (
@@ -137,35 +108,37 @@ def _first_mismatch(
                 ),
             )
 
-        if compare_sim_state_channels:
-            sim_ok, sim_detail = compare_sim_state(
-                sim_state_channel(pair.expected_row),
-                sim_state_channel(pair.actual_row),
+        expected_sim_state = sim_state_channel_required(pair.expected_row)
+        actual_sim_state = sim_state_channel_required(pair.actual_row)
+        sim_ok, sim_detail = compare_sim_state(
+            expected_sim_state,
+            actual_sim_state,
+        )
+        if not sim_ok:
+            return (
+                checked_count,
+                TraceMismatch(
+                    kind="sim_state_mismatch",
+                    tick_index=tick,
+                    detail=sim_detail,
+                ),
             )
-            if not sim_ok:
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="sim_state_mismatch",
-                        tick_index=tick,
-                        detail=sim_detail,
-                    ),
-                )
 
-        if compare_entity_channels:
-            entities_ok, entities_detail = compare_entity_samples(
-                entity_samples_channel(pair.expected_row),
-                entity_samples_channel(pair.actual_row),
+        expected_entity_samples = entity_samples_channel_required(pair.expected_row)
+        actual_entity_samples = entity_samples_channel_required(pair.actual_row)
+        entities_ok, entities_detail = compare_entity_samples(
+            expected_entity_samples,
+            actual_entity_samples,
+        )
+        if not entities_ok:
+            return (
+                checked_count,
+                TraceMismatch(
+                    kind="entity_sample_mismatch",
+                    tick_index=tick,
+                    detail=entities_detail,
+                ),
             )
-            if not entities_ok:
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="entity_sample_mismatch",
-                        tick_index=tick,
-                        detail=entities_detail,
-                    ),
-                )
 
     return checked_count, None
 
@@ -189,8 +162,6 @@ def _load_pairs(
                 tick_index=tick,
                 expected_row=exp_row,
                 actual_row=act_row,
-                expected_checkpoint=_extract_checkpoint(exp_row),
-                actual_checkpoint=_extract_checkpoint(act_row),
             ),
         )
     return pairs
@@ -232,11 +203,14 @@ def diff_traces(
             tick_start=tick_start,
             tick_end=tick_end,
         )
-        checked_count, mismatch = _first_mismatch(
-            pairs=pairs,
-            policy=policy,
-            tick_end=tick_end,
-        )
+        try:
+            checked_count, mismatch = _first_mismatch(
+                pairs=pairs,
+                policy=policy,
+                tick_end=tick_end,
+            )
+        except TraceError as exc:
+            raise ValueError(str(exc)) from exc
         return TraceDiffReport(
             ok=(mismatch is None),
             checked_count=checked_count,
@@ -276,7 +250,10 @@ def bisect_traces(
             )
 
         end_tick_bound = pairs[-1].tick_index if tick_end is None else tick_end
-        checked_count, mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=end_tick_bound)
+        try:
+            checked_count, mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=end_tick_bound)
+        except TraceError as exc:
+            raise ValueError(str(exc)) from exc
         if mismatch is None:
             return TraceBisectReport(
                 ok=True,

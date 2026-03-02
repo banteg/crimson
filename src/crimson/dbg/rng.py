@@ -1,29 +1,20 @@
 from __future__ import annotations
 
-import msgspec
-
 from .canonical_channels import RngStreamRow
 
 _RNG_MARKS_EMPTY_VALUE = -1
 
 
-def _decode_rng_stream_rows(rng_stream: object) -> list[RngStreamRow]:
-    try:
-        return msgspec.convert(rng_stream, type=list[RngStreamRow])
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError("rng_stream must be a valid list[RngStreamRow] payload") from exc
-
-
 def canonical_rng_marks(
     *,
     rng_state: int,
-    rng_stream: object,
+    rng_stream: list[RngStreamRow],
 ) -> dict[str, int]:
-    rows = _decode_rng_stream_rows(rng_stream)
+    rows = list(rng_stream)
     call_count = int(len(rows))
     inferred_count = 0
     for row in rows:
-        if bool(row.inferred):
+        if row.inferred:
             inferred_count += 1
 
     first_value = _RNG_MARKS_EMPTY_VALUE
