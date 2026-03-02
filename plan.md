@@ -92,6 +92,39 @@ For rewrite architecture, a robust simplification is:
 
 This removes duplicate state and avoids drift between `dt` and `dt_ms` fields while preserving capture-parity exceptions.
 
+### Cross-Language Conversion Parity (Validated)
+
+To avoid guessing `__ftol` semantics, we validated conversion behavior empirically across Python, Zig, and C++ using shared `f32` bit-pattern inputs.
+
+- Sample size: `160,000` finite `f32` inputs (seeded random + dense dt sweep + edge/tie values).
+- Conversion domain: `scaled = f32(dt * 1000.0)`, then convert to i32.
+- Result: all three languages can produce identical outputs when the same tie rule is used.
+
+Observed parity outcomes:
+
+- `trunc` mode parity: Python == Zig == C++ (`0` mismatches in corpus).
+- `nearest-even` mode parity: Python == Zig == C++ (`0` mismatches in corpus).
+- `half-away-from-zero` mode parity: Python == Zig == C++ (`0` mismatches in corpus).
+- Expected divergence when mixing rules: C++ `lroundf` vs `lrintf` differed on `.5` ties (e.g. `0.5`, `2.5`, `-1.5`).
+
+Tie examples (`scaled` value -> result):
+
+- Nearest-even: `+0.5 -> 0`, `+2.5 -> 2`, `-1.5 -> -2`
+- Half-away: `+0.5 -> 1`, `+2.5 -> 3`, `-1.5 -> -2`
+- Trunc: `+0.5 -> 0`, `+2.5 -> 2`, `-1.5 -> -1`
+
+Implementation guidance:
+
+- Binary-specific note (Crimsonland): `__ftol` appears to force x87 chop/truncate before conversion.
+  - Evidence: `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81336-81349`
+  - Pattern shows control-word save, OR high control byte with `0x0c` (round-control -> truncate), convert, then restore.
+- Therefore, for this game we should lock a truncation contract:
+  - C++: `static_cast<int32_t>(scaled_f32)` (or `std::trunc`)
+  - Python: `int(math.trunc(scaled_f32))`
+  - Zig: `@as(i32, @intFromFloat(@trunc(scaled_f32)))`
+- Keep nearest-even/half-away entries above only as cross-language validation modes; they are not the target mode for Crimsonland timing parity.
+- Add fixed tie-case tests so this behavior cannot regress silently.
+
 ## 4. Execution Plan (Cutover Strategy)
 
 ### Phase 1: Establish the Type
