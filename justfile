@@ -44,6 +44,10 @@ ty-tests:
 lint-imports:
     uv run lint-imports
 
+zig-z004-fix:
+    sg run -c sgconfig.local.yml -l zig -p 'const _NAME = _TYPE{};' -r 'const $NAME: $TYPE = .{};' crimson-zig/src -U
+    sg run -c sgconfig.local.yml -l zig -p 'var _NAME = _TYPE{};' -r 'var $NAME: $TYPE = .{};' crimson-zig/src -U
+
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
     mkdir -p "$(dirname "{{out}}")"

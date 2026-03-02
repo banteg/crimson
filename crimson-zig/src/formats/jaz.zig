@@ -32,7 +32,7 @@ pub fn decode(allocator: std.mem.Allocator, bytes: []const u8) JazError!Decoded 
     if (bytes.len < 9) return error.InvalidHeader;
 
     var header_reader = binary.Reader.init(bytes);
-    const header = Header{
+    const header: Header = .{
         .method = try header_reader.readU8(),
         .comp_size = try header_reader.readU32Le(),
         .raw_size = try header_reader.readU32Le(),

@@ -347,8 +347,8 @@ pub fn applyFreezePickupCorpseCleanupRng(
 
 test "shock chain bonus no-ops when no alive target exists" {
     var state = state_mod.GameplayState.init(0x1234);
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = 0.0;
 
@@ -453,7 +453,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
     };
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -463,7 +463,7 @@ test "pyrokinetic spawns particle burst when collision timer wraps" {
         .hp = 100.0,
     };
 
-    var particles = particles_mod.ParticlePool{};
+    var particles: particles_mod.ParticlePool = .{};
 
     perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -487,7 +487,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
     };
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -497,7 +497,7 @@ test "pyrokinetic uses f32 timer threshold before wrapping" {
         .hp = 100.0,
     };
 
-    var particles = particles_mod.ParticlePool{};
+    var particles: particles_mod.ParticlePool = .{};
 
     perks.applyPyrokineticEffects(
         &state,
@@ -534,7 +534,7 @@ test "pyrokinetic defaults to first alive player slot" {
     };
     players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -543,7 +543,7 @@ test "pyrokinetic defaults to first alive player slot" {
         .size = 50.0,
         .hp = 100.0,
     };
-    var particles = particles_mod.ParticlePool{};
+    var particles: particles_mod.ParticlePool = .{};
 
     perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -569,7 +569,7 @@ test "pyrokinetic targets all alive owners in default mode" {
     players[0].perk_counts.set(PerkId.pyrokinetic, 1);
     players[1].perk_counts.set(PerkId.pyrokinetic, 1);
 
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0] = .{
         .active = true,
         .pos = .{ .x = 100.0, .y = 200.0 },
@@ -586,7 +586,7 @@ test "pyrokinetic targets all alive owners in default mode" {
         .size = 50.0,
         .hp = 100.0,
     };
-    var particles = particles_mod.ParticlePool{};
+    var particles: particles_mod.ParticlePool = .{};
 
     perks.applyPyrokineticEffects(&state, players[0..], &creatures, &particles, 0.2);
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
@@ -599,9 +599,9 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
     state.pending_fireblast_count = 1;
@@ -636,9 +636,9 @@ test "pending fireblast does not convert into fire bullets while guard is active
             .fire_bullets_timer = 1.0,
         },
     };
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     state.pending_fireblast_origins[0] = players[0].pos;
     state.pending_fireblast_count = 1;
@@ -670,9 +670,9 @@ test "pending nuke damage is limited to radius" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -727,9 +727,9 @@ test "poison bullets does not trigger on pending nuke radius damage" {
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
     players[0].perk_counts.set(PerkId.poison_bullets, 1);
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -768,9 +768,9 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     state.pending_nuke_origins[0] = players[0].pos;
     state.pending_nuke_count = 1;
@@ -809,7 +809,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
 
 test "pending creature projectile queue materializes hostile shots before projectile step" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = projectiles_mod.ProjectilePool{};
+    var projectiles: projectiles_mod.ProjectilePool = .{};
 
     state.pending_creature_projectile_count = 1;
     state.pending_creature_projectiles[0] = .{
@@ -872,7 +872,7 @@ test "jinxed kills creature and awards base reward" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
     creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
@@ -905,7 +905,7 @@ test "jinxed reward uses float32 sum before truncation" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[2].active = true;
     creatures.entries[2].hp = 100.0;
     creatures.entries[2].lifecycle_stage = creature_lifecycle.alive;
@@ -940,7 +940,7 @@ test "jinxed accident can target another alive player" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
 
     perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
@@ -962,7 +962,7 @@ test "jinxed timer uses f32 underflow threshold before proc" {
         },
     };
     players[0].perk_counts.set(PerkId.jinxed, 1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
 
     perks.applyJinxedEffects(&state, players[0..], &creatures, dt);
 
@@ -990,7 +990,7 @@ test "jinxed pool uses full 384-slot upper bound" {
         },
     };
     default_players[0].perk_counts.set(PerkId.jinxed, 1);
-    var default_creatures = creatures_mod.CreaturePool{};
+    var default_creatures: creatures_mod.CreaturePool = .{};
     default_creatures.entries[0x17F].active = true;
     default_creatures.entries[0x17F].hp = 100.0;
     default_creatures.entries[0x17F].lifecycle_stage = creature_lifecycle.alive;
@@ -1012,8 +1012,8 @@ test "final revenge explosion applies radial damage on death transition" {
         },
     };
     players[0].perk_counts.set(PerkId.final_revenge, 1);
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
@@ -1055,8 +1055,8 @@ test "final revenge aoe includes active non-positive hp entries" {
         },
     };
     players[0].perk_counts.set(PerkId.final_revenge, 1);
-    var creatures = creatures_mod.CreaturePool{};
-    var bonuses = bonus_runtime.BonusPool{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
 
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,

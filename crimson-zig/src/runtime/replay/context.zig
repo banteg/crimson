@@ -129,7 +129,7 @@ pub const SimulationContext = struct {
             return error.InvalidWorldSize;
         }
 
-        var context = SimulationContext{
+        var context: SimulationContext = .{
             .state = state_mod.GameplayState.init(header.seed),
             .players_len = @intCast(header.player_count),
             .game_mode = game_mode,

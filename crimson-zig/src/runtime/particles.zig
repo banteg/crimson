@@ -221,7 +221,7 @@ pub const ParticlePool = struct {
                         entry.vel = .{};
                     } else {
                         entry.angle = wrapAngle(entry.angle);
-                        const hit_delta = state_mod.Vec2{
+                        const hit_delta: state_mod.Vec2 = .{
                             .x = (entry.pos.x - entry.vel.x * dt_f32) - creature.pos.x,
                             .y = (entry.pos.y - entry.vel.y * dt_f32) - creature.pos.y,
                         };

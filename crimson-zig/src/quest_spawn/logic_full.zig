@@ -28,7 +28,7 @@ pub fn buildQuestSpawnTable(
     if (player_count < 1 or player_count > 4) return error.UnsupportedQuestSpawnTable;
     const descriptor = lookupLevelBuilder(level_key) orelse return error.UnsupportedQuestSpawnTable;
 
-    const ctx = BuildContext{
+    const ctx: BuildContext = .{
         .width = world_size,
         .height = world_size,
         .player_count = player_count,

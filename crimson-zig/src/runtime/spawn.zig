@@ -166,7 +166,7 @@ pub const WaveSpawnCountResult = struct {
 
 pub const max_wave_spawn_batch: usize = 128;
 
-const empty_creature_init = CreatureInit{
+const empty_creature_init: CreatureInit = .{
     .pos = .{ .x = 0.0, .y = 0.0 },
 };
 
@@ -205,7 +205,7 @@ pub const QuestSpawnEntry = struct {
 
 pub const max_quest_spawn_batch: usize = 1024;
 
-const empty_spawn_template_call = SpawnTemplateCall{
+const empty_spawn_template_call: SpawnTemplateCall = .{
     .template_id = 0,
     .pos = .{ .x = 0.0, .y = 0.0 },
     .heading = 0.0,
@@ -288,7 +288,7 @@ pub fn tickQuestSpawnTimeline(
     creatures_none_active: bool,
     no_creatures_timer_ms: f32,
 ) QuestSpawnTimelineResult {
-    var result = QuestSpawnTimelineResult{
+    var result: QuestSpawnTimelineResult = .{
         .creatures_none_active = creatures_none_active,
         .no_creatures_timer_ms = no_creatures_timer_ms,
     };
@@ -370,7 +370,7 @@ pub fn tickQuestModeSpawns(
         creatures_none_active,
         no_creatures_timer_ms,
     );
-    var result = QuestModeSpawnsResult{
+    var result: QuestModeSpawnsResult = .{
         .quest_spawn_timeline_ms = timeline_ms,
         .creatures_none_active = timeline_result.creatures_none_active,
         .no_creatures_timer_ms = timeline_result.no_creatures_timer_ms,
@@ -497,7 +497,7 @@ pub fn buildSurvivalSpawnCreature(
     creature.size = size;
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
-        const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
+        const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
 
@@ -664,7 +664,7 @@ pub fn buildRushModeSpawnCreature(
     creature.health = narrowF32(elapsed_f32 * 1e-4 + 10.0);
     {
         const heading_base: f32 = @floatFromInt(rng.rand() % 314);
-        const heading_scaled: f32 = @as(f32, heading_base * @as(f32, 0.01));
+        const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
     creature.move_speed = narrowF32(elapsed_f32 * 1e-5 + 2.5);
@@ -720,7 +720,7 @@ pub fn tickRushModeSpawnsBatch(
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
-    var result = WaveSpawnBatchResult{
+    var result: WaveSpawnBatchResult = .{
         .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
@@ -741,11 +741,11 @@ pub fn tickRushModeSpawnsBatch(
         const theta = @as(f32, @floatFromInt(elapsed_ms)) * 0.001;
         const terrain_width_f: f32 = @floatFromInt(terrain_width);
         const terrain_height_f: f32 = @floatFromInt(terrain_height);
-        const spawn_right = Vec2{
+        const spawn_right: Vec2 = .{
             .x = narrowF32(terrain_width_f + 64.0),
             .y = narrowF32(terrain_height_f * 0.5 + std.math.cos(theta) * 256.0),
         };
-        const spawn_left = Vec2{
+        const spawn_left: Vec2 = .{
             .x = -64.0,
             .y = narrowF32(terrain_height_f * 0.5 + std.math.sin(theta) * 256.0),
         };
@@ -885,7 +885,7 @@ pub fn tickSurvivalWaveSpawnsBatch(
     terrain_width: i32,
     terrain_height: i32,
 ) WaveSpawnBatchResult {
-    var result = WaveSpawnBatchResult{
+    var result: WaveSpawnBatchResult = .{
         .cooldown = spawn_cooldown - @as(f32, @floatFromInt(player_count)) * frame_dt_ms,
         .count = 0,
     };
@@ -927,7 +927,7 @@ pub fn advanceSurvivalSpawnStage(
     stage_in: i32,
     player_level: i32,
 ) SpawnStageResult {
-    var result = SpawnStageResult{
+    var result: SpawnStageResult = .{
         .stage = stage_in,
     };
     var stage = stage_in;
@@ -1136,7 +1136,7 @@ test "spawn slot tick behavior parity" {
     };
 
     for (cases) |case| {
-        var slot = SpawnSlotInit{
+        var slot: SpawnSlotInit = .{
             .owner_creature = 0,
             .timer = narrowF32(case.timer),
             .count = case.count,
@@ -1158,7 +1158,7 @@ test "spawn slot tick behavior parity" {
 }
 
 test "spawn slot tick uses float32 cadence at boundary" {
-    var slot = SpawnSlotInit{
+    var slot: SpawnSlotInit = .{
         .owner_creature = 0,
         .timer = 2.4,
         .count = 0,
@@ -1182,7 +1182,7 @@ test "spawn slot tick uses float32 cadence at boundary" {
 }
 
 test "tick quest mode spawns advances timeline when creatures active" {
-    var entries = [_]QuestSpawnEntry{};
+    var entries: [0]QuestSpawnEntry = .{};
     const result = tickQuestModeSpawns(
         entries[0..],
         1000.0,
@@ -1256,7 +1256,7 @@ test "tick quest mode spawns advances timeline when table not empty" {
 }
 
 test "tick quest mode spawns freezes timeline when idle complete" {
-    var entries = [_]QuestSpawnEntry{};
+    var entries: [0]QuestSpawnEntry = .{};
     const result = tickQuestModeSpawns(
         entries[0..],
         1000.0,

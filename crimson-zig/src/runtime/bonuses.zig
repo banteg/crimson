@@ -762,7 +762,7 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
     state.status_quest_unlock_index = 49;
     state.status_quest_unlock_index_full = 49;
 
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
@@ -797,7 +797,7 @@ test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
         var state = state_mod.GameplayState.init(123);
         state.game_mode = case.game_mode;
         state.demo_mode_active = case.demo_mode_active;
-        var pool = BonusPool{};
+        var pool: BonusPool = .{};
         const spawned = pool.trySpawnOnKill(
             .{ .x = 300.0, .y = 300.0 },
             &state,
@@ -829,7 +829,7 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     state.status_quest_unlock_index_full = 50;
     state.status_weapon_usage_counts.set(.splitter_gun, 10);
 
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
@@ -844,7 +844,7 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
 
 test "bonus economist extends double experience timer" {
     var base_state = state_mod.GameplayState.init(1);
-    var base_player = state_mod.PlayerState{
+    var base_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -860,7 +860,7 @@ test "bonus economist extends double experience timer" {
     try std.testing.expectApproxEqAbs(@as(f32, 6.0), base_state.bonuses.double_experience, 1e-6);
 
     var perk_state = state_mod.GameplayState.init(1);
-    var perk_player = state_mod.PlayerState{
+    var perk_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -907,7 +907,7 @@ test "alternate weapon starts with preloaded pistol alt slot" {
 test "bonus magnet allows spawn on secondary roll" {
     var base_state = state_mod.GameplayState.init(7);
     base_state.game_mode = .survival;
-    var base_pool = BonusPool{};
+    var base_pool: BonusPool = .{};
     var base_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -926,7 +926,7 @@ test "bonus magnet allows spawn on secondary roll" {
 
     var perk_state = state_mod.GameplayState.init(7);
     perk_state.game_mode = .survival;
-    var perk_pool = BonusPool{};
+    var perk_pool: BonusPool = .{};
     var perk_players = [_]state_mod.PlayerState{
         .{
             .index = 0,
@@ -1082,7 +1082,7 @@ fn runTelekineticUpdate(
 
 test "telekinetic picks up bonus after hover timer threshold" {
     var state = state_mod.GameplayState.init(1);
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     setTestBonusEntry(
         &pool,
         0,
@@ -1091,7 +1091,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
         0,
     );
 
-    const base_player = state_mod.PlayerState{
+    const base_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -1101,7 +1101,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
     try runTelekineticUpdate(&pool, &state, base_players[0..], 0.7);
     try std.testing.expect(!pool.entries[0].picked);
 
-    var perk_player = state_mod.PlayerState{
+    var perk_player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -1117,7 +1117,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
 
 test "telekinetic nuke stores pending origin from bonus position" {
     var state = state_mod.GameplayState.init(1);
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     setTestBonusEntry(
         &pool,
         0,
@@ -1126,7 +1126,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
         1,
     );
 
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -1143,7 +1143,7 @@ test "telekinetic nuke stores pending origin from bonus position" {
 
 test "telekinetic shock chain stores pending origin from bonus position" {
     var state = state_mod.GameplayState.init(1);
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     setTestBonusEntry(
         &pool,
         0,
@@ -1152,7 +1152,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
         1,
     );
 
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -1169,7 +1169,7 @@ test "telekinetic shock chain stores pending origin from bonus position" {
 
 test "telekinetic picks only one bonus per frame across players" {
     var state = state_mod.GameplayState.init(1);
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     setTestBonusEntry(
         &pool,
         0,
@@ -1185,13 +1185,13 @@ test "telekinetic picks only one bonus per frame across players" {
         500,
     );
 
-    var player0 = state_mod.PlayerState{
+    var player0: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
         .aim = .{ .x = 100.0, .y = 100.0 },
     };
-    var player1 = state_mod.PlayerState{
+    var player1: state_mod.PlayerState = .{
         .index = 1,
         .pos = .{},
         .health = 100.0,
@@ -1210,7 +1210,7 @@ test "telekinetic picks only one bonus per frame across players" {
 
 test "telekinetic hover timer carries across bonus switch" {
     var state = state_mod.GameplayState.init(1);
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     setTestBonusEntry(
         &pool,
         0,
@@ -1226,7 +1226,7 @@ test "telekinetic hover timer carries across bonus switch" {
         500,
     );
 
-    var player = state_mod.PlayerState{
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
         .health = 100.0,
@@ -1261,7 +1261,7 @@ fn runQuestSuppressionCase(
     state.quest_stage_major = quest_stage_major;
     state.quest_stage_minor = quest_stage_minor;
 
-    var pool = BonusPool{};
+    var pool: BonusPool = .{};
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{} },
     };

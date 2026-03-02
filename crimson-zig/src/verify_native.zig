@@ -51,7 +51,7 @@ const ReplayResolution = struct {
     tried_secondary: ?[]u8,
     exists: bool,
 
-    pub fn deinit(self: ReplayResolution, allocator: std.mem.Allocator) void {
+    fn deinit(self: ReplayResolution, allocator: std.mem.Allocator) void {
         allocator.free(self.resolved_path);
         allocator.free(self.tried_primary);
         if (self.tried_secondary) |secondary| allocator.free(secondary);
@@ -181,9 +181,9 @@ fn runNativeVerify(
             defer replay_runner.deinitReplayTickTraceRows(allocator, tick_trace.items);
 
             const traced = replay_runner.runReplayScaffoldWithTrace(
+                allocator,
                 replay,
                 &tick_trace,
-                allocator,
                 .{},
             ) catch |err| {
                 writeReplayTickTraceMsgpack(allocator, trace_path, tick_trace.items) catch |trace_err| {
@@ -220,10 +220,10 @@ fn runNativeVerify(
     var replay_sha256: [64]u8 = undefined;
     hash.sha256HexLower(replay_bytes, &replay_sha256);
 
-    const run_result = RunResult{
+    const run_result: RunResult = .{
         .game_mode_id = header.game_mode_id,
         .tick_rate = header.tick_rate,
-        .ticks = @as(i32, @intCast(scaffold.ticks)),
+        .ticks = @intCast(scaffold.ticks),
         .elapsed_ms = scaffold.elapsed_ms_sim,
         .score_xp = scaffold.player_experience,
         .creature_kill_count = scaffold.creature_kill_count,
@@ -342,7 +342,7 @@ fn buildHeaderClaimPayload(
     claimed: replay_codec.ReplayClaimedStats,
     run_result: RunResult,
 ) !HeaderClaimPayload {
-    const expected = ClaimedStatsPayload{
+    const expected: ClaimedStatsPayload = .{
         .complete = claimed.complete,
         .ticks = claimed.ticks,
         .elapsed_ms = claimed.elapsed_ms,
@@ -352,7 +352,7 @@ fn buildHeaderClaimPayload(
         .shots_fired = claimed.shots_fired,
         .shots_hit = claimed.shots_hit,
     };
-    const simulated = ClaimedStatsPayload{
+    const simulated: ClaimedStatsPayload = .{
         .complete = claimed.complete,
         .ticks = run_result.ticks,
         .elapsed_ms = run_result.elapsed_ms,
@@ -653,7 +653,7 @@ fn buildNotPortedOutputForReplayRunnerError(
 
 fn parseNativeSubset(args: []const []const u8) ParseOutcome {
     var replay_file: ?[]const u8 = null;
-    var request = VerifyRequest{
+    var request: VerifyRequest = .{
         .replay_file = "",
     };
 
@@ -966,7 +966,7 @@ test "parse native subset reports removed submitted score option as unsupported"
 test "build verify payload header mismatch" {
     const allocator = std.testing.allocator;
     const mismatched = [_][]const u8{"score_xp"};
-    const header_claim = HeaderClaimPayload{
+    const header_claim: HeaderClaimPayload = .{
         .expected = .{
             .complete = true,
             .ticks = 100,

@@ -6,9 +6,7 @@ const replay_codec = @import("../replay_codec.zig");
 const bonuses_mod = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
-const owner_ref = @import("owner_ref.zig");
 const perks = @import("perks.zig");
-const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
 const secondary_projectiles_mod = @import("secondary_projectiles.zig");
@@ -19,7 +17,6 @@ const survival_progression = @import("survival_progression.zig");
 const weapon_data = @import("weapon_data.zig");
 const weapons_runtime = @import("weapons.zig");
 const math = @import("math.zig");
-const replay_capture_state = @import("replay/capture_state.zig");
 const replay_context_mod = @import("replay/context.zig");
 const replay_diagnostic_trace = @import("replay/diagnostic_trace.zig");
 const replay_events = @import("replay/events.zig");
@@ -170,17 +167,17 @@ pub fn runReplayScaffoldWithOptions(
     options: ReplayScaffoldOptions,
 ) ReplayRunnerError!ReplayScaffoldResult {
     return runReplayScaffoldWithTrace(
+        std.heap.page_allocator,
         replay,
         null,
-        std.heap.page_allocator,
         options,
     );
 }
 
 pub fn runReplayScaffoldWithTrace(
+    trace_allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
     trace_out: ?*std.ArrayList(ReplayTickTrace),
-    trace_allocator: std.mem.Allocator,
     options: ReplayScaffoldOptions,
 ) ReplayRunnerError!ReplayScaffoldResult {
     const header = replay.header;
@@ -513,7 +510,7 @@ test "replay input adapter preserves packed flag decode semantics" {
         replay_codec.aim_scheme_present_flag |
         (replay_codec.aim_scheme_mask << replay_codec.aim_scheme_shift);
 
-    const replay_input = replay_codec.ReplayPlayerInput{
+    const replay_input: replay_codec.ReplayPlayerInput = .{
         .move_x = 1.5,
         .move_y = -0.25,
         .aim_x = 777.0,
@@ -864,20 +861,20 @@ test "survival scaffold defers menu-open processing in original capture replays"
             allocator_inner: std.mem.Allocator,
             menu_before_pick: bool,
         ) !ReplayScaffoldResult {
-            var bootstrap = replay_codec.CaptureBootstrapEvent{
+            var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
             bootstrap.player_count = 1;
             bootstrap.perk_pending_count = 1;
             bootstrap.perk_choices_dirty = true;
 
-            const menu_event = replay_codec.ReplayEvent{
+            const menu_event: replay_codec.ReplayEvent = .{
                 .perk_menu_open = .{
                     .tick_index = 0,
                     .player_index = 0,
                 },
             };
-            const pick_event = replay_codec.ReplayEvent{
+            const pick_event: replay_codec.ReplayEvent = .{
                 .perk_pick = .{
                     .tick_index = 0,
                     .player_index = 0,
@@ -977,7 +974,7 @@ test "survival scaffold inter-tick rand draws shift rng deterministically" {
 test "survival scaffold applies capture bootstrap payload state" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1044,7 +1041,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             allocator_inner: std.mem.Allocator,
             include_shot_cooldown: bool,
         ) !struct { shots_fired: i32, ammo_bits: u32 } {
-            var bootstrap = replay_codec.CaptureBootstrapEvent{
+            var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
             bootstrap.player_count = 1;
@@ -1076,9 +1073,9 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
             defer trace.deinit(allocator_inner);
             defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             const result = try runReplayScaffoldWithTrace(
+                allocator_inner,
                 replay,
                 &trace,
-                allocator_inner,
                 .{},
             );
             try std.testing.expectEqual(@as(usize, 1), trace.items.len);
@@ -1105,7 +1102,7 @@ test "survival scaffold bootstrap perk counts enable alternate weapon swap" {
             allocator_inner: std.mem.Allocator,
             include_perk_counts: bool,
         ) !i32 {
-            var bootstrap = replay_codec.CaptureBootstrapEvent{
+            var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
             bootstrap.player_count = 1;
@@ -1155,7 +1152,7 @@ test "survival scaffold bootstrap perk counts enable alternate weapon swap" {
 test "survival scaffold bootstrap rejects invalid perk id in perk counts" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1184,7 +1181,7 @@ test "survival scaffold bootstrap rejects invalid perk id in perk counts" {
 test "survival scaffold bootstrap rejects invalid perk id in choices" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1216,12 +1213,12 @@ test "capture perk pending event sets pending without shifting rng in survival a
             game_mode_id: GameModeId,
             apply_pending_event: bool,
         ) !struct { rng_state: u32, pending: i32 } {
-            var bootstrap = replay_codec.CaptureBootstrapEvent{
+            var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
             bootstrap.player_count = 1;
             bootstrap.perk_pending_count = 2;
-            const pending_event = replay_codec.ReplayEvent{
+            const pending_event: replay_codec.ReplayEvent = .{
                 .capture_perk_pending = .{
                     .tick_index = 0,
                     .perk_pending = 0,
@@ -1270,7 +1267,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
             allocator_inner: std.mem.Allocator,
             include_perk_apply: bool,
         ) !ReplayScaffoldResult {
-            var bootstrap = replay_codec.CaptureBootstrapEvent{
+            var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
             bootstrap.player_count = 1;
@@ -1280,7 +1277,7 @@ test "capture perk apply outside-before keeps rng anchored and consumes pending-
                 .ammo = 6.0,
             };
 
-            const apply_event = replay_codec.ReplayEvent{
+            const apply_event: replay_codec.ReplayEvent = .{
                 .capture_perk_apply = .{
                     .tick_index = 0,
                     .perk_id = @intFromEnum(PerkId.random_weapon),
@@ -1416,7 +1413,7 @@ test "rush scaffold rejects replay events" {
 test "rush scaffold accepts capture bootstrap events" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1450,7 +1447,7 @@ test "rush scaffold accepts capture bootstrap events" {
 test "rush scaffold original capture bootstrap keeps packed move vector behavior" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1482,9 +1479,9 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
     defer trace.deinit(allocator);
     defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
+        allocator,
         replay,
         &trace,
-        allocator,
         .{},
     );
     try std.testing.expectEqual(@as(usize, 1), trace.items.len);
@@ -1517,7 +1514,7 @@ test "rush scaffold supports multiplayer replays" {
 test "rush scaffold disables progression updates even above level threshold" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1651,7 +1648,7 @@ test "quest scaffold is deterministic with explicit spawn entries" {
 test "quest scaffold timeline uses frame dt even when reflex boost is active" {
     const allocator = std.testing.allocator;
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1874,9 +1871,9 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     defer baseline_trace.deinit(allocator);
     defer deinitReplayTickTraceRows(allocator, baseline_trace.items);
     _ = try runReplayScaffoldWithTrace(
+        allocator,
         replay_baseline,
         &baseline_trace,
-        allocator,
         .{
             .quest_spawn_entries = quest_entries[0..],
         },
@@ -1884,7 +1881,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     try std.testing.expectEqual(@as(usize, 20), baseline_trace.items.len);
     try std.testing.expectEqual(@as(usize, 0), baseline_trace.items[19].summary.creature_count);
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1922,9 +1919,9 @@ test "quest scaffold applies capture bootstrap quest session timers" {
     defer bootstrapped_trace.deinit(allocator);
     defer deinitReplayTickTraceRows(allocator, bootstrapped_trace.items);
     _ = try runReplayScaffoldWithTrace(
+        allocator,
         replay_bootstrapped,
         &bootstrapped_trace,
-        allocator,
         .{
             .quest_spawn_entries = quest_entries[0..],
         },
@@ -1937,7 +1934,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
     const allocator = std.testing.allocator;
 
     const inputs = [_]u32{0} ** 40;
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -1956,7 +1953,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         .completion_transition_ms = -1.0,
     };
 
-    var capture_spawn = replay_codec.CaptureCreatureSpawnEvent{
+    var capture_spawn: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     capture_spawn.spawn_count = 1;
@@ -1984,14 +1981,14 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
         entry.* = 0.1;
     }
 
-    const empty_entries = [_]spawn_mod.QuestSpawnEntry{};
+    const empty_entries: [0]spawn_mod.QuestSpawnEntry = .{};
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
     defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
+        allocator,
         replay,
         &trace,
-        allocator,
         .{
             .quest_spawn_entries = empty_entries[0..],
         },
@@ -2002,10 +1999,10 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
 
 test "capture creature spawn event applies added head overrides" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.reset();
 
-    var event = replay_codec.CaptureCreatureSpawnEvent{
+    var event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     event.spawn_count = 1;
@@ -2062,10 +2059,10 @@ test "capture creature spawn event applies added head overrides" {
 
 test "capture creature spawn event applies added head rows without spawn rows" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.reset();
 
-    var seed_event = replay_codec.CaptureCreatureSpawnEvent{
+    var seed_event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     seed_event.spawn_count = 1;
@@ -2077,7 +2074,7 @@ test "capture creature spawn event applies added head rows without spawn rows" {
     };
     try applyCaptureCreatureSpawnEvent(&state, &creatures, seed_event);
 
-    var update_event = replay_codec.CaptureCreatureSpawnEvent{
+    var update_event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     update_event.added_head_count = 1;
@@ -2110,10 +2107,10 @@ test "capture creature spawn event applies added head rows without spawn rows" {
 
 test "capture creature spawn event hard fails on invalid ai mode enum" {
     var state = state_mod.GameplayState.init(1);
-    var creatures = creatures_mod.CreaturePool{};
+    var creatures: creatures_mod.CreaturePool = .{};
     creatures.reset();
 
-    var seed_event = replay_codec.CaptureCreatureSpawnEvent{
+    var seed_event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 0,
     };
     seed_event.spawn_count = 1;
@@ -2125,7 +2122,7 @@ test "capture creature spawn event hard fails on invalid ai mode enum" {
     };
     try applyCaptureCreatureSpawnEvent(&state, &creatures, seed_event);
 
-    var invalid_event = replay_codec.CaptureCreatureSpawnEvent{
+    var invalid_event: replay_codec.CaptureCreatureSpawnEvent = .{
         .tick_index = 1,
     };
     invalid_event.added_head_count = 1;
@@ -2157,7 +2154,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     });
     defer replay.deinit(allocator);
 
-    var bootstrap = replay_codec.CaptureBootstrapEvent{
+    var bootstrap: replay_codec.CaptureBootstrapEvent = .{
         .tick_index = 0,
     };
     bootstrap.player_count = 1;
@@ -2177,7 +2174,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
         .count = 1,
     };
 
-    var transition = replay_codec.CaptureStateTransitionEvent{
+    var transition: replay_codec.CaptureStateTransitionEvent = .{
         .tick_index = 0,
     };
     transition.transition_count = 1;
@@ -2201,9 +2198,9 @@ test "quest scaffold resets run state on capture transition to terminal state" {
     defer trace.deinit(allocator);
     defer deinitReplayTickTraceRows(allocator, trace.items);
     const result = try runReplayScaffoldWithTrace(
+        allocator,
         replay,
         &trace,
-        allocator,
         .{
             .quest_spawn_entries = &.{},
         },
@@ -2289,7 +2286,7 @@ test "survival scaffold rejects world_size outside i32 range" {
 test "quest scaffold disables world dt perk steps for original capture replays" {
     const allocator = std.testing.allocator;
 
-    const bootstrap_event = replay_codec.ReplayEvent{
+    const bootstrap_event: replay_codec.ReplayEvent = .{
         .capture_bootstrap = blk: {
             var bootstrap = replay_codec.CaptureBootstrapEvent{
                 .tick_index = 0,
@@ -2307,7 +2304,7 @@ test "quest scaffold disables world dt perk steps for original capture replays" 
             break :blk bootstrap;
         },
     };
-    const reflex_apply_event = replay_codec.ReplayEvent{
+    const reflex_apply_event: replay_codec.ReplayEvent = .{
         .capture_perk_apply = .{
             .tick_index = 0,
             .perk_id = @intFromEnum(PerkId.reflex_boosted),
@@ -2343,9 +2340,9 @@ test "quest scaffold disables world dt perk steps for original capture replays" 
             defer trace.deinit(allocator_inner);
             defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             _ = try runReplayScaffoldWithTrace(
+                allocator_inner,
                 replay,
                 &trace,
-                allocator_inner,
                 .{
                     .quest_spawn_entries = &.{},
                 },
@@ -2395,8 +2392,8 @@ test "quest scaffold disables world dt perk steps for original capture replays" 
 
 test "fire cough projectile uses pre-move player position for muzzle origin" {
     var state = state_mod.GameplayState.init(1);
-    var projectiles = projectiles_mod.ProjectilePool{};
-    var player = state_mod.PlayerState{
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .aim = .{ .x = 200.0, .y = 100.0 },
@@ -2413,7 +2410,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
         0.1,
     );
 
-    const move_input = player_runtime.GameInput{
+    const move_input: player_runtime.GameInput = .{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 200.0,
@@ -2434,7 +2431,7 @@ test "fire cough projectile uses pre-move player position for muzzle origin" {
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets), proj.type_id);
 
     const muzzle_dir = blk: {
-        const dir = state_mod.Vec2{
+        const dir: state_mod.Vec2 = .{
             .x = math.cos(-native_half_pi),
             .y = math.sin(-native_half_pi),
         };
