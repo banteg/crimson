@@ -16,9 +16,9 @@ from .relay_protocol import (
     ROOM_CODE_LENGTH,
     ClientHello,
     ClientWelcome,
-    LegacyLockstepControl,
-    LegacyLockstepInputBatch,
-    LegacyLockstepTickFrame,
+    LockstepControl,
+    LockstepInputBatch,
+    LockstepTickFrame,
     NetcodeMode,
     NetMessage,
     PeerDisconnect,
@@ -115,8 +115,8 @@ _FORWARD_RELIABLE_TYPES = (
     RbResyncBegin,
     RbResyncChunk,
     RbResyncCommit,
-    LegacyLockstepTickFrame,
-    LegacyLockstepControl,
+    LockstepTickFrame,
+    LockstepControl,
 )
 
 
@@ -303,7 +303,7 @@ class RelayServer:
             self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
             return
 
-        if isinstance(message, (LegacyLockstepInputBatch, LegacyLockstepTickFrame, LegacyLockstepControl)):
+        if isinstance(message, (LockstepInputBatch, LockstepTickFrame, LockstepControl)):
             self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
             return
 
@@ -602,7 +602,7 @@ class RelayServer:
                 return
 
         reliable = isinstance(message, _FORWARD_RELIABLE_TYPES)
-        if isinstance(message, LegacyLockstepInputBatch):
+        if isinstance(message, LockstepInputBatch):
             reliable = False
         forwarded = 0
         for slot in room.slots:

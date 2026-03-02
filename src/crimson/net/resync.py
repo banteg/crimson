@@ -5,7 +5,7 @@ import zlib
 
 import msgspec
 
-from .protocol import ResyncBegin, ResyncChunk, ResyncCommit
+from .lockstep_protocol import ResyncBegin, ResyncChunk, ResyncCommit
 
 
 class ResyncBuildError(ValueError):

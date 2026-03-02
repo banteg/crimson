@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from crimson.net.lockstep import ClientLockstepState
-from crimson.net.protocol import TickFrame
+from crimson.net.lockstep_protocol import TickFrame
+from crimson.net.lockstep_state import ClientLockstepState
 
 
 def test_client_input_batch_uses_three_tick_rolling_window() -> None:

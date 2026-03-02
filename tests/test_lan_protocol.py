@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import subprocess
 
-from crimson.net import protocol
-from crimson.net.protocol import (
+from crimson.net import lockstep_protocol as protocol
+from crimson.net.lockstep_protocol import (
     DebugLogBatch,
     Hello,
     KeepAlive,

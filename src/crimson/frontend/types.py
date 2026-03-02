@@ -12,9 +12,9 @@ if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
 
-    from ..game.types import PendingLanSession, PendingNetSession
-    from ..net.net_runtime import NetRuntime
-    from ..net.runtime import LanRuntime
+    from ..game.types import PendingNetworkSession
+    from ..net.lockstep_runtime import LockstepRuntime
+    from ..net.rollback_runtime import RollbackRuntime
     from ..persistence.save_status import GameStatus
 
 
@@ -41,24 +41,15 @@ class GameState(Protocol):
     menu_ground: GroundRenderer | None
     menu_ground_camera: Vec2 | None
     pause_background: PauseBackground | None
-    pending_net_session: PendingNetSession | None
-    net_runtime: NetRuntime | LanRuntime | None
-    net_in_lobby: bool
-    net_waiting_for_players: bool
-    net_expected_players: int
-    net_connected_players: int
-    net_desync_count: int
-    net_resync_failure_count: int
-    net_last_error: str
-    pending_lan_session: PendingLanSession | None
-    lan_runtime: NetRuntime | LanRuntime | None
-    lan_in_lobby: bool
-    lan_waiting_for_players: bool
-    lan_expected_players: int
-    lan_connected_players: int
-    lan_desync_count: int
-    lan_resync_failure_count: int
-    lan_last_error: str
+    pending_network_session: PendingNetworkSession | None
+    network_runtime: RollbackRuntime | LockstepRuntime | None
+    network_in_lobby: bool
+    network_waiting_for_players: bool
+    network_expected_players: int
+    network_connected_players: int
+    network_desync_count: int
+    network_resync_failure_count: int
+    network_last_error: str
     pending_quest_level: str | None
 
     demo_enabled: bool

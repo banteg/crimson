@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from crimson.net.lobby import HostLobby
-from crimson.net.protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, Hello, Ready
+from crimson.net.lockstep_lobby import HostLobby
+from crimson.net.lockstep_protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, Hello, Ready
 
 
 def _hello(*, build_id: str = "b1", mode_id: int = 1, player_count: int = 2) -> Hello:

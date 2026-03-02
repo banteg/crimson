@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.net.protocol import PauseState, Ready
+from crimson.net.lockstep_protocol import PauseState, Ready
 from crimson.net.reliable import ReliableLink
 
 

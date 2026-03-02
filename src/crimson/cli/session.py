@@ -6,7 +6,7 @@ from typing import Literal
 import typer
 
 _SessionMode = Literal["survival", "rush", "quests"]
-_ParsedNetcodeMode = Literal["rollback", "lockstep_legacy"]
+_ParsedNetcodeMode = Literal["rollback", "lockstep"]
 
 
 def _parse_session_mode(mode: str) -> _SessionMode:
@@ -27,8 +27,8 @@ def _parse_netcode_mode(raw: str) -> _ParsedNetcodeMode:
     value = str(raw).strip().lower()
     if value in {"rollback", "rb"}:
         return "rollback"
-    if value in {"lockstep", "lockstep_legacy", "legacy"}:
-        return "lockstep_legacy"
+    if value == "lockstep":
+        return "lockstep"
     raise typer.BadParameter(
         f"unsupported netcode {raw!r}; expected rollback|lockstep",
         param_hint="--netcode",
@@ -58,7 +58,6 @@ def _run_game_with_pending_session(
             debug=bool(debug),
             rtx=bool(rtx),
             preserve_bugs=False,
-            pending_net_session=pending,
-            pending_lan_session=pending,
+            pending_network_session=pending,
         ),
     )

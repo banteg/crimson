@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from .protocol import RELIABLE_RESEND_MS, NetMessage, Packet
+from .lockstep_protocol import RELIABLE_RESEND_MS, NetMessage, Packet
 
 
 class _PendingReliable(msgspec.Struct):

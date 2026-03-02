@@ -3,10 +3,10 @@ tags:
   - rewrite
   - multiplayer
   - networking
-  - legacy
+  - lockstep
 ---
 
-# LAN lockstep (legacy fallback)
+# LAN lockstep (fallback mode)
 
 Legacy lockstep is retained as a compatibility fallback mode while rollback is
 primary for network play.
@@ -35,30 +35,20 @@ Protocol note:
 
 - `uv run crimson net host ... --netcode lockstep`
 - `uv run crimson net join ... --netcode lockstep`
-- Deprecated wrappers still available for one release cycle:
-  - `uv run crimson lan host ...`
-  - `uv run crimson lan join ...`
 
 ### Runtime modules
 
-Legacy implementations live under `src/crimson/net/legacy_*`:
+Lockstep implementations live under `src/crimson/net/lockstep_*`:
 
-- `legacy_protocol.py`
-- `legacy_lobby.py`
-- `legacy_lockstep.py`
-- `legacy_runtime.py`
+- `lockstep_protocol.py`
+- `lockstep_lobby.py`
+- `lockstep_state.py`
+- `lockstep_runtime.py`
 
-Compatibility re-export modules preserve old imports:
+## Lockstep protocol contract
 
-- `src/crimson/net/protocol.py`
-- `src/crimson/net/lobby.py`
-- `src/crimson/net/lockstep.py`
-- `src/crimson/net/runtime.py`
-
-## Legacy protocol contract
-
-Legacy lockstep protocol constants and message contracts are still defined in
-`src/crimson/net/legacy_protocol.py`.
+Lockstep protocol constants and message contracts are defined in
+`src/crimson/net/lockstep_protocol.py`.
 
 - deterministic lockstep tick frame contract
 - reliable control channel with resend/ack
@@ -73,7 +63,7 @@ Legacy lockstep protocol constants and message contracts are still defined in
 
 ## Coverage
 
-Legacy fallback and compatibility tests:
+Fallback and compatibility tests:
 
 - `tests/test_lan_protocol.py`
 - `tests/test_lan_reliable_channel.py`

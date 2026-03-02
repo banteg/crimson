@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 
-from crimson.net.protocol import (
+from crimson.net.lockstep_protocol import (
     INPUT_DELAY_TICKS,
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
@@ -15,15 +15,20 @@ from crimson.net.protocol import (
     StatusSnapshot,
     Welcome,
 )
+from crimson.net.lockstep_runtime import (
+    IDLE_HEARTBEAT_MS,
+    PAUSED_LINK_TIMEOUT_MS,
+    LockstepRuntime,
+    LockstepRuntimeConfig,
+)
 from crimson.net.reliable import ReliableLink
-from crimson.net.runtime import IDLE_HEARTBEAT_MS, PAUSED_LINK_TIMEOUT_MS, LanRuntime, LanRuntimeConfig
 from crimson.net.transport import UdpTransport
 
 
 def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
     start = int(time.monotonic() * 1000.0)
-    runtime = LanRuntime(
-        LanRuntimeConfig(
+    runtime = LockstepRuntime(
+        LockstepRuntimeConfig(
             role="join",
             mode_id=1,
             player_count=2,
@@ -47,8 +52,8 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
 
 
 def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
-    runtime = LanRuntime(
-        LanRuntimeConfig(
+    runtime = LockstepRuntime(
+        LockstepRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,
@@ -75,8 +80,8 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
 
 
 def test_host_timeout_aborts_started_match() -> None:
-    runtime = LanRuntime(
-        LanRuntimeConfig(
+    runtime = LockstepRuntime(
+        LockstepRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,
@@ -120,8 +125,8 @@ def test_host_timeout_aborts_started_match() -> None:
 
 
 def test_host_waiting_input_pause_uses_extended_timeout() -> None:
-    runtime = LanRuntime(
-        LanRuntimeConfig(
+    runtime = LockstepRuntime(
+        LockstepRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,
@@ -177,8 +182,8 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
 
 
 def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
-    runtime = LanRuntime(
-        LanRuntimeConfig(
+    runtime = LockstepRuntime(
+        LockstepRuntimeConfig(
             role="join",
             mode_id=1,
             player_count=2,

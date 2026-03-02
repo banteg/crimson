@@ -5,8 +5,8 @@ from typing import cast
 import msgspec
 
 from ..replay.types import PackedPlayerInput
-from .lockstep import ClientLockstepState, HostLockstepState
-from .protocol import INPUT_DELAY_TICKS, InputBatch, PauseState, TickFrame
+from .lockstep_protocol import INPUT_DELAY_TICKS, InputBatch, PauseState, TickFrame
+from .lockstep_state import ClientLockstepState, HostLockstepState
 
 
 class ResyncFailureTracker(msgspec.Struct):

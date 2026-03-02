@@ -4,7 +4,7 @@ import uuid
 
 import msgspec
 
-from .protocol import (
+from .lockstep_protocol import (
     PROTOCOL_VERSION,
     Hello,
     LobbySlot,

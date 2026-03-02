@@ -3,7 +3,6 @@ from __future__ import annotations
 import builtins
 from unittest.mock import MagicMock
 
-from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import (
     ClientWelcome,
     Ping,
@@ -22,15 +21,16 @@ from crimson.net.rollback_resync_v5 import (
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
+from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 
 
 def _sent_messages(send_packet: MagicMock) -> list[object]:
     return [call.args[-1].message for call in send_packet.call_args_list]
 
 
-def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[NetRuntime, MagicMock]:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[RollbackRuntime, MagicMock]:
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,
@@ -167,8 +167,8 @@ def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> N
 
 
 def test_runtime_prints_host_invite_code_once(mocker) -> None:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,
@@ -192,8 +192,8 @@ def test_runtime_prints_host_invite_code_once(mocker) -> None:
 
 
 def test_client_sends_ready_only_after_room_state(mocker) -> None:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role="join",
             mode_id=1,
             player_count=2,
@@ -221,8 +221,8 @@ def test_client_sends_ready_only_after_room_state(mocker) -> None:
 
 
 def test_host_keeps_lobby_heartbeat_alive(mocker) -> None:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,

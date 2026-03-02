@@ -29,7 +29,7 @@ from ..input_codes import (
     input_primary_just_pressed,
 )
 from ..net.debug_log import lan_debug_log
-from ..net.protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,

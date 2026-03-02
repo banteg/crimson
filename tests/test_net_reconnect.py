@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import (
     ClientHello,
     ClientWelcome,
@@ -12,15 +11,16 @@ from crimson.net.relay_protocol import (
     RoomStart,
     RoomState,
 )
+from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 
 
 def _sent_messages(send_packet: MagicMock) -> list[object]:
     return [call.args[-1].message for call in send_packet.call_args_list]
 
 
-def _started_runtime(mocker) -> tuple[NetRuntime, MagicMock]:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+def _started_runtime(mocker) -> tuple[RollbackRuntime, MagicMock]:
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role="host",
             mode_id=1,
             player_count=2,

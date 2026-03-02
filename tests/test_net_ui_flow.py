@@ -3,72 +3,70 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any, cast
 
-import crimson.frontend.panels.lan_lobby as lan_lobby_module
-from crimson.frontend.panels.lan_lobby import LanLobbyPanelView
+import crimson.frontend.panels.network_lobby as lan_lobby_module
+from crimson.frontend.panels.network_lobby import NetworkLobbyPanelView
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import LanSessionConfig, PendingLanSession
+from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
 from crimson.net.relay_protocol import RoomState
 from grim.geom import Vec2
 
 
 def test_network_session_panel_requires_room_code_for_join(make_game_state) -> None:
-    from crimson.frontend.panels.lan_session import LanSessionPanelView
+    from crimson.frontend.panels.network_session import NetworkSessionPanelView
 
     state = make_game_state()
-    panel = LanSessionPanelView(state)
+    panel = NetworkSessionPanelView(state)
     panel._role = "join"
-    panel._host_ip = "127.0.0.1"
+    panel._host = "127.0.0.1"
     panel._room_code = ""
 
     panel._start_session()
 
     assert "Room code is required" in panel._error
-    assert state.pending_net_session is None
-    assert state.pending_lan_session is None
+    assert state.pending_network_session is None
 
 
-def test_network_session_panel_writes_pending_net_and_legacy_alias(make_game_state) -> None:
-    from crimson.frontend.panels.lan_session import LanSessionPanelView
+def test_network_session_panel_writes_pending_network_session(make_game_state) -> None:
+    from crimson.frontend.panels.network_session import NetworkSessionPanelView
 
     state = make_game_state()
-    panel = LanSessionPanelView(state)
+    panel = NetworkSessionPanelView(state)
     panel._role = "host"
     panel._mode_idx = 1  # rush
     panel._player_count = 3
-    panel._bind_host = "203.0.113.20"
+    panel._host = "203.0.113.20"
     panel._port_text = "32031"
+    panel._netcode_mode = "rollback"
     panel._room_code = "rB42"
-    panel._netcode_mode = "lockstep_legacy"
 
     panel._start_session()
 
-    pending = state.pending_net_session
+    pending = state.pending_network_session
     assert pending is not None
-    assert state.pending_lan_session is pending
     assert pending.role == "host"
     assert pending.config.mode == "rush"
     assert pending.config.player_count == 3
-    assert pending.config.relay_host == "203.0.113.20"
-    assert pending.config.relay_port == 32031
-    assert pending.config.room_code == "RB42"
-    assert pending.config.netcode_mode == "lockstep_legacy"
+    assert pending.config.netcode_mode == "rollback"
+    endpoint = pending.config.rollback_endpoint()
+    assert endpoint.relay_host == "203.0.113.20"
+    assert endpoint.relay_port == 32031
+    assert endpoint.room_code == "RB42"
 
 
-def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(make_game_state) -> None:
+def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_state) -> None:
     state = make_game_state()
-    state.pending_net_session = PendingLanSession(
+    state.pending_network_session = PendingNetworkSession(
         role="host",
-        config=LanSessionConfig(
+        config=NetworkSessionConfig(
             mode="rush",
+            netcode_mode="rollback",
+            endpoint=RollbackEndpoint(
+                relay_host="127.0.0.1",
+                relay_port=31993,
+                room_code="",
+            ),
             player_count=2,
             quest_level="",
-            bind_host="0.0.0.0",
-            relay_host="127.0.0.1",
-            relay_port=31993,
-            room_code="",
-            host_ip="127.0.0.1",
-            port=31993,
-            netcode_mode="rollback",
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
@@ -76,50 +74,44 @@ def test_loop_view_uses_pending_net_session_when_lan_alias_is_unset(make_game_st
         ),
         auto_start=False,
     )
-    state.pending_lan_session = None
     loop = GameLoopView(state)
 
     action = loop._resolve_lan_action("start_rush_lan")
 
     assert action == "open_lan_lobby"
-    assert state.net_runtime is not None
-    assert state.lan_runtime is state.net_runtime
-    assert state.net_in_lobby is True
-    assert state.lan_in_lobby is True
+    assert state.network_runtime is not None
+    assert state.network_in_lobby is True
 
 
 def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, mocker) -> None:
     state = make_game_state()
-    pending = PendingLanSession(
+    pending = PendingNetworkSession(
         role="host",
-        config=LanSessionConfig(
+        config=NetworkSessionConfig(
             mode="survival",
+            netcode_mode="rollback",
+            endpoint=RollbackEndpoint(
+                relay_host="127.0.0.1",
+                relay_port=31993,
+                room_code="ZZ99",
+            ),
             player_count=2,
             quest_level="",
-            bind_host="0.0.0.0",
-            relay_host="127.0.0.1",
-            relay_port=31993,
-            room_code="ZZ99",
-            host_ip="127.0.0.1",
-            port=31993,
-            netcode_mode="rollback",
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
             preserve_bugs=False,
         ),
     )
-    state.pending_net_session = pending
-    state.pending_lan_session = pending
-    state.net_runtime = cast(
+    state.pending_network_session = pending
+    state.network_runtime = cast(
         "Any",
         SimpleNamespace(
             lobby_state=lambda: RoomState(room_code="AB12", session_id="session123", player_count=2, slots=[]),
         ),
     )
-    state.lan_runtime = state.net_runtime
 
-    panel = LanLobbyPanelView(state)
+    panel = NetworkLobbyPanelView(state)
     draw_small_text = mocker.patch.object(lan_lobby_module, "draw_small_text")
     mocker.patch.object(
         lan_lobby_module,
@@ -149,52 +141,45 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
 
 def test_network_lobby_panel_update_match_start_applies_state_and_transition(make_game_state) -> None:
     state = make_game_state()
-    pending = PendingLanSession(
+    pending = PendingNetworkSession(
         role="host",
-        config=LanSessionConfig(
+        config=NetworkSessionConfig(
             mode="quests",
+            netcode_mode="rollback",
+            endpoint=RollbackEndpoint(
+                relay_host="127.0.0.1",
+                relay_port=31993,
+                room_code="QZ42",
+            ),
             player_count=2,
             quest_level="1.1",
-            bind_host="0.0.0.0",
-            relay_host="127.0.0.1",
-            relay_port=31993,
-            room_code="QZ42",
-            host_ip="127.0.0.1",
-            port=31993,
-            netcode_mode="rollback",
             rollback_max_ticks=8,
             reconnect_timeout_ms=15_000,
             input_delay_ticks=1,
             preserve_bugs=False,
         ),
     )
-    state.pending_net_session = pending
-    state.pending_lan_session = pending
+    state.pending_network_session = pending
     event = SimpleNamespace(mode_id=3, player_count=5, quest_level="2.4")
-    state.net_runtime = cast(
+    state.network_runtime = cast(
         "Any",
         SimpleNamespace(
             error="",
             match_start=lambda: event,
         ),
     )
-    state.lan_runtime = state.net_runtime
 
-    panel = LanLobbyPanelView(state)
+    panel = NetworkLobbyPanelView(state)
     panel._is_open = True
     panel._timeline_ms = 0
     panel._timeline_max_ms = 0
 
     panel.update(0.0)
 
-    assert state.lan_in_lobby is True
-    assert state.net_in_lobby is True
-    assert state.lan_waiting_for_players is False
-    assert state.net_waiting_for_players is False
-    assert state.lan_expected_players == 4
-    assert state.net_expected_players == 4
-    assert state.lan_connected_players == 4
-    assert state.net_connected_players == 4
+    assert state.network_in_lobby is True
+    assert state.network_waiting_for_players is False
+    assert state.network_expected_players == 4
+    assert state.network_connected_players == 4
     assert state.config.player_count == 4
     assert state.config.game_mode == 3
     assert state.pending_quest_level == "2.4"

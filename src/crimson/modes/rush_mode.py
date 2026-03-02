@@ -18,7 +18,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
-from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
+from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,

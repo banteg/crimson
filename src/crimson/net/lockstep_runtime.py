@@ -13,9 +13,8 @@ from ..replay.types import PackedPlayerInput
 from ..sim.timing import ftol_ms_i32
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
 from .deterministic_status import hash_status_snapshot
-from .lobby import ClientLobby, HostLobby
-from .lockstep import ClientLockstepState, HostLockstepState
-from .protocol import (
+from .lockstep_lobby import ClientLobby, HostLobby
+from .lockstep_protocol import (
     INPUT_DELAY_TICKS,
     LINK_TIMEOUT_MS,
     PROTOCOL_VERSION,
@@ -39,6 +38,7 @@ from .protocol import (
     Welcome,
     current_build_id,
 )
+from .lockstep_state import ClientLockstepState, HostLockstepState
 from .reliable import ReliableLink
 from .transport import PeerAddr, UdpTransport
 
@@ -77,7 +77,7 @@ MAX_RECV_PACKETS_PER_UPDATE = 512
 IDLE_HEARTBEAT_MS = 250
 
 
-class LanRuntimeConfig(msgspec.Struct):
+class LockstepRuntimeConfig(msgspec.Struct):
     role: str
     mode_id: int
     player_count: int
@@ -97,10 +97,10 @@ class _HostPeerLink(msgspec.Struct):
     last_seen_ms: int = 0
 
 
-class LanRuntime(msgspec.Struct):
+class LockstepRuntime(msgspec.Struct):
     """Drive LAN lobby handshake and keep socket state alive across views."""
 
-    cfg: LanRuntimeConfig
+    cfg: LockstepRuntimeConfig
     build_id: str = msgspec.field(default_factory=current_build_id)
     transport: UdpTransport = cast(UdpTransport, None)
     started: bool = False
@@ -1603,4 +1603,4 @@ class LanRuntime(msgspec.Struct):
         self._client_seen_tick_frame = False
 
 
-__all__ = ["LanRuntime", "LanRuntimeConfig"]
+__all__ = ["LockstepRuntime", "LockstepRuntimeConfig"]

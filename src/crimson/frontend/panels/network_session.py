@@ -7,7 +7,14 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game.types import LanSessionConfig, LanSessionMode, NetcodeMode, PendingLanSession
+from ...game.types import (
+    LockstepEndpoint,
+    NetcodeMode,
+    NetworkSessionConfig,
+    NetworkSessionMode,
+    PendingNetworkSession,
+    RollbackEndpoint,
+)
 from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
@@ -24,8 +31,8 @@ class _SessionLayout(msgspec.Struct, frozen=True):
     back_w: float
 
 
-class LanSessionPanelView(PanelMenuView):
-    _MODES: tuple[LanSessionMode, ...] = ("survival", "rush", "quests")
+class NetworkSessionPanelView(PanelMenuView):
+    _MODES: tuple[NetworkSessionMode, ...] = ("survival", "rush", "quests")
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -44,7 +51,7 @@ class LanSessionPanelView(PanelMenuView):
         self._player_count: int = 2
         self._quest_level: str = "1.1"
         self._bind_host: str = "127.0.0.1"
-        self._host_ip: str = "127.0.0.1"
+        self._host: str = "127.0.0.1"
         self._room_code: str = ""
         self._netcode_mode: NetcodeMode = "rollback"
         self._port_text: str = "31993"
@@ -60,9 +67,7 @@ class LanSessionPanelView(PanelMenuView):
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        pending = self.state.pending_net_session
-        if pending is None:
-            pending = self.state.pending_lan_session
+        pending = self.state.pending_network_session
         if pending is not None:
             self._role = str(pending.role)
             cfg = pending.config
@@ -72,16 +77,22 @@ class LanSessionPanelView(PanelMenuView):
                 self._mode_idx = 0
             self._player_count = max(1, min(4, int(cfg.player_count)))
             self._quest_level = str(cfg.quest_level or "1.1")
-            relay_host = str(cfg.relay_host).strip()
-            self._bind_host = relay_host or str(cfg.bind_host or "127.0.0.1")
-            self._host_ip = relay_host or str(cfg.host_ip or "127.0.0.1")
-            self._room_code = "".join(
-                ch for ch in str(cfg.room_code).upper() if ch.isalnum()
-            )[: int(ROOM_CODE_LENGTH)]
             netcode_raw = str(cfg.netcode_mode).strip().lower()
-            self._netcode_mode = "lockstep_legacy" if netcode_raw in {"lockstep", "lockstep_legacy"} else "rollback"
-            relay_port = int(cfg.relay_port)
-            self._port_text = str(int(relay_port)) if int(relay_port) > 0 else "31993"
+            self._netcode_mode = "lockstep" if netcode_raw == "lockstep" else "rollback"
+            if str(cfg.netcode_mode) == "lockstep":
+                endpoint = cfg.lockstep_endpoint()
+                self._bind_host = str(endpoint.bind_host or "0.0.0.0")
+                self._host = str(endpoint.host or "127.0.0.1")
+                self._room_code = ""
+                self._port_text = str(max(1, int(endpoint.port)))
+            else:
+                endpoint = cfg.rollback_endpoint()
+                self._bind_host = str(endpoint.relay_host or "127.0.0.1")
+                self._host = str(endpoint.relay_host or "127.0.0.1")
+                self._room_code = "".join(ch for ch in str(endpoint.room_code).upper() if ch.isalnum())[
+                    : int(ROOM_CODE_LENGTH)
+                ]
+                self._port_text = str(max(1, int(endpoint.relay_port)))
 
         self._active_field = ""
         self._error = ""
@@ -95,7 +106,6 @@ class LanSessionPanelView(PanelMenuView):
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
 
-        # Close transition (matches PanelMenuView).
         if self._closing:
             if dt_ms > 0 and self._pending_action is None:
                 self._timeline_ms -= dt_ms
@@ -114,10 +124,7 @@ class LanSessionPanelView(PanelMenuView):
 
         enabled = self._timeline_ms >= PANEL_TIMELINE_START_MS
         self._update_back_button(dt_ms=dt_ms, enabled=enabled)
-        if self._closing:
-            return
-
-        if self._timeline_ms < self._timeline_max_ms:
+        if self._closing or self._timeline_ms < self._timeline_max_ms:
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -135,11 +142,18 @@ class LanSessionPanelView(PanelMenuView):
                 self._active_field = "quest_level"
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
-            self._active_field = "host_ip" if self._role == "join" else "bind_host"
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_C) and self._role == "join":
+            self._active_field = "host"
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
+            self._active_field = "bind_host"
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_C) and self._netcode_mode == "rollback":
             self._active_field = "room_code"
         if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
-            self._netcode_mode = "lockstep_legacy" if self._netcode_mode == "rollback" else "rollback"
+            self._netcode_mode = "lockstep" if self._netcode_mode == "rollback" else "rollback"
+            if self._netcode_mode == "lockstep":
+                self._room_code = ""
+                if not self._host.strip():
+                    self._host = "127.0.0.1"
+            self._active_field = ""
         if rl.is_key_pressed(rl.KeyboardKey.KEY_P):
             self._active_field = "port"
 
@@ -149,8 +163,8 @@ class LanSessionPanelView(PanelMenuView):
                 self._quest_level = (self._quest_level + typed)[:8]
             elif self._active_field == "bind_host":
                 self._bind_host = (self._bind_host + typed)[:64]
-            elif self._active_field == "host_ip":
-                self._host_ip = (self._host_ip + typed)[:64]
+            elif self._active_field == "host":
+                self._host = (self._host + typed)[:64]
             elif self._active_field == "room_code":
                 self._room_code = "".join(ch for ch in (self._room_code + typed).upper() if ch.isalnum())[
                     : int(ROOM_CODE_LENGTH)
@@ -163,8 +177,8 @@ class LanSessionPanelView(PanelMenuView):
                 self._quest_level = self._quest_level[:-1]
             elif self._active_field == "bind_host" and self._bind_host:
                 self._bind_host = self._bind_host[:-1]
-            elif self._active_field == "host_ip" and self._host_ip:
-                self._host_ip = self._host_ip[:-1]
+            elif self._active_field == "host" and self._host:
+                self._host = self._host[:-1]
             elif self._active_field == "room_code" and self._room_code:
                 self._room_code = self._room_code[:-1]
             elif self._active_field == "port" and self._port_text:
@@ -174,7 +188,6 @@ class LanSessionPanelView(PanelMenuView):
             self._start_session()
 
     def _draw_entry(self, entry: MenuEntry) -> None:
-        # Panels outside the main menu use in-panel back buttons instead of the classic menu item.
         _ = entry
         return
 
@@ -201,8 +214,6 @@ class LanSessionPanelView(PanelMenuView):
             )
             + self._panel_offset * panel_scale
         )
-        # Match other classic panels: the panel is offset left (like Play Game), so anchor content
-        # further inside to avoid clipping against the left screen edge.
         base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
 
         font = self._ensure_small_font()
@@ -244,7 +255,7 @@ class LanSessionPanelView(PanelMenuView):
         ):
             self._begin_close_transition(self._back_action)
 
-    def _current_mode(self) -> LanSessionMode:
+    def _current_mode(self) -> NetworkSessionMode:
         idx = max(0, min(int(self._mode_idx), len(self._MODES) - 1))
         return self._MODES[idx]
 
@@ -255,7 +266,7 @@ class LanSessionPanelView(PanelMenuView):
             port = 31993
         return max(1, min(65535, int(port)))
 
-    def _mode_start_action(self, mode: LanSessionMode) -> str:
+    def _mode_start_action(self, mode: NetworkSessionMode) -> str:
         if mode == "rush":
             return "start_rush_lan"
         if mode == "quests":
@@ -267,60 +278,48 @@ class LanSessionPanelView(PanelMenuView):
         mode = self._current_mode()
         port = self._parse_port()
 
-        if self._role == "host":
-            if mode == "quests" and not self._quest_level.strip():
-                self._error = "Quest level is required for quest network sessions."
+        if mode == "quests" and not self._quest_level.strip():
+            self._error = "Quest level is required for quest network sessions."
+            return
+
+        if self._netcode_mode == "lockstep":
+            if not self._host.strip():
+                self._error = "Host is required for lockstep sessions."
                 return
-            pending = PendingLanSession(
-                role="host",
-                config=LanSessionConfig(
-                    mode=mode,
-                    player_count=max(1, min(4, int(self._player_count))),
-                    quest_level=str(self._quest_level.strip()),
-                    bind_host="0.0.0.0",
-                    relay_host=str(self._bind_host.strip() or "127.0.0.1"),
-                    relay_port=int(port),
-                    room_code=str(self._room_code.strip().upper()),
-                    host_ip=str(self._bind_host.strip() or "127.0.0.1"),
-                    port=int(port),
-                    netcode_mode=self._netcode_mode,
-                    rollback_max_ticks=8,
-                    reconnect_timeout_ms=15_000,
-                    input_delay_ticks=1,
-                    preserve_bugs=False,
-                ),
-                auto_start=False,
+            endpoint = LockstepEndpoint(
+                bind_host=str(self._bind_host.strip() or "0.0.0.0"),
+                host=str(self._host.strip()),
+                port=int(port),
             )
         else:
-            if not self._host_ip.strip():
-                self._error = "Relay host is required to join a network session."
+            if not self._host.strip():
+                self._error = "Relay host is required for rollback sessions."
                 return
-            if not self._room_code.strip():
-                self._error = "Room code is required to join."
+            if self._role == "join" and not self._room_code.strip():
+                self._error = "Room code is required to join rollback sessions."
                 return
-            pending = PendingLanSession(
-                role="join",
-                config=LanSessionConfig(
-                    mode=mode,
-                    player_count=max(1, min(4, int(self._player_count))),
-                    quest_level=str(self._quest_level.strip()),
-                    bind_host="0.0.0.0",
-                    relay_host=str(self._host_ip.strip()),
-                    relay_port=int(port),
-                    room_code=str(self._room_code.strip().upper()),
-                    host_ip=str(self._host_ip.strip()),
-                    port=int(port),
-                    netcode_mode=self._netcode_mode,
-                    rollback_max_ticks=8,
-                    reconnect_timeout_ms=15_000,
-                    input_delay_ticks=1,
-                    preserve_bugs=False,
-                ),
-                auto_start=False,
+            endpoint = RollbackEndpoint(
+                relay_host=str(self._host.strip()),
+                relay_port=int(port),
+                room_code=str(self._room_code.strip().upper()),
             )
 
-        self.state.pending_lan_session = pending
-        self.state.pending_net_session = pending
+        pending = PendingNetworkSession(
+            role=("host" if self._role == "host" else "join"),
+            config=NetworkSessionConfig(
+                mode=mode,
+                netcode_mode=self._netcode_mode,
+                endpoint=endpoint,
+                player_count=max(1, min(4, int(self._player_count))),
+                quest_level=str(self._quest_level.strip()),
+                rollback_max_ticks=8,
+                reconnect_timeout_ms=15_000,
+                input_delay_ticks=1,
+                preserve_bugs=False,
+            ),
+            auto_start=False,
+        )
+        self.state.pending_network_session = pending
         self._begin_close_transition(self._mode_start_action(mode))
 
     def _draw_contents(self) -> None:
@@ -341,25 +340,25 @@ class LanSessionPanelView(PanelMenuView):
         y = base_pos.y + float(font.cell_size) * title_scale + 6.0 * scale
         draw_small_text(
             font,
-            "Host or join an invite-code network session.",
+            "TAB role | M mode | [/] players | N netcode | H/B/P/C/L edit | ENTER continue",
             Vec2(base_pos.x, y),
-            0.9 * scale,
+            0.85 * scale,
             body_color,
         )
         y += float(font.cell_size) * 0.9 * scale + 10.0 * scale
 
         mode = self._current_mode()
         role_label = "Host" if self._role == "host" else "Join"
-        where_label = "Relay:"
-        where_value = self._bind_host if self._role == "host" else self._host_ip
 
         label_w = max(
             measure_small_text_width(font, "Role:", text_scale),
             measure_small_text_width(font, "Mode:", text_scale),
             measure_small_text_width(font, "Players:", text_scale),
-            measure_small_text_width(font, where_label, text_scale),
-            measure_small_text_width(font, "Code:", text_scale),
             measure_small_text_width(font, "Netcode:", text_scale),
+            measure_small_text_width(font, "Bind:", text_scale),
+            measure_small_text_width(font, "Host:", text_scale),
+            measure_small_text_width(font, "Relay:", text_scale),
+            measure_small_text_width(font, "Code:", text_scale),
             measure_small_text_width(font, "Port:", text_scale),
             measure_small_text_width(font, "Quest:", text_scale),
         )
@@ -378,19 +377,30 @@ class LanSessionPanelView(PanelMenuView):
         draw_small_text(font, str(self._player_count), Vec2(value_x, y), text_scale, value_color)
         y += line_h
 
-        draw_small_text(font, where_label, Vec2(base_pos.x, y), text_scale, label_color)
-        where_tint = active_color if self._active_field in {"bind_host", "host_ip"} else value_color
-        draw_small_text(font, where_value or "-", Vec2(value_x, y), text_scale, where_tint)
-        y += line_h
-
-        draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
-        code_tint = active_color if self._active_field == "room_code" else value_color
-        draw_small_text(font, self._room_code or "-", Vec2(value_x, y), text_scale, code_tint)
-        y += line_h
-
         draw_small_text(font, "Netcode:", Vec2(base_pos.x, y), text_scale, label_color)
         draw_small_text(font, str(self._netcode_mode), Vec2(value_x, y), text_scale, value_color)
         y += line_h
+
+        if self._netcode_mode == "lockstep":
+            draw_small_text(font, "Bind:", Vec2(base_pos.x, y), text_scale, label_color)
+            bind_tint = active_color if self._active_field == "bind_host" else value_color
+            draw_small_text(font, self._bind_host or "-", Vec2(value_x, y), text_scale, bind_tint)
+            y += line_h
+
+            draw_small_text(font, "Host:", Vec2(base_pos.x, y), text_scale, label_color)
+            host_tint = active_color if self._active_field == "host" else value_color
+            draw_small_text(font, self._host or "-", Vec2(value_x, y), text_scale, host_tint)
+            y += line_h
+        else:
+            draw_small_text(font, "Relay:", Vec2(base_pos.x, y), text_scale, label_color)
+            relay_tint = active_color if self._active_field == "host" else value_color
+            draw_small_text(font, self._host or "-", Vec2(value_x, y), text_scale, relay_tint)
+            y += line_h
+
+            draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
+            code_tint = active_color if self._active_field == "room_code" else value_color
+            draw_small_text(font, self._room_code or "-", Vec2(value_x, y), text_scale, code_tint)
+            y += line_h
 
         draw_small_text(font, "Port:", Vec2(base_pos.x, y), text_scale, label_color)
         port_tint = active_color if self._active_field == "port" else value_color
@@ -402,15 +412,6 @@ class LanSessionPanelView(PanelMenuView):
             quest_tint = active_color if self._active_field == "quest_level" else value_color
             draw_small_text(font, self._quest_level or "-", Vec2(value_x, y), text_scale, quest_tint)
             y += line_h
-
-        y += 4.0 * scale
-        draw_small_text(
-            font,
-            "TAB role | M mode | [/] players | H/P/L/C edit | N netcode | ENTER continue",
-            Vec2(base_pos.x, y),
-            0.85 * scale,
-            rl.Color(160, 160, 170, 220),
-        )
 
         if self._error:
             y += float(font.cell_size) * 0.9 * scale + 6.0 * scale
