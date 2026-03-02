@@ -158,3 +158,9 @@ def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
     with pytest.raises(TraceError, match="unsupported trace schema version"):
         with TraceReader(out_path):
             pass
+
+
+def test_write_trace_rejects_empty_ticks(tmp_path: Path) -> None:
+    out_path = tmp_path / "trace_empty.cdt"
+    with pytest.raises(TraceError, match="trace must contain at least one tick"):
+        write_trace(out_path, meta=_meta(), ticks=[], chunk_ticks=1)

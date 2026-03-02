@@ -171,14 +171,16 @@ def _write_trace_from_iter(
                 flush_block()
         flush_block()
 
-        footer_first_tick = -1 if first_tick is None else int(first_tick)
-        footer_last_tick = -1 if last_tick is None else int(last_tick)
+        if int(tick_count) <= 0:
+            raise TraceError("trace must contain at least one tick")
+        if first_tick is None or last_tick is None:
+            raise TraceError("trace footer tick bounds are missing")
         footer = TraceFooter(
             trace_format_version=TRACE_FORMAT_VERSION,
             tick_blocks=tick_indices,
             tick_count=int(tick_count),
-            first_tick=int(footer_first_tick),
-            last_tick=int(footer_last_tick),
+            first_tick=int(first_tick),
+            last_tick=int(last_tick),
             channel_counts={key: value for key, value in sorted(channel_counts.items())},
         )
         footer_payload = _ENCODER.encode(footer)
@@ -309,6 +311,14 @@ class TraceReader:
         if footer_kind != CHUNK_KIND_FOOTER:
             raise TraceError("invalid trace footer chunk")
         self.footer = _FOOTER_DECODER.decode(footer_payload)
+        if int(self.footer.tick_count) <= 0:
+            raise TraceError("invalid trace footer tick_count")
+        if int(self.footer.first_tick) < 0 or int(self.footer.last_tick) < 0:
+            raise TraceError("invalid trace footer tick bounds")
+        if int(self.footer.first_tick) > int(self.footer.last_tick):
+            raise TraceError("invalid trace footer tick order")
+        if len(self.footer.tick_blocks) <= 0:
+            raise TraceError("invalid trace footer block index")
         self._block_cache: dict[int, TickBlock] = {}
 
     def close(self) -> None:
