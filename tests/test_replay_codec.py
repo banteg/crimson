@@ -277,7 +277,7 @@ def test_replay_version_mismatch_raises() -> None:
 
 
 def test_replay_version_build_metadata_mismatch_warns() -> None:
-    header = ReplayHeader(game_mode_id=1, seed=1, player_count=1, game_version="1.0.0+gabc123")
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1, game_version="1.0.0+gabc123")
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput()])
     replay = rec.finish()
