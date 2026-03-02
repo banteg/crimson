@@ -452,7 +452,7 @@ pub fn stepTick(
         .rush => {
             const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 context.spawn_cooldown,
-                @floatFromInt(frame.dt_frame_ms_i32),
+                frame.dt_frame_ms,
                 &context.state.rng,
                 context.player_count,
                 elapsed_before_ms,
