@@ -20,7 +20,8 @@ Last reviewed: **2026-02-24**
   - `uv run crimson relay serve --bind 0.0.0.0 --port 31993`
   - `uv run crimson net host --mode survival --players 2 --relay-host <ip> --relay-port 31993`
   - `uv run crimson net join --code <invite> --relay-host <ip> --relay-port 31993`
-  - `uv run crimson lan host ...` / `uv run crimson lan join ...` (deprecated wrappers)
+  - `uv run crimson net host --mode survival --players 2 --netcode lockstep --host <ip> --port 31993`
+  - `uv run crimson net join --netcode lockstep --host <ip> --port 31993`
 - Replay tooling:
   - `uv run crimson replay play <replay.crd>`
   - `uv run crimson replay verify <replay.crd>`
@@ -93,7 +94,7 @@ Last reviewed: **2026-02-24**
 - **Multiplayer**: local 2-4 player input-frame flow is implemented for Survival/Rush/Quest.
   - Code: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/local_input.py`
 - **Rollback-primary netplay**: relay protocol v5 + relay service + rollback runtime are in-tree and selected by default for network sessions.
-  - Code: `src/crimson/net/relay_protocol.py`, `src/crimson/net/relay_service.py`, `src/crimson/net/net_runtime.py`, `src/crimson/net/rollback.py`, `src/crimson/game/loop_view.py`
+  - Code: `src/crimson/net/relay_protocol.py`, `src/crimson/net/relay_service.py`, `src/crimson/net/rollback_runtime.py`, `src/crimson/net/rollback.py`, `src/crimson/game/loop_view.py`
   - v5 adds end-to-end `rb_resync_request/begin/chunk/commit` fields (`request_id`, checksum, codec, snapshot tick), 5s link timeout + dedicated 250ms ping cadence, and reconnect/resync completion hooks.
   - Docs: [`docs/rewrite/netplay-rollback.md`](netplay-rollback.md), [`docs/rewrite/lan-lockstep.md`](lan-lockstep.md)
 - **Progression/unlocks/persistence**: quest unlock indices, mode play counters, and status persistence are wired.
@@ -115,7 +116,7 @@ Last reviewed: **2026-02-24**
   - Tests: `tests/test_step_pipeline_parity.py`, `tests/test_replay_runners.py`
   - Code: `src/crimson/sim/sessions.py`, `src/crimson/sim/runners/*.py`
 - Network protocol/runtime behavior is covered by unit and wiring tests.
-  - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus legacy suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
+  - Tests: `tests/test_relay_protocol.py`, `tests/test_relay_service.py`, `tests/test_rollback_core.py`, `tests/test_rollback_resync_v5.py`, `tests/test_net_runtime_heartbeat.py`, `tests/test_net_runtime_rollback.py`, `tests/test_net_runtime_resync.py`, `tests/test_net_runtime_modes.py`, `tests/test_net_reconnect.py`, `tests/test_net_runtime_lockstep_fallback.py`, `tests/test_net_cli.py`, `tests/test_net_ui_flow.py`, plus lockstep suites `tests/test_lan_protocol.py`, `tests/test_lan_lockstep_host.py`, `tests/test_lan_lockstep_client.py`
 - Replay-side checkpoint differential comparison is reusable via CLI and library helpers.
   - Code: `src/crimson/dbg/checkpoint_diff.py`
   - Command: `uv run crimson replay diff-checkpoints <expected> <actual>`
@@ -151,7 +152,7 @@ Last reviewed: **2026-02-24**
    - Deterministic parity infrastructure is in place; remaining gaps are mostly capture-backed edge-case timing and branch-order issues.
    - This status page intentionally avoids tick/session-specific examples that go stale quickly.
    - Current active probes and per-SHA outcomes are tracked in [`docs/frida/differential-sessions.md`](../frida/differential-sessions.md).
-3. **Rollback stress hardening + legacy fallback maintenance**
+3. **Rollback stress hardening + lockstep fallback maintenance**
    - Rollback is now the default path, but packet-impairment stress validation (loss/reorder/jitter extremes) still needs broader scenario coverage across long sessions.
    - Legacy lockstep fallback remains available and must continue to receive compatibility maintenance while rollback remains primary.
 

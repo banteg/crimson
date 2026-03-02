@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from crimson.net.net_runtime import NetRuntime, NetRuntimeConfig
 from crimson.net.relay_protocol import RbResyncBegin, RbResyncChunk, RbResyncCommit, RbResyncRequest, RoomStart
 from crimson.net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
@@ -11,15 +10,16 @@ from crimson.net.rollback_resync_v5 import (
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
+from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 
 
 def _sent_messages(send_packet: MagicMock) -> list[object]:
     return [call.args[-1].message for call in send_packet.call_args_list]
 
 
-def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[NetRuntime, MagicMock]:
-    runtime = NetRuntime(
-        NetRuntimeConfig(
+def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[RollbackRuntime, MagicMock]:
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
             role=role,
             mode_id=1,
             player_count=2,

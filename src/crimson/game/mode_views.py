@@ -76,9 +76,8 @@ class _QuestModeRuntime(_ModeRuntime, Protocol):
 
 def _mode_view_context(state: GameState) -> ViewContext:
     preserve_bugs = bool(state.preserve_bugs)
-    if bool(state.net_in_lobby) or bool(state.lan_in_lobby):
-        # LAN lockstep is a rewrite-only feature; force preserve_bugs off to keep
-        # simulation rules consistent across peers.
+    if bool(state.network_in_lobby):
+        # Network multiplayer must keep simulation rules deterministic across peers.
         preserve_bugs = False
     return ViewContext(assets_dir=state.assets_dir, preserve_bugs=preserve_bugs)
 
@@ -114,11 +113,8 @@ class _BaseModeGameView:
         return
 
     def _configure_lan_runtime(self) -> None:
-        pending = self.state.pending_net_session
-        if pending is None:
-            pending = self.state.pending_lan_session
-        in_net_session = pending is self.state.pending_net_session
-        in_lobby = bool(self.state.net_in_lobby) or bool(self.state.lan_in_lobby)
+        pending = self.state.pending_network_session
+        in_lobby = bool(self.state.network_in_lobby)
         if (not in_lobby) or pending is None:
             self._mode.set_lan_runtime(
                 enabled=False,
@@ -134,19 +130,17 @@ class _BaseModeGameView:
             1,
             min(
                 4,
-                int(self.state.net_expected_players if in_net_session else self.state.lan_expected_players),
+                int(self.state.network_expected_players),
             ),
         )
         connected_players = max(
             0,
             min(
                 expected_players,
-                int(self.state.net_connected_players if in_net_session else self.state.lan_connected_players),
+                int(self.state.network_connected_players),
             ),
         )
-        waiting_for_players = bool(
-            self.state.net_waiting_for_players if in_net_session else self.state.lan_waiting_for_players,
-        )
+        waiting_for_players = bool(self.state.network_waiting_for_players)
         self._mode.set_lan_runtime(
             enabled=True,
             role=str(pending.role),
@@ -154,9 +148,7 @@ class _BaseModeGameView:
             connected_players=int(connected_players),
             waiting_for_players=bool(waiting_for_players),
         )
-        runtime = self.state.net_runtime
-        if runtime is None:
-            runtime = self.state.lan_runtime
+        runtime = self.state.network_runtime
         self._mode.bind_lan_runtime(runtime=runtime)
         if runtime is not None:
             match_start = runtime.match_start

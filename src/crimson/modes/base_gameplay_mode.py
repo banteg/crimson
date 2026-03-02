@@ -21,7 +21,7 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
-from ..net.protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from ..net.lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
     ReplayStateSnapshotV2,
@@ -44,7 +44,7 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
     from ..gameplay import GameplayState
-    from ..net.protocol import StatusSnapshot
+    from ..net.lockstep_protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
     from ..sim.state_types import PlayerState
 

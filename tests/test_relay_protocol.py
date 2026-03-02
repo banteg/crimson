@@ -11,7 +11,7 @@ from crimson.net.relay_protocol import (
     RESYNC_MAX_SNAPSHOT_BYTES,
     ROLLBACK_MAX_TICKS,
     ClientHello,
-    LegacyLockstepControl,
+    LockstepControl,
     Packet,
     RbInputBatch,
     RbInputSample,
@@ -71,12 +71,12 @@ def test_relay_packet_round_trip_for_legacy_tunnel_message() -> None:
         seq=1,
         ack=0,
         reliable=True,
-        message=LegacyLockstepControl(payload=b"legacy"),
+        message=LockstepControl(payload=b"legacy"),
     )
 
     decoded = decode_packet(encode_packet(packet))
 
-    assert isinstance(decoded.message, LegacyLockstepControl)
+    assert isinstance(decoded.message, LockstepControl)
     assert decoded.message.payload == b"legacy"
 
 

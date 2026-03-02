@@ -12,7 +12,7 @@ from ..persistence.save_status import (
     GameStatus,
     build_status_blob,
 )
-from .protocol import StatusSnapshot
+from .lockstep_protocol import StatusSnapshot
 
 
 def status_snapshot_from_status(status: GameStatus | None) -> StatusSnapshot:

@@ -5,7 +5,7 @@ from typing import Literal, TypeAlias
 import msgspec
 
 from ..replay.types import PackedPlayerInput
-from .legacy_protocol import (
+from .lockstep_protocol import (
     INPUT_STALL_TIMEOUT_MS,
     MAX_PLAYERS,
     RELIABLE_RESEND_MS,
@@ -29,7 +29,7 @@ PING_INTERVAL_MS = 250
 RESYNC_CHUNK_PAYLOAD_BYTES = 1_024
 RESYNC_MAX_SNAPSHOT_BYTES = 2_097_152
 
-NetcodeMode = Literal["rollback", "lockstep", "lockstep_legacy"]
+NetcodeMode = Literal["rollback", "lockstep"]
 
 
 class RelaySlot(msgspec.Struct, forbid_unknown_fields=True):
@@ -167,15 +167,15 @@ class RbResyncCommit(msgspec.Struct, tag="rb_resync_commit", forbid_unknown_fiel
     payload_sha256: str = ""
 
 
-class LegacyLockstepInputBatch(msgspec.Struct, tag="legacy_lockstep_input_batch", forbid_unknown_fields=True):
+class LockstepInputBatch(msgspec.Struct, tag="lockstep_state_input_batch", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
-class LegacyLockstepTickFrame(msgspec.Struct, tag="legacy_lockstep_tick_frame", forbid_unknown_fields=True):
+class LockstepTickFrame(msgspec.Struct, tag="lockstep_state_tick_frame", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
-class LegacyLockstepControl(msgspec.Struct, tag="legacy_lockstep_control", forbid_unknown_fields=True):
+class LockstepControl(msgspec.Struct, tag="lockstep_state_control", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
@@ -196,9 +196,9 @@ NetMessage: TypeAlias = (
     | RbResyncBegin
     | RbResyncChunk
     | RbResyncCommit
-    | LegacyLockstepInputBatch
-    | LegacyLockstepTickFrame
-    | LegacyLockstepControl
+    | LockstepInputBatch
+    | LockstepTickFrame
+    | LockstepControl
 )
 
 
@@ -238,9 +238,9 @@ __all__ = [
     "TICK_RATE",
     "ClientHello",
     "ClientWelcome",
-    "LegacyLockstepControl",
-    "LegacyLockstepInputBatch",
-    "LegacyLockstepTickFrame",
+    "LockstepControl",
+    "LockstepInputBatch",
+    "LockstepTickFrame",
     "NetMessage",
     "NetcodeMode",
     "Packet",

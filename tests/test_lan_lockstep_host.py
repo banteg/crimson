@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.net.lockstep import HostLockstepState
+from crimson.net.lockstep_state import HostLockstepState
 
 
 def test_host_lockstep_emits_canonical_frames_in_tick_order() -> None:

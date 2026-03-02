@@ -4,7 +4,7 @@ import socket
 
 import msgspec
 
-from .protocol import Packet, decode_packet, encode_packet
+from .lockstep_protocol import Packet, decode_packet, encode_packet
 
 PeerAddr = tuple[str, int]
 

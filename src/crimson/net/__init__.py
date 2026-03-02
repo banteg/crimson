@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from .adapter import ClientLanAdapter, HostLanAdapter
-from .lobby import ClientLobby, HostLobby
-from .lockstep import ClientLockstepState, HostLockstepState
-from .net_runtime import NetRuntime, NetRuntimeConfig
-from .protocol import (
+from .lockstep_lobby import ClientLobby, HostLobby
+from .lockstep_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
     MAX_PLAYERS,
@@ -13,9 +11,12 @@ from .protocol import (
     STATE_HASH_PERIOD_TICKS,
     TICK_RATE,
 )
+from .lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
+from .lockstep_state import ClientLockstepState, HostLockstepState
 from .relay_service import RelayServer, RelayServerConfig
 from .reliable import ReliableLink
 from .resync import ResyncAssembler, ResyncBuildError, build_resync_messages
+from .rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 from .transport import PeerAddr, UdpTransport
 
 __all__ = [
@@ -27,9 +28,11 @@ __all__ = [
     "HostLobby",
     "HostLockstepState",
     "INPUT_DELAY_TICKS",
+    "LockstepRuntime",
+    "LockstepRuntimeConfig",
     "MAX_PLAYERS",
-    "NetRuntime",
-    "NetRuntimeConfig",
+    "RollbackRuntime",
+    "RollbackRuntimeConfig",
     "PROTOCOL_VERSION",
     "PeerAddr",
     "RELIABLE_RESEND_MS",

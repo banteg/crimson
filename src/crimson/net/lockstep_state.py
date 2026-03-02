@@ -5,7 +5,7 @@ from collections import deque
 import msgspec
 
 from ..replay.types import PackedPlayerInput
-from .protocol import (
+from .lockstep_protocol import (
     INPUT_DELAY_TICKS,
     INPUT_STALL_TIMEOUT_MS,
     STATE_HASH_PERIOD_TICKS,

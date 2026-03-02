@@ -341,17 +341,20 @@ def run_game(config: GameConfig) -> None:
             resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
             rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
-            pending_net_session=config.pending_net_session,
-            pending_lan_session=config.pending_lan_session,
+            pending_network_session=config.pending_network_session,
         )
-        pending = config.pending_net_session
-        if pending is None:
-            pending = config.pending_lan_session
+        pending = config.pending_network_session
         if pending is not None:
-            from ..net.protocol import current_build_id
+            from ..net.lockstep_protocol import current_build_id
 
-            host = pending.config.resolved_relay_host()
-            port = pending.config.resolved_relay_port()
+            if str(pending.config.netcode_mode) == "lockstep":
+                endpoint = pending.config.lockstep_endpoint()
+                host = str(endpoint.host)
+                port = int(endpoint.port)
+            else:
+                endpoint = pending.config.rollback_endpoint()
+                host = str(endpoint.relay_host)
+                port = int(endpoint.relay_port)
             log_path = init_lan_debug_log(
                 base_dir=base_dir,
                 role=str(pending.role),

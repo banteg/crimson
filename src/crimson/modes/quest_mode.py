@@ -28,7 +28,7 @@ from ..input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
-from ..net.protocol import STATE_HASH_PERIOD_TICKS, TickFrame
+from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,

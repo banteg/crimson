@@ -10,7 +10,7 @@ import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
-from .legacy_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from .lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from .relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
@@ -55,7 +55,7 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
-class NetRuntimeConfig(msgspec.Struct):
+class RollbackRuntimeConfig(msgspec.Struct):
     role: str
     mode_id: int
     player_count: int
@@ -75,8 +75,8 @@ class NetRuntimeConfig(msgspec.Struct):
 ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
 
 
-class NetRuntime(msgspec.Struct):
-    cfg: NetRuntimeConfig
+class RollbackRuntime(msgspec.Struct):
+    cfg: RollbackRuntimeConfig
     build_id: str = msgspec.field(default_factory=current_build_id)
     transport: RelayUdpTransport = cast(RelayUdpTransport, None)
     link: RelayReliableLink = msgspec.field(default_factory=RelayReliableLink)
@@ -858,4 +858,4 @@ class NetRuntime(msgspec.Struct):
         print(f"[crimson] Invite code: {code}", flush=True)
 
 
-__all__ = ["NetRuntime", "NetRuntimeConfig"]
+__all__ = ["RollbackRuntime", "RollbackRuntimeConfig"]

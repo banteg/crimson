@@ -37,16 +37,17 @@ def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path)
     assert result.exit_code == 0, result.output
     run_game.assert_called_once()
     config = run_game.call_args.args[0]
-    pending = config.pending_net_session
+    pending = config.pending_network_session
     assert pending is not None
-    assert config.pending_lan_session is pending
+    assert config.pending_network_session is pending
     assert pending.role == "host"
     assert pending.auto_start is True
     assert pending.config.mode == "rush"
     assert pending.config.player_count == 3
-    assert pending.config.relay_host == "203.0.113.10"
-    assert pending.config.relay_port == 32011
-    assert pending.config.room_code == "AB12CD"
+    endpoint = pending.config.rollback_endpoint()
+    assert endpoint.relay_host == "203.0.113.10"
+    assert endpoint.relay_port == 32011
+    assert endpoint.room_code == "AB12CD"
     assert pending.config.netcode_mode == "rollback"
 
 
@@ -70,7 +71,7 @@ def test_net_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
     assert "quest level is required" in result.output
 
 
-def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocker, tmp_path: Path) -> None:
+def test_net_join_command_builds_pending_join_session(mocker, tmp_path: Path) -> None:
     run_game = mocker.patch.object(game, "run_game")
 
     runner = CliRunner()
@@ -85,8 +86,6 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocke
             "198.51.100.15",
             "--relay-port",
             "31999",
-            "--netcode",
-            "lockstep",
             "--base-dir",
             str(tmp_path),
         ],
@@ -95,15 +94,37 @@ def test_net_join_command_builds_pending_join_session_with_legacy_fallback(mocke
     assert result.exit_code == 0, result.output
     run_game.assert_called_once()
     config = run_game.call_args.args[0]
-    pending = config.pending_net_session
+    pending = config.pending_network_session
     assert pending is not None
-    assert config.pending_lan_session is pending
+    assert config.pending_network_session is pending
     assert pending.role == "join"
     assert pending.auto_start is True
-    assert pending.config.room_code == "ROOM42"
-    assert pending.config.relay_host == "198.51.100.15"
-    assert pending.config.relay_port == 31999
-    assert pending.config.netcode_mode == "lockstep_legacy"
+    endpoint = pending.config.rollback_endpoint()
+    assert endpoint.room_code == "ROOM42"
+    assert endpoint.relay_host == "198.51.100.15"
+    assert endpoint.relay_port == 31999
+    assert pending.config.netcode_mode == "rollback"
+
+
+def test_net_join_lockstep_requires_host(mocker, tmp_path: Path) -> None:
+    mocker.patch.object(game, "run_game", side_effect=lambda _config: None)
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "net",
+            "join",
+            "--code",
+            "room42",
+            "--netcode",
+            "lockstep",
+            "--base-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "host is required in lockstep mode" in result.output
 
 
 def test_net_host_rtx_flag_enables_rtx_mode(mocker, tmp_path: Path) -> None:

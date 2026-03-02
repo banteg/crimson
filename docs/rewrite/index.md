@@ -18,7 +18,6 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson relay serve --bind 0.0.0.0 --port 31993` (run UDP relay)
 - `uv run crimson net host --mode survival --players 2 --relay-host 127.0.0.1 --relay-port 31993` (host rollback room)
 - `uv run crimson net join --code <ROOMCODE> --relay-host 127.0.0.1 --relay-port 31993` (join rollback room)
-- `uv run crimson lan host ...` / `uv run crimson lan join ...` (deprecated wrappers for one release cycle)
 
 ## Zig verifier (current WIP)
 
@@ -116,7 +115,7 @@ See also:
 - [Module map (Grim vs Crimson)](module-map.md)
 - [Deterministic step pipeline](deterministic-step-pipeline.md)
 - [Netplay (rollback primary)](netplay-rollback.md)
-- [LAN lockstep (legacy fallback)](lan-lockstep.md)
+- [LAN lockstep (fallback mode)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
 - [Float parity policy](float-parity-policy.md)
 - [Float expression precision map](float-expression-precision-map.md)
@@ -130,7 +129,7 @@ See also:
 
 - Creature runtime parity gaps: remaining AI edge cases and per-weapon behaviors are still pending.
 - Multiplayer (2-4 players): per-player local input is wired in Survival/Rush/Quest; deep scheme-by-scheme parity validation is still in progress.
-- Rollback netplay is primary (relay + room codes, protocol v5, reconnect/resync hooks); remaining hardening work is focused on packet-impairment stress runs and lockstep legacy fallback maintenance.
+- Rollback netplay is primary (relay + room codes, protocol v5, reconnect/resync hooks); remaining hardening work is focused on packet-impairment stress runs and lockstep fallback maintenance.
 - `game.cfg` progression/unlock wiring is in place; some tail fields/counter semantics still need deeper mapping validation.
 - Full Options/Controls parity (video/window mode editing, full widget set).
 - Native online-score submission is out of scope; direction is a more advanced headless verification system.

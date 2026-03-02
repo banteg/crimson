@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.net.lockstep import HostLockstepState
+from crimson.net.lockstep_state import HostLockstepState
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
