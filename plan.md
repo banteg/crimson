@@ -15,9 +15,9 @@ Decompile evidence shows a mostly two-variable runtime model in gameplay:
 There are also explicit zeroing gates (demo/pause/etc.) where both are set to `0`.
 
 There are three distinct scaling layers to model correctly:
-1. Outer frame-loop perk scaling (`REFLEX_BOOSTED`): `frame_dt *= 0.9` in the outer state loop.
+1. Outer frame-loop perk scaling (`REFLEX_BOOSTED`): `frame_dt *= 0.899999976` in the outer state loop.
 2. Gameplay-pass scaling (`bonus_reflex_boost_timer`): in `gameplay_update_and_render`, `frame_dt` is scaled by `_time_scale_factor`, then `frame_dt_ms` is re-derived via `__ftol`.
-3. Player-local temporary scaling: in `player_update`, `frame_dt` is temporarily remapped by `(0.6 / _time_scale_factor) * frame_dt` and later restored to the gameplay-pass scale.
+3. Player-local temporary scaling: in `player_update`, `frame_dt` is temporarily remapped by `(0.600000024 / _time_scale_factor) * frame_dt` and later restored to the gameplay-pass scale.
 
 Goal: build one canonical timing payload that mirrors this behavior, eliminates local ad-hoc math, and clearly distinguishes:
 - unscaled tick cadence
@@ -47,10 +47,11 @@ Introduce a canonical frame timing struct computed once per deterministic tick e
 - Replay format requires per-tick `dt` rows; no runtime fallback/override branch.
 - `Replay.dt[tick]` is sampled at `gameplay_update_and_render` entry (`fVar1 = frame_dt`), before gameplay-pass scaling.
 - `Replay.dt` validation allows finite non-negative values; `0.0` is valid for explicit native zeroing paths.
-- `FrameTiming.compute()` is called after outer-loop writes (`grim_get_frame_dt`, optional `REFLEX_BOOSTED`, optional outer zeroing) and before gameplay-pass scaling.
-- `FrameTiming.compute()` receives `time_scale_factor`; `bonus_reflex_boost_timer` is only used by the call site to derive `time_scale_active`.
-- `time_scale_factor` must be finite and `> 0.0` whenever `time_scale_active` is true.
-- `FrameTiming.compute()` does not carry a dedicated zero-gate branch; zeroed ticks are represented by passing `dt=0.0` and deriving integer cadence via the same helper path.
+- `FrameTiming.compute()` is called after outer-loop writes (`grim_get_frame_dt`, optional `REFLEX_BOOSTED`, optional outer console zeroing) and at `gameplay_update_and_render` entry.
+- Current-tick gameplay scaling is gated by entry-latched `time_scale_active_entry` (as in native), not by recomputing `bonus_reflex_boost_timer > 0` before `compute()`.
+- `bonus_reflex_boost_timer` influences current-tick `time_scale_factor` only when `time_scale_active_entry` is true; `time_scale_active` is recomputed later in tick for the next frame.
+- `time_scale_factor` must be finite and `> 0.0` whenever `time_scale_active_entry` is true.
+- `FrameTiming.compute()` receives `zero_gate_active`; when true it forces simulation cadence to zero (`dt_sim=0.0`, `dt_sim_ms_i32=0`) while preserving entry cadence (`dt`, `dt_ms_i32`) from `gpur_enter`.
 - `run_replay_info` must consume the exact same per-tick replay timing rows as `run_replay` (all modes).
 - `ReplayRecorder` will always emit per-tick `dt` rows.
 - Replay hard break specifics: drop `dt_ms_i32` replay rows from schema and reject old versions rather than migrating.
@@ -64,8 +65,9 @@ import msgspec
 class FrameTiming(msgspec.Struct, frozen=True):
     # Canonical seconds-domain values
     dt: float
-    time_scale_active: bool
+    time_scale_active_entry: bool
     time_scale_factor: float
+    zero_gate_active: bool
     dt_sim: float
 
     @property
@@ -78,16 +80,17 @@ class FrameTiming(msgspec.Struct, frozen=True):
 
     @property
     def dt_player_local(self) -> float:
-        if not self.time_scale_active:
+        if not self.time_scale_active_entry:
             return self.dt_sim
-        return (0.6 / self.time_scale_factor) * self.dt_sim
+        return (0.600000024 / self.time_scale_factor) * self.dt_sim
 
     @staticmethod
     def compute(
         dt: float,
         *,
-        time_scale_active: bool,
+        time_scale_active_entry: bool,
         time_scale_factor: float,
+        zero_gate_active: bool,
     ) -> "FrameTiming":
         # Centralized derivation of all fields.
         # Important: route i32 conversion through a single __ftol-compatible helper;
@@ -97,9 +100,11 @@ class FrameTiming(msgspec.Struct, frozen=True):
 
 ### Field Semantics
 
-- `dt`: pre-gameplay-scale cadence (base frame entry).
-- `dt_sim`: gameplay-pass cadence consumed by main simulation updates (creatures/projectiles/player/survival/rush/quest and related counters); equals `dt * time_scale_factor` when `time_scale_active`, otherwise `dt`.
-- `dt_player_local`: derived player-phase accessor (`(0.6 / time_scale_factor) * dt_sim`) for parity with `player_update`; it is not stored as mutable tick state.
+- `dt`: `gameplay_update_and_render` entry cadence (`fVar1` snapshot), and replay-row source.
+- `dt_sim`: effective gameplay cadence consumed by simulation updates after gameplay scaling and zero-gate logic.
+- `time_scale_active_entry`: entry-latched native flag that gates current-tick gameplay scaling.
+- `zero_gate_active`: `gameplay_update_and_render` gating decision that can force `dt_sim`/`dt_sim_ms_i32` to zero even when `dt` is non-zero.
+- `dt_player_local`: derived player-phase accessor (`(0.600000024 / time_scale_factor) * dt_sim`) for parity with `player_update`; it is not stored as mutable tick state.
   - It is seconds-domain only; there is no `dt_player_local_ms_i32` field.
   - Native `player_update` does not re-derive `frame_dt_ms` during player-local remap/restore.
 - `dt_ms_i32`: authoritative integer cadence for replayable tick entry (derived from `dt`).
@@ -111,14 +116,17 @@ class FrameTiming(msgspec.Struct, frozen=True):
 Deterministic callers must apply native outer-loop behavior before constructing `FrameTiming`:
 
 1. `dt_outer = grim_get_frame_dt()`
-2. optional `REFLEX_BOOSTED`: `dt_outer *= 0.9`
+2. optional `REFLEX_BOOSTED`: `dt_outer *= 0.899999976`
 3. optional outer zeroing gates
-4. derive `time_scale_active` from `bonus_reflex_boost_timer > 0`
-5. call `FrameTiming.compute(dt_outer, time_scale_active=time_scale_active, time_scale_factor=time_scale_factor)`
+4. at GPUR entry, latch `dt_entry = dt_outer` and `time_scale_active_entry` from current world state.
+5. compute/latch `time_scale_factor` for current tick from native formula under entry-active gate (`0.300000012` baseline; ramp with `0.699999988` and `0.300000012` when timer < `1.0`).
+6. evaluate GPUR zero-gate condition for current tick.
+7. call `FrameTiming.compute(dt_entry, time_scale_active_entry=..., time_scale_factor=..., zero_gate_active=...)`.
+8. later in tick, update `time_scale_active_next = (bonus_reflex_boost_timer > 0.0)` and decrement `bonus_reflex_boost_timer` by current `frame_dt` only when active; this write affects the next tick.
 
-This makes ownership explicit: `compute()` models gameplay-pass and player-local semantics, while outer-loop perk/gating writes stay at the driver boundary.
+This makes ownership explicit: `compute()` models gameplay-pass and player-local semantics (including GPUR zero-gate), while outer-loop writes stay at the driver boundary.
 `FrameTiming` remains immutable for the tick; native mid-tick writes are represented via derived accessors and `timing_samples`, not by mutating the struct.
-For zeroed ticks, callers pass `dt_outer=0.0`; do not add a separate zeroing branch inside `compute()`.
+`Replay.dt[tick]` remains the GPUR-entry sample (`dt_entry`) even on ticks where `zero_gate_active` forces `dt_sim` to `0.0`.
 
 ### Decision: Derive Integer-ms Accessors from Seconds
 
@@ -126,7 +134,7 @@ Decompile evidence indicates native `frame_dt_ms` is consistently re-derived fro
 
 For rewrite architecture, a robust simplification is:
 
-- store canonical second-domain fields (`dt`, `dt_sim`) plus scale metadata (`time_scale_active`, `time_scale_factor`)
+- store canonical second-domain fields (`dt`, `dt_sim`) plus scale metadata (`time_scale_active_entry`, `time_scale_factor`, `zero_gate_active`)
 - expose only integer-ms cadence accessors in the core model:
   1. always call a single shared `ftol_ms_i32()` helper on `dt * 1000.0`
 
@@ -296,7 +304,9 @@ Use these exact anchors while implementing:
     - `frame_dt_ms = 0; frame_dt = 0.0`
     - `analysis/ghidra/raw/crimsonland.exe_decompiled.c:6742-6743`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:8802-8803`
-  - `time_scale_active` derives from `bonus_reflex_boost_timer` and timer decrements by `frame_dt`
+  - Late-tick rewrite for next-frame state:
+    - `time_scale_active = 0.0 < bonus_reflex_boost_timer`
+    - if active, `bonus_reflex_boost_timer -= frame_dt`
     - `analysis/ghidra/raw/crimsonland.exe_decompiled.c:6824-6827`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:8954-8960`
   - End-of-function restore:
@@ -307,7 +317,7 @@ Use these exact anchors while implementing:
 ### Outer Loop Perk Scaling (`REFLEX_BOOSTED`)
 
 - `console_hotkey_update` @ `0x0040c1c0`
-  - Perk gate + gameplay-state check then `frame_dt *= 0.9`
+  - Perk gate + gameplay-state check then `frame_dt *= 0.899999976`
   - Re-derive `frame_dt_ms = __ftol(frame_dt * 1000.0)`
   - `analysis/ghidra/raw/crimsonland.exe_decompiled.c:7565-7573`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:10061-10096`
@@ -316,12 +326,12 @@ Use these exact anchors while implementing:
 
 - `player_update` @ `0x004136b0`
   - Local remap entry when `time_scale_active`:
-    - `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
+    - `frame_dt = (0.600000024 / _time_scale_factor) * frame_dt`
     - `analysis/ghidra/raw/crimsonland.exe_decompiled.c:12151-12152`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:16125-16130`
   - Local restore back to gameplay-pass scale:
-    - `frame_dt = time_scale_factor * frame_dt * 1.6666666...`
-    - constants: `data_46f33c=0.6`, `data_46f50c=1.6666666...`
+    - `frame_dt = time_scale_factor * frame_dt * 1.66666663`
+    - constants: `data_46f33c=0x3f19999a (0.600000024)`, `data_46f50c=0x3fd55555 (1.66666663)`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:17904-17909`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:97757`
     - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:97875`
@@ -352,7 +362,8 @@ To precisely find timing divergence causes, we should trace `frame_dt` and `fram
 - `frame_dt_f32`
 - `frame_dt_ms_i32`
 - `frame_dt_ms_f32`
-- `time_scale_active`
+- `time_scale_active_entry`
+- `time_scale_active_current`
 - `time_scale_factor`
 - `bonus_reflex_boost_timer`
 - `mode_fn` (nullable)
@@ -365,7 +376,7 @@ Emit a `timing_samples` row for every write to `frame_dt` or `frame_dt_ms` in th
 1. `outer_get_frame_dt`
    - `frame_dt = grim_get_frame_dt()` in `console_hotkey_update` (`0x0040c1d7`)
 2. `outer_reflex_boosted_scale` (conditional)
-   - `frame_dt = frame_dt * 0.9` (`0x0040c4e7`)
+   - `frame_dt = frame_dt * 0.899999976` (`0x0040c4e7`)
 3. `outer_rederive_ms`
    - `frame_dt_ms = __ftol(frame_dt * 1000.0)` (`0x0040c517`)
 4. `outer_console_zero_dt` (conditional)
@@ -381,12 +392,16 @@ Emit a `timing_samples` row for every write to `frame_dt` or `frame_dt_ms` in th
 9. `gpur_zero_gate_dt` (conditional)
    - `frame_dt = 0.0` (`0x0040abb4`)
 10. `player_local_scale_enter` (conditional)
-    - `frame_dt = (0.6 / _time_scale_factor) * frame_dt` in `player_update` (`0x00413e13`)
+    - `frame_dt = (0.600000024 / _time_scale_factor) * frame_dt` in `player_update` (`0x00413e13`)
 11. `player_local_scale_restore` (conditional)
-    - `frame_dt = time_scale_factor * frame_dt * 1.6666666...` (`0x00414f5f`)
-12. `gpur_restore_dt`
+    - `frame_dt = time_scale_factor * frame_dt * 1.66666663` (`0x00414f5f`)
+12. `gpur_time_scale_state_write` (snapshot after late-tick write)
+    - `time_scale_active = (0.0 < bonus_reflex_boost_timer)` (`0x0040ae3d` / `0x0040ae5a`)
+13. `gpur_bonus_reflex_timer_decrement` (conditional)
+    - `bonus_reflex_boost_timer = bonus_reflex_boost_timer - frame_dt` (`0x0040ae52`)
+14. `gpur_restore_dt`
     - `frame_dt = fVar1` (`0x0040b1fd`)
-13. `gpur_restore_ms`
+15. `gpur_restore_ms`
     - `frame_dt_ms = __ftol(fVar1 * 1000.0)` (`0x0040b208`)
 
 ### Existing Capture Support vs Needed Additions
@@ -407,6 +422,8 @@ Need to add:
 - Across `mode_enter` -> `mode_leave`: integer cadence should remain consistent for a given phase.
 - `player_local_scale_restore` should return `frame_dt` to gameplay-pass scale (not entry `dt`).
 - `frame_dt_ms` is not re-derived inside `player_update`; `frame_dt_ms_i32` should remain equal across `player_local_scale_enter` and `player_local_scale_restore` samples (unless already zeroed by gate path).
+- If `gpur_zero_gate_*` fires, simulation cadence is zeroed for the tick (`dt_sim=0.0`, `dt_sim_ms_i32=0`) while `Replay.dt[tick]` still equals the `gpur_enter` snapshot.
+- Current-tick scaling uses `time_scale_active_entry`; `gpur_time_scale_state_write` updates only next-tick state.
 - At `gpur_after_restore`: `frame_dt` / `frame_dt_ms` should match pre-scale baseline (`fVar1` path), except explicit zeroing paths.
 - `Replay.dt[tick]` should equal `gpur_enter.frame_dt_f32` for that tick.
 
