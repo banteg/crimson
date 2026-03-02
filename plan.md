@@ -180,3 +180,82 @@ Use these exact anchors while implementing:
 - Survival cadence uses `frame_dt_ms` arithmetic:
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:6152`
   - `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:8965-8966`
+
+## 6. Sub-Tick Timing Trace Plan (Divergence Localization)
+
+To precisely find timing divergence causes, we should trace `frame_dt` and `frame_dt_ms` at sub-tick phase boundaries, not only once per tick.
+
+### Why This Is Needed
+
+- `frame_dt` and `frame_dt_ms` are mutated inside a single gameplay tick.
+- A single per-tick snapshot can hide where drift begins (e.g., player-local remap vs gameplay-pass scale vs restore timing).
+
+### Required Trace Fields Per Sample
+
+- `tick_index`
+- `gameplay_frame`
+- `phase`
+- `frame_dt_f32`
+- `frame_dt_ms_i32`
+- `frame_dt_ms_f32`
+- `time_scale_active`
+- `time_scale_factor`
+- `bonus_reflex_boost_timer`
+- `mode_fn` (nullable)
+- `player_index` (nullable)
+
+### Canonical Phase Sequence (Native)
+
+1. `gpur_enter`
+   - Hook: `gameplay_update_and_render` on-enter (`0x0040aab0`)
+2. `gpur_after_gameplay_scale`
+   - Immediately after gameplay scaling and `frame_dt_ms` re-derive
+   - Decompile anchors: `0x0040ab11` / `0x0040ab22`
+3. `mode_enter` / `mode_leave`
+   - Around `survival_update` / `rush_mode_update` / `quest_mode_update`
+4. `player_enter` / `player_leave`
+   - Around `player_update` (`0x004136b0`)
+5. `player_local_scale_enter`
+   - Internal probe at local remap (`0x00413e13`)
+6. `player_local_scale_restore`
+   - Internal probe at local restore (`0x00414f5f`)
+7. `gpur_before_restore`
+   - Right before end-of-function restore (`frame_dt = fVar1`)
+8. `gpur_after_restore`
+   - After `frame_dt`/`frame_dt_ms` restore (`0x0040b1fd` / `0x0040b208`) or function leave
+
+### Existing Capture Support vs Needed Additions
+
+Already present in `scripts/frida/gameplay_diff_capture.js`:
+- Tick envelope (`gameplay_update_and_render` enter/leave)
+- Mode enter/leave samples with `frame_dt_ms_i32`
+- Before/after globals with timing summary
+
+Need to add:
+- Internal `player_update` probes at `0x00413e13` and `0x00414f5f`
+- Explicit `gpur_after_gameplay_scale` and `gpur_before_restore` phase samples
+
+### Invariants to Assert Per Tick
+
+- At `gpur_after_gameplay_scale`: `frame_dt_ms_i32 == ftol_ms_i32(frame_dt_f32 * 1000.0)` unless on zero-gate path.
+- Across `mode_enter` -> `mode_leave`: integer cadence should remain consistent for a given phase.
+- `player_local_scale_restore` should return `frame_dt` to gameplay-pass scale (not entry `dt_tick`).
+- At `gpur_after_restore`: `frame_dt` / `frame_dt_ms` should match pre-scale baseline (`fVar1` path), except explicit zeroing paths.
+
+### Divergence Triage Rules
+
+- First mismatch at `gpur_after_gameplay_scale`:
+  - likely gameplay-pass scaling or `ftol` conversion parity issue.
+- Match through mode phases, mismatch in `player_local_*`:
+  - likely player-local remap/restore implementation issue.
+- Match through player-local phases, mismatch in mode outputs:
+  - likely integer-cadence consumer mismatch (quest/survival/rush timers/cooldowns).
+- Match until `gpur_before_restore`, mismatch at `gpur_after_restore`:
+  - likely restore ordering or final `frame_dt_ms` recompute mismatch.
+
+### Practical Comparison Key
+
+Compare rows by:
+- `(tick_index, phase, player_index?)`
+
+Stop at first mismatch and classify by phase using the triage rules above.
