@@ -17,7 +17,6 @@ from ..owner_ref import OwnerRef
 class _BonusesLike(Protocol):
     freeze: float
 
-
 class _SpriteEffectsLike(Protocol):
     def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int: ...
 
@@ -176,5 +175,4 @@ __all__ = [
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
     "_rng_zero",
-    "_SpriteEffectsLike",
 ]

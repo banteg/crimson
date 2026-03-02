@@ -4,7 +4,7 @@ from typing import cast
 
 import crimson.ui.hud as hud_module
 from crimson.sim.state_types import PlayerState
-from crimson.ui.hud import HudAssets, HudRenderContext, HudState, draw_hud_overlay
+from crimson.ui.hud import HudAssets, HudRenderContext, HudRenderFlags, HudState, draw_hud_overlay
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -65,9 +65,13 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
             assets=assets,
             state=HudState(),
             alpha=1.0,
-            show_weapon=True,
-            show_xp=False,
-            show_time=False,
+            flags=HudRenderFlags(
+                show_health=True,
+                show_weapon=True,
+                show_xp=False,
+                show_time=False,
+                show_quest_hud=False,
+            ),
         ),
         player=player0,
         players=[player0, player1],
@@ -137,9 +141,13 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
             assets=assets,
             state=HudState(preserve_bugs=False),
             alpha=1.0,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
+            flags=HudRenderFlags(
+                show_health=True,
+                show_weapon=False,
+                show_xp=False,
+                show_time=False,
+                show_quest_hud=False,
+            ),
         ),
         player=player0,
         players=[player0, player1],
@@ -165,9 +173,13 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
             assets=assets,
             state=HudState(preserve_bugs=True),
             alpha=1.0,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
+            flags=HudRenderFlags(
+                show_health=True,
+                show_weapon=False,
+                show_xp=False,
+                show_time=False,
+                show_quest_hud=False,
+            ),
         ),
         player=player0,
         players=[player0, player1],
