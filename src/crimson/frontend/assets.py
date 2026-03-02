@@ -5,7 +5,7 @@ import msgspec
 from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path
 from grim.raylib_api import rl
 
-from .types import GameState
+from .types import FrontendContext
 
 
 class MenuAssets(msgspec.Struct):
@@ -15,11 +15,11 @@ class MenuAssets(msgspec.Struct):
     labels: rl.Texture
 
 
-def _load_resource_entries(state: GameState) -> dict[str, bytes]:
+def _load_resource_entries(state: FrontendContext) -> dict[str, bytes]:
     return load_paq_entries_from_path(state.resource_paq)
 
 
-def _ensure_texture_cache(state: GameState) -> PaqTextureCache:
+def _ensure_texture_cache(state: FrontendContext) -> PaqTextureCache:
     cache = state.texture_cache
     if cache is None:
         entries = _load_resource_entries(state)
@@ -34,7 +34,7 @@ def _require_menu_texture(texture: rl.Texture | None, *, rel_path: str) -> rl.Te
     return texture
 
 
-def load_menu_assets(state: GameState) -> MenuAssets:
+def load_menu_assets(state: FrontendContext) -> MenuAssets:
     cache = _ensure_texture_cache(state)
     loader = TextureLoader(assets_root=state.assets_dir, cache=cache)
     return MenuAssets(

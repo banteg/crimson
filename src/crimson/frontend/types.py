@@ -4,6 +4,8 @@ import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
+from ..pause_background import PauseBackground
+
 if TYPE_CHECKING:
     from grim.assets import LogoAssets, PaqTextureCache
     from grim.audio import AudioState
@@ -18,11 +20,7 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
 
 
-class PauseBackground(Protocol):
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
-
-
-class GameState(Protocol):
+class FrontendContext(Protocol):
     # Keep this protocol lightweight: frontend code should not depend on the full
     # gameplay/sim stack (enforced via import-linter).
     base_dir: Path

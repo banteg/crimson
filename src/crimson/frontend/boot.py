@@ -8,7 +8,7 @@ from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music,
 from grim.raylib_api import rl
 
 from .assets import _load_resource_entries
-from .types import GameState
+from .types import FrontendContext
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
     0: (
@@ -135,7 +135,7 @@ def _debug_loading_hold_seconds() -> float:
 
 
 class BootView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         self.state = state
         self._texture_stage = 0
         self._textures_done = False

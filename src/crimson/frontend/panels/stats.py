@@ -33,7 +33,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
@@ -94,7 +94,7 @@ class StatisticsMenuView:
       - Credits
     """
 
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

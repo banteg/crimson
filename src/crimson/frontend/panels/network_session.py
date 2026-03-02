@@ -19,7 +19,7 @@ from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ...ui.text_input import poll_text_input
 from ..menu import MENU_PANEL_OFFSET_Y, MENU_PANEL_WIDTH, MenuEntry, MenuView
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
@@ -34,7 +34,7 @@ class _SessionLayout(msgspec.Struct, frozen=True):
 class NetworkSessionPanelView(PanelMenuView):
     _MODES: tuple[NetworkSessionMode, ...] = ("survival", "rush", "quests")
 
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(
             state,
             title="Network Session",

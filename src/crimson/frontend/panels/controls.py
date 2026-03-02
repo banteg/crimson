@@ -20,7 +20,7 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -111,7 +111,7 @@ class _RebindRowLayout(msgspec.Struct, frozen=True):
 
 
 class ControlsMenuView(PanelMenuView):
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(
             state,
             title="Controls",

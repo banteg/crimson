@@ -37,7 +37,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None
@@ -329,7 +329,7 @@ class _DatabaseBaseView:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(state)
         self._wicons_tex: rl.Texture | None = None
         self._weapon_ids: list[int] = []
@@ -640,7 +640,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     _LIST_TEXT_Y = 128.0
     _DESC_WRAP_WIDTH_PX = 256.0
 
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(state)
         self._perk_ids: list[int] = []
         self._list_scroll_index: int = 0

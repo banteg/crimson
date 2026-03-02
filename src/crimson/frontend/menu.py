@@ -16,7 +16,7 @@ from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from .transitions import _draw_screen_fade
-from .types import GameState
+from .types import FrontendContext
 
 MENU_LABEL_WIDTH = 122.0
 MENU_LABEL_HEIGHT = 28.0
@@ -76,14 +76,14 @@ class _TimelineView(Protocol):
     _timeline_ms: int
 
 
-def menu_ground_camera(state: GameState) -> Vec2:
+def menu_ground_camera(state: FrontendContext) -> Vec2:
     camera = state.menu_ground_camera
     if isinstance(camera, Vec2):
         return camera
     return Vec2()
 
 
-def _menu_unlock_index(state: GameState) -> int:
+def _menu_unlock_index(state: FrontendContext) -> int:
     status = state.status
     if status is None:
         return 0
@@ -93,7 +93,7 @@ def _menu_unlock_index(state: GameState) -> int:
         return 0
 
 
-def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]:
+def _choose_menu_terrain_ids(state: FrontendContext) -> tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]:
     unlock_index = _menu_unlock_index(state)
     for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
         if unlock_index >= threshold and (state.rng.randrange(0, 8) & 7) == 3:
@@ -101,7 +101,7 @@ def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, Terrai
     return MENU_DEFAULT_TERRAIN_IDS
 
 
-def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.Texture | None:
+def _menu_terrain_texture(state: FrontendContext, terrain_id: TerrainTextureId) -> rl.Texture | None:
     cache = state.texture_cache
     if cache is None:
         return None
@@ -116,7 +116,7 @@ def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.
     return cache.get_or_load(key, rel_path).texture
 
 
-def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
+def ensure_menu_ground(state: FrontendContext, *, regenerate: bool = False) -> GroundRenderer | None:
     cache = state.texture_cache
     if cache is None:
         return None
@@ -179,7 +179,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     return ground
 
 
-def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
+def _draw_menu_cursor(state: FrontendContext, *, pulse_time: float) -> None:
     cache = _ensure_texture_cache(state)
     particles = cache.get_or_load("particles", "game/particles.jaz").texture
     cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
@@ -197,7 +197,7 @@ class MenuEntry(msgspec.Struct):
 
 
 class MenuView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None
@@ -224,7 +224,7 @@ class MenuView:
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
         self._assets = load_menu_assets(self.state)
-        # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
+        # Shareware gating is controlled by the --demo flag (see FrontendContext.demo_enabled),
         # not by a persisted config byte.
         self._full_version = not self.state.demo_enabled
         self._menu_entries = self._menu_entries_for_flags(

@@ -12,7 +12,7 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
@@ -23,7 +23,7 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
 
 
 class ModsMenuView(PanelMenuView):
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(state, title="Mods")
         self._small_font: SmallFontData | None = None
         self._lines: list[str] = []
