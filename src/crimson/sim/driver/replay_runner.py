@@ -9,7 +9,15 @@ from ...weapons import WeaponId
 from ..world_state import WorldEvents, WorldState
 from .playback_driver import (
     PlaybackDriver,
+    PlaybackDriverConfig,
     PlaybackDriverOptions,
+    PlaybackEventConfig,
+    PlaybackSessionConfigs,
+    PlaybackSessionDefaults,
+    PlaybackTimingConfig,
+    QuestSessionConfig,
+    RushSessionConfig,
+    SurvivalSessionConfig,
     TickRngTraceObserver,
     dt_ms_overrides_from_replay,
     resolve_quest_level_from_replay,
@@ -63,35 +71,47 @@ def run_replay(
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
-        warn_on_version_mismatch=bool(warn_on_version_mismatch),
-        version_mismatch_action="verification",
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
-        dt_frame_overrides=dt_frame_overrides,
-        dt_frame_ms_i32_overrides=effective_dt_ms_overrides,
-        inter_tick_rand_draws=int(inter_tick_rand_draws),
-        inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
-        clear_fx_queues_each_tick=True,
-        game_tune_started=False,
-        survival_partition_events=True,
-        quest_partition_events=True,
-        defer_menu_open=False,
-        rush_force_strict_events=True,
-        rush_pass_dt_frame_ms_i32=True,
-        rush_enforce_loadout=True,
-        quest_manual_finalize_post_render_lifecycle=True,
-        quest_disable_capture_spawn_events_authoritative=True,
-        quest_finalize_post_render_lifecycle_each_tick=False,
-        apply_terminal_tick_events=True,
-        terminal_events_use_resolved_dt=(mode_id != int(GameMode.RUSH)),
-        quest_result_uses_spawn_timeline_ms=True,
-        spawn_entries=spawn_entries,
-        quest_stage_major=quest_stage_major,
-        quest_stage_minor=quest_stage_minor,
-        start_weapon_id=start_weapon_id,
+        version_mismatch_action=("verification" if bool(warn_on_version_mismatch) else None),
+    )
+    config = PlaybackDriverConfig(
+        timing=PlaybackTimingConfig(
+            dt_frame_overrides=dt_frame_overrides,
+            dt_frame_ms_i32_overrides=effective_dt_ms_overrides,
+            inter_tick_rand_draws=int(inter_tick_rand_draws),
+            inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
+        ),
+        events=PlaybackEventConfig(
+            strict_events=bool(strict_events),
+            defer_menu_open=False,
+            apply_terminal_tick_events=True,
+            terminal_events_use_resolved_dt=(mode_id != int(GameMode.RUSH)),
+        ),
+        session_defaults=PlaybackSessionDefaults(
+            clear_fx_queues_each_tick=True,
+            game_tune_started=False,
+        ),
+        sessions=PlaybackSessionConfigs(
+            survival=SurvivalSessionConfig(partition_events=True),
+            rush=RushSessionConfig(
+                strict_events_override=True,
+                enforce_loadout=True,
+                use_dt_frame_ms_i32=True,
+            ),
+            quest=QuestSessionConfig(
+                partition_events=True,
+                disable_capture_spawn_events_authoritative=True,
+                finalize_post_render_lifecycle_each_tick=True,
+                result_uses_spawn_timeline_ms=True,
+                spawn_entries=spawn_entries,
+                quest_stage_major=quest_stage_major,
+                quest_stage_minor=quest_stage_minor,
+                start_weapon_id=start_weapon_id,
+            ),
+        ),
     )
 
-    driver = PlaybackDriver(replay, options)
+    driver = PlaybackDriver(replay, options, config=config)
     return driver.run_to_completion(
         checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
         checkpoints_out=checkpoints_out,

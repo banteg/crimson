@@ -10,7 +10,20 @@ from ...perks.ids import perk_display_name
 from ...replay import PerkMenuOpenEvent, Replay
 from ...weapons import WeaponId, weapon_display_name
 from ..state_types import BonusPickupEvent, PlayerState
-from .playback_driver import PlaybackDriver, PlaybackDriverOptions, PlaybackTerminalOutcome, PlaybackTickOutcome
+from .playback_driver import (
+    PlaybackDriver,
+    PlaybackDriverConfig,
+    PlaybackDriverOptions,
+    PlaybackEventConfig,
+    PlaybackSessionConfigs,
+    PlaybackSessionDefaults,
+    PlaybackTerminalOutcome,
+    PlaybackTickOutcome,
+    PlaybackTimingConfig,
+    QuestSessionConfig,
+    RushSessionConfig,
+    SurvivalSessionConfig,
+)
 from .setup import ReplayRunnerError
 
 _EPSILON = 1e-6
@@ -334,29 +347,37 @@ def _run_replay_info(
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
-        warn_on_version_mismatch=False,
-        strict_events=bool(strict_events),
         trace_rng=False,
-        dt_frame_overrides=None,
-        dt_frame_ms_i32_overrides=None,
-        inter_tick_rand_draws=0,
-        inter_tick_rand_draws_by_tick=None,
-        clear_fx_queues_each_tick=True,
-        game_tune_started=False,
-        survival_partition_events=True,
-        quest_partition_events=True,
-        defer_menu_open=False,
-        rush_force_strict_events=True,
-        rush_pass_dt_frame_ms_i32=False,
-        rush_enforce_loadout=True,
-        quest_manual_finalize_post_render_lifecycle=True,
-        quest_disable_capture_spawn_events_authoritative=True,
-        quest_finalize_post_render_lifecycle_each_tick=False,
-        apply_terminal_tick_events=True,
-        terminal_events_use_resolved_dt=(mode != int(GameMode.RUSH)),
-        quest_result_uses_spawn_timeline_ms=False,
+        version_mismatch_action=None,
     )
-    driver = PlaybackDriver(replay, options)
+    config = PlaybackDriverConfig(
+        timing=PlaybackTimingConfig(),
+        events=PlaybackEventConfig(
+            strict_events=bool(strict_events),
+            defer_menu_open=False,
+            apply_terminal_tick_events=True,
+            terminal_events_use_resolved_dt=(mode != int(GameMode.RUSH)),
+        ),
+        session_defaults=PlaybackSessionDefaults(
+            clear_fx_queues_each_tick=True,
+            game_tune_started=False,
+        ),
+        sessions=PlaybackSessionConfigs(
+            survival=SurvivalSessionConfig(partition_events=True),
+            rush=RushSessionConfig(
+                strict_events_override=True,
+                enforce_loadout=True,
+                use_dt_frame_ms_i32=False,
+            ),
+            quest=QuestSessionConfig(
+                partition_events=True,
+                disable_capture_spawn_events_authoritative=True,
+                finalize_post_render_lifecycle_each_tick=True,
+                result_uses_spawn_timeline_ms=False,
+            ),
+        ),
+    )
+    driver = PlaybackDriver(replay, options, config=config)
 
     timeline: list[ReplayInfoTimelineEvent] = []
     before_snapshots: list[_PlayerSnapshot] | None = None
@@ -438,7 +459,7 @@ def _run_replay_info(
     def _on_terminal(terminal: PlaybackTerminalOutcome) -> None:
         if int(mode) == int(GameMode.RUSH):
             return
-        session_elapsed = int(getattr(driver.session, "elapsed_ms"))
+        session_elapsed = int(float(driver.session.elapsed_ms))
         _append_extra_replay_events(
             tick_events=terminal.terminal_events,
             tick_index=int(terminal.tick_index),
