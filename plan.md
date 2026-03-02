@@ -17,13 +17,13 @@ Reduce schema drift across net/replay/debug/CLI without breaking wire compatibil
 
 Baseline measured on 2026-03-03 via AST scan of `src/**/*.py`:
 
-| Metric | Before cleanup | Expected after cleanup (Phase 4) |
-| --- | ---: | ---: |
-| Total `msgspec.Struct` classes in `src/` | 388 | 359-371 |
-| `msgspec.Struct` classes in primary cleanup areas (`net`, `sim`, `dbg`, `replay`, `cli`, `ui`, `frontend`) | 240 | 217-231 |
-| CLI replay payload structs in `src/crimson/cli/replay.py` (`class _*Payload`) | 20 | 6-10 |
-| Known duplicate class names (current: `Packet`, `_DropdownLayout`, `_PendingReliable`) | 3 | 0-1 |
-| Status snapshot representations (`lockstep`, `replay`, `dbg`, persistence blob schema) | 4 | 2-3 |
+| Metric | Before cleanup | Current (2026-03-03, post-batch) | Expected after cleanup (Phase 4) |
+| --- | ---: | ---: | ---: |
+| Total `msgspec.Struct` classes in `src/` | 388 | 373 | 359-371 |
+| `msgspec.Struct` classes in primary cleanup areas (`net`, `sim`, `dbg`, `replay`, `cli`, `ui`, `frontend`) | 240 | 225 | 217-231 |
+| CLI replay payload structs in `src/crimson/cli/replay.py` (`class _*Payload`) | 20 | 8 | 6-10 |
+| Known duplicate class names (current: `Packet`, `_DropdownLayout`, `_PendingReliable`) | 3 | 0 | 0-1 |
+| Status snapshot representations (`lockstep`, `replay`, `dbg`, persistence blob schema) | 4 | 4 | 2-3 |
 
 Progress gates:
 - Phase 1 should remove at least 2 direct duplicate definitions without changing behavior.
