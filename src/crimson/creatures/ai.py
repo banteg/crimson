@@ -25,11 +25,8 @@ __all__ = [
 _FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
 
-class PositionLike(Protocol):
+class CreatureLinkLike(Protocol):
     pos: Vec2
-
-
-class CreatureLinkLike(PositionLike, Protocol):
     hp: float
 
 

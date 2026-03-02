@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Protocol, cast
+from typing import cast
 
 from grim.geom import Vec2
 
@@ -9,10 +9,6 @@ from ..owner_ref import OwnerRef
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_BY_ID
-
-
-class _HasPos(Protocol):
-    pos: Vec2
 
 
 def owner_ref_for_player(player_index: int) -> OwnerRef:
@@ -145,7 +141,7 @@ def projectile_spawn(
 
 def spawn_projectile_ring(
     state: GameplayState,
-    origin: _HasPos,
+    origin_pos: Vec2,
     *,
     count: int,
     angle_offset: float,
@@ -161,7 +157,7 @@ def spawn_projectile_ring(
         projectile_spawn(
             state,
             players=players,
-            pos=origin.pos,
+            pos=origin_pos,
             angle=float(idx) * step + float(angle_offset),
             type_id=type_id,
             owner=owner,

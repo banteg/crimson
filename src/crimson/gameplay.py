@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, cast
 
 import msgspec
 
@@ -62,6 +62,7 @@ from .weapons import WEAPON_TABLE, WeaponId
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
+    from .creatures.spawn import SpawnSlotInit
     from .persistence.save_status import GameStatus
     from .sim.input import PlayerInput
     from .sim.state_types import PlayerState
@@ -92,10 +93,6 @@ _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
 _LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[str, str] = ("sfx_bloodspill_01", "sfx_bloodspill_02")
-
-
-class _SpawnSlotLike(Protocol):
-    owner_creature: int
 
 
 class GameplayState(msgspec.Struct):
@@ -369,7 +366,7 @@ def _player_apply_move_with_spawn_avoidance(
     player: PlayerState,
     *,
     delta: Vec2,
-    spawn_slots: Sequence[_SpawnSlotLike] | None,
+    spawn_slots: Sequence[SpawnSlotInit] | None,
     creatures: Sequence[CreatureState] | None,
 ) -> None:
     """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290)."""
@@ -560,7 +557,7 @@ def player_update(
     world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
-    spawn_slots: Sequence[_SpawnSlotLike] | None = None,
+    spawn_slots: Sequence[SpawnSlotInit] | None = None,
     on_player_lethal: Callable[[PlayerState], None] | None = None,
     reload_active_any: bool | None = None,
 ) -> None:
@@ -915,7 +912,7 @@ def player_update(
                 state.bonus_spawn_guard = True
                 _spawn_projectile_ring(
                     state,
-                    player,
+                    player.pos,
                     count=count,
                     angle_offset=0.1,
                     type_id=ProjectileTypeId.PLASMA_MINIGUN,

@@ -12,13 +12,11 @@ from ..rtx.mode import RtxRenderMode
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from grim.config import CrimsonConfig
+
     from ...creatures.runtime import CreaturePool
     from ...projectiles import Projectile, SecondaryProjectile
     from ...sim.state_types import PlayerState
-
-
-class _FxDetailConfigLike(Protocol):
-    def fx_detail(self, *, level: int, default: bool) -> bool: ...
 
 
 class ProjectileRendererLike(Protocol):
@@ -35,7 +33,7 @@ class ProjectileRendererLike(Protocol):
     def projs_texture(self) -> rl.Texture | None: ...
 
     @property
-    def config(self) -> _FxDetailConfigLike | None: ...
+    def config(self) -> CrimsonConfig | None: ...
 
     @property
     def players(self) -> Sequence[PlayerState]: ...
