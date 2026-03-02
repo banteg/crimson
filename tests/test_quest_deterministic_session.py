@@ -38,8 +38,9 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministic
 
 def test_quest_session_tick_exposes_required_fields() -> None:
     session = _build_session(seed=101)
+    timing = session.timing_for_dt(1.0 / 60.0)
     tick = session.step_tick(
-        dt_frame=1.0 / 60.0,
+        timing=timing,
         inputs=[PlayerInput(aim=Vec2(512.0, 512.0))],
     )
 
@@ -64,7 +65,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
     trace1: list[tuple[str, int, float, float, float]] = []
 
     for _ in range(8):
-        tick0 = session0.step_tick(dt_frame=1.0 / 60.0, inputs=inputs)
+        tick0 = session0.step_tick(timing=session0.timing_for_dt(1.0 / 60.0), inputs=inputs)
         trace0.append(
             (
                 str(tick0.step.command_hash),
@@ -75,7 +76,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
             ),
         )
 
-        tick1 = session1.step_tick(dt_frame=1.0 / 60.0, inputs=inputs)
+        tick1 = session1.step_tick(timing=session1.timing_for_dt(1.0 / 60.0), inputs=inputs)
         trace1.append(
             (
                 str(tick1.step.command_hash),
@@ -95,9 +96,9 @@ def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None
     session.world.state.bonuses.reflex_boost = 0.25471345
     session.world.state.time_scale_active = True
 
+    timing = session.timing_for_dt(0.054)
     tick = session.step_tick(
-        dt_frame=0.054,
-        dt_frame_ms_i32=54,
+        timing=timing,
         inputs=[PlayerInput()],
     )
 

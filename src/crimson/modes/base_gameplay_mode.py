@@ -37,6 +37,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
+from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
@@ -57,10 +58,12 @@ class DeterministicSessionLike(Protocol):
     fx_toggle: int
     game_tune_started: bool
 
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
     ) -> DeterministicSessionTick: ...
 
@@ -913,8 +916,9 @@ class BaseGameplayMode:
                 tick_index: int | None = recorder.record_tick(inputs)
             else:
                 tick_index = None
+            timing = session.timing_for_dt(float(dt_tick))
             tick = session.step_tick(
-                dt_frame=float(dt_tick),
+                timing=timing,
                 inputs=inputs,
             )
             self.world.apply_step_result(

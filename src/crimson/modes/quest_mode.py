@@ -58,6 +58,7 @@ from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
+from ..sim.timing import FrameTiming
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -104,10 +105,12 @@ class QuestSessionLike(Protocol):
     completion_transition_ms: float
     game_tune_started: bool
 
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick: ...
@@ -774,8 +777,9 @@ class QuestMode(BaseGameplayMode):
                 tick_index = recorder.record_tick(inputs)
             else:
                 tick_index = None
+            timing = session.timing_for_dt(float(dt_tick))
             tick = session.step_tick(
-                dt_frame=dt_tick,
+                timing=timing,
                 inputs=inputs,
             )
             self.world.apply_step_result(
@@ -907,8 +911,9 @@ class QuestMode(BaseGameplayMode):
                 session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
                 session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
+                timing = session.timing_for_dt(float(dt_tick))
                 tick = session.step_tick(
-                    dt_frame=float(dt_tick),
+                    timing=timing,
                     inputs=player_inputs,
                 )
 

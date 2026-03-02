@@ -182,8 +182,9 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     for tick_index in range(len(replay.inputs)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
         rush_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in tick_inputs]
+        timing = session.timing_for_dt(float(dt_frame))
         tick = session.step_tick(
-            dt_frame=float(dt_frame),
+            timing=timing,
             inputs=rush_inputs,
             trace_rng=False,
         )
@@ -250,8 +251,9 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     dt_frame = 1.0 / float(replay.header.tick_rate)
 
     for tick_index in range(len(replay.inputs)):
+        timing = session.timing_for_dt(float(dt_frame))
         tick = session.step_tick(
-            dt_frame=dt_frame,
+            timing=timing,
             inputs=_inputs_for_tick(replay, tick_index),
             trace_rng=False,
         )

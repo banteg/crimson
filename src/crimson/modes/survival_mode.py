@@ -852,8 +852,9 @@ class SurvivalMode(BaseGameplayMode):
                 else:
                     tick_index = None
 
+                timing = session.timing_for_dt(float(dt_tick))
                 tick = session.step_tick(
-                    dt_frame=float(dt_tick),
+                    timing=timing,
                     inputs=player_inputs,
                 )
 

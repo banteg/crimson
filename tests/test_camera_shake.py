@@ -147,8 +147,9 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         perk_progression_enabled=False,
     )
 
+    timing = session.timing_for_dt(1.0 / 60.0)
     tick = session.step_tick(
-        dt_frame=1.0 / 60.0,
+        timing=timing,
         inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
     )
 
@@ -171,8 +172,9 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         fx_queue_rotated=fx_queue_rotated,
     )
 
+    timing = session.timing_for_dt(1.0 / 60.0)
     tick = session.step_tick(
-        dt_frame=1.0 / 60.0,
+        timing=timing,
         inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
     )
 

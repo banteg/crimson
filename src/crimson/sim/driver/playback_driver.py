@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -30,7 +31,7 @@ from ..step_pipeline import DeterministicStepResult
 from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_events import apply_replay_tick_events, partition_tick_events
-from .replay_timing import resolve_dt_frame, should_apply_world_dt_steps_for_replay
+from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
     RunResult,
@@ -51,19 +52,6 @@ TickObserver: TypeAlias = Callable[[int, WorldState], None]
 TickTraceObserver: TypeAlias = Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[[int, WorldState, float, list[object], list[object], list[object]], None]
-
-
-def dt_overrides_from_replay(replay: Replay) -> dict[int, float] | None:
-    dt_rows = replay.dt
-    if not dt_rows:
-        return None
-    out: dict[int, float] = {}
-    for tick_index, dt in enumerate(dt_rows):
-        dt_value = float(dt)
-        if not (dt_value >= 0.0):
-            continue
-        out[int(tick_index)] = float(dt_value)
-    return out if out else None
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
@@ -117,7 +105,6 @@ class PlaybackDriverOptions(msgspec.Struct, frozen=True):
 
 @dataclass(slots=True, frozen=True)
 class PlaybackTimingConfig:
-    dt_frame_overrides: dict[int, float] | None = None
     inter_tick_rand_draws: int = 0
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None
 
@@ -154,7 +141,6 @@ class SurvivalSessionConfig:
 class RushSessionConfig:
     strict_events_override: bool | None = True
     enforce_loadout: bool = True
-    use_dt_frame_ms_i32: bool = True
 
 
 @dataclass(slots=True, frozen=True)
@@ -375,7 +361,6 @@ class PlaybackDriver:
 
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=False,
-            dt_frame_overrides=self.config.timing.dt_frame_overrides,
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
         self.session: DeterministicSession = self._mode_runtime.session
@@ -524,7 +509,6 @@ class PlaybackDriver:
                 enforce_loadout=(lambda: enforce_rush_loadout(self.world))
                 if bool(rush_config.enforce_loadout)
                 else None,
-                use_dt_frame_ms_i32=bool(rush_config.use_dt_frame_ms_i32),
             )
             return RushPlaybackRuntime(
                 session=session,
@@ -586,12 +570,11 @@ class PlaybackDriver:
             for _ in range(max(0, int(draws))):
                 state.rng.rand()
 
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(self.dt_frame),
-            dt_frame_overrides=timing.dt_frame_overrides,
-        )
+        dt_tick = float(self.replay.dt[int(tick_index)])
+        if not math.isfinite(dt_tick) or dt_tick < 0.0:
+            raise ReplayRunnerError(f"invalid replay dt row at tick {int(tick_index)}: {dt_tick!r}")
         dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(dt_tick))))
+        step_timing = self.session.timing_for_dt(float(dt_tick))
 
         tick_events = self.events_by_tick.get(int(tick_index), [])
         defer_menu_open_value = (
@@ -621,8 +604,7 @@ class PlaybackDriver:
 
             player_inputs = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
             tick = self.session.step_tick(
-                dt_frame=float(dt_tick),
-                dt_frame_ms_i32=int(dt_tick_ms_i32),
+                timing=step_timing,
                 inputs=player_inputs,
                 trace_rng=bool(self.options.trace_rng),
             )
@@ -677,12 +659,8 @@ class PlaybackDriver:
         if int(tick_index) != int(len(self.replay.inputs)):
             return None
 
-        if bool(events_config.terminal_events_use_resolved_dt):
-            dt_tick = resolve_dt_frame(
-                tick_index=int(tick_index),
-                default_dt_frame=float(self.dt_frame),
-                dt_frame_overrides=self.config.timing.dt_frame_overrides,
-            )
+        if bool(events_config.terminal_events_use_resolved_dt) and self.replay.dt:
+            dt_tick = float(self.replay.dt[-1])
         else:
             dt_tick = float(self.dt_frame)
 

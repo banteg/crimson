@@ -39,7 +39,6 @@ from ..sim.driver.playback_driver import (
     QuestSessionConfig,
     RushSessionConfig,
     SurvivalSessionConfig,
-    dt_overrides_from_replay,
     resolve_quest_level_from_replay,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
@@ -447,9 +446,7 @@ class ReplayPlaybackMode:
                     version_mismatch_action=None,
                 ),
                 config=PlaybackDriverConfig(
-                    timing=PlaybackTimingConfig(
-                        dt_frame_overrides=dt_overrides_from_replay(replay),
-                    ),
+                    timing=PlaybackTimingConfig(),
                     world=PlaybackWorldConfig(
                         world=world.world_state,
                         world_size=float(world.world_size),
@@ -472,7 +469,6 @@ class ReplayPlaybackMode:
                         rush=RushSessionConfig(
                             strict_events_override=None,
                             enforce_loadout=True,
-                            use_dt_frame_ms_i32=True,
                         ),
                         quest=QuestSessionConfig(
                             partition_events=False,

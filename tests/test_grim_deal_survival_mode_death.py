@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from crimson.sim.timing import FrameTiming
 from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -30,8 +31,17 @@ def _install_minimal_sim_session(mode: SurvivalMode, mocker) -> None:
             self.detail_preset = 5
             self.fx_toggle = 0
 
-        def step_tick(self, *, dt_frame: float, inputs):
+        def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+            return FrameTiming.compute(
+                float(dt_frame),
+                time_scale_active_entry=False,
+                time_scale_factor=1.0,
+                zero_gate_active=False,
+            )
+
+        def step_tick(self, *, timing: FrameTiming, inputs):
             _ = inputs
+            dt_frame = float(timing.dt)
             self.elapsed_ms += float(dt_frame) * 1000.0
             for player in mode.world.players:
                 if float(player.health) <= 0.0:

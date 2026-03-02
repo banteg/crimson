@@ -23,6 +23,14 @@ const weapons_runtime = @import("../weapons.zig");
 const narrowF32 = native_math.roundF32;
 const SimulationContext = context_mod.SimulationContext;
 
+fn ftolMsI32(dt_seconds: f32) i32 {
+    const scaled = narrowF32(dt_seconds * 1000.0);
+    if (!std.math.isFinite(scaled)) return 0;
+    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
+    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
+    return @intFromFloat(scaled);
+}
+
 pub const StepError = events.EventError ||
     creatures_mod.CreatureRuntimeError ||
     bonus_runtime.BonusRuntimeError ||
@@ -151,8 +159,8 @@ pub fn stepTick(
     tick_events: []const replay_codec.ReplayEvent,
     dt_tick: f32,
     options: StepOptions,
-) StepError!StepResult {
-    var frame = StepFrame{
+) anyerror!StepResult {
+    var frame: StepFrame = .{
         .tick_index = tick_index,
         .dt_tick = narrowF32(dt_tick),
     };
@@ -224,8 +232,8 @@ pub fn stepTick(
         frame.dt_world,
     );
 
-    frame.dt_frame_ms = frame.dt_tick * 1000.0;
-    frame.dt_frame_ms_i32 = @intFromFloat(@round(frame.dt_frame_ms));
+    frame.dt_frame_ms = narrowF32(frame.dt_tick * 1000.0);
+    frame.dt_frame_ms_i32 = ftolMsI32(frame.dt_tick);
     if (frame.dt_frame_ms_i32 < 1) {
         frame.dt_frame_ms_i32 = 1;
     }
@@ -582,7 +590,7 @@ pub fn stepTick(
 
     context.event_index += tick_events.len;
 
-    const result = StepResult{
+    const result: StepResult = .{
         .tick_index = tick_index,
         .pre_events_applied = frame.pre_events_applied,
         .post_events_applied = frame.post_events_applied,
@@ -743,7 +751,7 @@ fn buildDiagnosticTrace(
     frame: *const StepFrame,
 ) diagnostic_trace_mod.ReplayTickTrace {
     const players = context.players();
-    var player0 = state_mod.PlayerState{
+    var player0: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -805,7 +813,7 @@ test "step tick applies counters and emits trace snapshot" {
 
     const before_speed = context.players()[0].move_speed;
 
-    const input = player_runtime.GameInput{
+    const input: player_runtime.GameInput = .{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 700.0,

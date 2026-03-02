@@ -26,14 +26,12 @@ def test_survival_runner_is_deterministic() -> None:
     assert result0.shots_hit == 0
 
 
-def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
+def test_survival_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
+    replay.dt[0] = 0.5
 
-    result = run_replay(
-        replay,
-        dt_frame_overrides={0: 0.5},
-    )
+    result = run_replay(replay)
 
     assert result.elapsed_ms == 500
 

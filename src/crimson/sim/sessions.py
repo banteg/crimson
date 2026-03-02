@@ -48,17 +48,9 @@ class SurvivalDeterministicSession(msgspec.Struct):
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
 
-    def step_tick(
-        self,
-        *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-    ) -> DeterministicSessionTick:
-        dt_frame = float(dt_frame)
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
         state = self.world.state
-        timing = FrameTiming.compute(
+        return FrameTiming.compute(
             float(dt_frame),
             time_scale_active_entry=bool(state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
@@ -67,15 +59,16 @@ class SurvivalDeterministicSession(msgspec.Struct):
             ),
             zero_gate_active=False,
         )
+
+    def step_tick(
+        self,
+        *,
+        timing: FrameTiming,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> DeterministicSessionTick:
+        state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
-        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            # Use captured integer ms for native cadence counters when available,
-            # then apply reflex scaling with integer semantics.
-            base_dt_ms_i32 = int(dt_frame_ms_i32)
-            if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                dt_sim_ms = float(max(0, int(timing.dt_sim_ms_i32)))
-            else:
-                dt_sim_ms = float(base_dt_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)
 
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
@@ -176,19 +169,28 @@ class RushDeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
-    use_dt_frame_ms_i32: bool = True
     elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
+
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
+            float(dt_frame),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=False,
+        )
 
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
-        dt_frame = float(dt_frame)
         normalized_inputs = inputs
         if inputs is not None:
             normalized_inputs = [
@@ -196,18 +198,7 @@ class RushDeterministicSession(msgspec.Struct):
                 for player_input in inputs
             ]
 
-        timing = FrameTiming.compute(
-            float(dt_frame),
-            time_scale_active_entry=bool(self.world.state.time_scale_active),
-            time_scale_factor=time_scale_reflex_boost_factor(
-                reflex_boost_timer=float(self.world.state.bonuses.reflex_boost),
-                time_scale_active=bool(self.world.state.time_scale_active),
-            ),
-            zero_gate_active=False,
-        )
         dt_ms_i32 = int(timing.dt_ms_i32)
-        if bool(self.use_dt_frame_ms_i32) and dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            dt_ms_i32 = int(dt_frame_ms_i32)
         if dt_ms_i32 < 1:
             dt_ms_i32 = 1
         dt_frame_ms = float(dt_ms_i32)
@@ -311,28 +302,26 @@ class QuestDeterministicSession(msgspec.Struct):
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
 
-    def step_tick(
-        self,
-        *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-    ) -> QuestDeterministicSessionTick:
-        dt_frame = float(dt_frame)
-        timing = FrameTiming.compute(
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
             float(dt_frame),
-            time_scale_active_entry=bool(self.world.state.time_scale_active),
+            time_scale_active_entry=bool(state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
-                reflex_boost_timer=float(self.world.state.bonuses.reflex_boost),
-                time_scale_active=bool(self.world.state.time_scale_active),
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
             ),
             zero_gate_active=False,
         )
+
+    def step_tick(
+        self,
+        *,
+        timing: FrameTiming,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> QuestDeterministicSessionTick:
         dt_frame_ms = float(timing.dt_ms_i32)
-        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            # Keep quest spawn timeline/counters on captured integer-ms cadence.
-            dt_frame_ms = float(int(dt_frame_ms_i32))
         self.elapsed_ms += float(dt_frame_ms)
 
         state = self.world.state
@@ -440,11 +429,12 @@ DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterm
 class DeterministicSession(Protocol):
     elapsed_ms: int | float
 
+    def timing_for_dt(self, dt_frame: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionStepTick: ...
