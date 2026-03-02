@@ -46,8 +46,12 @@ Introduce a canonical frame timing struct computed once per deterministic tick e
 - Replay format requires per-tick `dt` rows; no runtime fallback/override branch.
 - `Replay.dt[tick]` is sampled at `gameplay_update_and_render` entry (`fVar1 = frame_dt`), before gameplay-pass scaling.
 - `Replay.dt` validation allows finite non-negative values; `0.0` is valid for explicit native zeroing paths.
+- `FrameTiming.compute()` is called after outer-loop writes (`grim_get_frame_dt`, optional `REFLEX_BOOSTED`, optional outer zeroing) and before gameplay-pass scaling.
+- `FrameTiming.compute()` receives `time_scale_factor`; `bonus_reflex_boost_timer` is only used by the call site to derive `time_scale_active`.
+- `time_scale_factor` must be finite and `> 0.0` whenever `time_scale_active` is true.
 - `run_replay_info` must consume the exact same per-tick replay timing rows as `run_replay` (all modes).
 - `ReplayRecorder` will always emit per-tick `dt` rows.
+- Replay hard break specifics: drop `dt_ms_i32` replay rows from schema and reject old versions rather than migrating.
 
 ### Proposed Python Schema
 
@@ -58,31 +62,38 @@ import msgspec
 class FrameTiming(msgspec.Struct, frozen=True):
     # Canonical seconds-domain values
     dt: float
+    time_scale_active: bool
+    time_scale_factor: float
     dt_sim: float
-    dt_player_local: float | None = None
 
     @property
     def dt_ms(self) -> float:
-        return float(self.dt) * 1000.0
+        return self.dt * 1000.0
 
     @property
     def dt_ms_i32(self) -> int:
-        return ftol_ms_i32(float(self.dt))
+        return ftol_ms_i32(self.dt)
 
     @property
     def dt_sim_ms(self) -> float:
-        return float(self.dt_sim) * 1000.0
+        return self.dt_sim * 1000.0
 
     @property
     def dt_sim_ms_i32(self) -> int:
-        return ftol_ms_i32(float(self.dt_sim))
+        return ftol_ms_i32(self.dt_sim)
+
+    @property
+    def dt_player_local(self) -> float:
+        if not self.time_scale_active:
+            return self.dt_sim
+        return (0.6 / self.time_scale_factor) * self.dt_sim
 
     @staticmethod
     def compute(
         dt: float,
         *,
         time_scale_active: bool,
-        reflex_boost_timer: float,
+        time_scale_factor: float,
     ) -> "FrameTiming":
         # Centralized derivation of all fields.
         # Important: route i32 conversion through a single __ftol-compatible helper;
@@ -93,11 +104,24 @@ class FrameTiming(msgspec.Struct, frozen=True):
 ### Field Semantics
 
 - `dt`: pre-gameplay-scale cadence (base frame entry).
-- `dt_sim`: gameplay-pass cadence consumed by main simulation updates (creatures/projectiles/player/survival/rush/quest and related counters).
-- `dt_player_local`: only for player movement section parity when `time_scale_active` is true.
+- `dt_sim`: gameplay-pass cadence consumed by main simulation updates (creatures/projectiles/player/survival/rush/quest and related counters); equals `dt * time_scale_factor` when `time_scale_active`, otherwise `dt`.
+- `dt_player_local`: derived player-phase accessor (`(0.6 / time_scale_factor) * dt_sim`) for parity with `player_update`; it is not stored as mutable tick state.
 - `dt_ms_i32`: authoritative integer cadence for replayable tick entry (derived from `dt`).
 - `dt_sim_ms_i32`: authoritative integer cadence for gameplay-pass consumers.
 - `dt_ms` and `dt_sim_ms` are derived convenience accessors only.
+
+### Call-Order Contract (Important)
+
+Deterministic callers must apply native outer-loop behavior before constructing `FrameTiming`:
+
+1. `dt_outer = grim_get_frame_dt()`
+2. optional `REFLEX_BOOSTED`: `dt_outer *= 0.9`
+3. optional outer zeroing gates
+4. derive `time_scale_active` from `bonus_reflex_boost_timer > 0`
+5. call `FrameTiming.compute(dt_outer, time_scale_active=time_scale_active, time_scale_factor=time_scale_factor)`
+
+This makes ownership explicit: `compute()` models gameplay-pass and player-local semantics, while outer-loop perk/gating writes stay at the driver boundary.
+`FrameTiming` remains immutable for the tick; native mid-tick writes are represented via derived accessors and `timing_samples`, not by mutating the struct.
 
 ### Decision: Make `ms`/`ms_i32` Derived Accessors
 
@@ -105,7 +129,7 @@ Decompile evidence indicates native `frame_dt_ms` is consistently re-derived fro
 
 For rewrite architecture, a robust simplification is:
 
-- store canonical second-domain fields (`dt`, `dt_sim`, optional `dt_player_local`)
+- store canonical second-domain fields (`dt`, `dt_sim`) plus scale metadata (`time_scale_active`, `time_scale_factor`)
 - expose `ms` and `ms_i32` as properties (or computed accessors) that:
   1. always call a single shared `ftol_ms_i32()` helper on `dt * 1000.0`
 
@@ -153,18 +177,25 @@ Implementation guidance:
 ### Phase 1: Lock Conversion Contract and Helper
 1. Implement one shared `ftol_ms_i32()` helper with Crimsonland truncation semantics.
 2. Replace ad-hoc conversion call sites (`round`, `int`, local formulas) with this helper across replay/sim/dbg channels.
+   - First-pass parity-critical replacements:
+     - `src/crimson/sim/driver/replay_timing.py` (`resolve_dt_frame_ms_i32`)
+     - `src/crimson/sim/sessions.py` (`RushSession.elapsed`)
+     - `src/crimson/replay/recorder.py` (`ReplayRecorder._default_tick_dt_ms_i32`)
 3. Add explicit tie-case and negative-value tests (`+0.5`, `+2.5`, `-1.5`) to freeze behavior.
 
 ### Phase 2: Canonical Timing Type + Nomenclature
 1. Define `FrameTiming` in `src/crimson/sim/step_pipeline.py` (or dedicated `timing.py`) with seconds-domain storage and derived accessors.
 2. Rename `dt_frame` -> `dt` across drivers/tests.
-3. Redesign replay schema to require per-tick `dt` rows (same length as inputs).
+3. Redesign replay schema to require per-tick `dt` rows (same length as inputs) and remove legacy `dt_ms_i32` rows.
 4. Align Zig field names and replay schema in `crimson-zig/src/runtime/replay/step.zig`.
 5. Bump replay format version and reject older formats in Python/Zig codecs (hard break, no migration).
 
 ### Phase 3: Replay Runner and Info Harmonization
 1. Remove `resolve_dt_frame_ms_i32` override plumbing and replace with replay `dt` row lookup (`Replay.dt[tick]`).
 2. Ensure `run_replay_info()` consumes replay timing rows exactly like `run_replay()` for survival/rush/quest.
+   - Current divergence source to remove:
+     - `run_replay()` threads replay dt rows via playback timing config
+     - `run_replay_info()` currently constructs empty/default timing config
 3. Remove runtime dt override parameters from parity-critical APIs.
 4. Update `ReplayRecorder` to always persist per-tick `dt` rows.
 
@@ -213,7 +244,7 @@ Required sections for `delta-time.md`:
   - Include tie examples (`+0.5`, `+2.5`, `-1.5`) and expected integer outputs.
   - Provide exact Python/Zig/C++ equivalents.
 - **Units and field semantics for rewrite**
-  - `dt` vs `dt_sim` vs `dt_player_local`.
+  - `dt` vs `dt_sim` and derived `dt_player_local`.
   - `*_ms` convenience vs `*_ms_i32` authoritative cadence.
   - Replay row semantics (`Replay.dt` required, `*_ms_i32` derived via helper).
 - **Consumer map**
