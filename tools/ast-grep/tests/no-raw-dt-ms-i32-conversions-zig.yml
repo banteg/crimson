@@ -1,0 +1,11 @@
+id: no-raw-dt-ms-i32-conversions-zig
+valid:
+  - |
+    int ok(float dt) {
+        return ftol_ms_i32(dt);
+    }
+invalid:
+  - |
+    int bad(float dt) {
+        return intFromFloat(round(dt * 1000.0));
+    }

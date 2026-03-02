@@ -1,0 +1,13 @@
+id: no-raw-dt-ms-i32-conversions-python
+language: python
+severity: warning
+message: Route dt->ms integer conversion through ftol_ms_i32() instead of ad-hoc int/round/trunc expressions.
+files:
+  - src/crimson/sim/**/*.py
+  - src/crimson/replay/**/*.py
+  - src/crimson/dbg/**/*.py
+rule:
+  any:
+    - pattern: int(round($DT * 1000.0))
+    - pattern: int($DT * 1000.0)
+    - pattern: int(math.trunc($DT * 1000.0))

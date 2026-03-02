@@ -1,0 +1,11 @@
+id: no-raw-dt-ms-i32-conversions-zig
+snapshots:
+  ? |
+    int bad(float dt) {
+        return intFromFloat(round(dt * 1000.0));
+    }
+  : labels:
+    - source: intFromFloat(round(dt * 1000.0))
+      style: primary
+      start: 31
+      end: 63

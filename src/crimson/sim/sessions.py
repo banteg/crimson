@@ -19,6 +19,7 @@ from .step_pipeline import (
     run_deterministic_step,
     time_scale_reflex_boost_bonus,
 )
+from .timing import ftol_ms_i32
 from .world_state import WorldState
 
 
@@ -68,7 +69,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
             # then apply reflex scaling with integer semantics.
             base_dt_ms_i32 = int(dt_frame_ms_i32)
             if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                dt_sim_ms = float(max(0, int(float(dt_sim) * 1000.0)))
+                dt_sim_ms = float(max(0, int(ftol_ms_i32(float(dt_sim)))))
             else:
                 dt_sim_ms = float(base_dt_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)
@@ -192,7 +193,7 @@ class RushDeterministicSession(msgspec.Struct):
                 for player_input in inputs
             ]
 
-        dt_ms_i32 = int(round(float(dt_frame) * 1000.0))
+        dt_ms_i32 = ftol_ms_i32(float(dt_frame))
         if bool(self.use_dt_frame_ms_i32) and dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
             dt_ms_i32 = int(dt_frame_ms_i32)
         if dt_ms_i32 < 1:

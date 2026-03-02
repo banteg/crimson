@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from ..sim.input import PlayerInput
+from ..sim.timing import ftol_ms_i32
 from .input_codec import pack_tick_inputs
 from .types import (
     REPLAY_FORMAT_VERSION,
@@ -41,7 +42,7 @@ class ReplayRecorder:
         tick_rate = int(self._header.tick_rate)
         if tick_rate <= 0:
             raise ValueError(f"invalid tick_rate: {tick_rate}")
-        dt_ms_i32 = int(round(1000.0 / float(tick_rate)))
+        dt_ms_i32 = ftol_ms_i32(1.0 / float(tick_rate))
         if dt_ms_i32 <= 0:
             return 1
         return int(dt_ms_i32)
