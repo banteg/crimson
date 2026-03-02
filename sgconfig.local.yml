@@ -1,0 +1,11 @@
+ruleDirs:
+  - tools/ast-grep/rules
+testConfigs:
+  - testDir: tools/ast-grep/tests
+utilDirs:
+  - tools/ast-grep/utils
+customLanguages:
+  zig:
+    libraryPath: /Users/banteg/dev/tree-sitter-grammars/tree-sitter-zig/zig.dylib
+    extensions: [zig]
+    expandoChar: _
