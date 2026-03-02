@@ -6,53 +6,15 @@ import msgspec
 class ParityPolicy(msgspec.Struct, frozen=True):
     name: str
     float_abs_tol: float
-    float_ulp_tol: int
     max_field_diffs: int
-    include_hash_fields: bool
-    include_rng_fields: bool
-    include_entity_channels: bool
-    include_event_channels: bool
     ignore_field_prefixes: tuple[str, ...] = ()
 
 
 _POLICIES: dict[str, ParityPolicy] = {
-    "original_vs_python_default": ParityPolicy(
-        name="original_vs_python_default",
-        float_abs_tol=0.001,
-        float_ulp_tol=0,
-        max_field_diffs=16,
-        include_hash_fields=False,
-        include_rng_fields=False,
-        include_entity_channels=True,
-        include_event_channels=True,
-    ),
-    "python_vs_zig_strict": ParityPolicy(
-        name="python_vs_zig_strict",
+    "strict": ParityPolicy(
+        name="strict",
         float_abs_tol=0.0,
-        float_ulp_tol=1,
         max_field_diffs=16,
-        include_hash_fields=True,
-        include_rng_fields=True,
-        include_entity_channels=True,
-        include_event_channels=True,
-    ),
-    "python_vs_zig_core": ParityPolicy(
-        name="python_vs_zig_core",
-        float_abs_tol=0.001,
-        float_ulp_tol=0,
-        max_field_diffs=16,
-        include_hash_fields=False,
-        include_rng_fields=False,
-        include_entity_channels=False,
-        include_event_channels=False,
-        ignore_field_prefixes=(
-            "players",
-            "perk.choices",
-            "perk.choices_dirty",
-            "perk.player_nonzero_counts",
-            "deaths",
-            "events",
-        ),
     ),
 }
 
@@ -65,7 +27,6 @@ def resolve_parity_policy(
     name: str,
     *,
     float_abs_tol: float | None = None,
-    float_ulp_tol: int | None = None,
     max_field_diffs: int | None = None,
 ) -> ParityPolicy:
     key = str(name).strip()
@@ -75,8 +36,6 @@ def resolve_parity_policy(
     policy = _POLICIES[key]
     if float_abs_tol is not None:
         policy = msgspec.structs.replace(policy, float_abs_tol=max(0.0, float(float_abs_tol)))
-    if float_ulp_tol is not None:
-        policy = msgspec.structs.replace(policy, float_ulp_tol=max(0, int(float_ulp_tol)))
     if max_field_diffs is not None:
         policy = msgspec.structs.replace(policy, max_field_diffs=max(1, int(max_field_diffs)))
     return policy

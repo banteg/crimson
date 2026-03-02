@@ -11,7 +11,7 @@ from .channel_helpers import (
     sim_state_channel,
 )
 from .checkpoint_codec import channel_to_checkpoint
-from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_deepdiff
+from .checkpoint_diff import checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
@@ -50,13 +50,9 @@ def focus_tick(
     checkpoint_diff = checkpoint_deepdiff(
         expected_checkpoint,
         candidate_checkpoint,
-        include_hash_fields=bool(policy.include_hash_fields),
-        include_rng_fields=bool(policy.include_rng_fields),
         ignore_field_prefixes=policy.ignore_field_prefixes,
-        elapsed_baseline=None,
         max_diffs=int(policy.max_field_diffs),
         float_abs_tol=float(policy.float_abs_tol),
-        float_ulp_tol=int(policy.float_ulp_tol),
     )
 
     expected_rng = {str(key): int(value) for key, value in expected_checkpoint.rng_marks.items()}
@@ -64,7 +60,7 @@ def focus_tick(
     mismatching_rng = [key for key in sorted(set(expected_rng) | set(candidate_rng)) if expected_rng.get(key) != candidate_rng.get(key)]
     first_rng_mark = None
     if mismatching_rng:
-        first_rng_mark = next((mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng), mismatching_rng[0])
+        first_rng_mark = mismatching_rng[0]
 
     rng_ok, rng_stream_detail = compare_rng_stream(
         rng_stream_channel(expected_row),

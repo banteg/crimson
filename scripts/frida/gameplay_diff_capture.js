@@ -1041,35 +1041,26 @@ function runPlayerCountFromTick(tickObj) {
   return Math.max(1, outState.playerCountResolved | 0);
 }
 
-function rngMarksFromCheckpoint(checkpoint) {
-  const marks = checkpoint && checkpoint.rng_marks ? checkpoint.rng_marks : {};
-  return {
-    rand_calls: intOr(marks.rand_calls, 0),
-    rand_last: intOr(marks.rand_last, -1),
-    rand_seq_first: intOr(marks.rand_seq_first, -1),
-    rand_seq_last: intOr(marks.rand_seq_last, -1),
-    rand_seed_epoch_enter: intOr(marks.rand_seed_epoch_enter, -1),
-    rand_seed_epoch_last: intOr(marks.rand_seed_epoch_last, -1),
-    rand_outside_before_calls: intOr(marks.rand_outside_before_calls, 0),
-    rand_outside_before_dropped: intOr(marks.rand_outside_before_dropped, 0),
-    rand_mirror_mismatch_total: intOr(marks.rand_mirror_mismatch_total, 0),
-    rand_mirror_unknown_total: intOr(marks.rand_mirror_unknown_total, 0),
-  };
-}
+function canonicalRngMarksFromStream(checkpoint, rngStreamRows) {
+  const rows = Array.isArray(rngStreamRows) ? rngStreamRows : [];
+  const callsTotal = rows.length | 0;
+  let inferredTotal = 0;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] && rows[i].inferred === true) inferredTotal += 1;
+  }
 
-function checkpointRngMarksFromTick(tick) {
-  const rng = tick && tick.rng ? tick.rng : {};
+  const firstRow = rows.length > 0 ? rows[0] : null;
+  const lastRow = rows.length > 0 ? rows[rows.length - 1] : null;
+  const checkpointRngState = intOr(checkpoint && checkpoint.rng_state, -1);
+
   return {
-    rand_calls: intOr(rng.calls, 0),
-    rand_last: intOr(rng.last_value, -1),
-    rand_seq_first: intOr(rng.first_seq, -1),
-    rand_seq_last: intOr(rng.last_seq, -1),
-    rand_seed_epoch_enter: intOr(rng.seed_epoch_enter, -1),
-    rand_seed_epoch_last: intOr(rng.seed_epoch_last, -1),
-    rand_outside_before_calls: intOr(rng.outside_before_calls, 0),
-    rand_outside_before_dropped: intOr(rng.outside_before_dropped, 0),
-    rand_mirror_mismatch_total: intOr(outState.rngMirrorMismatchCount, 0),
-    rand_mirror_unknown_total: intOr(outState.rngMirrorUnknownCalls, 0),
+    calls_total: callsTotal | 0,
+    inferred_total: inferredTotal | 0,
+    first_value_15: intOr(firstRow && firstRow.value_15, -1),
+    last_value_15: intOr(lastRow && lastRow.value_15, -1),
+    first_state_before_u32: intOr(firstRow && firstRow.state_before_u32, -1),
+    last_state_after_u32: intOr(lastRow && lastRow.state_after_u32, -1),
+    checkpoint_rng_state: checkpointRngState | 0,
   };
 }
 
@@ -1356,6 +1347,11 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
 
 function buildTraceTickRow(tickObj) {
   const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
+  const rngStream = rngStreamFromTick(tickObj);
+  const rngMarks = canonicalRngMarksFromStream(checkpoint, rngStream);
+  checkpoint.state_hash = "";
+  checkpoint.command_hash = "";
+  checkpoint.rng_marks = rngMarks;
   const modeId = tickModeId(tickObj);
   const dtMsI32 =
     tickObj.frame_dt_ms_i32 != null
@@ -1384,8 +1380,8 @@ function buildTraceTickRow(tickObj) {
     replay_inputs: replayInputsFromTick(tickObj),
     channels: {
       checkpoint: checkpoint,
-      rng_marks: rngMarksFromCheckpoint(checkpoint),
-      rng_stream: rngStreamFromTick(tickObj),
+      rng_marks: rngMarks,
+      rng_stream: rngStream,
       sim_state: simState,
       entity_samples: entitySamplesFromTick(tickObj),
     },
@@ -3694,25 +3690,6 @@ function finalizeTick() {
   };
   const killCount = globals.creature_kill_count == null ? -1 : globals.creature_kill_count;
 
-  const stateHashSeed = {
-    globals: {
-      time_played_ms: globals.time_played_ms,
-      creature_active_count: globals.creature_active_count,
-      creature_kill_count: globals.creature_kill_count,
-      perk_pending_count: globals.perk_pending_count,
-      perk_choices_dirty: perkChoicesDirty,
-      quest_spawn_timeline: globals.quest_spawn_timeline,
-      quest_stage_major: globals.quest_stage_major,
-      quest_stage_minor: globals.quest_stage_minor,
-      perk_doctor_target_creature_id: globals.perk_doctor_target_creature_id,
-      shock_chain_links_left: globals.shock_chain_links_left,
-      shock_chain_projectile_id: globals.shock_chain_projectile_id,
-    },
-    players: checkpointPlayers,
-    perk: perkSnapshot,
-    bonus_timers: bonusTimers,
-  };
-
   const rngCallersSorted = Object.keys(tick.rng.caller_counts)
     .map((k) => ({ caller_static: k, calls: tick.rng.caller_counts[k] }))
     .sort((a, b) => b.calls - a.calls);
@@ -3819,8 +3796,8 @@ function finalizeTick() {
 
   const checkpoint = {
     tick_index: tick.tick_index,
-    state_hash: String(hashHex(stateHashSeed)),
-    command_hash: String(toHex(tick.command_hash_state >>> 0, 8)),
+    state_hash: "",
+    command_hash: "",
     rng_state: tick.rng.last_value == null ? -1 : tick.rng.last_value,
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
@@ -3840,7 +3817,7 @@ function finalizeTick() {
         : [],
     },
     bonus_timers: bonusTimers,
-    rng_marks: checkpointRngMarksFromTick(tick),
+    rng_marks: {},
     deaths: checkpointDeathsFromEventHeads(tick.event_heads),
     perk: perkSnapshot,
     events: eventSummary,

@@ -41,6 +41,7 @@ from .canonical_channels import (
     status_payload_from_mapping,
 )
 from .checkpoint_codec import checkpoint_to_channel
+from .rng import canonical_rng_marks
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace
 
@@ -593,13 +594,24 @@ def _record_replay_to_trace_python(
         tick_index = checkpoint.tick_index
         entity_samples_obj = entity_samples_by_tick[tick_index]
         sim_state_obj = sim_state_by_tick[tick_index]
+        rng_stream = _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint))
+        trace_rng_marks = canonical_rng_marks(
+            rng_state=int(checkpoint.rng_state),
+            rng_stream=rng_stream,
+        )
+        trace_checkpoint = msgspec.structs.replace(
+            checkpoint,
+            state_hash="",
+            command_hash="",
+            rng_marks=dict(trace_rng_marks),
+        )
 
         channels: dict[str, object] = {
-            "checkpoint": checkpoint_to_channel(checkpoint),
+            "checkpoint": checkpoint_to_channel(trace_checkpoint),
             "sim_state": dict(sim_state_obj),
             "entity_samples": dict(entity_samples_obj),
-            "rng_marks": dict(sorted(checkpoint.rng_marks.items())),
-            "rng_stream": _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint)),
+            "rng_marks": dict(trace_rng_marks),
+            "rng_stream": rng_stream,
         }
 
         tick_dt_ms_i32: int | None = None
@@ -983,12 +995,23 @@ def _record_replay_to_trace_zig(
                 bonus_state=bonus_state,
             ),
         )
+        rng_stream = _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint))
+        trace_rng_marks = canonical_rng_marks(
+            rng_state=int(checkpoint.rng_state),
+            rng_stream=rng_stream,
+        )
+        trace_checkpoint = msgspec.structs.replace(
+            checkpoint,
+            state_hash="",
+            command_hash="",
+            rng_marks=dict(trace_rng_marks),
+        )
         channels: dict[str, object] = {
-            "checkpoint": checkpoint_to_channel(checkpoint),
+            "checkpoint": checkpoint_to_channel(trace_checkpoint),
             "sim_state": _sim_state_from_zig_row(row, replay=replay),
             "entity_samples": entity_samples,
-            "rng_marks": dict(sorted(checkpoint.rng_marks.items())),
-            "rng_stream": _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint)),
+            "rng_marks": dict(trace_rng_marks),
+            "rng_stream": rng_stream,
         }
 
         channels_seen.update(channels.keys())

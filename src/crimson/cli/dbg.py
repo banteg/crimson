@@ -139,7 +139,7 @@ def cmd_dbg_health(
 def cmd_dbg_diff(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -194,8 +194,6 @@ def cmd_dbg_diff(
         f"checked={report.checked_count} policy={report.policy}",
         err=True,
     )
-    if mismatch.first_rng_mark is not None:
-        typer.echo(f"first_rng_mark={mismatch.first_rng_mark}", err=True)
     if mismatch.checkpoint_diff is not None:
         typer.echo(f"checkpoint_diff_count={mismatch.checkpoint_diff.diff_count}", err=True)
         if mismatch.checkpoint_diff.pretty:
@@ -210,7 +208,7 @@ def cmd_dbg_diff(
 def cmd_dbg_bisect(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -459,7 +457,7 @@ def cmd_dbg_focus(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick: int = typer.Option(..., "--tick", help="focus tick index"),
-    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -546,7 +544,7 @@ def cmd_dbg_viz(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick: int | None = typer.Option(None, "--tick", help="focus tick (auto when omitted)"),
-    policy: str = typer.Option("original_vs_python_default", "--policy", help="parity policy name"),
+    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     window_before: int = typer.Option(64, "--window-before", min=0, help="ticks before focus tick"),
     window_after: int = typer.Option(64, "--window-after", min=0, help="ticks after focus tick"),
     out: Path | None = typer.Option(None, "--out", help="output HTML path"),

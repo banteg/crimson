@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import math
-import struct
 from collections.abc import Iterable, Sequence
 
 import msgspec
@@ -88,42 +87,8 @@ def _checkpoint_to_obj(
     return obj
 
 
-def _normalize_checkpoint_for_diff(
-    checkpoint: ReplayCheckpoint,
-    *,
-    include_hash_fields: bool,
-    include_rng_fields: bool,
-    elapsed_base: int | None,
-) -> ReplayCheckpoint:
-    out = checkpoint
-    if not include_hash_fields:
-        out = msgspec.structs.replace(out, state_hash="", command_hash="")
-    if not include_rng_fields:
-        out = msgspec.structs.replace(out, rng_state=0, rng_marks={})
-    if elapsed_base is not None and int(out.elapsed_ms) >= 0:
-        out = msgspec.structs.replace(out, elapsed_ms=int(out.elapsed_ms) - int(elapsed_base))
-    return out
-
-
 def _is_numeric_value(value: object) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool)
-
-
-def _ordered_float32_bits(bits: int) -> int:
-    if bits & 0x80000000:
-        return 0xFFFFFFFF - bits
-    return bits + 0x80000000
-
-
-def _float32_ulp_distance(expected_value: float, actual_value: float) -> int | None:
-    if not math.isfinite(expected_value) or not math.isfinite(actual_value):
-        return 0 if expected_value == actual_value else None
-    try:
-        expected_bits = struct.unpack(">I", struct.pack(">f", float(expected_value)))[0]
-        actual_bits = struct.unpack(">I", struct.pack(">f", float(actual_value)))[0]
-    except (OverflowError, ValueError):
-        return None
-    return abs(_ordered_float32_bits(expected_bits) - _ordered_float32_bits(actual_bits))
 
 
 def _numbers_match_tolerance(
@@ -131,7 +96,6 @@ def _numbers_match_tolerance(
     actual_value: object,
     *,
     float_abs_tol: float,
-    float_ulp_tol: int,
 ) -> bool:
     if not _is_numeric_value(expected_value) or not _is_numeric_value(actual_value):
         return False
@@ -142,13 +106,7 @@ def _numbers_match_tolerance(
     if expected_float == actual_float:
         return True
     abs_tol = max(0.0, float(float_abs_tol))
-    if math.isclose(expected_float, actual_float, rel_tol=0.0, abs_tol=abs_tol):
-        return True
-    max_ulp = max(0, int(float_ulp_tol))
-    if max_ulp <= 0:
-        return False
-    ulp_distance = _float32_ulp_distance(expected_float, actual_float)
-    return ulp_distance is not None and int(ulp_distance) <= max_ulp
+    return math.isclose(expected_float, actual_float, rel_tol=0.0, abs_tol=abs_tol)
 
 
 def _path_matches_ignored_prefix(path: str, prefixes: Sequence[str]) -> bool:
@@ -201,7 +159,6 @@ def _normalize_deepdiff_payload(
     ignore_field_prefixes: Sequence[str],
     max_diffs: int | None,
     float_abs_tol: float,
-    float_ulp_tol: int,
 ) -> tuple[dict[str, object], int]:
     out: dict[str, object] = {}
     total = 0
@@ -230,7 +187,6 @@ def _normalize_deepdiff_payload(
                             old_value,
                             new_value,
                             float_abs_tol=float_abs_tol,
-                            float_ulp_tol=float_ulp_tol,
                         ):
                             continue
                     category_out[path] = _to_jsonable(row)
@@ -259,35 +215,13 @@ def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
     *,
-    include_hash_fields: bool = True,
-    include_rng_fields: bool = True,
     ignore_field_prefixes: Sequence[str] = (),
-    elapsed_baseline: tuple[int, int] | None = None,
     max_diffs: int | None = None,
-    float_abs_tol: float = 0.0001,
-    float_ulp_tol: int = 0,
+    float_abs_tol: float = 0.0,
 ) -> CheckpointDeepDiff | None:
-    exp_base = None
-    act_base = None
-    if elapsed_baseline is not None:
-        exp_base, act_base = elapsed_baseline
-
-    expected_checkpoint = _normalize_checkpoint_for_diff(
-        expected,
-        include_hash_fields=bool(include_hash_fields),
-        include_rng_fields=bool(include_rng_fields),
-        elapsed_base=exp_base,
-    )
-    actual_checkpoint = _normalize_checkpoint_for_diff(
-        actual,
-        include_hash_fields=bool(include_hash_fields),
-        include_rng_fields=bool(include_rng_fields),
-        elapsed_base=act_base,
-    )
-
     deep = DeepDiff(
-        expected_checkpoint,
-        actual_checkpoint,
+        expected,
+        actual,
         ignore_order=False,
         verbose_level=2,
         math_epsilon=max(0.0, float(float_abs_tol)),
@@ -299,7 +233,6 @@ def checkpoint_deepdiff(
         ignore_field_prefixes=tuple(str(prefix) for prefix in ignore_field_prefixes),
         max_diffs=max_diffs,
         float_abs_tol=float_abs_tol,
-        float_ulp_tol=float_ulp_tol,
     )
     if int(diff_count) <= 0:
         return None

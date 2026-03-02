@@ -17,6 +17,7 @@ from ..replay.codec import dump_replay_file
 from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
+from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_SCHEMA_VERSION,
@@ -218,15 +219,32 @@ def _canonical_channels_payload(
     local_tick: int,
     field: str,
 ) -> tuple[ReplayCheckpoint, dict[str, object]]:
-    checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
-    expected_rng_marks = dict(sorted(checkpoint.rng_marks.items()))
+    checkpoint = msgspec.structs.replace(
+        channels.checkpoint,
+        tick_index=int(local_tick),
+        state_hash="",
+        command_hash="",
+    )
+    expected_rng_marks = canonical_rng_marks(
+        rng_state=int(checkpoint.rng_state),
+        rng_stream=channels.rng_stream,
+    )
+    if dict(checkpoint.rng_marks) != expected_rng_marks:
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.rng_marks must match canonical rng marks; "
+            "recapture with updated gameplay_diff_capture.js",
+        )
     if dict(channels.rng_marks) != expected_rng_marks:
-        raise FridaFinalizeError(f"{field}.rng_marks must match checkpoint.rng_marks exactly")
+        raise FridaFinalizeError(
+            f"{field}.rng_marks must match canonical rng marks; "
+            "recapture with updated gameplay_diff_capture.js",
+        )
+    checkpoint = msgspec.structs.replace(checkpoint, rng_marks=dict(expected_rng_marks))
     normalized = _TickChannels(
         checkpoint=checkpoint,
         sim_state=channels.sim_state,
         entity_samples=channels.entity_samples,
-        rng_marks=expected_rng_marks,
+        rng_marks=dict(expected_rng_marks),
         rng_stream=list(channels.rng_stream),
     )
     built = msgspec.to_builtins(normalized)

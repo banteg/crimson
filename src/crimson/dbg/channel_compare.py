@@ -126,8 +126,24 @@ def _to_builtin_obj(value: object) -> dict[str, object]:
 
 
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, dict[str, object] | None]:
-    exp_keys = [(int(row.value_15), row.caller_static, row.branch_id) for row in expected_rows]
-    act_keys = [(int(row.value_15), row.caller_static, row.branch_id) for row in actual_rows]
+    exp_keys = [
+        (
+            int(row.tick_call_index),
+            int(row.value_15),
+            int(row.state_before_u32),
+            int(row.state_after_u32),
+        )
+        for row in expected_rows
+    ]
+    act_keys = [
+        (
+            int(row.tick_call_index),
+            int(row.value_15),
+            int(row.state_before_u32),
+            int(row.state_after_u32),
+        )
+        for row in actual_rows
+    ]
     max_prefix = min(len(exp_keys), len(act_keys))
     prefix = 0
     while prefix < max_prefix and exp_keys[prefix] == act_keys[prefix]:
@@ -235,4 +251,3 @@ def compare_entity_samples(
     if diffs:
         detail["first_diffs"] = diffs
     return (len(detail) == 0), (None if len(detail) == 0 else detail)
-

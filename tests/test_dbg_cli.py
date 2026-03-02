@@ -340,7 +340,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert repro_trace.exists()
 
 
-def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
+def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_hashes.crd")
     golden_trace = tmp_path / "golden_hashes.cdt"
     candidate_trace = tmp_path / "candidate_hashes.cdt"
@@ -359,7 +359,7 @@ def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
     checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
-    relaxed_result = runner.invoke(
+    result = runner.invoke(
         app,
         [
             "dbg",
@@ -367,92 +367,12 @@ def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
             str(golden_trace),
             str(candidate_trace),
             "--policy",
-            "original_vs_python_default",
+            "strict",
         ],
     )
-    assert relaxed_result.exit_code == 0, relaxed_result.output
-    assert "result=ok" in relaxed_result.output
-
-    strict_result = runner.invoke(
-        app,
-        [
-            "dbg",
-            "diff",
-            str(golden_trace),
-            str(candidate_trace),
-            "--policy",
-            "python_vs_zig_strict",
-        ],
-    )
-    assert strict_result.exit_code == 1, strict_result.output
-    assert "result=diverged" in strict_result.output
-    assert ("command_hash_mismatch" in strict_result.output) or ("state_hash_mismatch" in strict_result.output)
-
-
-def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample_core.crd")
-    golden_trace = tmp_path / "golden_core.cdt"
-    candidate_trace = tmp_path / "candidate_core.cdt"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
-    )
-    assert record_result.exit_code == 0, record_result.output
-
-    meta, ticks, _footer = load_trace(golden_trace)
-    tick0 = next(row for row in ticks if int(row.tick_index) == 0)
-    tick0.channels.pop("entity_samples", None)
-    checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
-    checkpoint["state_hash"] = "ffffffffffffffff"
-    checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
-    checkpoint["players"] = [
-        {
-            "pos": {"x": 12345.0, "y": 67890.0},
-            "health": 1.0,
-            "weapon_id": 2,
-            "ammo": 2.0,
-            "experience": 3,
-            "level": 4,
-        },
-    ]
-    checkpoint["perk"] = {
-        "pending_count": 0,
-        "choices_dirty": False,
-        "choices": [1, 2, 3],
-        "player_nonzero_counts": [[[1, 2]]],
-    }
-    checkpoint["events"] = {
-        "hit_count": 999,
-        "pickup_count": 999,
-        "sfx_count": 999,
-        "sfx_head": ["x"],
-    }
-    checkpoint["deaths"] = [
-        {
-            "creature_index": 1,
-            "type_id": 2,
-            "reward_value": 3.0,
-            "xp_awarded": 4,
-            "owner_id": 5,
-        },
-    ]
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    default_result = runner.invoke(
-        app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
-    )
-    assert default_result.exit_code == 1, default_result.output
-    assert "result=diverged" in default_result.output
-
-    core_result = runner.invoke(
-        app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "python_vs_zig_core"],
-    )
-    assert core_result.exit_code == 0, core_result.output
-    assert "result=ok" in core_result.output
+    assert result.exit_code == 1, result.output
+    assert "result=diverged" in result.output
+    assert "checkpoint_field_mismatch" in result.output
 
 
 def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> None:
@@ -475,7 +395,7 @@ def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> 
 
     result = runner.invoke(
         app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
+        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "strict"],
     )
     assert result.exit_code == 1, result.output
     assert "missing_channel" in result.output
@@ -513,7 +433,7 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     report = dbg_diff.bisect_traces(
         expected_trace_path=golden_trace,
         actual_trace_path=candidate_trace,
-        policy=resolve_parity_policy("python_vs_zig_strict"),
+        policy=resolve_parity_policy("strict"),
     )
     assert report.first_bad_tick == 1
     assert call_count == 1

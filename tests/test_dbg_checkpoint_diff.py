@@ -37,39 +37,27 @@ def _checkpoint_with_health(health: float) -> ReplayCheckpoint:
     )
 
 
-def test_checkpoint_deepdiff_one_ulp_tolerance_accepts_adjacent_float32() -> None:
+def test_checkpoint_deepdiff_zero_tolerance_requires_exact_match() -> None:
     expected = _checkpoint_with_health(1.0)
     actual = _checkpoint_with_health(_next_float32(1.0, ulps=1))
-
-    strict_ulps = checkpoint_deepdiff(
-        expected,
-        actual,
-        float_abs_tol=0.0,
-        float_ulp_tol=1,
-    )
-    assert strict_ulps is None
-
-    exact_only = checkpoint_deepdiff(
-        expected,
-        actual,
-        float_abs_tol=0.0,
-        float_ulp_tol=0,
-    )
-    assert exact_only is not None
-    assert exact_only.diff_count >= 1
-    assert "players[0].health" in exact_only.pretty
-
-
-def test_checkpoint_deepdiff_one_ulp_tolerance_rejects_two_ulp_delta() -> None:
-    expected = _checkpoint_with_health(1.0)
-    actual = _checkpoint_with_health(_next_float32(1.0, ulps=2))
 
     diff = checkpoint_deepdiff(
         expected,
         actual,
         float_abs_tol=0.0,
-        float_ulp_tol=1,
     )
     assert diff is not None
     assert diff.diff_count >= 1
     assert "players[0].health" in diff.pretty
+
+
+def test_checkpoint_deepdiff_abs_tolerance_accepts_small_delta() -> None:
+    expected = _checkpoint_with_health(1.0)
+    actual = _checkpoint_with_health(_next_float32(1.0, ulps=1))
+
+    diff_small = checkpoint_deepdiff(
+        expected,
+        actual,
+        float_abs_tol=1e-6,
+    )
+    assert diff_small is None

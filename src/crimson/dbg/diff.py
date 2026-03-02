@@ -8,7 +8,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
 from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
 from .checkpoint_codec import channel_to_checkpoint
-from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, CheckpointDeepDiff, checkpoint_deepdiff
+from .checkpoint_diff import CheckpointDeepDiff, checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -25,7 +25,6 @@ class TraceMismatch(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
     checkpoint_diff: CheckpointDeepDiff | None = None
-    first_rng_mark: str | None = None
     detail: dict[str, object] | None = None
 
 
@@ -84,14 +83,12 @@ def _first_mismatch(
     tick_end: int | None = None,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
-    elapsed_baseline: tuple[int, int] | None = None
     compare_sim_state_channels = (
         _trace_has_channel(pairs, side="expected", channel_name="sim_state")
         and _trace_has_channel(pairs, side="actual", channel_name="sim_state")
     )
     compare_entity_channels = (
-        bool(policy.include_entity_channels)
-        and _trace_has_channel(pairs, side="expected", channel_name="entity_samples")
+        _trace_has_channel(pairs, side="expected", channel_name="entity_samples")
         and _trace_has_channel(pairs, side="actual", channel_name="entity_samples")
     )
     for pair in pairs:
@@ -110,44 +107,12 @@ def _first_mismatch(
                 ),
             )
 
-        if bool(policy.include_hash_fields) and expected.command_hash and expected.command_hash != actual.command_hash:
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="command_hash_mismatch",
-                    tick_index=tick,
-                    detail={
-                        "expected": expected.command_hash,
-                        "actual": actual.command_hash,
-                    },
-                ),
-            )
-        if bool(policy.include_hash_fields) and expected.state_hash != actual.state_hash:
-            return (
-                checked_count,
-                TraceMismatch(
-                    kind="state_hash_mismatch",
-                    tick_index=tick,
-                    detail={
-                        "expected": expected.state_hash,
-                        "actual": actual.state_hash,
-                    },
-                ),
-            )
-
-        if elapsed_baseline is None and expected.elapsed_ms >= 0 and actual.elapsed_ms >= 0:
-            elapsed_baseline = (expected.elapsed_ms, actual.elapsed_ms)
-
         checkpoint_diff = checkpoint_deepdiff(
             expected,
             actual,
-            include_hash_fields=bool(policy.include_hash_fields),
-            include_rng_fields=bool(policy.include_rng_fields),
             ignore_field_prefixes=policy.ignore_field_prefixes,
-            elapsed_baseline=elapsed_baseline,
             max_diffs=policy.max_field_diffs,
             float_abs_tol=float(policy.float_abs_tol),
-            float_ulp_tol=int(policy.float_ulp_tol),
         )
         if checkpoint_diff is not None:
             return (
@@ -159,40 +124,18 @@ def _first_mismatch(
                 ),
             )
 
-        if bool(policy.include_rng_fields):
-            exp_rng = dict(expected.rng_marks)
-            act_rng = dict(actual.rng_marks)
-            mismatching_rng_keys = [key for key in sorted(set(exp_rng) | set(act_rng)) if exp_rng.get(key, -1) != act_rng.get(key, -1)]
-            if mismatching_rng_keys:
-                first_rng_mark = next(
-                    (mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng_keys),
-                    mismatching_rng_keys[0],
-                )
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="rng_mark_mismatch",
-                        tick_index=tick,
-                        first_rng_mark=first_rng_mark,
-                        detail={
-                            "expected": exp_rng.get(first_rng_mark),
-                            "actual": act_rng.get(first_rng_mark),
-                        },
-                    ),
-                )
-
-            act_rng_stream = rng_stream_channel(pair.actual_row)
-            exp_rng_stream = rng_stream_channel(pair.expected_row)
-            rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
-            if not rng_ok:
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="rng_stream_mismatch",
-                        tick_index=tick,
-                        detail=rng_detail,
-                    ),
-                )
+        act_rng_stream = rng_stream_channel(pair.actual_row)
+        exp_rng_stream = rng_stream_channel(pair.expected_row)
+        rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
+        if not rng_ok:
+            return (
+                checked_count,
+                TraceMismatch(
+                    kind="rng_stream_mismatch",
+                    tick_index=tick,
+                    detail=rng_detail,
+                ),
+            )
 
         if compare_sim_state_channels:
             sim_ok, sim_detail = compare_sim_state(
@@ -432,7 +375,6 @@ def mismatch_to_json(mismatch: TraceMismatch | None) -> dict[str, object] | None
     return {
         "kind": mismatch.kind,
         "tick_index": mismatch.tick_index,
-        "first_rng_mark": mismatch.first_rng_mark,
         "checkpoint_diff": (
             None
             if checkpoint_diff is None

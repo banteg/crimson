@@ -74,12 +74,9 @@ def rng_marks_channel(row: TickRecord | None) -> dict[str, int]:
     if row is None:
         return {}
     payload = row.channels.get("rng_marks")
-    if payload is not None:
-        return cast("dict[str, int]", _decode_channel(payload, channel_name="rng_marks", target=dict[str, int]))
-    checkpoint = checkpoint_channel(row)
-    if checkpoint is None:
+    if payload is None:
         return {}
-    return dict(checkpoint.rng_marks)
+    return cast("dict[str, int]", _decode_channel(payload, channel_name="rng_marks", target=dict[str, int]))
 
 
 def entity_rows(samples: EntitySamplesSnapshot, *, kind: str) -> list[EntitySampleRow]:
@@ -94,4 +91,3 @@ def entity_rows(samples: EntitySamplesSnapshot, *, kind: str) -> list[EntitySamp
             return [*samples.bonuses]
         case _:
             raise ValueError(f"unsupported entity sample kind: {kind!r}")
-

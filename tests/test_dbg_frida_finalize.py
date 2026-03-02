@@ -7,6 +7,7 @@ from typing import cast
 import pytest
 
 from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_to_traces
+from crimson.dbg.rng import canonical_rng_marks
 from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
 from crimson.sim.bootstrap import run_terrain_bootstrap
@@ -116,7 +117,13 @@ def _channels_stub(
     checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms))
     if checkpoint_overrides:
         checkpoint.update(dict(checkpoint_overrides))
-    marks = dict(rng_marks or {})
+    if rng_marks is None:
+        marks = canonical_rng_marks(
+            rng_state=int(checkpoint.get("rng_state", -1)),
+            rng_stream=[],
+        )
+    else:
+        marks = dict(rng_marks)
     checkpoint["rng_marks"] = dict(marks)
     return {
         "checkpoint": checkpoint,
