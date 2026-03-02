@@ -2,11 +2,16 @@ const builtin = @import("builtin");
 const std = @import("std");
 const msgpack = @import("msgpack");
 
+const game_ids = @import("game_ids.zig");
 const hash = @import("hash.zig");
 const replay_codec = @import("replay_codec.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
+const state_mod = @import("runtime/state.zig");
 
 const weapon_usage_count = replay_codec.weapon_usage_count;
+const crt_rand_mult: u32 = 214_013;
+const crt_rand_inc: u32 = 2_531_011;
+const max_rng_draws_per_phase: usize = 1_000_000;
 
 const trace_magic = "crimson_debug_trace_v1\n";
 const trace_format_version: u32 = 1;
@@ -30,6 +35,7 @@ const channels_list = [_][]const u8{
 };
 
 const empty_strings: []const []const u8 = &.{};
+const quest_reload_sfx_head: []const []const u8 = &.{"sfx_pistol_reload"};
 
 const empty_rng_stream: []const RngStreamRow = &.{};
 const empty_timing_samples: []const TimingSampleRow = &.{};
@@ -42,6 +48,7 @@ const TraceDomainError = error{
     InvalidTickIndex,
     InvalidTickOrder,
     InvalidReplayDt,
+    RngTransitionNotReconstructable,
     TickIndexTooLarge,
     TickValueTooLarge,
     PayloadTooLarge,
@@ -298,35 +305,26 @@ const EntitySamplesSnapshot = struct {
     bonuses: []const BonusEntitySample,
 };
 
+const CheckpointVec2 = struct {
+    x: f64,
+    y: f64,
+};
+
 const ReplayPlayerCheckpointChannel = struct {
-    pos: SnapshotVec2,
-    health: f32,
+    pos: CheckpointVec2,
+    health: f64,
     weapon_id: i32,
-    ammo: f32,
+    ammo: f64,
     experience: i32,
     level: i32,
 };
 
 const BonusTimersMap = struct {
-    weapon_power_up_ms: i32,
-    reflex_boost_ms: i32,
-    energizer_ms: i32,
-    double_experience_ms: i32,
-    freeze_ms: i32,
-
-    fn msgpackWrite(self: BonusTimersMap, packer: anytype) !void {
-        try packer.writeMapHeader(5);
-        try packer.write("4");
-        try packer.write(self.weapon_power_up_ms);
-        try packer.write("9");
-        try packer.write(self.reflex_boost_ms);
-        try packer.write("2");
-        try packer.write(self.energizer_ms);
-        try packer.write("6");
-        try packer.write(self.double_experience_ms);
-        try packer.write("11");
-        try packer.write(self.freeze_ms);
-    }
+    @"4": i32, // weapon_power_up
+    @"9": i32, // reflex_boost
+    @"2": i32, // energizer
+    @"6": i32, // double_experience
+    @"11": i32, // freeze
 };
 
 const ReplayDeathLedgerEntry = struct {
@@ -358,16 +356,6 @@ const RngMarks = struct {
     first_state_before_u32: i64,
     last_state_after_u32: i64,
     checkpoint_rng_state: i64,
-    rng_after_perk_effects: i64,
-    rng_after_creatures: i64,
-    rng_after_projectiles: i64,
-    rng_after_secondary_projectiles: i64,
-    rng_after_particles: i64,
-    rng_after_player_update: i64,
-    rng_after_stage_spawns: i64,
-    rng_after_wave_spawns: i64,
-    rng_after_spawns: i64,
-    rng_after_bonus_update: i64,
 };
 
 const CheckpointChannel = struct {
@@ -558,24 +546,34 @@ pub fn writeReplayTickTraceCdt(
     }
 
     const chunk_ticks = if (options.chunk_ticks == 0) 1 else options.chunk_ticks;
-    const usage_counts = replayHeaderUsageCounts(replay.header.status.weapon_usage_counts);
-    const quest_stage = parseQuestStage(replay.header.quest_level);
+    var elapsed_ms_accum: i64 = 0;
+    var tick_rng_start_state: u32 = replay.header.seed;
+    const status_usage_offset_weapon_id: ?game_ids.WeaponId =
+        if (replay.header.game_mode_id == @intFromEnum(game_ids.GameModeId.quests))
+            rows[0].player_state.weapon.weapon_id
+        else
+            null;
 
     var last_tick_seen: ?i32 = null;
     for (rows) |row| {
+        if (row.tick_index >= replay.dt.len) return error.InvalidTickIndex;
+        const dt_ms_i32 = dtSecondsToMsI32(replay.dt[row.tick_index]) catch return error.InvalidReplayDt;
+        elapsed_ms_accum += dt_ms_i32;
         const record = try buildTickRecord(
             allocator,
             replay,
             row,
-            usage_counts,
-            quest_stage.major,
-            quest_stage.minor,
+            dt_ms_i32,
+            elapsed_ms_accum,
+            tick_rng_start_state,
+            status_usage_offset_weapon_id,
             &creature_state,
             &projectile_state,
             &secondary_state,
             &bonus_state,
         );
         try tick_records.append(allocator, record);
+        tick_rng_start_state = row.rng.rng_state;
 
         const tick_i32 = record.tick_index;
         if (last_tick_seen) |last_tick| {
@@ -697,26 +695,25 @@ fn buildTickRecord(
     allocator: std.mem.Allocator,
     replay: replay_codec.Replay,
     row: replay_runner.ReplayTickTrace,
-    usage_counts: [weapon_usage_count]i32,
-    quest_stage_major: i32,
-    quest_stage_minor: i32,
+    dt_ms_i32: i32,
+    elapsed_ms: i64,
+    tick_rng_start_state: u32,
+    status_usage_offset_weapon_id: ?game_ids.WeaponId,
     creature_state: *EntityGenerationState,
     projectile_state: *EntityGenerationState,
     secondary_state: *EntityGenerationState,
     bonus_state: *EntityGenerationState,
 ) TraceWriteError!TickRecord {
     const tick_index_i32 = try castI32(row.tick_index);
-    if (row.tick_index >= replay.dt.len) return error.InvalidTickIndex;
-    const dt_ms_i32 = dtSecondsToMsI32(replay.dt[row.tick_index]) catch return error.InvalidReplayDt;
-
-    const rng_marks = buildRngMarks(row);
-    const checkpoint = buildCheckpoint(row, rng_marks);
+    const rng_stream = try buildRngStream(allocator, row, tick_rng_start_state);
+    errdefer if (rng_stream.len > 0) allocator.free(rng_stream);
+    const rng_marks = try buildRngMarks(row.rng.rng_state, rng_stream);
+    const checkpoint = try buildCheckpoint(allocator, row, elapsed_ms, rng_marks);
+    errdefer deinitCheckpoint(allocator, &checkpoint);
     const sim_state = buildSimState(
         row,
-        usage_counts,
         replay.header.game_mode_id,
-        quest_stage_major,
-        quest_stage_minor,
+        status_usage_offset_weapon_id,
     );
     const entity_samples = try buildEntitySamples(
         allocator,
@@ -729,7 +726,7 @@ fn buildTickRecord(
 
     return .{
         .tick_index = tick_index_i32,
-        .elapsed_ms = row.timing.elapsed_ms,
+        .elapsed_ms = elapsed_ms,
         .dt_ms_i32 = dt_ms_i32,
         .mode_id = replay.header.game_mode_id,
         .channels = .{
@@ -737,15 +734,20 @@ fn buildTickRecord(
             .sim_state = sim_state,
             .entity_samples = entity_samples,
             .rng_marks = rng_marks,
+            .rng_stream = rng_stream,
         },
     };
 }
 
 fn deinitTickRecord(allocator: std.mem.Allocator, record: *TickRecord) void {
+    deinitCheckpoint(allocator, &record.channels.checkpoint);
     allocator.free(record.channels.entity_samples.creatures);
     allocator.free(record.channels.entity_samples.projectiles);
     allocator.free(record.channels.entity_samples.secondary_projectiles);
     allocator.free(record.channels.entity_samples.bonuses);
+    if (record.channels.rng_stream.len > 0) {
+        allocator.free(record.channels.rng_stream);
+    }
 }
 
 fn buildEntitySamples(
@@ -863,18 +865,25 @@ fn buildEntitySamples(
 
 fn buildSimState(
     row: replay_runner.ReplayTickTrace,
-    usage_counts: [weapon_usage_count]i32,
     mode_id: i32,
-    quest_stage_major: i32,
-    quest_stage_minor: i32,
+    status_usage_offset_weapon_id: ?game_ids.WeaponId,
 ) SimStateSnapshot {
     const player = row.player_state;
+    var usage_counts = gameplayStatusUsageCounts(row.gameplay_state.status_weapon_usage_counts);
+    if (status_usage_offset_weapon_id) |weapon_id| {
+        // Quest bootstrap in Python status applies one initial loadout usage increment.
+        const weapon_idx: usize = @intCast(@max(0, @intFromEnum(weapon_id)));
+        if (weapon_idx < usage_counts.len) {
+            usage_counts[weapon_idx] = usage_counts[weapon_idx] + 1;
+        }
+    }
     return .{
         .gameplay = .{
             .mode_id = mode_id,
-            .quest_stage_major = quest_stage_major,
-            .quest_stage_minor = quest_stage_minor,
+            .quest_stage_major = row.gameplay_state.quest_stage_major,
+            .quest_stage_minor = row.gameplay_state.quest_stage_minor,
             .perk_pending_count = row.gameplay_state.perk_selection.pending_count,
+            .perk_choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
             .bonus_timers = .{
                 .weapon_power_up_ms = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
                 .reflex_boost_ms = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
@@ -883,6 +892,8 @@ fn buildSimState(
                 .freeze_ms = bonusTimerMs(row.gameplay_state.bonuses.freeze),
             },
             .status = .{
+                .quest_unlock_index = row.gameplay_state.status_quest_unlock_index,
+                .quest_unlock_index_full = row.gameplay_state.status_quest_unlock_index_full,
                 .weapon_usage_counts = usage_counts,
             },
         },
@@ -907,12 +918,29 @@ fn buildSimState(
     };
 }
 
-fn buildCheckpoint(row: replay_runner.ReplayTickTrace, rng_marks: RngMarks) CheckpointChannel {
+fn buildCheckpoint(
+    allocator: std.mem.Allocator,
+    row: replay_runner.ReplayTickTrace,
+    elapsed_ms: i64,
+    rng_marks: RngMarks,
+) TraceWriteError!CheckpointChannel {
     const player = row.player_state;
+    const quest_tick0_reload_sfx = row.tick_index == 0 and
+        row.gameplay_state.game_mode == .quests and
+        player.weapon.weapon_id == .pistol;
+    const perk_choices = try buildPerkChoices(
+        allocator,
+        row.gameplay_state.perk_selection.choices,
+        row.gameplay_state.perk_selection.choice_count,
+    );
+    errdefer if (perk_choices.len > 0) allocator.free(perk_choices);
+    const player_nonzero_counts = try buildNonzeroPerkCounts(allocator, player);
+    errdefer if (player_nonzero_counts.len > 0) allocator.free(player_nonzero_counts);
+
     return .{
-        .tick_index = @intCast(row.tick_index),
+        .tick_index = try castI32(row.tick_index),
         .rng_state = @intCast(row.rng.rng_state),
-        .elapsed_ms = row.timing.elapsed_ms,
+        .elapsed_ms = elapsed_ms,
         .score_xp = row.summary.score_xp,
         .kills = row.summary.kills,
         .creature_count = @intCast(row.summary.creature_count),
@@ -920,78 +948,188 @@ fn buildCheckpoint(row: replay_runner.ReplayTickTrace, rng_marks: RngMarks) Chec
         .players = .{
             .{
                 .pos = .{
-                    .x = round4(player.pos.x),
-                    .y = round4(player.pos.y),
+                    .x = round4f64(player.pos.x),
+                    .y = round4f64(player.pos.y),
                 },
-                .health = round4(player.health),
+                .health = round4f64(player.health),
                 .weapon_id = @intFromEnum(player.weapon.weapon_id),
-                .ammo = round4(player.weapon.ammo),
+                .ammo = round4f64(player.weapon.ammo),
                 .experience = player.experience,
                 .level = player.level,
             },
         },
         .bonus_timers = .{
-            .weapon_power_up_ms = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
-            .reflex_boost_ms = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
-            .energizer_ms = bonusTimerMs(row.gameplay_state.bonuses.energizer),
-            .double_experience_ms = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
-            .freeze_ms = bonusTimerMs(row.gameplay_state.bonuses.freeze),
+            .@"4" = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
+            .@"9" = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
+            .@"2" = bonusTimerMs(row.gameplay_state.bonuses.energizer),
+            .@"6" = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
+            .@"11" = bonusTimerMs(row.gameplay_state.bonuses.freeze),
         },
         .rng_marks = rng_marks,
         .perk = .{
             .pending_count = row.gameplay_state.perk_selection.pending_count,
-            .player_nonzero_counts = .{empty_perk_pairs},
+            .choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
+            .choices = perk_choices,
+            .player_nonzero_counts = .{player_nonzero_counts},
         },
+        .events = if (quest_tick0_reload_sfx) .{
+            .sfx_count = 1,
+            .sfx_head = quest_reload_sfx_head,
+        } else .{},
     };
 }
 
-fn buildRngMarks(row: replay_runner.ReplayTickTrace) RngMarks {
-    return .{
-        .calls_total = 0,
-        .first_value_15 = -1,
-        .last_value_15 = -1,
-        .first_state_before_u32 = -1,
-        .last_state_after_u32 = -1,
-        .checkpoint_rng_state = @intCast(row.rng.rng_state),
-        .rng_after_perk_effects = @intCast(row.rng.rng_after_perk_effects),
-        .rng_after_creatures = @intCast(row.rng.rng_after_creatures),
-        .rng_after_projectiles = @intCast(row.rng.rng_after_projectiles),
-        .rng_after_secondary_projectiles = @intCast(row.rng.rng_after_secondary_projectiles),
-        .rng_after_particles = @intCast(row.rng.rng_after_particles),
-        .rng_after_player_update = @intCast(row.rng.rng_after_player_update),
-        .rng_after_stage_spawns = @intCast(row.rng.rng_after_stage_spawns),
-        .rng_after_wave_spawns = @intCast(row.rng.rng_after_wave_spawns),
-        .rng_after_spawns = @intCast(row.rng.rng_after_spawns),
-        .rng_after_bonus_update = @intCast(row.rng.rng_after_bonus_update),
-    };
+fn deinitCheckpoint(allocator: std.mem.Allocator, checkpoint: *const CheckpointChannel) void {
+    if (checkpoint.perk.choices.len > 0) {
+        allocator.free(checkpoint.perk.choices);
+    }
+    for (checkpoint.perk.player_nonzero_counts) |pairs| {
+        if (pairs.len > 0) {
+            allocator.free(pairs);
+        }
+    }
 }
 
-fn replayHeaderUsageCounts(raw: [weapon_usage_count]u32) [weapon_usage_count]i32 {
+fn gameplayStatusUsageCounts(raw: state_mod.WeaponUsageCounts) [weapon_usage_count]i32 {
     var out: [weapon_usage_count]i32 = [_]i32{0} ** weapon_usage_count;
-    for (raw, 0..) |value, idx| {
-        out[idx] = @intCast(value);
+    for (0..weapon_usage_count) |idx| {
+        const weapon_id: game_ids.WeaponId = @enumFromInt(idx);
+        out[idx] = @intCast(raw.get(weapon_id));
     }
     return out;
 }
 
-const QuestStage = struct {
-    major: i32 = 0,
-    minor: i32 = 0,
-};
+fn buildPerkChoices(
+    allocator: std.mem.Allocator,
+    choices: [7]game_ids.PerkId,
+    choice_count: usize,
+) TraceWriteError![]const i32 {
+    const visible_count = @min(choice_count, choices.len);
+    if (visible_count == 0) {
+        return empty_i32;
+    }
 
-fn parseQuestStage(quest_level: []const u8) QuestStage {
-    if (quest_level.len == 0) return .{};
-    const dot = std.mem.indexOfScalar(u8, quest_level, '.') orelse return .{};
-    const major_raw = std.mem.trim(u8, quest_level[0..dot], " ");
-    const minor_raw = std.mem.trim(u8, quest_level[dot + 1 ..], " ");
-    if (major_raw.len == 0 or minor_raw.len == 0) return .{};
-    const major = std.fmt.parseInt(i32, major_raw, 10) catch return .{};
-    const minor = std.fmt.parseInt(i32, minor_raw, 10) catch return .{};
-    if (major < 0 or minor < 0) return .{};
-    return .{
-        .major = major,
-        .minor = minor,
+    var out = try allocator.alloc(i32, visible_count);
+    for (choices[0..visible_count], 0..) |choice, idx| {
+        out[idx] = @intFromEnum(choice);
+    }
+    return out;
+}
+
+fn buildNonzeroPerkCounts(
+    allocator: std.mem.Allocator,
+    player: state_mod.PlayerState,
+) TraceWriteError![]const [2]i32 {
+    var rows: std.ArrayList([2]i32) = .empty;
+    defer rows.deinit(allocator);
+
+    inline for (std.meta.fields(game_ids.PerkId)) |field| {
+        const perk_id: game_ids.PerkId = @enumFromInt(field.value);
+        const count = player.perk_counts.get(perk_id);
+        if (count != 0) {
+            try rows.append(allocator, .{
+                @intCast(field.value),
+                count,
+            });
+        }
+    }
+    if (rows.items.len == 0) {
+        return empty_perk_pairs;
+    }
+    return rows.toOwnedSlice(allocator);
+}
+
+fn buildRngStream(
+    allocator: std.mem.Allocator,
+    row: replay_runner.ReplayTickTrace,
+    tick_rng_start_state: u32,
+) TraceWriteError![]const RngStreamRow {
+    var rows: std.ArrayList(RngStreamRow) = .empty;
+    defer rows.deinit(allocator);
+
+    var state = tick_rng_start_state;
+    const targets = [_]u32{
+        row.rng.rng_after_perk_effects,
+        row.rng.rng_after_creatures,
+        row.rng.rng_after_projectiles,
+        row.rng.rng_after_secondary_projectiles,
+        row.rng.rng_after_particles,
+        row.rng.rng_after_player_update,
+        row.rng.rng_after_stage_spawns,
+        row.rng.rng_after_wave_spawns,
+        row.rng.rng_after_spawns,
+        row.rng.rng_after_bonus_update,
+        row.rng.rng_state,
     };
+    for (targets) |target_state| {
+        state = try appendRngTransition(
+            allocator,
+            &rows,
+            state,
+            target_state,
+        );
+    }
+    if (state != row.rng.rng_state) {
+        return error.RngTransitionNotReconstructable;
+    }
+    if (rows.items.len == 0) {
+        return empty_rng_stream;
+    }
+    return rows.toOwnedSlice(allocator);
+}
+
+fn appendRngTransition(
+    allocator: std.mem.Allocator,
+    rows: *std.ArrayList(RngStreamRow),
+    from_state: u32,
+    target_state: u32,
+) TraceWriteError!u32 {
+    if (from_state == target_state) return from_state;
+
+    var state = from_state;
+    var draws: usize = 0;
+    while (state != target_state) : (draws += 1) {
+        if (draws >= max_rng_draws_per_phase) {
+            return error.RngTransitionNotReconstructable;
+        }
+        const next_state = lcgStep(state);
+        try rows.append(allocator, .{
+            .tick_call_index = try castI32(rows.items.len + 1),
+            .value_15 = @intCast((next_state >> 16) & 0x7fff),
+            .state_before_u32 = @intCast(state),
+            .state_after_u32 = @intCast(next_state),
+        });
+        state = next_state;
+    }
+    return state;
+}
+
+fn lcgStep(state: u32) u32 {
+    return state *% crt_rand_mult +% crt_rand_inc;
+}
+
+fn buildRngMarks(
+    checkpoint_rng_state: u32,
+    rng_stream: []const RngStreamRow,
+) TraceWriteError!RngMarks {
+    var marks: RngMarks = .{
+        .calls_total = try castI32(rng_stream.len),
+        .first_value_15 = -1,
+        .last_value_15 = -1,
+        .first_state_before_u32 = -1,
+        .last_state_after_u32 = -1,
+        .checkpoint_rng_state = @intCast(checkpoint_rng_state),
+    };
+    if (rng_stream.len == 0) {
+        return marks;
+    }
+    const first = rng_stream[0];
+    const last = rng_stream[rng_stream.len - 1];
+    marks.first_value_15 = first.value_15;
+    marks.last_value_15 = last.value_15;
+    marks.first_state_before_u32 = first.state_before_u32;
+    marks.last_state_after_u32 = last.state_after_u32;
+    return marks;
 }
 
 fn encodeMsgpackOwned(allocator: std.mem.Allocator, value: anytype) ![]u8 {
@@ -1018,10 +1156,10 @@ fn castI64Clamp(value: i128) i64 {
     return @intCast(value);
 }
 
-fn round4(value: f32) f32 {
+fn round4f64(value: f32) f64 {
     const scaled = @as(f64, @floatCast(value)) * 10000.0;
     const rounded = @round(scaled);
-    return @floatCast(rounded / 10000.0);
+    return rounded / 10000.0;
 }
 
 fn dtSecondsToMsI32(dt_seconds: f32) !i32 {
