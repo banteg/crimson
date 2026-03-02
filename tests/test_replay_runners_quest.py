@@ -3,9 +3,12 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.quests import quest_by_level
 from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.weapon_sfx import resolve_weapon_sfx_ref
+from crimson.weapons import WEAPON_BY_ID
 from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
 
 
@@ -52,6 +55,30 @@ def test_quest_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
     assert shifted.rng_state != baseline.rng_state
+
+
+def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
+    _header, rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = rec.finish()
+    checkpoints = []
+
+    run_replay(
+        replay,
+        checkpoints_out=checkpoints,
+        checkpoint_ticks={0},
+    )
+
+    assert len(checkpoints) == 1
+    tick0 = checkpoints[0]
+    assert int(tick0.events.sfx_count) == 1
+
+    quest = quest_by_level("1.1")
+    assert quest is not None
+    weapon = WEAPON_BY_ID.get(quest.start_weapon_id)
+    assert weapon is not None
+    expected_reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
+    assert expected_reload_sfx is not None
+    assert tick0.events.sfx_head == [expected_reload_sfx]
 
 
 def test_quest_runner_rejects_invalid_perk_pick_event() -> None:
