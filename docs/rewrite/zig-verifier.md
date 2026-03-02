@@ -32,8 +32,6 @@ with explicit hard-fail behavior for unsupported native paths.
 - CLI surface: `crimson-zig replay verify <replay>` with human/json outputs,
   intrinsic replay-header claimed-stats checking, plus replay SHA-256 reporting.
 - Wasm target build + export ABI for worker-side integration.
-- Differential harness for tick-level Python-vs-Zig comparisons:
-  - `uv run crimson-zig/scripts/diff_survival_verifiers.py ...`
 - Unsupported/not-yet-ported native paths hard-fail instead of silently accepting.
 
 ## Runtime ownership model (Zig rewrite)
