@@ -6,7 +6,7 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.net.lockstep import HostLockstepState
 from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
-from crimson.sim.driver.replay_runner import run_survival_replay
+from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame
 from crimson.sim.state_types import PlayerState
@@ -99,14 +99,14 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     checkpoints1 = []
 
     with pytest.warns(ReplayGameVersionWarning):
-        result0 = run_survival_replay(
+        result0 = run_replay(
             replay,
             strict_events=True,
             checkpoints_out=checkpoints0,
             checkpoint_ticks=set(range(5)),
         )
     with pytest.warns(ReplayGameVersionWarning):
-        result1 = run_survival_replay(
+        result1 = run_replay(
             replay,
             strict_events=True,
             checkpoints_out=checkpoints1,

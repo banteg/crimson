@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Protocol, TypeAlias
 
 import msgspec
 
@@ -171,6 +172,7 @@ class RushDeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
+    use_dt_frame_ms_i32: bool = True
     elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
 
@@ -183,8 +185,15 @@ class RushDeterministicSession(msgspec.Struct):
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
         dt_frame = float(dt_frame)
+        normalized_inputs = inputs
+        if inputs is not None:
+            normalized_inputs = [
+                (msgspec.structs.replace(player_input, reload_pressed=False) if bool(player_input.reload_pressed) else player_input)
+                for player_input in inputs
+            ]
+
         dt_ms_i32 = int(round(float(dt_frame) * 1000.0))
-        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
+        if bool(self.use_dt_frame_ms_i32) and dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
             dt_ms_i32 = int(dt_frame_ms_i32)
         if dt_ms_i32 < 1:
             dt_ms_i32 = 1
@@ -227,7 +236,7 @@ class RushDeterministicSession(msgspec.Struct):
                 perk_progression_enabled=False,
                 game_tune_started=bool(self.game_tune_started),
             ),
-            inputs=inputs,
+            inputs=normalized_inputs,
             fx_queue=self.fx_queue,
             fx_queue_rotated=self.fx_queue_rotated,
             defer_camera_shake_update=False,
@@ -402,3 +411,19 @@ class QuestDeterministicSession(msgspec.Struct):
             play_hit_sfx=bool(play_hit_sfx),
             play_completion_music=bool(play_completion_music),
         )
+
+
+DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterministicSessionTick
+
+
+class DeterministicSession(Protocol):
+    elapsed_ms: int | float
+
+    def step_tick(
+        self,
+        *,
+        dt_frame: float,
+        dt_frame_ms_i32: int | None = None,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> DeterministicSessionStepTick: ...

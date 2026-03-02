@@ -7,29 +7,24 @@ import msgspec
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import perk_display_name
-from ...quests import quest_by_level
-from ...quests.runtime import build_quest_spawn_table
-from ...quests.types import QuestContext
-from ...replay import (
-    PerkMenuOpenEvent,
-    Replay,
-    apply_replay_bootstrap,
-    unpack_tick_inputs,
-)
-from ...weapon_runtime import weapon_assign_player
+from ...replay import PerkMenuOpenEvent, Replay
 from ...weapons import WeaponId, weapon_display_name
-from ..sessions import QuestDeterministicSession, RushDeterministicSession, SurvivalDeterministicSession
 from ..state_types import BonusPickupEvent, PlayerState
-from ..world_state import WorldState
-from .replay_events import apply_replay_tick_events, partition_tick_events
-from .replay_timing import resolve_dt_frame, resolve_dt_frame_ms_i32, should_apply_world_dt_steps_for_replay
-from .setup import (
-    ReplayRunnerError,
-    build_damage_scale_by_type,
-    build_empty_fx_queues,
-    reset_players,
-    status_from_snapshot,
+from .playback_driver import (
+    PlaybackDriver,
+    PlaybackDriverConfig,
+    PlaybackDriverOptions,
+    PlaybackEventConfig,
+    PlaybackSessionConfigs,
+    PlaybackSessionDefaults,
+    PlaybackTerminalOutcome,
+    PlaybackTickOutcome,
+    PlaybackTimingConfig,
+    QuestSessionConfig,
+    RushSessionConfig,
+    SurvivalSessionConfig,
 )
+from .setup import ReplayRunnerError
 
 _EPSILON = 1e-6
 _CORE_EVENT_KINDS = frozenset(
@@ -43,9 +38,6 @@ _CORE_EVENT_KINDS = frozenset(
         "player_death",
     ),
 )
-
-RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-RUSH_FORCED_AMMO = 30.0
 
 
 class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
@@ -72,26 +64,6 @@ class _PlayerSnapshot(msgspec.Struct, frozen=True):
     experience: int
     weapon_id: WeaponId
     perk_counts: tuple[int, ...]
-
-
-def _resolve_quest_level(replay: Replay) -> str:
-    quest_level = str(replay.header.quest_level)
-    if quest_level:
-        return str(quest_level)
-
-    seed = int(replay.header.seed)
-    major = seed // 100
-    minor = seed % 100
-    if 1 <= int(major) <= 5 and 1 <= int(minor) <= 10:
-        return f"{major}.{minor}"
-    return ""
-
-
-def _enforce_rush_loadout(world: WorldState) -> None:
-    for player in world.players:
-        if player.weapon.weapon_id != RUSH_WEAPON_ID:
-            weapon_assign_player(player, RUSH_WEAPON_ID)
-        player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
 
 def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
@@ -361,7 +333,7 @@ def _validate_player_filter(*, replay: Replay, player_index: int | None) -> int 
     return int(idx)
 
 
-def _run_survival_replay_info(
+def _run_replay_info(
     replay: Replay,
     *,
     max_ticks: int | None,
@@ -369,489 +341,111 @@ def _run_survival_replay_info(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> ReplayInfoResult:
-    tick_rate = int(replay.header.tick_rate)
-    if tick_rate <= 0:
-        raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
-    dt_frame = 1.0 / float(tick_rate)
+    mode = int(replay.header.game_mode_id)
+    if mode not in (int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)):
+        raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
 
-    world_size = float(replay.header.world_size)
-    world = WorldState.build(
-        world_size=world_size,
-        demo_mode_active=False,
-        hardcore=bool(replay.header.hardcore),
-        difficulty_level=int(replay.header.difficulty_level),
-        preserve_bugs=bool(replay.header.preserve_bugs),
+    options = PlaybackDriverOptions(
+        max_ticks=max_ticks,
+        trace_rng=False,
+        version_mismatch_action=None,
     )
-    reset_players(world.players, world_size=world_size, player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-    apply_replay_bootstrap(replay.header, rng=world.state.rng, world_size=float(world_size), strict=True)
-
-    events_by_tick: dict[int, list[object]] = {}
-    for event in replay.events:
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
-
-    apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
-        original_capture_replay=False,
-        dt_frame_overrides=None,
-        dt_frame_ms_i32_overrides=None,
-    )
-    fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = SurvivalDeterministicSession(
-        world=world,
-        world_size=float(world_size),
-        damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        detail_preset=int(replay.header.detail_preset),
-        fx_toggle=int(replay.header.fx_toggle),
-        game_tune_started=False,
-        apply_world_dt_steps=bool(apply_world_dt_steps),
-        clear_fx_queues_each_tick=True,
-    )
-
-    timeline: list[ReplayInfoTimelineEvent] = []
-    inputs = replay.inputs
-    tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
-    for tick_index in range(tick_limit):
-        world.state.game_mode = int(GameMode.SURVIVAL)
-        world.state.demo_mode_active = False
-        before = _capture_snapshots(world.players)
-
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(dt_frame),
-            dt_frame_overrides=None,
-        )
-        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32_overrides=None,
-        )
-        tick_events = events_by_tick.get(int(tick_index), [])
-        pre_step_events, post_step_events = partition_tick_events(
-            tick_events,
+    config = PlaybackDriverConfig(
+        timing=PlaybackTimingConfig(),
+        events=PlaybackEventConfig(
+            strict_events=bool(strict_events),
             defer_menu_open=False,
-        )
-
-        apply_replay_tick_events(
-            pre_step_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.SURVIVAL),
-            strict_events=bool(strict_events),
-        )
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=unpack_tick_inputs(inputs[tick_index]),
-            trace_rng=False,
-        )
-        if post_step_events:
-            apply_replay_tick_events(
-                post_step_events,
-                tick_index=int(tick_index),
-                dt_frame=float(dt_tick),
-                world=world,
-                game_mode_id=int(GameMode.SURVIVAL),
-                strict_events=bool(strict_events),
-            )
-        after = _capture_snapshots(world.players)
-
-        elapsed_ms = int(tick.elapsed_ms)
-        _append_extra_replay_events(
-            tick_events=pre_step_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-        _append_bonus_pickup_events(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            pickups=tick.step.events.pickups,
-            preserve_bugs=bool(replay.header.preserve_bugs),
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-        if len(tick.step.events.deaths) > 0:
-            _append_event(
-                timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
-                kind="creature_deaths",
-                player_index=None,
-                detail=f"creature deaths={len(tick.step.events.deaths)}",
-                data={"count": int(len(tick.step.events.deaths))},
-                player_filter=player_filter,
-                include_extra_events=include_extra_events,
-            )
-        _append_extra_replay_events(
-            tick_events=post_step_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-        _append_snapshot_diff_events(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            before=before,
-            after=after,
-            timeline=timeline,
-            preserve_bugs=bool(replay.header.preserve_bugs),
-            fx_toggle=int(replay.header.fx_toggle),
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-    else:
-        tick_index = tick_limit
-
-    if int(tick_index) == int(len(inputs)):
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(dt_frame),
-            dt_frame_overrides=None,
-        )
-        terminal_events = events_by_tick.get(int(tick_index), [])
-        apply_replay_tick_events(
-            terminal_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.SURVIVAL),
-            strict_events=bool(strict_events),
-        )
-        _append_extra_replay_events(
-            tick_events=terminal_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(session.elapsed_ms),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-
-    return ReplayInfoResult(
-        game_mode_id=int(GameMode.SURVIVAL),
-        tick_rate=int(tick_rate),
-        ticks_simulated=int(tick_index),
-        elapsed_ms=int(session.elapsed_ms),
-        player_count=int(len(world.players)),
-        timeline=timeline,
-    )
-
-
-def _run_rush_replay_info(
-    replay: Replay,
-    *,
-    max_ticks: int | None,
-    player_filter: int | None,
-    include_extra_events: bool,
-) -> ReplayInfoResult:
-    events_by_tick: dict[int, list[object]] = {}
-    for event in replay.events:
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
-
-    tick_rate = int(replay.header.tick_rate)
-    if tick_rate <= 0:
-        raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
-    dt_frame = 1.0 / float(tick_rate)
-
-    world_size = float(replay.header.world_size)
-    world = WorldState.build(
-        world_size=world_size,
-        demo_mode_active=False,
-        hardcore=bool(replay.header.hardcore),
-        difficulty_level=int(replay.header.difficulty_level),
-        preserve_bugs=bool(replay.header.preserve_bugs),
-    )
-    reset_players(world.players, world_size=world_size, player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-    apply_replay_bootstrap(replay.header, rng=world.state.rng, world_size=float(world_size), strict=True)
-    _enforce_rush_loadout(world)
-
-    fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = RushDeterministicSession(
-        world=world,
-        world_size=float(world_size),
-        damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        detail_preset=int(replay.header.detail_preset),
-        fx_toggle=int(replay.header.fx_toggle),
-        game_tune_started=False,
-        clear_fx_queues_each_tick=True,
-        enforce_loadout=lambda: _enforce_rush_loadout(world),
-    )
-
-    timeline: list[ReplayInfoTimelineEvent] = []
-    inputs = replay.inputs
-    tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
-    for tick_index in range(tick_limit):
-        world.state.game_mode = int(GameMode.RUSH)
-        world.state.demo_mode_active = False
-        before = _capture_snapshots(world.players)
-
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(dt_frame),
-            dt_frame_overrides=None,
-        )
-        tick_events = events_by_tick.get(int(tick_index), [])
-        apply_replay_tick_events(
-            tick_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.RUSH),
-            strict_events=True,
-        )
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            inputs=[
-                msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])
-            ],
-            trace_rng=False,
-        )
-        after = _capture_snapshots(world.players)
-
-        elapsed_ms = int(tick.elapsed_ms)
-        _append_bonus_pickup_events(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            pickups=tick.step.events.pickups,
-            preserve_bugs=bool(replay.header.preserve_bugs),
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-        if len(tick.step.events.deaths) > 0:
-            _append_event(
-                timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
-                kind="creature_deaths",
-                player_index=None,
-                detail=f"creature deaths={len(tick.step.events.deaths)}",
-                data={"count": int(len(tick.step.events.deaths))},
-                player_filter=player_filter,
-                include_extra_events=include_extra_events,
-            )
-        _append_snapshot_diff_events(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            before=before,
-            after=after,
-            timeline=timeline,
-            preserve_bugs=bool(replay.header.preserve_bugs),
-            fx_toggle=int(replay.header.fx_toggle),
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-    else:
-        tick_index = tick_limit
-
-    apply_replay_tick_events(
-        events_by_tick.get(int(tick_index), []),
-        tick_index=int(tick_index),
-        dt_frame=float(dt_frame),
-        world=world,
-        game_mode_id=int(GameMode.RUSH),
-        strict_events=True,
-    )
-
-    return ReplayInfoResult(
-        game_mode_id=int(GameMode.RUSH),
-        tick_rate=int(tick_rate),
-        ticks_simulated=int(tick_index),
-        elapsed_ms=int(session.elapsed_ms),
-        player_count=int(len(world.players)),
-        timeline=timeline,
-    )
-
-
-def _run_quest_replay_info(
-    replay: Replay,
-    *,
-    max_ticks: int | None,
-    strict_events: bool,
-    player_filter: int | None,
-    include_extra_events: bool,
-) -> ReplayInfoResult:
-    tick_rate = int(replay.header.tick_rate)
-    if tick_rate <= 0:
-        raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
-    dt_frame = 1.0 / float(tick_rate)
-
-    world_size = float(replay.header.world_size)
-    world = WorldState.build(
-        world_size=world_size,
-        demo_mode_active=False,
-        hardcore=bool(replay.header.hardcore),
-        difficulty_level=int(replay.header.difficulty_level),
-        preserve_bugs=bool(replay.header.preserve_bugs),
-    )
-    reset_players(world.players, world_size=world_size, player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
-        quest_unlock_index=int(replay.header.status.quest_unlock_index),
-        quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
-        weapon_usage_counts=replay.header.status.weapon_usage_counts,
-    )
-    world.state.rng.srand(int(replay.header.seed))
-
-    quest_level = _resolve_quest_level(replay)
-    quest = quest_by_level(quest_level) if quest_level else None
-    if quest is None:
-        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
-    world.state.quest_stage_major, world.state.quest_stage_minor = quest.level_key
-    quest_start_weapon_id = quest.start_weapon_id
-    ctx = QuestContext(
-        width=int(world_size),
-        height=int(world_size),
-        player_count=int(replay.header.player_count),
-    )
-    spawn_entries = tuple(
-        build_quest_spawn_table(
-            quest,
-            ctx,
-            seed=int(replay.header.seed),
-            hardcore=bool(replay.header.hardcore),
-            full_version=True,
+            apply_terminal_tick_events=True,
+            terminal_events_use_resolved_dt=(mode != int(GameMode.RUSH)),
+        ),
+        session_defaults=PlaybackSessionDefaults(
+            clear_fx_queues_each_tick=True,
+            game_tune_started=False,
+        ),
+        sessions=PlaybackSessionConfigs(
+            survival=SurvivalSessionConfig(partition_events=True),
+            rush=RushSessionConfig(
+                strict_events_override=True,
+                enforce_loadout=True,
+                use_dt_frame_ms_i32=False,
+            ),
+            quest=QuestSessionConfig(
+                partition_events=True,
+                disable_capture_spawn_events_authoritative=True,
+                finalize_post_render_lifecycle_each_tick=True,
+                result_uses_spawn_timeline_ms=False,
+            ),
         ),
     )
-
-    for player in world.players:
-        weapon_assign_player(player, quest_start_weapon_id)
-
-    events_by_tick: dict[int, list[object]] = {}
-    for event in replay.events:
-        events_by_tick.setdefault(int(event.tick_index), []).append(event)
-
-    apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
-        original_capture_replay=False,
-        dt_frame_overrides=None,
-        dt_frame_ms_i32_overrides=None,
-    )
-    world.creatures.capture_spawn_events_authoritative = False
-
-    fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = QuestDeterministicSession(
-        world=world,
-        world_size=float(world_size),
-        damage_scale_by_type=build_damage_scale_by_type(),
-        fx_queue=fx_queue,
-        fx_queue_rotated=fx_queue_rotated,
-        spawn_entries=tuple(spawn_entries),
-        detail_preset=int(replay.header.detail_preset),
-        fx_toggle=int(replay.header.fx_toggle),
-        apply_world_dt_steps=bool(apply_world_dt_steps),
-        clear_fx_queues_each_tick=True,
-        finalize_post_render_lifecycle_each_tick=False,
-    )
-
-    inputs = replay.inputs
-    tick_limit = len(inputs) if max_ticks is None else min(len(inputs), max(0, int(max_ticks)))
-    tick_start = 0
+    driver = PlaybackDriver(replay, options, config=config)
 
     timeline: list[ReplayInfoTimelineEvent] = []
-    for tick_index in range(int(tick_start), int(tick_limit)):
-        world.state.game_mode = int(GameMode.QUESTS)
-        world.state.demo_mode_active = False
-        before = _capture_snapshots(world.players)
+    before_snapshots: list[_PlayerSnapshot] | None = None
 
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(dt_frame),
-            dt_frame_overrides=None,
-        )
-        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32_overrides=None,
-        )
-        tick_events = events_by_tick.get(int(tick_index), [])
-        pre_step_events, post_step_events = partition_tick_events(
-            tick_events,
-            defer_menu_open=False,
-        )
-        apply_replay_tick_events(
-            pre_step_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.QUESTS),
-            strict_events=bool(strict_events),
-        )
+    def _on_tick_begin(
+        tick_index: int,
+        world,
+        dt_tick: float,
+        tick_events: list[object],
+        pre_step_events: list[object],
+        post_step_events: list[object],
+    ) -> None:
+        _ = tick_index, dt_tick, tick_events, pre_step_events, post_step_events
+        nonlocal before_snapshots
+        before_snapshots = _capture_snapshots(world.players)
 
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=unpack_tick_inputs(inputs[tick_index]),
-            trace_rng=False,
-        )
-        if post_step_events:
-            apply_replay_tick_events(
-                post_step_events,
-                tick_index=int(tick_index),
-                dt_frame=float(dt_tick),
-                world=world,
-                game_mode_id=int(GameMode.QUESTS),
-                strict_events=bool(strict_events),
+    def _on_tick_end(outcome: PlaybackTickOutcome) -> None:
+        nonlocal before_snapshots
+        before = before_snapshots if before_snapshots is not None else _capture_snapshots(outcome.world.players)
+        after = _capture_snapshots(outcome.world.players)
+        before_snapshots = None
+
+        elapsed_ms = int(outcome.elapsed_ms)
+        if int(mode) != int(GameMode.RUSH):
+            _append_extra_replay_events(
+                tick_events=outcome.pre_step_events,
+                tick_index=int(outcome.tick_index),
+                elapsed_ms=int(elapsed_ms),
+                timeline=timeline,
+                player_filter=player_filter,
+                include_extra_events=include_extra_events,
             )
-        world.creatures.finalize_post_render_lifecycle()
-        after = _capture_snapshots(world.players)
 
-        elapsed_ms = int(tick.elapsed_ms)
-        _append_extra_replay_events(
-            tick_events=pre_step_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
         _append_bonus_pickup_events(
-            tick_index=int(tick_index),
+            tick_index=int(outcome.tick_index),
             elapsed_ms=int(elapsed_ms),
             timeline=timeline,
-            pickups=tick.step.events.pickups,
+            pickups=outcome.step_events.pickups,
             preserve_bugs=bool(replay.header.preserve_bugs),
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
-        if len(tick.step.events.deaths) > 0:
+
+        if len(outcome.step_events.deaths) > 0:
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
+                tick_index=int(outcome.tick_index),
                 elapsed_ms=int(elapsed_ms),
                 kind="creature_deaths",
                 player_index=None,
-                detail=f"creature deaths={len(tick.step.events.deaths)}",
-                data={"count": int(len(tick.step.events.deaths))},
+                detail=f"creature deaths={len(outcome.step_events.deaths)}",
+                data={"count": int(len(outcome.step_events.deaths))},
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
-        _append_extra_replay_events(
-            tick_events=post_step_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
+
+        if int(mode) != int(GameMode.RUSH):
+            _append_extra_replay_events(
+                tick_events=outcome.post_step_events,
+                tick_index=int(outcome.tick_index),
+                elapsed_ms=int(elapsed_ms),
+                timeline=timeline,
+                player_filter=player_filter,
+                include_extra_events=include_extra_events,
+            )
+
         _append_snapshot_diff_events(
-            tick_index=int(tick_index),
+            tick_index=int(outcome.tick_index),
             elapsed_ms=int(elapsed_ms),
             before=before,
             after=after,
@@ -861,39 +455,32 @@ def _run_quest_replay_info(
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
-    else:
-        tick_index = tick_limit
 
-    if int(tick_index) == int(len(inputs)):
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(dt_frame),
-            dt_frame_overrides=None,
-        )
-        terminal_events = events_by_tick.get(int(tick_index), [])
-        apply_replay_tick_events(
-            terminal_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.QUESTS),
-            strict_events=bool(strict_events),
-        )
+    def _on_terminal(terminal: PlaybackTerminalOutcome) -> None:
+        if int(mode) == int(GameMode.RUSH):
+            return
+        session_elapsed = int(float(driver.session.elapsed_ms))
         _append_extra_replay_events(
-            tick_events=terminal_events,
-            tick_index=int(tick_index),
-            elapsed_ms=int(session.elapsed_ms),
+            tick_events=terminal.terminal_events,
+            tick_index=int(terminal.tick_index),
+            elapsed_ms=int(session_elapsed),
             timeline=timeline,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
 
+    run_result = driver.run_to_completion(
+        tick_begin_observer=_on_tick_begin,
+        tick_end_observer=_on_tick_end,
+        terminal_observer=_on_terminal,
+    )
+
     return ReplayInfoResult(
-        game_mode_id=int(GameMode.QUESTS),
-        tick_rate=int(tick_rate),
-        ticks_simulated=int(tick_index),
-        elapsed_ms=int(session.elapsed_ms),
-        player_count=int(len(world.players)),
+        game_mode_id=int(mode),
+        tick_rate=int(replay.header.tick_rate),
+        ticks_simulated=int(driver.tick_limit),
+        elapsed_ms=int(run_result.elapsed_ms),
+        player_count=int(len(driver.world.players)),
         timeline=timeline,
     )
 
@@ -907,32 +494,13 @@ def run_replay_info(
     include_extra_events: bool = True,
 ) -> ReplayInfoResult:
     player_filter = _validate_player_filter(replay=replay, player_index=player_index)
-
-    mode = int(replay.header.game_mode_id)
-    if mode == int(GameMode.SURVIVAL):
-        return _run_survival_replay_info(
-            replay,
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            player_filter=player_filter,
-            include_extra_events=bool(include_extra_events),
-        )
-    if mode == int(GameMode.RUSH):
-        return _run_rush_replay_info(
-            replay,
-            max_ticks=max_ticks,
-            player_filter=player_filter,
-            include_extra_events=bool(include_extra_events),
-        )
-    if mode == int(GameMode.QUESTS):
-        return _run_quest_replay_info(
-            replay,
-            max_ticks=max_ticks,
-            strict_events=bool(strict_events),
-            player_filter=player_filter,
-            include_extra_events=bool(include_extra_events),
-        )
-    raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
+    return _run_replay_info(
+        replay,
+        max_ticks=max_ticks,
+        strict_events=bool(strict_events),
+        player_filter=player_filter,
+        include_extra_events=bool(include_extra_events),
+    )
 
 
 def event_counts_by_kind(timeline: list[ReplayInfoTimelineEvent]) -> dict[str, int]:

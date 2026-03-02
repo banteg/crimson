@@ -4,7 +4,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayGameVersionWarning
-from crimson.sim.driver.replay_runner import run_survival_replay
+from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_survival_replay
 
@@ -14,9 +14,9 @@ def test_survival_runner_is_deterministic() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        result0 = run_survival_replay(replay)
+        result0 = run_replay(replay)
     with pytest.warns(ReplayGameVersionWarning):
-        result1 = run_survival_replay(replay)
+        result1 = run_replay(replay)
 
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.SURVIVAL)
@@ -34,7 +34,7 @@ def test_survival_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        result = run_survival_replay(
+        result = run_replay(
             replay,
             dt_frame_overrides={0: 0.5},
         )
@@ -47,11 +47,11 @@ def test_survival_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        baseline = run_survival_replay(replay)
+        baseline = run_replay(replay)
     with pytest.warns(ReplayGameVersionWarning):
-        shifted = run_survival_replay(replay, inter_tick_rand_draws=1)
+        shifted = run_replay(replay, inter_tick_rand_draws=1)
     with pytest.warns(ReplayGameVersionWarning):
-        shifted_again = run_survival_replay(replay, inter_tick_rand_draws=1)
+        shifted_again = run_replay(replay, inter_tick_rand_draws=1)
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -65,7 +65,7 @@ def test_survival_runner_rejects_invalid_perk_pick_event() -> None:
 
     with pytest.warns(ReplayGameVersionWarning):
         with pytest.raises(ReplayRunnerError, match="perk_pick failed"):
-            run_survival_replay(replay)
+            run_replay(replay)
 
 
 def test_survival_runner_checkpoints_capture_rng_marks() -> None:
@@ -74,7 +74,7 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
     checkpoints = []
 
     with pytest.warns(ReplayGameVersionWarning):
-        run_survival_replay(
+        run_replay(
             replay,
             strict_events=False,
             checkpoints_out=checkpoints,
@@ -116,7 +116,7 @@ def test_survival_runner_trace_rng_captures_presentation_marks() -> None:
     checkpoints = []
 
     with pytest.warns(ReplayGameVersionWarning):
-        run_survival_replay(
+        run_replay(
             replay,
             strict_events=False,
             trace_rng=True,
@@ -137,7 +137,7 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
         rows_by_tick[int(tick_index)] = list(draws)
 
     with pytest.warns(ReplayGameVersionWarning):
-        run_survival_replay(
+        run_replay(
             replay,
             strict_events=False,
             trace_rng=True,
@@ -158,7 +158,7 @@ def test_survival_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        result = run_survival_replay(replay, strict_events=False)
+        result = run_replay(replay, strict_events=False)
 
     assert result.ticks == 3
 
@@ -172,9 +172,9 @@ def test_survival_runner_applies_terminal_tick_events() -> None:
     replay_without_terminal_event = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        with_terminal_event = run_survival_replay(replay_with_terminal_event)
+        with_terminal_event = run_replay(replay_with_terminal_event)
     with pytest.warns(ReplayGameVersionWarning):
-        without_terminal_event = run_survival_replay(replay_without_terminal_event)
+        without_terminal_event = run_replay(replay_without_terminal_event)
 
     assert with_terminal_event.rng_state != without_terminal_event.rng_state
 
@@ -186,7 +186,7 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
     checkpoints = []
 
     with pytest.warns(ReplayGameVersionWarning):
-        run_survival_replay(
+        run_replay(
             replay,
             strict_events=True,
             checkpoints_out=checkpoints,
