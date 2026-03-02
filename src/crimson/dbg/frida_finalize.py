@@ -290,10 +290,12 @@ def _replay_tick_inputs_from_row(
 def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
     status = channels.sim_state.gameplay.status
     counts = [int(value) for value in status.weapon_usage_counts]
-    if len(counts) < int(WEAPON_USAGE_COUNT):
-        counts.extend([0] * (int(WEAPON_USAGE_COUNT) - len(counts)))
-    elif len(counts) > int(WEAPON_USAGE_COUNT):
-        counts = counts[: int(WEAPON_USAGE_COUNT)]
+    expected_usage_count = int(WEAPON_USAGE_COUNT)
+    if len(counts) != expected_usage_count:
+        raise FridaFinalizeError(
+            "sim_state.gameplay.status.weapon_usage_counts length mismatch: "
+            f"expected {expected_usage_count}, got {len(counts)}",
+        )
     return ReplayStatusSnapshot(
         quest_unlock_index=int(status.quest_unlock_index),
         quest_unlock_index_full=int(status.quest_unlock_index_full),

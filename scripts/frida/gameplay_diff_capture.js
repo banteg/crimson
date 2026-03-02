@@ -33,12 +33,6 @@ const BONUS_ID_WEAPON_POWER_UP = "4";
 const BONUS_ID_DOUBLE_EXPERIENCE = "6";
 const BONUS_ID_REFLEX_BOOST = "9";
 const BONUS_ID_FREEZE = "11";
-const ENTITY_KIND_CODES = {
-  creature: 1,
-  projectile: 2,
-  secondary_projectile: 3,
-  bonus: 4,
-};
 const TERRAIN_DENSITY_BASE = 800;
 const TERRAIN_DENSITY_OVERLAY = 0x23;
 const TERRAIN_DENSITY_DETAIL = 0x0f;
@@ -557,10 +551,8 @@ function nextEntityUid(kind, index) {
   }
   state.seenInTick[key] = true;
   const generation = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
-  const kindCode = ENTITY_KIND_CODES[kind] == null ? 0 : ENTITY_KIND_CODES[kind] & 0xf;
-  const uid = kindCode * 562949953421312 + (generation & 0xfffff) * 536870912 + (idx & 0x1fffffff);
   return {
-    uid: uid,
+    uid: idx,
     generation: generation,
   };
 }
@@ -1044,10 +1036,6 @@ function runPlayerCountFromTick(tickObj) {
 function canonicalRngMarksFromStream(checkpoint, rngStreamRows) {
   const rows = Array.isArray(rngStreamRows) ? rngStreamRows : [];
   const callsTotal = rows.length | 0;
-  let inferredTotal = 0;
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i] && rows[i].inferred === true) inferredTotal += 1;
-  }
 
   const firstRow = rows.length > 0 ? rows[0] : null;
   const lastRow = rows.length > 0 ? rows[rows.length - 1] : null;
@@ -1055,7 +1043,6 @@ function canonicalRngMarksFromStream(checkpoint, rngStreamRows) {
 
   return {
     calls_total: callsTotal | 0,
-    inferred_total: inferredTotal | 0,
     first_value_15: intOr(firstRow && firstRow.value_15, -1),
     last_value_15: intOr(lastRow && lastRow.value_15, -1),
     first_state_before_u32: intOr(firstRow && firstRow.state_before_u32, -1),
@@ -1320,7 +1307,6 @@ function rngStreamFromTick(tickObj) {
       state_after_u32: stateAfter,
       caller_static: row.caller_static == null ? null : String(row.caller_static),
       branch_id: row.branch_id == null ? null : String(row.branch_id),
-      inferred: false,
     });
   }
   return out;

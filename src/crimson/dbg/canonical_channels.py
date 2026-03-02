@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import cast
 
 import msgspec
@@ -66,7 +65,6 @@ class RngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     state_after_u32: int
     caller_static: str | None = None
     branch_id: str | None = None
-    inferred: bool = False
 
 
 class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -144,10 +142,7 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
 
 
 def bonus_timer_ms(value: float) -> int:
-    ms = int(round(float(value) * 1000.0))
-    if ms < 0:
-        return 0
-    return int(ms)
+    return int(round(float(value) * 1000.0))
 
 
 def _to_builtin(value: object) -> object:
@@ -177,32 +172,3 @@ def validate_entity_samples(value: object, *, field: str) -> dict[str, object]:
         raise ValueError(f"{field} must be a valid EntitySamplesSnapshot payload") from exc
     return cast("dict[str, object]", _to_builtin(validated))
 
-
-def status_payload_from_mapping(
-    status: Mapping[str, object] | None,
-    *,
-    usage_count: int,
-) -> SnapshotStatus:
-    expected_usage_count = max(0, int(usage_count))
-    status_payload: dict[str, object] = {
-        "quest_unlock_index": 0,
-        "quest_unlock_index_full": 0,
-        "weapon_usage_counts": [0] * expected_usage_count,
-    }
-    if status is not None:
-        status_payload["quest_unlock_index"] = status.get("quest_unlock_index", 0)
-        status_payload["quest_unlock_index_full"] = status.get("quest_unlock_index_full", 0)
-        status_payload["weapon_usage_counts"] = status.get(
-            "weapon_usage_counts",
-            [0] * expected_usage_count,
-        )
-    try:
-        validated = msgspec.convert(status_payload, type=SnapshotStatus)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise ValueError("status payload must be a valid SnapshotStatus object") from exc
-    counts = list(validated.weapon_usage_counts)
-    if len(counts) < int(expected_usage_count):
-        counts.extend([0] * (int(expected_usage_count) - len(counts)))
-    elif len(counts) > int(expected_usage_count):
-        counts = counts[: int(expected_usage_count)]
-    return msgspec.structs.replace(validated, weapon_usage_counts=counts)

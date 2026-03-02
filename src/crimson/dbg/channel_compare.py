@@ -1,71 +1,16 @@
 from __future__ import annotations
 
-import json
 from typing import cast
 
 import msgspec
-from deepdiff import DeepDiff
 
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
-
-_DEEPDIFF_CATEGORY_ORDER: tuple[str, ...] = (
-    "type_changes",
-    "values_changed",
-    "dictionary_item_removed",
-    "iterable_item_removed",
-    "set_item_removed",
-    "dictionary_item_added",
-    "iterable_item_added",
-    "set_item_added",
-)
+from .strict_compare import strict_mismatch_payload
 
 
 def _to_builtin_obj(value: object) -> dict[str, object]:
     return cast("dict[str, object]", msgspec.to_builtins(value))
-
-
-def _deepdiff_payload(
-    expected: object,
-    actual: object,
-) -> tuple[dict[str, object], int]:
-    deep = DeepDiff(
-        expected,
-        actual,
-        ignore_order=False,
-        verbose_level=2,
-    )
-    raw_json = json.loads(str(deep.to_json()))
-    if not isinstance(raw_json, dict):
-        raise TypeError("deepdiff payload must decode to object")
-    raw = cast("dict[str, object]", raw_json)
-
-    out: dict[str, object] = {}
-    total = 0
-    for category in _DEEPDIFF_CATEGORY_ORDER:
-        payload = raw.get(category)
-        if payload is None:
-            continue
-        match payload:
-            case dict() as mapping:
-                keep: dict[str, object] = {}
-                for key in sorted(mapping.keys(), key=str):
-                    if not isinstance(key, str):
-                        raise TypeError(f"deepdiff dict category {category} had non-string key")
-                    keep[str(key)] = mapping[key]
-                    total += 1
-                if keep:
-                    out[category] = keep
-            case list() as rows:
-                keep_rows: list[object] = []
-                for item in rows:
-                    keep_rows.append(item)
-                    total += 1
-                if keep_rows:
-                    out[category] = keep_rows
-            case _:
-                raise TypeError(f"unsupported deepdiff category payload for {category}: {type(payload).__name__}")
-    return out, total
 
 
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, dict[str, object] | None]:
@@ -113,11 +58,11 @@ def compare_sim_state(
 ) -> tuple[bool, dict[str, object] | None]:
     if expected_obj == actual_obj:
         return True, None
-    payload, diff_count = _deepdiff_payload(expected_obj, actual_obj)
+    payload, diff_count, pretty = strict_mismatch_payload(expected_obj, actual_obj, root_path="sim_state")
     return False, {
         "diff_count": int(diff_count),
-        "payload": payload,
-        "pretty": json.dumps(payload, sort_keys=True, indent=2),
+        "mismatches": payload,
+        "pretty": pretty,
     }
 
 
@@ -148,16 +93,16 @@ def compare_entity_samples(
             detail[f"{kind}_count"] = {"expected": exp_total, "actual": act_total}
         if exp_dupes or act_dupes:
             detail[f"{kind}_duplicate_uids"] = {
-                "expected": exp_dupes[:8],
-                "actual": act_dupes[:8],
+                "expected": exp_dupes,
+                "actual": act_dupes,
             }
 
         missing = sorted(uid for uid in exp_map if uid not in act_map)
         extra = sorted(uid for uid in act_map if uid not in exp_map)
         if missing or extra:
             detail[f"{kind}_uids"] = {
-                "missing": missing[:16],
-                "extra": extra[:16],
+                "missing": missing,
+                "extra": extra,
             }
 
         for uid in sorted(set(exp_map) & set(act_map)):
@@ -165,13 +110,18 @@ def compare_entity_samples(
             actual_row = act_map[uid]
             if expected_row == actual_row:
                 continue
-            payload, diff_count = _deepdiff_payload(expected_row, actual_row)
+            row_path = f"entity_samples.{kind}[uid={uid}]"
+            payload, diff_count, pretty = strict_mismatch_payload(
+                expected_row,
+                actual_row,
+                root_path=row_path,
+            )
             row_diffs.append(
                 {
-                    "path": f"entity_samples.{kind}[uid={uid}]",
+                    "path": row_path,
                     "diff_count": int(diff_count),
-                    "payload": payload,
-                    "pretty": json.dumps(payload, sort_keys=True, indent=2),
+                    "mismatches": payload,
+                    "pretty": pretty,
                 },
             )
 

@@ -10,6 +10,7 @@ from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_
 from crimson.dbg.rng import canonical_rng_marks
 from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
+from crimson.replay.types import WEAPON_USAGE_COUNT
 from crimson.sim.bootstrap import run_terrain_bootstrap
 from grim.rand import CrtRand
 
@@ -60,7 +61,7 @@ def _sim_state_stub(
             "status": {
                 "quest_unlock_index": 0,
                 "quest_unlock_index_full": 0,
-                "weapon_usage_counts": [],
+                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
             },
         },
         "players": [],
