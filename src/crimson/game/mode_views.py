@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, cast
 
+from crimson.quest_level import QuestLevel
 from grim.audio import stop_music
 from grim.view import ViewContext
 
@@ -331,8 +332,12 @@ class QuestGameView(_BaseModeGameView):
 
     def _on_open_end(self) -> None:
         level = self.state.pending_quest_level
-        if level is not None:
-            cast(_QuestModeRuntime, self._mode).prepare_new_run(level, status=self.state.status)
+        if level is None:
+            return
+        parsed = QuestLevel.parse(level)
+        normalized = parsed.to_string()
+        self.state.pending_quest_level = normalized
+        cast(_QuestModeRuntime, self._mode).prepare_new_run(normalized, status=self.state.status)
 
     def _handle_close_requested(self) -> None:
         outcome = cast(_QuestModeRuntime, self._mode).consume_outcome()

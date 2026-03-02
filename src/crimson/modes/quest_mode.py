@@ -8,6 +8,7 @@ from typing import Protocol, cast
 
 import msgspec
 
+from crimson.quest_level import QuestLevel
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.config import (
@@ -141,12 +142,8 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
 
 
 def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
-    tier = int(major)
-    quest = int(minor)
-    global_index = (tier - 1) * 10 + (quest - 1)
-    if not (0 <= global_index < 40):
-        return None
-    return global_index + 11
+    level = QuestLevel.from_parts(major, minor)
+    return level.tracked_games_counter_index
 
 
 class QuestMode(BaseGameplayMode):
@@ -411,7 +408,7 @@ class QuestMode(BaseGameplayMode):
         self._bind_world()
         self._local_input.reset(players=self.world.players)
         self.bind_status(status)
-        self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
+        self.state.quest_level = QuestLevel.from_parts(*quest.level_key)
 
         default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
         terrain_ids = quest.terrain_ids

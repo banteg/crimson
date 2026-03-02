@@ -9,6 +9,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
+from ..quest_level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
 
 
@@ -74,6 +75,10 @@ class NetworkSessionConfig(msgspec.Struct, frozen=True):
     reconnect_timeout_ms: int = 15_000
     input_delay_ticks: int = 1
     preserve_bugs: bool = False
+
+    @property
+    def quest_level_value(self) -> QuestLevel | None:
+        return QuestLevel.try_parse(self.quest_level)
 
     def lockstep_endpoint(self) -> LockstepEndpoint:
         endpoint = self.endpoint
@@ -157,6 +162,14 @@ class GameState(msgspec.Struct):
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
+
+    @property
+    def pending_quest_level_value(self) -> QuestLevel | None:
+        return QuestLevel.try_parse(self.pending_quest_level)
+
+    @pending_quest_level_value.setter
+    def pending_quest_level_value(self, value: QuestLevel | None) -> None:
+        self.pending_quest_level = value.to_string() if value is not None else None
 
 
 __all__ = [

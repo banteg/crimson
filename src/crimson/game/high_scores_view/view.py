@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import msgspec
+
+from crimson.quest_level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -585,9 +588,7 @@ class HighScoresView:
         # Clamp to a sane range.
         major = max(1, min(5, major))
         minor = max(1, min(10, minor))
-        global_index = (major - 1) * 10 + (minor - 1)
-        if global_index < 0:
-            global_index = 0
+        global_index = int(QuestLevel.from_parts(major, minor).global_index)
 
         unlock = int(self.state.status.quest_unlock_index_full) if self.state.config.hardcore else int(self.state.status.quest_unlock_index)
         max_index = max(0, min(49, unlock))
@@ -605,12 +606,11 @@ class HighScoresView:
 
         def _set_level(index: int) -> None:
             index = max(0, min(max_index, int(index)))
-            new_major = index // 10 + 1
-            new_minor = index % 10 + 1
+            level = QuestLevel.from_global_index(index)
+            new_major, new_minor = level.to_stage_pair()
             request.quest_stage_major = int(new_major)
             request.quest_stage_minor = int(new_minor)
-            level = f"{int(new_major)}.{int(new_minor)}"
-            self.state.config.quest_level = level
+            self.state.config.quest_level = level.to_string()
             self.state.config.quest_stage_major = int(new_major)
             self.state.config.quest_stage_minor = int(new_minor)
             self._dirty = True

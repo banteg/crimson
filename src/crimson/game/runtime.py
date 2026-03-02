@@ -7,6 +7,7 @@ import time
 import webbrowser
 from pathlib import Path
 
+from crimson.quest_level import QuestLevel
 from grim import music
 from grim.app import RunViewHooks, run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path
@@ -33,7 +34,6 @@ from ..frontend.assets import _ensure_texture_cache
 from ..game_modes import GameMode
 from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
-from ..quests.types import parse_level
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState
@@ -240,12 +240,10 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         quest_minor = 0
         match mode_id:
             case GameMode.QUESTS:
-                level = state.pending_quest_level or ""
-                if level:
-                    try:
-                        quest_major, quest_minor = parse_level(level)
-                    except ValueError:
-                        quest_major, quest_minor = 0, 0
+                level_text = str(state.pending_quest_level or "")
+                if level_text:
+                    level = QuestLevel.parse(level_text)
+                    quest_major, quest_minor = level.to_stage_pair()
             case _:
                 pass
         info = demo_trial_overlay_info(

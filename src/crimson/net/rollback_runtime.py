@@ -8,6 +8,8 @@ from typing import Literal, cast
 
 import msgspec
 
+from crimson.quest_level import normalize_quest_level_text
+
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
 from .lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
@@ -132,6 +134,7 @@ class RollbackRuntime(msgspec.Struct):
     _neutral_input: PackedPlayerInput = msgspec.field(default_factory=lambda: [0.0, 0.0, 0.0, 0.0, 0])
 
     def __post_init__(self) -> None:
+        self.cfg.quest_level = normalize_quest_level_text(self.cfg.quest_level)
         self.transport = RelayUdpTransport(bind_host="0.0.0.0", bind_port=0)
 
     @property
