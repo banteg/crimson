@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import msgspec
-
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -62,6 +60,7 @@ from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.transitions import _draw_screen_fade
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
+from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
 from ..types import GameState, HighScoresRequest
@@ -70,13 +69,8 @@ from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
 
 
-class _DropdownLayout(msgspec.Struct, frozen=True):
-    pos: Vec2
-    width: float
-    header_h: float
-    row_h: float
-    rows_y0: float
-    full_h: float
+class _DropdownLayout(DropdownLayoutBase, frozen=True):
+    pass
 
 
 class HighScoresView:

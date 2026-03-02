@@ -13,6 +13,7 @@ from grim.raylib_api import rl
 from ...aim_schemes import AimScheme
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
+from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..menu import (
     MENU_PANEL_HEIGHT,
@@ -94,13 +95,7 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     return CONTROLS_RIGHT_PANEL_POS_Y
 
 
-class _DropdownLayout(msgspec.Struct, frozen=True):
-    pos: Vec2
-    width: float
-    header_h: float
-    row_h: float
-    rows_y0: float
-    full_h: float
+class _DropdownLayout(DropdownLayoutBase, frozen=True):
     arrow_pos: Vec2
     arrow_size: Vec2
     text_pos: Vec2
