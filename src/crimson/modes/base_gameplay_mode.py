@@ -25,6 +25,7 @@ from ..net.protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
     ReplayStateSnapshotV2,
+    RollbackResyncV5Error,
     decode_mode_snapshot,
     encode_mode_snapshot,
 )
@@ -658,10 +659,7 @@ class BaseGameplayMode:
         tick = max(0, int(snapshot.tick_index))
         if (tick % 4) != 0:
             return
-        try:
-            payload = encode_mode_snapshot(snapshot=snapshot)
-        except Exception:
-            return
+        payload = encode_mode_snapshot(snapshot=snapshot)
         runtime.store_local_snapshot(int(tick), payload)
 
     def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
@@ -683,8 +681,8 @@ class BaseGameplayMode:
         tick_index, payload = pending
         try:
             snapshot = decode_mode_snapshot(payload)
-        except Exception:
-            runtime.error = "resync_decode_error"
+        except RollbackResyncV5Error as exc:
+            runtime.error = f"resync_decode_error:{exc}"
             return
         if str(snapshot.mode) != str(mode_name):
             runtime.error = "resync_mode_mismatch"

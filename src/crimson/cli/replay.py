@@ -573,7 +573,7 @@ def _build_replay_list_row(
 
     try:
         replay = cast("Any", load_replay_fn(replay_path.read_bytes()))
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         return (
             _ReplayListRow(
                 replay=rel,

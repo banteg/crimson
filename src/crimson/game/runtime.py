@@ -406,8 +406,8 @@ def run_game(config: GameConfig) -> None:
         )
         if state is not None:
             state.status.save_if_dirty()
-    except BaseException:
-        crash_file.write("python exception:\n")
+    except Exception as exc:
+        crash_file.write(f"python exception ({type(exc).__name__}: {exc}):\n")
         crash_file.write(traceback.format_exc())
         crash_file.write("\n")
         crash_file.flush()

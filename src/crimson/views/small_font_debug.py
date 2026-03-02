@@ -59,7 +59,7 @@ class SmallFontDebugView:
                 rl.set_texture_filter(self._vector_font.texture, VECTOR_FONT_FILTER)
                 self._vector_font_path = candidate
                 break
-            except Exception:
+            except (RuntimeError, ValueError, OSError):
                 self._vector_font = None
                 self._vector_font_path = None
         for candidate in (
@@ -74,7 +74,7 @@ class SmallFontDebugView:
                 rl.set_texture_filter(self._vector_font_alt.texture, VECTOR_FONT_FILTER)
                 self._vector_font_alt_path = candidate
                 break
-            except Exception:
+            except (RuntimeError, ValueError, OSError):
                 self._vector_font_alt = None
                 self._vector_font_alt_path = None
 
@@ -189,7 +189,7 @@ class SmallFontDebugView:
         try:
             size = rl.measure_text_ex(font, text, float(font_size_px), float(spacing))
             width = size.x
-        except Exception:
+        except (RuntimeError, ValueError):
             width = float(rl.measure_text(text, int(font_size_px)))
         line_y = pos.y + 13.0
         rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)

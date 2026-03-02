@@ -305,13 +305,14 @@ class _MixedAudioCapture:
             chunk = bytes(self._rl.ffi.buffer(buffer_data, int(byte_count)))
             self._queue.put(chunk)
             self._captured_frames += int(frame_count)
-        except Exception as exc:  # pragma: no cover - callback errors are integration-only.
+        except (BufferError, RuntimeError, TypeError, ValueError) as exc:  # pragma: no cover
             self._callback_error = exc
 
     def _raise_callback_error(self) -> None:
-        if self._callback_error is None:
+        exc = self._callback_error
+        if exc is None:
             return
-        raise ReplayRenderError(f"audio capture callback failed: {self._callback_error}")
+        raise ReplayRenderError(f"audio capture callback failed: {exc}") from exc
 
     def start(self) -> None:
         if self._attached:
