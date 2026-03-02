@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from typing import Protocol, cast
+from typing import cast
 
 import msgspec
 
@@ -56,8 +56,7 @@ from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
-from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
-from ..sim.timing import FrameTiming
+from ..sim.sessions import QuestDeterministicSession
 from ..status_snapshot import progress_status_from_game_status, replay_status_from_progress
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
@@ -91,26 +90,6 @@ _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 # Compatibility aliases used by existing monkeypatch-based tests.
 _quest_complete_banner_alpha = quest_complete_banner_alpha
 _quest_level_label = quest_level_label
-
-
-class QuestSessionLike(Protocol):
-    detail_preset: int
-    fx_toggle: int
-    spawn_entries: tuple[SpawnEntry, ...]
-    spawn_timeline_ms: float
-    no_creatures_timer_ms: float
-    completion_transition_ms: float
-    game_tune_started: bool
-
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-    ) -> QuestDeterministicSessionTick: ...
 
 
 class _QuestRunState(msgspec.Struct):
@@ -184,7 +163,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt, on_pick=self._record_perk_pick)
         self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
-        self._sim_session: QuestSessionLike | None = None
+        self._sim_session: QuestDeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60

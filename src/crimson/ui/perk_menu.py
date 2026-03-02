@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol
 
 import msgspec
 
@@ -292,11 +291,6 @@ def draw_menu_item(
     return width
 
 
-class UiButtonTextures(Protocol):
-    button_sm: rl.Texture | None
-    button_md: rl.Texture | None
-
-
 class UiButtonTextureSet(msgspec.Struct):
     button_sm: rl.Texture | None
     button_md: rl.Texture | None
@@ -354,7 +348,7 @@ def button_update(
 
 
 def button_draw(
-    assets: UiButtonTextures,
+    assets: PerkMenuAssets | UiButtonTextureSet,
     font: SmallFontData | None,
     state: UiButtonState,
     *,
