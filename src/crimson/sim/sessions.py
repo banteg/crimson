@@ -59,7 +59,6 @@ class SurvivalDeterministicSession(msgspec.Struct):
             ),
             zero_gate_active=zero_gate_active_from_state(
                 demo_mode_active=bool(state.demo_mode_active),
-                perk_pending_count=int(state.perk_selection.pending_count),
             ),
         )
 
@@ -186,7 +185,6 @@ class RushDeterministicSession(msgspec.Struct):
             ),
             zero_gate_active=zero_gate_active_from_state(
                 demo_mode_active=bool(state.demo_mode_active),
-                perk_pending_count=int(state.perk_selection.pending_count),
             ),
         )
 
@@ -317,7 +315,6 @@ class QuestDeterministicSession(msgspec.Struct):
             ),
             zero_gate_active=zero_gate_active_from_state(
                 demo_mode_active=bool(state.demo_mode_active),
-                perk_pending_count=int(state.perk_selection.pending_count),
             ),
         )
 

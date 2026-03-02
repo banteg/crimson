@@ -529,7 +529,7 @@ class PlaybackDriver:
         if weapon_id <= WeaponId.NONE:
             weapon_id = WeaponId.PISTOL
         for player in self.world.players:
-            weapon_assign_player(player, weapon_id)
+            weapon_assign_player(player, weapon_id, state=self.world.state)
 
         if bool(quest_config.disable_capture_spawn_events_authoritative):
             self.world.creatures.capture_spawn_events_authoritative = False

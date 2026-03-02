@@ -105,3 +105,13 @@ def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None
     assert tick.spawn_timeline_ms == 0.0
     assert session.world.state.bonuses.reflex_boost == 0.0
     assert session.world.state.time_scale_active is False
+
+
+def test_quest_timing_does_not_zero_dt_for_pending_perk_prompt() -> None:
+    session = _build_session(seed=101)
+    session.world.state.perk_selection.pending_count = 1
+
+    timing = session.timing_for_dt(1.0 / 60.0)
+
+    assert timing.zero_gate_active is False
+    assert timing.dt_sim > 0.0

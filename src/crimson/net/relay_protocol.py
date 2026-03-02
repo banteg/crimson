@@ -40,13 +40,13 @@ class RelaySlot(msgspec.Struct, forbid_unknown_fields=True):
     peer_name: str = ""
 
 
-class ClientHello(msgspec.Struct, tag_field="kind", tag="client_hello", forbid_unknown_fields=True):
+class ClientHello(msgspec.Struct, tag="client_hello", forbid_unknown_fields=True):
     protocol_version: int = PROTOCOL_VERSION
     build_id: str = ""
     peer_name: str = ""
 
 
-class ClientWelcome(msgspec.Struct, tag_field="kind", tag="client_welcome", forbid_unknown_fields=True):
+class ClientWelcome(msgspec.Struct, tag="client_welcome", forbid_unknown_fields=True):
     accepted: bool = False
     reason: str = ""
     protocol_version: int = PROTOCOL_VERSION
@@ -54,7 +54,7 @@ class ClientWelcome(msgspec.Struct, tag_field="kind", tag="client_welcome", forb
     peer_id: str = ""
 
 
-class RoomCreate(msgspec.Struct, tag_field="kind", tag="room_create", forbid_unknown_fields=True):
+class RoomCreate(msgspec.Struct, tag="room_create", forbid_unknown_fields=True):
     mode_id: int = 0
     player_count: int = 1
     quest_level: str = ""
@@ -66,17 +66,17 @@ class RoomCreate(msgspec.Struct, tag_field="kind", tag="room_create", forbid_unk
     status_snapshot: StatusSnapshot | None = None
 
 
-class RoomJoin(msgspec.Struct, tag_field="kind", tag="room_join", forbid_unknown_fields=True):
+class RoomJoin(msgspec.Struct, tag="room_join", forbid_unknown_fields=True):
     room_code: str = ""
     reconnect_token: str = ""
 
 
-class RoomReady(msgspec.Struct, tag_field="kind", tag="room_ready", forbid_unknown_fields=True):
+class RoomReady(msgspec.Struct, tag="room_ready", forbid_unknown_fields=True):
     slot_index: int = -1
     ready: bool = False
 
 
-class RoomState(msgspec.Struct, tag_field="kind", tag="room_state", forbid_unknown_fields=True):
+class RoomState(msgspec.Struct, tag="room_state", forbid_unknown_fields=True):
     room_code: str = ""
     session_id: str = ""
     mode_id: int = 0
@@ -92,7 +92,7 @@ class RoomState(msgspec.Struct, tag_field="kind", tag="room_state", forbid_unkno
     started: bool = False
 
 
-class RoomStart(msgspec.Struct, tag_field="kind", tag="room_start", forbid_unknown_fields=True):
+class RoomStart(msgspec.Struct, tag="room_start", forbid_unknown_fields=True):
     room_code: str = ""
     session_id: str = ""
     seed: int = 0
@@ -111,20 +111,20 @@ class RoomStart(msgspec.Struct, tag_field="kind", tag="room_start", forbid_unkno
     status_snapshot: StatusSnapshot | None = None
 
 
-class PeerDisconnect(msgspec.Struct, tag_field="kind", tag="peer_disconnect", forbid_unknown_fields=True):
+class PeerDisconnect(msgspec.Struct, tag="peer_disconnect", forbid_unknown_fields=True):
     slot_index: int = -1
     reason: str = ""
 
 
-class RelayError(msgspec.Struct, tag_field="kind", tag="relay_error", forbid_unknown_fields=True):
+class RelayError(msgspec.Struct, tag="relay_error", forbid_unknown_fields=True):
     reason: str = ""
 
 
-class Ping(msgspec.Struct, tag_field="kind", tag="ping", forbid_unknown_fields=True):
+class Ping(msgspec.Struct, tag="ping", forbid_unknown_fields=True):
     stamp_ms: int = 0
 
 
-class Pong(msgspec.Struct, tag_field="kind", tag="pong", forbid_unknown_fields=True):
+class Pong(msgspec.Struct, tag="pong", forbid_unknown_fields=True):
     stamp_ms: int = 0
 
 
@@ -133,19 +133,19 @@ class RbInputSample(msgspec.Struct, forbid_unknown_fields=True):
     packed_input: PackedPlayerInput = msgspec.field(default_factory=list)
 
 
-class RbInputBatch(msgspec.Struct, tag_field="kind", tag="rb_input_sample", forbid_unknown_fields=True):
+class RbInputBatch(msgspec.Struct, tag="rb_input_sample", forbid_unknown_fields=True):
     slot_index: int = -1
     samples: list[RbInputSample] = msgspec.field(default_factory=list)
 
 
-class RbResyncRequest(msgspec.Struct, tag_field="kind", tag="rb_resync_request", forbid_unknown_fields=True):
+class RbResyncRequest(msgspec.Struct, tag="rb_resync_request", forbid_unknown_fields=True):
     request_id: str = ""
     from_tick: int = 0
     reason: str = ""
     requested_by_slot: int = -1
 
 
-class RbResyncBegin(msgspec.Struct, tag_field="kind", tag="rb_resync_begin", forbid_unknown_fields=True):
+class RbResyncBegin(msgspec.Struct, tag="rb_resync_begin", forbid_unknown_fields=True):
     request_id: str = ""
     snapshot_tick: int = 0
     codec: str = "msgpack_state_v1"
@@ -155,27 +155,27 @@ class RbResyncBegin(msgspec.Struct, tag_field="kind", tag="rb_resync_begin", for
     payload_sha256: str = ""
 
 
-class RbResyncChunk(msgspec.Struct, tag_field="kind", tag="rb_resync_chunk", forbid_unknown_fields=True):
+class RbResyncChunk(msgspec.Struct, tag="rb_resync_chunk", forbid_unknown_fields=True):
     request_id: str = ""
     chunk_index: int = 0
     payload: bytes = b""
 
 
-class RbResyncCommit(msgspec.Struct, tag_field="kind", tag="rb_resync_commit", forbid_unknown_fields=True):
+class RbResyncCommit(msgspec.Struct, tag="rb_resync_commit", forbid_unknown_fields=True):
     request_id: str = ""
     snapshot_tick: int = 0
     payload_sha256: str = ""
 
 
-class LegacyLockstepInputBatch(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_input_batch", forbid_unknown_fields=True):
+class LegacyLockstepInputBatch(msgspec.Struct, tag="legacy_lockstep_input_batch", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
-class LegacyLockstepTickFrame(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_tick_frame", forbid_unknown_fields=True):
+class LegacyLockstepTickFrame(msgspec.Struct, tag="legacy_lockstep_tick_frame", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
-class LegacyLockstepControl(msgspec.Struct, tag_field="kind", tag="legacy_lockstep_control", forbid_unknown_fields=True):
+class LegacyLockstepControl(msgspec.Struct, tag="legacy_lockstep_control", forbid_unknown_fields=True):
     payload: bytes = b""
 
 
