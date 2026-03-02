@@ -10,7 +10,6 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from ..effects import EffectPool
 from ..owner_ref import OwnerRef
 
@@ -104,9 +103,6 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
-_CREATURE_LIFECYCLE_ALIVE = CREATURE_LIFECYCLE_ALIVE
-
-
 def _rng_zero() -> int:
     return 0
 
@@ -178,6 +174,5 @@ __all__ = [
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
-    "_CREATURE_LIFECYCLE_ALIVE",
     "_rng_zero",
 ]
