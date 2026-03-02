@@ -131,7 +131,7 @@ class BaseGameplayMode:
         ctx: ViewContext,
         *,
         world_size: float,
-        default_game_mode_id: GameMode | int,
+        default_game_mode_id: GameMode,
         demo_mode_active: bool = False,
         difficulty_level: int = 0,
         hardcore: bool = False,
@@ -269,8 +269,11 @@ class BaseGameplayMode:
         self.world.lan_local_aim_indicators_only = self._lan_enabled
         self.world.lan_local_player_slot_index = max(0, min(3, int(self._lan_local_slot_index)))
 
-    def _config_game_mode_id(self) -> int:
-        return self.config.game_mode
+    def _config_game_mode_id(self) -> GameMode:
+        try:
+            return GameMode(self.config.game_mode)
+        except ValueError:
+            return GameMode.DEMO
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
         creatures = self.creatures.entries

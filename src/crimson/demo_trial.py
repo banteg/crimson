@@ -28,7 +28,7 @@ class DemoTrialOverlayInfo(msgspec.Struct, frozen=True):
 def tick_demo_trial_timers(
     *,
     demo_build: bool,
-    game_mode_id: GameMode | int,
+    game_mode_id: GameMode,
     overlay_visible: bool,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
@@ -81,7 +81,7 @@ def tick_demo_trial_timers(
 def demo_trial_overlay_info(
     *,
     demo_build: bool,
-    game_mode_id: GameMode | int,
+    game_mode_id: GameMode,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
     quest_stage_major: int,

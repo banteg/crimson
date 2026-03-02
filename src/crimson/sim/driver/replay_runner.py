@@ -50,11 +50,7 @@ def run_replay(
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
-    mode_raw = int(replay.header.game_mode_id)
-    try:
-        mode_id: GameMode | int = GameMode(mode_raw)
-    except ValueError:
-        mode_id = mode_raw
+    mode_id = replay.header.game_mode_id
     match mode_id:
         case GameMode.RUSH:
             terminal_events_use_resolved_dt = False

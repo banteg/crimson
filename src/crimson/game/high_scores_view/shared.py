@@ -44,13 +44,8 @@ def parse_quest_level(level: str | None) -> tuple[int, int]:
         return (0, 0)
 
 
-def mode_label(mode_id: GameMode | int, quest_major: int, quest_minor: int) -> str:
-    try:
-        mode: GameMode | int = GameMode(int(mode_id))
-    except ValueError:
-        mode = int(mode_id)
-
-    match mode:
+def mode_label(mode_id: GameMode, quest_major: int, quest_minor: int) -> str:
+    match mode_id:
         case GameMode.SURVIVAL:
             return "Survival"
         case GameMode.RUSH:
@@ -62,7 +57,7 @@ def mode_label(mode_id: GameMode | int, quest_major: int, quest_minor: int) -> s
                 return f"Quest {int(quest_major)}.{int(quest_minor)}"
             return "Quests"
         case _:
-            return f"Mode {int(mode)}"
+            return "Unknown"
 
 
 def quest_title(major: int, minor: int) -> str:

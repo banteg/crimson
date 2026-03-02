@@ -16,7 +16,7 @@ def apply_replay_tick_events(
     tick_index: int,
     dt: float,
     world: WorldState,
-    game_mode_id: GameMode | int,
+    game_mode_id: GameMode,
     on_capture_state_transition=None,
 ) -> int | None:
     _ = on_capture_state_transition

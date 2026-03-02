@@ -411,14 +411,20 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
-        base_id, overlay_id, detail_id = quest.terrain_ids or (
-            TerrainTextureId.Q1_BASE,
-            TerrainTextureId.Q1_OVERLAY,
-            TerrainTextureId.Q1_BASE,
-        )
-        base = terrain_texture_by_id(int(base_id))
-        overlay = terrain_texture_by_id(int(overlay_id))
-        detail = terrain_texture_by_id(int(detail_id))
+        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+        terrain_ids = quest.terrain_ids
+        if terrain_ids is None:
+            base_id, overlay_id, detail_id = default_terrain
+        else:
+            try:
+                base_id = TerrainTextureId(int(terrain_ids[0]))
+                overlay_id = TerrainTextureId(int(terrain_ids[1]))
+                detail_id = TerrainTextureId(int(terrain_ids[2]))
+            except ValueError:
+                base_id, overlay_id, detail_id = default_terrain
+        base = terrain_texture_by_id(base_id)
+        overlay = terrain_texture_by_id(overlay_id)
+        detail = terrain_texture_by_id(detail_id)
         if base is not None and overlay is not None:
             base_key, base_path = base
             overlay_key, overlay_path = overlay

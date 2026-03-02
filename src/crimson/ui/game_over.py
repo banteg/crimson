@@ -293,7 +293,10 @@ class GameOverUi(msgspec.Struct):
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
-            game_mode_id = self.config.game_mode
+            try:
+                game_mode_id = GameMode(self.config.game_mode)
+            except ValueError:
+                game_mode_id = GameMode.DEMO
             candidate = record.copy()
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate
@@ -454,9 +457,9 @@ class GameOverUi(msgspec.Struct):
         card_origin = pos.offset(dx=4.0 * scale)
         mode_raw = int(record.game_mode_id)
         try:
-            mode_id: GameMode | int = GameMode(mode_raw)
+            mode_id = GameMode(mode_raw)
         except ValueError:
-            mode_id = mode_raw
+            mode_id = GameMode.DEMO
 
         # Left column: Score + value + Rank.
         score_label = "Score"

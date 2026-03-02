@@ -74,7 +74,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
         tick_index: int,
         dt: float,
         world,
-        game_mode_id: int,
+        game_mode_id: GameMode,
         on_capture_state_transition=None,
     ):
         order.append("events")
@@ -83,7 +83,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
             tick_index=int(tick_index),
             dt=float(dt),
             world=world,
-            game_mode_id=int(game_mode_id),
+            game_mode_id=GameMode(int(game_mode_id)),
             on_capture_state_transition=on_capture_state_transition,
         )
 

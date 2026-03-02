@@ -9,6 +9,7 @@ from crimson.demo_trial import (
     format_demo_trial_time,
     tick_demo_trial_timers,
 )
+from crimson.game_modes import GameMode
 
 
 def test_format_demo_trial_time() -> None:
@@ -31,14 +32,24 @@ def test_format_demo_trial_time() -> None:
         "expected_remaining_ms",
     ),
     [
-        (False, 1, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, 4, 10, False, "none", None),
-        (True, 1, DEMO_TOTAL_PLAY_TIME_MS, 0, 1, 1, True, "time_up", 0),
-        (True, 3, 0, 0, 2, 1, True, "quest_tier_limit", None),
-        (True, 1, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, True, "quest_grace_left", DEMO_QUEST_GRACE_TIME_MS - 1_000),
-        (True, 3, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, False, "none", None),
+        (False, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, DEMO_QUEST_GRACE_TIME_MS, 4, 10, False, "none", None),
+        (True, GameMode.SURVIVAL, DEMO_TOTAL_PLAY_TIME_MS, 0, 1, 1, True, "time_up", 0),
+        (True, GameMode.QUESTS, 0, 0, 2, 1, True, "quest_tier_limit", None),
         (
             True,
-            3,
+            GameMode.SURVIVAL,
+            DEMO_TOTAL_PLAY_TIME_MS,
+            1_000,
+            1,
+            1,
+            True,
+            "quest_grace_left",
+            DEMO_QUEST_GRACE_TIME_MS - 1_000,
+        ),
+        (True, GameMode.QUESTS, DEMO_TOTAL_PLAY_TIME_MS, 1_000, 1, 1, False, "none", None),
+        (
+            True,
+            GameMode.QUESTS,
             DEMO_TOTAL_PLAY_TIME_MS,
             1_000,
             2,
@@ -59,7 +70,7 @@ def test_format_demo_trial_time() -> None:
 )
 def test_demo_trial_overlay_info(
     demo_build: bool,
-    game_mode_id: int,
+    game_mode_id: GameMode,
     global_playtime_ms: int,
     quest_grace_elapsed_ms: int,
     quest_stage_major: int,
@@ -98,7 +109,7 @@ def test_tick_demo_trial_timers_starts_grace_after_time_limit(
 ) -> None:
     used_ms, grace_ms = tick_demo_trial_timers(
         demo_build=True,
-        game_mode_id=1,
+        game_mode_id=GameMode.SURVIVAL,
         overlay_visible=overlay_visible,
         global_playtime_ms=global_playtime_ms,
         quest_grace_elapsed_ms=quest_grace_elapsed_ms,
@@ -111,7 +122,7 @@ def test_tick_demo_trial_timers_starts_grace_after_time_limit(
 def test_tick_demo_trial_timers_grace_counts_only_in_quests() -> None:
     used_ms, grace_ms = tick_demo_trial_timers(
         demo_build=True,
-        game_mode_id=3,
+        game_mode_id=GameMode.QUESTS,
         overlay_visible=False,
         global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
         quest_grace_elapsed_ms=1,
@@ -122,7 +133,7 @@ def test_tick_demo_trial_timers_grace_counts_only_in_quests() -> None:
 
     used_ms, grace_ms = tick_demo_trial_timers(
         demo_build=True,
-        game_mode_id=1,
+        game_mode_id=GameMode.SURVIVAL,
         overlay_visible=False,
         global_playtime_ms=DEMO_TOTAL_PLAY_TIME_MS,
         quest_grace_elapsed_ms=1,

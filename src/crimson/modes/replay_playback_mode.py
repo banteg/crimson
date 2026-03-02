@@ -81,13 +81,6 @@ _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
 
 
-def _known_game_mode(value: GameMode | int) -> GameMode | int:
-    try:
-        return GameMode(int(value))
-    except ValueError:
-        return int(value)
-
-
 def _world_reset_seed_for_replay(header: ReplayHeader) -> int:
     match str(header.bootstrap_kind):
         case kind if kind == BOOTSTRAP_KIND_TERRAIN_V1:
@@ -380,7 +373,7 @@ class ReplayPlaybackMode:
 
         self._world = world
 
-        mode_id = _known_game_mode(replay.header.game_mode_id)
+        mode_id = replay.header.game_mode_id
         spawn_entries = None
         quest_stage_major: int | None = None
         quest_stage_minor: int | None = None
@@ -401,14 +394,20 @@ class ReplayPlaybackMode:
                 world.state.quest_stage_major = int(quest_stage_major)
                 world.state.quest_stage_minor = int(quest_stage_minor)
 
-                base_id, overlay_id, detail_id = quest.terrain_ids or (
-                    TerrainTextureId.Q1_BASE,
-                    TerrainTextureId.Q1_OVERLAY,
-                    TerrainTextureId.Q1_BASE,
-                )
-                base = terrain_texture_by_id(int(base_id))
-                overlay = terrain_texture_by_id(int(overlay_id))
-                detail = terrain_texture_by_id(int(detail_id))
+                default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+                terrain_ids = quest.terrain_ids
+                if terrain_ids is None:
+                    base_id, overlay_id, detail_id = default_terrain
+                else:
+                    try:
+                        base_id = TerrainTextureId(int(terrain_ids[0]))
+                        overlay_id = TerrainTextureId(int(terrain_ids[1]))
+                        detail_id = TerrainTextureId(int(terrain_ids[2]))
+                    except ValueError:
+                        base_id, overlay_id, detail_id = default_terrain
+                base = terrain_texture_by_id(base_id)
+                overlay = terrain_texture_by_id(overlay_id)
+                detail = terrain_texture_by_id(detail_id)
                 if base is not None and overlay is not None:
                     base_key, base_path = base
                     overlay_key, overlay_path = overlay
@@ -727,7 +726,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_title(self) -> None:
         replay = self._replay
-        if replay is None or _known_game_mode(replay.header.game_mode_id) != GameMode.QUESTS:
+        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
         font = self._grim_mono
         if font is None:
@@ -741,7 +740,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_complete_banner(self) -> None:
         replay = self._replay
-        if replay is None or _known_game_mode(replay.header.game_mode_id) != GameMode.QUESTS:
+        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
         tex = self._quest_complete_texture
         if tex is None:
@@ -757,7 +756,7 @@ class ReplayPlaybackMode:
 
         replay = self._replay
         if world is not None and replay is not None and self._hud_assets is not None and world.players:
-            mode_id = _known_game_mode(replay.header.game_mode_id)
+            mode_id = replay.header.game_mode_id
             hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
             elapsed_ms = float(world._elapsed_ms)

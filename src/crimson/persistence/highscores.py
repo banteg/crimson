@@ -20,12 +20,12 @@ NAME_SIZE = 0x20
 NAME_MAX_EDIT = 0x14  # game_over_screen_update sets ui_text_input maxlen=0x14
 
 
-def _known_game_mode(value: GameMode | int) -> GameMode | int:
+def _known_game_mode(value: int) -> GameMode:
     raw = int(value)
     try:
         return GameMode(raw)
     except ValueError:
-        return raw
+        return GameMode.DEMO
 
 
 def _clamp_u32(value: int) -> int:
@@ -123,11 +123,11 @@ class HighScoreRecord(msgspec.Struct):
         struct.pack_into("<I", self.data, 0x24, int(value) & 0xFFFFFFFF)
 
     @property
-    def game_mode_id(self) -> GameMode | int:
+    def game_mode_id(self) -> GameMode:
         return _known_game_mode(int(self.data[0x28]))
 
     @game_mode_id.setter
-    def game_mode_id(self, value: GameMode | int) -> None:
+    def game_mode_id(self, value: GameMode) -> None:
         self.data[0x28] = int(value) & 0xFF
 
     @property
@@ -244,12 +244,12 @@ def _with_player_count_suffix(path: Path, *, player_count: int) -> Path:
 def _scores_path_for_mode_root(
     *,
     root: Path,
-    game_mode_id: GameMode | int,
+    game_mode_id: GameMode,
     hardcore: bool,
     quest_stage_major: int,
     quest_stage_minor: int,
 ) -> Path:
-    mode = _known_game_mode(game_mode_id)
+    mode = _known_game_mode(int(game_mode_id))
     match mode:
         case GameMode.SURVIVAL:
             return root / "survival.hi"
@@ -270,7 +270,7 @@ def _scores_path_for_mode_root(
 
 def scores_path_for_mode(
     base_dir: Path,
-    game_mode_id: GameMode | int,
+    game_mode_id: GameMode,
     *,
     hardcore: bool = False,
     quest_stage_major: int = 0,
@@ -378,14 +378,14 @@ def write_highscore_records(path: Path, records: list[HighScoreRecord]) -> None:
             fp.write(struct.pack("<I", checksum))
 
 
-def read_highscore_table(path: Path, *, game_mode_id: GameMode | int) -> list[HighScoreRecord]:
+def read_highscore_table(path: Path, *, game_mode_id: GameMode) -> list[HighScoreRecord]:
     records = read_highscore_records(path)
     records = [r for r in records if int(r.game_mode_id) == int(game_mode_id)]
     return sort_highscores(records, game_mode_id=game_mode_id)[:TABLE_MAX]
 
 
-def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode | int) -> list[HighScoreRecord]:
-    mode = _known_game_mode(game_mode_id)
+def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode) -> list[HighScoreRecord]:
+    mode = _known_game_mode(int(game_mode_id))
     match mode:
         case GameMode.RUSH:
             return sorted(records, key=lambda r: int(r.survival_elapsed_ms), reverse=True)
@@ -402,7 +402,7 @@ def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode | 
 
 
 def rank_index(records_sorted: list[HighScoreRecord], record: HighScoreRecord) -> int:
-    mode = _known_game_mode(record.game_mode_id)
+    mode = _known_game_mode(int(record.game_mode_id))
     match mode:
         case GameMode.RUSH:
             score = int(record.survival_elapsed_ms)

@@ -189,7 +189,7 @@ def _render_checkpoint_diff_failure(diff: object) -> None:
     raise typer.Exit(code=1)
 
 
-def _replay_mode_label(game_mode_id: GameMode | int) -> str:
+def _replay_mode_label(game_mode_id: GameMode) -> str:
     match game_mode_id:
         case GameMode.SURVIVAL:
             return "survival"
@@ -198,7 +198,7 @@ def _replay_mode_label(game_mode_id: GameMode | int) -> str:
         case GameMode.QUESTS:
             return "quests"
         case _:
-            return f"mode_{int(game_mode_id)}"
+            return "unknown"
 
 
 class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -460,7 +460,7 @@ def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
 class _ReplayListRow:
     replay: str
     mode: str
-    game_mode_id: GameMode | int
+    game_mode_id: GameMode | None
     game_version: str
     ticks: str
     duration: str
@@ -506,7 +506,7 @@ def _is_version_older(*, replay_version: str, current_version: str) -> bool:
     return replay_norm < current_norm
 
 
-def _replay_list_mode_label(*, game_mode_id: GameMode | int, player_count: int, quest_level: str) -> str:
+def _replay_list_mode_label(*, game_mode_id: GameMode, player_count: int, quest_level: str) -> str:
     match game_mode_id:
         case GameMode.QUESTS:
             label = "quest"
@@ -520,7 +520,7 @@ def _replay_list_mode_label(*, game_mode_id: GameMode | int, player_count: int, 
     return label
 
 
-def _replay_list_mode_style(game_mode_id: GameMode | int) -> str:
+def _replay_list_mode_style(game_mode_id: GameMode | None) -> str:
     match game_mode_id:
         case GameMode.SURVIVAL:
             return "green"
@@ -564,7 +564,7 @@ def _build_replay_list_row(
             _ReplayListRow(
                 replay=rel,
                 mode="error",
-                game_mode_id=-1,
+                game_mode_id=None,
                 game_version="-",
                 ticks="-",
                 duration="-",
@@ -584,7 +584,7 @@ def _build_replay_list_row(
             _ReplayListRow(
                 replay=rel,
                 mode="invalid",
-                game_mode_id=-1,
+                game_mode_id=None,
                 game_version="-",
                 ticks="-",
                 duration="-",

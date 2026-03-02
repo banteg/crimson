@@ -457,9 +457,9 @@ def _draw_right_panel_local_score(
 
     mode_raw = int(entry.game_mode_id)
     try:
-        mode_id: GameMode | int = GameMode(mode_raw)
+        mode_id = GameMode(mode_raw)
     except ValueError:
-        mode_id = mode_raw
+        mode_id = GameMode.DEMO
     elapsed_ms = int(entry.survival_elapsed_ms)
     score_xp = int(entry.score_xp)
     match mode_id:

@@ -479,7 +479,7 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = self.config.game_mode
+        game_mode_id = GameMode(self.config.game_mode)
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,

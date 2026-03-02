@@ -62,7 +62,10 @@ MENU_SIGN_POS_X_PAD = 4.0
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
 MENU_DEFAULT_TERRAIN_IDS = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
-MENU_UNLOCK_TERRAIN_RULES: tuple[tuple[int, tuple[int, int, int]], ...] = (
+MENU_UNLOCK_TERRAIN_RULES: tuple[
+    tuple[int, tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]],
+    ...,
+] = (
     (0x28, (TerrainTextureId.Q4_BASE, TerrainTextureId.Q4_OVERLAY, TerrainTextureId.Q4_BASE)),
     (0x1E, (TerrainTextureId.Q3_BASE, TerrainTextureId.Q3_OVERLAY, TerrainTextureId.Q3_BASE)),
     (0x14, (TerrainTextureId.Q2_BASE, TerrainTextureId.Q2_OVERLAY, TerrainTextureId.Q2_BASE)),
@@ -90,7 +93,7 @@ def _menu_unlock_index(state: GameState) -> int:
         return 0
 
 
-def _choose_menu_terrain_ids(state: GameState) -> tuple[int, int, int]:
+def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]:
     unlock_index = _menu_unlock_index(state)
     for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
         if unlock_index >= threshold and (state.rng.randrange(0, 8) & 7) == 3:
@@ -98,11 +101,11 @@ def _choose_menu_terrain_ids(state: GameState) -> tuple[int, int, int]:
     return MENU_DEFAULT_TERRAIN_IDS
 
 
-def _menu_terrain_texture(state: GameState, terrain_id: int) -> rl.Texture | None:
+def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.Texture | None:
     cache = state.texture_cache
     if cache is None:
         return None
-    terrain = terrain_texture_by_id(int(terrain_id))
+    terrain = terrain_texture_by_id(terrain_id)
     if terrain is None:
         return None
 

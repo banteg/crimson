@@ -233,9 +233,9 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
     def cmd_demo_trial_info(_args: list[str]) -> None:
         mode_raw = state.config.game_mode
         try:
-            mode_id: GameMode | int = GameMode(mode_raw)
+            mode_id = GameMode(mode_raw)
         except ValueError:
-            mode_id = mode_raw
+            mode_id = GameMode.DEMO
         quest_major = 0
         quest_minor = 0
         match mode_id:

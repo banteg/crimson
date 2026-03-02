@@ -143,7 +143,7 @@ class HudLayout(msgspec.Struct, frozen=True):
     hud_y_shift: float
 
 
-def hud_flags_for_game_mode(game_mode_id: GameMode | int) -> HudRenderFlags:
+def hud_flags_for_game_mode(game_mode_id: GameMode) -> HudRenderFlags:
     """Match `hud_update_and_render` (0x0041ca90) flag mapping."""
 
     match game_mode_id:

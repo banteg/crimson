@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from crimson.aim_schemes import AimScheme
 from crimson.frontend.panels.controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -15,13 +17,13 @@ from crimson.movement_controls import MovementControlType
 
 
 def test_input_configure_for_label_mapping() -> None:
-    assert input_configure_for_label(0) == "Mouse"
-    assert input_configure_for_label(1) == "Keyboard"
-    assert input_configure_for_label(2) == "Joystick"
-    assert input_configure_for_label(3) == "Mouse relative"
-    assert input_configure_for_label(4) == "Dual Action Pad"
-    assert input_configure_for_label(5) == "Computer"
-    assert input_configure_for_label(99) == "Unknown"
+    assert input_configure_for_label(AimScheme.MOUSE) == "Mouse"
+    assert input_configure_for_label(AimScheme.KEYBOARD) == "Keyboard"
+    assert input_configure_for_label(AimScheme.JOYSTICK) == "Joystick"
+    assert input_configure_for_label(AimScheme.MOUSE_RELATIVE) == "Mouse relative"
+    assert input_configure_for_label(AimScheme.DUAL_ACTION_PAD) == "Dual Action Pad"
+    assert input_configure_for_label(AimScheme.COMPUTER) == "Computer"
+    assert input_configure_for_label(cast(AimScheme, 99)) == "Unknown"
 
 
 def test_input_scheme_label_mapping() -> None:

@@ -645,7 +645,13 @@ class HighScoresView:
 
         font = self._ensure_small_font()
         request = self._request
-        mode_id: GameMode | int = request.game_mode_id if request is not None else self.state.config.game_mode
+        if request is not None:
+            mode_id = request.game_mode_id
+        else:
+            try:
+                mode_id = GameMode(self.state.config.game_mode)
+            except ValueError:
+                mode_id = GameMode.DEMO
         quest_major = int(request.quest_stage_major) if request is not None else 0
         quest_minor = int(request.quest_stage_minor) if request is not None else 0
 

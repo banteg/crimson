@@ -86,7 +86,7 @@ class QuestResultsView:
                     self._unlock_perk_name = f"perk_{perk_id}"
 
         record = HighScoreRecord.blank()
-        record.game_mode_id = int(GameMode.QUESTS)
+        record.game_mode_id = GameMode.QUESTS
         record.quest_stage_major = major
         record.quest_stage_minor = minor
         record.score_xp = int(outcome.experience)
