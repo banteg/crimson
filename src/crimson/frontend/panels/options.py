@@ -17,7 +17,7 @@ from ..menu import (
     _draw_menu_cursor,
 )
 from ..transitions import _draw_screen_fade
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
@@ -43,7 +43,7 @@ class OptionsMenuView(PanelMenuView):
         "Mouse sensitivity:",
     )
 
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(state, title="Options", back_action="open_pause_menu")
         self._small_font: SmallFontData | None = None
         self._rect_on: rl.Texture | None = None

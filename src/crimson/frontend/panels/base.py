@@ -37,7 +37,7 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import GameState
+from ..types import FrontendContext
 
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
@@ -60,7 +60,7 @@ FADE_TO_GAME_ACTIONS = frozenset(
 class PanelMenuView:
     def __init__(
         self,
-        state: GameState,
+        state: FrontendContext,
         *,
         title: str,
         body: str | None = None,

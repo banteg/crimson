@@ -17,6 +17,7 @@ from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay.header_settings import session_settings_from_replay_header
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..sessions import (
@@ -358,13 +359,15 @@ class PlaybackDriver:
         if self.options.version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(self.options.version_mismatch_action))
 
-        mode_raw = int(replay.header.game_mode_id)
+        self.session_settings = session_settings_from_replay_header(replay.header)
+
+        mode_raw = int(self.session_settings.mode_id)
         try:
             self.mode_id = GameMode(mode_raw)
         except ValueError as exc:
             raise ReplayRunnerError(f"unsupported replay game_mode_id={mode_raw}") from exc
 
-        tick_rate = int(replay.header.tick_rate)
+        tick_rate = int(self.session_settings.tick_rate)
         if tick_rate <= 0:
             raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
         self.tick_rate = int(tick_rate)
@@ -409,12 +412,12 @@ class PlaybackDriver:
             demo_mode_active=False,
             hardcore=bool(self.replay.header.hardcore),
             difficulty_level=int(self.replay.header.difficulty_level),
-            preserve_bugs=bool(self.replay.header.preserve_bugs),
+            preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
         reset_players(
             world.players,
             world_size=float(self.world_size),
-            player_count=int(self.replay.header.player_count),
+            player_count=int(self.session_settings.player_count),
         )
         world.state.status = status_from_snapshot(
             quest_unlock_index=int(self.replay.header.status.quest_unlock_index),
@@ -458,7 +461,7 @@ class PlaybackDriver:
             quest, spawn_entries = resolve_replay_quest_setup(
                 self.replay,
                 world_size=float(self.world_size),
-                player_count=int(self.replay.header.player_count),
+                player_count=int(self.session_settings.player_count),
             )
 
             if quest_stage_major is None or quest_stage_minor is None:

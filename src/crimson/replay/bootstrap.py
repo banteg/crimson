@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Protocol
-
 import msgspec
+
+from grim.rand import CrandLike
 
 from ..sim.bootstrap import (
     BOOTSTRAP_KIND_NONE,
@@ -17,15 +17,6 @@ class ReplayBootstrapError(ValueError):
     pass
 
 
-class ReplayRng(Protocol):
-    @property
-    def state(self) -> int: ...
-
-    def srand(self, seed: int) -> None: ...
-
-    def rand(self) -> int: ...
-
-
 class AppliedReplayBootstrap(msgspec.Struct, frozen=True):
     """Bootstrap data produced when applying a replay header."""
 
@@ -35,7 +26,7 @@ class AppliedReplayBootstrap(msgspec.Struct, frozen=True):
 def apply_replay_bootstrap(
     header: ReplayHeader,
     *,
-    rng: ReplayRng,
+    rng: CrandLike,
     world_size: float,
 ) -> AppliedReplayBootstrap | None:
     """Seed/advance `rng` to tick-0 state for a replay header.

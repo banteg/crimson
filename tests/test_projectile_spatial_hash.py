@@ -56,6 +56,7 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
         _ = (damage, damage_type, impulse, owner)
         hit_indices.append(int(idx))
 
-    pool.update_pulse_gun(0.1, creatures, apply_creature_damage=_apply)
+    pool.creature_damage_applier = _apply
+    pool.update_pulse_gun(0.1, creatures)
 
     assert hit_indices == [0]

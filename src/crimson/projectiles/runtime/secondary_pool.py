@@ -9,6 +9,7 @@ from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...effects import EffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
@@ -20,7 +21,6 @@ from ..types import (
     SecondaryDetonationKillHandler,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
-    _EffectsLike,
     _rng_zero,
     _SpriteEffectsLike,
 )
@@ -34,10 +34,19 @@ if TYPE_CHECKING:
 class SecondaryProjectilePool:
     def __init__(self, *, size: int = SECONDARY_PROJECTILE_POOL_SIZE) -> None:
         self._entries = [SecondaryProjectile() for _ in range(size)]
+        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[SecondaryProjectile]:
         return self._entries
+
+    @property
+    def creature_damage_applier(self) -> CreatureDamageApplier | None:
+        return self._creature_damage_applier
+
+    @creature_damage_applier.setter
+    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
+        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -49,7 +58,7 @@ class SecondaryProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: int,
-        owner_id: OwnerRef = OwnerRef.from_local_player(0),
+        owner: OwnerRef = OwnerRef.from_local_player(0),
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
         creatures: Sequence[CreatureState] | None = None,
@@ -67,7 +76,7 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = int(type_id)
         entry.pos = pos
-        entry.owner = owner_id
+        entry.owner = owner
         entry.target_id = -1
         entry.target_hint_active = False
         entry.target_hint = Vec2()
@@ -114,7 +123,6 @@ class SecondaryProjectilePool:
         dt: float,
         creatures: Sequence[CreatureState],
         *,
-        apply_creature_damage: CreatureDamageApplier | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
         fx_queue: FxQueueLike | None = None,
         detail_preset: int = 5,
@@ -139,12 +147,12 @@ class SecondaryProjectilePool:
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner=owner,
-                apply_creature_damage=apply_creature_damage,
+                apply_creature_damage=self._creature_damage_applier,
             )
 
         rand = _rng_zero
         freeze_active = False
-        effects: _EffectsLike | None = None
+        effects: EffectPool | None = None
         sprite_effects: _SpriteEffectsLike | None = None
         sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:

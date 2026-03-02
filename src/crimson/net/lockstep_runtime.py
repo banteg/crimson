@@ -40,6 +40,13 @@ from .lockstep_protocol import (
 )
 from .lockstep_state import ClientLockstepState, HostLockstepState
 from .reliable import ReliableLink
+from .session_settings import (
+    hello_from_session_settings,
+    session_settings_for_lockstep,
+    session_settings_from_hello,
+    session_settings_from_match_start,
+    session_settings_from_welcome,
+)
 from .transport import PeerAddr, UdpTransport
 
 
@@ -229,15 +236,18 @@ class LockstepRuntime(msgspec.Struct):
             self.client_link = ReliableLink()
             set_lan_debug_forwarder(self._client_forward_log_line)
             self._client_log_forward_enabled = True
-            hello = Hello(
-                protocol_version=int(PROTOCOL_VERSION),
-                build_id=str(self.build_id),
+            settings = session_settings_for_lockstep(
                 mode_id=int(self.cfg.mode_id),
                 player_count=int(self.cfg.player_count),
-                tick_rate=int(self.cfg.tick_rate),
-                input_delay_ticks=int(self.cfg.input_delay_ticks),
                 quest_level=str(self.cfg.quest_level),
                 preserve_bugs=bool(self.cfg.preserve_bugs),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
+            )
+            hello = hello_from_session_settings(
+                settings,
+                protocol_version=int(PROTOCOL_VERSION),
+                build_id=str(self.build_id),
                 host=False,
             )
             self.client_lobby = ClientLobby(build_id=str(self.build_id), hello=hello)
@@ -1230,42 +1240,37 @@ class LockstepRuntime(msgspec.Struct):
             if not bool(message.accepted):
                 self._set_client_error(str(message.reason or "rejected"))
                 return
+            welcome_settings = session_settings_from_welcome(message)
             hello = lobby.hello
             if hello is not None:
-                mismatched = (
-                    int(message.mode_id) != int(hello.mode_id)
-                    or int(message.player_count) != int(hello.player_count)
-                    or int(message.tick_rate) != int(hello.tick_rate)
-                    or int(message.input_delay_ticks) != int(hello.input_delay_ticks)
-                    or str(message.quest_level or "") != str(hello.quest_level or "")
-                    or bool(message.preserve_bugs) != bool(hello.preserve_bugs)
-                )
+                hello_settings = session_settings_from_hello(hello)
+                mismatched = hello_settings != welcome_settings
                 if mismatched:
                     lan_debug_log(
                         "net_welcome_override",
                         role="join",
-                        hello_mode_id=int(hello.mode_id),
-                        welcome_mode_id=int(message.mode_id),
-                        hello_player_count=int(hello.player_count),
-                        welcome_player_count=int(message.player_count),
-                        hello_tick_rate=int(hello.tick_rate),
-                        welcome_tick_rate=int(message.tick_rate),
-                        hello_input_delay_ticks=int(hello.input_delay_ticks),
-                        welcome_input_delay_ticks=int(message.input_delay_ticks),
-                        hello_quest_level=str(hello.quest_level or ""),
-                        welcome_quest_level=str(message.quest_level or ""),
-                        hello_preserve_bugs=bool(hello.preserve_bugs),
-                        welcome_preserve_bugs=bool(message.preserve_bugs),
+                        hello_mode_id=int(hello_settings.mode_id),
+                        welcome_mode_id=int(welcome_settings.mode_id),
+                        hello_player_count=int(hello_settings.player_count),
+                        welcome_player_count=int(welcome_settings.player_count),
+                        hello_tick_rate=int(hello_settings.tick_rate),
+                        welcome_tick_rate=int(welcome_settings.tick_rate),
+                        hello_input_delay_ticks=int(hello_settings.input_delay_ticks),
+                        welcome_input_delay_ticks=int(welcome_settings.input_delay_ticks),
+                        hello_quest_level=str(hello_settings.quest_level or ""),
+                        welcome_quest_level=str(welcome_settings.quest_level or ""),
+                        hello_preserve_bugs=bool(hello_settings.preserve_bugs),
+                        welcome_preserve_bugs=bool(welcome_settings.preserve_bugs),
                     )
 
             # Host is authoritative; adopt its config so lockstep + validation use
             # canonical values (CLI joiners may start with placeholders).
-            self.cfg.mode_id = int(message.mode_id)
-            self.cfg.player_count = max(1, min(4, int(message.player_count)))
-            self.cfg.tick_rate = max(1, int(message.tick_rate))
-            self.cfg.input_delay_ticks = max(0, int(message.input_delay_ticks))
-            self.cfg.quest_level = str(message.quest_level or "")
-            self.cfg.preserve_bugs = bool(message.preserve_bugs)
+            self.cfg.mode_id = int(welcome_settings.mode_id)
+            self.cfg.player_count = int(welcome_settings.player_count)
+            self.cfg.tick_rate = int(welcome_settings.tick_rate)
+            self.cfg.input_delay_ticks = int(welcome_settings.input_delay_ticks)
+            self.cfg.quest_level = str(welcome_settings.quest_level)
+            self.cfg.preserve_bugs = bool(welcome_settings.preserve_bugs)
             ready = Ready(slot_index=int(message.slot_index), ready=True)
             self._client_send(ready, reliable=True, now_ms=int(now_ms))
             return
@@ -1317,26 +1322,34 @@ class LockstepRuntime(msgspec.Struct):
                         actual_session_id=str(message.session_id or ""),
                     )
                     return
-            mismatched = (
-                int(message.mode_id) != int(self.cfg.mode_id)
-                or int(message.player_count) != int(self.cfg.player_count)
-                or str(message.quest_level or "") != str(self.cfg.quest_level or "")
-                or bool(message.preserve_bugs) != bool(self.cfg.preserve_bugs)
+            expected_settings = session_settings_for_lockstep(
+                mode_id=int(self.cfg.mode_id),
+                player_count=int(self.cfg.player_count),
+                quest_level=str(self.cfg.quest_level),
+                preserve_bugs=bool(self.cfg.preserve_bugs),
+                tick_rate=int(self.cfg.tick_rate),
+                input_delay_ticks=int(self.cfg.input_delay_ticks),
             )
+            match_settings = session_settings_from_match_start(
+                message,
+                tick_rate=int(expected_settings.tick_rate),
+                input_delay_ticks=int(expected_settings.input_delay_ticks),
+            )
+            mismatched = match_settings != expected_settings
             if mismatched:
                 self._set_client_error("match_start_mismatch")
                 lan_debug_log(
                     "net_sanity_mismatch",
                     role="join",
                     kind="match_start",
-                    expected_mode_id=int(self.cfg.mode_id),
-                    actual_mode_id=int(message.mode_id),
-                    expected_player_count=int(self.cfg.player_count),
-                    actual_player_count=int(message.player_count),
-                    expected_quest_level=str(self.cfg.quest_level or ""),
-                    actual_quest_level=str(message.quest_level or ""),
-                    expected_preserve_bugs=bool(self.cfg.preserve_bugs),
-                    actual_preserve_bugs=bool(message.preserve_bugs),
+                    expected_mode_id=int(expected_settings.mode_id),
+                    actual_mode_id=int(match_settings.mode_id),
+                    expected_player_count=int(expected_settings.player_count),
+                    actual_player_count=int(match_settings.player_count),
+                    expected_quest_level=str(expected_settings.quest_level or ""),
+                    actual_quest_level=str(match_settings.quest_level or ""),
+                    expected_preserve_bugs=bool(expected_settings.preserve_bugs),
+                    actual_preserve_bugs=bool(match_settings.preserve_bugs),
                 )
                 return
 

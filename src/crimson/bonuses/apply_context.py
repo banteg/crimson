@@ -7,10 +7,10 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .hud import _TimerRef
 from .ids import BONUS_BY_ID, BonusId
+from .payload import BonusDurationPayload, bonus_payload_from_bonus
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
@@ -28,7 +28,6 @@ class BonusApplyCtx(msgspec.Struct):
     origin: HasPos | None
     creatures: Sequence[CreatureState] | None
     players: list[PlayerState] | None
-    apply_creature_damage: CreatureDamageApplier | None
     detail_preset: int
     economist_multiplier: float
     label: str
@@ -72,4 +71,10 @@ def bonus_apply_seconds(ctx: BonusApplyCtx) -> float:
     meta = BONUS_BY_ID.get(ctx.bonus_id)
     if meta is not None and meta.apply_seconds is not None:
         return float(meta.apply_seconds)
+    payload = bonus_payload_from_bonus(
+        bonus_id=ctx.bonus_id,
+        amount=int(ctx.amount),
+    )
+    if isinstance(payload, BonusDurationPayload):
+        return float(payload.seconds)
     return float(ctx.amount)

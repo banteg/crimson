@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from ..math_parity import f32
 from ..perks.helpers import perk_active
-from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from .apply import bonus_apply
 from .hud import bonus_hud_update
@@ -24,7 +23,6 @@ def bonus_telekinetic_update(
     dt: float,
     *,
     creatures: Sequence[CreatureState] | None = None,
-    apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
     freeze_corpse_indices: set[int] | None = None,
@@ -67,7 +65,6 @@ def bonus_telekinetic_update(
             origin=entry,
             creatures=creatures,
             players=players,
-            apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices,
@@ -98,7 +95,6 @@ def bonus_update(
     *,
     creatures: Sequence[CreatureState] | None = None,
     update_hud: bool = True,
-    apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
     freeze_corpse_indices: set[int] | None = None,
@@ -110,7 +106,6 @@ def bonus_update(
         players,
         dt,
         creatures=creatures,
-        apply_creature_damage=apply_creature_damage,
         detail_preset=int(detail_preset),
         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
         freeze_corpse_indices=freeze_corpse_indices,
@@ -121,7 +116,6 @@ def bonus_update(
             state=state,
             players=players,
             creatures=creatures,
-            apply_creature_damage=apply_creature_damage,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices,

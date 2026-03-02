@@ -13,13 +13,14 @@ from grim.raylib_api import rl
 from ...aim_schemes import AimScheme
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
+from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import GameState
+from ..types import FrontendContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -94,13 +95,7 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     return CONTROLS_RIGHT_PANEL_POS_Y
 
 
-class _DropdownLayout(msgspec.Struct, frozen=True):
-    pos: Vec2
-    width: float
-    header_h: float
-    row_h: float
-    rows_y0: float
-    full_h: float
+class _ControlsDropdownLayout(DropdownLayoutBase, frozen=True):
     arrow_pos: Vec2
     arrow_size: Vec2
     text_pos: Vec2
@@ -116,7 +111,7 @@ class _RebindRowLayout(msgspec.Struct, frozen=True):
 
 
 class ControlsMenuView(PanelMenuView):
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         super().__init__(
             state,
             title="Controls",
@@ -472,7 +467,7 @@ class ControlsMenuView(PanelMenuView):
             items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
-    def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _DropdownLayout:
+    def _dropdown_layout(self, *, pos: Vec2, items: tuple[str, ...], scale: float) -> _ControlsDropdownLayout:
         font = self._ensure_small_font()
         text_scale = 1.0 * scale
         max_label_w = 0.0
@@ -483,7 +478,7 @@ class ControlsMenuView(PanelMenuView):
         row_h = 16.0 * scale
         full_h = (float(len(items)) * 16.0 + 24.0) * scale
         arrow = 16.0 * scale
-        return _DropdownLayout(
+        return _ControlsDropdownLayout(
             pos=pos,
             width=width,
             header_h=header_h,
@@ -499,7 +494,7 @@ class ControlsMenuView(PanelMenuView):
     def _update_dropdown(
         self,
         *,
-        layout: _DropdownLayout,
+        layout: _ControlsDropdownLayout,
         item_count: int,
         is_open: bool,
         enabled: bool,
@@ -751,7 +746,7 @@ class ControlsMenuView(PanelMenuView):
             rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        dropdowns: tuple[tuple[bool, _DropdownLayout, tuple[str, ...], int, bool], ...] = (
+        dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (
                 self._player_profile_open,
                 player_layout,
@@ -910,7 +905,7 @@ class ControlsMenuView(PanelMenuView):
     def _draw_dropdown(
         self,
         *,
-        layout: _DropdownLayout,
+        layout: _ControlsDropdownLayout,
         items: tuple[str, ...],
         selected_index: int,
         is_open: bool,

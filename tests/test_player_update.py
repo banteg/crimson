@@ -15,6 +15,7 @@ from crimson.gameplay import (
 )
 from crimson.math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from crimson.movement_controls import MovementControlType
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
@@ -344,8 +345,8 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
-    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
-    assert owner_ids == {-100}
+    owners = {entry.owner for entry in pool.entries if entry.active}
+    assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 15
 
@@ -360,8 +361,8 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
     assert state.bonus_spawn_guard
-    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
-    assert owner_ids == {-100}
+    owners = {entry.owner for entry in pool.entries if entry.active}
+    assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
@@ -391,8 +392,8 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
-    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
-    assert owner_ids == {-100}
+    owners = {entry.owner for entry in pool.entries if entry.active}
+    assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTypeId.FIRE_BULLETS)]
 
@@ -866,8 +867,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
-    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
-    assert owner_ids == {-100}
+    owners = {entry.owner for entry in pool.entries if entry.active}
+    assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 4
@@ -906,8 +907,8 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state, players=[player])
 
-    owner_ids = {int(entry.owner_id) for entry in pool.entries if entry.active}
-    assert owner_ids == {-100}
+    owners = {entry.owner for entry in pool.entries if entry.active}
+    assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
     assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}

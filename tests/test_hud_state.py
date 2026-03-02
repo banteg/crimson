@@ -1,11 +1,37 @@
 from __future__ import annotations
 
-from crimson.ui.hud import HUD_QUEST_LEFT_Y_SHIFT, HudState, hud_layout
+import pytest
+
+from crimson.ui.hud import (
+    HUD_QUEST_LEFT_Y_SHIFT,
+    HudAssets,
+    HudRenderContext,
+    HudRenderFlags,
+    HudState,
+    hud_layout,
+)
 
 
 class _FontStub:
     def __init__(self, cell_size: int) -> None:
         self.cell_size = int(cell_size)
+
+
+def _empty_assets() -> HudAssets:
+    return HudAssets(
+        game_top=None,
+        life_heart=None,
+        ind_life=None,
+        ind_panel=None,
+        ind_bullet=None,
+        ind_fire=None,
+        ind_rocket=None,
+        ind_electric=None,
+        wicons=None,
+        clock_table=None,
+        clock_pointer=None,
+        bonuses=None,
+    )
 
 
 def test_hud_state_smooth_xp_resets_on_non_positive_target() -> None:
@@ -54,3 +80,34 @@ def test_hud_layout_quest_hud_y_shift() -> None:
     layout = hud_layout(1024, 768, font=None, show_quest_hud=True)
     assert layout.hud_y_shift == HUD_QUEST_LEFT_Y_SHIFT
 
+
+def test_hud_render_context_exposes_flags() -> None:
+    flags = HudRenderFlags(
+        show_health=False,
+        show_weapon=False,
+        show_xp=False,
+        show_time=True,
+        show_quest_hud=True,
+    )
+    context = HudRenderContext(assets=_empty_assets(), state=HudState(), flags=flags)
+    assert context.flags == flags
+
+
+def test_hud_render_context_defaults_to_standard_flags() -> None:
+    context = HudRenderContext(assets=_empty_assets(), state=HudState())
+    flags = context.flags
+    assert flags.show_health is True
+    assert flags.show_weapon is True
+    assert flags.show_xp is True
+    assert flags.show_time is False
+    assert flags.show_quest_hud is False
+
+
+def test_hud_render_context_rejects_legacy_show_overrides() -> None:
+    with pytest.raises(TypeError):
+        # Keep `HudRenderContext` cut over to `flags` only.
+        HudRenderContext(
+            assets=_empty_assets(),
+            state=HudState(),
+            show_health=False,  # type: ignore[call-arg]
+        )

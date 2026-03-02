@@ -15,6 +15,12 @@ from .lockstep_protocol import (
     Welcome,
     builds_compatible,
 )
+from .session_settings import (
+    SessionSettings,
+    match_start_from_session_settings,
+    session_settings_for_lockstep,
+    welcome_from_session_settings,
+)
 from .transport import PeerAddr
 
 
@@ -37,6 +43,16 @@ class HostLobby(msgspec.Struct):
     started: bool = False
     host_ready: bool = True
     peers_by_addr: dict[PeerAddr, HostPeer] = msgspec.field(default_factory=dict)
+
+    def session_settings(self) -> SessionSettings:
+        return session_settings_for_lockstep(
+            mode_id=int(self.mode_id),
+            player_count=int(self.player_count),
+            quest_level=str(self.quest_level),
+            preserve_bugs=bool(self.preserve_bugs),
+            tick_rate=int(self.tick_rate),
+            input_delay_ticks=int(self.input_delay_ticks),
+        )
 
     def _next_free_slot(self) -> int | None:
         used = {0}
@@ -64,21 +80,16 @@ class HostLobby(msgspec.Struct):
             peer = HostPeer(addr=addr, slot_index=int(slot), ready=False)
             self.peers_by_addr[addr] = peer
 
-        return Welcome(
+        return welcome_from_session_settings(
+            self.session_settings(),
             accepted=True,
             reason="",
             session_id=str(self.session_id),
             protocol_version=int(PROTOCOL_VERSION),
             build_id=str(self.build_id),
-            mode_id=int(self.mode_id),
-            player_count=int(self.player_count),
             slot_index=int(peer.slot_index),
             host_slot_index=0,
-            tick_rate=int(self.tick_rate),
-            input_delay_ticks=int(self.input_delay_ticks),
             seed=0,
-            quest_level=str(self.quest_level),
-            preserve_bugs=bool(self.preserve_bugs),
             started=bool(self.started),
         )
 
@@ -165,14 +176,11 @@ class HostLobby(msgspec.Struct):
         status_hash: str = "",
     ) -> MatchStart:
         self.started = True
-        return MatchStart(
+        return match_start_from_session_settings(
+            self.session_settings(),
             session_id=str(self.session_id),
-            mode_id=int(self.mode_id),
-            player_count=int(self.player_count),
             seed=int(seed),
             start_tick=int(start_tick),
-            quest_level=str(self.quest_level),
-            preserve_bugs=bool(self.preserve_bugs),
             status_snapshot=status_snapshot,
             status_hash=str(status_hash or ""),
         )

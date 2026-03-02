@@ -6,12 +6,13 @@ from collections.abc import Callable, MutableSequence
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..effects import EffectPool
 from ..effects_atlas import EffectId
-from .types import ProjectileTypeId, _EffectsLike
+from .types import ProjectileTypeId
 
 
 def _spawn_shrinkifier_hit_effects(
-    effects: _EffectsLike | None,
+    effects: EffectPool | None,
     *,
     pos: Vec2,
     rng: Callable[[], int],
@@ -70,7 +71,7 @@ def _spawn_shrinkifier_hit_effects(
 
 
 def _spawn_ion_hit_effects(
-    effects: _EffectsLike | None,
+    effects: EffectPool | None,
     sfx_queue: MutableSequence[str] | None,
     *,
     type_id: ProjectileTypeId,
@@ -156,7 +157,7 @@ def _spawn_ion_hit_effects(
 
 
 def _spawn_plasma_cannon_hit_effects(
-    effects: _EffectsLike | None,
+    effects: EffectPool | None,
     sfx_queue: MutableSequence[str] | None,
     *,
     pos: Vec2,
@@ -203,7 +204,7 @@ def _spawn_plasma_cannon_hit_effects(
 
 
 def _spawn_splitter_hit_effects(
-    effects: _EffectsLike | None,
+    effects: EffectPool | None,
     *,
     pos: Vec2,
     rng: Callable[[], int],

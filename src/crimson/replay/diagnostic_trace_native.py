@@ -5,6 +5,8 @@ from pathlib import Path
 
 import msgspec
 
+from ..owner_ref import OwnerRef
+
 REPLAY_TICK_TRACE_SCHEMA_VERSION = 6
 REPLAY_TICK_TRACE_MSGPACK_MAGIC = b"crimson_replay_tick_trace_msgpack_v3\n"
 
@@ -110,7 +112,7 @@ class ReplayTickTraceProjectileSample(msgspec.Struct):
     damage_pool: float
     hit_radius: float
     travel_budget: float
-    owner_id: int
+    owner: OwnerRef
 
 
 class ReplayTickTraceSecondaryProjectileSample(msgspec.Struct):
@@ -121,7 +123,7 @@ class ReplayTickTraceSecondaryProjectileSample(msgspec.Struct):
     vel: ReplayTickTraceVec2
     speed: float
     trail_timer: float
-    owner_id: int
+    owner: OwnerRef
     target_id: int
 
 

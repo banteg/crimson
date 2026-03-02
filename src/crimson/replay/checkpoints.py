@@ -11,6 +11,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
+from ..owner_ref import OwnerRef
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
@@ -22,7 +23,7 @@ class _DeathLike(Protocol):
     type_id: int
     reward_value: float
     xp_awarded: int
-    owner_id: int
+    owner: OwnerRef
 
 
 class _EventsLike(Protocol):
@@ -70,7 +71,7 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
     type_id: int
     reward_value: float
     xp_awarded: int
-    owner_id: int
+    owner: OwnerRef
 
 
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True):
@@ -213,7 +214,7 @@ def build_checkpoint(
                 type_id=int(death_view.type_id),
                 reward_value=float(death_view.reward_value),
                 xp_awarded=int(death_view.xp_awarded),
-                owner_id=int(death_view.owner_id),
+                owner=death_view.owner,
             ),
         )
 

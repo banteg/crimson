@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import msgspec
-
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -62,6 +60,7 @@ from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
 from ...frontend.transitions import _draw_screen_fade
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
+from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
 from ..types import GameState, HighScoresRequest
@@ -70,13 +69,8 @@ from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
 
 
-class _DropdownLayout(msgspec.Struct, frozen=True):
-    pos: Vec2
-    width: float
-    header_h: float
-    row_h: float
-    rows_y0: float
-    full_h: float
+class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
+    pass
 
 
 class HighScoresView:
@@ -338,11 +332,11 @@ class HighScoresView:
         self._closing = True
         self._close_action = action
 
-    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _DropdownLayout:
+    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
         row_h = 16.0 * scale
         full_h = (float(item_count) * 16.0 + 24.0) * scale
-        return _DropdownLayout(
+        return _ScoresDropdownLayout(
             pos=pos,
             width=float(width),
             header_h=header_h,
@@ -354,7 +348,7 @@ class HighScoresView:
     def _update_dropdown(
         self,
         *,
-        layout: _DropdownLayout,
+        layout: _ScoresDropdownLayout,
         item_count: int,
         is_open: bool,
         enabled: bool,

@@ -1,9 +1,20 @@
 from __future__ import annotations
 
+import msgspec
+
 from grim.geom import Vec2
 
 UI_BASE_WIDTH = 640.0
 UI_BASE_HEIGHT = 480.0
+
+
+class DropdownLayoutBase(msgspec.Struct, frozen=True):
+    pos: Vec2
+    width: float
+    header_h: float
+    row_h: float
+    rows_y0: float
+    full_h: float
 
 
 def ui_scale(screen_w: float, screen_h: float) -> float:

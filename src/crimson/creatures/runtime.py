@@ -12,7 +12,7 @@ See: `docs/creatures/update.md`.
 
 import math
 from collections.abc import Callable, Sequence
-from typing import Protocol, cast
+from typing import cast
 
 import msgspec
 
@@ -21,7 +21,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..bonuses import BonusId
-from ..effects import FxQueue, FxQueueRotated
+from ..effects import EffectPool, FxQueue, FxQueueRotated
 from ..gameplay import (
     award_experience,
     award_experience_from_reward,
@@ -110,28 +110,6 @@ _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[str, str]] = {
     CreatureTypeId.SPIDER_SP1: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
     CreatureTypeId.SPIDER_SP2: ("sfx_spider_attack_01", "sfx_spider_attack_02"),
 }
-
-
-class _EffectsForCreatureSpawns(Protocol):
-    def spawn_blood_splatter(
-        self,
-        *,
-        pos: Vec2,
-        angle: float,
-        age: float,
-        rand: Callable[[], int],
-        detail_preset: int,
-        fx_toggle: int,
-    ) -> None: ...
-
-    def spawn_burst(
-        self,
-        *,
-        pos: Vec2,
-        count: int,
-        rand: Callable[[], int],
-        detail_preset: int,
-    ) -> None: ...
 
 
 def _wrap_angle(angle: float) -> float:
@@ -291,22 +269,13 @@ class CreatureState(msgspec.Struct):
     bonus_id: BonusId | None = None
     bonus_duration_override: int | None = None
 
-    @property
-    def last_hit_owner_id(self) -> int:
-        return self.last_hit_owner.to_legacy()
-
-    @last_hit_owner_id.setter
-    def last_hit_owner_id(self, value: OwnerRef) -> None:
-        self.last_hit_owner = value
-
-
 class CreatureDeath(msgspec.Struct, frozen=True):
     index: int
     pos: Vec2
     type_id: CreatureTypeId
     reward_value: float
     xp_awarded: int
-    owner_id: int
+    owner: OwnerRef
     suppress_death_sfx: bool = False
     # Some native death paths already consume/use their own SFX randomness
     # (for example plague timer kills). Skip world-level death-SFX planning there.
@@ -582,7 +551,7 @@ class CreaturePool:
         *,
         size: int = CREATURE_POOL_SIZE,
         env: SpawnEnv | None = None,
-        effects: _EffectsForCreatureSpawns | None = None,
+        effects: EffectPool | None = None,
     ) -> None:
         self._entries = [CreatureState() for _ in range(int(size))]
         self.spawn_slots: list[SpawnSlotInit] = []
@@ -744,7 +713,7 @@ class CreaturePool:
         *,
         rand: Callable[[], int] | None = None,
         detail_preset: int = 5,
-        effects: _EffectsForCreatureSpawns | None = None,
+        effects: EffectPool | None = None,
     ) -> tuple[list[int], int | None]:
         """Materialize a pure `SpawnPlan` into the runtime pool.
 
@@ -834,7 +803,7 @@ class CreaturePool:
         rand: Callable[[], int] | None = None,
         env: SpawnEnv | None = None,
         detail_preset: int = 5,
-        effects: _EffectsForCreatureSpawns | None = None,
+        effects: EffectPool | None = None,
     ) -> tuple[list[int], int | None]:
         """Build a spawn plan and materialize it into the pool."""
 
@@ -1209,7 +1178,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
-                            owner_id=OwnerRef.from_creature(int(idx)),
+                            owner=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
@@ -1222,7 +1191,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
-                            owner_id=OwnerRef.from_creature(int(idx)),
+                            owner=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
@@ -1330,7 +1299,7 @@ class CreaturePool:
                 type_id=creature.type_id,
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
-                owner_id=creature.last_hit_owner.to_legacy(),
+                owner=creature.last_hit_owner,
                 suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
                 plan_death_sfx=bool(plan_death_sfx),
             )
@@ -1626,6 +1595,6 @@ class CreaturePool:
             type_id=creature.type_id,
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
-            owner_id=creature.last_hit_owner.to_legacy(),
+            owner=creature.last_hit_owner,
             suppress_death_sfx=bool(armored_death),
         )

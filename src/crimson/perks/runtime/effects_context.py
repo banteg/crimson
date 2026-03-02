@@ -90,7 +90,3 @@ class PerksUpdateEffectsCtx(msgspec.Struct):
         )
         self._aim_target_by_player_index[player_index] = int(target)
         return int(target)
-
-    # Backward-compatible alias for player 1 targeting.
-    def aim_target(self) -> int:
-        return self.aim_target_for_player(0)

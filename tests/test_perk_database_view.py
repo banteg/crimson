@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import cast
 
-import crimson.frontend.panels.databases as perk_db
+import crimson.frontend.panels.databases_perks as perk_db
 from crimson.frontend.panels.databases import UnlockedPerksDatabaseView
 from grim.fonts.small import SmallFontData
 

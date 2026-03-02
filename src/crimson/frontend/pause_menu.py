@@ -34,13 +34,13 @@ from .menu import (
     _draw_menu_cursor,
 )
 from .transitions import _draw_screen_fade
-from .types import GameState, PauseBackground
+from .types import FrontendContext, PauseBackground
 
 PAUSE_MENU_TO_MAIN_MENU_FADE_MS = 500
 
 
 class PauseMenuView:
-    def __init__(self, state: GameState) -> None:
+    def __init__(self, state: FrontendContext) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

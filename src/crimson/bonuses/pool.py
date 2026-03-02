@@ -15,6 +15,15 @@ from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
 from .ids import BONUS_BY_ID, BonusId, bonus_display_name
+from .payload import (
+    BonusPayload,
+    BonusPointsPayload,
+    BonusWeaponPayload,
+    bonus_payload_from_bonus,
+    bonus_payload_value,
+    bonus_points_payload,
+    bonus_weapon_payload,
+)
 from .selection import bonus_pick_random_type
 
 if TYPE_CHECKING:
@@ -40,6 +49,17 @@ class BonusEntry(msgspec.Struct):
     pos: Vec2 = Vec2()
     amount: int = 0
 
+    @property
+    def payload(self) -> BonusPayload:
+        return bonus_payload_from_bonus(
+            bonus_id=self.bonus_id,
+            amount=int(self.amount),
+        )
+
+    @payload.setter
+    def payload(self, value: BonusPayload) -> None:
+        self.amount = int(bonus_payload_value(value))
+
 
 def _bonus_entry_is_empty(entry: BonusEntry) -> bool:
     return (
@@ -63,8 +83,19 @@ _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
 }
 
 
-def _weapon_id_from_bonus_amount(amount: int) -> WeaponId | None:
-    weapon = WEAPON_BY_ID.get(int(amount))
+def _weapon_id_from_native_payload_value(payload: BonusPayload) -> WeaponId | None:
+    # Keep native amount-domain behavior: any payload numeric value that happens
+    # to match a weapon id can trip suppression checks under `--preserve-bugs`.
+    weapon = WEAPON_BY_ID.get(int(bonus_payload_value(payload)))
+    if weapon is None:
+        return None
+    return weapon.weapon_id
+
+
+def _weapon_id_from_weapon_payload(payload: BonusPayload) -> WeaponId | None:
+    if not isinstance(payload, BonusWeaponPayload):
+        return None
+    weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
     if weapon is None:
         return None
     return weapon.weapon_id
@@ -90,10 +121,19 @@ class BonusPool:
         # Native bonus code uses a writable sentinel entry when allocation/spacing
         # checks fail. Some callers still mutate it, which affects RNG consumption.
         self._sentinel = BonusEntry()
+        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[BonusEntry]:
         return self._entries
+
+    @property
+    def creature_damage_applier(self) -> CreatureDamageApplier | None:
+        return self._creature_damage_applier
+
+    @creature_damage_applier.setter
+    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
+        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -161,7 +201,10 @@ class BonusPool:
         if amount == -1:
             meta = BONUS_BY_ID.get(bonus_id)
             amount = int(meta.default_amount or 0) if meta is not None else 0
-        entry.amount = int(amount)
+        entry.payload = bonus_payload_from_bonus(
+            bonus_id=bonus_id,
+            amount=int(amount),
+        )
         return entry
 
     def spawn_at_pos(
@@ -202,12 +245,15 @@ class BonusPool:
 
         rng = state.rng
         if entry.bonus_id == BonusId.WEAPON:
-            entry.amount = weapon_pick_random_available(state)
+            entry.payload = bonus_weapon_payload(weapon_pick_random_available(state))
         elif entry.bonus_id == BonusId.POINTS:
-            entry.amount = 1000 if (rng.rand() & 7) < 3 else 500
+            entry.payload = bonus_points_payload(1000 if (rng.rand() & 7) < 3 else 500)
         else:
             meta = BONUS_BY_ID.get(entry.bonus_id)
-            entry.amount = int(meta.default_amount or 0) if meta is not None else 0
+            entry.payload = bonus_payload_from_bonus(
+                bonus_id=entry.bonus_id,
+                amount=int(meta.default_amount or 0) if meta is not None else 0,
+            )
         return entry
 
     def try_spawn_on_kill(
@@ -247,17 +293,17 @@ class BonusPool:
 
                 entry.bonus_id = BonusId.WEAPON
                 weapon_id = WeaponId(weapon_pick_random_available(state))
-                entry.amount = int(weapon_id)
+                entry.payload = bonus_weapon_payload(int(weapon_id))
                 if weapon_id == WeaponId.PISTOL:
                     weapon_id = WeaponId(weapon_pick_random_available(state))
-                    entry.amount = int(weapon_id)
+                    entry.payload = bonus_weapon_payload(int(weapon_id))
 
                 matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
                 if matches > 1:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == WeaponId.PISTOL or (
+                if int(bonus_payload_value(entry.payload)) == WeaponId.PISTOL or (
                     players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
                 ):
                     self._clear_entry(entry)
@@ -310,7 +356,7 @@ class BonusPool:
                     near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
             if near_player:
                 entry.bonus_id = BonusId.POINTS
-                entry.amount = 100
+                entry.payload = bonus_points_payload(100)
 
         if entry.bonus_id != BonusId.POINTS:
             matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
@@ -323,13 +369,13 @@ class BonusPool:
                 weapon_id = players[0].weapon.weapon_id
                 suppression_weapon_id = _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION.get(entry.bonus_id)
                 if suppression_weapon_id is None:
-                    suppression_weapon_id = _weapon_id_from_bonus_amount(entry.amount)
+                    suppression_weapon_id = _weapon_id_from_native_payload_value(entry.payload)
                 if suppression_weapon_id == weapon_id:
                     self._clear_entry(entry)
                     return None
             else:
                 carried_weapon_ids = _all_carried_weapon_ids(players)
-                bonus_weapon_id = _weapon_id_from_bonus_amount(entry.amount)
+                bonus_weapon_id = _weapon_id_from_weapon_payload(entry.payload)
                 if entry.bonus_id == BonusId.WEAPON and bonus_weapon_id in carried_weapon_ids:
                     self._clear_entry(entry)
                     return None
@@ -345,7 +391,6 @@ class BonusPool:
         state: GameplayState,
         players: list[PlayerState],
         creatures: Sequence[CreatureState] | None = None,
-        apply_creature_damage: CreatureDamageApplier | None = None,
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,
         freeze_corpse_indices: set[int] | None = None,
@@ -386,7 +431,6 @@ class BonusPool:
                         origin=entry,
                         creatures=creatures,
                         players=players,
-                        apply_creature_damage=apply_creature_damage,
                         detail_preset=int(detail_preset),
                         defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
                         freeze_corpse_indices=freeze_corpse_indices,
@@ -427,14 +471,18 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     """Return the classic label text for a bonus entry (`bonus_label_for_entry`)."""
 
     bonus_id = entry.bonus_id
+    payload = entry.payload
     if bonus_id == BonusId.WEAPON:
-        weapon = WEAPON_BY_ID.get(entry.amount)
+        if not isinstance(payload, BonusWeaponPayload):
+            return "Weapon"
+        weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
         if weapon is not None and weapon.name:
-            return weapon_display_name(WeaponId(entry.amount), preserve_bugs=bool(preserve_bugs))
+            return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
         return "Weapon"
     if bonus_id == BonusId.POINTS:
+        points = int(payload.points) if isinstance(payload, BonusPointsPayload) else int(entry.amount)
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))
-        return f"{points_label}: {int(entry.amount)}"
+        return f"{points_label}: {points}"
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is not None:
         return bonus_display_name(meta.bonus_id, preserve_bugs=bool(preserve_bugs))

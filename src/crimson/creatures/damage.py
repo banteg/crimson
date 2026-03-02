@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
-from typing import Protocol
 
 import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..effects import EffectPool
 from ..effects_atlas import EffectId
 from ..math_parity import f32
 from ..owner_ref import OwnerRef
@@ -36,27 +36,6 @@ class _CreatureDamageCtx(msgspec.Struct):
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
-
-
-class _EffectsLike(Protocol):
-    def spawn(
-        self,
-        *,
-        effect_id: int,
-        pos: Vec2,
-        vel: Vec2,
-        rotation: float,
-        scale: float,
-        half_width: float,
-        half_height: float,
-        age: float,
-        lifetime: float,
-        flags: int,
-        color: RGBA,
-        rotation_step: float,
-        scale_step: float,
-        detail_preset: int,
-    ) -> int | None: ...
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
@@ -115,7 +94,7 @@ def _damage_lethal_ranged_shock_burst(
     *,
     creature: CreatureState,
     rand: Callable[[], int],
-    effects: _EffectsLike | None,
+    effects: EffectPool | None,
     detail_preset: int,
 ) -> None:
     """Port the `creature_apply_damage` lethal branch for `flags & 0x10`."""
@@ -177,7 +156,7 @@ def creature_apply_damage(
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
-    effects: _EffectsLike | None = None,
+    effects: EffectPool | None = None,
     detail_preset: int = 5,
 ) -> bool:
     """Apply damage to a creature, returning True if the hit killed it.
@@ -253,7 +232,7 @@ def creature_apply_damage_with_lethal_followup(
     dt: float,
     players: list[PlayerState],
     rand: Callable[[], int],
-    effects: _EffectsLike | None = None,
+    effects: EffectPool | None = None,
     detail_preset: int = 5,
     on_lethal: Callable[[], None],
 ) -> bool:

@@ -34,13 +34,17 @@ from .relay_protocol import (
     RoomCreate,
     RoomJoin,
     RoomReady,
-    RoomStart,
-    RoomState,
     StatusSnapshot,
     builds_compatible,
 )
 from .relay_reliable import RelayReliableLink
 from .relay_transport import PeerAddr, RelayUdpTransport
+from .session_settings import (
+    room_start_from_session_settings,
+    room_state_from_session_settings,
+    session_settings_for_relay,
+    session_settings_from_room_create,
+)
 
 
 def _now_ms() -> int:
@@ -351,7 +355,8 @@ class RelayServer:
             self._send_peer(peer, RelayError(reason="room_code_exhausted"), reliable=True, now_ms=int(now_ms))
             return
 
-        player_count = max(1, min(4, int(message.player_count)))
+        settings = session_settings_from_room_create(message)
+        player_count = int(settings.player_count)
         slots = [_RoomSlot(slot_index=i) for i in range(int(player_count))]
         host_slot = slots[0]
         host_slot.peer_id = str(peer.peer_id)
@@ -362,14 +367,14 @@ class RelayServer:
         room = _Room(
             room_code=str(code),
             session_id=uuid.uuid4().hex[:12],
-            mode_id=int(message.mode_id),
+            mode_id=int(settings.mode_id),
             player_count=int(player_count),
-            quest_level=str(message.quest_level or ""),
-            preserve_bugs=bool(message.preserve_bugs),
-            tick_rate=max(1, int(message.tick_rate)),
-            input_delay_ticks=max(0, int(message.input_delay_ticks)),
-            rollback_max_ticks=max(1, int(message.rollback_max_ticks)),
-            netcode_mode=message.netcode_mode,
+            quest_level=str(settings.quest_level),
+            preserve_bugs=bool(settings.preserve_bugs),
+            tick_rate=int(settings.tick_rate),
+            input_delay_ticks=int(settings.input_delay_ticks),
+            rollback_max_ticks=int(settings.rollback_max_ticks),
+            netcode_mode=settings.netcode_mode,
             status_snapshot=message.status_snapshot,
             slots=slots,
         )
@@ -634,9 +639,7 @@ class RelayServer:
             )
             for slot in room.slots
         ]
-        state = RoomState(
-            room_code=str(room.room_code),
-            session_id=str(room.session_id),
+        settings = session_settings_for_relay(
             mode_id=int(room.mode_id),
             player_count=int(room.player_count),
             quest_level=str(room.quest_level),
@@ -645,6 +648,11 @@ class RelayServer:
             input_delay_ticks=int(room.input_delay_ticks),
             rollback_max_ticks=int(room.rollback_max_ticks),
             netcode_mode=room.netcode_mode,
+        )
+        state = room_state_from_session_settings(
+            settings,
+            room_code=str(room.room_code),
+            session_id=str(room.session_id),
             slots=slots,
             all_ready=bool(room.all_ready()),
             started=bool(room.started),
@@ -681,21 +689,24 @@ class RelayServer:
         reconnect_token = ""
         if 0 <= int(slot_index) < len(room.slots):
             reconnect_token = str(room.slots[int(slot_index)].reconnect_token)
+        settings = session_settings_for_relay(
+            mode_id=int(room.mode_id),
+            player_count=int(room.player_count),
+            quest_level=str(room.quest_level),
+            preserve_bugs=bool(room.preserve_bugs),
+            tick_rate=int(room.tick_rate),
+            input_delay_ticks=int(room.input_delay_ticks),
+            rollback_max_ticks=int(room.rollback_max_ticks),
+            netcode_mode=room.netcode_mode,
+        )
         self._send_peer(
             peer,
-            RoomStart(
+            room_start_from_session_settings(
+                settings,
                 room_code=str(room.room_code),
                 session_id=str(room.session_id),
                 seed=int(room.seed),
                 start_tick=int(room.start_tick),
-                mode_id=int(room.mode_id),
-                player_count=int(room.player_count),
-                quest_level=str(room.quest_level),
-                preserve_bugs=bool(room.preserve_bugs),
-                tick_rate=int(room.tick_rate),
-                input_delay_ticks=int(room.input_delay_ticks),
-                rollback_max_ticks=int(room.rollback_max_ticks),
-                netcode_mode=room.netcode_mode,
                 slot_index=int(slot_index),
                 host_slot_index=0,
                 reconnect_token=str(reconnect_token),

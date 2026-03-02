@@ -22,6 +22,7 @@ from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
+from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
@@ -1026,7 +1027,7 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     assert_float_close(entry.collision_timer, 0.0)
     assert_float_close(entry.hit_flash_timer, 0.0)
     assert_float_close(entry.anim_phase, 0.0)
-    assert entry.last_hit_owner_id == -100
+    assert entry.last_hit_owner == OwnerRef.from_local_player(0)
 
 
 def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:

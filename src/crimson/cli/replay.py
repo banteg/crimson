@@ -13,6 +13,14 @@ from tqdm import tqdm
 
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
+from ..replay.types import ReplayClaimedStatsSnapshot
+from ..sim.driver.replay_benchmark import (
+    BenchmarkAggregate,
+    BenchmarkSample,
+    ReplayProfileResult,
+    ReplayRenderTelemetryResult,
+)
+from ..sim.driver.setup import RunResult
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
 _REPLAY_INFO_SCHEMA_VERSION = 1
@@ -201,42 +209,11 @@ def _replay_mode_label(game_mode_id: GameMode) -> str:
             return "unknown"
 
 
-class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
-    game_mode_id: GameMode
-    tick_rate: int
-    ticks: int
-    elapsed_ms: int
-    score_xp: int
-    creature_kill_count: int
-    most_used_weapon_id: int
-    shots_fired: int
-    shots_hit: int
-    rng_state: int
-
-
-class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
-    metric: str
-    submitted_score: int
-    simulated_value: int
-    match: bool
-
-
-class _ReplayVerifyClaimedStatsPayload(msgspec.Struct, forbid_unknown_fields=True):
-    complete: bool
-    ticks: int
-    elapsed_ms: int
-    score_xp: int
-    kills: int
-    most_used_weapon_id: int
-    shots_fired: int
-    shots_hit: int
-
-
 class _ReplayVerifyHeaderClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
-    expected: _ReplayVerifyClaimedStatsPayload
-    simulated: _ReplayVerifyClaimedStatsPayload
+    expected: ReplayClaimedStatsSnapshot
+    simulated: ReplayClaimedStatsSnapshot
     match: bool
-    mismatched_fields: list[str]
+    mismatched_fields: tuple[str, ...]
 
 
 class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -244,9 +221,9 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     status: str
     replay: str
     replay_sha256: str
-    run_result: _RunResultPayload
+    run_result: RunResult
     header_claim: _ReplayVerifyHeaderClaimPayload | None
-    score_claim: _ReplayVerifyScoreClaimPayload | None
+    score_claim: None = None
 
 
 class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -278,32 +255,6 @@ class _ReplayInfoPayload(msgspec.Struct, forbid_unknown_fields=True):
     timeline: list[_ReplayInfoEventPayload]
 
 
-class _BenchmarkAggregatePayload(msgspec.Struct, forbid_unknown_fields=True):
-    min: float
-    p50: float
-    mean: float
-    p95: float
-    max: float
-    stdev: float
-
-
-class _ReplayBenchmarkProfileHotspotPayload(msgspec.Struct, forbid_unknown_fields=True):
-    file: str
-    line: int
-    function: str
-    primitive_calls: int
-    total_calls: int
-    tottime: float
-    cumtime: float
-
-
-class _ReplayBenchmarkProfilePayload(msgspec.Struct, forbid_unknown_fields=True):
-    sort: str
-    top: int
-    source: str
-    hotspots: list[_ReplayBenchmarkProfileHotspotPayload]
-
-
 class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True):
     mode: str
     runs: int
@@ -319,63 +270,12 @@ class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True
     render_charts_out_dir: str | None
 
 
-class _ReplayBenchmarkSamplePayload(msgspec.Struct, forbid_unknown_fields=True):
-    wall_ms: float
-    ticks_per_second: float
-    realtime_x: float
-
-
-class _ReplayBenchmarkSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
+class _ReplayBenchmarkStatsPayload(msgspec.Struct, forbid_unknown_fields=True):
     sample_count: int
-    samples: list[_ReplayBenchmarkSamplePayload]
-    wall_ms: _BenchmarkAggregatePayload
-    ticks_per_second: _BenchmarkAggregatePayload
-    realtime_x: _BenchmarkAggregatePayload
-
-
-class _ReplayRenderTelemetryTopTickPayload(msgspec.Struct, forbid_unknown_fields=True):
-    tick_index: int
-    frame_index: int
-    value: float
-
-
-class _ReplayRenderTelemetryFramePayload(msgspec.Struct, forbid_unknown_fields=True):
-    frame_index: int
-    tick_index_before_update: int
-    tick_index_after_update: int
-    update_ms: float
-    draw_ms: float
-    frame_ms: float
-    draw_calls_total: int
-    draw_calls_by_api: dict[str, int]
-    draw_calls_by_pass: dict[str, int]
-    pass_ms: dict[str, float]
-
-
-class _ReplayRenderTelemetrySummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
-    frame_ms: _BenchmarkAggregatePayload
-    update_ms: _BenchmarkAggregatePayload
-    draw_ms: _BenchmarkAggregatePayload
-    draw_calls_total: _BenchmarkAggregatePayload
-    top_draw_ms_ticks: list[_ReplayRenderTelemetryTopTickPayload]
-    top_frame_ms_ticks: list[_ReplayRenderTelemetryTopTickPayload]
-    top_draw_calls_ticks: list[_ReplayRenderTelemetryTopTickPayload]
-
-
-class _ReplayRenderTelemetryArtifactsPayload(msgspec.Struct, forbid_unknown_fields=True):
-    telemetry_json_path: str | None
-    charts_dir: str | None
-    frame_timing_svg: str | None
-    draw_calls_svg: str | None
-    pass_timing_stacked_svg: str | None
-    report_md: str | None
-
-
-class _ReplayRenderTelemetryPayload(msgspec.Struct, forbid_unknown_fields=True):
-    summary: _ReplayRenderTelemetrySummaryPayload
-    frames: list[_ReplayRenderTelemetryFramePayload]
-    preview: list[_ReplayRenderTelemetryFramePayload]
-    artifacts: _ReplayRenderTelemetryArtifactsPayload | None
+    samples: tuple[BenchmarkSample, ...]
+    wall_ms: BenchmarkAggregate
+    ticks_per_second: BenchmarkAggregate
+    realtime_x: BenchmarkAggregate
 
 
 class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -384,63 +284,10 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     replay: str
     replay_sha256: str
     settings: _ReplayBenchmarkSettingsPayload
-    run_result: _RunResultPayload
-    benchmark: _ReplayBenchmarkSummaryPayload
-    profile: _ReplayBenchmarkProfilePayload | None
-    render_telemetry: _ReplayRenderTelemetryPayload | None
-
-
-def _run_result_payload(run_result: object) -> _RunResultPayload:
-    result = cast("Any", run_result)
-    return _RunResultPayload(
-        game_mode_id=GameMode(int(result.game_mode_id)),
-        tick_rate=int(result.tick_rate),
-        ticks=int(result.ticks),
-        elapsed_ms=int(result.elapsed_ms),
-        score_xp=int(result.score_xp),
-        creature_kill_count=int(result.creature_kill_count),
-        most_used_weapon_id=result.most_used_weapon_id,
-        shots_fired=int(result.shots_fired),
-        shots_hit=int(result.shots_hit),
-        rng_state=int(result.rng_state),
-    )
-
-
-def _benchmark_aggregate_payload(aggregate: object) -> _BenchmarkAggregatePayload:
-    entry = cast("Any", aggregate)
-    return _BenchmarkAggregatePayload(
-        min=float(entry.min),
-        p50=float(entry.p50),
-        mean=float(entry.mean),
-        p95=float(entry.p95),
-        max=float(entry.max),
-        stdev=float(entry.stdev),
-    )
-
-
-def _render_telemetry_top_tick_payload(entry: object) -> _ReplayRenderTelemetryTopTickPayload:
-    item = cast("Any", entry)
-    return _ReplayRenderTelemetryTopTickPayload(
-        tick_index=int(item.tick_index),
-        frame_index=int(item.frame_index),
-        value=float(item.value),
-    )
-
-
-def _render_telemetry_frame_payload(entry: object) -> _ReplayRenderTelemetryFramePayload:
-    item = cast("Any", entry)
-    return _ReplayRenderTelemetryFramePayload(
-        frame_index=int(item.frame_index),
-        tick_index_before_update=int(item.tick_index_before_update),
-        tick_index_after_update=int(item.tick_index_after_update),
-        update_ms=float(item.update_ms),
-        draw_ms=float(item.draw_ms),
-        frame_ms=float(item.frame_ms),
-        draw_calls_total=int(item.draw_calls_total),
-        draw_calls_by_api={str(key): int(value) for key, value in dict(item.draw_calls_by_api).items()},
-        draw_calls_by_pass={str(key): int(value) for key, value in dict(item.draw_calls_by_pass).items()},
-        pass_ms={str(key): float(value) for key, value in dict(item.pass_ms).items()},
-    )
+    run_result: RunResult
+    benchmark: _ReplayBenchmarkStatsPayload
+    profile: ReplayProfileResult | None
+    render_telemetry: ReplayRenderTelemetryResult | None
 
 
 def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
@@ -844,7 +691,7 @@ def cmd_replay_verify(
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
     if bool(full_replay_simulated):
-        expected_claim = _ReplayVerifyClaimedStatsPayload(
+        expected_claim = ReplayClaimedStatsSnapshot(
             complete=bool(claimed_stats.complete),
             ticks=int(claimed_stats.ticks),
             elapsed_ms=int(claimed_stats.elapsed_ms),
@@ -854,7 +701,7 @@ def cmd_replay_verify(
             shots_fired=int(claimed_stats.shots_fired),
             shots_hit=int(claimed_stats.shots_hit),
         )
-        simulated_claim = _ReplayVerifyClaimedStatsPayload(
+        simulated_claim = ReplayClaimedStatsSnapshot(
             complete=bool(claimed_stats.complete),
             ticks=int(result.ticks),
             elapsed_ms=int(result.elapsed_ms),
@@ -884,7 +731,7 @@ def cmd_replay_verify(
             expected=expected_claim,
             simulated=simulated_claim,
             match=bool(header_claim_matches),
-            mismatched_fields=list(mismatched_fields),
+            mismatched_fields=tuple(mismatched_fields),
         )
 
     status = "ok"
@@ -896,9 +743,8 @@ def cmd_replay_verify(
         status=str(status),
         replay=str(replay_path),
         replay_sha256=str(replay_sha256),
-        run_result=_run_result_payload(result),
+        run_result=result,
         header_claim=header_claim_payload,
-        score_claim=None,
     )
     payload_json = msgspec.json.encode(payload)
 
@@ -1209,62 +1055,8 @@ def cmd_replay_benchmark(
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    profile_payload: _ReplayBenchmarkProfilePayload | None = None
-    if benchmark.profile is not None:
-        profile_payload = _ReplayBenchmarkProfilePayload(
-            sort=str(benchmark.profile.sort),
-            top=int(benchmark.profile.top),
-            source=str(benchmark.profile.source),
-            hotspots=[
-                _ReplayBenchmarkProfileHotspotPayload(
-                    file=str(row.file),
-                    line=int(row.line),
-                    function=str(row.function),
-                    primitive_calls=int(row.primitive_calls),
-                    total_calls=int(row.total_calls),
-                    tottime=float(row.tottime),
-                    cumtime=float(row.cumtime),
-                )
-                for row in benchmark.profile.hotspots
-            ],
-        )
-
-    render_telemetry_payload: _ReplayRenderTelemetryPayload | None = None
-    if benchmark.render_telemetry is not None:
-        telemetry_summary = benchmark.render_telemetry.summary
-        artifacts_payload: _ReplayRenderTelemetryArtifactsPayload | None = None
-        if benchmark.render_telemetry.artifacts is not None:
-            artifacts = benchmark.render_telemetry.artifacts
-            artifacts_payload = _ReplayRenderTelemetryArtifactsPayload(
-                telemetry_json_path=(str(artifacts.telemetry_json_path) if artifacts.telemetry_json_path else None),
-                charts_dir=(str(artifacts.charts_dir) if artifacts.charts_dir else None),
-                frame_timing_svg=(str(artifacts.frame_timing_svg) if artifacts.frame_timing_svg else None),
-                draw_calls_svg=(str(artifacts.draw_calls_svg) if artifacts.draw_calls_svg else None),
-                pass_timing_stacked_svg=(
-                    str(artifacts.pass_timing_stacked_svg) if artifacts.pass_timing_stacked_svg else None
-                ),
-                report_md=(str(artifacts.report_md) if artifacts.report_md else None),
-            )
-        render_telemetry_payload = _ReplayRenderTelemetryPayload(
-            summary=_ReplayRenderTelemetrySummaryPayload(
-                frame_ms=_benchmark_aggregate_payload(telemetry_summary.frame_ms),
-                update_ms=_benchmark_aggregate_payload(telemetry_summary.update_ms),
-                draw_ms=_benchmark_aggregate_payload(telemetry_summary.draw_ms),
-                draw_calls_total=_benchmark_aggregate_payload(telemetry_summary.draw_calls_total),
-                top_draw_ms_ticks=[
-                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_draw_ms_ticks
-                ],
-                top_frame_ms_ticks=[
-                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_frame_ms_ticks
-                ],
-                top_draw_calls_ticks=[
-                    _render_telemetry_top_tick_payload(entry) for entry in telemetry_summary.top_draw_calls_ticks
-                ],
-            ),
-            frames=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.frames],
-            preview=[_render_telemetry_frame_payload(entry) for entry in benchmark.render_telemetry.preview],
-            artifacts=artifacts_payload,
-        )
+    profile_payload = benchmark.profile
+    render_telemetry_payload = benchmark.render_telemetry
 
     payload = _ReplayBenchmarkPayload(
         schema_version=int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
@@ -1285,20 +1077,13 @@ def cmd_replay_benchmark(
             render_telemetry_out=(str(render_telemetry_out) if render_telemetry_out is not None else None),
             render_charts_out_dir=(str(render_charts_out_dir) if render_charts_out_dir is not None else None),
         ),
-        run_result=_run_result_payload(benchmark.run_result),
-        benchmark=_ReplayBenchmarkSummaryPayload(
+        run_result=benchmark.run_result,
+        benchmark=_ReplayBenchmarkStatsPayload(
             sample_count=int(len(benchmark.samples)),
-            samples=[
-                _ReplayBenchmarkSamplePayload(
-                    wall_ms=float(sample.wall_ms),
-                    ticks_per_second=float(sample.ticks_per_second),
-                    realtime_x=float(sample.realtime_x),
-                )
-                for sample in benchmark.samples
-            ],
-            wall_ms=_benchmark_aggregate_payload(benchmark.wall_ms),
-            ticks_per_second=_benchmark_aggregate_payload(benchmark.ticks_per_second),
-            realtime_x=_benchmark_aggregate_payload(benchmark.realtime_x),
+            samples=tuple(benchmark.samples),
+            wall_ms=benchmark.wall_ms,
+            ticks_per_second=benchmark.ticks_per_second,
+            realtime_x=benchmark.realtime_x,
         ),
         profile=profile_payload,
         render_telemetry=render_telemetry_payload,

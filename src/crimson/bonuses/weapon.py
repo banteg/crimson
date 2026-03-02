@@ -6,10 +6,17 @@ from ..sim.state_types import WeaponSlot
 from ..weapon_runtime.assign import weapon_assign_player
 from ..weapons import WeaponId
 from .apply_context import BonusApplyCtx
+from .payload import BonusWeaponPayload, bonus_payload_from_bonus
 
 
 def apply_weapon(ctx: BonusApplyCtx) -> None:
-    weapon_id = WeaponId(ctx.amount)
+    payload = bonus_payload_from_bonus(
+        bonus_id=ctx.bonus_id,
+        amount=int(ctx.amount),
+    )
+    if not isinstance(payload, BonusWeaponPayload):
+        return
+    weapon_id = WeaponId(int(payload.weapon_id))
     if perk_active(ctx.player, PerkId.ALTERNATE_WEAPON) and ctx.player.alt_weapon is None:
         primary = ctx.player.weapon
         ctx.player.alt_weapon = WeaponSlot(

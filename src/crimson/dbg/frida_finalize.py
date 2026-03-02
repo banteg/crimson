@@ -13,10 +13,13 @@ import msgspec
 from grim.rand import CrtRand
 
 from ..game_modes import GameMode
+from ..net.session_settings import session_settings_for_lockstep
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
-from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayHeader, ReplayStatusSnapshot
+from ..replay.header_settings import replay_header_from_session_settings
+from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
+from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .rng import canonical_rng_marks
 from .schema import (
@@ -271,18 +274,14 @@ def _replay_tick_inputs_from_row(
 
 def _replay_status_from_channels(channels: _TickChannels) -> ReplayStatusSnapshot:
     status = channels.sim_state.gameplay.status
-    counts = [int(value) for value in status.weapon_usage_counts]
     expected_usage_count = int(WEAPON_USAGE_COUNT)
-    if len(counts) != expected_usage_count:
+    if len(status.weapon_usage_counts) != expected_usage_count:
         raise FridaFinalizeError(
             "sim_state.gameplay.status.weapon_usage_counts length mismatch: "
-            f"expected {expected_usage_count}, got {len(counts)}",
+            f"expected {expected_usage_count}, got {len(status.weapon_usage_counts)}",
         )
-    return ReplayStatusSnapshot(
-        quest_unlock_index=int(status.quest_unlock_index),
-        quest_unlock_index_full=int(status.quest_unlock_index_full),
-        weapon_usage_counts=tuple(int(value) for value in counts),
-    )
+    progress = progress_status_from_debug_snapshot(status)
+    return replay_status_from_progress(progress)
 
 
 def _tick_iter_from_spool(path: Path):
@@ -456,15 +455,17 @@ def _write_run_trace(
         and int(run.quest_stage_major) > 0
         and int(run.quest_stage_minor) > 0
     )
-    replay_header = ReplayHeader(
-        game_mode_id=GameMode(int(run.mode_id)),
+    settings = session_settings_for_lockstep(
+        mode_id=int(run.mode_id),
+        player_count=int(run.replay_player_count),
+        quest_level=(f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""),
+        preserve_bugs=False,
+    )
+    replay_header = replay_header_from_session_settings(
+        settings,
         seed=int(run.replay_seed),
-        quest_level=(
-            f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""
-        ),
         bootstrap_kind=run.replay_bootstrap_kind,
         bootstrap_seed=int(run.replay_bootstrap_seed),
-        player_count=int(run.replay_player_count),
         status=run.replay_status,
     )
     dump_replay_file(

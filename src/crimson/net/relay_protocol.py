@@ -17,6 +17,7 @@ from .lockstep_protocol import (
     builds_compatible,
     current_build_id,
 )
+from .schema_shared import PacketHeader, SlotState
 
 PROTOCOL_VERSION = 5
 DEFAULT_PORT = 31993
@@ -32,12 +33,8 @@ RESYNC_MAX_SNAPSHOT_BYTES = 2_097_152
 NetcodeMode = Literal["rollback", "lockstep"]
 
 
-class RelaySlot(msgspec.Struct, forbid_unknown_fields=True):
-    slot_index: int = -1
-    connected: bool = False
-    ready: bool = False
-    is_host: bool = False
-    peer_name: str = ""
+class RelaySlot(SlotState, forbid_unknown_fields=True):
+    pass
 
 
 class ClientHello(msgspec.Struct, tag="client_hello", forbid_unknown_fields=True):
@@ -202,21 +199,18 @@ NetMessage: TypeAlias = (
 )
 
 
-class Packet(msgspec.Struct, forbid_unknown_fields=True):
-    seq: int = 0
-    ack: int = 0
-    reliable: bool = False
+class RelayPacket(PacketHeader, forbid_unknown_fields=True):
     message: NetMessage = msgspec.field(default_factory=Ping)
 
 
-_PACKET_DECODER = msgspec.msgpack.Decoder(type=Packet)
+_PACKET_DECODER = msgspec.msgpack.Decoder(type=RelayPacket)
 
 
-def encode_packet(packet: Packet) -> bytes:
+def encode_packet(packet: RelayPacket) -> bytes:
     return msgspec.msgpack.encode(packet)
 
 
-def decode_packet(blob: bytes) -> Packet:
+def decode_packet(blob: bytes) -> RelayPacket:
     return _PACKET_DECODER.decode(blob)
 
 
@@ -243,7 +237,7 @@ __all__ = [
     "LockstepTickFrame",
     "NetMessage",
     "NetcodeMode",
-    "Packet",
+    "RelayPacket",
     "PeerDisconnect",
     "Ping",
     "Pong",

@@ -7,7 +7,7 @@ from crimson.net.lockstep_protocol import (
     DebugLogBatch,
     Hello,
     KeepAlive,
-    Packet,
+    LockstepPacket,
     PauseState,
     PerkMenuClose,
     PerkMenuOpen,
@@ -18,7 +18,7 @@ from crimson.net.lockstep_protocol import (
 
 
 def test_packet_msgpack_round_trip() -> None:
-    packet = Packet(
+    packet = LockstepPacket(
         seq=7,
         ack=3,
         reliable=True,
@@ -42,7 +42,7 @@ def test_packet_msgpack_round_trip() -> None:
 
 
 def test_debug_log_batch_msgpack_round_trip() -> None:
-    packet = Packet(
+    packet = LockstepPacket(
         seq=1,
         ack=0,
         reliable=False,
@@ -65,7 +65,7 @@ def test_lan_perk_and_keepalive_messages_round_trip() -> None:
     ]
 
     for idx, message in enumerate(messages, start=1):
-        packet = Packet(seq=idx, ack=0, reliable=True, message=message)
+        packet = LockstepPacket(seq=idx, ack=0, reliable=True, message=message)
         decoded = decode_packet(encode_packet(packet))
         assert type(decoded.message) is type(message)
         assert decoded.message == message
@@ -96,7 +96,7 @@ def test_current_build_id_falls_back_to_package_version(mocker) -> None:
 
 
 def test_decode_packet_rejects_invalid_blob() -> None:
-    bad = encode_packet(Packet(seq=0, ack=0, reliable=False, message=PauseState(paused=False, reason="")))
+    bad = encode_packet(LockstepPacket(seq=0, ack=0, reliable=False, message=PauseState(paused=False, reason="")))
     decoded = decode_packet(bad)
     assert isinstance(decoded.message, PauseState)
 

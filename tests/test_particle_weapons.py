@@ -39,7 +39,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         particles = [entry for entry in state.particles.entries if entry.active]
         assert len(particles) == 1
         assert int(particles[0].style_id) == expected_style
-        assert int(particles[0].owner_id) == -1
+        assert particles[0].owner == OwnerRef.from_player(0)
         expected_angle = Vec2.from_heading(float(heading_from_delta_f32(dx=200.0, dy=0.0))).to_angle()
         assert_float_close(float(particles[0].angle), expected_angle)
 
@@ -151,12 +151,12 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     creature.size = 50.0
     creature.lifecycle_stage = 16.0
 
-    killed: list[tuple[int, int]] = []
+    killed: list[tuple[int, OwnerRef]] = []
 
     def _kill(creature_index: int, owner: OwnerRef) -> None:
-        killed.append((int(creature_index), owner.to_legacy()))
+        killed.append((int(creature_index), owner))
 
     state.particles.update(0.016, creatures=[creature], kill_creature=_kill)
     state.particles.update(2.0, creatures=[creature], kill_creature=_kill)
 
-    assert killed == [(0, -1)]
+    assert killed == [(0, OwnerRef.from_player(0))]

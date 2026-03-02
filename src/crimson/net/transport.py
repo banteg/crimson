@@ -4,7 +4,7 @@ import socket
 
 import msgspec
 
-from .lockstep_protocol import Packet, decode_packet, encode_packet
+from .lockstep_protocol import LockstepPacket, decode_packet, encode_packet
 
 PeerAddr = tuple[str, int]
 
@@ -40,18 +40,18 @@ class UdpTransport(msgspec.Struct):
         except OSError:
             return
 
-    def send_packet(self, addr: PeerAddr, packet: Packet) -> None:
+    def send_packet(self, addr: PeerAddr, packet: LockstepPacket) -> None:
         sock = self._sock
         if sock is None:
             raise RuntimeError("transport is not open")
         blob = encode_packet(packet)
         sock.sendto(blob, (str(addr[0]), int(addr[1])))
 
-    def recv_packets(self, *, max_packets: int | None = None) -> list[tuple[PeerAddr, Packet]]:
+    def recv_packets(self, *, max_packets: int | None = None) -> list[tuple[PeerAddr, LockstepPacket]]:
         sock = self._sock
         if sock is None:
             return []
-        out: list[tuple[PeerAddr, Packet]] = []
+        out: list[tuple[PeerAddr, LockstepPacket]] = []
         cap = None if max_packets is None else max(0, int(max_packets))
         while True:
             if cap is not None and len(out) >= int(cap):

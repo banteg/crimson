@@ -1,19 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Protocol
 
 import msgspec
 
+from grim.rand import CrandLike
+
 from ..terrain_assets import TerrainTextureId
-
-
-class RandStream(Protocol):
-    @property
-    def state(self) -> int: ...
-
-    def rand(self) -> int: ...
-
 
 BOOTSTRAP_KIND_NONE = "none"
 BOOTSTRAP_KIND_TERRAIN_V1 = "terrain_v1"
@@ -86,7 +79,7 @@ class TerrainBootstrapResult(msgspec.Struct, frozen=True):
 
 
 def run_terrain_bootstrap(
-    rng: RandStream,
+    rng: CrandLike,
     *,
     quest_unlock_index: int,
     width: int,

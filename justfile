@@ -91,6 +91,9 @@ function-hotspots:
 dat-hotspots *args:
     uv run scripts/dat_hotspots.py {{args}}
 
+schema-inventory *args:
+    uv run scripts/schema_inventory.py {{args}}
+
 save-status *args:
     uv run scripts/save_status.py {{args}}
 
