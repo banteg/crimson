@@ -291,22 +291,13 @@ class CreatureState(msgspec.Struct):
     bonus_id: BonusId | None = None
     bonus_duration_override: int | None = None
 
-    @property
-    def last_hit_owner_id(self) -> int:
-        return self.last_hit_owner.to_legacy()
-
-    @last_hit_owner_id.setter
-    def last_hit_owner_id(self, value: OwnerRef) -> None:
-        self.last_hit_owner = value
-
-
 class CreatureDeath(msgspec.Struct, frozen=True):
     index: int
     pos: Vec2
     type_id: CreatureTypeId
     reward_value: float
     xp_awarded: int
-    owner_id: int
+    owner: OwnerRef
     suppress_death_sfx: bool = False
     # Some native death paths already consume/use their own SFX randomness
     # (for example plague timer kills). Skip world-level death-SFX planning there.
@@ -1209,7 +1200,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
-                            owner_id=OwnerRef.from_creature(int(idx)),
+                            owner=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(type_id),
                             hits_players=True,
                         )
@@ -1222,7 +1213,7 @@ class CreaturePool:
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
-                            owner_id=OwnerRef.from_creature(int(idx)),
+                            owner=OwnerRef.from_creature(int(idx)),
                             travel_budget=_travel_budget_for_type_id(projectile_type),
                             hits_players=True,
                         )
@@ -1330,7 +1321,7 @@ class CreaturePool:
                 type_id=creature.type_id,
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
-                owner_id=creature.last_hit_owner.to_legacy(),
+                owner=creature.last_hit_owner,
                 suppress_death_sfx=bool(creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK),
                 plan_death_sfx=bool(plan_death_sfx),
             )
@@ -1626,6 +1617,6 @@ class CreaturePool:
             type_id=creature.type_id,
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
-            owner_id=creature.last_hit_owner.to_legacy(),
+            owner=creature.last_hit_owner,
             suppress_death_sfx=bool(armored_death),
         )

@@ -2092,7 +2092,7 @@ class LightingDebugView:
                 pos=impact,
                 angle=float(heading),
                 type_id=SecondaryProjectileTypeId.DETONATION,
-                owner_id=OwnerRef.from_local_player(0),
+                owner=OwnerRef.from_local_player(0),
                 time_to_live=float(profile.secondary_ttl),
             )
             self._push_transient_light(
@@ -2117,14 +2117,14 @@ class LightingDebugView:
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
-                    owner_id=OwnerRef.from_local_player(0),
+                    owner=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
                 self._world.state.secondary_projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.secondary_type_id,
-                    owner_id=OwnerRef.from_local_player(0),
+                    owner=OwnerRef.from_local_player(0),
                     time_to_live=float(profile.secondary_ttl),
                     creatures=self._world.creatures.entries,
                     target_hint=player.aim,

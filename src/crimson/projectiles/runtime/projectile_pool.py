@@ -96,7 +96,7 @@ class ProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: ProjectileTypeId,
-        owner_id: OwnerRef,
+        owner: OwnerRef,
         travel_budget: float = 0.0,
         hits_players: bool = False,
     ) -> int:
@@ -129,7 +129,7 @@ class ProjectilePool:
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
         if weapon_entry is not None and weapon_entry.travel_budget is not None:
             entry.travel_budget = float(weapon_entry.travel_budget)
-        entry.owner = owner_id
+        entry.owner = owner
         entry.hits_players = bool(hits_players)
 
         collision_profile = projectile_collision_profile(type_id)

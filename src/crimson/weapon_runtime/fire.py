@@ -242,7 +242,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=ProjectileTypeId.FIRE_BULLETS,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=meta,
             )
     elif weapon_id == WeaponId.ROCKET_LAUNCHER:
@@ -251,7 +251,7 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET,
-            owner_id=owner,
+            owner=owner,
         )
     elif weapon_id == WeaponId.SEEKER_ROCKETS:
         # Seeker Rockets -> secondary type 2.
@@ -259,7 +259,7 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-            owner_id=owner,
+            owner=owner,
             target_hint=aim,
             creatures=creatures,
         )
@@ -281,7 +281,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-                owner_id=owner,
+                owner=owner,
                 target_hint=aim,
                 creatures=creatures,
             )
@@ -294,20 +294,20 @@ def player_fire_weapon(
             pos=muzzle,
             angle=shot_angle,
             type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN,
-            owner_id=owner,
+            owner=owner,
         )
     elif weapon_id == WeaponId.FLAMETHROWER:
         # Flamethrower -> fast particle weapon (style 0), fractional ammo drain.
-        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
+        state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner=owner)
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BLOW_TORCH:
         # Blow Torch -> fast particle weapon (style 1), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner=owner)
         state.particles.entries[particle_id].style_id = ParticleStyleId.BLOW_TORCH
         ammo_cost = 0.05
     elif weapon_id == WeaponId.HR_FLAMER:
         # HR Flamer -> fast particle weapon (style 2), fractional ammo drain.
-        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner_id=owner)
+        particle_id = state.particles.spawn_particle(pos=muzzle, angle=particle_angle, intensity=1.0, owner=owner)
         state.particles.entries[particle_id].style_id = ParticleStyleId.HR_FLAMER
         ammo_cost = 0.1
     elif weapon_id == WeaponId.BUBBLEGUN:
@@ -315,7 +315,7 @@ def player_fire_weapon(
         state.particles.spawn_particle_slow(
             pos=muzzle,
             angle=Vec2.from_heading(shot_angle).to_angle(),
-            owner_id=owner,
+            owner=owner,
         )
         ammo_cost = 0.15
     elif weapon_id == WeaponId.MULTI_PLASMA:
@@ -337,7 +337,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + angle_offset,
                 type_id=type_id,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=travel_budget_for_type_id(type_id),
             )
     elif weapon_id == WeaponId.PLASMA_SHOTGUN:
@@ -351,7 +351,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.PLASMA_MINIGUN,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.0 + float(int(state.rng.rand()) % 100) * 0.01
@@ -366,7 +366,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.GAUSS_GUN,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -381,7 +381,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=shot_angle + jitter,
                 type_id=ProjectileTypeId.ION_MINIGUN,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=meta,
             )
             state.projectiles.entries[int(proj_id)].speed_scale = 1.4 + float(int(state.rng.rand()) % 0x50) * 0.01
@@ -402,7 +402,7 @@ def player_fire_weapon(
                 pos=muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner_id=projectile_owner,
+                owner=projectile_owner,
                 travel_budget=meta,
             )
             # Shotgun variants randomize speed_scale per pellet (rand%100 * 0.01 + 1.0).

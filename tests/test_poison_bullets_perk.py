@@ -39,7 +39,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=45.0,
     )
 
@@ -84,7 +84,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=45.0,
     )
 
@@ -168,7 +168,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=45.0,
     )
 

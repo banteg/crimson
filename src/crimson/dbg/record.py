@@ -150,7 +150,7 @@ def _entity_samples_for_world(
                 damage_pool=float(projectile.damage_pool),
                 hit_radius=float(projectile.hit_radius),
                 travel_budget=float(projectile.travel_budget),
-                owner_id=int(projectile.owner_id),
+                owner=projectile.owner,
             ),
         )
 
@@ -172,7 +172,7 @@ def _entity_samples_for_world(
                 vel=SnapshotVec2(x=float(projectile.vel.x), y=float(projectile.vel.y)),
                 speed=float(projectile.speed),
                 trail_timer=float(projectile.trail_timer),
-                owner_id=int(projectile.owner_id),
+                owner=projectile.owner,
                 target_id=int(projectile.target_id),
             ),
         )

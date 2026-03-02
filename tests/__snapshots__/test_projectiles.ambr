@@ -25,7 +25,11 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.15,
-      'owner_id': -100,
+      'owner': dict({
+        'index': 0,
+        'kind': 1,
+        'local_host': True,
+      }),
       'pos': list([
         30.0,
         0.0,
@@ -60,7 +64,11 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner_id': -100,
+      'owner': dict({
+        'index': 0,
+        'kind': 1,
+        'local_host': True,
+      }),
       'pos': list([
         30.0,
         0.0,
@@ -95,7 +103,11 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner_id': -100,
+      'owner': dict({
+        'index': 0,
+        'kind': 1,
+        'local_host': True,
+      }),
       'pos': list([
         62.0,
         0.0,
@@ -132,7 +144,11 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner_id': -100,
+      'owner': dict({
+        'index': 0,
+        'kind': 1,
+        'local_host': True,
+      }),
       'pos': list([
         60.0,
         0.0,
@@ -161,7 +177,11 @@
         0.0,
         -1170.0,
       ]),
-      'owner_id': -100,
+      'owner': dict({
+        'index': 0,
+        'kind': 1,
+        'local_host': True,
+      }),
     }),
   ])
 # ---

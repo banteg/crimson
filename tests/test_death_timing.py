@@ -43,7 +43,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_player(0),
+        owner=OwnerRef.from_player(0),
     )
 
     assert player.experience == 0
@@ -127,7 +127,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
         angle=0.0,
         type_id=int(SecondaryProjectileTypeId.DETONATION),
         time_to_live=1.0,
-        owner_id=OwnerRef.from_player(0),
+        owner=OwnerRef.from_player(0),
     )
 
     def _fake_plan(
@@ -240,7 +240,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         type_id=CreatureTypeId.ALIEN,
         reward_value=0.0,
         xp_awarded=0,
-        owner_id=-1,
+        owner=OwnerRef.from_player(0),
         plan_death_sfx=False,
     )
 
@@ -367,7 +367,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
             type_id=CreatureTypeId.ALIEN,
             reward_value=0.0,
             xp_awarded=0,
-            owner_id=-1,
+            owner=OwnerRef.from_player(0),
         )
         for idx in range(7)
     )

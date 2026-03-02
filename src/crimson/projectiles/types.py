@@ -171,14 +171,6 @@ class Projectile(msgspec.Struct):
     owner: OwnerRef = msgspec.field(default_factory=OwnerRef.none)
     hits_players: bool = False
 
-    @property
-    def owner_id(self) -> int:
-        return self.owner.to_legacy()
-
-    @owner_id.setter
-    def owner_id(self, value: OwnerRef) -> None:
-        self.owner = value
-
 
 class SecondaryProjectile(msgspec.Struct):
     active: bool = False
@@ -195,14 +187,6 @@ class SecondaryProjectile(msgspec.Struct):
     # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
     target_hint_active: bool = False
     target_hint: Vec2 = Vec2()
-
-    @property
-    def owner_id(self) -> int:
-        return self.owner.to_legacy()
-
-    @owner_id.setter
-    def owner_id(self, value: OwnerRef) -> None:
-        self.owner = value
 
 
 __all__ = [

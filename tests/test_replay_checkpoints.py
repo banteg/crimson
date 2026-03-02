@@ -3,6 +3,7 @@ from __future__ import annotations
 import msgspec
 import pytest
 
+from crimson.owner_ref import OwnerRef
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
@@ -16,12 +17,12 @@ from crimson.sim.world_state import WorldState
 
 
 class _Death:
-    def __init__(self, *, index: int, type_id: int, reward_value: float, xp_awarded: int, owner_id: int) -> None:
+    def __init__(self, *, index: int, type_id: int, reward_value: float, xp_awarded: int, owner: OwnerRef) -> None:
         self.index = int(index)
         self.type_id = int(type_id)
         self.reward_value = float(reward_value)
         self.xp_awarded = int(xp_awarded)
-        self.owner_id = int(owner_id)
+        self.owner = owner
 
 
 class _Events:
@@ -63,7 +64,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         world=world,
         elapsed_ms=250.0,
         rng_marks={"before_world_step": 111, "after_world_step": 222},
-        deaths=[_Death(index=33, type_id=18, reward_value=75.0, xp_awarded=10, owner_id=-1)],
+        deaths=[_Death(index=33, type_id=18, reward_value=75.0, xp_awarded=10, owner=OwnerRef.from_player(0))],
         events=_Events(hits=2, pickups=1, sfx=["sfx_a", "sfx_b", "sfx_c", "sfx_d", "sfx_e"]),
         command_hash="0123456789abcdef",
     )

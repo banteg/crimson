@@ -46,6 +46,14 @@ def _normalize_hit(hit: ProjectileHit) -> dict[str, object]:
     }
 
 
+def _normalize_owner(owner: OwnerRef) -> dict[str, object]:
+    return {
+        "kind": int(owner.kind),
+        "index": int(owner.index),
+        "local_host": bool(owner.local_host),
+    }
+
+
 def _normalize_primary_pool(pool: ProjectilePool, idx: int, creatures: list[CreatureState], hits: list[ProjectileHit]) -> dict[str, object]:
     projectile = pool.entries[idx]
     return {
@@ -53,7 +61,7 @@ def _normalize_primary_pool(pool: ProjectilePool, idx: int, creatures: list[Crea
         "projectile": {
             "active": bool(projectile.active),
             "type_id": int(projectile.type_id),
-            "owner_id": int(projectile.owner_id),
+            "owner": _normalize_owner(projectile.owner),
             "life_timer": round(float(projectile.life_timer), 6),
             "pos": _normalize_vec2(projectile.pos),
             "damage_pool": round(float(projectile.damage_pool), 6),
@@ -156,7 +164,7 @@ def test_primary_spawn_uses_collision_profile_defaults() -> None:
             pos=Vec2(),
             angle=0.0,
             type_id=type_id,
-            owner_id=OwnerRef.from_local_player(0),
+            owner=OwnerRef.from_local_player(0),
         )
         entry = pool.entries[idx]
         profile = projectile_collision_profile(type_id)
@@ -215,7 +223,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             pos=Vec2(),
             angle=math.pi / 2.0,
             type_id=ProjectileTypeId(int(case["type_id"])),
-            owner_id=OwnerRef.from_local_player(0),
+            owner=OwnerRef.from_local_player(0),
             travel_budget=float(case["travel_budget"]),
         )
         creatures = case["creatures"]
@@ -250,7 +258,7 @@ def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> No
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.ASSAULT_RIFLE,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
     )
     pool.update_demo(
         0.1,
@@ -276,7 +284,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
     )
 
     entry = pool.entries[idx]
@@ -335,7 +343,7 @@ def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAsser
                 "damage": round(float(call.args[1]), 6),
                 "damage_type": int(call.args[2]),
                 "impulse": _normalize_vec2(call.args[3]),
-                "owner_id": int(call.args[4].to_legacy()),
+                "owner": _normalize_owner(call.args[4]),
             }
             for call in apply_damage.call_args_list
         ],

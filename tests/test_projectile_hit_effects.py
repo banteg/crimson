@@ -18,7 +18,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.PLASMA_CANNON,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 
@@ -53,7 +53,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
 
@@ -72,7 +72,11 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     assert len(sparks) == 3
     assert all(int(entry.flags) == 0x19 for entry in sparks)
 
-    split = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.SPLITTER_GUN) and int(p.owner_id) == 0]
+    split = [
+        p
+        for p in pool.entries
+        if p.active and int(p.type_id) == int(ProjectileTypeId.SPLITTER_GUN) and p.owner == OwnerRef.from_creature(0)
+    ]
     assert len(split) == 2
     assert all(bool(p.hits_players) for p in split)
 
@@ -86,7 +90,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
 
@@ -113,7 +117,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.SHRINKIFIER,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 
@@ -158,7 +162,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTypeId.PISTOL,
-        owner_id=OwnerRef.from_local_player(0),
+        owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
 

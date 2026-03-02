@@ -4,6 +4,7 @@ from typing import cast
 
 import msgspec
 
+from ..owner_ref import OwnerRef
 from ..sim.timing import ftol_ms_i32
 
 
@@ -119,7 +120,7 @@ class ProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=
     damage_pool: float
     hit_radius: float
     travel_budget: float
-    owner_id: int
+    owner: OwnerRef
 
 
 class SecondaryProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -134,7 +135,7 @@ class SecondaryProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknow
     vel: SnapshotVec2
     speed: float
     trail_timer: float
-    owner_id: int
+    owner: OwnerRef
     target_id: int
 
 

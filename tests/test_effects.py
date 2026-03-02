@@ -117,7 +117,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
         pos=Vec2(),
         angle=0.0,
         intensity=1.0,
-        owner_id=OwnerRef.from_player(0),
+        owner=OwnerRef.from_player(0),
     )
     particle = pool.entries[particle_id]
 

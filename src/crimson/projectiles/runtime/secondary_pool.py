@@ -49,7 +49,7 @@ class SecondaryProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: int,
-        owner_id: OwnerRef = OwnerRef.from_local_player(0),
+        owner: OwnerRef = OwnerRef.from_local_player(0),
         time_to_live: float = 2.0,
         target_hint: Vec2 | None = None,
         creatures: Sequence[CreatureState] | None = None,
@@ -67,7 +67,7 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = int(type_id)
         entry.pos = pos
-        entry.owner = owner_id
+        entry.owner = owner
         entry.target_id = -1
         entry.target_hint_active = False
         entry.target_hint = Vec2()

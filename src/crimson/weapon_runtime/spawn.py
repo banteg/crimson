@@ -88,7 +88,7 @@ def _fire_bullets_active(
         resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner.index))
     elif owner.local_host and owner.index == 0 and len(players) == 1:
         # Callers that only pass one player are explicitly indicating the owner
-        # context (for example owner_id -100 with friendly fire disabled).
+        # context (for example OwnerRef.from_local_player(0) with friendly fire disabled).
         resolved_owner_slot = 0
 
     if resolved_owner_slot is None:
@@ -137,7 +137,7 @@ def projectile_spawn(
         pos=pos,
         angle=float(angle),
         type_id=type_id,
-        owner_id=owner,
+        owner=owner,
         travel_budget=float(meta),
         hits_players=bool(hits_players),
     )

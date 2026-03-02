@@ -164,14 +164,14 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
-    # Native player-hit checks key off `owner_id != -100`; creature-owned splitters
+    # Native player-hit checks key off non-player ownership; creature-owned splitters
     # always satisfy this, so they can hit players even when the parent was local-owned.
     split_hits_players = True
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=OwnerRef.from_creature(int(hit_idx)),
+        owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
@@ -179,7 +179,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         pos=proj.pos,
         angle=proj.angle + 1.0471976,
         type_id=ProjectileTypeId.SPLITTER_GUN,
-        owner_id=OwnerRef.from_creature(int(hit_idx)),
+        owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
     )
@@ -237,7 +237,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     pos=origin_pos,
                     angle=angle,
                     type_id=ProjectileTypeId(hit.proj.type_id),
-                    owner_id=OwnerRef.from_creature(hit_creature),
+                    owner=OwnerRef.from_creature(hit_creature),
                     travel_budget=hit.proj.travel_budget,
                 )
             finally:
@@ -271,7 +271,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 pos=hit.proj.pos + ring_offset,
                 angle=ring_angle,
                 type_id=ProjectileTypeId.PLASMA_RIFLE,
-                owner_id=OwnerRef.from_local_player(0),
+                owner=OwnerRef.from_local_player(0),
                 travel_budget=plasma_meta,
             )
     finally:

@@ -88,14 +88,6 @@ class Particle(msgspec.Struct):
     target_id: int = -1
     owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
 
-    @property
-    def owner_id(self) -> int:
-        return self.owner.to_legacy()
-
-    @owner_id.setter
-    def owner_id(self, value: OwnerRef) -> None:
-        self.owner = value
-
 
 class ParticlePool:
     def __init__(self, *, size: int = PARTICLE_POOL_SIZE, rand: Callable[[], int] | None = None) -> None:
@@ -125,7 +117,7 @@ class ParticlePool:
         pos: Vec2,
         angle: float,
         intensity: float = 1.0,
-        owner_id: OwnerRef = OwnerRef.from_local_player(0),
+        owner: OwnerRef = OwnerRef.from_local_player(0),
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
 
@@ -144,7 +136,7 @@ class ParticlePool:
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
-        entry.owner = owner_id
+        entry.owner = owner
         return idx
 
     def spawn_particle_slow(
@@ -152,7 +144,7 @@ class ParticlePool:
         *,
         pos: Vec2,
         angle: float,
-        owner_id: OwnerRef = OwnerRef.from_local_player(0),
+        owner: OwnerRef = OwnerRef.from_local_player(0),
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
 
@@ -171,7 +163,7 @@ class ParticlePool:
         entry.spin = float(int(self._rand()) % 0x274) * 0.01
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
-        entry.owner = owner_id
+        entry.owner = owner
         return idx
 
     def iter_active(self) -> list[Particle]:

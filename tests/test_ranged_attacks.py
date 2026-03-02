@@ -115,7 +115,7 @@ def test_ranged_projectile_can_damage_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
-        owner_id=OwnerRef.from_creature(0),
+        owner=OwnerRef.from_creature(0),
         travel_budget=45.0,
         hits_players=True,
     )
@@ -158,7 +158,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTypeId.PLASMA_RIFLE,
-        owner_id=OwnerRef.from_creature(0),
+        owner=OwnerRef.from_creature(0),
         travel_budget=45.0,
         hits_players=True,
     )
