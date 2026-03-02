@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Sequence
-from typing import Any, cast
+from typing import Protocol, cast
 
 import msgspec
 
@@ -61,7 +61,7 @@ from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
-from .base_gameplay_mode import BaseGameplayMode
+from .base_gameplay_mode import BaseGameplayMode, DeterministicSessionLike
 from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -81,6 +81,12 @@ class _SurvivalState(msgspec.Struct):
     elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown: float = 0.0
+
+
+class SurvivalSessionLike(DeterministicSessionLike, Protocol):
+    elapsed_ms: float
+    stage: int
+    spawn_cooldown_ms: float
 
 
 class SurvivalMode(BaseGameplayMode):
@@ -122,7 +128,7 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
-        self._sim_session: Any | None = None
+        self._sim_session: SurvivalSessionLike | None = None
         self._lan_last_tick_index: int = -1
         self._lan_perk_events: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
         self._lan_perk_close_suppress: bool = False

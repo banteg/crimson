@@ -7,7 +7,7 @@ Ported from `creature_update_all` (`FUN_00426220`).
 
 import math
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Protocol
 
 import msgspec
 
@@ -25,7 +25,21 @@ __all__ = [
 _FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
 
-CreatureAIStateLike = Any
+class CreatureAIStateLike(Protocol):
+    pos: Vec2
+    hp: float
+    flags: CreatureFlags
+    ai_mode: int
+    link_index: int
+    target_offset: Vec2 | None
+    phase_seed: float
+    orbit_angle: float
+    orbit_radius: float
+    heading: float
+
+    target: Vec2
+    target_heading: float
+    force_target: int
 
 
 class CreatureAIUpdate(msgspec.Struct, frozen=True):
