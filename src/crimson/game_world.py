@@ -32,7 +32,13 @@ from .sim.presentation_step import (
     queue_projectile_decals,
 )
 from .sim.state_types import PlayerState
-from .sim.step_pipeline import DeterministicStepResult, StepPipelineOptions, run_deterministic_step
+from .sim.step_pipeline import (
+    DeterministicStepResult,
+    StepPipelineOptions,
+    run_deterministic_step,
+    time_scale_reflex_boost_factor,
+)
+from .sim.timing import FrameTiming
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -478,9 +484,19 @@ class GameWorld(msgspec.Struct):
             self._sync_ground_settings()
             self.ground.process_pending()
 
+        timing = FrameTiming.compute(
+            float(dt),
+            time_scale_active_entry=bool(self.state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(self.state.bonuses.reflex_boost),
+                time_scale_active=bool(self.state.time_scale_active),
+            ),
+            zero_gate_active=False,
+        )
+
         step = run_deterministic_step(
             world=self.world_state,
-            dt=float(dt),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self._damage_scale_by_type,

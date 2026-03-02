@@ -94,9 +94,8 @@ def presentation_commands_hash(commands: PresentationStepCommands) -> str:
 def run_deterministic_step(
     *,
     world: WorldState,
-    dt: float,
+    timing: FrameTiming,
     options: StepPipelineOptions,
-    dt_frame_ms_i32: int | None = None,
     apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
     fx_queue: FxQueue,
@@ -125,35 +124,15 @@ def run_deterministic_step(
     _mark("gw_after_weapon_refresh")
     perks_rebuild_available(state)
     _mark("gw_after_perks_rebuild")
-
-    timing = FrameTiming.compute(
-        float(dt),
-        time_scale_active_entry=bool(state.time_scale_active),
-        time_scale_factor=time_scale_reflex_boost_factor(
-            reflex_boost_timer=float(state.bonuses.reflex_boost),
-            time_scale_active=bool(state.time_scale_active),
-        ),
-        zero_gate_active=False,
-    )
     _mark("gw_after_time_scale")
 
     prev_audio = [(player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players]
     prev_perk_pending = int(state.perk_selection.pending_count)
 
-    dt_sim_ms_i32: int | None = None
-    if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-        base_dt_ms_i32 = int(dt_frame_ms_i32)
-        if state.time_scale_active and float(timing.dt) > 0.0:
-            # Under Reflex Boost, native integer cadence counters track the scaled
-            # float dt path (`frame_dt`) instead of integer-base ms scaling.
-            dt_sim_ms_i32 = max(0, int(timing.dt_sim_ms_i32))
-        else:
-            dt_sim_ms_i32 = base_dt_ms_i32
-
     events = world.step(
         float(timing.dt_sim),
         apply_world_dt_steps=apply_world_dt_steps,
-        dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
+        dt_ms_i32=int(timing.dt_sim_ms_i32),
         defer_camera_shake_update=defer_camera_shake_update,
         defer_freeze_corpse_fx=defer_freeze_corpse_fx,
         mid_step_hook=mid_step_hook,

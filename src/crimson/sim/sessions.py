@@ -121,7 +121,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -133,7 +133,6 @@ class SurvivalDeterministicSession(msgspec.Struct):
                 perk_progression_enabled=bool(self.perk_progression_enabled),
                 game_tune_started=bool(self.game_tune_started),
             ),
-            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             fx_queue=self.fx_queue,
@@ -238,7 +237,7 @@ class RushDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -341,7 +340,7 @@ class QuestDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -353,7 +352,6 @@ class QuestDeterministicSession(msgspec.Struct):
                 perk_progression_enabled=True,
                 game_tune_started=bool(self.game_tune_started),
             ),
-            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             fx_queue=self.fx_queue,
