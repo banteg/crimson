@@ -11,8 +11,9 @@ from grim.geom import Vec2
 from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...math_parity import f32
-from ...persistence.save_status import GameStatus, default_status_data
-from ...replay.types import normalize_weapon_usage_counts
+from ...persistence.save_status import GameStatus
+from ...replay.types import ReplayStatusSnapshot
+from ...status_snapshot import game_status_from_progress_status, progress_status_from_replay
 from ...weapon_runtime import init_default_alt_weapon, most_used_weapon_id_for_player, weapon_assign_player
 from ...weapons import WEAPON_TABLE, WeaponId
 from ..state_types import GameplayState, PlayerState
@@ -55,14 +56,13 @@ def status_from_snapshot(
     quest_unlock_index_full: int,
     weapon_usage_counts: tuple[int, ...] | None = None,
 ) -> GameStatus:
-    data = default_status_data()
-    data["quest_unlock_index"] = int(quest_unlock_index) & 0xFFFF
-    data["quest_unlock_index_full"] = int(quest_unlock_index_full) & 0xFFFF
-
-    if weapon_usage_counts is not None:
-        data["weapon_usage_counts"] = list(normalize_weapon_usage_counts(weapon_usage_counts))
-
-    return GameStatus(path=Path("replay://status"), data=data)
+    replay_status = ReplayStatusSnapshot(
+        quest_unlock_index=int(quest_unlock_index),
+        quest_unlock_index_full=int(quest_unlock_index_full),
+        weapon_usage_counts=tuple(weapon_usage_counts or ()),
+    )
+    progress = progress_status_from_replay(replay_status)
+    return game_status_from_progress_status(progress, path=Path("replay://status"))
 
 
 def reset_players(
