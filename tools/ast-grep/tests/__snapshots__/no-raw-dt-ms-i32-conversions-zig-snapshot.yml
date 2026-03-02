@@ -1,11 +1,26 @@
 id: no-raw-dt-ms-i32-conversions-zig
 snapshots:
   ? |
-    int bad(float dt) {
-        return intFromFloat(round(dt * 1000.0));
+    fn bad(dt: f32) i32 {
+        return @intFromFloat(@round(dt * 1000.0));
     }
   : labels:
-    - source: intFromFloat(round(dt * 1000.0))
+    - source: |
+        fn bad(dt: f32) i32 {
+            return @intFromFloat(@round(dt * 1000.0));
+        }
       style: primary
-      start: 31
-      end: 63
+      start: 0
+      end: 71
+  ? |
+    fn bad2(dt: f32) i32 {
+        return @intFromFloat(dt * 1000.0);
+    }
+  : labels:
+    - source: |
+        fn bad2(dt: f32) i32 {
+            return @intFromFloat(dt * 1000.0);
+        }
+      style: primary
+      start: 0
+      end: 64

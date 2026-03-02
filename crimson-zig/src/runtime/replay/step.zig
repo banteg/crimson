@@ -241,9 +241,6 @@ pub fn stepTick(
 
     frame.dt_frame_ms = narrowF32(frame.dt_tick * 1000.0);
     frame.dt_frame_ms_i32 = ftolMsI32(frame.dt_tick);
-    if (frame.dt_frame_ms_i32 < 1) {
-        frame.dt_frame_ms_i32 = 1;
-    }
     const dt_sim_ms = frame.dt_sim * 1000.0;
     const elapsed_before_ms: f32 = if (context.game_mode == .rush)
         @floatFromInt(context.elapsed_ms_sim_rush)

@@ -19,7 +19,7 @@ from .step_pipeline import (
     run_deterministic_step,
     time_scale_reflex_boost_factor,
 )
-from .timing import FrameTiming
+from .timing import FrameTiming, zero_gate_active_from_state
 from .world_state import WorldState
 
 
@@ -57,7 +57,10 @@ class SurvivalDeterministicSession(msgspec.Struct):
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
                 time_scale_active=bool(state.time_scale_active),
             ),
-            zero_gate_active=False,
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
         )
 
     def step_tick(
@@ -181,7 +184,10 @@ class RushDeterministicSession(msgspec.Struct):
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
                 time_scale_active=bool(state.time_scale_active),
             ),
-            zero_gate_active=False,
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
         )
 
     def step_tick(
@@ -199,8 +205,6 @@ class RushDeterministicSession(msgspec.Struct):
             ]
 
         dt_ms_i32 = int(timing.dt_ms_i32)
-        if dt_ms_i32 < 1:
-            dt_ms_i32 = 1
         dt_frame_ms = float(dt_ms_i32)
         elapsed_before_ms = int(self.elapsed_ms)
 
@@ -311,7 +315,10 @@ class QuestDeterministicSession(msgspec.Struct):
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
                 time_scale_active=bool(state.time_scale_active),
             ),
-            zero_gate_active=False,
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
         )
 
     def step_tick(

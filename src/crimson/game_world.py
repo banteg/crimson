@@ -38,7 +38,7 @@ from .sim.step_pipeline import (
     run_deterministic_step,
     time_scale_reflex_boost_factor,
 )
-from .sim.timing import FrameTiming
+from .sim.timing import FrameTiming, zero_gate_active_from_state
 from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
 from .terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -491,7 +491,10 @@ class GameWorld(msgspec.Struct):
                 reflex_boost_timer=float(self.state.bonuses.reflex_boost),
                 time_scale_active=bool(self.state.time_scale_active),
             ),
-            zero_gate_active=False,
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(self.state.demo_mode_active),
+                perk_pending_count=int(self.state.perk_selection.pending_count),
+            ),
         )
 
         step = run_deterministic_step(
