@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.ui.hud import (
     HUD_QUEST_LEFT_Y_SHIFT,
     HudAssets,
@@ -99,3 +101,13 @@ def test_hud_render_context_defaults_to_standard_flags() -> None:
     assert flags.show_xp is True
     assert flags.show_time is False
     assert flags.show_quest_hud is False
+
+
+def test_hud_render_context_rejects_legacy_show_overrides() -> None:
+    with pytest.raises(TypeError):
+        # Keep `HudRenderContext` cut over to `flags` only.
+        HudRenderContext(
+            assets=_empty_assets(),
+            state=HudState(),
+            show_health=False,  # type: ignore[call-arg]
+        )
