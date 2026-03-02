@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import msgspec
 from crimson.quest_level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
