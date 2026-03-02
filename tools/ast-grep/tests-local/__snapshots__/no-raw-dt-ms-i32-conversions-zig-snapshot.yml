@@ -5,22 +5,16 @@ snapshots:
         return @intFromFloat(@round(dt * 1000.0));
     }
   : labels:
-    - source: |
-        fn bad(dt: f32) i32 {
-            return @intFromFloat(@round(dt * 1000.0));
-        }
+    - source: '@intFromFloat(@round(dt * 1000.0))'
       style: primary
-      start: 0
-      end: 71
+      start: 33
+      end: 67
   ? |
     fn bad2(dt: f32) i32 {
         return @intFromFloat(dt * 1000.0);
     }
   : labels:
-    - source: |
-        fn bad2(dt: f32) i32 {
-            return @intFromFloat(dt * 1000.0);
-        }
+    - source: '@intFromFloat(dt * 1000.0)'
       style: primary
-      start: 0
-      end: 64
+      start: 34
+      end: 60

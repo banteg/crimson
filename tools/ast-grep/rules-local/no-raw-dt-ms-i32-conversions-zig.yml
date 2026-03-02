@@ -1,10 +1,13 @@
 id: no-raw-dt-ms-i32-conversions-zig
-language: c
+language: zig
 severity: warning
 message: Route dt->ms integer conversion through the canonical helper instead of ad-hoc @intFromFloat(... * 1000.0) expressions.
 files:
   - crimson-zig/src/runtime/**/*.zig
   - crimson-zig/src/replay_codec.zig
 rule:
-  kind: translation_unit
-  regex: "@intFromFloat\\s*\\(\\s*(?:@round\\s*\\(\\s*)?[^\\n)]*\\*\\s*1000(?:\\.0)?\\s*\\)?\\s*\\)"
+  any:
+    - pattern: "@intFromFloat(@round(_DT * 1000.0))"
+    - pattern: "@intFromFloat(_DT * 1000.0)"
+    - pattern: "@intFromFloat(@round(_DT * 1000))"
+    - pattern: "@intFromFloat(_DT * 1000)"
