@@ -4,7 +4,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayGameVersionWarning
-from crimson.sim.driver.replay_runner import run_quest_replay
+from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
 
@@ -17,9 +17,9 @@ def test_quest_runner_is_deterministic() -> None:
     )
 
     with pytest.warns(ReplayGameVersionWarning):
-        result0 = run_quest_replay(replay, spawn_entries=spawn_entries)
+        result0 = run_replay(replay, spawn_entries=spawn_entries)
     with pytest.warns(ReplayGameVersionWarning):
-        result1 = run_quest_replay(replay, spawn_entries=spawn_entries)
+        result1 = run_replay(replay, spawn_entries=spawn_entries)
 
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.QUESTS)
@@ -35,7 +35,7 @@ def test_quest_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
     )
 
     with pytest.warns(ReplayGameVersionWarning):
-        result = run_quest_replay(
+        result = run_replay(
             replay,
             spawn_entries=spawn_entries,
             dt_frame_overrides={0: 0.5},
@@ -49,11 +49,11 @@ def test_quest_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        baseline = run_quest_replay(replay, spawn_entries=())
+        baseline = run_replay(replay, spawn_entries=())
     with pytest.warns(ReplayGameVersionWarning):
-        shifted = run_quest_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
+        shifted = run_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
     with pytest.warns(ReplayGameVersionWarning):
-        shifted_again = run_quest_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
+        shifted_again = run_replay(replay, spawn_entries=(), inter_tick_rand_draws=1)
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -67,7 +67,7 @@ def test_quest_runner_rejects_invalid_perk_pick_event() -> None:
 
     with pytest.warns(ReplayGameVersionWarning):
         with pytest.raises(ReplayRunnerError, match="perk_pick failed"):
-            run_quest_replay(replay, spawn_entries=())
+            run_replay(replay, spawn_entries=())
 
 
 def test_quest_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
@@ -76,6 +76,6 @@ def test_quest_runner_can_skip_invalid_perk_pick_event_non_strict() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        result = run_quest_replay(replay, spawn_entries=(), strict_events=False)
+        result = run_replay(replay, spawn_entries=(), strict_events=False)
 
     assert result.ticks == 3

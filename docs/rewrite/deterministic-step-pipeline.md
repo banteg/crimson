@@ -32,14 +32,16 @@ Output is a `DeterministicStepResult` with:
 - `command_hash`: stable checksum of the presentation command stream
 - optional presentation-phase RNG draw trace (for debugging)
 
-For Survival/Rush orchestration, the reusable wrappers are:
+For mode orchestration, deterministic sessions feed a unified playback driver:
 
 - `SurvivalDeterministicSession.step_tick(...)`
 - `RushDeterministicSession.step_tick(...)`
+- `QuestDeterministicSession.step_tick(...)`
+- `PlaybackDriver(replay, pipeline_options)`
 
 These session adapters own mode-level elapsed timers and spawn pacing, and are now used by:
 
-- replay runners (`run_survival_replay`, `run_rush_replay`)
+- replay verification/timeline extraction (`run_replay`, `run_replay_info`, via `PlaybackDriver`)
 - replay playback mode
 - interactive Survival/Rush mode loops
 
