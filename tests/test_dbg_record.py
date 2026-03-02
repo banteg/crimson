@@ -17,12 +17,10 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         *,
         replay_path: Path,
         out_path: Path,
-        strict_events: bool,
         chunk_ticks: int,
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["strict_events"] = strict_events
         captured["chunk_ticks"] = chunk_ticks
         return sentinel
 
@@ -38,7 +36,6 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
         replay_path=replay_path,
         out_path=out_path,
         impl="python",
-        strict_events=True,
         chunk_ticks=32,
         warnings_out=warnings,
     )
@@ -47,7 +44,6 @@ def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Pa
     assert warnings == []
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
-    assert captured["strict_events"] is True
     assert captured["chunk_ticks"] == 32
 
 
@@ -61,12 +57,10 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
         *,
         replay_path: Path,
         out_path: Path,
-        strict_events: bool,
         chunk_ticks: int,
     ) -> tuple[object, list[str]]:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["strict_events"] = strict_events
         captured["chunk_ticks"] = chunk_ticks
         return sentinel, ["warning: first", "warning: second"]
 
@@ -82,7 +76,6 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
         replay_path=replay_path,
         out_path=out_path,
         impl="zig",
-        strict_events=True,
         chunk_ticks=64,
         warnings_out=warnings,
     )
@@ -91,5 +84,4 @@ def test_record_replay_to_trace_dispatches_zig_impl_and_collects_warnings(monkey
     assert warnings == ["warning: existing", "warning: first", "warning: second"]
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == out_path
-    assert captured["strict_events"] is True
     assert captured["chunk_ticks"] == 64

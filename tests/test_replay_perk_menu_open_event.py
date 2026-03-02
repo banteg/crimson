@@ -39,7 +39,6 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
         dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
-        strict_events=True,
     )
 
     assert int(state.rng.state) != before
@@ -74,7 +73,6 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
         dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
-        strict_events=True,
     )
 
     apply_replay_tick_events(
@@ -83,7 +81,6 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
         dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
-        strict_events=True,
     )
 
     assert int(state.perk_selection.pending_count) == 0
@@ -106,7 +103,6 @@ def test_same_tick_stale_perk_pick_after_menu_open_is_noop_in_strict_mode() -> N
         dt=1.0 / 60.0,
         world=menu_only_world,
         game_mode_id=int(GameMode.SURVIVAL),
-        strict_events=True,
     )
 
     apply_replay_tick_events(
@@ -118,7 +114,6 @@ def test_same_tick_stale_perk_pick_after_menu_open_is_noop_in_strict_mode() -> N
         dt=1.0 / 60.0,
         world=stale_pick_world,
         game_mode_id=int(GameMode.SURVIVAL),
-        strict_events=True,
     )
 
     assert int(stale_pick_world.state.rng.state) == int(menu_only_world.state.rng.state)
@@ -140,5 +135,4 @@ def test_apply_replay_tick_events_rejects_unknown_event_type_in_strict_mode() ->
             dt=1.0 / 60.0,
             world=world,
             game_mode_id=int(GameMode.SURVIVAL),
-            strict_events=True,
         )

@@ -309,7 +309,6 @@ class _ReplayBenchmarkSettingsPayload(msgspec.Struct, forbid_unknown_fields=True
     runs: int
     warmup_runs: int
     max_ticks: int | None
-    strict_events: bool
     trace_rng: bool
     profile: bool
     profile_sort: str
@@ -834,7 +833,6 @@ def cmd_replay_verify(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=True,
             trace_rng=bool(trace_rng),
         )
     except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
@@ -990,7 +988,6 @@ def cmd_replay_info(
         result = run_replay_info(
             replay,
             max_ticks=max_ticks,
-            strict_events=True,
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
@@ -1184,7 +1181,6 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1202,7 +1198,6 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1281,7 +1276,6 @@ def cmd_replay_benchmark(
             runs=int(resolved_runs),
             warmup_runs=int(resolved_warmup_runs),
             max_ticks=(int(max_ticks) if max_ticks is not None else None),
-            strict_events=True,
             trace_rng=bool(trace_rng),
             profile=bool(profile),
             profile_sort=str(profile_sort),
@@ -1490,7 +1484,6 @@ def cmd_replay_render(
             height=height,
             fps=int(fps),
             max_ticks=max_ticks,
-            strict_events=True,
             trace_rng=bool(trace_rng),
             ffmpeg_bin=(Path(ffmpeg_bin) if ffmpeg_bin is not None else None),
             crf=int(crf),
@@ -1596,7 +1589,6 @@ def cmd_replay_verify_checkpoints(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=True,
             trace_rng=bool(trace_rng),
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,

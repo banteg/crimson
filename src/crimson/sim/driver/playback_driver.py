@@ -148,7 +148,6 @@ class PlaybackWorldConfig:
 
 @dataclass(slots=True, frozen=True)
 class PlaybackEventConfig:
-    strict_events: bool = True
     defer_menu_open: bool = False
     apply_terminal_tick_events: bool = True
     terminal_events_use_resolved_dt: bool = True
@@ -167,7 +166,6 @@ class SurvivalSessionConfig:
 
 @dataclass(slots=True, frozen=True)
 class RushSessionConfig:
-    strict_events_override: bool | None = True
     enforce_loadout: bool = True
 
 
@@ -241,9 +239,6 @@ class SurvivalPlaybackRuntime:
     session: SurvivalDeterministicSession
     partition_events: bool
 
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        return bool(default_strict_events)
-
     def partition_tick_events(
         self,
         tick_events: list[object],
@@ -274,12 +269,6 @@ class SurvivalPlaybackRuntime:
 @dataclass(slots=True)
 class RushPlaybackRuntime:
     session: RushDeterministicSession
-    strict_events_override: bool | None
-
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        if self.strict_events_override is None:
-            return bool(default_strict_events)
-        return bool(self.strict_events_override)
 
     def partition_tick_events(
         self,
@@ -314,9 +303,6 @@ class QuestPlaybackRuntime:
     session: QuestDeterministicSession
     partition_events: bool
     result_uses_spawn_timeline_ms: bool
-
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        return bool(default_strict_events)
 
     def partition_tick_events(
         self,
@@ -526,7 +512,6 @@ class PlaybackDriver:
                 )
                 return RushPlaybackRuntime(
                     session=session,
-                    strict_events_override=rush_config.strict_events_override,
                 )
             case GameMode.QUESTS:
                 quest_config = sessions.quest
@@ -602,9 +587,6 @@ class PlaybackDriver:
             defer_menu_open=bool(defer_menu_open_value),
         )
 
-        strict_events = self._mode_runtime.strict_events(
-            default_strict_events=bool(self.config.events.strict_events),
-        )
         rng_before_events = int(state.rng.state)
         with _tick_rng_trace(state.rng, enabled=bool(self.options.trace_rng)) as tick_rng_rows:
             apply_replay_tick_events(
@@ -613,7 +595,6 @@ class PlaybackDriver:
                 dt=float(dt_tick),
                 world=self.world,
                 game_mode_id=self.mode_id,
-                strict_events=bool(strict_events),
             )
             rng_after_events = int(state.rng.state)
             step_timing = self.session.timing_for_dt(float(dt_tick))
@@ -635,7 +616,6 @@ class PlaybackDriver:
                     dt=float(dt_tick),
                     world=self.world,
                     game_mode_id=self.mode_id,
-                    strict_events=bool(strict_events),
                 )
             rng_after_post_events = int(state.rng.state)
 
@@ -681,9 +661,6 @@ class PlaybackDriver:
             dt_tick = float(self.dt)
 
         terminal_events = self.events_by_tick.get(int(tick_index), [])
-        strict_events = self._mode_runtime.strict_events(
-            default_strict_events=bool(events_config.strict_events),
-        )
 
         rng_before_events = int(self.world.state.rng.state)
         apply_replay_tick_events(
@@ -692,7 +669,6 @@ class PlaybackDriver:
             dt=float(dt_tick),
             world=self.world,
             game_mode_id=self.mode_id,
-            strict_events=bool(strict_events),
         )
         rng_after_events = int(self.world.state.rng.state)
 

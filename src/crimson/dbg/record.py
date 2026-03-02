@@ -287,7 +287,6 @@ def _build_trace_meta(
     tick_rows: list[TickRecord],
     channels_seen: set[str],
     impl: Literal["python", "zig"],
-    strict_events: bool,
     config_extra: dict[str, object] | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
@@ -295,7 +294,6 @@ def _build_trace_meta(
     replay_fingerprint = _build_replay_fingerprint(replay_path=replay_path, replay=replay)
     channels_sorted = sorted(channels_seen)
     config = {
-        "strict_events": bool(strict_events),
         "impl": str(impl),
     }
     if config_extra is not None:
@@ -326,7 +324,6 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    strict_events: bool,
     chunk_ticks: int,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
@@ -359,7 +356,6 @@ def _record_replay_to_trace_python(
     run_replay(
         replay,
         max_ticks=None,
-        strict_events=bool(strict_events),
         trace_rng=True,
         checkpoints_out=checkpoints,
         checkpoint_ticks=checkpoint_ticks,
@@ -426,7 +422,6 @@ def _record_replay_to_trace_python(
         tick_rows=tick_rows,
         channels_seen=channels_seen,
         impl="python",
-        strict_events=strict_events,
         config_extra=None,
     )
     return write_trace(
@@ -465,12 +460,8 @@ def _record_replay_to_trace_zig(
     *,
     replay_path: Path,
     out_path: Path,
-    strict_events: bool,
     chunk_ticks: int,
 ) -> tuple[TraceSummary, list[str]]:
-    if not bool(strict_events):
-        raise ValueError("strict_events=False is unsupported for zig dbg record")
-
     replay = load_replay_file(replay_path)
     if int(replay.header.player_count) != 1:
         raise ValueError(
@@ -527,7 +518,6 @@ def record_replay_to_trace(
     replay_path: Path,
     out_path: Path,
     impl: Literal["python", "zig"] = "python",
-    strict_events: bool = True,
     chunk_ticks: int = 256,
     warnings_out: list[str] | None = None,
 ) -> TraceSummary:
@@ -539,7 +529,6 @@ def record_replay_to_trace(
         summary = _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
-            strict_events=strict_events,
             chunk_ticks=chunk_ticks,
         )
         return summary
@@ -547,7 +536,6 @@ def record_replay_to_trace(
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,
             out_path=out_path,
-            strict_events=strict_events,
             chunk_ticks=chunk_ticks,
         )
         warnings_out.extend(warnings)

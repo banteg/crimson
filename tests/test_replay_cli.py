@@ -780,7 +780,6 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     assert payload["run_result"]["score_xp"] == 42
     run_replay_render_benchmark.assert_called_once()
     kwargs = run_replay_render_benchmark.call_args.kwargs
-    assert kwargs["strict_events"] is True
     assert kwargs["runs"] == 1
     assert kwargs["warmup_runs"] == 0
     assert kwargs["rtx"] is False
@@ -1205,7 +1204,6 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     assert "frames=120" in result.output
     run_replay_render_video.assert_called_once()
     kwargs = run_replay_render_video.call_args.kwargs
-    assert kwargs["strict_events"] is True
     assert kwargs["fps"] == 60
     assert kwargs["crf"] == 14
     assert kwargs["preset"] == "slow"

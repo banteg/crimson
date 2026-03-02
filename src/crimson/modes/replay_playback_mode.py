@@ -105,19 +105,15 @@ class ReplayPlaybackMode:
         config: CrimsonConfig,
         console: ConsoleState,
         max_ticks: int | None = None,
-        strict_events: bool = True,
         trace_rng: bool = False,
         rtx: bool = False,
         show_replay_widget: bool = True,
     ) -> None:
-        if not bool(strict_events):
-            raise ValueError("strict_events=False is unsupported; replay playback is always strict")
         self._ctx = ctx
         self._replay_path = Path(replay_path)
         self._config = config
         self._console = console
         self._max_ticks = max(0, int(max_ticks)) if max_ticks is not None else None
-        self._strict_events = bool(strict_events)
         self._trace_rng = bool(trace_rng)
         self._rtx = bool(rtx)
         self._show_replay_widget = bool(show_replay_widget)
@@ -456,7 +452,6 @@ class ReplayPlaybackMode:
                         use_existing_world_state=True,
                     ),
                     events=PlaybackEventConfig(
-                        strict_events=bool(self._strict_events),
                         defer_menu_open=False,
                         apply_terminal_tick_events=True,
                         terminal_events_use_resolved_dt=False,
@@ -468,7 +463,6 @@ class ReplayPlaybackMode:
                     sessions=PlaybackSessionConfigs(
                         survival=SurvivalSessionConfig(partition_events=True),
                         rush=RushSessionConfig(
-                            strict_events_override=None,
                             enforce_loadout=True,
                         ),
                         quest=QuestSessionConfig(

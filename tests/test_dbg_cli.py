@@ -77,14 +77,12 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
         replay_path: Path,
         out_path: Path,
         impl: str,
-        strict_events: bool,
         chunk_ticks: int,
         warnings_out: list[str],
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
         captured["impl"] = impl
-        captured["strict_events"] = strict_events
         captured["chunk_ticks"] = chunk_ticks
         warnings_out.append("warning: zig replay verify exited 1; continuing with emitted trace")
         return SimpleNamespace(
@@ -119,7 +117,6 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == trace_path
     assert captured["impl"] == "zig"
-    assert captured["strict_events"] is True
     assert captured["chunk_ticks"] == 8
 
 

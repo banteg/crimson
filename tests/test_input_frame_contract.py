@@ -97,13 +97,11 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
 
     result0 = run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=checkpoints0,
         checkpoint_ticks=set(range(5)),
     )
     result1 = run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=checkpoints1,
         checkpoint_ticks=set(range(5)),
     )

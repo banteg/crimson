@@ -61,7 +61,6 @@ def run_replay_render_video(
     height: int | None = None,
     fps: int = 60,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     trace_rng: bool = False,
     ffmpeg_bin: Path | None = None,
     crf: int = 16,
@@ -90,7 +89,6 @@ def run_replay_render_video(
     baseline_result = run_replay(
         replay,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
     )
 
@@ -153,7 +151,6 @@ def run_replay_render_video(
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
-                strict_events=bool(strict_events),
                 trace_rng=bool(trace_rng),
                 show_replay_widget=False,
             )
@@ -215,7 +212,6 @@ def run_replay_render_video(
                     config=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
                     output_path=audio_raw_path,
                     replay_tick_rate=int(replay_tick_rate),
@@ -365,7 +361,6 @@ def _capture_replay_audio_track(
     config,
     console,
     max_ticks: int | None,
-    strict_events: bool,
     trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
@@ -393,7 +388,6 @@ def _capture_replay_audio_track(
             config=cfg,
             console=console,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
             trace_rng=bool(trace_rng),
             show_replay_widget=False,
         )

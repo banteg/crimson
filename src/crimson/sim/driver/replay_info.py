@@ -337,7 +337,6 @@ def _run_replay_info(
     replay: Replay,
     *,
     max_ticks: int | None,
-    strict_events: bool,
     player_filter: int | None,
     include_extra_events: bool,
 ) -> ReplayInfoResult:
@@ -355,7 +354,6 @@ def _run_replay_info(
     config = PlaybackDriverConfig(
         timing=PlaybackTimingConfig(),
         events=PlaybackEventConfig(
-            strict_events=bool(strict_events),
             defer_menu_open=False,
             apply_terminal_tick_events=True,
             terminal_events_use_resolved_dt=(mode != GameMode.RUSH),
@@ -367,7 +365,6 @@ def _run_replay_info(
         sessions=PlaybackSessionConfigs(
             survival=SurvivalSessionConfig(partition_events=True),
             rush=RushSessionConfig(
-                strict_events_override=True,
                 enforce_loadout=True,
             ),
             quest=QuestSessionConfig(
@@ -490,17 +487,13 @@ def run_replay_info(
     replay: Replay,
     *,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     player_index: int | None = None,
     include_extra_events: bool = True,
 ) -> ReplayInfoResult:
-    if not bool(strict_events):
-        raise ReplayRunnerError("strict_events=False is unsupported; replay info extraction is always strict")
     player_filter = _validate_player_filter(replay=replay, player_index=player_index)
     return _run_replay_info(
         replay,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         player_filter=player_filter,
         include_extra_events=bool(include_extra_events),
     )

@@ -136,7 +136,6 @@ def run_replay_render_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
@@ -165,7 +164,6 @@ def run_replay_render_benchmark(
     baseline_result = run_replay(
         replay,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
     )
 
@@ -246,7 +244,6 @@ def run_replay_render_benchmark(
                     cfg=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
@@ -414,7 +411,6 @@ def run_replay_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
@@ -466,7 +462,6 @@ def run_replay_benchmark(
                 result = run_replay(
                     replay,
                     max_ticks=max_ticks,
-                    strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
                     tick_progress_callback=tick_callback,
                 )
@@ -569,7 +564,6 @@ def _run_render_once(
     cfg: CrimsonConfig,
     console: ConsoleState,
     max_ticks: int | None,
-    strict_events: bool,
     trace_rng: bool,
     rtx: bool,
     telemetry_session: RenderTelemetrySession | None = None,
@@ -583,7 +577,6 @@ def _run_render_once(
         config=cfg,
         console=console,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
         rtx=bool(rtx),
     )

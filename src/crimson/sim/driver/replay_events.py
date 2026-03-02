@@ -17,12 +17,9 @@ def apply_replay_tick_events(
     dt: float,
     world: WorldState,
     game_mode_id: GameMode | int,
-    strict_events: bool,
     on_capture_state_transition=None,
 ) -> int | None:
     _ = on_capture_state_transition
-    if not bool(strict_events):
-        raise ReplayRunnerError("strict_events=False is unsupported; replay event handling is always strict")
     state = world.state
     players = world.players
     perk_state = state.perk_selection

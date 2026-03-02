@@ -35,7 +35,6 @@ def run_replay(
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
-    strict_events: bool = True,
     trace_rng: bool = False,
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
@@ -51,8 +50,6 @@ def run_replay(
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
-    if not bool(strict_events):
-        raise ReplayRunnerError("strict_events=False is unsupported; replay execution is always strict")
     mode_raw = int(replay.header.game_mode_id)
     try:
         mode_id: GameMode | int = GameMode(mode_raw)
@@ -75,7 +72,6 @@ def run_replay(
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         ),
         events=PlaybackEventConfig(
-            strict_events=bool(strict_events),
             defer_menu_open=False,
             apply_terminal_tick_events=True,
             terminal_events_use_resolved_dt=terminal_events_use_resolved_dt,
@@ -87,7 +83,6 @@ def run_replay(
         sessions=PlaybackSessionConfigs(
             survival=SurvivalSessionConfig(partition_events=True),
             rush=RushSessionConfig(
-                strict_events_override=True,
                 enforce_loadout=True,
             ),
             quest=QuestSessionConfig(

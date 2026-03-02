@@ -297,7 +297,6 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
     headless: list[ReplayCheckpoint] = []
     run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=headless,
         checkpoint_ticks=set(range(len(replay.inputs))),
     )
