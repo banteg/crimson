@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Protocol, cast, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -22,7 +22,6 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
-from ..net.lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
     ReplayStateSnapshotV2,
@@ -35,7 +34,6 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
 from ..ui.game_over import GameOverUi
@@ -48,43 +46,33 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
     from ..sim.state_types import PlayerState
 
-
-@runtime_checkable
-class LanRuntimeLike(Protocol):
-    error: str
-    local_slot_index: int
-
-    def update(self) -> None: ...
-    def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None: ...
-    def host_remote_inputs_ready(self) -> bool: ...
-    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None: ...
-    def pop_tick_frame(self) -> TickFrame | None: ...
-    def note_desync(self, *, kind: str, tick_index: int, expected: str, actual: str) -> None: ...
-    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None: ...
-    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None: ...
-    def broadcast_perk_menu_close(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        now_ms: int | None = None,
-    ) -> None: ...
-    def broadcast_perk_pick(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        choice_index: int,
-        now_ms: int | None = None,
-    ) -> None: ...
-    def debug_overlay_lines(self) -> list[str]: ...
-
-
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
 # we force stable values while in a LAN match.
 LAN_SIM_DETAIL_PRESET = 5
 LAN_SIM_FX_TOGGLE = 0
+
+_LAN_RUNTIME_REQUIRED_ATTRS = (
+    "error",
+    "local_slot_index",
+    "update",
+    "queue_local_input",
+    "host_remote_inputs_ready",
+    "pop_perk_event",
+    "pop_tick_frame",
+    "note_desync",
+    "broadcast_tick_frame",
+    "broadcast_perk_menu_open",
+    "broadcast_perk_menu_close",
+    "broadcast_perk_pick",
+    "debug_overlay_lines",
+)
+
+
+def _is_lan_runtime(value: object | None) -> bool:
+    if value is None:
+        return False
+    return all(hasattr(value, name) for name in _LAN_RUNTIME_REQUIRED_ATTRS)
 
 
 class BaseGameplayMode:
@@ -160,7 +148,7 @@ class BaseGameplayMode:
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: Any | None = None
-        self._lan_runtime: LanRuntimeLike | None = None
+        self._lan_runtime: Any | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
         self._lan_start_tick = 0
@@ -189,7 +177,7 @@ class BaseGameplayMode:
         self.state.status = self._status_sim
 
     def bind_lan_runtime(self, runtime: object | None) -> None:
-        self._lan_runtime = runtime if isinstance(runtime, LanRuntimeLike) else None
+        self._lan_runtime = runtime if _is_lan_runtime(runtime) else None
         slot_index = int(getattr(runtime, "local_slot_index", 0))
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
