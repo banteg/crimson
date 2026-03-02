@@ -2286,7 +2286,7 @@ test "survival scaffold rejects world_size outside i32 range" {
     try std.testing.expectError(error.InvalidHeaderValue, runReplayScaffold(replay));
 }
 
-test "quest scaffold disables world dt perk steps for original capture dt overrides" {
+test "quest scaffold disables world dt perk steps for original capture replays" {
     const allocator = std.testing.allocator;
 
     const bootstrap_event = replay_codec.ReplayEvent{
@@ -2321,7 +2321,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             bootstrap: replay_codec.ReplayEvent,
             reflex_apply: replay_codec.ReplayEvent,
             include_reflex_boosted: bool,
-            dt_override: ?f32,
+            dt_tick: f32,
         ) !struct { x_bits: u32, y_bits: u32 } {
             const events = [_]replay_codec.ReplayEvent{ bootstrap, reflex_apply };
             var replay = try buildTestReplay(allocator_inner, .{
@@ -2337,9 +2337,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
             replay.inputs[0][0].move_y = 0.0;
             replay.inputs[0][0].aim_x = 700.0;
             replay.inputs[0][0].aim_y = 512.0;
-            if (dt_override) |dt_value| {
-                replay.dt[0] = dt_value;
-            }
+            replay.dt[0] = dt_tick;
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
@@ -2365,16 +2363,17 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
         bootstrap_event,
         reflex_apply_event,
         false,
-        null,
+        1.0 / 60.0,
     );
     const no_override_with_perk = try run(
         allocator,
         bootstrap_event,
         reflex_apply_event,
         true,
-        null,
+        1.0 / 60.0,
     );
-    try std.testing.expect(no_override_with_perk.x_bits != no_override_without_perk.x_bits);
+    try std.testing.expectEqual(no_override_without_perk.x_bits, no_override_with_perk.x_bits);
+    try std.testing.expectEqual(no_override_without_perk.y_bits, no_override_with_perk.y_bits);
 
     const override_without_perk = try run(
         allocator,
