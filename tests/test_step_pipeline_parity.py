@@ -85,8 +85,8 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     )
 
     checkpoints: list[ReplayCheckpoint] = []
-    dt_frame = 1.0 / float(replay.header.tick_rate)
-    dt_frame_ms = dt_frame * 1000.0
+    dt = 1.0 / float(replay.header.tick_rate)
+    dt_ms = dt * 1000.0
     elapsed_ms = 0.0
     stage = 0
     spawn_cooldown_ms = 0.0
@@ -96,7 +96,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         rng_before_world_step = int(world.state.rng.state)
         world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
         world.update(
-            dt_frame,
+            dt,
             inputs=_inputs_for_tick(replay, tick_index),
             auto_pick_perks=False,
             game_mode=int(GameMode.SURVIVAL),
@@ -122,7 +122,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         player_xp = world.players[0].experience if world.players else 0
         cooldown, wave_spawns = tick_survival_wave_spawns(
             spawn_cooldown_ms,
-            dt_frame_ms,
+            dt_ms,
             world.state.rng,
             player_count=len(world.players),
             survival_elapsed_ms=elapsed_before_ms,
@@ -133,7 +133,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         spawn_cooldown_ms = cooldown
         world.creatures.spawn_inits(wave_spawns)
         rng_after_wave_spawns = int(world.state.rng.state)
-        elapsed_ms += float(dt_frame_ms)
+        elapsed_ms += float(dt_ms)
 
         checkpoints.append(
             build_checkpoint(
@@ -178,11 +178,11 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     )
 
     checkpoints: list[ReplayCheckpoint] = []
-    dt_frame = 1.0 / float(replay.header.tick_rate)
+    dt = 1.0 / float(replay.header.tick_rate)
     for tick_index in range(len(replay.inputs)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
         rush_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in tick_inputs]
-        timing = session.timing_for_dt(float(dt_frame))
+        timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
             timing=timing,
             inputs=rush_inputs,
@@ -248,10 +248,10 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     )
 
     checkpoints: list[ReplayCheckpoint] = []
-    dt_frame = 1.0 / float(replay.header.tick_rate)
+    dt = 1.0 / float(replay.header.tick_rate)
 
     for tick_index in range(len(replay.inputs)):
-        timing = session.timing_for_dt(float(dt_frame))
+        timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
             timing=timing,
             inputs=_inputs_for_tick(replay, tick_index),

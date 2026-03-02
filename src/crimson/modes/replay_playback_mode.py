@@ -124,7 +124,7 @@ class ReplayPlaybackMode:
         self._quest_completion_transition_ms = -1.0
 
         self._tick_rate = 60
-        self._dt_frame = 1.0 / 60.0
+        self._dt = 1.0 / 60.0
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
@@ -314,7 +314,7 @@ class ReplayPlaybackMode:
         if tick_rate <= 0:
             raise ValueError(f"invalid tick_rate: {tick_rate}")
         self._tick_rate = tick_rate
-        self._dt_frame = 1.0 / float(tick_rate)
+        self._dt = 1.0 / float(tick_rate)
         self._dt_accum = 0.0
         self._tick_index = 0
         self._finished = False
@@ -544,7 +544,7 @@ class ReplayPlaybackMode:
         *,
         outcome: PlaybackTickOutcome,
         game_tune_started: bool,
-        dt_frame: float,
+        dt: float,
     ) -> float:
         world = self._world
         if world is None:
@@ -558,7 +558,7 @@ class ReplayPlaybackMode:
         )
         if outcome.spawn_timeline_ms is not None:
             self._quest_spawn_timeline_ms = float(outcome.spawn_timeline_ms)
-            self._quest_name_timer_ms += float(dt_frame) * 1000.0
+            self._quest_name_timer_ms += float(dt) * 1000.0
             if outcome.completion_transition_ms is not None:
                 self._quest_completion_transition_ms = float(outcome.completion_transition_ms)
             if bool(outcome.play_hit_sfx):
@@ -575,7 +575,7 @@ class ReplayPlaybackMode:
 
         return float(outcome.dt_sim)
 
-    def _tick_survival(self, *, tick_index: int, dt_frame: float) -> float:
+    def _tick_survival(self, *, tick_index: int, dt: float) -> float:
         replay = self._replay
         world = self._world
         driver = self._driver
@@ -586,10 +586,10 @@ class ReplayPlaybackMode:
         return self._apply_tick_outcome(
             outcome=outcome,
             game_tune_started=bool(session.game_tune_started),
-            dt_frame=float(dt_frame),
+            dt=float(dt),
         )
 
-    def _tick_rush(self, *, tick_index: int, dt_frame: float) -> float:
+    def _tick_rush(self, *, tick_index: int, dt: float) -> float:
         replay = self._replay
         world = self._world
         driver = self._driver
@@ -600,10 +600,10 @@ class ReplayPlaybackMode:
         return self._apply_tick_outcome(
             outcome=outcome,
             game_tune_started=bool(session.game_tune_started),
-            dt_frame=float(dt_frame),
+            dt=float(dt),
         )
 
-    def _tick_quest(self, *, tick_index: int, dt_frame: float) -> float:
+    def _tick_quest(self, *, tick_index: int, dt: float) -> float:
         replay = self._replay
         world = self._world
         driver = self._driver
@@ -614,7 +614,7 @@ class ReplayPlaybackMode:
         return self._apply_tick_outcome(
             outcome=outcome,
             game_tune_started=bool(session.game_tune_started),
-            dt_frame=float(dt_frame),
+            dt=float(dt),
         )
 
     def _tick_one(self) -> None:
@@ -637,13 +637,13 @@ class ReplayPlaybackMode:
             self._finished = True
             return
 
-        dt_frame = float(self._dt_frame)
+        dt = float(self._dt)
         if self._survival is not None:
-            dt_sim = self._tick_survival(tick_index=tick_index, dt_frame=dt_frame)
+            dt_sim = self._tick_survival(tick_index=tick_index, dt=dt)
         elif self._quest is not None:
-            dt_sim = self._tick_quest(tick_index=tick_index, dt_frame=dt_frame)
+            dt_sim = self._tick_quest(tick_index=tick_index, dt=dt)
         elif self._rush is not None:
-            dt_sim = self._tick_rush(tick_index=tick_index, dt_frame=dt_frame)
+            dt_sim = self._tick_rush(tick_index=tick_index, dt=dt)
         else:  # pragma: no cover
             self._finished = True
             return
@@ -716,9 +716,9 @@ class ReplayPlaybackMode:
                 dt = 0.1
             self._dt_accum += dt * self._playback_speed()
 
-            while self._dt_accum + 1e-9 >= self._dt_frame and not self._finished:
+            while self._dt_accum + 1e-9 >= self._dt and not self._finished:
                 self._tick_one()
-                self._dt_accum -= self._dt_frame
+                self._dt_accum -= self._dt
 
         if self._audio is not None:
             update_audio(self._audio, float(dt))

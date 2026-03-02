@@ -201,7 +201,7 @@ class PerkMenuController:
         else:
             self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
 
-    def handle_input(self, ctx: PerkMenuContext, *, dt_frame: float, dt_ui_ms: float) -> None:
+    def handle_input(self, ctx: PerkMenuContext, *, dt: float, dt_ui_ms: float) -> None:
         if ctx.assets is None:
             self.close()
             return
@@ -267,7 +267,7 @@ class PerkMenuController:
                         idx,
                         game_mode=int(ctx.game_mode),
                         player_count=int(ctx.player_count),
-                        dt=float(dt_frame),
+                        dt=float(dt),
                         creatures=ctx.creatures,
                     )
                     if picked is not None and ctx.play_sfx is not None:
@@ -307,7 +307,7 @@ class PerkMenuController:
                 self._selected_index,
                 game_mode=int(ctx.game_mode),
                 player_count=int(ctx.player_count),
-                dt=float(dt_frame),
+                dt=float(dt),
                 creatures=ctx.creatures,
             )
             if picked is not None and ctx.play_sfx is not None:

@@ -17,7 +17,7 @@ def _set_private(view, name: str, value: object) -> None:
 
 
 def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
-    # Regression test: a missing `dt_accum -= dt_frame` inside the playback loop
+    # Regression test: a missing `dt_accum -= dt` inside the playback loop
     # can cause the entire replay to run in a single frame (or an infinite loop).
     import crimson.modes.replay_playback_mode as replay_playback_mode
     view, _console = replay_playback_view
@@ -38,7 +38,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view._finished = False
     view._paused = False
     view._tick_rate = 60
-    view._dt_frame = 1.0 / 60.0
+    view._dt = 1.0 / 60.0
     view._dt_accum = 0.0
 
     view.update(0.05)

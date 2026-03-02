@@ -31,9 +31,9 @@ def _install_minimal_sim_session(mode: SurvivalMode, mocker) -> None:
             self.detail_preset = 5
             self.fx_toggle = 0
 
-        def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+        def timing_for_dt(self, dt: float) -> FrameTiming:
             return FrameTiming.compute(
-                float(dt_frame),
+                float(dt),
                 time_scale_active_entry=False,
                 time_scale_factor=1.0,
                 zero_gate_active=False,
@@ -41,11 +41,11 @@ def _install_minimal_sim_session(mode: SurvivalMode, mocker) -> None:
 
         def step_tick(self, *, timing: FrameTiming, inputs):
             _ = inputs
-            dt_frame = float(timing.dt)
-            self.elapsed_ms += float(dt_frame) * 1000.0
+            dt = float(timing.dt)
+            self.elapsed_ms += float(dt) * 1000.0
             for player in mode.world.players:
                 if float(player.health) <= 0.0:
-                    player.death_timer -= float(dt_frame) * 20.0
+                    player.death_timer -= float(dt) * 20.0
             step = SimpleNamespace(events=SimpleNamespace(deaths=()), command_hash=0)
             return SimpleNamespace(step=step, rng_marks={})
 
@@ -63,7 +63,7 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
     mode._perk_menu.open = True
     mode._perk_menu.timeline_ms = 100.0
 
-    def _apply_grim_deal_and_close(_ctx, *, dt_frame: float, dt_ui_ms: float) -> None:
+    def _apply_grim_deal_and_close(_ctx, *, dt: float, dt_ui_ms: float) -> None:
         perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 

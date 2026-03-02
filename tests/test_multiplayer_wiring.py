@@ -82,9 +82,9 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
             self.completion_transition_ms = -1.0
             self.game_tune_started = False
 
-        def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+        def timing_for_dt(self, dt: float) -> FrameTiming:
             return FrameTiming.compute(
-                float(dt_frame),
+                float(dt),
                 time_scale_active_entry=False,
                 time_scale_factor=1.0,
                 zero_gate_active=False,
@@ -97,7 +97,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
-    mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt_frame: inputs)
+    mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt: inputs)
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
     mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
 
@@ -121,7 +121,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
         side_effect=lambda *, players, **_kwargs: [PlayerInput() for _ in players],
     )
 
-    frame = mode._build_local_inputs(dt_frame=0.016)
+    frame = mode._build_local_inputs(dt=0.016)
 
     assert len(frame) == len(mode.world.players)
     build_frame_inputs.assert_called_once()
