@@ -34,10 +34,19 @@ if TYPE_CHECKING:
 class SecondaryProjectilePool:
     def __init__(self, *, size: int = SECONDARY_PROJECTILE_POOL_SIZE) -> None:
         self._entries = [SecondaryProjectile() for _ in range(size)]
+        self._creature_damage_applier: CreatureDamageApplier | None = None
 
     @property
     def entries(self) -> list[SecondaryProjectile]:
         return self._entries
+
+    @property
+    def creature_damage_applier(self) -> CreatureDamageApplier | None:
+        return self._creature_damage_applier
+
+    @creature_damage_applier.setter
+    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
+        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -114,7 +123,6 @@ class SecondaryProjectilePool:
         dt: float,
         creatures: Sequence[CreatureState],
         *,
-        apply_creature_damage: CreatureDamageApplier | None = None,
         runtime_state: ProjectileRuntimeState | None = None,
         fx_queue: FxQueueLike | None = None,
         detail_preset: int = 5,
@@ -139,7 +147,7 @@ class SecondaryProjectilePool:
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner=owner,
-                apply_creature_damage=apply_creature_damage,
+                apply_creature_damage=self._creature_damage_applier,
             )
 
         rand = _rng_zero

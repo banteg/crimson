@@ -7,7 +7,6 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .hud import _TimerRef
 from .ids import BONUS_BY_ID, BonusId
@@ -28,7 +27,6 @@ class BonusApplyCtx(msgspec.Struct):
     origin: HasPos | None
     creatures: Sequence[CreatureState] | None
     players: list[PlayerState] | None
-    apply_creature_damage: CreatureDamageApplier | None
     detail_preset: int
     economist_multiplier: float
     label: str

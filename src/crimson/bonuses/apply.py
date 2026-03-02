@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
-from ..projectiles import CreatureDamageApplier
 from ..sim.state_types import GameplayState, PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler, HasPos
 from .double_experience import apply_double_experience
@@ -54,7 +53,6 @@ def bonus_apply(
     origin: HasPos | None = None,
     creatures: Sequence[CreatureState] | None = None,
     players: list[PlayerState] | None = None,
-    apply_creature_damage: CreatureDamageApplier | None = None,
     detail_preset: int = 5,
     defer_freeze_corpse_fx: bool = False,
     freeze_corpse_indices: set[int] | None = None,
@@ -78,7 +76,6 @@ def bonus_apply(
         origin=origin,
         creatures=creatures,
         players=players,
-        apply_creature_damage=apply_creature_damage,
         detail_preset=int(detail_preset),
         economist_multiplier=float(economist_multiplier),
         label=str(label),

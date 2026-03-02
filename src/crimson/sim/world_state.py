@@ -205,6 +205,7 @@ class WorldState(msgspec.Struct):
                     plan_death_sfx=not suppress_death_sfx,
                 ),
             )
+        prev_creature_damage_appliers = self._set_creature_damage_appliers(_apply_projectile_damage_to_creature)
 
         def _on_secondary_detonation_kill(creature_index: int) -> None:
             idx = int(creature_index)
@@ -261,7 +262,6 @@ class WorldState(msgspec.Struct):
                 rng=self.state.rng.rand,
                 runtime_state=self.state, players=self.players,
                 apply_player_damage=_apply_projectile_damage_to_player,
-                apply_creature_damage=_apply_projectile_damage_to_creature,
                 on_hit=_on_projectile_hit_pre,
                 on_hit_post=_on_projectile_hit_post,
             ),
@@ -271,7 +271,6 @@ class WorldState(msgspec.Struct):
         self.state.secondary_projectiles.update_pulse_gun(
             dt,
             self.creatures.entries,
-            apply_creature_damage=_apply_projectile_damage_to_creature,
             runtime_state=self.state,
             fx_queue=fx_queue,
             detail_preset=int(detail_preset),
@@ -309,7 +308,6 @@ class WorldState(msgspec.Struct):
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
-            apply_creature_damage=_apply_projectile_damage_to_creature,
             kill_creature=_kill_creature_no_corpse,
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
@@ -383,7 +381,6 @@ class WorldState(msgspec.Struct):
             dt,
             creatures=self.creatures.entries,
             update_hud=True,
-            apply_creature_damage=_apply_projectile_damage_to_creature,
             detail_preset=int(detail_preset),
             defer_freeze_corpse_fx=bool(defer_freeze_corpse_fx),
             freeze_corpse_indices=freeze_corpse_indices_at_tick_start,
@@ -407,6 +404,7 @@ class WorldState(msgspec.Struct):
         _mark("ws_after_player_damage_sfx")
         _mark("ws_after_sfx")
         self.state.player_death_hook_skip_indices.clear()
+        self._restore_creature_damage_appliers(prev_creature_damage_appliers)
 
         return WorldEvents(
             hits=hits,
@@ -417,6 +415,43 @@ class WorldState(msgspec.Struct):
             hit_sfx=hit_sfx,
             death_sfx_preplanned=True,
         )
+
+    def _set_creature_damage_appliers(
+        self,
+        applier: Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+    ) -> tuple[
+        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+        Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+    ]:
+        prev = (
+            self.state.projectiles.creature_damage_applier,
+            self.state.secondary_projectiles.creature_damage_applier,
+            self.state.particles.creature_damage_applier,
+            self.state.bonus_pool.creature_damage_applier,
+        )
+        self.state.projectiles.creature_damage_applier = applier
+        self.state.secondary_projectiles.creature_damage_applier = applier
+        self.state.particles.creature_damage_applier = applier
+        self.state.bonus_pool.creature_damage_applier = applier
+        return prev
+
+    def _restore_creature_damage_appliers(
+        self,
+        previous: tuple[
+            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+            Callable[[int, float, int, Vec2, OwnerRef], None] | None,
+        ],
+    ) -> None:
+        (
+            self.state.projectiles.creature_damage_applier,
+            self.state.secondary_projectiles.creature_damage_applier,
+            self.state.particles.creature_damage_applier,
+            self.state.bonus_pool.creature_damage_applier,
+        ) = previous
 
     def _run_player_death_hooks(
         self,

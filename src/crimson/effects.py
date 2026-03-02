@@ -94,13 +94,28 @@ class Particle(msgspec.Struct):
 
 
 class ParticlePool:
-    def __init__(self, *, size: int = PARTICLE_POOL_SIZE, rand: Callable[[], int] | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        size: int = PARTICLE_POOL_SIZE,
+        rand: Callable[[], int] | None = None,
+        creature_damage_applier: CreatureDamageApplier | None = None,
+    ) -> None:
         self._entries = [Particle() for _ in range(int(size))]
         self._rand = rand or _default_rand
+        self._creature_damage_applier = creature_damage_applier
 
     @property
     def entries(self) -> list[Particle]:
         return self._entries
+
+    @property
+    def creature_damage_applier(self) -> CreatureDamageApplier | None:
+        return self._creature_damage_applier
+
+    @creature_damage_applier.setter
+    def creature_damage_applier(self, value: CreatureDamageApplier | None) -> None:
+        self._creature_damage_applier = value
 
     def reset(self) -> None:
         for entry in self._entries:
@@ -178,7 +193,6 @@ class ParticlePool:
         dt: float,
         *,
         creatures: Sequence[_CreatureForParticles] | None = None,
-        apply_creature_damage: CreatureDamageApplier | None = None,
         kill_creature: CreatureKillHandler | None = None,
         fx_queue: FxQueue | None = None,
         sprite_effects: SpriteEffectPool | None = None,
@@ -335,8 +349,14 @@ class ParticlePool:
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
-                            if apply_creature_damage is not None:
-                                apply_creature_damage(int(hit_idx), float(damage), 4, Vec2(), entry.owner)
+                            if self._creature_damage_applier is not None:
+                                self._creature_damage_applier(
+                                    int(hit_idx),
+                                    float(damage),
+                                    4,
+                                    Vec2(),
+                                    entry.owner,
+                                )
                             else:
                                 creature.hp -= float(damage)
 
