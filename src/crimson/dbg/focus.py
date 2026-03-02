@@ -70,8 +70,8 @@ def focus_tick(
         entity_presence[kind] = {
             "expected_count": int(len(expected_uids)),
             "candidate_count": int(len(candidate_uids)),
-            "missing_uids": missing[:32],
-            "extra_uids": extra[:32],
+            "missing_uids": missing,
+            "extra_uids": extra,
         }
     entity_samples_ok, entity_samples_detail = compare_entity_samples(
         entity_samples_channel_required(expected_row),

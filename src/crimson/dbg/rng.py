@@ -12,10 +12,6 @@ def canonical_rng_marks(
 ) -> dict[str, int]:
     rows = list(rng_stream)
     call_count = int(len(rows))
-    inferred_count = 0
-    for row in rows:
-        if row.inferred:
-            inferred_count += 1
 
     first_value = _RNG_MARKS_EMPTY_VALUE
     last_value = _RNG_MARKS_EMPTY_VALUE
@@ -31,7 +27,6 @@ def canonical_rng_marks(
 
     return {
         "calls_total": int(call_count),
-        "inferred_total": int(inferred_count),
         "first_value_15": int(first_value),
         "last_value_15": int(last_value),
         "first_state_before_u32": int(first_state_before),

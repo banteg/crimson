@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
-from typing import cast
 
 import msgspec
-from deepdiff import DeepDiff
 
 from ..replay.checkpoints import ReplayCheckpoint
+from .strict_compare import strict_mismatch_payload
 
 DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
     "before_world_step",
@@ -36,18 +35,6 @@ DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
     "after_wave_spawns",
     "after_rush_spawns",
 )
-
-_DEEPDIFF_CATEGORY_ORDER: tuple[str, ...] = (
-    "type_changes",
-    "values_changed",
-    "dictionary_item_removed",
-    "iterable_item_removed",
-    "set_item_removed",
-    "dictionary_item_added",
-    "iterable_item_added",
-    "set_item_added",
-)
-
 
 class ReplayDiffFailure(msgspec.Struct, frozen=True):
     kind: str
@@ -86,63 +73,15 @@ def _checkpoint_to_obj(
     return obj
 
 
-def _normalize_deepdiff_payload(raw_payload: dict[str, object]) -> tuple[dict[str, object], int]:
-    out: dict[str, object] = {}
-    total = 0
-
-    for category in _DEEPDIFF_CATEGORY_ORDER:
-        payload = raw_payload.get(category)
-        if payload is None:
-            continue
-
-        match payload:
-            case dict() as mapping:
-                category_out: dict[str, object] = {}
-                for key in sorted(mapping.keys(), key=str):
-                    if not isinstance(key, str):
-                        raise TypeError(f"deepdiff dict category {category} had non-string key")
-                    path = str(key)
-                    row = mapping[key]
-                    category_out[path] = row
-                    total += 1
-                if category_out:
-                    out[category] = category_out
-            case list() as paths:
-                category_out_list: list[str] = []
-                for path in paths:
-                    if not isinstance(path, str):
-                        raise TypeError(f"deepdiff list category {category} had non-string path value")
-                    path_text = str(path)
-                    category_out_list.append(path_text)
-                    total += 1
-                if category_out_list:
-                    out[category] = category_out_list
-            case _:
-                raise TypeError(f"unsupported deepdiff category payload for {category}: {type(payload).__name__}")
-
-    return out, total
-
-
 def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
 ) -> CheckpointDeepDiff | None:
-    deep = DeepDiff(
-        expected,
-        actual,
-        ignore_order=False,
-        verbose_level=2,
-    )
-
-    raw_json = json.loads(str(deep.to_json()))
-    if isinstance(raw_json, dict):
-        raw_payload = cast("dict[str, object]", raw_json)
-    else:
-        raise TypeError("deepdiff payload must decode to object")
-    payload, diff_count = _normalize_deepdiff_payload(raw_payload)
+    mismatches, diff_count, _pretty = strict_mismatch_payload(expected, actual)
     if int(diff_count) <= 0:
         return None
 
+    payload: dict[str, object] = {"mismatches": mismatches}
     return CheckpointDeepDiff(
         payload=payload,
         pretty=json.dumps(payload, sort_keys=True, indent=2, default=repr),

@@ -98,13 +98,6 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert "rng_stream" in tick0.channels
         assert "sim_state" in tick0.channels
         assert "entity_samples" in tick0.channels
-        for row in trace.iter_ticks():
-            rng_stream_obj = row.channels.get("rng_stream")
-            assert isinstance(rng_stream_obj, list)
-            for stream_row in rng_stream_obj:
-                inferred_obj = _as_dict(stream_row).get("inferred")
-                assert isinstance(inferred_obj, bool)
-                assert not inferred_obj
 
 
 def test_dbg_record_full_profile_uses_canonical_channels(tmp_path: Path) -> None:

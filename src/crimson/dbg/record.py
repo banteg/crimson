@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import platform
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal, cast
@@ -29,7 +28,6 @@ from .canonical_channels import (
     SnapshotVec2,
     SnapshotWeapon,
     bonus_timer_ms,
-    status_payload_from_mapping,
 )
 from .checkpoint_codec import checkpoint_to_channel
 from .rng import canonical_rng_marks
@@ -38,20 +36,7 @@ from .trace import TraceSummary, write_trace
 
 RecordProfile = Literal["minimal", "standard", "full"]
 
-_ENTITY_KIND_CODES = {
-    "creature": 1,
-    "projectile": 2,
-    "secondary_projectile": 3,
-    "bonus": 4,
-}
-_ENTITY_UID_KIND_SHIFT = 49
-_ENTITY_UID_GEN_SHIFT = 29
-_ENTITY_UID_KIND_MASK = 0xF
-_ENTITY_UID_GEN_MASK = 0xFFFFF
-_ENTITY_UID_INDEX_MASK = 0x1FFFFFFF
-
-
-class _EntityUidState(msgspec.Struct):
+class _EntityGenerationState(msgspec.Struct):
     generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
     active_indices: set[int] = msgspec.field(default_factory=set)
     _seen_in_tick: set[int] = msgspec.field(default_factory=set)
@@ -62,22 +47,14 @@ class _EntityUidState(msgspec.Struct):
     def end_tick(self) -> None:
         self.active_indices = set(self._seen_in_tick)
 
-    def next_uid(self, *, kind: str, index: int) -> tuple[int, int]:
+    def next_generation(self, *, index: int) -> int:
         idx = int(index)
         if idx not in self.generation_by_index:
             self.generation_by_index[idx] = 0
         if idx not in self.active_indices:
             self.generation_by_index[idx] += 1
         self._seen_in_tick.add(idx)
-
-        generation = int(self.generation_by_index[idx])
-        kind_code = _ENTITY_KIND_CODES[kind] & _ENTITY_UID_KIND_MASK
-        uid = (
-            (kind_code << _ENTITY_UID_KIND_SHIFT)
-            | ((generation & _ENTITY_UID_GEN_MASK) << _ENTITY_UID_GEN_SHIFT)
-            | (idx & _ENTITY_UID_INDEX_MASK)
-        )
-        return uid, generation
+        return int(self.generation_by_index[idx])
 
 
 def _fingerprint(path: Path) -> dict[str, object]:
@@ -103,7 +80,6 @@ def _rng_stream_from_draws(draws: list[tuple[int, int, int]]) -> list[RngStreamR
                 state_after_u32=int(state_after_u32),
                 caller_static=None,
                 branch_id=None,
-                inferred=False,
             ),
         )
     return rows
@@ -112,10 +88,10 @@ def _rng_stream_from_draws(draws: list[tuple[int, int, int]]) -> list[RngStreamR
 def _entity_samples_for_world(
     world: WorldState,
     *,
-    creature_state: _EntityUidState,
-    projectile_state: _EntityUidState,
-    secondary_state: _EntityUidState,
-    bonus_state: _EntityUidState,
+    creature_state: _EntityGenerationState,
+    projectile_state: _EntityGenerationState,
+    secondary_state: _EntityGenerationState,
+    bonus_state: _EntityGenerationState,
 ) -> EntitySamplesSnapshot:
     creature_state.begin_tick()
     projectile_state.begin_tick()
@@ -126,10 +102,10 @@ def _entity_samples_for_world(
     for index, creature in enumerate(world.creatures.entries):
         if not creature.active:
             continue
-        uid, generation = creature_state.next_uid(kind="creature", index=index)
+        generation = creature_state.next_generation(index=index)
         creatures.append(
             CreatureEntitySample(
-                uid=uid,
+                uid=int(index),
                 generation=generation,
                 pool_kind="creature",
                 index=index,
@@ -152,10 +128,10 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.projectiles.entries):
         if not projectile.active:
             continue
-        uid, generation = projectile_state.next_uid(kind="projectile", index=index)
+        generation = projectile_state.next_generation(index=index)
         projectiles.append(
             ProjectileEntitySample(
-                uid=uid,
+                uid=int(index),
                 generation=generation,
                 pool_kind="projectile",
                 index=index,
@@ -177,10 +153,10 @@ def _entity_samples_for_world(
     for index, projectile in enumerate(world.state.secondary_projectiles.entries):
         if not projectile.active:
             continue
-        uid, generation = secondary_state.next_uid(kind="secondary_projectile", index=index)
+        generation = secondary_state.next_generation(index=index)
         secondary_projectiles.append(
             SecondaryProjectileEntitySample(
-                uid=uid,
+                uid=int(index),
                 generation=generation,
                 pool_kind="secondary_projectile",
                 index=index,
@@ -200,10 +176,10 @@ def _entity_samples_for_world(
     for index, bonus in enumerate(world.state.bonus_pool.entries):
         if int(bonus.bonus_id) == 0:
             continue
-        uid, generation = bonus_state.next_uid(kind="bonus", index=index)
+        generation = bonus_state.next_generation(index=index)
         bonuses.append(
             BonusEntitySample(
-                uid=uid,
+                uid=int(index),
                 generation=generation,
                 pool_kind="bonus",
                 index=index,
@@ -232,10 +208,20 @@ def _entity_samples_for_world(
 
 def _status_snapshot_from_world(world: WorldState) -> SnapshotStatus:
     gameplay = world.state
-    status_obj = gameplay.status.data if gameplay.status is not None else None
-    return status_payload_from_mapping(
-        cast("Mapping[str, object] | None", status_obj),
-        usage_count=int(WEAPON_USAGE_COUNT),
+    if gameplay.status is None:
+        raise ValueError("gameplay status missing while recording trace")
+    raw_counts = gameplay.status.data["weapon_usage_counts"]
+    counts = [int(value) for value in list(raw_counts)]
+    expected_usage_count = int(WEAPON_USAGE_COUNT)
+    if len(counts) != expected_usage_count:
+        raise ValueError(
+            "gameplay status weapon_usage_counts length mismatch: "
+            f"expected {expected_usage_count}, got {len(counts)}",
+        )
+    return SnapshotStatus(
+        quest_unlock_index=int(gameplay.status.quest_unlock_index),
+        quest_unlock_index_full=int(gameplay.status.quest_unlock_index_full),
+        weapon_usage_counts=counts,
     )
 
 
@@ -342,17 +328,17 @@ def _record_replay_to_trace_python(
     replay = load_replay_file(replay_path)
 
     replay_tick_count = len(replay.inputs)
-    tick_count = replay_tick_count if max_ticks is None else min(replay_tick_count, max(0, max_ticks))
+    tick_count = replay_tick_count if max_ticks is None else min(replay_tick_count, int(max_ticks))
     checkpoint_ticks = set(range(tick_count))
     checkpoints: list[ReplayCheckpoint] = []
 
     entity_samples_by_tick: dict[int, EntitySamplesSnapshot] = {}
     sim_state_by_tick: dict[int, SimStateSnapshot] = {}
     rng_stream_by_tick: dict[int, list[RngStreamRow]] = {}
-    creature_state = _EntityUidState()
-    projectile_state = _EntityUidState()
-    secondary_state = _EntityUidState()
-    bonus_state = _EntityUidState()
+    creature_state = _EntityGenerationState()
+    projectile_state = _EntityGenerationState()
+    secondary_state = _EntityGenerationState()
+    bonus_state = _EntityGenerationState()
 
     def _tick_observer(tick_index: int, world: WorldState) -> None:
         entity_samples_by_tick[tick_index] = _entity_samples_for_world(
