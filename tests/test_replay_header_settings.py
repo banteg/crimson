@@ -1,0 +1,74 @@
+from __future__ import annotations
+
+import pytest
+
+from crimson.game_modes import GameMode
+from crimson.net.session_settings import session_settings_for_lockstep
+from crimson.replay.header_settings import replay_header_from_session_settings, session_settings_from_replay_header
+from crimson.replay.types import ReplayHeader, ReplayStatusSnapshot
+
+
+def test_replay_header_from_session_settings_roundtrip() -> None:
+    settings = session_settings_for_lockstep(
+        mode_id=int(GameMode.RUSH),
+        player_count=3,
+        quest_level="",
+        preserve_bugs=True,
+        tick_rate=75,
+        input_delay_ticks=2,
+    )
+    status = ReplayStatusSnapshot(quest_unlock_index=4, quest_unlock_index_full=7)
+    header = replay_header_from_session_settings(
+        settings,
+        seed=1234,
+        bootstrap_kind="terrain_v1",
+        bootstrap_seed=11,
+        difficulty_level=2,
+        hardcore=True,
+        detail_preset=4,
+        fx_toggle=1,
+        world_size=2048.0,
+        status=status,
+    )
+    assert header.game_mode_id == GameMode.RUSH
+    assert header.tick_rate == 75
+    assert header.player_count == 3
+    assert header.preserve_bugs is True
+    assert header.bootstrap_kind == "terrain_v1"
+    assert header.bootstrap_seed == 11
+    assert header.status == status
+
+    restored = session_settings_from_replay_header(header, input_delay_ticks=2)
+    assert restored == settings
+
+
+def test_replay_header_from_session_settings_rejects_unknown_mode() -> None:
+    settings = session_settings_for_lockstep(
+        mode_id=999,
+        player_count=1,
+        quest_level="",
+        preserve_bugs=False,
+        tick_rate=60,
+        input_delay_ticks=0,
+    )
+    with pytest.raises(ValueError, match="unsupported replay game_mode_id=999"):
+        replay_header_from_session_settings(settings, seed=1)
+
+
+def test_session_settings_from_replay_header_uses_lockstep_defaults() -> None:
+    header = ReplayHeader(
+        game_mode_id=GameMode.QUESTS,
+        seed=42,
+        quest_level="2.3",
+        tick_rate=60,
+        preserve_bugs=False,
+        player_count=2,
+    )
+    settings = session_settings_from_replay_header(header)
+    assert settings.mode_id == int(GameMode.QUESTS)
+    assert settings.player_count == 2
+    assert settings.quest_level == "2.3"
+    assert settings.preserve_bugs is False
+    assert settings.tick_rate == 60
+    assert settings.input_delay_ticks == 1
+

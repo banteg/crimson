@@ -33,12 +33,13 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
+from ..net.session_settings import session_settings_for_lockstep
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayRecorder, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -50,6 +51,7 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
+from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
@@ -488,19 +490,23 @@ class QuestMode(BaseGameplayMode):
         status_snapshot = replay_status_from_progress(progress_status_from_game_status(status))
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
+            settings = session_settings_for_lockstep(
+                mode_id=int(GameMode.QUESTS),
+                player_count=len(self.world.players),
+                quest_level=str(quest.level),
+                preserve_bugs=bool(self.state.preserve_bugs),
+                tick_rate=int(self._sim_clock.tick_rate),
+                input_delay_ticks=0,
+            )
             self._replay_recorder = ReplayRecorder(
-                ReplayHeader(
-                    game_mode_id=GameMode.QUESTS,
+                replay_header_from_session_settings(
+                    settings,
                     seed=int(self.state.rng.state),
-                    quest_level=str(quest.level),
-                    tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
-                    preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=self.config.detail_preset,
                     fx_toggle=self.config.fx_toggle,
                     world_size=float(self.world.world_size),
-                    player_count=len(self.world.players),
                     status=status_snapshot,
                 ),
             )
