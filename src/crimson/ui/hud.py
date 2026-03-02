@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Protocol
+from typing import Any
 
 import msgspec
 
@@ -61,11 +61,6 @@ HUD_BONUS_SPACING = 52.0
 HUD_BONUS_PANEL_OFFSET_Y = -11.0
 HUD_XP_BAR_RGBA = RGBA(0.1, 0.3, 0.6, 1.0)
 HUD_QUEST_LEFT_Y_SHIFT = 80.0
-
-
-class SmallFontLike(Protocol):
-    @property
-    def cell_size(self) -> int: ...
 
 
 class HudAssets(msgspec.Struct):
@@ -203,7 +198,7 @@ def hud_ui_scale(screen_w: float, screen_h: float) -> float:
     return float(scale)
 
 
-def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontLike | None, show_quest_hud: bool) -> HudLayout:
+def hud_layout(screen_w: float, screen_h: float, *, font: Any | None, show_quest_hud: bool) -> HudLayout:
     scale = hud_ui_scale(float(screen_w), float(screen_h))
     text_scale = 1.0 * scale
     line_h = float(font.cell_size) * text_scale if font is not None else 18.0 * text_scale
