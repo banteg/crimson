@@ -9,7 +9,6 @@ from deepdiff import DeepDiff
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
 
-_DEFAULT_MAX_DIFF_ROWS = 16
 _DEEPDIFF_CATEGORY_ORDER: tuple[str, ...] = (
     "type_changes",
     "values_changed",
@@ -30,7 +29,7 @@ def _deepdiff_payload(
     expected: object,
     actual: object,
     *,
-    max_rows: int,
+    max_rows: int | None,
 ) -> tuple[dict[str, object], int]:
     deep = DeepDiff(
         expected,
@@ -45,18 +44,20 @@ def _deepdiff_payload(
 
     out: dict[str, object] = {}
     total = 0
-    limit = max(1, int(max_rows))
+    limit = (None if max_rows is None else max(1, int(max_rows)))
     for category in _DEEPDIFF_CATEGORY_ORDER:
-        if total >= limit:
+        if limit is not None and total >= limit:
             break
         payload = raw.get(category)
+        if payload is None:
+            continue
         match payload:
             case dict() as mapping:
                 keep: dict[str, object] = {}
                 for key in sorted(mapping.keys(), key=str):
                     if not isinstance(key, str):
                         raise TypeError(f"deepdiff dict category {category} had non-string key")
-                    if total >= limit:
+                    if limit is not None and total >= limit:
                         break
                     keep[str(key)] = mapping[key]
                     total += 1
@@ -65,7 +66,7 @@ def _deepdiff_payload(
             case list() as rows:
                 keep_rows: list[object] = []
                 for item in rows:
-                    if total >= limit:
+                    if limit is not None and total >= limit:
                         break
                     keep_rows.append(item)
                     total += 1
@@ -119,7 +120,7 @@ def compare_sim_state(
     expected_obj: SimStateSnapshot,
     actual_obj: SimStateSnapshot,
     *,
-    max_diff_rows: int = _DEFAULT_MAX_DIFF_ROWS,
+    max_diff_rows: int | None = None,
 ) -> tuple[bool, dict[str, object] | None]:
     if expected_obj == actual_obj:
         return True, None
@@ -150,14 +151,14 @@ def compare_entity_samples(
     expected_obj: EntitySamplesSnapshot,
     actual_obj: EntitySamplesSnapshot,
     *,
-    max_diff_rows: int = _DEFAULT_MAX_DIFF_ROWS,
+    max_diff_rows: int | None = None,
 ) -> tuple[bool, dict[str, object] | None]:
     if expected_obj == actual_obj:
         return True, None
 
     detail: dict[str, object] = {}
     row_diffs: list[dict[str, object]] = []
-    row_limit = max(1, int(max_diff_rows))
+    row_limit = (None if max_diff_rows is None else max(1, int(max_diff_rows)))
     for kind in ENTITY_SAMPLE_KINDS:
         exp_map, exp_total, exp_dupes = _rows_by_uid(entity_rows(expected_obj, kind=kind))
         act_map, act_total, act_dupes = _rows_by_uid(entity_rows(actual_obj, kind=kind))
@@ -178,7 +179,7 @@ def compare_entity_samples(
             }
 
         for uid in sorted(set(exp_map) & set(act_map)):
-            if len(row_diffs) >= row_limit:
+            if row_limit is not None and len(row_diffs) >= row_limit:
                 break
             expected_row = exp_map[uid]
             actual_row = act_map[uid]

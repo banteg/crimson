@@ -150,7 +150,7 @@ def cmd_dbg_diff(
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
-    """Compare two traces and report the first mismatch."""
+    """Compare two traces and report the first divergent tick."""
     from ..dbg.diff import diff_report_to_json, diff_traces
 
     try:
@@ -183,11 +183,6 @@ def cmd_dbg_diff(
         f"checked={report.checked_count}",
         err=True,
     )
-    if mismatch.checkpoint_diff is not None:
-        typer.echo(f"checkpoint_diff_count={mismatch.checkpoint_diff.diff_count}", err=True)
-        if mismatch.checkpoint_diff.pretty:
-            typer.echo("checkpoint_diff:", err=True)
-            typer.echo(mismatch.checkpoint_diff.pretty, err=True)
     if mismatch.detail is not None:
         typer.echo("detail=" + json.dumps(mismatch.detail, sort_keys=True), err=True)
     raise typer.Exit(code=1)

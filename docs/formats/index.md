@@ -9,6 +9,7 @@ Crimsonland uses custom container and texture formats for game assets.
 
 ## Formats
 
+- [CDT debug trace](cdt.md) - Debug trace container for deterministic parity tooling
 - [PAQ](paq.md) — Archive container (flat stream, no directory)
 - [JAZ](jaz.md) — JPEG + RLE alpha texture format
 - [Fonts](fonts.md) — Bitmap font data (glyph widths)
