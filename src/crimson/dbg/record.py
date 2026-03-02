@@ -18,6 +18,7 @@ from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint, ReplayEventSummary, ReplayPerkSnapshot, ReplayPlayerCheckpoint
 from ..replay.diagnostic_trace_native import (
     ReplayTickRng,
+    ReplayTickTraceEntitySamples,
     ReplayTickTraceRow,
     decode_replay_tick_trace_msgpack_stream,
 )
@@ -676,6 +677,122 @@ def _zig_rng_marks(
     return marks
 
 
+def _zig_entity_samples(
+    entities: ReplayTickTraceEntitySamples,
+    *,
+    creature_state: _EntityUidState,
+    projectile_state: _EntityUidState,
+    secondary_state: _EntityUidState,
+    bonus_state: _EntityUidState,
+) -> dict[str, object]:
+    creature_state.begin_tick()
+    projectile_state.begin_tick()
+    secondary_state.begin_tick()
+    bonus_state.begin_tick()
+
+    creatures: list[dict[str, object]] = []
+    for item in entities.creatures:
+        index = int(item.index)
+        uid, generation = creature_state.next_uid(kind="creature", index=index)
+        creatures.append(
+            {
+                "uid": uid,
+                "generation": generation,
+                "pool_kind": "creature",
+                "index": index,
+                "active": True,
+                "type_id": int(item.type_id),
+                "hp": float(item.hp),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+                "flags": int(item.flags),
+                "ai_mode": int(item.ai_mode),
+                "link_index": int(item.link_index),
+                "heading": float(item.heading),
+                "target_heading": float(item.target_heading),
+                "orbit_angle": float(item.orbit_angle),
+                "orbit_radius": float(item.orbit_radius),
+                "lifecycle_stage": float(item.lifecycle_stage),
+            },
+        )
+
+    projectiles: list[dict[str, object]] = []
+    for item in entities.projectiles:
+        index = int(item.index)
+        uid, generation = projectile_state.next_uid(kind="projectile", index=index)
+        projectiles.append(
+            {
+                "uid": uid,
+                "generation": generation,
+                "pool_kind": "projectile",
+                "index": index,
+                "active": True,
+                "type_id": int(item.type_id),
+                "angle": float(item.angle),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+                "vel": {"x": float(item.vel.x), "y": float(item.vel.y)},
+                "life_timer": float(item.life_timer),
+                "speed_scale": float(item.speed_scale),
+                "damage_pool": float(item.damage_pool),
+                "hit_radius": float(item.hit_radius),
+                "travel_budget": float(item.travel_budget),
+                "owner_id": int(item.owner_id),
+            },
+        )
+
+    secondary_projectiles: list[dict[str, object]] = []
+    for item in entities.secondary_projectiles:
+        index = int(item.index)
+        uid, generation = secondary_state.next_uid(kind="secondary_projectile", index=index)
+        secondary_projectiles.append(
+            {
+                "uid": uid,
+                "generation": generation,
+                "pool_kind": "secondary_projectile",
+                "index": index,
+                "active": True,
+                "type_id": int(item.type_id),
+                "angle": float(item.angle),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+                "vel": {"x": float(item.vel.x), "y": float(item.vel.y)},
+                "speed": float(item.speed),
+                "trail_timer": float(item.trail_timer),
+                "owner_id": int(item.owner_id),
+                "target_id": int(item.target_id),
+            },
+        )
+
+    bonuses: list[dict[str, object]] = []
+    for item in entities.bonuses:
+        index = int(item.index)
+        uid, generation = bonus_state.next_uid(kind="bonus", index=index)
+        bonuses.append(
+            {
+                "uid": uid,
+                "generation": generation,
+                "pool_kind": "bonus",
+                "index": index,
+                "bonus_id": int(item.bonus_id),
+                "picked": bool(item.picked),
+                "time_left": float(item.time_left),
+                "time_max": float(item.time_max),
+                "pos": {"x": float(item.pos.x), "y": float(item.pos.y)},
+                "amount": int(item.amount),
+            },
+        )
+
+    creature_state.end_tick()
+    projectile_state.end_tick()
+    secondary_state.end_tick()
+    bonus_state.end_tick()
+
+    return {
+        "creatures": creatures,
+        "projectiles": projectiles,
+        "secondary_projectiles": secondary_projectiles,
+        "bonuses": bonuses,
+    }
+
+
 def _zig_checkpoint_from_row(
     row: ReplayTickTraceRow,
     *,
@@ -775,8 +892,14 @@ def _record_replay_to_trace_zig(
     channels_seen: set[str] = set()
     replay_dt_rows = list(replay.dt_ms_i32)
     include_rng = profile in {"standard", "full"}
+    include_entities = profile in {"standard", "full"}
     include_full_event_channels = profile == "full"
     rng_before_tick = int(replay.header.seed)
+    creature_state = _EntityUidState()
+    projectile_state = _EntityUidState()
+    secondary_state = _EntityUidState()
+    bonus_state = _EntityUidState()
+    previous_entity_samples: dict[str, object] | None = None
     for row in sorted_rows:
         checkpoint = _zig_checkpoint_from_row(
             row,
@@ -797,11 +920,24 @@ def _record_replay_to_trace_zig(
         if include_rng:
             channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
             channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
+        entity_samples: dict[str, object] | None = None
+        if include_entities:
+            entity_samples = _zig_entity_samples(
+                row.entities,
+                creature_state=creature_state,
+                projectile_state=projectile_state,
+                secondary_state=secondary_state,
+                bonus_state=bonus_state,
+            )
+            channels["entity_samples"] = entity_samples
         if include_full_event_channels:
             channels["event_heads"] = []
             channels["event_summary"] = checkpoint.events
             channels["perk_snapshot"] = checkpoint.perk
-            channels["micro_traces"] = []
+            channels["micro_traces"] = _micro_traces_from_entities(
+                previous_samples=previous_entity_samples,
+                current_samples=entity_samples,
+            )
 
         channels_seen.update(channels.keys())
         tick_rows.append(
@@ -814,6 +950,8 @@ def _record_replay_to_trace_zig(
                 channels=channels,
             ),
         )
+        if entity_samples is not None:
+            previous_entity_samples = entity_samples
 
     producer_version = ""
     verify_payload_producer_obj = verify_payload.get("producer")

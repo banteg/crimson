@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
+const bonuses_mod = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
@@ -136,6 +137,12 @@ pub const ReplayScaffoldResult = struct {
 };
 
 pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTrace;
+pub fn deinitReplayTickTraceRows(
+    allocator: std.mem.Allocator,
+    rows: []ReplayTickTrace,
+) void {
+    replay_diagnostic_trace.deinitReplayTickTraceSlice(allocator, rows);
+}
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
@@ -322,12 +329,16 @@ pub fn runReplayScaffoldWithTrace(
             const player0 = players[0];
             try trace.append(
                 trace_allocator,
-                buildTickTrace(
+                try buildTickTrace(
+                    trace_allocator,
                     tick_index,
                     narrowF32(trace_elapsed_ms),
                     &context.state,
                     player0,
                     &context.creatures,
+                    &context.projectiles,
+                    &context.secondary_projectiles,
+                    &context.bonuses,
                     step_result.rng_after_perk_effects,
                     step_result.rng_after_creatures,
                     step_result.rng_after_projectiles,
@@ -433,11 +444,15 @@ pub fn runReplayScaffoldWithTrace(
 }
 
 fn buildTickTrace(
+    allocator: std.mem.Allocator,
     tick_index: usize,
     elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
+    projectiles: *const projectiles_mod.ProjectilePool,
+    secondary_projectiles: *const secondary_projectiles_mod.SecondaryProjectilePool,
+    bonuses: *const bonuses_mod.BonusPool,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
     rng_after_projectiles: u32,
@@ -448,13 +463,17 @@ fn buildTickTrace(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
-) ReplayTickTrace {
-    return replay_diagnostic_trace.buildReplayTickTrace(
+) !ReplayTickTrace {
+    return replay_diagnostic_trace.buildReplayTickTraceWithEntities(
+        allocator,
         tick_index,
         elapsed_ms_sim,
         state,
         player,
         creatures,
+        projectiles,
+        secondary_projectiles,
+        bonuses,
         rng_after_perk_effects,
         rng_after_creatures,
         rng_after_projectiles,
@@ -1089,6 +1108,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
+            defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             const result = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,
@@ -1497,6 +1517,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
 
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -1902,6 +1923,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
 
     var baseline_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer baseline_trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, baseline_trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay_baseline,
         &baseline_trace,
@@ -1946,6 +1968,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
 
     var bootstrapped_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer bootstrapped_trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, bootstrapped_trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay_bootstrapped,
         &bootstrapped_trace,
@@ -2017,6 +2040,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
     const empty_entries = [_]spawn_mod.QuestSpawnEntry{};
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -2229,6 +2253,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
 
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     const result = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -2373,6 +2398,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
+            defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             _ = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,

@@ -178,6 +178,7 @@ fn runNativeVerify(
         if (request.debug_trace_msgpack) |trace_path| {
             var tick_trace: std.ArrayList(replay_runner.ReplayTickTrace) = .empty;
             defer tick_trace.deinit(allocator);
+            defer replay_runner.deinitReplayTickTraceRows(allocator, tick_trace.items);
 
             const traced = replay_runner.runReplayScaffoldWithTrace(
                 replay,

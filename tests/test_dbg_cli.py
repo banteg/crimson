@@ -91,6 +91,7 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
     assert "rng_marks" in result.output
     assert "rng_stream_head" in result.output
     assert "entity_samples" in result.output
+    assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
@@ -292,6 +293,7 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
         assert checkpoint["score_xp"] == 10
         assert "rng_marks" in tick0.channels
         assert "rng_stream_head" in tick0.channels
+        assert isinstance(tick0.channels.get("entity_samples"), dict)
 
 
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
