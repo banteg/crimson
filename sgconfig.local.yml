@@ -1,7 +1,9 @@
 ruleDirs:
   - tools/ast-grep/rules
+  - tools/ast-grep/rules-local
 testConfigs:
   - testDir: tools/ast-grep/tests
+  - testDir: tools/ast-grep/tests-local
 utilDirs:
   - tools/ast-grep/utils
 customLanguages:
