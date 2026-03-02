@@ -25,6 +25,12 @@ This page is the source of truth for delta-time semantics used by Python/Zig rew
 
 Ordering is parity-critical: scaling, remap, integer re-derive, and restore must occur in the same sequence.
 
+## Decompile reference anchors
+
+- `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81336` shows the `__ftol` control-word save/restore sequence.
+- `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81342` shows the round-control override (`| 0x0c`) used for trunc/chop behavior before conversion.
+- `analysis/ghidra/raw/crimsonland.exe_decompiled.c:6742` shows an explicit gameplay zero-gate write where both `frame_dt_ms` and `frame_dt` are forced to zero.
+
 ## Conversion contract (`__ftol`)
 
 - Crimsonland parity requires truncation/chop semantics (round toward zero), not bankers rounding and not nearest integer.
@@ -66,6 +72,26 @@ int ftol_ms_i32(float dt_seconds) {
 - Replay rows:
   - `Replay.dt` is required and length-matched to `inputs`.
   - `*_ms_i32` values are derived on load/use, not stored as authoritative rows.
+
+## Worked tick timeline example
+
+Example tick with concrete numbers and call-order:
+
+1. Outer frame loop starts from nominal `1/60 = 0.016666668`.
+2. If `REFLEX_BOOSTED` outer scaling is active, apply `* 0.899999976` first:
+   - `dt_entry = f32(0.016666668 * 0.899999976) = 0.015`
+3. At `gameplay_update_and_render` entry, derive entry cadence:
+   - `dt = 0.015`
+   - `dt_ms_i32 = ftol_ms_i32(0.015) = 15`
+4. With `time_scale_active_entry=true` and `reflex_boost_timer=0.5`:
+   - `time_scale_factor = f32((1.0 - 0.5) * 0.699999988 + 0.300000012) = 0.65`
+   - `dt_sim = f32(0.015 * 0.65) = 0.00975`
+   - `dt_sim_ms_i32 = ftol_ms_i32(0.00975) = 9`
+5. Player-local remap uses:
+   - `dt_player_local = f32((0.600000024 / 0.65) * 0.00975) = 0.009000001`
+6. If zero-gate triggers this tick:
+   - keep entry cadence (`dt=0.015`, `dt_ms_i32=15`)
+   - force sim cadence to zero (`dt_sim=0.0`, `dt_sim_ms_i32=0`)
 
 ## Consumer map
 
