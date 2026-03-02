@@ -372,7 +372,7 @@ def _run_replay_info(
                 partition_events=True,
                 disable_capture_spawn_events_authoritative=True,
                 finalize_post_render_lifecycle_each_tick=True,
-                result_uses_spawn_timeline_ms=False,
+                result_uses_spawn_timeline_ms=True,
             ),
         ),
     )

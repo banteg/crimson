@@ -132,7 +132,7 @@ def run_deterministic_step(
     events = world.step(
         float(timing.dt_sim),
         apply_world_dt_steps=apply_world_dt_steps,
-        dt_ms_i32=int(timing.dt_sim_ms_i32),
+        dt_player_local=float(timing.dt_player_local),
         defer_camera_shake_update=defer_camera_shake_update,
         defer_freeze_corpse_fx=defer_freeze_corpse_fx,
         mid_step_hook=mid_step_hook,

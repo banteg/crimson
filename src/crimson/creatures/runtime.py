@@ -322,7 +322,6 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
-    dt_ms_i32: int | None = None
     rand: Callable[[], int] | None = None
     detail_preset: int = 5
     fx_toggle: int = 0
@@ -870,7 +869,6 @@ class CreaturePool:
         dt = float(f32(float(dt)))
         state = options.state
         players = options.players
-        dt_ms_i32 = options.dt_ms_i32
         rand = options.rand
         detail_preset = int(options.detail_preset)
         fx_toggle = int(options.fx_toggle)
@@ -920,10 +918,7 @@ class CreaturePool:
         # even when `players` is empty so debug views remain deterministic.
         # Native AI7 timer math uses `frame_dt_ms` integer slots with ftol-style
         # truncation semantics.
-        if dt_ms_i32 is not None:
-            dt_ms = max(0, int(dt_ms_i32))
-        else:
-            dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
+        dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
 
         def _apply_self_damage_tick(creature_index: int, creature: CreatureState) -> bool:
             if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
