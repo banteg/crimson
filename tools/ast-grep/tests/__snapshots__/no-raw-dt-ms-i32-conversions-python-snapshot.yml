@@ -1,0 +1,20 @@
+id: no-raw-dt-ms-i32-conversions-python
+snapshots:
+  ? |
+    def bad(dt: float) -> int:
+      return int(round(dt * 1000.0))
+  : labels:
+    - source: int(round(dt * 1000.0))
+      style: primary
+      start: 36
+      end: 59
+  ? |
+    import math
+
+    def bad(dt: float) -> int:
+      return int(math.trunc(dt * 1000.0))
+  : labels:
+    - source: int(math.trunc(dt * 1000.0))
+      style: primary
+      start: 49
+      end: 77

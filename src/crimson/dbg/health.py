@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .channel_helpers import entity_samples_channel, rng_stream_channel_required, sim_state_channel
+from .channel_helpers import (
+    entity_samples_channel,
+    rng_stream_channel_required,
+    sim_state_channel,
+    timing_samples_channel_required,
+)
 from .schema import TRACE_REQUIRED_CHANNELS
 from .trace import TraceReader
 
@@ -24,6 +29,7 @@ def summarize_trace_health(
         sample_projectile_rows = 0
         sample_secondary_rows = 0
         sample_bonus_rows = 0
+        timing_samples_rows = 0
 
         for tick in trace.iter_ticks(tick_start=tick_start, tick_end=tick_end):
             ticks_total += 1
@@ -34,6 +40,8 @@ def summarize_trace_health(
                 _ = channel_value
                 if channel_name == "rng_stream":
                     rng_stream_rows += len(rng_stream_channel_required(tick))
+                elif channel_name == "timing_samples":
+                    timing_samples_rows += len(timing_samples_channel_required(tick))
                 elif channel_name == "sim_state":
                     if sim_state_channel(tick) is not None:
                         sim_state_rows += 1
@@ -79,6 +87,7 @@ def summarize_trace_health(
                 "sample_projectile_rows": int(sample_projectile_rows),
                 "sample_secondary_projectile_rows": int(sample_secondary_rows),
                 "sample_bonus_rows": int(sample_bonus_rows),
+                "timing_samples_rows": int(timing_samples_rows),
             },
             "issues": issues,
             "ok_for_movement_root_cause": len(issues) == 0,

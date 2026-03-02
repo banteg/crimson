@@ -18,7 +18,7 @@ def test_rush_runner_is_deterministic() -> None:
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.RUSH)
     assert result0.ticks == 10
-    assert result0.elapsed_ms == 10 * int(round(1000.0 / 60.0))
+    assert result0.elapsed_ms == 10 * int(1000.0 / 60.0)
     assert result0.score_xp == 0
     assert result0.creature_kill_count == 0
     assert result0.most_used_weapon_id == 2
@@ -26,14 +26,12 @@ def test_rush_runner_is_deterministic() -> None:
     assert result0.shots_hit == 0
 
 
-def test_rush_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
+def test_rush_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
+    replay.dt[0] = 0.5
 
-    result = run_replay(
-        replay,
-        dt_frame_overrides={0: 0.5},
-    )
+    result = run_replay(replay)
 
     assert result.elapsed_ms == 500
 

@@ -509,8 +509,8 @@ class SurvivalMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
-        dt_frame, dt_ui_ms = self._tick_frame(dt)
-        self._cursor_time += dt_frame
+        dt, dt_ui_ms = self._tick_frame(dt)
+        self._cursor_time += dt
         self._handle_input()
         if self._action == "open_pause_menu":
             return
@@ -520,7 +520,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            self._update_lan_match(dt=dt, dt_ui_ms=dt_ui_ms)
             return
 
         any_alive = any(player.health > 0.0 for player in self.world.players)
@@ -529,7 +529,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         perk_ctx = self._perk_menu_context()
         if self._perk_menu.open:
-            self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            self._perk_menu.handle_input(perk_ctx, dt=dt, dt_ui_ms=dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
         any_alive = self._any_player_alive()
@@ -603,12 +603,12 @@ class SurvivalMode(BaseGameplayMode):
                 self._enter_game_over()
             return
 
-        ticks_to_run = self._sim_clock.advance(dt_frame)
+        ticks_to_run = self._sim_clock.advance(dt)
         if ticks_to_run <= 0:
             return
 
         dt_tick = float(self._sim_clock.dt_tick)
-        input_frame = self._build_local_inputs(dt_frame=dt_frame)
+        input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
             return
@@ -642,7 +642,7 @@ class SurvivalMode(BaseGameplayMode):
             on_tick=_on_tick,
         )
 
-    def _update_lan_match(self, *, dt_frame: float, dt_ui_ms: float) -> None:
+    def _update_lan_match(self, *, dt: float, dt_ui_ms: float) -> None:
         runtime = self._lan_runtime
         if runtime is None:
             return
@@ -767,7 +767,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         if self._perk_menu.open and role == "host":
             # Keep perk application dt consistent across peers.
-            self._perk_menu.handle_input(perk_ctx, dt_frame=float(dt_tick), dt_ui_ms=dt_ui_ms)
+            self._perk_menu.handle_input(perk_ctx, dt=float(dt_tick), dt_ui_ms=dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
         if role == "host" and (not perk_menu_active) and perk_pending and (not self._paused):
@@ -852,8 +852,9 @@ class SurvivalMode(BaseGameplayMode):
                 else:
                     tick_index = None
 
+                timing = session.timing_for_dt(float(dt_tick))
                 tick = session.step_tick(
-                    dt_frame=float(dt_tick),
+                    timing=timing,
                     inputs=player_inputs,
                 )
 
@@ -960,9 +961,9 @@ class SurvivalMode(BaseGameplayMode):
                 self._lan_capture_clock.reset()
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        ticks_to_capture = self._lan_capture_clock.advance(dt)
         if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            input_frame = self._build_local_inputs(dt=dt)
             # In LAN sessions each peer is a single local player, so always sample
             # inputs using the configured Player 1 bindings (index 0). The network
             # slot mapping is handled by the lockstep runtime.

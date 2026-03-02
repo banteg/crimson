@@ -6,6 +6,7 @@ const replay_codec = @import("../../replay_codec.zig");
 const effects = @import("effects.zig");
 const events = @import("events.zig");
 const movement = @import("../movement.zig");
+const timing = @import("../timing.zig");
 const capture_state = @import("capture_state.zig");
 const context_mod = @import("context.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
@@ -51,11 +52,10 @@ pub const TickPhase = enum {
 
 pub const StepFrame = struct {
     tick_index: usize,
-    dt_tick: f32,
+    dt: f32,
     dt_world: f32 = 0.0,
     dt_sim: f32 = 0.0,
-    dt_frame_ms: f32 = 0.0,
-    dt_frame_ms_i32: i32 = 0,
+    dt_ms_i32: i32 = 0,
     menu_open_seen_this_tick: bool = false,
     reload_active_any: bool = false,
     pre_events_applied: usize = 0,
@@ -124,7 +124,7 @@ pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTic
 pub const diagnostic_trace = struct {
     pub const TickSnapshot = struct {
         tick_index: usize,
-        dt_tick: f32,
+        dt: f32,
         dt_world: f32,
         dt_sim: f32,
         pre_events_applied: usize,
@@ -149,12 +149,19 @@ pub fn stepTick(
     tick_index: usize,
     tick_inputs: []const player_runtime.GameInput,
     tick_events: []const replay_codec.ReplayEvent,
-    dt_tick: f32,
+    dt: f32,
     options: StepOptions,
-) StepError!StepResult {
-    var frame = StepFrame{
+) (events.EventError ||
+    creatures_mod.CreatureRuntimeError ||
+    bonus_runtime.BonusRuntimeError ||
+    weapons_runtime.WeaponRuntimeError ||
+    error{
+        UnsupportedDemoMode,
+        UnsupportedPreserveBugs,
+    })!StepResult {
+    var frame: StepFrame = .{
         .tick_index = tick_index,
-        .dt_tick = narrowF32(dt_tick),
+        .dt = narrowF32(dt),
     };
 
     callPhaseHook(options.hooks, context, .pre_reset, &frame);
@@ -191,7 +198,7 @@ pub fn stepTick(
         context,
         tick_events,
         .pre_step,
-        frame.dt_tick,
+        frame.dt,
         &frame.menu_open_seen_this_tick,
     );
     try ensureSupportedReplayFeatureFlags(&context.state);
@@ -214,9 +221,9 @@ pub fn stepTick(
     }
 
     frame.dt_world = if (context.apply_world_dt_steps)
-        movement.applyPerkWorldDtSteps(players, frame.dt_tick)
+        movement.applyPerkWorldDtSteps(players, frame.dt)
     else
-        frame.dt_tick;
+        frame.dt;
 
     frame.dt_sim = survival_progression.timeScaleReflexBoostBonus(
         context.state.bonuses.reflex_boost,
@@ -224,11 +231,8 @@ pub fn stepTick(
         frame.dt_world,
     );
 
-    frame.dt_frame_ms = frame.dt_tick * 1000.0;
-    frame.dt_frame_ms_i32 = @intFromFloat(@round(frame.dt_frame_ms));
-    if (frame.dt_frame_ms_i32 < 1) {
-        frame.dt_frame_ms_i32 = 1;
-    }
+    const dt_ms = narrowF32(frame.dt * 1000.0);
+    frame.dt_ms_i32 = timing.ftolMsI32(frame.dt);
     const dt_sim_ms = frame.dt_sim * 1000.0;
     const elapsed_before_ms: f32 = if (context.game_mode == .rush)
         @floatFromInt(context.elapsed_ms_sim_rush)
@@ -237,9 +241,9 @@ pub fn stepTick(
     const elapsed_after_ms = if (context.game_mode == .survival)
         elapsed_before_ms + dt_sim_ms
     else if (context.game_mode == .rush)
-        @as(f32, @floatFromInt(context.elapsed_ms_sim_rush + @as(i64, frame.dt_frame_ms_i32)))
+        @as(f32, @floatFromInt(context.elapsed_ms_sim_rush + @as(i64, frame.dt_ms_i32)))
     else
-        elapsed_before_ms + frame.dt_frame_ms;
+        elapsed_before_ms + dt_ms;
 
     var freeze_corpse_at_tick_start = [_]bool{false} ** context.creatures.entries.len;
     for (context.creatures.entries, 0..) |creature, idx| {
@@ -437,7 +441,7 @@ pub fn stepTick(
         .rush => {
             const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 context.spawn_cooldown,
-                @floatFromInt(frame.dt_frame_ms_i32),
+                dt_ms,
                 &context.state.rng,
                 context.player_count,
                 elapsed_before_ms,
@@ -455,7 +459,7 @@ pub fn stepTick(
             const quest_spawns = spawn_mod.tickQuestModeSpawns(
                 context.quest_spawn_entries,
                 context.quest_spawn_timeline_ms,
-                narrowF32(frame.dt_frame_ms),
+                dt_ms,
                 @floatFromInt(context.terrain_size),
                 context.quest_creatures_none_active,
                 context.quest_no_creatures_timer_ms,
@@ -490,7 +494,7 @@ pub fn stepTick(
             if (any_alive_after) {
                 const quest_completion = spawn_mod.tickQuestCompletionTransition(
                     context.quest_completion_transition_ms,
-                    narrowF32(frame.dt_frame_ms),
+                    dt_ms,
                     context.quest_creatures_none_active,
                     spawn_table_empty_now,
                 );
@@ -555,7 +559,7 @@ pub fn stepTick(
 
     context.creatures.finalizePostRenderLifecycle();
     if (context.game_mode == .rush) {
-        context.elapsed_ms_sim_rush += @as(i64, frame.dt_frame_ms_i32);
+        context.elapsed_ms_sim_rush += @as(i64, frame.dt_ms_i32);
         context.elapsed_ms_sim = @floatFromInt(context.elapsed_ms_sim_rush);
     } else {
         context.elapsed_ms_sim = elapsed_after_ms;
@@ -572,7 +576,7 @@ pub fn stepTick(
                 context,
                 tick_events,
                 post_phase,
-                frame.dt_tick,
+                frame.dt,
                 &frame.menu_open_seen_this_tick,
             );
             try ensureSupportedReplayFeatureFlags(&context.state);
@@ -582,7 +586,7 @@ pub fn stepTick(
 
     context.event_index += tick_events.len;
 
-    const result = StepResult{
+    const result: StepResult = .{
         .tick_index = tick_index,
         .pre_events_applied = frame.pre_events_applied,
         .post_events_applied = frame.post_events_applied,
@@ -607,7 +611,7 @@ pub fn stepTick(
 
     diagnostic_trace.emit(options.trace_sink, .{
         .tick_index = tick_index,
-        .dt_tick = frame.dt_tick,
+        .dt = frame.dt,
         .dt_world = frame.dt_world,
         .dt_sim = frame.dt_sim,
         .pre_events_applied = frame.pre_events_applied,
@@ -698,7 +702,7 @@ fn applyEventsForPhase(
     context: *SimulationContext,
     tick_events: []const replay_codec.ReplayEvent,
     phase: events.TickEventPhase,
-    dt_tick: f32,
+    dt: f32,
     menu_open_seen_this_tick: *bool,
 ) StepError!usize {
     var applied: usize = 0;
@@ -713,7 +717,7 @@ fn applyEventsForPhase(
             &context.state,
             players,
             &context.creatures,
-            dt_tick,
+            dt,
             &context.quest_spawn_timeline_ms,
             &context.quest_no_creatures_timer_ms,
             &context.quest_completion_transition_ms,
@@ -743,7 +747,7 @@ fn buildDiagnosticTrace(
     frame: *const StepFrame,
 ) diagnostic_trace_mod.ReplayTickTrace {
     const players = context.players();
-    var player0 = state_mod.PlayerState{
+    var player0: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
@@ -805,7 +809,7 @@ test "step tick applies counters and emits trace snapshot" {
 
     const before_speed = context.players()[0].move_speed;
 
-    const input = player_runtime.GameInput{
+    const input: player_runtime.GameInput = .{
         .move_x = 1.0,
         .move_y = 0.0,
         .aim_x = 700.0,

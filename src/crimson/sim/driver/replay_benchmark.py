@@ -593,7 +593,7 @@ def _run_render_once(
         if replay is None:
             raise ReplayBenchmarkError("render benchmark failed: replay playback did not initialize replay state")
 
-        step_dt = float(mode._dt_frame)
+        step_dt = float(mode._dt)
         if step_dt <= 0.0:
             step_dt = 1.0 / 60.0
 

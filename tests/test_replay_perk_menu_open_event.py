@@ -36,7 +36,7 @@ def test_perk_menu_open_event_consumes_rng_for_choices() -> None:
     apply_replay_tick_events(
         [PerkMenuOpenEvent(tick_index=0, player_index=0)],
         tick_index=0,
-        dt_frame=1.0 / 60.0,
+        dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
@@ -71,7 +71,7 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
     apply_replay_tick_events(
         [PerkMenuOpenEvent(tick_index=0, player_index=0)],
         tick_index=0,
-        dt_frame=1.0 / 60.0,
+        dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
@@ -80,7 +80,7 @@ def test_perk_pick_event_refreshes_choices_for_ui_transition_parity() -> None:
     apply_replay_tick_events(
         [PerkPickEvent(tick_index=1, player_index=0, choice_index=0)],
         tick_index=1,
-        dt_frame=1.0 / 60.0,
+        dt=1.0 / 60.0,
         world=world,
         game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
@@ -103,7 +103,7 @@ def test_same_tick_stale_perk_pick_after_menu_open_is_noop_in_strict_mode() -> N
     apply_replay_tick_events(
         [PerkMenuOpenEvent(tick_index=0, player_index=0)],
         tick_index=0,
-        dt_frame=1.0 / 60.0,
+        dt=1.0 / 60.0,
         world=menu_only_world,
         game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
@@ -115,7 +115,7 @@ def test_same_tick_stale_perk_pick_after_menu_open_is_noop_in_strict_mode() -> N
             PerkPickEvent(tick_index=0, player_index=0, choice_index=1),
         ],
         tick_index=0,
-        dt_frame=1.0 / 60.0,
+        dt=1.0 / 60.0,
         world=stale_pick_world,
         game_mode_id=int(GameMode.SURVIVAL),
         strict_events=True,
@@ -137,7 +137,7 @@ def test_apply_replay_tick_events_rejects_unknown_event_type_in_strict_mode() ->
         apply_replay_tick_events(
             [object()],
             tick_index=0,
-            dt_frame=1.0 / 60.0,
+            dt=1.0 / 60.0,
             world=world,
             game_mode_id=int(GameMode.SURVIVAL),
             strict_events=True,

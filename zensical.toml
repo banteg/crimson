@@ -62,6 +62,7 @@ nav = [
       { "Zig replay verifier" = "rewrite/zig-verifier.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
       { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
+      { "Delta-time parity reference" = "rewrite/parity/delta-time.md" },
     ]},
   ]},
   { "Reverse Engineering" = [

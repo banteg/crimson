@@ -289,7 +289,7 @@ class LocalInputInterpreter:
         mouse_screen: Vec2,
         mouse_world: Vec2,
         screen_center: Vec2,
-        dt_frame: float,
+        dt: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
@@ -445,9 +445,9 @@ class LocalInputInterpreter:
         elif aim_scheme is AimScheme.KEYBOARD:
             if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
                 if input_code_is_down_for_player(aim_right_key, player_index=idx):
-                    heading = float(heading + float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
+                    heading = float(heading + float(dt) * _AIM_KEYBOARD_TURN_RATE)
                 if input_code_is_down_for_player(aim_left_key, player_index=idx):
-                    heading = float(heading - float(dt_frame) * _AIM_KEYBOARD_TURN_RATE)
+                    heading = float(heading - float(dt) * _AIM_KEYBOARD_TURN_RATE)
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
             rel = mouse_screen - screen_center
@@ -468,9 +468,9 @@ class LocalInputInterpreter:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
             if _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = float(heading + float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
+                heading = float(heading + float(dt) * _AIM_JOYSTICK_TURN_RATE)
             if _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = float(heading - float(dt_frame) * _AIM_JOYSTICK_TURN_RATE)
+                heading = float(heading - float(dt) * _AIM_JOYSTICK_TURN_RATE)
             aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.COMPUTER:
             target_index = computer_target_index
@@ -486,7 +486,7 @@ class LocalInputInterpreter:
                 to_target = Vec2(float(target.pos.x), float(target.pos.y)) - aim
                 target_dir, target_dist = to_target.normalized_with_length()
                 if float(target_dist) >= _COMPUTER_AIM_SNAP_DISTANCE:
-                    aim = aim + target_dir * (float(target_dist) * _COMPUTER_AIM_TRACK_GAIN * float(dt_frame))
+                    aim = aim + target_dir * (float(target_dist) * _COMPUTER_AIM_TRACK_GAIN * float(dt))
                 else:
                     aim = Vec2(float(target.pos.x), float(target.pos.y))
                 delta = aim - player.pos
@@ -535,7 +535,7 @@ class LocalInputInterpreter:
         config: CrimsonConfig | None,
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
-        dt_frame: float,
+        dt: float,
         creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
@@ -550,7 +550,7 @@ class LocalInputInterpreter:
                     mouse_screen=mouse_screen,
                     mouse_world=mouse_world,
                     screen_center=screen_center,
-                    dt_frame=float(dt_frame),
+                    dt=float(dt),
                     creatures=creatures,
                 ),
             )

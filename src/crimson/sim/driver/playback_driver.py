@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -27,9 +28,10 @@ from ..sessions import (
     SurvivalDeterministicSession,
 )
 from ..step_pipeline import DeterministicStepResult
+from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_events import apply_replay_tick_events, partition_tick_events
-from .replay_timing import resolve_dt_frame, resolve_dt_frame_ms_i32, should_apply_world_dt_steps_for_replay
+from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
     RunResult,
@@ -50,19 +52,6 @@ TickObserver: TypeAlias = Callable[[int, WorldState], None]
 TickTraceObserver: TypeAlias = Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[[int, WorldState, float, list[object], list[object], list[object]], None]
-
-
-def dt_ms_overrides_from_replay(replay: Replay) -> dict[int, int] | None:
-    dt_rows = replay.dt_ms_i32
-    if not dt_rows:
-        return None
-    out: dict[int, int] = {}
-    for tick_index, dt_ms in enumerate(dt_rows):
-        dt_i32 = int(dt_ms)
-        if dt_i32 <= 0:
-            continue
-        out[int(tick_index)] = int(dt_i32)
-    return out if out else None
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
@@ -116,8 +105,6 @@ class PlaybackDriverOptions(msgspec.Struct, frozen=True):
 
 @dataclass(slots=True, frozen=True)
 class PlaybackTimingConfig:
-    dt_frame_overrides: dict[int, float] | None = None
-    dt_frame_ms_i32_overrides: dict[int, int] | None = None
     inter_tick_rand_draws: int = 0
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None
 
@@ -154,7 +141,6 @@ class SurvivalSessionConfig:
 class RushSessionConfig:
     strict_events_override: bool | None = True
     enforce_loadout: bool = True
-    use_dt_frame_ms_i32: bool = True
 
 
 @dataclass(slots=True, frozen=True)
@@ -366,7 +352,7 @@ class PlaybackDriver:
         if tick_rate <= 0:
             raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
         self.tick_rate = int(tick_rate)
-        self.dt_frame = 1.0 / float(self.tick_rate)
+        self.dt = 1.0 / float(self.tick_rate)
 
         self.world_size = self._resolve_world_size()
         self.world = self._prepare_world()
@@ -375,8 +361,6 @@ class PlaybackDriver:
 
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=False,
-            dt_frame_overrides=self.config.timing.dt_frame_overrides,
-            dt_frame_ms_i32_overrides=self.config.timing.dt_frame_ms_i32_overrides,
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
         self.session: DeterministicSession = self._mode_runtime.session
@@ -525,7 +509,6 @@ class PlaybackDriver:
                 enforce_loadout=(lambda: enforce_rush_loadout(self.world))
                 if bool(rush_config.enforce_loadout)
                 else None,
-                use_dt_frame_ms_i32=bool(rush_config.use_dt_frame_ms_i32),
             )
             return RushPlaybackRuntime(
                 session=session,
@@ -587,16 +570,10 @@ class PlaybackDriver:
             for _ in range(max(0, int(draws))):
                 state.rng.rand()
 
-        dt_tick = resolve_dt_frame(
-            tick_index=int(tick_index),
-            default_dt_frame=float(self.dt_frame),
-            dt_frame_overrides=timing.dt_frame_overrides,
-        )
-        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32_overrides=timing.dt_frame_ms_i32_overrides,
-        )
+        dt_tick = float(self.replay.dt[int(tick_index)])
+        if not math.isfinite(dt_tick) or dt_tick < 0.0:
+            raise ReplayRunnerError(f"invalid replay dt row at tick {int(tick_index)}: {dt_tick!r}")
+        dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(dt_tick))))
 
         tick_events = self.events_by_tick.get(int(tick_index), [])
         defer_menu_open_value = (
@@ -617,17 +594,17 @@ class PlaybackDriver:
             apply_replay_tick_events(
                 pre_step_events,
                 tick_index=int(tick_index),
-                dt_frame=float(dt_tick),
+                dt=float(dt_tick),
                 world=self.world,
                 game_mode_id=int(self.mode_id),
                 strict_events=bool(strict_events),
             )
             rng_after_events = int(state.rng.state)
+            step_timing = self.session.timing_for_dt(float(dt_tick))
 
             player_inputs = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
             tick = self.session.step_tick(
-                dt_frame=float(dt_tick),
-                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                timing=step_timing,
                 inputs=player_inputs,
                 trace_rng=bool(self.options.trace_rng),
             )
@@ -639,7 +616,7 @@ class PlaybackDriver:
                 apply_replay_tick_events(
                     post_step_events,
                     tick_index=int(tick_index),
-                    dt_frame=float(dt_tick),
+                    dt=float(dt_tick),
                     world=self.world,
                     game_mode_id=int(self.mode_id),
                     strict_events=bool(strict_events),
@@ -654,7 +631,7 @@ class PlaybackDriver:
         outcome = PlaybackTickOutcome(
             tick_index=int(tick_index),
             dt_tick=float(dt_tick),
-            dt_tick_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+            dt_tick_ms_i32=int(dt_tick_ms_i32),
             tick_events=list(tick_events),
             pre_step_events=list(pre_step_events),
             post_step_events=list(post_step_events),
@@ -682,14 +659,10 @@ class PlaybackDriver:
         if int(tick_index) != int(len(self.replay.inputs)):
             return None
 
-        if bool(events_config.terminal_events_use_resolved_dt):
-            dt_tick = resolve_dt_frame(
-                tick_index=int(tick_index),
-                default_dt_frame=float(self.dt_frame),
-                dt_frame_overrides=self.config.timing.dt_frame_overrides,
-            )
+        if bool(events_config.terminal_events_use_resolved_dt) and self.replay.dt:
+            dt_tick = float(self.replay.dt[-1])
         else:
-            dt_tick = float(self.dt_frame)
+            dt_tick = float(self.dt)
 
         terminal_events = self.events_by_tick.get(int(tick_index), [])
         strict_events = self._mode_runtime.strict_events(
@@ -700,7 +673,7 @@ class PlaybackDriver:
         apply_replay_tick_events(
             terminal_events,
             tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
+            dt=float(dt_tick),
             world=self.world,
             game_mode_id=int(self.mode_id),
             strict_events=bool(strict_events),

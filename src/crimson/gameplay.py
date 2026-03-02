@@ -29,6 +29,7 @@ from .projectiles import (
     SecondaryProjectilePool,
 )
 from .sim.state_types import PERK_COUNT_SIZE
+from .sim.timing import ftol_ms_i32
 from .weapon_runtime import (
     owner_ref_for_player as _owner_ref_for_player,
 )
@@ -958,7 +959,7 @@ def player_update(
     reload_key_released = (not bool(reload_active_any)) if reload_active_any is not None else (not reload_key_active)
     if has_alt_weapon_perk:
         cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
-        dt_ms = int(round(float(dt) * 1000.0)) if float(dt) > 0.0 else 0
+        dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0
         if cooldown_ms < 1:
             cooldown_ms = 0
         else:

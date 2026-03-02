@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
@@ -24,9 +25,10 @@ def test_quest_runner_is_deterministic() -> None:
     assert result0.elapsed_ms >= 0
 
 
-def test_quest_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
+def test_quest_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()
+    replay.dt[0] = 0.5
     spawn_entries = tuple(
         _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
     )
@@ -34,7 +36,6 @@ def test_quest_runner_honors_dt_frame_overrides_for_elapsed_ms() -> None:
     result = run_replay(
         replay,
         spawn_entries=spawn_entries,
-        dt_frame_overrides={0: 0.5},
     )
 
     assert result.elapsed_ms == 500
@@ -69,3 +70,14 @@ def test_quest_runner_rejects_strict_events_false() -> None:
 
     with pytest.raises(ReplayRunnerError, match="strict_events=False is unsupported"):
         run_replay(replay, spawn_entries=(), strict_events=False)
+
+
+def test_quest_replay_info_elapsed_matches_run_replay() -> None:
+    _header, rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = rec.finish()
+    replay.dt[0] = 0.5
+
+    run_result = run_replay(replay)
+    info = run_replay_info(replay)
+
+    assert int(info.elapsed_ms) == int(run_result.elapsed_ms)

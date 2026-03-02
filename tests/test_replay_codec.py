@@ -50,6 +50,7 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
             },
         },
         "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
+        "dt": [1.0 / 60.0],
         "events": [],
     }
 
@@ -160,6 +161,14 @@ def test_replay_codec_rejects_negative_event_tick_index() -> None:
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 
+@pytest.mark.parametrize("bad_dt", [-1.0, float("inf"), float("nan")])
+def test_replay_codec_rejects_invalid_dt_rows(bad_dt: float) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_obj["dt"] = [bad_dt]
+    with pytest.raises(ReplayCodecError, match="must be finite and >= 0"):
+        load_replay(msgspec.msgpack.encode(replay_obj))
+
+
 def test_replay_codec_rejects_legacy_json_payload() -> None:
     with pytest.raises(ReplayCodecError, match="legacy JSON replay format is unsupported"):
         load_replay(b'{"header":{"game_mode_id":1,"seed":1}}')
@@ -226,6 +235,7 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
             },
         },
         "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],
+        "dt": [1.0 / 60.0],
         "events": [],
     }
 

@@ -37,6 +37,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
+from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
@@ -57,10 +58,12 @@ class DeterministicSessionLike(Protocol):
     fx_toggle: int
     game_tune_started: bool
 
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
     ) -> DeterministicSessionTick: ...
 
@@ -386,17 +389,17 @@ class BaseGameplayMode:
         )
 
     def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
-        dt_frame = float(dt)
-        dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
+        dt = float(dt)
+        dt_ui_ms = float(min(dt, 0.1) * 1000.0)
         self._last_dt_ms = dt_ui_ms
 
         self._update_ui_mouse()
         self._trace_lan_state_heartbeat()
 
-        pulse_dt = float(min(dt_frame, 0.1)) if clamp_cursor_pulse else dt_frame
+        pulse_dt = float(min(dt, 0.1)) if clamp_cursor_pulse else dt
         self._cursor_pulse_time += pulse_dt * 1.1
 
-        return dt_frame, dt_ui_ms
+        return dt, dt_ui_ms
 
     def set_lan_runtime(
         self,
@@ -873,13 +876,13 @@ class BaseGameplayMode:
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
         rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
 
-    def _build_local_inputs(self, *, dt_frame: float) -> list[PlayerInput]:
+    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
             players=self.world.players,
             config=self.config,
             mouse_screen=self._ui_mouse,
             screen_to_world=self.world.screen_to_world,
-            dt_frame=float(dt_frame),
+            dt=float(dt),
             creatures=self.creatures.entries,
         )
 
@@ -913,8 +916,9 @@ class BaseGameplayMode:
                 tick_index: int | None = recorder.record_tick(inputs)
             else:
                 tick_index = None
+            timing = session.timing_for_dt(float(dt_tick))
             tick = session.step_tick(
-                dt_frame=float(dt_tick),
+                timing=timing,
                 inputs=inputs,
             )
             self.world.apply_step_result(

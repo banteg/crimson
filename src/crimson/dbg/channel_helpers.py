@@ -13,6 +13,7 @@ from .canonical_channels import (
     RngStreamRow,
     SecondaryProjectileEntitySample,
     SimStateSnapshot,
+    TimingSampleRow,
 )
 from .schema import TickRecord
 from .trace import TraceError
@@ -97,6 +98,14 @@ def rng_stream_channel_required(row: TickRecord | None) -> list[RngStreamRow]:
 def rng_marks_channel_required(row: TickRecord | None) -> dict[str, int]:
     payload = _require_channel_payload(row, channel_name="rng_marks")
     return cast("dict[str, int]", _decode_channel(payload, channel_name="rng_marks", target=dict[str, int]))
+
+
+def timing_samples_channel_required(row: TickRecord | None) -> list[TimingSampleRow]:
+    payload = _require_channel_payload(row, channel_name="timing_samples")
+    return cast(
+        "list[TimingSampleRow]",
+        _decode_channel(payload, channel_name="timing_samples", target=list[TimingSampleRow]),
+    )
 
 
 def entity_rows(samples: EntitySamplesSnapshot, *, kind: str) -> list[EntitySampleRow]:

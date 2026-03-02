@@ -226,7 +226,7 @@ class TypoShooterMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
-        dt_frame = self._tick_frame(dt)[0]
+        dt = self._tick_frame(dt)[0]
         self._handle_input()
         if self._action == "open_pause_menu":
             return
@@ -235,7 +235,7 @@ class TypoShooterMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        dt_world = 0.0 if self._paused else dt_frame
+        dt_world = 0.0 if self._paused else dt
 
         # Native: delay game-over transition until the trooper death animation finishes
         # (checks `death_timer < 0.0` in the main gameplay loop).

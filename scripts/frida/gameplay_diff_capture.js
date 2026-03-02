@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 8;
+const CAPTURE_FORMAT_VERSION = 9;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -289,6 +289,21 @@ const FN = {
   sfx_play: 0x0043d120,
   sfx_play_panned: 0x0043d260,
   sfx_play_exclusive: 0x0043d460,
+  outer_get_frame_dt: 0x0040c1d7,
+  outer_reflex_boosted_scale: 0x0040c4e7,
+  outer_rederive_ms: 0x0040c517,
+  outer_console_zero_dt: 0x0040c5b6,
+  gpur_after_gameplay_scale: 0x0040ab11,
+  gpur_after_gameplay_scale_ms: 0x0040ab22,
+  gpur_zero_gate_ms: 0x0040abae,
+  gpur_zero_gate_dt: 0x0040abb4,
+  gpur_time_scale_state_write_a: 0x0040ae3d,
+  gpur_time_scale_state_write_b: 0x0040ae5a,
+  gpur_bonus_reflex_timer_decrement: 0x0040ae52,
+  gpur_restore_dt: 0x0040b1fd,
+  gpur_restore_ms: 0x0040b208,
+  player_local_scale_enter: 0x00413e13,
+  player_local_scale_restore: 0x00414f5f,
 };
 
 // Ghidra (latest sync): first function after `player_update`.
@@ -498,6 +513,7 @@ const outState = {
   perkApplyOutsideTickPendingHead: [],
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
+  pending_timing_samples: [],
   lastSrandSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
@@ -830,6 +846,7 @@ function startCaptureFile(meta, outPath) {
   outState.currentOutPath = targetOutPath;
   outState.outFile = null;
   outState.outWarned = false;
+  outState.pending_timing_samples = [];
   outState.captureStarted = false;
   outState.captureClosed = false;
   const started = _captureWriteJsonLine(
@@ -1312,6 +1329,72 @@ function rngStreamFromTick(tickObj) {
   return out;
 }
 
+function timingSamplesFromTick(tickObj) {
+  const out = [];
+  const tickIndex = tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : -1;
+  const gameplayFrame = tickObj && tickObj.gameplay_frame != null ? tickObj.gameplay_frame | 0 : null;
+  const rawRows = tickObj && Array.isArray(tickObj.timing_samples) ? tickObj.timing_samples : [];
+  for (let i = 0; i < rawRows.length; i++) {
+    const row = rawRows[i] && typeof rawRows[i] === "object" ? rawRows[i] : {};
+    out.push({
+      tick_index: row.tick_index == null ? tickIndex : intOr(row.tick_index, tickIndex),
+      gameplay_frame: row.gameplay_frame == null ? gameplayFrame : intOr(row.gameplay_frame, gameplayFrame),
+      phase: row.phase == null ? "" : String(row.phase),
+      write_kind: row.write_kind == null ? "snapshot" : String(row.write_kind),
+      frame_dt_f32: row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32),
+      frame_dt_ms_i32: row.frame_dt_ms_i32 == null ? null : intOr(row.frame_dt_ms_i32, null),
+      frame_dt_ms_f32: row.frame_dt_ms_f32 == null ? null : captureNumber(row.frame_dt_ms_f32),
+      time_scale_active_entry:
+        row.time_scale_active_entry == null ? null : !!row.time_scale_active_entry,
+      time_scale_active_current:
+        row.time_scale_active_current == null ? null : !!row.time_scale_active_current,
+      time_scale_factor: row.time_scale_factor == null ? null : captureNumber(row.time_scale_factor),
+      bonus_reflex_boost_timer:
+        row.bonus_reflex_boost_timer == null ? null : captureNumber(row.bonus_reflex_boost_timer),
+      mode_fn: row.mode_fn == null ? null : String(row.mode_fn),
+      player_index: row.player_index == null ? null : intOr(row.player_index, null),
+    });
+  }
+  if (out.length > 0) return out;
+
+  // Fallback for pre-marker captures.
+  out.length = 0;
+  const diagnostics = tickObj && tickObj.diagnostics && typeof tickObj.diagnostics === "object" ? tickObj.diagnostics : {};
+  const timing = diagnostics && diagnostics.timing && typeof diagnostics.timing === "object" ? diagnostics.timing : {};
+  out.push({
+    tick_index: tickIndex,
+    gameplay_frame: gameplayFrame,
+    phase: "gpur_enter",
+    write_kind: "snapshot",
+    frame_dt_f32: timing.frame_dt_before == null ? null : captureNumber(timing.frame_dt_before),
+    frame_dt_ms_i32: timing.frame_dt_ms_before_i32 == null ? null : intOr(timing.frame_dt_ms_before_i32, null),
+    frame_dt_ms_f32: timing.frame_dt_ms_before_f32 == null ? null : captureNumber(timing.frame_dt_ms_before_f32),
+    time_scale_active_entry: null,
+    time_scale_active_current: null,
+    time_scale_factor: null,
+    bonus_reflex_boost_timer: null,
+    mode_fn: null,
+    player_index: null,
+  });
+  out.push({
+    tick_index: tickIndex,
+    gameplay_frame: gameplayFrame,
+    phase: "post_gameplay_update_and_render",
+    write_kind: "snapshot",
+    frame_dt_f32: timing.frame_dt_after == null ? null : captureNumber(timing.frame_dt_after),
+    frame_dt_ms_i32: timing.frame_dt_ms_after_i32 == null ? null : intOr(timing.frame_dt_ms_after_i32, null),
+    frame_dt_ms_f32: timing.frame_dt_ms_after_f32 == null ? null : captureNumber(timing.frame_dt_ms_after_f32),
+    time_scale_active_entry: null,
+    time_scale_active_current: null,
+    time_scale_factor: null,
+    bonus_reflex_boost_timer: null,
+    mode_fn: null,
+    player_index: null,
+  });
+
+  return out;
+}
+
 function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   const dt = dtMsI32 == null ? null : dtMsI32 | 0;
   if (dt == null || dt <= 0) return intOr(rawElapsedMs, -1);
@@ -1334,6 +1417,7 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
 function buildTraceTickRow(tickObj) {
   const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
   const rngStream = rngStreamFromTick(tickObj);
+  const timingSamples = timingSamplesFromTick(tickObj);
   const rngMarks = canonicalRngMarksFromStream(checkpoint, rngStream);
   checkpoint.state_hash = "";
   checkpoint.command_hash = "";
@@ -1348,6 +1432,24 @@ function buildTraceTickRow(tickObj) {
           tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
         ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
         : null;
+  let gpurEnterDt = null;
+  for (let i = 0; i < timingSamples.length; i++) {
+    const row = timingSamples[i] && typeof timingSamples[i] === "object" ? timingSamples[i] : {};
+    if (String(row.phase || "") !== "gpur_enter") continue;
+    gpurEnterDt = row.frame_dt_f32 == null ? null : captureNumber(row.frame_dt_f32);
+    break;
+  }
+  const dtSeconds =
+    gpurEnterDt != null
+      ? gpurEnterDt
+      : tickObj &&
+          tickObj.diagnostics &&
+          tickObj.diagnostics.timing &&
+          tickObj.diagnostics.timing.frame_dt_before != null
+        ? captureNumber(tickObj.diagnostics.timing.frame_dt_before)
+      : dtMsI32 == null
+        ? 0.0
+        : captureNumber(dtMsI32 / 1000.0);
   const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
   const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
   checkpoint.elapsed_ms = elapsedMs;
@@ -1358,6 +1460,7 @@ function buildTraceTickRow(tickObj) {
     run_id: outState.currentRunId | 0,
     tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
     elapsed_ms: elapsedMs,
+    dt: dtSeconds,
     dt_ms_i32: dtMsI32,
     mode_id: modeId,
     quest_stage_major: tickQuestMajor(tickObj),
@@ -1368,6 +1471,7 @@ function buildTraceTickRow(tickObj) {
       checkpoint: checkpoint,
       rng_marks: rngMarks,
       rng_stream: rngStream,
+      timing_samples: timingSamples,
       sim_state: simState,
       entity_samples: entitySamplesFromTick(tickObj),
     },
@@ -2835,6 +2939,12 @@ function makeTickContext() {
   const outsideRngBefore = takePendingOutsideRngRolls();
   const outsidePerkApplyBefore = takePendingOutsidePerkApply();
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
+  const beforeGlobals = before && before.globals && typeof before.globals === "object" ? before.globals : {};
+  const timingEntryActive = _timeScaleActiveFromBonusTimer(beforeGlobals.bonus_reflex_boost_timer);
+  const timingEntryFactor = _timeScaleFactorFromBonusTimer(
+    beforeGlobals.bonus_reflex_boost_timer,
+    timingEntryActive
+  );
   const playerBindings =
     before && before.input_bindings && Array.isArray(before.input_bindings.players)
       ? before.input_bindings.players
@@ -2931,6 +3041,9 @@ function makeTickContext() {
       mirror_unknown_total_enter: outState.rngMirrorUnknownCalls,
     },
     perk_apply_outside_before: outsidePerkApplyBefore,
+    timing_entry_active: timingEntryActive,
+    timing_entry_factor: timingEntryFactor,
+    timing_samples: [],
     phase_markers: [
       {
         kind: "state_enter",
@@ -3060,6 +3173,121 @@ function addPhaseMarker(kind, payload) {
   const tick = outState.currentTick;
   if (!tick) return;
   pushHead(tick.phase_markers, Object.assign({ kind: kind }, payload || {}));
+}
+
+function _timeScaleActiveFromBonusTimer(timerValue) {
+  const timer = decodeCapturedF32(timerValue);
+  if (timer == null) return null;
+  return timer > 0.0;
+}
+
+function _timeScaleFactorFromBonusTimer(timerValue, active) {
+  if (active == null) return null;
+  if (!active) return 1.0;
+  const timer = decodeCapturedF32(timerValue);
+  if (timer == null) return 0.3;
+  if (timer < 1.0) return ((1.0 - timer) * 0.7) + 0.3;
+  return 0.3;
+}
+
+function _buildTimingSampleRow(tick, phase, writeKind, payload) {
+  const globalsObj =
+    payload && payload.globals && typeof payload.globals === "object"
+      ? payload.globals
+      : readGameplayGlobalsCompact();
+  const bonusTimer =
+    globalsObj && globalsObj.bonus_reflex_boost_timer != null
+      ? decodeCapturedF32(globalsObj.bonus_reflex_boost_timer)
+      : null;
+  const activeCurrent = _timeScaleActiveFromBonusTimer(
+    globalsObj ? globalsObj.bonus_reflex_boost_timer : null
+  );
+  const entryActive =
+    payload && payload.time_scale_active_entry != null
+      ? !!payload.time_scale_active_entry
+      : tick && tick.timing_entry_active != null
+        ? !!tick.timing_entry_active
+        : activeCurrent;
+  const entryFactorValue =
+    payload && payload.time_scale_factor != null
+      ? Number(payload.time_scale_factor)
+      : tick && tick.timing_entry_factor != null
+        ? Number(tick.timing_entry_factor)
+        : _timeScaleFactorFromBonusTimer(
+            globalsObj ? globalsObj.bonus_reflex_boost_timer : null,
+            entryActive
+          );
+  const modeFn =
+    payload && payload.mode_fn != null
+      ? String(payload.mode_fn)
+      : tick && tick.mode_hint
+        ? String(tick.mode_hint)
+        : null;
+  const playerIndex =
+    payload && payload.player_index != null ? intOr(payload.player_index, null) : null;
+
+  return {
+    tick_index: tick ? tick.tick_index | 0 : -1,
+    gameplay_frame: tick ? tick.gameplay_frame | 0 : outState.gameplayFrame | 0,
+    phase: String(phase),
+    write_kind: String(writeKind),
+    frame_dt_f32:
+      globalsObj && globalsObj.frame_dt != null ? captureNumber(globalsObj.frame_dt) : null,
+    frame_dt_ms_i32:
+      globalsObj && globalsObj.frame_dt_ms_i32 != null
+        ? intOr(globalsObj.frame_dt_ms_i32, null)
+        : null,
+    frame_dt_ms_f32:
+      globalsObj && globalsObj.frame_dt_ms_f32 != null
+        ? captureNumber(globalsObj.frame_dt_ms_f32)
+        : null,
+    time_scale_active_entry: entryActive == null ? null : !!entryActive,
+    time_scale_active_current: activeCurrent == null ? null : !!activeCurrent,
+    time_scale_factor:
+      entryFactorValue == null || !Number.isFinite(entryFactorValue)
+        ? null
+        : captureNumber(entryFactorValue),
+    bonus_reflex_boost_timer:
+      bonusTimer == null || !Number.isFinite(bonusTimer) ? null : captureNumber(bonusTimer),
+    mode_fn: modeFn,
+    player_index: playerIndex,
+  };
+}
+
+function _enqueuePendingTimingSample(row) {
+  if (!Array.isArray(outState.pending_timing_samples)) outState.pending_timing_samples = [];
+  outState.pending_timing_samples.push(row);
+  if (outState.pending_timing_samples.length > 256) {
+    outState.pending_timing_samples.splice(0, outState.pending_timing_samples.length - 256);
+  }
+}
+
+function _consumePendingTimingSamplesIntoTick(tick) {
+  const pending = Array.isArray(outState.pending_timing_samples) ? outState.pending_timing_samples : [];
+  outState.pending_timing_samples = [];
+  for (let i = 0; i < pending.length; i++) {
+    const row = pending[i] && typeof pending[i] === "object" ? pending[i] : null;
+    if (!row) continue;
+    row.tick_index = tick.tick_index | 0;
+    row.gameplay_frame = tick.gameplay_frame | 0;
+    if (row.time_scale_active_entry == null && tick.timing_entry_active != null) {
+      row.time_scale_active_entry = !!tick.timing_entry_active;
+    }
+    if (row.time_scale_factor == null && tick.timing_entry_factor != null) {
+      row.time_scale_factor = captureNumber(tick.timing_entry_factor);
+    }
+    pushHead(tick.timing_samples, row);
+  }
+}
+
+function recordTimingSample(phase, writeKind, payload) {
+  const tick = outState.currentTick;
+  const row = _buildTimingSampleRow(tick, phase, writeKind, payload || {});
+  if (tick) {
+    pushHead(tick.timing_samples, row);
+  } else {
+    _enqueuePendingTimingSample(row);
+  }
 }
 
 const EVENT_HEAD_ORDER = [
@@ -3854,6 +4082,12 @@ function finalizeTick() {
     event_overflow: tick.overflow,
     event_heads: buildCaptureEventHeads(tick.event_heads),
     phase_markers: buildCapturePhaseMarkers(tick.phase_markers),
+    timing_samples: timingSamplesFromTick({
+      tick_index: tick.tick_index,
+      gameplay_frame: tick.gameplay_frame,
+      timing_samples: tick.timing_samples,
+      diagnostics: { timing: timing },
+    }),
     input_queries: {
       stats: tick.input_queries,
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
@@ -3936,10 +4170,20 @@ function installHooks() {
       outState.gameplayFrame += 1;
       updateCurrentStateFromMemory();
       if (!shouldCaptureTickForState(outState.currentStateId)) {
+        outState.pending_timing_samples = [];
         outState.currentTick = null;
         return;
       }
       outState.currentTick = makeTickContext();
+      _consumePendingTimingSamplesIntoTick(outState.currentTick);
+      recordTimingSample("gpur_enter", "snapshot", {
+        globals:
+          outState.currentTick &&
+          outState.currentTick.before &&
+          outState.currentTick.before.globals
+            ? outState.currentTick.before.globals
+            : null,
+      });
     },
     onLeave() {
       finalizeTick();
@@ -4050,6 +4294,41 @@ function installHooks() {
   hookModeTick("rush_mode_update");
   hookModeTick("survival_update");
   hookModeTick("typo_gameplay_update_and_render");
+
+  function hookTimingMarker(name, phase, writeKind, payloadFactory) {
+    attachHook(name, fnPtrs[name], {
+      onEnter() {
+        const payload = payloadFactory ? payloadFactory(this) : {};
+        recordTimingSample(phase, writeKind, payload || {});
+      },
+    });
+  }
+
+  hookTimingMarker("outer_get_frame_dt", "outer_get_frame_dt", "frame_dt_write");
+  hookTimingMarker("outer_reflex_boosted_scale", "outer_reflex_boosted_scale", "frame_dt_write");
+  hookTimingMarker("outer_rederive_ms", "outer_rederive_ms", "frame_dt_ms_write");
+  hookTimingMarker("outer_console_zero_dt", "outer_console_zero_dt", "frame_dt_write");
+  hookTimingMarker("gpur_after_gameplay_scale", "gpur_after_gameplay_scale", "frame_dt_write");
+  hookTimingMarker("gpur_after_gameplay_scale_ms", "gpur_after_gameplay_scale_ms", "frame_dt_ms_write");
+  hookTimingMarker("gpur_zero_gate_ms", "gpur_zero_gate_ms", "frame_dt_ms_write");
+  hookTimingMarker("gpur_zero_gate_dt", "gpur_zero_gate_dt", "frame_dt_write");
+  hookTimingMarker("player_local_scale_enter", "player_local_scale_enter", "frame_dt_write", function () {
+    return {
+      mode_fn: "player_update",
+      player_index: null,
+    };
+  });
+  hookTimingMarker("player_local_scale_restore", "player_local_scale_restore", "frame_dt_write", function () {
+    return {
+      mode_fn: "player_update",
+      player_index: null,
+    };
+  });
+  hookTimingMarker("gpur_time_scale_state_write_a", "gpur_time_scale_state_write", "snapshot");
+  hookTimingMarker("gpur_time_scale_state_write_b", "gpur_time_scale_state_write", "snapshot");
+  hookTimingMarker("gpur_bonus_reflex_timer_decrement", "gpur_bonus_reflex_timer_decrement", "snapshot");
+  hookTimingMarker("gpur_restore_dt", "gpur_restore_dt", "frame_dt_write");
+  hookTimingMarker("gpur_restore_ms", "gpur_restore_ms", "frame_dt_ms_write");
 
   if (CONFIG.enableCreatureMicroHooks) {
     attachHook("creature_update_all", fnPtrs.creature_update_all, {

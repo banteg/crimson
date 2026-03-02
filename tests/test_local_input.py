@@ -62,7 +62,7 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: Mocker
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -90,7 +90,7 @@ def test_local_input_computer_aim_without_target_points_away_from_center(mocker:
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -126,7 +126,7 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -137,7 +137,7 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -181,7 +181,7 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -213,7 +213,7 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -248,7 +248,7 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -281,7 +281,7 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
     multiplayer = interpreter.build_player_input(
@@ -291,7 +291,7 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -323,7 +323,7 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -366,7 +366,7 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
         mouse_screen=Vec2(),
         mouse_world=mouse_world,
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -399,7 +399,7 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -428,7 +428,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -458,7 +458,7 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=creatures,
     )
 
@@ -491,7 +491,7 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -525,7 +525,7 @@ def test_local_input_joystick_aim_turns_with_pov_input(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -565,7 +565,7 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -606,7 +606,7 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -646,7 +646,7 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -680,7 +680,7 @@ def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -713,7 +713,7 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 
@@ -749,7 +749,7 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
         mouse_screen=center,
         mouse_world=Vec2(),
         screen_center=center,
-        dt_frame=0.1,
+        dt=0.1,
         creatures=[],
     )
 

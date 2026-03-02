@@ -9,6 +9,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.input import PlayerInput
+from crimson.sim.timing import FrameTiming
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
@@ -81,14 +82,22 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
             self.completion_transition_ms = -1.0
             self.game_tune_started = False
 
-        def step_tick(self, *, dt_frame, inputs, trace_rng=False):
-            return step_tick(dt_frame=dt_frame, inputs=inputs, trace_rng=trace_rng)
+        def timing_for_dt(self, dt: float) -> FrameTiming:
+            return FrameTiming.compute(
+                float(dt),
+                time_scale_active_entry=False,
+                time_scale_factor=1.0,
+                zero_gate_active=False,
+            )
+
+        def step_tick(self, *, timing, inputs, trace_rng=False):
+            return step_tick(timing=timing, inputs=inputs, trace_rng=trace_rng)
 
     mode._sim_session = _FakeSession()
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
-    mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt_frame: inputs)
+    mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt: inputs)
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
     mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
 
@@ -112,7 +121,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
         side_effect=lambda *, players, **_kwargs: [PlayerInput() for _ in players],
     )
 
-    frame = mode._build_local_inputs(dt_frame=0.016)
+    frame = mode._build_local_inputs(dt=0.016)
 
     assert len(frame) == len(mode.world.players)
     build_frame_inputs.assert_called_once()

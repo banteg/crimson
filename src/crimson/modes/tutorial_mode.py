@@ -240,7 +240,7 @@ class TutorialMode(BaseGameplayMode):
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
-        dt_frame, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
+        dt, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
 
         self._handle_input()
         if self._action == "open_pause_menu":
@@ -255,10 +255,10 @@ class TutorialMode(BaseGameplayMode):
 
         perk_menu_active = self._perk_menu.active
         if self._perk_menu.open:
-            self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            self._perk_menu.handle_input(perk_ctx, dt=dt, dt_ui_ms=dt_ui_ms)
         self._perk_menu.tick_timeline(dt_ui_ms)
 
-        dt_world = 0.0 if self._paused or perk_menu_active else dt_frame
+        dt_world = 0.0 if self._paused or perk_menu_active else dt
 
         input_state = self._build_input()
         any_move_active = input_state.move.length_sq() > 0.0

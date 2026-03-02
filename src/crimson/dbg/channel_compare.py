@@ -4,7 +4,7 @@ from typing import cast
 
 import msgspec
 
-from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
+from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
 from .strict_compare import strict_mismatch_payload
 
@@ -59,6 +59,24 @@ def compare_sim_state(
     if expected_obj == actual_obj:
         return True, None
     payload, diff_count, pretty = strict_mismatch_payload(expected_obj, actual_obj, root_path="sim_state")
+    return False, {
+        "diff_count": int(diff_count),
+        "mismatches": payload,
+        "pretty": pretty,
+    }
+
+
+def compare_timing_samples(
+    expected_rows: list[TimingSampleRow],
+    actual_rows: list[TimingSampleRow],
+) -> tuple[bool, dict[str, object] | None]:
+    if expected_rows == actual_rows:
+        return True, None
+    payload, diff_count, pretty = strict_mismatch_payload(
+        expected_rows,
+        actual_rows,
+        root_path="timing_samples",
+    )
     return False, {
         "diff_count": int(diff_count),
         "mismatches": payload,

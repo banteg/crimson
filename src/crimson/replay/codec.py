@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gzip
 import io
+import math
 import os
 from pathlib import Path
 
@@ -181,19 +182,18 @@ def dump_replay(replay: Replay) -> bytes:
         ]
         inputs.append(normalized_tick)
 
-    dt_ms_i32: list[int] = []
-    if replay.dt_ms_i32:
-        if len(replay.dt_ms_i32) != len(inputs):
-            raise ReplayCodecError(
-                f"replay dt_ms_i32 length {len(replay.dt_ms_i32)} must match input ticks {len(inputs)}",
-            )
-        for tick_idx, dt_row in enumerate(replay.dt_ms_i32):
-            if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
-                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be numeric")
-            dt_ms = int(dt_row)
-            if dt_ms <= 0:
-                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be > 0, got {dt_ms}")
-            dt_ms_i32.append(int(dt_ms))
+    dt_rows: list[float] = []
+    if len(replay.dt) != len(inputs):
+        raise ReplayCodecError(
+            f"replay dt length {len(replay.dt)} must match input ticks {len(inputs)}",
+        )
+    for tick_idx, dt_row in enumerate(replay.dt):
+        if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
+            raise ReplayCodecError(f"replay dt[{tick_idx}] must be numeric")
+        dt_value = float(dt_row)
+        if not math.isfinite(dt_value) or dt_value < 0.0:
+            raise ReplayCodecError(f"replay dt[{tick_idx}] must be finite and >= 0, got {dt_value!r}")
+        dt_rows.append(_quantize_f32(dt_value))
 
     for event in replay.events:
         _validate_event(event)
@@ -202,7 +202,7 @@ def dump_replay(replay: Replay) -> bytes:
         Replay(
             header=replay.header,
             inputs=inputs,
-            dt_ms_i32=dt_ms_i32,
+            dt=dt_rows,
             events=list(replay.events),
         ),
     )
@@ -252,19 +252,18 @@ def load_replay(data: bytes) -> Replay:
             )
         inputs.append(normalized_tick)
 
-    dt_ms_i32: list[int] = []
-    if replay.dt_ms_i32:
-        if len(replay.dt_ms_i32) != len(inputs):
-            raise ReplayCodecError(
-                f"replay dt_ms_i32 length {len(replay.dt_ms_i32)} must match input ticks {len(inputs)}",
-            )
-        for tick_idx, dt_row in enumerate(replay.dt_ms_i32):
-            if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
-                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be numeric")
-            dt_ms = int(dt_row)
-            if dt_ms <= 0:
-                raise ReplayCodecError(f"replay dt_ms_i32[{tick_idx}] must be > 0, got {dt_ms}")
-            dt_ms_i32.append(int(dt_ms))
+    if len(replay.dt) != len(inputs):
+        raise ReplayCodecError(
+            f"replay dt length {len(replay.dt)} must match input ticks {len(inputs)}",
+        )
+    dt_rows: list[float] = []
+    for tick_idx, dt_row in enumerate(replay.dt):
+        if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
+            raise ReplayCodecError(f"replay dt[{tick_idx}] must be numeric")
+        dt_value = float(dt_row)
+        if not math.isfinite(dt_value) or dt_value < 0.0:
+            raise ReplayCodecError(f"replay dt[{tick_idx}] must be finite and >= 0, got {dt_value!r}")
+        dt_rows.append(_quantize_f32(dt_value))
 
     events = list(replay.events)
     input_len = len(inputs)
@@ -276,7 +275,7 @@ def load_replay(data: bytes) -> Replay:
         if tick_index > input_len:
             raise ReplayCodecError(f"replay event tick_index out of bounds: {tick_index} > {input_len}")
 
-    return Replay(header=replay.header, inputs=inputs, dt_ms_i32=dt_ms_i32, events=events)
+    return Replay(header=replay.header, inputs=inputs, dt=dt_rows, events=events)
 
 
 def dump_replay_file(path: Path, replay: Replay) -> None:

@@ -352,7 +352,7 @@ class RushMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
-        dt_frame = self._tick_frame(dt)[0]
+        dt = self._tick_frame(dt)[0]
         self._handle_input()
         if self._action == "open_pause_menu":
             return
@@ -362,7 +362,7 @@ class RushMode(BaseGameplayMode):
             return
 
         if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt_frame=dt_frame)
+            self._update_lan_match(dt=dt)
             return
 
         any_alive = any(player.health > 0.0 for player in self.world.players)
@@ -379,12 +379,12 @@ class RushMode(BaseGameplayMode):
                 self._enter_game_over()
             return
 
-        ticks_to_run = self._sim_clock.advance(dt_frame)
+        ticks_to_run = self._sim_clock.advance(dt)
         if ticks_to_run <= 0:
             return
 
         dt_tick = float(self._sim_clock.dt_tick)
-        input_frame = self._build_local_inputs(dt_frame=dt_frame)
+        input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
             return
@@ -417,7 +417,7 @@ class RushMode(BaseGameplayMode):
             on_tick=_on_tick,
         )
 
-    def _update_lan_match(self, *, dt_frame: float) -> None:
+    def _update_lan_match(self, *, dt: float) -> None:
         runtime = self._lan_runtime
         if runtime is None:
             return
@@ -466,8 +466,9 @@ class RushMode(BaseGameplayMode):
                     tick_index = recorder.record_tick(player_inputs)
                 else:
                     tick_index = None
+                timing = session.timing_for_dt(float(dt_tick))
                 tick = session.step_tick(
-                    dt_frame=float(dt_tick),
+                    timing=timing,
                     inputs=player_inputs,
                 )
 
@@ -560,9 +561,9 @@ class RushMode(BaseGameplayMode):
             if _consume_lan_frames():
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        ticks_to_capture = self._lan_capture_clock.advance(dt)
         if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            input_frame = self._build_local_inputs(dt=dt)
             # In LAN sessions each peer is a single local player, so always sample
             # inputs using the configured Player 1 bindings (index 0). The network
             # slot mapping is handled by the lockstep runtime.

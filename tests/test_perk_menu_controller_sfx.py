@@ -108,7 +108,7 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
         play_sfx=play_sfx,
     )
 
-    menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
 
     assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick", "sfx_ui_bonus"]
     assert menu.open is False
@@ -143,7 +143,7 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
         play_sfx=None,
     )
 
-    menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
 
     on_pick.assert_called_once_with(0)
 
@@ -173,7 +173,7 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
         play_sfx=play_sfx,
     )
 
-    menu.handle_input(ctx, dt_frame=0.0, dt_ui_ms=0.0)
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
 
     play_sfx.assert_called_once_with("sfx_ui_buttonclick")
     assert menu.open is False

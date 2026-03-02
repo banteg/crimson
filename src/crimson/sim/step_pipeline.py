@@ -13,6 +13,7 @@ from ..weapon_runtime import weapon_refresh_available
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import PresentationStepCommands, apply_world_presentation_step
+from .timing import FrameTiming
 from .world_state import WorldEvents, WorldState
 
 
@@ -23,6 +24,7 @@ class PresentationRngTrace(msgspec.Struct):
 
 class DeterministicStepResult(msgspec.Struct):
     dt_sim: float
+    timing: FrameTiming
     events: WorldEvents
     presentation: PresentationStepCommands
     command_hash: str
@@ -58,11 +60,25 @@ def time_scale_reflex_boost_bonus(
     if not time_scale_active:
         return float(dt_f32)
 
+    time_scale_factor = time_scale_reflex_boost_factor(
+        reflex_boost_timer=float(reflex_boost_timer),
+        time_scale_active=bool(time_scale_active),
+    )
+    return float(f32(float(dt_f32) * float(time_scale_factor)))
+
+
+def time_scale_reflex_boost_factor(
+    *,
+    reflex_boost_timer: float,
+    time_scale_active: bool,
+) -> float:
+    if not bool(time_scale_active):
+        return 1.0
     reflex_f32 = f32(float(reflex_boost_timer))
     time_scale_factor = f32(0.3)
     if float(reflex_f32) < 1.0:
         time_scale_factor = f32((1.0 - float(reflex_f32)) * 0.7 + 0.3)
-    return float(f32(float(dt_f32) * float(time_scale_factor)))
+    return float(time_scale_factor)
 
 
 def presentation_commands_hash(commands: PresentationStepCommands) -> str:
@@ -78,9 +94,8 @@ def presentation_commands_hash(commands: PresentationStepCommands) -> str:
 def run_deterministic_step(
     *,
     world: WorldState,
-    dt_frame: float,
+    timing: FrameTiming,
     options: StepPipelineOptions,
-    dt_frame_ms_i32: int | None = None,
     apply_world_dt_steps: bool = True,
     inputs: list[PlayerInput] | None,
     fx_queue: FxQueue,
@@ -109,31 +124,15 @@ def run_deterministic_step(
     _mark("gw_after_weapon_refresh")
     perks_rebuild_available(state)
     _mark("gw_after_perks_rebuild")
-
-    dt_sim = time_scale_reflex_boost_bonus(
-        reflex_boost_timer=float(state.bonuses.reflex_boost),
-        time_scale_active=state.time_scale_active,
-        dt=float(dt_frame),
-    )
     _mark("gw_after_time_scale")
 
     prev_audio = [(player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in world.players]
     prev_perk_pending = int(state.perk_selection.pending_count)
 
-    dt_sim_ms_i32: int | None = None
-    if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-        base_dt_ms_i32 = int(dt_frame_ms_i32)
-        if state.time_scale_active and float(dt_frame) > 0.0:
-            # Under Reflex Boost, native integer cadence counters track the scaled
-            # float dt path (`frame_dt`) instead of integer-base ms scaling.
-            dt_sim_ms_i32 = max(0, int(float(dt_sim) * 1000.0))
-        else:
-            dt_sim_ms_i32 = base_dt_ms_i32
-
     events = world.step(
-        float(dt_sim),
+        float(timing.dt_sim),
         apply_world_dt_steps=apply_world_dt_steps,
-        dt_ms_i32=(int(dt_sim_ms_i32) if dt_sim_ms_i32 is not None else None),
+        dt_player_local=float(timing.dt_player_local),
         defer_camera_shake_update=defer_camera_shake_update,
         defer_freeze_corpse_fx=defer_freeze_corpse_fx,
         mid_step_hook=mid_step_hook,
@@ -196,7 +195,8 @@ def run_deterministic_step(
             rng_marks_out[f"ps_draws_{key}"] = int(value)
 
     return DeterministicStepResult(
-        dt_sim=float(dt_sim),
+        dt_sim=float(timing.dt_sim),
+        timing=timing,
         events=events,
         presentation=presentation,
         command_hash=str(command_hash),

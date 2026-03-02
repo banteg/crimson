@@ -1,0 +1,16 @@
+id: no-raw-dt-ms-i32-conversions-python
+valid:
+  - |
+    from crimson.sim.timing import ftol_ms_i32
+
+    def ok(dt: float) -> int:
+      return ftol_ms_i32(dt)
+invalid:
+  - |
+    def bad(dt: float) -> int:
+      return int(round(dt * 1000.0))
+  - |
+    import math
+
+    def bad(dt: float) -> int:
+      return int(math.trunc(dt * 1000.0))

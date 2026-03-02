@@ -43,6 +43,7 @@ from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
 from ..projectiles import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
+from ..sim.timing import ftol_ms_i32
 from ..weapons import WEAPON_BY_ID
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
@@ -321,7 +322,6 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
-    dt_ms_i32: int | None = None
     rand: Callable[[], int] | None = None
     detail_preset: int = 5
     fx_toggle: int = 0
@@ -869,7 +869,6 @@ class CreaturePool:
         dt = float(f32(float(dt)))
         state = options.state
         players = options.players
-        dt_ms_i32 = options.dt_ms_i32
         rand = options.rand
         detail_preset = int(options.detail_preset)
         fx_toggle = int(options.fx_toggle)
@@ -917,12 +916,9 @@ class CreaturePool:
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
-        # Native AI7 timer math uses `frame_dt_ms` integer slots; round-to-nearest
-        # keeps parity with captured `frame_dt` values such as 0.0329999998 -> 33.
-        if dt_ms_i32 is not None:
-            dt_ms = max(0, int(dt_ms_i32))
-        else:
-            dt_ms = int(round(dt * 1000.0)) if dt > 0.0 else 0
+        # Native AI7 timer math uses `frame_dt_ms` integer slots with ftol-style
+        # truncation semantics.
+        dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
 
         def _apply_self_damage_tick(creature_index: int, creature: CreatureState) -> bool:
             if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:

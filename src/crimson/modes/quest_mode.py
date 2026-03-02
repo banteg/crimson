@@ -58,6 +58,7 @@ from ..replay.types import WEAPON_USAGE_COUNT
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
+from ..sim.timing import FrameTiming
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -104,10 +105,12 @@ class QuestSessionLike(Protocol):
     completion_transition_ms: float
     game_tune_started: bool
 
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick: ...
@@ -583,8 +586,8 @@ class QuestMode(BaseGameplayMode):
                 return False
         return dead_players > 0
 
-    def _tick_death_timers(self, dt_frame: float, *, rate: float = 20.0) -> None:
-        delta = float(dt_frame) * float(rate)
+    def _tick_death_timers(self, dt: float, *, rate: float = 20.0) -> None:
+        delta = float(dt) * float(rate)
         if delta <= 0.0:
             return
         for player in self.world.players:
@@ -649,7 +652,7 @@ class QuestMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
-        dt_frame, dt_ui_ms = self._tick_frame(dt)
+        dt, dt_ui_ms = self._tick_frame(dt)
         self._handle_input()
         if self._action == "open_pause_menu":
             return
@@ -658,7 +661,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            self._update_lan_match(dt=dt, dt_ui_ms=dt_ui_ms)
             return
 
         any_alive = any(player.health > 0.0 for player in self.world.players)
@@ -667,7 +670,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         perk_ctx = self._perk_menu_context()
         if self._perk_menu.open:
-            self._perk_menu.handle_input(perk_ctx, dt_frame=dt_frame, dt_ui_ms=dt_ui_ms)
+            self._perk_menu.handle_input(perk_ctx, dt=dt, dt_ui_ms=dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
 
@@ -729,12 +732,12 @@ class QuestMode(BaseGameplayMode):
             self._sim_clock.reset()
             return
 
-        dt_world = 0.0 if self._paused or self._perk_menu.active else dt_frame
+        dt_world = 0.0 if self._paused or self._perk_menu.active else dt
         if dt_world <= 0.0:
             self._sim_clock.reset()
             # Match legacy transition behavior: keep countdown moving, but at
             # real-time pace while perk-menu transition is holding world ticks.
-            self._tick_death_timers(dt_frame, rate=1.0)
+            self._tick_death_timers(dt, rate=1.0)
             if self._death_transition_ready():
                 self._close_failed_run()
             return
@@ -744,7 +747,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         dt_tick = float(self._sim_clock.dt_tick)
-        input_frame = self._build_local_inputs(dt_frame=dt_frame)
+        input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
             self._tick_death_timers(dt_world)
@@ -774,8 +777,9 @@ class QuestMode(BaseGameplayMode):
                 tick_index = recorder.record_tick(inputs)
             else:
                 tick_index = None
+            timing = session.timing_for_dt(float(dt_tick))
             tick = session.step_tick(
-                dt_frame=dt_tick,
+                timing=timing,
                 inputs=inputs,
             )
             self.world.apply_step_result(
@@ -847,7 +851,7 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
                 break
 
-    def _update_lan_match(self, *, dt_frame: float, dt_ui_ms: float) -> None:
+    def _update_lan_match(self, *, dt: float, dt_ui_ms: float) -> None:
         runtime = self._lan_runtime
         if runtime is None:
             return
@@ -879,7 +883,7 @@ class QuestMode(BaseGameplayMode):
         if bool(self._paused):
             self._sim_clock.reset()
             # Mirror legacy: keep the fail transition timers moving at real-time pace while paused.
-            self._tick_death_timers(dt_frame, rate=1.0)
+            self._tick_death_timers(dt, rate=1.0)
             if self._death_transition_ready():
                 self._close_failed_run()
             return
@@ -907,8 +911,9 @@ class QuestMode(BaseGameplayMode):
                 session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
                 session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
+                timing = session.timing_for_dt(float(dt_tick))
                 tick = session.step_tick(
-                    dt_frame=float(dt_tick),
+                    timing=timing,
                     inputs=player_inputs,
                 )
 
@@ -1052,9 +1057,9 @@ class QuestMode(BaseGameplayMode):
             if _consume_lan_frames():
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt_frame)
+        ticks_to_capture = self._lan_capture_clock.advance(dt)
         if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt_frame=dt_frame)
+            input_frame = self._build_local_inputs(dt=dt)
             # In LAN sessions each peer is a single local player, so always sample
             # inputs using the configured Player 1 bindings (index 0). The network
             # slot mapping is handled by the lockstep runtime.

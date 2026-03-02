@@ -96,7 +96,7 @@ class WorldState(msgspec.Struct):
         dt: float,
         *,
         apply_world_dt_steps: bool = True,
-        dt_ms_i32: int | None = None,
+        dt_player_local: float | None = None,
         defer_camera_shake_update: bool = False,
         defer_freeze_corpse_fx: bool = False,
         mid_step_hook: Callable[[], None] | None = None,
@@ -146,7 +146,6 @@ class WorldState(msgspec.Struct):
         creature_result = self.creatures.update(
             dt,
             options=CreatureUpdateOptions(
-                dt_ms_i32=(int(dt_ms_i32) if dt_ms_i32 is not None else None),
                 state=self.state,
                 players=self.players,
                 detail_preset=int(detail_preset),
@@ -321,17 +320,20 @@ class WorldState(msgspec.Struct):
         _mark("ws_after_particles")
         _mark("ws_after_death_sfx")
         reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
+        player_dt = float(dt)
+        if dt_player_local is not None:
+            player_dt = float(dt_player_local)
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(
                 player,
                 input_state,
-                dt,
+                player_dt,
                 self.state,
                 detail_preset=int(detail_preset),
                 world_size=float(world_size),
                 players=self.players, creatures=self.creatures.entries, spawn_slots=self.creatures.spawn_slots,
-                on_player_lethal=lambda dead_player, dt_value=float(dt): self._run_player_death_hooks(
+                on_player_lethal=lambda dead_player, dt_value=float(player_dt): self._run_player_death_hooks(
                     player=dead_player,
                     dt=float(dt_value),
                     world_size=float(world_size),
@@ -341,9 +343,15 @@ class WorldState(msgspec.Struct):
                 ),
                 reload_active_any=bool(reload_active_any),
             )
-            dt = player_frame_dt_after_roundtrip(dt=dt, time_scale_active=bool(self.state.time_scale_active), reflex_boost_timer=float(self.state.bonuses.reflex_boost))
+            if dt_player_local is None:
+                player_dt = player_frame_dt_after_roundtrip(
+                    dt=player_dt,
+                    time_scale_active=bool(self.state.time_scale_active),
+                    reflex_boost_timer=float(self.state.bonuses.reflex_boost),
+                )
             if idx == 0:
                 _mark("ws_after_player_update_p0")
+        dt = float(player_dt)
         _mark("ws_after_player_update")
         if dt > 0.0:
             self._advance_creature_anim(dt)

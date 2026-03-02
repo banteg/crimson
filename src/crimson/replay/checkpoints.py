@@ -12,6 +12,7 @@ from grim.geom import Vec2
 
 from ..bonuses import BonusId
 from ..sim.state_types import PlayerState
+from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from ..weapons import WeaponId
 
@@ -140,7 +141,7 @@ def _max_checkpoints_payload_bytes() -> int:
 
 def _bonus_timer_ms(value: float) -> int:
     # Keep checkpoint values compact/stable: ms resolution is enough for divergence detection.
-    ms = int(round(value * 1000.0))
+    ms = int(ftol_ms_i32(float(value)))
     if ms < 0:
         return 0
     return ms

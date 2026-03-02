@@ -11,6 +11,7 @@ const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
+const timing = @import("timing.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -1835,7 +1836,7 @@ pub const CreaturePool = struct {
             }
         }
 
-        const dt_ms = @max(@as(i32, 0), @as(i32, @intFromFloat(@round(dt * 1000.0))));
+        const dt_ms = @max(@as(i32, 0), timing.ftolMsI32(dt));
         const player = &players[0];
         const single_player_dead_target_pos: ?state_mod.Vec2 =
             if (players.len == 1 and players[0].health <= 0.0)

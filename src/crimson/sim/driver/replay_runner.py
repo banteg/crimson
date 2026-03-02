@@ -19,7 +19,6 @@ from .playback_driver import (
     RushSessionConfig,
     SurvivalSessionConfig,
     TickRngTraceObserver,
-    dt_ms_overrides_from_replay,
     resolve_quest_level_from_replay,
 )
 from .setup import ReplayRunnerError, RunResult
@@ -48,8 +47,6 @@ def run_replay(
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
     checkpoint_ticks: set[int] | None = None,
-    dt_frame_overrides: dict[int, float] | None = None,
-    dt_frame_ms_i32_overrides: dict[int, int] | None = None,
     inter_tick_rand_draws: int = 0,
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     spawn_entries=None,
@@ -64,10 +61,6 @@ def run_replay(
     if not bool(strict_events):
         raise ReplayRunnerError("strict_events=False is unsupported; replay execution is always strict")
     mode_id = int(replay.header.game_mode_id)
-    replay_dt_ms_overrides = dt_ms_overrides_from_replay(replay)
-    effective_dt_ms_overrides = dt_frame_ms_i32_overrides
-    if effective_dt_ms_overrides is None and dt_frame_overrides is None:
-        effective_dt_ms_overrides = replay_dt_ms_overrides
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -76,8 +69,6 @@ def run_replay(
     )
     config = PlaybackDriverConfig(
         timing=PlaybackTimingConfig(
-            dt_frame_overrides=dt_frame_overrides,
-            dt_frame_ms_i32_overrides=effective_dt_ms_overrides,
             inter_tick_rand_draws=int(inter_tick_rand_draws),
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         ),
@@ -96,7 +87,6 @@ def run_replay(
             rush=RushSessionConfig(
                 strict_events_override=True,
                 enforce_loadout=True,
-                use_dt_frame_ms_i32=True,
             ),
             quest=QuestSessionConfig(
                 partition_events=True,

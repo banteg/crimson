@@ -4,6 +4,8 @@ from typing import cast
 
 import msgspec
 
+from ..sim.timing import ftol_ms_i32
+
 
 class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     x: float
@@ -65,6 +67,22 @@ class RngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     state_after_u32: int
     caller_static: str | None = None
     branch_id: str | None = None
+
+
+class TimingSampleRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    tick_index: int
+    gameplay_frame: int | None = None
+    phase: str = ""
+    write_kind: str = "snapshot"
+    frame_dt_f32: float | None = None
+    frame_dt_ms_i32: int | None = None
+    frame_dt_ms_f32: float | None = None
+    time_scale_active_entry: bool | None = None
+    time_scale_active_current: bool | None = None
+    time_scale_factor: float | None = None
+    bonus_reflex_boost_timer: float | None = None
+    mode_fn: str | None = None
+    player_index: int | None = None
 
 
 class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -142,7 +160,7 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
 
 
 def bonus_timer_ms(value: float) -> int:
-    return int(round(float(value) * 1000.0))
+    return max(0, int(ftol_ms_i32(float(value))))
 
 
 def _to_builtin(value: object) -> object:
@@ -172,3 +190,10 @@ def validate_entity_samples(value: object, *, field: str) -> dict[str, object]:
         raise ValueError(f"{field} must be a valid EntitySamplesSnapshot payload") from exc
     return cast("dict[str, object]", _to_builtin(validated))
 
+
+def validate_timing_samples(value: object, *, field: str) -> list[object]:
+    try:
+        validated = msgspec.convert(value, type=list[TimingSampleRow])
+    except (msgspec.ValidationError, TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be a valid timing_samples payload") from exc
+    return cast("list[object]", _to_builtin(validated))

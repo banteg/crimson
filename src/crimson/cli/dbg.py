@@ -126,6 +126,23 @@ def cmd_dbg_health(
         raise typer.Exit(code=1)
 
 
+@dbg_app.command("verify")
+def cmd_dbg_verify() -> None:
+    """Verify dbg schema/replay parity contract wiring."""
+    from ..dbg.schema import TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
+    from ..replay.types import REPLAY_FORMAT_VERSION
+
+    channels = tuple(str(channel) for channel in TRACE_REQUIRED_CHANNELS)
+    if "timing_samples" not in channels:
+        typer.echo("dbg verify failed: timing_samples missing from required trace channels", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"trace_schema_version={int(TRACE_SCHEMA_VERSION)}")
+    typer.echo(f"replay_format_version={int(REPLAY_FORMAT_VERSION)}")
+    typer.echo("required_channels=" + ",".join(channels))
+    typer.echo("result=ok")
+
+
 @dbg_app.command("diff")
 def cmd_dbg_diff(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),

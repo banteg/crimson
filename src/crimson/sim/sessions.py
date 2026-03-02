@@ -17,8 +17,9 @@ from .step_pipeline import (
     DeterministicStepResult,
     StepPipelineOptions,
     run_deterministic_step,
-    time_scale_reflex_boost_bonus,
+    time_scale_reflex_boost_factor,
 )
+from .timing import FrameTiming, zero_gate_active_from_state
 from .world_state import WorldState
 
 
@@ -47,30 +48,30 @@ class SurvivalDeterministicSession(msgspec.Struct):
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
 
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
+            float(dt),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
+        )
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
-        dt_frame = float(dt_frame)
         state = self.world.state
-        dt_sim = time_scale_reflex_boost_bonus(
-            reflex_boost_timer=float(state.bonuses.reflex_boost),
-            time_scale_active=bool(state.time_scale_active),
-            dt=float(dt_frame),
-        )
-        dt_sim_ms = float(dt_sim) * 1000.0
-        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            # Use captured integer ms for native cadence counters when available,
-            # then apply reflex scaling with integer semantics.
-            base_dt_ms_i32 = int(dt_frame_ms_i32)
-            if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                dt_sim_ms = float(max(0, int(float(dt_sim) * 1000.0)))
-            else:
-                dt_sim_ms = float(base_dt_ms_i32)
+        dt_sim_ms = float(timing.dt_sim_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)
 
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
@@ -116,7 +117,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -128,7 +129,6 @@ class SurvivalDeterministicSession(msgspec.Struct):
                 perk_progression_enabled=bool(self.perk_progression_enabled),
                 game_tune_started=bool(self.game_tune_started),
             ),
-            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             fx_queue=self.fx_queue,
@@ -172,19 +172,31 @@ class RushDeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
-    use_dt_frame_ms_i32: bool = True
     elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
+
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
+            float(dt),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
+        )
 
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionTick:
-        dt_frame = float(dt_frame)
         normalized_inputs = inputs
         if inputs is not None:
             normalized_inputs = [
@@ -192,12 +204,8 @@ class RushDeterministicSession(msgspec.Struct):
                 for player_input in inputs
             ]
 
-        dt_ms_i32 = int(round(float(dt_frame) * 1000.0))
-        if bool(self.use_dt_frame_ms_i32) and dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            dt_ms_i32 = int(dt_frame_ms_i32)
-        if dt_ms_i32 < 1:
-            dt_ms_i32 = 1
-        dt_frame_ms = float(dt_ms_i32)
+        dt_ms_i32 = int(timing.dt_ms_i32)
+        dt_ms = float(dt_ms_i32)
         elapsed_before_ms = int(self.elapsed_ms)
 
         if self.enforce_loadout is not None:
@@ -211,7 +219,7 @@ class RushDeterministicSession(msgspec.Struct):
             # It reads survival_elapsed_ms before the frame-loop increments it.
             cooldown, spawns = tick_rush_mode_spawns(
                 self.spawn_cooldown_ms,
-                dt_frame_ms,
+                dt_ms,
                 state.rng,
                 player_count=len(self.world.players),
                 survival_elapsed_ms=int(elapsed_before_ms),
@@ -224,7 +232,7 @@ class RushDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -298,27 +306,37 @@ class QuestDeterministicSession(msgspec.Struct):
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
 
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
+            float(dt),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+                perk_pending_count=int(state.perk_selection.pending_count),
+            ),
+        )
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick:
-        dt_frame = float(dt_frame)
-        dt_frame_ms = float(dt_frame) * 1000.0
-        if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
-            # Keep quest spawn timeline/counters on captured integer-ms cadence.
-            dt_frame_ms = float(int(dt_frame_ms_i32))
-        self.elapsed_ms += float(dt_frame_ms)
+        dt_ms = float(timing.dt_ms_i32)
+        self.elapsed_ms += float(dt_ms)
 
         state = self.world.state
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -330,7 +348,6 @@ class QuestDeterministicSession(msgspec.Struct):
                 perk_progression_enabled=True,
                 game_tune_started=bool(self.game_tune_started),
             ),
-            dt_frame_ms_i32=(int(dt_frame_ms_i32) if dt_frame_ms_i32 is not None else None),
             apply_world_dt_steps=bool(self.apply_world_dt_steps),
             inputs=inputs,
             fx_queue=self.fx_queue,
@@ -348,7 +365,7 @@ class QuestDeterministicSession(msgspec.Struct):
         entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
             self.spawn_entries,
             quest_spawn_timeline_ms=float(self.spawn_timeline_ms),
-            frame_dt_ms=float(dt_frame_ms),
+            frame_dt_ms=float(dt_ms),
             terrain_width=float(self.world_size),
             creatures_none_active=bool(creatures_none_active),
             no_creatures_timer_ms=float(self.no_creatures_timer_ms),
@@ -379,7 +396,7 @@ class QuestDeterministicSession(msgspec.Struct):
         if any_alive_after:
             completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
                 float(self.completion_transition_ms),
-                frame_dt_ms=float(dt_frame_ms),
+                frame_dt_ms=float(dt_ms),
                 creatures_none_active=bool(creatures_none_active),
                 spawn_table_empty=bool(spawn_table_empty_now),
             )
@@ -419,11 +436,12 @@ DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterm
 class DeterministicSession(Protocol):
     elapsed_ms: int | float
 
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
+
     def step_tick(
         self,
         *,
-        dt_frame: float,
-        dt_frame_ms_i32: int | None = None,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> DeterministicSessionStepTick: ...
