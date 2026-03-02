@@ -113,9 +113,8 @@ def cmd_dbg_health(
     )
     metric_keys = (
         "ticks_with_dt_ms_i32",
-        "rng_stream_head_rows",
-        "event_head_rows",
-        "micro_trace_rows",
+        "rng_stream_rows",
+        "sim_state_rows",
         "sample_creature_rows",
         "sample_projectile_rows",
         "sample_secondary_projectile_rows",
@@ -525,13 +524,17 @@ def cmd_dbg_focus(
         + " extra_tail="
         + str(rng_stream.get("extra_tail")),
     )
-    event_heads = _as_dict(payload.get("event_heads"))
+    entity_samples = _as_dict(payload.get("entity_samples"))
+    sim_state = _as_dict(payload.get("sim_state"))
     typer.echo(
-        "event_heads "
-        + "expected_count="
-        + str(event_heads.get("expected_count"))
-        + " candidate_count="
-        + str(event_heads.get("candidate_count")),
+        "entity_samples "
+        + "ok="
+        + str(entity_samples.get("ok")),
+    )
+    typer.echo(
+        "sim_state "
+        + "ok="
+        + str(sim_state.get("ok")),
     )
 
 

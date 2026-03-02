@@ -16,8 +16,15 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
-from .record import _event_heads_from_checkpoint, _micro_traces_from_entities
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from .canonical_channels import validate_entity_samples, validate_rng_stream, validate_sim_state
+from .schema import (
+    TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS_V3,
+    TRACE_SCHEMA_VERSION,
+    TickRecord,
+    TraceMeta,
+    channel_versions_for,
+)
 from .trace import TraceSummary, write_trace_iter
 
 _FRAME_LEN_BYTES = 4
@@ -28,7 +35,7 @@ _GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
 _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
 _BOOTSTRAP_KINDS = {"none", "terrain_v1"}
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 7
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 8
 _FIRST_TICK_MAX_ELAPSED_MULTIPLIER = 8
 _FIRST_TICK_MAX_ELAPSED_FLOOR_MS = 1000
 _MODE_LABEL_BY_ID = {
@@ -39,14 +46,6 @@ _MODE_LABEL_BY_ID = {
     int(GameMode.TYPO): "typo",
     int(GameMode.TUTORIAL): "tutorial",
 }
-_ENTITY_KIND_CODES = {
-    "creature": 1,
-    "projectile": 2,
-    "secondary_projectile": 3,
-    "bonus": 4,
-}
-
-
 class FridaFinalizeError(ValueError):
     pass
 
@@ -88,29 +87,6 @@ class _OpenRun(msgspec.Struct):
     channels_seen: set[str] = msgspec.field(default_factory=set)
     global_tick_first: int | None = None
     global_tick_last: int | None = None
-    previous_entity_samples: dict[str, object] | None = None
-    creature_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
-    projectile_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
-    secondary_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
-    bonus_state: _EntityUidState = msgspec.field(default_factory=lambda: _EntityUidState())
-
-
-class _EntityUidState(msgspec.Struct):
-    generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
-    active_indices: set[int] = msgspec.field(default_factory=set)
-
-    def next_uid(self, *, kind: str, index: int, active: bool) -> tuple[int, int]:
-        idx = int(index)
-        if bool(active) and idx not in self.active_indices:
-            self.generation_by_index[idx] = int(self.generation_by_index.get(idx, 0)) + 1
-        if bool(active):
-            self.active_indices.add(idx)
-        else:
-            self.active_indices.discard(idx)
-        generation = int(self.generation_by_index.get(idx, 0))
-        kind_code = int(_ENTITY_KIND_CODES[kind]) & 0xFF
-        uid = (kind_code << 56) | ((generation & 0xFFFFFF) << 32) | (idx & 0xFFFFFFFF)
-        return int(uid), int(generation)
 
 
 def _as_dict(value: object, *, field: str) -> dict[str, object]:
@@ -189,191 +165,103 @@ def _as_int_default(value: object, default: int = 0) -> int:
     return int(default)
 
 
-def _as_bool(value: object) -> bool:
-    if isinstance(value, bool):
-        return bool(value)
-    if isinstance(value, int):
-        return bool(value)
-    if isinstance(value, float):
-        return bool(int(value))
-    return False
-
-
-def _entity_rows_from_raw(
-    rows_obj: object,
-    *,
-    state: _EntityUidState,
-    kind: str,
-    active_fn,
-) -> list[dict[str, object]]:
-    rows = rows_obj if isinstance(rows_obj, list) else []
-    out: list[dict[str, object]] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        payload = _as_dict(row, field=f"entity_samples.{kind}[]")
-        idx = _as_int_default(payload.get("index"), default=0)
-        active = bool(active_fn(payload))
-        uid, generation = state.next_uid(kind=kind, index=int(idx), active=bool(active))
-        payload["uid"] = int(uid)
-        payload["generation"] = int(generation)
-        payload["pool_kind"] = str(kind)
-        out.append(payload)
-    return out
-
-
-def _normalize_entity_samples(
-    *,
-    run: _OpenRun,
-    channels: dict[str, object],
-) -> None:
-    entity_obj = channels.get("entity_samples")
-    if not isinstance(entity_obj, dict):
-        return
-    entity_samples = _as_dict(entity_obj, field="tick.channels.entity_samples")
-    channels["entity_samples"] = {
-        "creatures": _entity_rows_from_raw(
-            entity_samples.get("creatures"),
-            state=run.creature_state,
-            kind="creature",
-            active_fn=lambda payload: _as_bool(payload.get("active")),
-        ),
-        "projectiles": _entity_rows_from_raw(
-            entity_samples.get("projectiles"),
-            state=run.projectile_state,
-            kind="projectile",
-            active_fn=lambda payload: _as_bool(payload.get("active")),
-        ),
-        "secondary_projectiles": _entity_rows_from_raw(
-            entity_samples.get("secondary_projectiles"),
-            state=run.secondary_state,
-            kind="secondary_projectile",
-            active_fn=lambda payload: _as_bool(payload.get("active")),
-        ),
-        "bonuses": _entity_rows_from_raw(
-            entity_samples.get("bonuses"),
-            state=run.bonus_state,
-            kind="bonus",
-            active_fn=lambda payload: _as_int_default(payload.get("state"), default=0) != 0,
-        ),
-    }
-
-
-def _validate_checkpoint_channel(
-    *,
-    channels: dict[str, object],
-    field: str,
-) -> None:
-    checkpoint_obj = channels.get("checkpoint")
-    if not isinstance(checkpoint_obj, dict):
-        return
-    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
-    channels["checkpoint"] = checkpoint
-    try:
-        msgspec.convert(checkpoint, type=ReplayCheckpoint)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
-
-
-def _rebase_checkpoint_tick_index(
+def _checkpoint_payload(
     *,
     channels: dict[str, object],
     local_tick: int,
     field: str,
-) -> None:
+) -> ReplayCheckpoint:
     checkpoint_obj = channels.get("checkpoint")
     if not isinstance(checkpoint_obj, dict):
-        return
+        raise FridaFinalizeError(f"{field}.checkpoint must be an object")
     checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
     checkpoint["tick_index"] = int(local_tick)
-    channels["checkpoint"] = checkpoint
+    try:
+        checkpoint_struct = msgspec.convert(checkpoint, type=ReplayCheckpoint)
+    except (msgspec.ValidationError, TypeError, ValueError) as exc:
+        raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
+    checkpoint_built = msgspec.to_builtins(checkpoint_struct)
+    if not isinstance(checkpoint_built, dict):
+        raise FridaFinalizeError(f"{field}.checkpoint failed canonical encode")
+    channels["checkpoint"] = checkpoint_built
+    return checkpoint_struct
 
 
-def _canonicalize_checkpoint_creature_count(
+def _validate_required_channels(
     *,
     channels: dict[str, object],
     field: str,
 ) -> None:
-    checkpoint_obj = channels.get("checkpoint")
-    if not isinstance(checkpoint_obj, dict):
-        return
-    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
-    debug_obj = checkpoint.get("debug")
-    if not isinstance(debug_obj, dict):
-        return
-    debug = _as_dict(debug_obj, field=f"{field}.checkpoint.debug")
-    lifecycle_obj = debug.get("creature_lifecycle")
-    if not isinstance(lifecycle_obj, dict):
-        return
-    lifecycle = _as_dict(lifecycle_obj, field=f"{field}.checkpoint.debug.creature_lifecycle")
-    after_count_obj = lifecycle.get("after_count")
-    if isinstance(after_count_obj, bool):
-        return
-    if not isinstance(after_count_obj, (int, float)):
-        return
-    after_count = int(after_count_obj)
-    if int(after_count) < 0:
-        return
-    checkpoint["creature_count"] = int(after_count)
-    channels["checkpoint"] = checkpoint
+    required = set(str(name) for name in TRACE_REQUIRED_CHANNELS_V3)
+    present = set(str(name) for name in channels.keys())
+    missing = sorted(required - present)
+    extra = sorted(present - required)
+    if missing or extra:
+        detail: list[str] = []
+        if missing:
+            detail.append("missing=" + ",".join(missing))
+        if extra:
+            detail.append("extra=" + ",".join(extra))
+        raise FridaFinalizeError(
+            f"{field} must contain exactly canonical channels "
+            f"{','.join(sorted(required))}; {'; '.join(detail)}",
+        )
 
 
-def _is_unknown_death_row(value: object) -> bool:
-    if not isinstance(value, dict):
-        return False
-    row = value
-    creature_index = row.get("creature_index")
-    type_id = row.get("type_id")
-    xp_awarded = row.get("xp_awarded")
-    owner_id = row.get("owner_id")
-    reward_value = row.get("reward_value")
-    if any(isinstance(item, bool) for item in (creature_index, type_id, xp_awarded, owner_id, reward_value)):
-        return False
-    if not all(isinstance(item, (int, float)) for item in (creature_index, type_id, xp_awarded, owner_id, reward_value)):
-        return False
-    return (
-        int(creature_index) == -1
-        and int(type_id) == -1
-        and int(xp_awarded) == -1
-        and int(owner_id) == -1
-        and int(reward_value) == 0
+def _validate_rng_marks(
+    *,
+    channels: dict[str, object],
+    checkpoint: ReplayCheckpoint,
+    field: str,
+) -> None:
+    rng_marks_obj = channels.get("rng_marks")
+    if not isinstance(rng_marks_obj, dict):
+        raise FridaFinalizeError(f"{field}.rng_marks must be an object")
+    rng_marks = _as_dict(rng_marks_obj, field=f"{field}.rng_marks")
+    normalized: dict[str, int] = {}
+    for key, value in rng_marks.items():
+        normalized[str(key)] = _as_int(value, field=f"{field}.rng_marks.{key}")
+    expected = dict(sorted(checkpoint.rng_marks.items()))
+    if normalized != expected:
+        raise FridaFinalizeError(
+            f"{field}.rng_marks must match checkpoint.rng_marks exactly",
+        )
+    channels["rng_marks"] = expected
+
+
+def _validate_canonical_channels(
+    *,
+    channels: dict[str, object],
+    local_tick: int,
+    field: str,
+) -> ReplayCheckpoint:
+    _validate_required_channels(channels=channels, field=field)
+    checkpoint = _checkpoint_payload(
+        channels=channels,
+        local_tick=int(local_tick),
+        field=field,
     )
-
-
-def _canonicalize_checkpoint_events_and_deaths(
-    *,
-    channels: dict[str, object],
-    field: str,
-) -> None:
-    checkpoint_obj = channels.get("checkpoint")
-    if not isinstance(checkpoint_obj, dict):
-        return
-    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
-
-    deaths_obj = checkpoint.get("deaths")
-    if isinstance(deaths_obj, list):
-        for idx, row in enumerate(deaths_obj):
-            if _is_unknown_death_row(row):
-                raise FridaFinalizeError(
-                    f"{field}.checkpoint.deaths[{idx}] contains legacy unknown death sentinel; "
-                    "update gameplay_diff_capture.js capture output",
-                )
-
-    events_obj = checkpoint.get("events")
-    if isinstance(events_obj, dict):
-        events = _as_dict(events_obj, field=f"{field}.checkpoint.events")
-        for key in ("hit_count", "pickup_count", "sfx_count"):
-            value = events.get(key)
-            if isinstance(value, bool):
-                continue
-            if isinstance(value, (int, float)) and int(value) < 0:
-                raise FridaFinalizeError(
-                    f"{field}.checkpoint.events.{key} must be >= 0 for capture_format_version "
-                    f"{int(_SUPPORTED_CAPTURE_FORMAT_VERSION)}, got {int(value)}",
-                )
-        checkpoint["events"] = events
-
-    channels["checkpoint"] = checkpoint
+    _validate_rng_marks(
+        channels=channels,
+        checkpoint=checkpoint,
+        field=field,
+    )
+    try:
+        channels["sim_state"] = validate_sim_state(
+            channels.get("sim_state"),
+            field=f"{field}.sim_state",
+        )
+        channels["entity_samples"] = validate_entity_samples(
+            channels.get("entity_samples"),
+            field=f"{field}.entity_samples",
+        )
+        channels["rng_stream"] = validate_rng_stream(
+            channels.get("rng_stream"),
+            field=f"{field}.rng_stream",
+        )
+    except ValueError as exc:
+        raise FridaFinalizeError(str(exc)) from exc
+    return checkpoint
 
 
 def _validate_first_tick_elapsed_for_replay(
@@ -455,54 +343,6 @@ def _replay_status_from_checkpoint(checkpoint_obj: object) -> ReplayStatusSnapsh
         quest_unlock_index_full=int(quest_unlock_index_full),
         weapon_usage_counts=tuple(int(value) for value in counts),
     )
-
-
-def _canonicalize_event_channels(
-    *,
-    run: _OpenRun,
-    channels: dict[str, object],
-    field: str,
-) -> None:
-    checkpoint_obj = channels.get("checkpoint")
-    if not isinstance(checkpoint_obj, dict):
-        channels["event_heads"] = []
-        channels["event_summary"] = {
-            "hit_count": 0,
-            "pickup_count": 0,
-            "sfx_count": 0,
-            "sfx_head": [],
-        }
-        channels["perk_snapshot"] = {
-            "pending_count": 0,
-            "choices_dirty": True,
-            "choices": [],
-            "player_nonzero_counts": [],
-        }
-        channels["micro_traces"] = []
-        run.previous_entity_samples = None
-        return
-
-    checkpoint = _as_dict(checkpoint_obj, field=f"{field}.checkpoint")
-    try:
-        checkpoint_struct = msgspec.convert(checkpoint, type=ReplayCheckpoint)
-    except (msgspec.ValidationError, TypeError, ValueError) as exc:
-        raise FridaFinalizeError(f"{field}.checkpoint is not a valid ReplayCheckpoint payload") from exc
-
-    entity_obj = channels.get("entity_samples")
-    current_samples = _as_dict(entity_obj, field=f"{field}.entity_samples") if isinstance(entity_obj, dict) else None
-    channels["event_heads"] = _event_heads_from_checkpoint(checkpoint_struct)
-    channels["event_summary"] = checkpoint_struct.events
-    channels["perk_snapshot"] = checkpoint_struct.perk
-    try:
-        channels["micro_traces"] = _micro_traces_from_entities(
-            previous_samples=run.previous_entity_samples,
-            current_samples=current_samples,
-        )
-    except (TypeError, ValueError):
-        channels["micro_traces"] = []
-        run.previous_entity_samples = None
-        return
-    run.previous_entity_samples = None if current_samples is None else dict(current_samples)
 
 
 def _tick_iter_from_spool(path: Path):
@@ -869,21 +709,9 @@ def finalize_frida_jsonl_to_traces(
                         expected_players=int(active_run.replay_player_count),
                         field=f"{raw_path}.lines[{line_no}].replay_inputs",
                     )
-                    _validate_checkpoint_channel(
-                        channels=channels,
-                        field=f"{raw_path}.lines[{line_no}].channels",
-                    )
-                    _rebase_checkpoint_tick_index(
+                    _validate_canonical_channels(
                         channels=channels,
                         local_tick=int(active_run.next_local_tick),
-                        field=f"{raw_path}.lines[{line_no}].channels",
-                    )
-                    _canonicalize_checkpoint_creature_count(
-                        channels=channels,
-                        field=f"{raw_path}.lines[{line_no}].channels",
-                    )
-                    _canonicalize_checkpoint_events_and_deaths(
-                        channels=channels,
                         field=f"{raw_path}.lines[{line_no}].channels",
                     )
                     _validate_first_tick_elapsed_for_replay(
@@ -895,12 +723,6 @@ def finalize_frida_jsonl_to_traces(
                     active_run.replay_status = _replay_status_from_checkpoint(channels.get("checkpoint"))
                     active_run.replay_inputs.append(list(replay_inputs))
                     active_run.replay_dt_ms_i32.append(int(dt_ms_i32))
-                    _normalize_entity_samples(run=active_run, channels=channels)
-                    _canonicalize_event_channels(
-                        run=active_run,
-                        channels=channels,
-                        field=f"{raw_path}.lines[{line_no}].channels",
-                    )
                     tick = TickRecord(
                         tick_index=int(active_run.next_local_tick),
                         elapsed_ms=int(elapsed_ms),

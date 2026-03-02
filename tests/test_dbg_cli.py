@@ -89,8 +89,8 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
     assert "channels=" in result.output
     assert "checkpoint" in result.output
     assert "rng_marks" in result.output
-    assert "rng_stream_head" in result.output
-    assert "entity_samples" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
     assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
@@ -98,11 +98,12 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert tick0 is not None
         assert "checkpoint" in tick0.channels
         assert "rng_marks" in tick0.channels
-        assert "rng_stream_head" in tick0.channels
+        assert "rng_stream" in tick0.channels
+        assert "sim_state" in tick0.channels
         assert "entity_samples" in tick0.channels
 
 
-def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Path) -> None:
+def test_dbg_record_full_profile_uses_canonical_channels(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_full.crd")
     trace_path = tmp_path / "sample_full.cdt"
     runner = CliRunner()
@@ -112,19 +113,21 @@ def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Pat
         ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "full"],
     )
     assert result.exit_code == 0, result.output
-    assert "rng_stream_head" in result.output
-    assert "event_heads" in result.output
-    assert "micro_traces" in result.output
+    assert "checkpoint" in result.output
+    assert "rng_marks" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
+    assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
-        rng_stream_head = tick0.channels.get("rng_stream_head")
-        assert isinstance(rng_stream_head, list)
-        event_heads = tick0.channels.get("event_heads")
-        assert isinstance(event_heads, list)
-        micro_traces = tick0.channels.get("micro_traces")
-        assert isinstance(micro_traces, list)
+        rng_stream = tick0.channels.get("rng_stream")
+        assert isinstance(rng_stream, list)
+        sim_state = tick0.channels.get("sim_state")
+        assert isinstance(sim_state, dict)
+        entity_samples = tick0.channels.get("entity_samples")
+        assert isinstance(entity_samples, dict)
 
 
 def _write_fake_zig_bin(path: Path) -> Path:
@@ -284,7 +287,8 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
     assert "channels=" in result.output
     assert "checkpoint" in result.output
     assert "rng_marks" in result.output
-    assert "rng_stream_head" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
@@ -292,7 +296,8 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
         checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
         assert checkpoint["score_xp"] == 10
         assert "rng_marks" in tick0.channels
-        assert "rng_stream_head" in tick0.channels
+        assert "rng_stream" in tick0.channels
+        assert "sim_state" in tick0.channels
         assert isinstance(tick0.channels.get("entity_samples"), dict)
 
 
@@ -450,7 +455,7 @@ def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path:
     assert "result=ok" in core_result.output
 
 
-def test_dbg_diff_default_policy_skips_optional_channel_families_when_absent_globally(tmp_path: Path) -> None:
+def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> None:
     replay_path = _write_replay_with_fire(tmp_path / "sample_optional_channels.crd", ticks=3)
     golden_trace = tmp_path / "golden_optional_channels.cdt"
     candidate_trace = tmp_path / "candidate_optional_channels.cdt"
@@ -465,16 +470,15 @@ def test_dbg_diff_default_policy_skips_optional_channel_families_when_absent_glo
     meta, ticks, _footer = load_trace(golden_trace)
     for row in ticks:
         row.channels.pop("entity_samples", None)
-        row.channels.pop("event_heads", None)
-        row.channels.pop("micro_traces", None)
+    meta.channels = [name for name in meta.channels if name != "entity_samples"]
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(
         app,
         ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
     )
-    assert result.exit_code == 0, result.output
-    assert "result=ok" in result.output
+    assert result.exit_code == 1, result.output
+    assert "missing_channel" in result.output
 
 
 def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:

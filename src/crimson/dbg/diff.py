@@ -5,11 +5,19 @@ from pathlib import Path
 import msgspec
 
 from ..replay.checkpoints import ReplayCheckpoint
-from .channel_helpers import as_object_dict, channel_dict, channel_list, rng_row_key
+from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
+from .channel_helpers import channel_dict, channel_list
 from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from .policy import ParityPolicy
-from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
+from .schema import (
+    TRACE_FORMAT_VERSION,
+    TRACE_REQUIRED_CHANNELS_V3,
+    TRACE_SCHEMA_VERSION,
+    TickRecord,
+    TraceMeta,
+    channel_versions_for,
+)
 from .trace import TraceReader, write_trace
 
 
@@ -69,71 +77,6 @@ def _extract_checkpoint(row: TickRecord | None) -> ReplayCheckpoint | None:
     return channel_to_checkpoint(payload)
 
 
-def _compare_rng_stream(expected: list[object], actual: list[object]) -> tuple[bool, dict[str, object] | None]:
-    exp_keys = [rng_row_key(row) for row in expected]
-    act_keys = [rng_row_key(row) for row in actual]
-    max_prefix = min(len(exp_keys), len(act_keys))
-    prefix = 0
-    while prefix < max_prefix and exp_keys[prefix] == act_keys[prefix]:
-        prefix += 1
-    if prefix == len(exp_keys) == len(act_keys):
-        return True, None
-    detail: dict[str, object] = {
-        "prefix_match_len": prefix,
-        "expected_calls": len(exp_keys),
-        "actual_calls": len(act_keys),
-        "missing_tail": max(0, len(exp_keys) - len(act_keys)),
-        "extra_tail": max(0, len(act_keys) - len(exp_keys)),
-    }
-    if prefix < len(exp_keys):
-        detail["expected_first_mismatch"] = expected[prefix]
-    if prefix < len(act_keys):
-        detail["actual_first_mismatch"] = actual[prefix]
-    return False, detail
-
-
-def _compare_entity_samples(expected: dict[str, object], actual: dict[str, object]) -> tuple[bool, dict[str, object] | None]:
-    kinds = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
-    diffs: dict[str, object] = {}
-    for kind in kinds:
-        exp_rows = expected.get(kind)
-        act_rows = actual.get(kind)
-        exp_list = exp_rows if isinstance(exp_rows, list) else []
-        act_list = act_rows if isinstance(act_rows, list) else []
-        if len(exp_list) != len(act_list):
-            diffs[f"{kind}_count"] = {
-                "expected": len(exp_list),
-                "actual": len(act_list),
-            }
-            continue
-        exp_uids: list[int] = []
-        act_uids: list[int] = []
-        for row in exp_list:
-            mapped = as_object_dict(row)
-            if mapped is None:
-                continue
-            uid = mapped.get("uid")
-            if isinstance(uid, int) and not isinstance(uid, bool):
-                exp_uids.append(uid)
-        for row in act_list:
-            mapped = as_object_dict(row)
-            if mapped is None:
-                continue
-            uid = mapped.get("uid")
-            if isinstance(uid, int) and not isinstance(uid, bool):
-                act_uids.append(uid)
-        exp_uids.sort()
-        act_uids.sort()
-        if exp_uids != act_uids:
-            diffs[f"{kind}_uids"] = {
-                "expected_head": exp_uids[:16],
-                "actual_head": act_uids[:16],
-            }
-    if not diffs:
-        return True, None
-    return False, diffs
-
-
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
@@ -142,20 +85,14 @@ def _first_mismatch(
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
     elapsed_baseline: tuple[int, int] | None = None
+    compare_sim_state_channels = (
+        _trace_has_channel(pairs, side="expected", channel_name="sim_state")
+        and _trace_has_channel(pairs, side="actual", channel_name="sim_state")
+    )
     compare_entity_channels = (
         bool(policy.include_entity_channels)
         and _trace_has_channel(pairs, side="expected", channel_name="entity_samples")
         and _trace_has_channel(pairs, side="actual", channel_name="entity_samples")
-    )
-    compare_event_heads = (
-        bool(policy.include_event_channels)
-        and _trace_has_channel(pairs, side="expected", channel_name="event_heads")
-        and _trace_has_channel(pairs, side="actual", channel_name="event_heads")
-    )
-    compare_micro_traces = (
-        bool(policy.include_event_channels)
-        and _trace_has_channel(pairs, side="expected", channel_name="micro_traces")
-        and _trace_has_channel(pairs, side="actual", channel_name="micro_traces")
     )
     for pair in pairs:
         tick = pair.tick_index
@@ -250,9 +187,9 @@ def _first_mismatch(
                     ),
                 )
 
-            exp_rng_head = channel_list(pair.expected_row, "rng_stream_head")
-            act_rng_head = channel_list(pair.actual_row, "rng_stream_head")
-            rng_ok, rng_detail = _compare_rng_stream(exp_rng_head, act_rng_head)
+            exp_rng_stream = channel_list(pair.expected_row, "rng_stream")
+            act_rng_stream = channel_list(pair.actual_row, "rng_stream")
+            rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
             if not rng_ok:
                 return (
                     checked_count,
@@ -263,10 +200,26 @@ def _first_mismatch(
                     ),
                 )
 
+        if compare_sim_state_channels:
+            sim_ok, sim_detail = compare_sim_state(
+                channel_dict(pair.expected_row, "sim_state"),
+                channel_dict(pair.actual_row, "sim_state"),
+            )
+            if not sim_ok:
+                return (
+                    checked_count,
+                    TraceMismatch(
+                        kind="sim_state_mismatch",
+                        tick_index=tick,
+                        detail=sim_detail,
+                    ),
+                )
+
         if compare_entity_channels:
-            exp_entities = channel_dict(pair.expected_row, "entity_samples")
-            act_entities = channel_dict(pair.actual_row, "entity_samples")
-            entities_ok, entities_detail = _compare_entity_samples(exp_entities, act_entities)
+            entities_ok, entities_detail = compare_entity_samples(
+                channel_dict(pair.expected_row, "entity_samples"),
+                channel_dict(pair.actual_row, "entity_samples"),
+            )
             if not entities_ok:
                 return (
                     checked_count,
@@ -274,38 +227,6 @@ def _first_mismatch(
                         kind="entity_sample_mismatch",
                         tick_index=tick,
                         detail=entities_detail,
-                    ),
-                )
-
-        if compare_event_heads:
-            exp_events = channel_list(pair.expected_row, "event_heads")
-            act_events = channel_list(pair.actual_row, "event_heads")
-            if len(exp_events) != len(act_events):
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="event_head_mismatch",
-                        tick_index=tick,
-                        detail={
-                            "expected_count": len(exp_events),
-                            "actual_count": len(act_events),
-                        },
-                    ),
-                )
-
-        if compare_micro_traces:
-            exp_micro = channel_list(pair.expected_row, "micro_traces")
-            act_micro = channel_list(pair.actual_row, "micro_traces")
-            if len(exp_micro) != len(act_micro):
-                return (
-                    checked_count,
-                    TraceMismatch(
-                        kind="micro_trace_mismatch",
-                        tick_index=tick,
-                        detail={
-                            "expected_count": len(exp_micro),
-                            "actual_count": len(act_micro),
-                        },
                     ),
                 )
 
@@ -358,6 +279,27 @@ def diff_traces(
     tick_end: int | None = None,
 ) -> TraceDiffReport:
     with TraceReader(Path(expected_trace_path)) as expected_trace, TraceReader(Path(actual_trace_path)) as actual_trace:
+        expected_channels = {str(channel) for channel in expected_trace.meta.channels}
+        actual_channels = {str(channel) for channel in actual_trace.meta.channels}
+        for required_channel in TRACE_REQUIRED_CHANNELS_V3:
+            channel_name = str(required_channel)
+            if channel_name not in expected_channels or channel_name not in actual_channels:
+                return TraceDiffReport(
+                    ok=False,
+                    checked_count=0,
+                    policy=policy.name,
+                    tick_start=tick_start,
+                    tick_end=tick_end,
+                    mismatch=TraceMismatch(
+                        kind="missing_channel",
+                        tick_index=-1,
+                        detail={
+                            "channel": channel_name,
+                            "expected_has": channel_name in expected_channels,
+                            "actual_has": channel_name in actual_channels,
+                        },
+                    ),
+                )
         pairs = _load_pairs(
             expected_trace=expected_trace,
             actual_trace=actual_trace,

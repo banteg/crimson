@@ -165,30 +165,18 @@ def _entity_rows(row: TickRecord) -> list[dict[str, object]]:
 
 
 def _event_type_counts(row: TickRecord) -> dict[str, int]:
-    counts_channel = as_object_dict(row.channels.get("event_counts"))
-    if counts_channel is not None:
-        out: dict[str, int] = {}
-        for key, value in counts_channel.items():
-            if isinstance(value, bool):
-                out[key] = int(value)
-            elif isinstance(value, int):
-                out[key] = value
-            elif isinstance(value, float) and value.is_integer():
-                out[key] = int(value)
-            else:
-                raise ValueError(f"event_counts[{key!r}] must be an integer value")
-        return out
-
-    out: dict[str, int] = {}
-    for head in as_object_list(row.channels.get("event_heads")):
-        mapped = as_object_dict(head)
-        if mapped is None:
-            name = str(type(head).__name__)
-        else:
-            type_obj = mapped.get("type")
-            name = str(type_obj) if type_obj is not None else str(type(head).__name__)
-        out[name] = out.get(name, 0) + 1
-    return out
+    checkpoint = as_object_dict(row.channels.get("checkpoint"))
+    if checkpoint is not None:
+        events = as_object_dict(checkpoint.get("events"))
+        if events is not None:
+            return {
+                "hit_count": int(events.get("hit_count", 0)) if isinstance(events.get("hit_count"), (int, float)) else 0,
+                "pickup_count": int(events.get("pickup_count", 0))
+                if isinstance(events.get("pickup_count"), (int, float))
+                else 0,
+                "sfx_count": int(events.get("sfx_count", 0)) if isinstance(events.get("sfx_count"), (int, float)) else 0,
+            }
+    return {}
 
 
 def tick_summary_from_row(row: TickRecord) -> dict[str, object]:

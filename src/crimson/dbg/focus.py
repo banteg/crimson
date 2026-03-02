@@ -2,34 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list, rng_row_key
+from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
+from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
 from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
-
-
-def _rng_stream_alignment(expected_rows: list[object], candidate_rows: list[object]) -> dict[str, object]:
-    exp_keys = [rng_row_key(row) for row in expected_rows]
-    cand_keys = [rng_row_key(row) for row in candidate_rows]
-    max_prefix = min(len(exp_keys), len(cand_keys))
-    prefix = 0
-    while prefix < max_prefix and exp_keys[prefix] == cand_keys[prefix]:
-        prefix += 1
-    detail: dict[str, object] = {
-        "prefix_match_len": int(prefix),
-        "expected_calls": int(len(exp_keys)),
-        "candidate_calls": int(len(cand_keys)),
-        "missing_tail": int(max(0, len(exp_keys) - len(cand_keys))),
-        "extra_tail": int(max(0, len(cand_keys) - len(exp_keys))),
-    }
-    if prefix < len(expected_rows):
-        detail["expected_first_mismatch"] = expected_rows[prefix]
-    if prefix < len(candidate_rows):
-        detail["candidate_first_mismatch"] = candidate_rows[prefix]
-    detail["ok"] = bool(prefix == len(exp_keys) == len(cand_keys))
-    return detail
 
 
 def _entity_uid_set(row: TickRecord | None, kind: str) -> set[int]:
@@ -47,21 +26,6 @@ def _entity_uid_set(row: TickRecord | None, kind: str) -> set[int]:
         uid_value = mapped.get("uid")
         if isinstance(uid_value, int):
             out.add(int(uid_value))
-    return out
-
-
-def _event_type_counts(row: TickRecord | None) -> dict[str, int]:
-    if row is None:
-        return {}
-    out: dict[str, int] = {}
-    for item in as_object_list(row.channels.get("event_heads")):
-        mapped = as_object_dict(item)
-        if mapped is None:
-            key = str(type(item).__name__)
-        else:
-            type_obj = mapped.get("type")
-            key = str(type_obj) if type_obj is not None else str(type(item).__name__)
-        out[key] = int(out.get(key, 0)) + 1
     return out
 
 
@@ -106,10 +70,12 @@ def focus_tick(
     if mismatching_rng:
         first_rng_mark = next((mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng), mismatching_rng[0])
 
-    rng_stream = _rng_stream_alignment(
-        as_object_list(expected_row.channels.get("rng_stream_head")),
-        as_object_list(candidate_row.channels.get("rng_stream_head")),
+    rng_ok, rng_stream_detail = compare_rng_stream(
+        as_object_list(expected_row.channels.get("rng_stream")),
+        as_object_list(candidate_row.channels.get("rng_stream")),
     )
+    rng_stream = dict(rng_stream_detail or {})
+    rng_stream["ok"] = bool(rng_ok)
 
     entity_presence: dict[str, object] = {}
     entity_diverged = False
@@ -127,19 +93,22 @@ def focus_tick(
             "missing_uids": missing[:32],
             "extra_uids": extra[:32],
         }
-
-    expected_event_types = _event_type_counts(expected_row)
-    candidate_event_types = _event_type_counts(candidate_row)
-    expected_micro_count = len(as_object_list(expected_row.channels.get("micro_traces")))
-    candidate_micro_count = len(as_object_list(candidate_row.channels.get("micro_traces")))
+    entity_samples_ok, entity_samples_detail = compare_entity_samples(
+        expected_row.channels.get("entity_samples"),
+        candidate_row.channels.get("entity_samples"),
+    )
+    sim_state_ok, sim_state_detail = compare_sim_state(
+        expected_row.channels.get("sim_state"),
+        candidate_row.channels.get("sim_state"),
+    )
 
     diverged = bool(
         checkpoint_fields
         or mismatching_rng
         or not bool(rng_stream.get("ok"))
         or entity_diverged
-        or expected_event_types != candidate_event_types
-        or expected_micro_count != candidate_micro_count,
+        or not entity_samples_ok
+        or not sim_state_ok,
     )
 
     return {
@@ -156,14 +125,12 @@ def focus_tick(
         },
         "rng_stream": rng_stream,
         "entity_presence": entity_presence,
-        "event_heads": {
-            "expected_count": int(sum(expected_event_types.values())),
-            "candidate_count": int(sum(candidate_event_types.values())),
-            "expected_types": expected_event_types,
-            "candidate_types": candidate_event_types,
+        "entity_samples": {
+            "ok": bool(entity_samples_ok),
+            "detail": entity_samples_detail,
         },
-        "micro_traces": {
-            "expected_count": int(expected_micro_count),
-            "candidate_count": int(candidate_micro_count),
+        "sim_state": {
+            "ok": bool(sim_state_ok),
+            "detail": sim_state_detail,
         },
     }

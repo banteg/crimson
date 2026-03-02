@@ -22,11 +22,24 @@ from ..replay.diagnostic_trace_native import (
     ReplayTickTraceRow,
     decode_replay_tick_trace_msgpack_stream,
 )
-from ..replay.types import Replay
+from ..replay.types import WEAPON_USAGE_COUNT, Replay
 from ..sim.driver.replay_runner import run_replay
 from ..sim.driver.setup import ReplayRunnerError
 from ..sim.world_state import WorldState
 from ..weapons import WeaponId
+from .canonical_channels import (
+    EntitySamplesSnapshot,
+    RngStreamRow,
+    SimStateSnapshot,
+    SnapshotBonusTimers,
+    SnapshotGameplay,
+    SnapshotPlayer,
+    SnapshotStatus,
+    SnapshotVec2,
+    SnapshotWeapon,
+    bonus_timer_ms,
+    status_payload_from_mapping,
+)
 from .checkpoint_codec import checkpoint_to_channel
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace
@@ -39,6 +52,11 @@ _ENTITY_KIND_CODES = {
     "secondary_projectile": 3,
     "bonus": 4,
 }
+_ENTITY_UID_KIND_SHIFT = 49
+_ENTITY_UID_GEN_SHIFT = 29
+_ENTITY_UID_KIND_MASK = 0xF
+_ENTITY_UID_GEN_MASK = 0xFFFFF
+_ENTITY_UID_INDEX_MASK = 0x1FFFFFFF
 
 _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
@@ -76,8 +94,12 @@ class _EntityUidState(msgspec.Struct):
             self.generation_by_index[idx] = self.generation_by_index.get(idx, 0) + 1
         self._seen_in_tick.add(idx)
         generation = self.generation_by_index.get(idx, 0)
-        kind_code = _ENTITY_KIND_CODES[kind] & 0xFF
-        uid = (kind_code << 56) | ((generation & 0xFFFFFF) << 32) | (idx & 0xFFFFFFFF)
+        kind_code = _ENTITY_KIND_CODES[kind] & _ENTITY_UID_KIND_MASK
+        uid = (
+            (kind_code << _ENTITY_UID_KIND_SHIFT)
+            | ((generation & _ENTITY_UID_GEN_MASK) << _ENTITY_UID_GEN_SHIFT)
+            | (idx & _ENTITY_UID_INDEX_MASK)
+        )
         return uid, generation
 
 
@@ -132,13 +154,6 @@ def _weapon_id_from_wire(value: int | str) -> WeaponId:
         raise ValueError(f"unsupported zig weapon_id value: {value!r}") from exc
 
 
-def _bonus_timer_ms(value: float) -> int:
-    ms = int(round(float(value) * 1000.0))
-    if ms < 0:
-        return 0
-    return int(ms)
-
-
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
     value = marks.get(key)
     if value is None:
@@ -161,7 +176,7 @@ def _infer_rand_calls_between_states(before_state: int, after_state: int, *, max
     return None
 
 
-def _rng_stream_head_from_checkpoint(
+def _rng_stream_from_checkpoint(
     checkpoint: ReplayCheckpoint,
     *,
     max_rows: int | None = None,
@@ -207,94 +222,6 @@ def _rng_stream_head_from_checkpoint(
             },
         )
         state = state_after_u32
-    return rows
-
-
-def _event_heads_from_checkpoint(checkpoint: ReplayCheckpoint) -> list[dict[str, object]]:
-    heads: list[dict[str, object]] = [
-        {
-            "type": "event_summary",
-            "hit_count": checkpoint.events.hit_count,
-            "pickup_count": checkpoint.events.pickup_count,
-            "sfx_count": checkpoint.events.sfx_count,
-        },
-    ]
-    for entry in checkpoint.deaths:
-        heads.append(
-            {
-                "type": "creature_death",
-                "creature_index": entry.creature_index,
-                "type_id": entry.type_id,
-                "reward_value": float(entry.reward_value),
-                "xp_awarded": entry.xp_awarded,
-                "owner_id": entry.owner_id,
-            },
-        )
-    for sfx_key in checkpoint.events.sfx_head:
-        heads.append({"type": "sfx", "key": str(sfx_key)})
-    if checkpoint.perk.pending_count > 0 or checkpoint.perk.choices_dirty:
-        heads.append(
-            {
-                "type": "perk_state",
-                "pending_count": checkpoint.perk.pending_count,
-                "choices_dirty": bool(checkpoint.perk.choices_dirty),
-                "choices_count": len(checkpoint.perk.choices),
-            },
-        )
-    return heads
-
-
-def _creature_map(entity_samples: dict[str, object] | None) -> dict[int, dict[str, object]]:
-    if entity_samples is None:
-        return {}
-    creatures_obj = entity_samples.get("creatures")
-    if not isinstance(creatures_obj, list):
-        return {}
-    out: dict[int, dict[str, object]] = {}
-    for item in creatures_obj:
-        mapped = _require_object_dict(item, field="entity_samples.creatures[]")
-        uid = _require_int(mapped.get("uid"), field="entity_samples.creatures[].uid")
-        out[uid] = mapped
-    return out
-
-
-def _micro_traces_from_entities(
-    *,
-    previous_samples: dict[str, object] | None,
-    current_samples: dict[str, object] | None,
-) -> list[dict[str, object]]:
-    if previous_samples is None or current_samples is None:
-        return []
-
-    prev_creatures = _creature_map(previous_samples)
-    curr_creatures = _creature_map(current_samples)
-    rows: list[dict[str, object]] = []
-    for uid in sorted(set(prev_creatures) & set(curr_creatures)):
-        prev_row = prev_creatures[uid]
-        curr_row = curr_creatures[uid]
-        prev_pos = _require_object_dict(prev_row.get("pos"), field="entity_samples.creatures[].pos")
-        curr_pos = _require_object_dict(curr_row.get("pos"), field="entity_samples.creatures[].pos")
-        px = _require_numeric(prev_pos.get("x"), field="entity_samples.creatures[].pos.x")
-        py = _require_numeric(prev_pos.get("y"), field="entity_samples.creatures[].pos.y")
-        cx = _require_numeric(curr_pos.get("x"), field="entity_samples.creatures[].pos.x")
-        cy = _require_numeric(curr_pos.get("y"), field="entity_samples.creatures[].pos.y")
-        dx = float(cx - px)
-        dy = float(cy - py)
-        rows.append(
-            {
-                "type": "creature_update_micro_window",
-                "uid": uid,
-                "index": _require_int(curr_row.get("index"), field="entity_samples.creatures[].index"),
-                "before_pos": {"x": float(px), "y": float(py)},
-                "after_pos": {"x": float(cx), "y": float(cy)},
-                "dx": float(dx),
-                "dy": float(dy),
-                "before_hp": _require_numeric(prev_row.get("hp"), field="entity_samples.creatures[].hp"),
-                "after_hp": _require_numeric(curr_row.get("hp"), field="entity_samples.creatures[].hp"),
-                "before_heading": _require_numeric(prev_row.get("heading"), field="entity_samples.creatures[].heading"),
-                "after_heading": _require_numeric(curr_row.get("heading"), field="entity_samples.creatures[].heading"),
-            },
-        )
     return rows
 
 
@@ -396,6 +323,7 @@ def _entity_samples_for_world(
                 "generation": generation,
                 "pool_kind": "bonus",
                 "index": index,
+                "active": True,
                 "bonus_id": int(bonus.bonus_id),
                 "picked": bool(bonus.picked),
                 "time_left": float(bonus.time_left),
@@ -416,6 +344,152 @@ def _entity_samples_for_world(
         "secondary_projectiles": secondary_projectiles,
         "bonuses": bonuses,
     }
+
+
+def _parse_quest_level(value: str) -> tuple[int, int]:
+    raw = str(value).strip()
+    if not raw:
+        return -1, -1
+    parts = raw.split(".")
+    if len(parts) != 2:
+        return -1, -1
+    try:
+        major = int(parts[0])
+        minor = int(parts[1])
+    except ValueError:
+        return -1, -1
+    return int(major), int(minor)
+
+
+def _status_snapshot_from_mapping(status_obj: object | None) -> SnapshotStatus:
+    status_mapping = status_obj if isinstance(status_obj, dict) else None
+    return status_payload_from_mapping(
+        status_mapping,
+        usage_count=int(WEAPON_USAGE_COUNT),
+    )
+
+
+def _status_snapshot_from_replay_header(replay: Replay) -> SnapshotStatus:
+    header_status = replay.header.status
+    return status_payload_from_mapping(
+        {
+            "quest_unlock_index": int(header_status.quest_unlock_index),
+            "quest_unlock_index_full": int(header_status.quest_unlock_index_full),
+            "weapon_usage_counts": [int(value) for value in header_status.weapon_usage_counts],
+        },
+        usage_count=int(WEAPON_USAGE_COUNT),
+    )
+
+
+def _to_builtin_dict(value: object, *, field: str) -> dict[str, object]:
+    built = msgspec.to_builtins(value)
+    if not isinstance(built, dict):
+        raise TypeError(f"{field} did not encode to object")
+    return built
+
+
+def _to_builtin_list(value: object, *, field: str) -> list[object]:
+    built = msgspec.to_builtins(value)
+    if not isinstance(built, list):
+        raise TypeError(f"{field} did not encode to list")
+    return built
+
+
+def _canonical_entity_samples(payload: dict[str, object]) -> dict[str, object]:
+    validated = msgspec.convert(payload, type=EntitySamplesSnapshot)
+    return _to_builtin_dict(validated, field="entity_samples")
+
+
+def _canonical_rng_stream(rows: list[dict[str, object]]) -> list[object]:
+    validated = msgspec.convert(rows, type=list[RngStreamRow])
+    return _to_builtin_list(validated, field="rng_stream")
+
+
+def _sim_state_from_world(world: WorldState, *, replay: Replay) -> dict[str, object]:
+    gameplay = world.state
+    status_obj = gameplay.status.data if gameplay.status is not None else None
+    status_snapshot = _status_snapshot_from_mapping(status_obj)
+    players: list[SnapshotPlayer] = []
+    for player in world.players:
+        players.append(
+            SnapshotPlayer(
+                index=int(player.index),
+                pos=SnapshotVec2(x=float(player.pos.x), y=float(player.pos.y)),
+                health=float(player.health),
+                weapon=SnapshotWeapon(
+                    weapon_id=int(player.weapon.weapon_id),
+                    ammo=float(player.weapon.ammo),
+                    clip_size=int(player.weapon.clip_size),
+                    reload_active=bool(player.weapon.reload_active),
+                    reload_timer=float(player.weapon.reload_timer),
+                    reload_timer_max=float(player.weapon.reload_timer_max),
+                    shot_cooldown=float(player.weapon.shot_cooldown),
+                ),
+                experience=int(player.experience),
+                level=int(player.level),
+            ),
+        )
+    sim_state = SimStateSnapshot(
+        gameplay=SnapshotGameplay(
+            mode_id=int(replay.header.game_mode_id),
+            quest_stage_major=int(gameplay.quest_stage_major),
+            quest_stage_minor=int(gameplay.quest_stage_minor),
+            perk_pending_count=int(gameplay.perk_selection.pending_count),
+            perk_choices_dirty=bool(gameplay.perk_selection.choices_dirty),
+            bonus_timers=SnapshotBonusTimers(
+                weapon_power_up_ms=bonus_timer_ms(float(gameplay.bonuses.weapon_power_up)),
+                reflex_boost_ms=bonus_timer_ms(float(gameplay.bonuses.reflex_boost)),
+                energizer_ms=bonus_timer_ms(float(gameplay.bonuses.energizer)),
+                double_experience_ms=bonus_timer_ms(float(gameplay.bonuses.double_experience)),
+                freeze_ms=bonus_timer_ms(float(gameplay.bonuses.freeze)),
+            ),
+            status=status_snapshot,
+        ),
+        players=players,
+    )
+    return _to_builtin_dict(sim_state, field="sim_state")
+
+
+def _sim_state_from_zig_row(row: ReplayTickTraceRow, *, replay: Replay) -> dict[str, object]:
+    gameplay = row.gameplay_state
+    player = row.player_state
+    quest_major, quest_minor = _parse_quest_level(str(replay.header.quest_level))
+    sim_state = SimStateSnapshot(
+        gameplay=SnapshotGameplay(
+            mode_id=int(replay.header.game_mode_id),
+            quest_stage_major=int(quest_major),
+            quest_stage_minor=int(quest_minor),
+            perk_pending_count=int(row.summary.perk_pending),
+            perk_choices_dirty=bool(int(row.summary.perk_pending) <= 0),
+            bonus_timers=SnapshotBonusTimers(
+                weapon_power_up_ms=bonus_timer_ms(float(gameplay.bonuses.weapon_power_up)),
+                reflex_boost_ms=bonus_timer_ms(float(gameplay.bonuses.reflex_boost)),
+                energizer_ms=bonus_timer_ms(float(gameplay.bonuses.energizer)),
+                double_experience_ms=bonus_timer_ms(float(gameplay.bonuses.double_experience)),
+                freeze_ms=bonus_timer_ms(float(gameplay.bonuses.freeze)),
+            ),
+            status=_status_snapshot_from_replay_header(replay),
+        ),
+        players=[
+            SnapshotPlayer(
+                index=int(player.index),
+                pos=SnapshotVec2(x=float(player.pos.x), y=float(player.pos.y)),
+                health=float(player.health),
+                weapon=SnapshotWeapon(
+                    weapon_id=int(_weapon_id_from_wire(player.weapon.weapon_id)),
+                    ammo=float(player.weapon.ammo),
+                    clip_size=int(getattr(player.weapon, "clip_size", 0)),
+                    reload_active=bool(player.weapon.reload_active),
+                    reload_timer=float(player.weapon.reload_timer),
+                    reload_timer_max=float(player.weapon.reload_timer_max),
+                    shot_cooldown=float(player.weapon.shot_cooldown),
+                ),
+                experience=int(player.experience),
+                level=int(player.level),
+            ),
+        ],
+    )
+    return _to_builtin_dict(sim_state, field="sim_state")
 
 
 def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> dict[str, object]:
@@ -485,34 +559,31 @@ def _record_replay_to_trace_python(
     checkpoint_ticks = set(range(tick_count))
     checkpoints: list[ReplayCheckpoint] = []
 
-    include_rng = profile in {"standard", "full"}
-    include_entities = profile in {"standard", "full"}
-    include_full_event_channels = profile == "full"
-    trace_rng = profile in {"standard", "full"}
-
     entity_samples_by_tick: dict[int, dict[str, object]] = {}
+    sim_state_by_tick: dict[int, dict[str, object]] = {}
     creature_state = _EntityUidState()
     projectile_state = _EntityUidState()
     secondary_state = _EntityUidState()
     bonus_state = _EntityUidState()
 
     def _tick_observer(tick_index: int, world: WorldState) -> None:
-        if not include_entities:
-            return
-        entity_samples_by_tick[tick_index] = _entity_samples_for_world(
-            world,
-            creature_state=creature_state,
-            projectile_state=projectile_state,
-            secondary_state=secondary_state,
-            bonus_state=bonus_state,
+        entity_samples_by_tick[tick_index] = _canonical_entity_samples(
+            _entity_samples_for_world(
+                world,
+                creature_state=creature_state,
+                projectile_state=projectile_state,
+                secondary_state=secondary_state,
+                bonus_state=bonus_state,
+            ),
         )
+        sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
 
     try:
         run_replay(
             replay,
             max_ticks=max_ticks,
             strict_events=bool(strict_events),
-            trace_rng=bool(trace_rng),
+            trace_rng=True,
             checkpoints_out=checkpoints,
             checkpoint_ticks=checkpoint_ticks,
             tick_observer=_tick_observer,
@@ -522,35 +593,23 @@ def _record_replay_to_trace_python(
 
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
-    previous_entity_samples: dict[str, object] | None = None
     replay_dt_rows = list(replay.dt_ms_i32)
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = checkpoint.tick_index
+        entity_samples_obj = entity_samples_by_tick.get(tick_index)
+        if not isinstance(entity_samples_obj, dict):
+            raise TypeError(f"missing canonical entity_samples for tick {tick_index}")
+        sim_state_obj = sim_state_by_tick.get(tick_index)
+        if not isinstance(sim_state_obj, dict):
+            raise TypeError(f"missing canonical sim_state for tick {tick_index}")
+
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
+            "sim_state": dict(sim_state_obj),
+            "entity_samples": dict(entity_samples_obj),
+            "rng_marks": dict(sorted(checkpoint.rng_marks.items())),
+            "rng_stream": _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint)),
         }
-        if include_rng:
-            channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
-            channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
-
-        entity_samples: dict[str, object] | None = None
-        if include_entities:
-            entity_samples_obj = entity_samples_by_tick.get(tick_index)
-            entity_samples = (
-                dict(entity_samples_obj)
-                if isinstance(entity_samples_obj, dict)
-                else None
-            )
-            if entity_samples is not None:
-                channels["entity_samples"] = entity_samples
-        if include_full_event_channels:
-            channels["event_heads"] = _event_heads_from_checkpoint(checkpoint)
-            channels["event_summary"] = checkpoint.events
-            channels["perk_snapshot"] = checkpoint.perk
-            channels["micro_traces"] = _micro_traces_from_entities(
-                previous_samples=previous_entity_samples,
-                current_samples=entity_samples,
-            )
 
         tick_dt_ms_i32: int | None = None
         if 0 <= int(tick_index) < len(replay_dt_rows):
@@ -569,8 +628,6 @@ def _record_replay_to_trace_python(
                 channels=channels,
             ),
         )
-        if entity_samples is not None:
-            previous_entity_samples = entity_samples
 
     meta = _build_trace_meta(
         replay_path=replay_path,
@@ -771,6 +828,7 @@ def _zig_entity_samples(
                 "generation": generation,
                 "pool_kind": "bonus",
                 "index": index,
+                "active": True,
                 "bonus_id": int(item.bonus_id),
                 "picked": bool(item.picked),
                 "time_left": float(item.time_left),
@@ -814,11 +872,11 @@ def _zig_checkpoint_from_row(
     player_experience = int(player.experience)
     player_level = int(player.level)
 
-    bonus_weapon_power_up_ms = _bonus_timer_ms(gameplay_state.bonuses.weapon_power_up)
-    bonus_reflex_boost_ms = _bonus_timer_ms(gameplay_state.bonuses.reflex_boost)
-    bonus_energizer_ms = _bonus_timer_ms(gameplay_state.bonuses.energizer)
-    bonus_double_experience_ms = _bonus_timer_ms(gameplay_state.bonuses.double_experience)
-    bonus_freeze_ms = _bonus_timer_ms(gameplay_state.bonuses.freeze)
+    bonus_weapon_power_up_ms = bonus_timer_ms(gameplay_state.bonuses.weapon_power_up)
+    bonus_reflex_boost_ms = bonus_timer_ms(gameplay_state.bonuses.reflex_boost)
+    bonus_energizer_ms = bonus_timer_ms(gameplay_state.bonuses.energizer)
+    bonus_double_experience_ms = bonus_timer_ms(gameplay_state.bonuses.double_experience)
+    bonus_freeze_ms = bonus_timer_ms(gameplay_state.bonuses.freeze)
     perk_pending = int(summary.perk_pending)
     player_slots = max(1, int(player_count))
 
@@ -891,15 +949,11 @@ def _record_replay_to_trace_zig(
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
     replay_dt_rows = list(replay.dt_ms_i32)
-    include_rng = profile in {"standard", "full"}
-    include_entities = profile in {"standard", "full"}
-    include_full_event_channels = profile == "full"
     rng_before_tick = int(replay.header.seed)
     creature_state = _EntityUidState()
     projectile_state = _EntityUidState()
     secondary_state = _EntityUidState()
     bonus_state = _EntityUidState()
-    previous_entity_samples: dict[str, object] | None = None
     for row in sorted_rows:
         checkpoint = _zig_checkpoint_from_row(
             row,
@@ -914,30 +968,22 @@ def _record_replay_to_trace_zig(
             dt_raw = int(replay_dt_rows[int(checkpoint.tick_index)])
             if dt_raw > 0:
                 tick_dt_ms_i32 = int(dt_raw)
-        channels: dict[str, object] = {
-            "checkpoint": checkpoint_to_channel(checkpoint),
-        }
-        if include_rng:
-            channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
-            channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
-        entity_samples: dict[str, object] | None = None
-        if include_entities:
-            entity_samples = _zig_entity_samples(
+        entity_samples = _canonical_entity_samples(
+            _zig_entity_samples(
                 row.entities,
                 creature_state=creature_state,
                 projectile_state=projectile_state,
                 secondary_state=secondary_state,
                 bonus_state=bonus_state,
-            )
-            channels["entity_samples"] = entity_samples
-        if include_full_event_channels:
-            channels["event_heads"] = []
-            channels["event_summary"] = checkpoint.events
-            channels["perk_snapshot"] = checkpoint.perk
-            channels["micro_traces"] = _micro_traces_from_entities(
-                previous_samples=previous_entity_samples,
-                current_samples=entity_samples,
-            )
+            ),
+        )
+        channels: dict[str, object] = {
+            "checkpoint": checkpoint_to_channel(checkpoint),
+            "sim_state": _sim_state_from_zig_row(row, replay=replay),
+            "entity_samples": entity_samples,
+            "rng_marks": dict(sorted(checkpoint.rng_marks.items())),
+            "rng_stream": _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint)),
+        }
 
         channels_seen.update(channels.keys())
         tick_rows.append(
@@ -950,8 +996,6 @@ def _record_replay_to_trace_zig(
                 channels=channels,
             ),
         )
-        if entity_samples is not None:
-            previous_entity_samples = entity_samples
 
     producer_version = ""
     verify_payload_producer_obj = verify_payload.get("producer")

@@ -36,6 +36,101 @@ def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
     }
 
 
+def _sim_state_stub(
+    *,
+    mode_id: int,
+    quest_stage_major: int = -1,
+    quest_stage_minor: int = -1,
+) -> dict[str, object]:
+    return {
+        "gameplay": {
+            "mode_id": int(mode_id),
+            "quest_stage_major": int(quest_stage_major),
+            "quest_stage_minor": int(quest_stage_minor),
+            "perk_pending_count": 0,
+            "perk_choices_dirty": True,
+            "bonus_timers": {
+                "weapon_power_up_ms": 0,
+                "reflex_boost_ms": 0,
+                "energizer_ms": 0,
+                "double_experience_ms": 0,
+                "freeze_ms": 0,
+            },
+            "status": {
+                "quest_unlock_index": 0,
+                "quest_unlock_index_full": 0,
+                "weapon_usage_counts": [],
+            },
+        },
+        "players": [],
+    }
+
+
+def _entity_samples_stub(*, creatures: list[dict[str, object]] | None = None) -> dict[str, object]:
+    return {
+        "creatures": list(creatures or []),
+        "projectiles": [],
+        "secondary_projectiles": [],
+        "bonuses": [],
+    }
+
+
+def _creature_sample(
+    *,
+    uid: int,
+    generation: int,
+    index: int,
+    active: bool = True,
+) -> dict[str, object]:
+    return {
+        "uid": int(uid),
+        "generation": int(generation),
+        "pool_kind": "creature",
+        "index": int(index),
+        "active": bool(active),
+        "type_id": 0,
+        "hp": 1.0,
+        "pos": {"x": 0.0, "y": 0.0},
+        "flags": 0,
+        "ai_mode": 0,
+        "link_index": -1,
+        "heading": 0.0,
+        "target_heading": 0.0,
+        "orbit_angle": 0.0,
+        "orbit_radius": 0.0,
+        "lifecycle_stage": 0.0,
+    }
+
+
+def _channels_stub(
+    *,
+    tick_index: int,
+    elapsed_ms: int,
+    mode_id: int,
+    quest_stage_major: int = -1,
+    quest_stage_minor: int = -1,
+    creatures: list[dict[str, object]] | None = None,
+    checkpoint_overrides: dict[str, object] | None = None,
+    rng_marks: dict[str, int] | None = None,
+) -> dict[str, object]:
+    checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms))
+    if checkpoint_overrides:
+        checkpoint.update(dict(checkpoint_overrides))
+    marks = dict(rng_marks or {})
+    checkpoint["rng_marks"] = dict(marks)
+    return {
+        "checkpoint": checkpoint,
+        "sim_state": _sim_state_stub(
+            mode_id=int(mode_id),
+            quest_stage_major=int(quest_stage_major),
+            quest_stage_minor=int(quest_stage_minor),
+        ),
+        "entity_samples": _entity_samples_stub(creatures=creatures),
+        "rng_marks": dict(marks),
+        "rng_stream": [],
+    }
+
+
 def _terrain_seed_after(*, bootstrap_seed: int, quest_unlock_index: int = 0, world_size: int = 1024) -> int:
     rng = CrtRand(seed=int(bootstrap_seed))
     terrain = run_terrain_bootstrap(
@@ -93,7 +188,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
         [
             {
                 "event": "session_start",
-                "capture_format_version": 7,
+                "capture_format_version": 8,
                 "platform": "windows",
                 "arch": "x86",
                 "script_version": "5",
@@ -109,15 +204,12 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "mode_id": 1,
                 "phase_markers": ["a"],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=100, elapsed_ms=0),
-                    "entity_samples": {
-                        "creatures": [{"index": 5, "active": True}],
-                        "projectiles": [],
-                        "secondary_projectiles": [],
-                        "bonuses": [],
-                    },
-                },
+                "channels": _channels_stub(
+                    tick_index=100,
+                    elapsed_ms=0,
+                    mode_id=1,
+                    creatures=[_creature_sample(uid=562949953421317, generation=1, index=5, active=True)],
+                ),
             },
             {
                 "event": "tick",
@@ -128,15 +220,12 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=101, elapsed_ms=16),
-                    "entity_samples": {
-                        "creatures": [{"index": 5, "active": False}],
-                        "projectiles": [],
-                        "secondary_projectiles": [],
-                        "bonuses": [],
-                    },
-                },
+                "channels": _channels_stub(
+                    tick_index=101,
+                    elapsed_ms=16,
+                    mode_id=1,
+                    creatures=[_creature_sample(uid=562949953421317, generation=1, index=5, active=False)],
+                ),
             },
             {"event": "run_end", "run_id": 1},
             {"event": "session_end"},
@@ -165,7 +254,9 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert footer.tick_count == 2
     assert meta.producer["impl"] == "frida_original"
     assert "checkpoint" in meta.channels
+    assert "sim_state" in meta.channels
     assert "entity_samples" in meta.channels
+    assert "rng_stream" in meta.channels
     assert cast("dict[str, object]", ticks[0].channels["checkpoint"])["tick_index"] == 0
     assert cast("dict[str, object]", ticks[1].channels["checkpoint"])["tick_index"] == 1
 
@@ -180,7 +271,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
             {
                 "event": "tick",
@@ -190,7 +281,7 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
+                "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
             },
             {"event": "run_end", "run_id": 1},
         ],
@@ -206,7 +297,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
             {
                 "event": "tick",
@@ -216,7 +307,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
                 "mode_id": 2,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=33)},
+                "channels": _channels_stub(tick_index=0, elapsed_ms=33, mode_id=2),
             },
         ],
     )
@@ -229,7 +320,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": 7}])
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": 8}])
 
     with pytest.raises(FridaFinalizeError, match="missing session_end"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
@@ -239,7 +330,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
@@ -249,7 +340,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
+                "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=3),
             },
             {"event": "run_end", "run_id": 1},
             _run_start_row(run_id=2, mode_id=2, seed=32, player_count=1, quest_stage_major=1, quest_stage_minor=5),
@@ -261,7 +352,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 2,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=1, elapsed_ms=16)},
+                "channels": _channels_stub(tick_index=1, elapsed_ms=16, mode_id=2),
             },
             {"event": "run_end", "run_id": 2},
             _run_start_row(run_id=3, mode_id=1, seed=33, player_count=1, quest_stage_major=1, quest_stage_minor=5),
@@ -273,7 +364,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=2, elapsed_ms=33)},
+                "channels": _channels_stub(tick_index=2, elapsed_ms=33, mode_id=1),
             },
             {"event": "run_end", "run_id": 3},
             {"event": "session_end"},
@@ -300,7 +391,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=1, seed=51, player_count=1),
             {
                 "event": "tick",
@@ -311,6 +402,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
+                    **_channels_stub(tick_index=123, elapsed_ms=0, mode_id=1),
                     "checkpoint": {
                         "tick_index": 123,
                         "rng_state": 777,
@@ -351,7 +443,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -372,7 +464,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -395,7 +487,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -416,7 +508,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {"checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=0)},
+                "channels": _channels_stub(tick_index=0, elapsed_ms=0, mode_id=1),
             },
             {"event": "run_end", "run_id": 1},
             {"event": "session_end"},
@@ -443,16 +535,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=16),
-                },
+                "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3),
             },
             {"event": "run_end", "run_id": 1},
             {"event": "session_end"},
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 7"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 8"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -460,7 +550,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(t
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -470,9 +560,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(t
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": _checkpoint_stub(tick_index=0, elapsed_ms=25_000),
-                },
+                "channels": _channels_stub(tick_index=0, elapsed_ms=25_000, mode_id=3),
             },
         ],
     )
@@ -481,13 +569,15 @@ def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(t
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_unknown_death_sentinel_in_new_capture_format(
+def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_channel(
     tmp_path: Path,
 ) -> None:
+    channels = _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3)
+    channels.pop("sim_state", None)
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=3, seed=93, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -497,37 +587,26 @@ def test_finalize_frida_jsonl_to_traces_rejects_unknown_death_sentinel_in_new_ca
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": {
-                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
-                        "deaths": [
-                            {
-                                "creature_index": -1,
-                                "type_id": -1,
-                                "reward_value": 0,
-                                "xp_awarded": -1,
-                                "owner_id": -1,
-                            },
-                        ],
-                    },
-                },
+                "channels": channels,
             },
             {"event": "run_end", "run_id": 1},
             {"event": "session_end"},
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="legacy unknown death sentinel"):
+    with pytest.raises(FridaFinalizeError, match="must contain exactly canonical channels"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_negative_event_counts_in_new_capture_format(
+def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
     tmp_path: Path,
 ) -> None:
+    channels = _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3)
+    channels["event_heads"] = []
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 7},
+            {"event": "session_start", "capture_format_version": 8},
             _run_start_row(run_id=1, mode_id=3, seed=94, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -537,24 +616,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_negative_event_counts_in_new_cap
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
-                "channels": {
-                    "checkpoint": {
-                        **_checkpoint_stub(tick_index=0, elapsed_ms=16),
-                        "events": {
-                            "hit_count": -1,
-                            "pickup_count": 0,
-                            "sfx_count": 0,
-                            "sfx_head": [],
-                        },
-                    },
-                },
+                "channels": channels,
             },
             {"event": "run_end", "run_id": 1},
             {"event": "session_end"},
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="checkpoint.events.hit_count must be >= 0"):
+    with pytest.raises(FridaFinalizeError, match="must contain exactly canonical channels"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -566,5 +635,5 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_capture_format_version(t
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="missing capture_format_version; expected 7"):
+    with pytest.raises(FridaFinalizeError, match="missing capture_format_version; expected 8"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)

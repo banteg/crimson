@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 7;
+const CAPTURE_FORMAT_VERSION = 8;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -28,6 +28,17 @@ const GRIM_MODULE = "grim.dll";
 const GAME_MODE_SURVIVAL = 1;
 const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
+const BONUS_ID_ENERGIZER = "2";
+const BONUS_ID_WEAPON_POWER_UP = "4";
+const BONUS_ID_DOUBLE_EXPERIENCE = "6";
+const BONUS_ID_REFLEX_BOOST = "9";
+const BONUS_ID_FREEZE = "11";
+const ENTITY_KIND_CODES = {
+  creature: 1,
+  projectile: 2,
+  secondary_projectile: 3,
+  bonus: 4,
+};
 const TERRAIN_DENSITY_BASE = 800;
 const TERRAIN_DENSITY_OVERLAY = 0x23;
 const TERRAIN_DENSITY_DETAIL = 0x0f;
@@ -499,7 +510,62 @@ const outState = {
   lastCreatureDigest: null,
   questAttemptPendingByLevel: {},
   questAttemptStartsByLevel: {},
+  entityUidStates: null,
 };
+
+function newEntityUidState() {
+  return {
+    generationByIndex: {},
+    activeIndices: {},
+    seenInTick: {},
+  };
+}
+
+function resetEntityUidStates() {
+  outState.entityUidStates = {
+    creature: newEntityUidState(),
+    projectile: newEntityUidState(),
+    secondary_projectile: newEntityUidState(),
+    bonus: newEntityUidState(),
+  };
+}
+
+function beginEntityUidTick(kind) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return;
+  state.seenInTick = {};
+}
+
+function endEntityUidTick(kind) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return;
+  state.activeIndices = state.seenInTick || {};
+  state.seenInTick = {};
+}
+
+function nextEntityUid(kind, index) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return { uid: 0, generation: 0 };
+  const idx = index | 0;
+  const key = String(idx);
+  if (!state.activeIndices[key]) {
+    const previous = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
+    state.generationByIndex[key] = (previous + 1) | 0;
+  }
+  state.seenInTick[key] = true;
+  const generation = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
+  const kindCode = ENTITY_KIND_CODES[kind] == null ? 0 : ENTITY_KIND_CODES[kind] & 0xf;
+  const uid = kindCode * 562949953421312 + (generation & 0xfffff) * 536870912 + (idx & 0x1fffffff);
+  return {
+    uid: uid,
+    generation: generation,
+  };
+}
+
+resetEntityUidStates();
 
 function questLevelKey(major, minor) {
   const stageMajor = major == null ? -1 : major | 0;
@@ -818,6 +884,7 @@ function closeActiveRun(reason, tickObj) {
   outState.currentRunElapsedRawStartMs = null;
   outState.currentRunElapsedRawLastMs = null;
   outState.currentRunElapsedNormalizedMs = null;
+  resetEntityUidStates();
 }
 
 function startRunForTick(tickObj, reason) {
@@ -841,6 +908,7 @@ function startRunForTick(tickObj, reason) {
   outState.currentRunElapsedRawStartMs = null;
   outState.currentRunElapsedRawLastMs = null;
   outState.currentRunElapsedNormalizedMs = null;
+  resetEntityUidStates();
   outState.runActive = true;
   const wrote = _captureWriteJsonLine(
     {
@@ -897,25 +965,6 @@ function phaseMarkerNames(markers) {
       continue;
     }
     out.push(String(marker));
-  }
-  return out;
-}
-
-function eventHeadKind(head) {
-  if (head && typeof head === "object" && typeof head.type === "string") {
-    return String(head.type);
-  }
-  return String(head);
-}
-
-function microTracesFromEventHeads(eventHeads) {
-  if (!Array.isArray(eventHeads)) return [];
-  const out = [];
-  for (let i = 0; i < eventHeads.length; i++) {
-    const head = eventHeads[i];
-    if (String(eventHeadKind(head)).indexOf("creature_update_micro") >= 0) {
-      out.push(head);
-    }
   }
   return out;
 }
@@ -1024,16 +1073,266 @@ function checkpointRngMarksFromTick(tick) {
   };
 }
 
+function numberOr(value, fallback) {
+  const parsed = captureNumber(value);
+  return parsed == null ? fallback : parsed;
+}
+
+function _bonusTimerFromCheckpoint(bonusTimers, key) {
+  if (!bonusTimers || typeof bonusTimers !== "object") return 0;
+  const value = intOr(bonusTimers[key], null);
+  if (value == null || value < 0) return 0;
+  return value | 0;
+}
+
+function simStateFromTick(tickObj, checkpoint) {
+  const checkpointObj = checkpoint && typeof checkpoint === "object" ? checkpoint : {};
+  const after = tickObj && tickObj.after && typeof tickObj.after === "object" ? tickObj.after : {};
+  const checkpointPlayers = Array.isArray(checkpointObj.players) ? checkpointObj.players : [];
+  const afterPlayers = Array.isArray(after.players) ? after.players : [];
+  const playerCount = Math.max(checkpointPlayers.length, afterPlayers.length);
+  const players = [];
+
+  for (let i = 0; i < playerCount; i++) {
+    const cp = checkpointPlayers[i] && typeof checkpointPlayers[i] === "object" ? checkpointPlayers[i] : {};
+    const ap = afterPlayers[i] && typeof afterPlayers[i] === "object" ? afterPlayers[i] : {};
+    const cpPos = cp.pos && typeof cp.pos === "object" ? cp.pos : {};
+    players.push({
+      index: intOr(ap.index, intOr(cp.index, i)),
+      pos: {
+        x: numberOr(ap.pos_x, numberOr(cpPos.x, 0)),
+        y: numberOr(ap.pos_y, numberOr(cpPos.y, 0)),
+      },
+      health: numberOr(ap.health, numberOr(cp.health, 0)),
+      weapon: {
+        weapon_id: intOr(ap.weapon_id, intOr(cp.weapon_id, 0)),
+        ammo: numberOr(ap.ammo_f32, numberOr(cp.ammo, 0)),
+        clip_size: intOr(ap.clip_size_i32, 0),
+        reload_active: intOr(ap.reload_active_i32, 0) !== 0,
+        reload_timer: numberOr(ap.reload_timer, 0),
+        reload_timer_max: numberOr(ap.reload_timer_max, 0),
+        shot_cooldown: numberOr(ap.shot_cooldown, 0),
+      },
+      experience: intOr(ap.experience, intOr(cp.experience, 0)),
+      level: intOr(ap.level, intOr(cp.level, 0)),
+    });
+  }
+
+  const checkpointStatus =
+    checkpointObj.status && typeof checkpointObj.status === "object" ? checkpointObj.status : {};
+  const checkpointBonusTimers =
+    checkpointObj.bonus_timers && typeof checkpointObj.bonus_timers === "object"
+      ? checkpointObj.bonus_timers
+      : {};
+  const usageCountsRaw = Array.isArray(checkpointStatus.weapon_usage_counts)
+    ? checkpointStatus.weapon_usage_counts
+    : [];
+  const usageCounts = [];
+  for (let i = 0; i < usageCountsRaw.length; i++) {
+    usageCounts.push(intOr(usageCountsRaw[i], 0));
+  }
+
+  const perk = checkpointObj.perk && typeof checkpointObj.perk === "object" ? checkpointObj.perk : {};
+  const perkPending = intOr(checkpointObj.perk_pending, intOr(perk.pending_count, 0));
+  const perkChoicesDirty =
+    perk.choices_dirty == null ? perkPending <= 0 : !!perk.choices_dirty;
+
+  return {
+    gameplay: {
+      mode_id: tickModeId(tickObj),
+      quest_stage_major: tickQuestMajor(tickObj),
+      quest_stage_minor: tickQuestMinor(tickObj),
+      perk_pending_count: perkPending | 0,
+      perk_choices_dirty: !!perkChoicesDirty,
+      bonus_timers: {
+        weapon_power_up_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_WEAPON_POWER_UP),
+        reflex_boost_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_REFLEX_BOOST),
+        energizer_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_ENERGIZER),
+        double_experience_ms: _bonusTimerFromCheckpoint(
+          checkpointBonusTimers,
+          BONUS_ID_DOUBLE_EXPERIENCE,
+        ),
+        freeze_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_FREEZE),
+      },
+      status: {
+        quest_unlock_index: intOr(checkpointStatus.quest_unlock_index, 0),
+        quest_unlock_index_full: intOr(checkpointStatus.quest_unlock_index_full, 0),
+        weapon_usage_counts: usageCounts,
+      },
+    },
+    players: players,
+  };
+}
+
 function entitySamplesFromTick(tickObj) {
   const samples = tickObj && tickObj.samples ? tickObj.samples : {};
+  const creaturesRaw = Array.isArray(samples.creatures) ? samples.creatures : [];
+  const projectilesRaw = Array.isArray(samples.projectiles) ? samples.projectiles : [];
+  const secondaryRaw = Array.isArray(samples.secondary_projectiles)
+    ? samples.secondary_projectiles
+    : [];
+  const bonusesRaw = Array.isArray(samples.bonuses) ? samples.bonuses : [];
+
+  beginEntityUidTick("creature");
+  beginEntityUidTick("projectile");
+  beginEntityUidTick("secondary_projectile");
+  beginEntityUidTick("bonus");
+
+  const creatures = [];
+  for (let i = 0; i < creaturesRaw.length; i++) {
+    const row = creaturesRaw[i] && typeof creaturesRaw[i] === "object" ? creaturesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("creature", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    creatures.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "creature",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      hp: numberOr(row.hp, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      flags: intOr(row.flags, 0),
+      ai_mode: intOr(row.ai_mode, 0),
+      link_index: intOr(row.link_index, -1),
+      heading: numberOr(row.heading, 0),
+      target_heading: numberOr(row.target_heading, 0),
+      orbit_angle: numberOr(row.orbit_angle, 0),
+      orbit_radius: numberOr(row.orbit_radius, 0),
+      lifecycle_stage: numberOr(row.lifecycle_stage, 0),
+    });
+  }
+
+  const projectiles = [];
+  for (let i = 0; i < projectilesRaw.length; i++) {
+    const row = projectilesRaw[i] && typeof projectilesRaw[i] === "object" ? projectilesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("projectile", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
+    projectiles.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "projectile",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      angle: numberOr(row.angle, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      vel: {
+        x: numberOr(vel.x, 0),
+        y: numberOr(vel.y, 0),
+      },
+      life_timer: numberOr(row.life_timer, 0),
+      speed_scale: numberOr(row.speed_scale, 0),
+      damage_pool: numberOr(row.damage_pool, 0),
+      hit_radius: numberOr(row.hit_radius, 0),
+      travel_budget: numberOr(row.travel_budget, numberOr(row.base_damage, 0)),
+      owner_id: intOr(row.owner_id, -1),
+    });
+  }
+
+  const secondary_projectiles = [];
+  for (let i = 0; i < secondaryRaw.length; i++) {
+    const row = secondaryRaw[i] && typeof secondaryRaw[i] === "object" ? secondaryRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("secondary_projectile", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
+    const velX = numberOr(vel.x, 0);
+    const velY = numberOr(vel.y, 0);
+    const speedAuto = numberOr(Math.sqrt(velX * velX + velY * velY), 0);
+    secondary_projectiles.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "secondary_projectile",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      angle: numberOr(row.angle, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      vel: {
+        x: velX,
+        y: velY,
+      },
+      speed: numberOr(row.speed, speedAuto),
+      trail_timer: numberOr(row.trail_timer, 0),
+      owner_id: intOr(row.owner_id, -1),
+      target_id: intOr(row.target_id, -1),
+    });
+  }
+
+  const bonuses = [];
+  for (let i = 0; i < bonusesRaw.length; i++) {
+    const row = bonusesRaw[i] && typeof bonusesRaw[i] === "object" ? bonusesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("bonus", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    bonuses.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "bonus",
+      index: index,
+      active: true,
+      bonus_id: intOr(row.bonus_id, 0),
+      picked: intOr(row.state, 0) !== 0,
+      time_left: numberOr(row.time_left, 0),
+      time_max: numberOr(row.time_max, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      amount: intOr(row.amount_i32, intOr(row.amount_f32, 0)),
+    });
+  }
+
+  endEntityUidTick("creature");
+  endEntityUidTick("projectile");
+  endEntityUidTick("secondary_projectile");
+  endEntityUidTick("bonus");
+
   return {
-    creatures: Array.isArray(samples.creatures) ? samples.creatures : [],
-    projectiles: Array.isArray(samples.projectiles) ? samples.projectiles : [],
-    secondary_projectiles: Array.isArray(samples.secondary_projectiles)
-      ? samples.secondary_projectiles
-      : [],
-    bonuses: Array.isArray(samples.bonuses) ? samples.bonuses : [],
+    creatures: creatures,
+    projectiles: projectiles,
+    secondary_projectiles: secondary_projectiles,
+    bonuses: bonuses,
   };
+}
+
+function rngStreamFromTick(tickObj) {
+  const rows = tickObj && tickObj.rng && Array.isArray(tickObj.rng.head) ? tickObj.rng.head : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
+    const tickCallIndex = intOr(row.tick_call_index, i + 1);
+    const value15 = intOr(row.value_15, intOr(row.value, 0) & 0x7fff);
+    const stateBefore = intOr(row.state_before_u32, 0) >>> 0;
+    const stateAfter = intOr(row.state_after_u32, 0) >>> 0;
+    out.push({
+      tick_call_index: tickCallIndex,
+      value_15: value15,
+      state_before_u32: stateBefore,
+      state_after_u32: stateAfter,
+      caller_static: row.caller_static == null ? null : String(row.caller_static),
+      branch_id: row.branch_id == null ? null : String(row.branch_id),
+      inferred: false,
+    });
+  }
+  return out;
 }
 
 function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
@@ -1057,7 +1356,6 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
 
 function buildTraceTickRow(tickObj) {
   const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
-  const eventHeads = Array.isArray(tickObj.event_heads) ? tickObj.event_heads : [];
   const modeId = tickModeId(tickObj);
   const dtMsI32 =
     tickObj.frame_dt_ms_i32 != null
@@ -1071,6 +1369,7 @@ function buildTraceTickRow(tickObj) {
   const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
   const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
   checkpoint.elapsed_ms = elapsedMs;
+  const simState = simStateFromTick(tickObj, checkpoint);
 
   return {
     event: "tick",
@@ -1086,12 +1385,9 @@ function buildTraceTickRow(tickObj) {
     channels: {
       checkpoint: checkpoint,
       rng_marks: rngMarksFromCheckpoint(checkpoint),
-      rng_stream_head:
-        tickObj && tickObj.rng && Array.isArray(tickObj.rng.head) ? tickObj.rng.head : [],
+      rng_stream: rngStreamFromTick(tickObj),
+      sim_state: simState,
       entity_samples: entitySamplesFromTick(tickObj),
-      event_heads: eventHeads,
-      event_counts: tickObj && tickObj.event_counts ? tickObj.event_counts : {},
-      micro_traces: microTracesFromEventHeads(eventHeads),
     },
   };
 }
