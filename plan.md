@@ -39,9 +39,13 @@ Introduce a canonical frame timing struct computed once per deterministic tick e
 
 - `__ftol` semantics for Crimsonland are treated as x87 chop/truncation, not nearest-even.
 - `f32` seconds is the primary timing representation in runtime and replay.
+- Replay format change is a hard break: no migration path and no legacy replay support.
+- Hard break policy applies to replay payloads; trace schema remains explicitly versioned with compatibility handling.
 - Timing values do change mid-tick in native flow; sub-tick phase sampling is required for divergence localization.
 - `ms`/`ms_i32` values in rewrite code are derived via one helper, not recomputed ad-hoc at call sites.
 - Replay format requires per-tick `dt` rows; no runtime fallback/override branch.
+- `Replay.dt[tick]` is sampled at `gameplay_update_and_render` entry (`fVar1 = frame_dt`), before gameplay-pass scaling.
+- `Replay.dt` validation allows finite non-negative values; `0.0` is valid for explicit native zeroing paths.
 - `run_replay_info` must consume the exact same per-tick replay timing rows as `run_replay` (all modes).
 - `ReplayRecorder` will always emit per-tick `dt` rows.
 
@@ -137,6 +141,10 @@ Implementation guidance:
   - C++: `static_cast<int32_t>(scaled_f32)` (or `std::trunc`)
   - Python: `int(math.trunc(scaled_f32))`
   - Zig: `@as(i32, @intFromFloat(@trunc(scaled_f32)))`
+- Replay dt encoding contract:
+  - Python replay codec quantizes replay `dt` rows to binary32 (`f32`) before write and after load canonicalization.
+  - Zig replay codec stores replay `dt` as `[]f32` on wire/runtime.
+  - These are interchangeable cross-language because both sides use binary32 values.
 - Keep nearest-even/half-away entries above only as cross-language validation modes; they are not the target mode for Crimsonland timing parity.
 - Add fixed tie-case tests so this behavior cannot regress silently.
 
@@ -152,19 +160,20 @@ Implementation guidance:
 2. Rename `dt_frame` -> `dt` across drivers/tests.
 3. Redesign replay schema to require per-tick `dt` rows (same length as inputs).
 4. Align Zig field names and replay schema in `crimson-zig/src/runtime/replay/step.zig`.
+5. Bump replay format version and reject older formats in Python/Zig codecs (hard break, no migration).
 
 ### Phase 3: Replay Runner and Info Harmonization
-1. Remove `resolve_dt_frame_ms_i32` override plumbing and replace with replay `dt` row lookup.
+1. Remove `resolve_dt_frame_ms_i32` override plumbing and replace with replay `dt` row lookup (`Replay.dt[tick]`).
 2. Ensure `run_replay_info()` consumes replay timing rows exactly like `run_replay()` for survival/rush/quest.
 3. Remove runtime dt override parameters from parity-critical APIs.
 4. Update `ReplayRecorder` to always persist per-tick `dt` rows.
 
 ### Phase 4: Capture/Finalize/Diff Tooling Harmonization
-1. Keep per-tick `dt` as the authoritative replay timing output.
-2. Add structured sub-tick `timing_samples` payload for phase analysis (`gpur_*`, `mode_*`, `player_*`).
+1. Keep per-tick `dt` as the authoritative replay timing output (sampled at `gpur_enter`).
+2. Add structured sub-tick `timing_samples` payload for phase analysis with one row per timing write.
 3. Preserve timing evidence through finalize (schema extension required) instead of dropping it.
-4. Bump trace schema version for timing channel additions and keep explicit compatibility handling for prior schema files.
-5. Extend `dbg diff`/bisect to compare timing channels and report first timing-phase mismatch.
+4. Bump trace schema version for `timing_samples` channel additions and keep explicit compatibility handling for prior trace schema files.
+5. Extend `dbg diff`/bisect to compare `timing_samples` and report first timing-phase mismatch.
 
 ### Phase 5: Pipeline Wiring
 1. Update deterministic step APIs to consume `FrameTiming` instead of separate dt args.
@@ -177,8 +186,9 @@ Implementation guidance:
 3. Exit only when all are true:
    - `run_replay` and `run_replay_info` agree on elapsed/tick timing for same replay inputs.
    - Runtime timing APIs contain no dt override/fallback branches.
+   - Replay codecs reject missing/legacy replay timing rows by version (no implicit fallback path).
    - No remaining ad-hoc dt->ms conversions in parity-critical paths.
-   - Recorder-produced replays always include `dt` rows with valid positive lengths.
+   - Recorder-produced replays always include `dt` rows with finite non-negative values and row count equal to input ticks.
    - Timing-channel diff pinpoints first divergence phase on known drift fixtures.
 
 ### Phase 7: Author Delta-Time Porting Reference
@@ -294,6 +304,7 @@ To precisely find timing divergence causes, we should trace `frame_dt` and `fram
 - `tick_index`
 - `gameplay_frame`
 - `phase`
+- `write_kind` (`frame_dt_write` | `frame_dt_ms_write` | `snapshot`)
 - `frame_dt_f32`
 - `frame_dt_ms_i32`
 - `frame_dt_ms_f32`
@@ -303,25 +314,36 @@ To precisely find timing divergence causes, we should trace `frame_dt` and `fram
 - `mode_fn` (nullable)
 - `player_index` (nullable)
 
-### Canonical Phase Sequence (Native)
+### Canonical Mutation Markers (Native)
 
-1. `gpur_enter`
-   - Hook: `gameplay_update_and_render` on-enter (`0x0040aab0`)
-2. `gpur_after_gameplay_scale`
-   - Immediately after gameplay scaling and `frame_dt_ms` re-derive
-   - Decompile anchors: `0x0040ab11` / `0x0040ab22`
-3. `mode_enter` / `mode_leave`
-   - Around `survival_update` / `rush_mode_update` / `quest_mode_update`
-4. `player_enter` / `player_leave`
-   - Around `player_update` (`0x004136b0`)
-5. `player_local_scale_enter`
-   - Internal probe at local remap (`0x00413e13`)
-6. `player_local_scale_restore`
-   - Internal probe at local restore (`0x00414f5f`)
-7. `gpur_before_restore`
-   - Right before end-of-function restore (`frame_dt = fVar1`)
-8. `gpur_after_restore`
-   - After `frame_dt`/`frame_dt_ms` restore (`0x0040b1fd` / `0x0040b208`) or function leave
+Emit a `timing_samples` row for every write to `frame_dt` or `frame_dt_ms` in the gameplay frame path:
+
+1. `outer_get_frame_dt`
+   - `frame_dt = grim_get_frame_dt()` in `console_hotkey_update` (`0x0040c1d7`)
+2. `outer_reflex_boosted_scale` (conditional)
+   - `frame_dt = frame_dt * 0.9` (`0x0040c4e7`)
+3. `outer_rederive_ms`
+   - `frame_dt_ms = __ftol(frame_dt * 1000.0)` (`0x0040c517`)
+4. `outer_console_zero_dt` (conditional)
+   - `frame_dt = 0.0` (`0x0040c5b6`)
+5. `gpur_enter` (snapshot; replay `dt` source)
+   - `fVar1 = frame_dt` at `gameplay_update_and_render` entry (`0x0040aab0`)
+6. `gpur_after_gameplay_scale` (conditional)
+   - `frame_dt = _time_scale_factor * frame_dt` (`0x0040ab11`)
+7. `gpur_after_gameplay_scale_ms` (conditional)
+   - `frame_dt_ms = __ftol(frame_dt * 1000.0)` (`0x0040ab22`)
+8. `gpur_zero_gate_ms` (conditional)
+   - `frame_dt_ms = 0` (`0x0040abae`)
+9. `gpur_zero_gate_dt` (conditional)
+   - `frame_dt = 0.0` (`0x0040abb4`)
+10. `player_local_scale_enter` (conditional)
+    - `frame_dt = (0.6 / _time_scale_factor) * frame_dt` in `player_update` (`0x00413e13`)
+11. `player_local_scale_restore` (conditional)
+    - `frame_dt = time_scale_factor * frame_dt * 1.6666666...` (`0x00414f5f`)
+12. `gpur_restore_dt`
+    - `frame_dt = fVar1` (`0x0040b1fd`)
+13. `gpur_restore_ms`
+    - `frame_dt_ms = __ftol(fVar1 * 1000.0)` (`0x0040b208`)
 
 ### Existing Capture Support vs Needed Additions
 
@@ -331,8 +353,9 @@ Already present in `scripts/frida/gameplay_diff_capture.js`:
 - Before/after globals with timing summary
 
 Need to add:
-- Internal `player_update` probes at `0x00413e13` and `0x00414f5f`
-- Explicit `gpur_after_gameplay_scale` and `gpur_before_restore` phase samples
+- `timing_samples` channel (array of marker rows) emitted per tick, analogous to RNG sample streams.
+- Internal `player_update` probes at `0x00413e13` and `0x00414f5f`.
+- Explicit write markers for outer-loop and `gpur_*` timing writes listed above.
 
 ### Invariants to Assert Per Tick
 
@@ -340,6 +363,7 @@ Need to add:
 - Across `mode_enter` -> `mode_leave`: integer cadence should remain consistent for a given phase.
 - `player_local_scale_restore` should return `frame_dt` to gameplay-pass scale (not entry `dt`).
 - At `gpur_after_restore`: `frame_dt` / `frame_dt_ms` should match pre-scale baseline (`fVar1` path), except explicit zeroing paths.
+- `Replay.dt[tick]` should equal `gpur_enter.frame_dt_f32` for that tick.
 
 ### Divergence Triage Rules
 
