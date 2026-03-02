@@ -69,7 +69,7 @@ from .records import load_records, resolve_request
 from .right_panel import draw_right_panel
 
 
-class _DropdownLayout(DropdownLayoutBase, frozen=True):
+class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
     pass
 
 
@@ -332,11 +332,11 @@ class HighScoresView:
         self._closing = True
         self._close_action = action
 
-    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _DropdownLayout:
+    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
         header_h = 16.0 * scale
         row_h = 16.0 * scale
         full_h = (float(item_count) * 16.0 + 24.0) * scale
-        return _DropdownLayout(
+        return _ScoresDropdownLayout(
             pos=pos,
             width=float(width),
             header_h=header_h,
@@ -348,7 +348,7 @@ class HighScoresView:
     def _update_dropdown(
         self,
         *,
-        layout: _DropdownLayout,
+        layout: _ScoresDropdownLayout,
         item_count: int,
         is_open: bool,
         enabled: bool,

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import msgspec
 
-from .lockstep_protocol import RELIABLE_RESEND_MS, NetMessage, Packet
+from .lockstep_protocol import RELIABLE_RESEND_MS, LockstepPacket, NetMessage
 
 
-class _PendingReliable(msgspec.Struct):
-    packet: Packet
+class _LockstepPendingReliable(msgspec.Struct):
+    packet: LockstepPacket
     sent_at_ms: int
 
 
@@ -17,9 +17,9 @@ class ReliableLink(msgspec.Struct):
     _next_seq: int = 1
     # Highest *contiguous* reliable sequence that has been received and delivered.
     _recv_highest_seq: int = 0
-    _pending: dict[int, _PendingReliable] = msgspec.field(default_factory=dict)
+    _pending: dict[int, _LockstepPendingReliable] = msgspec.field(default_factory=dict)
     # Out-of-order reliable packets (seq > _recv_highest_seq + 1).
-    _recv_buffer: dict[int, Packet] = msgspec.field(default_factory=dict)
+    _recv_buffer: dict[int, LockstepPacket] = msgspec.field(default_factory=dict)
     # Very rough RTT estimate based on ACK turnaround. Useful for debugging only.
     _rtt_last_ms: int = 0
     _rtt_ewma_ms: float = 0.0
@@ -56,22 +56,22 @@ class ReliableLink(msgspec.Struct):
             return
         self._recv_highest_seq = int(value)
 
-    def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> Packet:
+    def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> LockstepPacket:
         seq = 0
         if reliable:
             seq = int(self._next_seq)
             self._next_seq += 1
-        packet = Packet(
+        packet = LockstepPacket(
             seq=int(seq),
             ack=int(self._recv_highest_seq),
             reliable=bool(reliable),
             message=message,
         )
         if reliable:
-            self._pending[int(seq)] = _PendingReliable(packet=packet, sent_at_ms=int(now_ms))
+            self._pending[int(seq)] = _LockstepPendingReliable(packet=packet, sent_at_ms=int(now_ms))
         return packet
 
-    def ingest_packet(self, packet: Packet, *, now_ms: int) -> tuple[list[NetMessage], bool]:
+    def ingest_packet(self, packet: LockstepPacket, *, now_ms: int) -> tuple[list[NetMessage], bool]:
         """Return `(messages, is_duplicate_reliable_packet)`.
 
         Reliable delivery uses a cumulative ACK of the highest contiguous reliable
@@ -125,19 +125,19 @@ class ReliableLink(msgspec.Struct):
         for seq in to_drop:
             self._pending.pop(int(seq), None)
 
-    def poll_resends(self, *, now_ms: int) -> list[Packet]:
-        out: list[Packet] = []
+    def poll_resends(self, *, now_ms: int) -> list[LockstepPacket]:
+        out: list[LockstepPacket] = []
         for seq, pending in list(self._pending.items()):
             if int(now_ms) - int(pending.sent_at_ms) < int(self.resend_ms):
                 continue
             # Re-send packet with up-to-date ACK.
-            refreshed = Packet(
+            refreshed = LockstepPacket(
                 seq=int(pending.packet.seq),
                 ack=int(self._recv_highest_seq),
                 reliable=True,
                 message=pending.packet.message,
             )
-            self._pending[int(seq)] = _PendingReliable(packet=refreshed, sent_at_ms=int(now_ms))
+            self._pending[int(seq)] = _LockstepPendingReliable(packet=refreshed, sent_at_ms=int(now_ms))
             out.append(refreshed)
             self._resend_count += 1
         return out

@@ -106,22 +106,7 @@ class HudRenderContext(msgspec.Struct, frozen=True):
     font: SmallFontData | None = None
     alpha: float = 1.0
     flags: HudRenderFlags = DEFAULT_HUD_RENDER_FLAGS
-    show_health: bool | None = None
-    show_weapon: bool | None = None
-    show_xp: bool | None = None
-    show_time: bool | None = None
-    show_quest_hud: bool | None = None
     small_indicators: bool = False
-
-    def resolved_flags(self) -> HudRenderFlags:
-        flags = self.flags
-        return HudRenderFlags(
-            show_health=flags.show_health if self.show_health is None else bool(self.show_health),
-            show_weapon=flags.show_weapon if self.show_weapon is None else bool(self.show_weapon),
-            show_xp=flags.show_xp if self.show_xp is None else bool(self.show_xp),
-            show_time=flags.show_time if self.show_time is None else bool(self.show_time),
-            show_quest_hud=flags.show_quest_hud if self.show_quest_hud is None else bool(self.show_quest_hud),
-        )
 
 
 class HudState(msgspec.Struct):
@@ -363,7 +348,7 @@ def draw_hud_overlay(
     state = context.state
     font = context.font
     alpha = float(context.alpha)
-    flags = context.resolved_flags()
+    flags = context.flags
     show_health = bool(flags.show_health)
     show_weapon = bool(flags.show_weapon)
     show_xp = bool(flags.show_xp)

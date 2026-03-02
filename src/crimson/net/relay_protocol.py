@@ -199,18 +199,18 @@ NetMessage: TypeAlias = (
 )
 
 
-class Packet(PacketHeader, forbid_unknown_fields=True):
+class RelayPacket(PacketHeader, forbid_unknown_fields=True):
     message: NetMessage = msgspec.field(default_factory=Ping)
 
 
-_PACKET_DECODER = msgspec.msgpack.Decoder(type=Packet)
+_PACKET_DECODER = msgspec.msgpack.Decoder(type=RelayPacket)
 
 
-def encode_packet(packet: Packet) -> bytes:
+def encode_packet(packet: RelayPacket) -> bytes:
     return msgspec.msgpack.encode(packet)
 
 
-def decode_packet(blob: bytes) -> Packet:
+def decode_packet(blob: bytes) -> RelayPacket:
     return _PACKET_DECODER.decode(blob)
 
 
@@ -237,7 +237,7 @@ __all__ = [
     "LockstepTickFrame",
     "NetMessage",
     "NetcodeMode",
-    "Packet",
+    "RelayPacket",
     "PeerDisconnect",
     "Ping",
     "Pong",

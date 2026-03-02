@@ -12,11 +12,11 @@ from crimson.net.relay_protocol import (
     ROLLBACK_MAX_TICKS,
     ClientHello,
     LockstepControl,
-    Packet,
     RbInputBatch,
     RbInputSample,
     RbResyncRequest,
     RelayError,
+    RelayPacket,
     RoomCreate,
     decode_packet,
     encode_packet,
@@ -24,7 +24,7 @@ from crimson.net.relay_protocol import (
 
 
 def test_relay_packet_round_trip_for_control_message() -> None:
-    packet = Packet(
+    packet = RelayPacket(
         seq=7,
         ack=3,
         reliable=True,
@@ -49,7 +49,7 @@ def test_relay_packet_round_trip_for_control_message() -> None:
 
 
 def test_relay_packet_round_trip_for_rollback_input_batch() -> None:
-    packet = Packet(
+    packet = RelayPacket(
         seq=0,
         ack=0,
         reliable=False,
@@ -67,7 +67,7 @@ def test_relay_packet_round_trip_for_rollback_input_batch() -> None:
 
 
 def test_relay_packet_round_trip_for_legacy_tunnel_message() -> None:
-    packet = Packet(
+    packet = RelayPacket(
         seq=1,
         ack=0,
         reliable=True,
@@ -93,7 +93,7 @@ def test_relay_protocol_constants_match_v5_spec() -> None:
 
 
 def test_relay_error_round_trip() -> None:
-    packet = Packet(seq=1, ack=0, reliable=True, message=RelayError(reason="room_not_found"))
+    packet = RelayPacket(seq=1, ack=0, reliable=True, message=RelayError(reason="room_not_found"))
 
     decoded = decode_packet(encode_packet(packet))
 
@@ -102,7 +102,7 @@ def test_relay_error_round_trip() -> None:
 
 
 def test_client_hello_round_trip() -> None:
-    packet = Packet(
+    packet = RelayPacket(
         seq=1,
         ack=0,
         reliable=True,
@@ -116,7 +116,7 @@ def test_client_hello_round_trip() -> None:
 
 
 def test_rb_resync_request_round_trip_v5_fields() -> None:
-    packet = Packet(
+    packet = RelayPacket(
         seq=2,
         ack=1,
         reliable=True,

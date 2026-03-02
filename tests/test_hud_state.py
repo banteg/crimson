@@ -79,7 +79,7 @@ def test_hud_layout_quest_hud_y_shift() -> None:
     assert layout.hud_y_shift == HUD_QUEST_LEFT_Y_SHIFT
 
 
-def test_hud_render_context_resolved_flags_uses_flags_by_default() -> None:
+def test_hud_render_context_exposes_flags() -> None:
     flags = HudRenderFlags(
         show_health=False,
         show_weapon=False,
@@ -88,26 +88,14 @@ def test_hud_render_context_resolved_flags_uses_flags_by_default() -> None:
         show_quest_hud=True,
     )
     context = HudRenderContext(assets=_empty_assets(), state=HudState(), flags=flags)
-    assert context.resolved_flags() == flags
+    assert context.flags == flags
 
 
-def test_hud_render_context_resolved_flags_legacy_values_override_flags() -> None:
-    context = HudRenderContext(
-        assets=_empty_assets(),
-        state=HudState(),
-        flags=HudRenderFlags(
-            show_health=False,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
-            show_quest_hud=False,
-        ),
-        show_health=True,
-        show_time=True,
-    )
-    flags = context.resolved_flags()
+def test_hud_render_context_defaults_to_standard_flags() -> None:
+    context = HudRenderContext(assets=_empty_assets(), state=HudState())
+    flags = context.flags
     assert flags.show_health is True
-    assert flags.show_weapon is False
-    assert flags.show_xp is False
-    assert flags.show_time is True
+    assert flags.show_weapon is True
+    assert flags.show_xp is True
+    assert flags.show_time is False
     assert flags.show_quest_hud is False

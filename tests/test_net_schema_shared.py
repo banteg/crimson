@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import msgspec
 
-from crimson.net.lockstep_protocol import LobbySlot, PauseState
-from crimson.net.lockstep_protocol import Packet as LockstepPacket
-from crimson.net.relay_protocol import Packet as RelayPacket
-from crimson.net.relay_protocol import Ping, RelaySlot
+from crimson.net.lockstep_protocol import LobbySlot, LockstepPacket, PauseState
+from crimson.net.relay_protocol import Ping, RelayPacket, RelaySlot
 from crimson.net.schema_shared import PacketHeader, SlotState
 
 

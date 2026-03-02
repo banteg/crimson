@@ -305,16 +305,16 @@ NetMessage: TypeAlias = (
 )
 
 
-class Packet(PacketHeader, forbid_unknown_fields=True):
+class LockstepPacket(PacketHeader, forbid_unknown_fields=True):
     message: NetMessage = msgspec.field(default_factory=PauseState)
 
 
-_PACKET_DECODER = msgspec.msgpack.Decoder(type=Packet)
+_PACKET_DECODER = msgspec.msgpack.Decoder(type=LockstepPacket)
 
 
-def encode_packet(packet: Packet) -> bytes:
+def encode_packet(packet: LockstepPacket) -> bytes:
     return msgspec.msgpack.encode(packet)
 
 
-def decode_packet(blob: bytes) -> Packet:
+def decode_packet(blob: bytes) -> LockstepPacket:
     return _PACKET_DECODER.decode(blob)

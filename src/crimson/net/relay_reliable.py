@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import msgspec
 
-from .relay_protocol import RELIABLE_RESEND_MS, NetMessage, Packet
+from .relay_protocol import RELIABLE_RESEND_MS, NetMessage, RelayPacket
 
 
-class _PendingReliable(msgspec.Struct):
-    packet: Packet
+class _RelayPendingReliable(msgspec.Struct):
+    packet: RelayPacket
     sent_at_ms: int
 
 
@@ -16,8 +16,8 @@ class RelayReliableLink(msgspec.Struct):
     resend_ms: int = RELIABLE_RESEND_MS
     _next_seq: int = 1
     _recv_highest_seq: int = 0
-    _pending: dict[int, _PendingReliable] = msgspec.field(default_factory=dict)
-    _recv_buffer: dict[int, Packet] = msgspec.field(default_factory=dict)
+    _pending: dict[int, _RelayPendingReliable] = msgspec.field(default_factory=dict)
+    _recv_buffer: dict[int, RelayPacket] = msgspec.field(default_factory=dict)
     _rtt_last_ms: int = 0
     _rtt_ewma_ms: float = 0.0
     _resend_count: int = 0
@@ -48,22 +48,22 @@ class RelayReliableLink(msgspec.Struct):
             return
         self._recv_highest_seq = int(value)
 
-    def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> Packet:
+    def build_packet(self, message: NetMessage, *, reliable: bool, now_ms: int) -> RelayPacket:
         seq = 0
         if reliable:
             seq = int(self._next_seq)
             self._next_seq += 1
-        packet = Packet(
+        packet = RelayPacket(
             seq=int(seq),
             ack=int(self._recv_highest_seq),
             reliable=bool(reliable),
             message=message,
         )
         if reliable:
-            self._pending[int(seq)] = _PendingReliable(packet=packet, sent_at_ms=int(now_ms))
+            self._pending[int(seq)] = _RelayPendingReliable(packet=packet, sent_at_ms=int(now_ms))
         return packet
 
-    def ingest_packet(self, packet: Packet, *, now_ms: int) -> tuple[list[NetMessage], bool]:
+    def ingest_packet(self, packet: RelayPacket, *, now_ms: int) -> tuple[list[NetMessage], bool]:
         self._apply_ack(int(packet.ack), now_ms=int(now_ms))
         if not bool(packet.reliable):
             return [packet.message], False
@@ -109,18 +109,18 @@ class RelayReliableLink(msgspec.Struct):
         for seq in to_drop:
             self._pending.pop(int(seq), None)
 
-    def poll_resends(self, *, now_ms: int) -> list[Packet]:
-        out: list[Packet] = []
+    def poll_resends(self, *, now_ms: int) -> list[RelayPacket]:
+        out: list[RelayPacket] = []
         for seq, pending in list(self._pending.items()):
             if int(now_ms) - int(pending.sent_at_ms) < int(self.resend_ms):
                 continue
-            refreshed = Packet(
+            refreshed = RelayPacket(
                 seq=int(pending.packet.seq),
                 ack=int(self._recv_highest_seq),
                 reliable=True,
                 message=pending.packet.message,
             )
-            self._pending[int(seq)] = _PendingReliable(packet=refreshed, sent_at_ms=int(now_ms))
+            self._pending[int(seq)] = _RelayPendingReliable(packet=refreshed, sent_at_ms=int(now_ms))
             out.append(refreshed)
             self._resend_count += 1
         return out
