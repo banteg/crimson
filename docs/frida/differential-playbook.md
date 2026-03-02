@@ -40,10 +40,10 @@ Record the SHA256 of the `.cdt` trace first. Session tracking is by capture SHA 
 ```bash
 uv run crimson dbg record \
   analysis/frida/traces/gameplay_diff_capture.<run>.crd \
-  --impl zig \
-  --out analysis/frida/traces/gameplay_diff_capture.<run>.zig.cdt
+  --out analysis/frida/traces/gameplay_diff_capture.<run>.py.cdt
 ```
-*(Use `--impl python` to test the Python path).*
+
+Record Zig traces from Zig-native tooling, then compare `.cdt` artifacts directly.
 
 ## 3) Decide session bookkeeping
 

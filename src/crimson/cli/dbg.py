@@ -23,7 +23,6 @@ def _as_dict(value: object) -> dict[str, object]:
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    impl: str = typer.Option("python", "--impl", help="trace producer implementation id (supported: python, zig)"),
     profile: Literal["minimal", "standard", "full"] = typer.Option(
         "standard", "--profile", help="minimal|standard|full",
     ),
@@ -33,6 +32,7 @@ def cmd_dbg_record(
     """Run replay simulation and record a CDT trace."""
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
+    from ..sim.driver.setup import ReplayRunnerError
 
     profile_name = profile.strip().lower()
 
@@ -44,9 +44,8 @@ def cmd_dbg_record(
             max_ticks=max_ticks,
             strict_events=True,
             chunk_ticks=chunk_ticks,
-            impl=impl,
         )
-    except (TraceError, ValueError) as exc:
+    except (TraceError, ValueError, ReplayRunnerError) as exc:
         typer.echo(f"dbg record failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
