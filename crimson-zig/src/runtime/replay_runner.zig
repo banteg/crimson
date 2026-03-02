@@ -66,7 +66,6 @@ const ai7_link_timer_rollover_max: i32 = -700;
 pub const ReplayRunnerError = error{
     OutOfMemory,
     InvalidHeaderValue,
-    InvalidReplayTimingRows,
     InvalidCaptureEnumValue,
     UnsupportedGameMode,
     UnsupportedPlayerCount,
@@ -200,7 +199,7 @@ pub fn runReplayScaffoldWithTrace(
         return error.InvalidHeaderValue;
     }
     if (replay.dt.len != replay.tickCount()) {
-        return error.InvalidReplayTimingRows;
+        return error.InvalidHeaderValue;
     }
 
     const events = replay.events;
