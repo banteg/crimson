@@ -32,4 +32,3 @@ zig-out/
 .mcp.json
 .gemini/
 gha-creds-*.json
-sgconfig.local.yml
