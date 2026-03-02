@@ -47,7 +47,7 @@ def focus_tick(
         expected_checkpoint,
         candidate_checkpoint,
         ignore_field_prefixes=policy.ignore_field_prefixes,
-        max_diffs=int(policy.max_field_diffs),
+        max_diffs=policy.max_field_diffs,
         float_abs_tol=float(policy.float_abs_tol),
     )
 

@@ -6,7 +6,7 @@ import msgspec
 class ParityPolicy(msgspec.Struct, frozen=True):
     name: str
     float_abs_tol: float
-    max_field_diffs: int
+    max_field_diffs: int | None
     ignore_field_prefixes: tuple[str, ...] = ()
 
 
@@ -14,7 +14,7 @@ _POLICIES: dict[str, ParityPolicy] = {
     "strict": ParityPolicy(
         name="strict",
         float_abs_tol=0.0,
-        max_field_diffs=16,
+        max_field_diffs=None,
     ),
 }
 
