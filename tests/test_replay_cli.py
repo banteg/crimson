@@ -13,9 +13,7 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.perks import PerkId
 from crimson.replay import (
-    CapturePerkApplyEvent,
     PerkMenuOpenEvent,
     PerkPickEvent,
     Replay,
@@ -418,7 +416,7 @@ def test_replay_verify_is_strict_by_default(tmp_path: Path) -> None:
     assert "perk_pick failed" in result.output
 
 
-def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
+def test_replay_verify_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -426,8 +424,10 @@ def test_replay_verify_can_run_lenient_event_mode(tmp_path: Path) -> None:
 
     result = runner.invoke(app, ["replay", "verify", str(replay_path), "--lenient-events"])
 
-    assert result.exit_code == 0, result.output
-    assert "ok:" in result.output
+    assert result.exit_code == 2
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--lenient-events" in output
 
 
 def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:
@@ -560,7 +560,7 @@ def test_replay_info_is_strict_by_default(tmp_path: Path) -> None:
     assert "perk_pick failed" in result.output
 
 
-def test_replay_info_can_run_lenient_event_mode(tmp_path: Path) -> None:
+def test_replay_info_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -568,8 +568,10 @@ def test_replay_info_can_run_lenient_event_mode(tmp_path: Path) -> None:
 
     result = runner.invoke(app, ["replay", "info", str(replay_path), "--lenient-events"])
 
-    assert result.exit_code == 0, result.output
-    assert "ok:" in result.output
+    assert result.exit_code == 2
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--lenient-events" in output
 
 
 def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
@@ -595,15 +597,8 @@ def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
 
 def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
-    replay.events.append(
-        CapturePerkApplyEvent(
-            tick_index=0,
-            perk_id=int(PerkId.BREATHING_ROOM),
-            outside_before=False,
-            pending_before=None,
-            pending_after=None,
-        ),
-    )
+    replay.events.append(PerkMenuOpenEvent(tick_index=0, player_index=0))
+    replay.events.append(PerkMenuOpenEvent(tick_index=0, player_index=1))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival-2p.crd")
     runner = CliRunner()
 
@@ -615,6 +610,7 @@ def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
             str(replay_path),
             "--format",
             "json",
+            "--verbose",
             "--player-index",
             "1",
         ],
@@ -663,76 +659,6 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     verbose_payload = json.loads(verbose_result.output)
     verbose_kinds = {event["kind"] for event in verbose_payload["timeline"]}
     assert "perk_menu_open" in verbose_kinds
-
-
-def test_replay_info_emits_net_health_damage_from_tick_delta(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(
-        CapturePerkApplyEvent(
-            tick_index=0,
-            perk_id=int(PerkId.BREATHING_ROOM),
-            outside_before=False,
-            pending_before=None,
-            pending_after=None,
-        ),
-    )
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival-health.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "info",
-            str(replay_path),
-            "--format",
-            "json",
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    payload = json.loads(result.output)
-    damage_events = [
-        event for event in payload["timeline"] if event["kind"] == "health_damage" and int(event["player_index"]) == 0
-    ]
-    assert len(damage_events) == 1
-    data = damage_events[0]["data"]
-    assert abs(float(data["health_before"]) - 100.0) < 1e-6
-    assert abs(float(data["health_after"]) - 33.33333333333333) < 0.05
-    assert abs(float(data["amount"]) - 66.66666666666667) < 0.05
-
-
-def test_replay_info_player_death_is_core_event(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay.events.append(
-        CapturePerkApplyEvent(
-            tick_index=0,
-            perk_id=int(PerkId.GRIM_DEAL),
-            outside_before=False,
-            pending_before=None,
-            pending_after=None,
-        ),
-    )
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival-player-death.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "info",
-            str(replay_path),
-            "--format",
-            "json",
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    payload = json.loads(result.output)
-    death_events = [
-        event for event in payload["timeline"] if event["kind"] == "player_death" and int(event["player_index"]) == 0
-    ]
-    assert len(death_events) == 1
 
 
 def test_replay_benchmark_human_success_outputs_throughput_stats(tmp_path: Path) -> None:
@@ -843,7 +769,6 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
             "1",
             "--warmup-runs",
             "0",
-            "--lenient-events",
             "--format",
             "json",
         ],
@@ -855,7 +780,7 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
     assert payload["run_result"]["score_xp"] == 42
     run_replay_render_benchmark.assert_called_once()
     kwargs = run_replay_render_benchmark.call_args.kwargs
-    assert kwargs["strict_events"] is False
+    assert kwargs["strict_events"] is True
     assert kwargs["runs"] == 1
     assert kwargs["warmup_runs"] == 0
     assert kwargs["rtx"] is False
@@ -1272,7 +1197,6 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
             "--pixel-format",
             "yuv420p",
             "--overwrite",
-            "--lenient-events",
         ],
     )
 
@@ -1281,7 +1205,7 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     assert "frames=120" in result.output
     run_replay_render_video.assert_called_once()
     kwargs = run_replay_render_video.call_args.kwargs
-    assert kwargs["strict_events"] is False
+    assert kwargs["strict_events"] is True
     assert kwargs["fps"] == 60
     assert kwargs["crf"] == 14
     assert kwargs["preset"] == "slow"
@@ -1565,7 +1489,7 @@ def test_replay_benchmark_is_strict_by_default(tmp_path: Path) -> None:
     assert "perk_pick failed" in result.output
 
 
-def test_replay_benchmark_can_run_lenient_event_mode(tmp_path: Path) -> None:
+def test_replay_benchmark_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay.events.append(PerkPickEvent(tick_index=0, player_index=0, choice_index=0))
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -1585,8 +1509,10 @@ def test_replay_benchmark_can_run_lenient_event_mode(tmp_path: Path) -> None:
         ],
     )
 
-    assert result.exit_code == 0, result.output
-    assert "ok:" in result.output
+    assert result.exit_code == 2
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--lenient-events" in output
 
 
 def test_replay_verify_rejects_checkpoints_option(tmp_path: Path) -> None:

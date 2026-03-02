@@ -573,7 +573,7 @@ def _build_replay_list_row(
 
     try:
         replay = cast("Any", load_replay_fn(replay_path.read_bytes()))
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         return (
             _ReplayListRow(
                 replay=rel,
@@ -625,6 +625,8 @@ def _build_replay_list_row(
 
 
 replay_app = typer.Typer(add_completion=False)
+
+
 @replay_app.command("play")
 def cmd_replay_play(
     replay_file: Path = typer.Argument(
@@ -781,11 +783,6 @@ def cmd_replay_verify(
         help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -829,7 +826,7 @@ def cmd_replay_verify(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
         )
     except (ReplayCodecError, ReplayRunnerError) as exc:
@@ -916,9 +913,7 @@ def cmd_replay_verify(
         )
         if header_claim_payload is not None:
             mismatch_fields = (
-                ",".join(header_claim_payload.mismatched_fields)
-                if header_claim_payload.mismatched_fields
-                else "-"
+                ",".join(header_claim_payload.mismatched_fields) if header_claim_payload.mismatched_fields else "-"
             )
             message += (
                 f"; header_claim complete={header_claim_payload.expected.complete} "
@@ -948,11 +943,6 @@ def cmd_replay_info(
         help="optional JSON output path for replay info payload",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     verbose: bool = typer.Option(
         False,
         "--verbose",
@@ -992,7 +982,7 @@ def cmd_replay_info(
         result = run_replay_info(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
@@ -1050,8 +1040,7 @@ def cmd_replay_info(
     for event in timeline_payload:
         player_tag = f" [p{int(event.player_index)}]" if event.player_index is not None else ""
         typer.echo(
-            f"t={float(event.elapsed_s):.3f} tick={int(event.tick_index)}{player_tag} "
-            f"{event.kind} {event.detail}",
+            f"t={float(event.elapsed_s):.3f} tick={int(event.tick_index)}{player_tag} {event.kind} {event.detail}",
         )
 
     tail = f"events={int(summary_payload.event_count)}"
@@ -1089,11 +1078,6 @@ def cmd_replay_benchmark(
         help="enable non-canonical RTX render mode (render mode only)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -1177,7 +1161,9 @@ def cmd_replay_benchmark(
             typer.echo("replay benchmark failed: --render-telemetry-out is supported only with --mode render", err=True)
             raise typer.Exit(code=1)
         if render_charts_out_dir is not None:
-            typer.echo("replay benchmark failed: --render-charts-out-dir is supported only with --mode render", err=True)
+            typer.echo(
+                "replay benchmark failed: --render-charts-out-dir is supported only with --mode render", err=True,
+            )
             raise typer.Exit(code=1)
 
     try:
@@ -1190,7 +1176,7 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=bool(strict_events),
+                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1208,7 +1194,7 @@ def cmd_replay_benchmark(
                 runs=int(resolved_runs),
                 warmup_runs=int(resolved_warmup_runs),
                 max_ticks=max_ticks,
-                strict_events=bool(strict_events),
+                strict_events=True,
                 trace_rng=bool(trace_rng),
                 profile=bool(profile),
                 profile_sort=profile_sort,
@@ -1287,7 +1273,7 @@ def cmd_replay_benchmark(
             runs=int(resolved_runs),
             warmup_runs=int(resolved_warmup_runs),
             max_ticks=(int(max_ticks) if max_ticks is not None else None),
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             profile=bool(profile),
             profile_sort=str(profile_sort),
@@ -1376,8 +1362,7 @@ def cmd_replay_benchmark(
     if benchmark.profile is None:
         return
     typer.echo(
-        f"profile: sort={benchmark.profile.sort} source={benchmark.profile.source} "
-        f"top={benchmark.profile.top}",
+        f"profile: sort={benchmark.profile.sort} source={benchmark.profile.source} top={benchmark.profile.top}",
     )
     typer.echo("hotspots:")
     if not benchmark.profile.hotspots:
@@ -1407,11 +1392,6 @@ def cmd_replay_render(
     height: int | None = typer.Option(None, help="render height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, "--fps", min=1, help="output video fps"),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -1502,7 +1482,7 @@ def cmd_replay_render(
             height=height,
             fps=int(fps),
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             ffmpeg_bin=(Path(ffmpeg_bin) if ffmpeg_bin is not None else None),
             crf=int(crf),
@@ -1541,11 +1521,6 @@ def cmd_replay_verify_checkpoints(
         help="checkpoint sidecar path (default: <replay>.chk)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_events: bool = typer.Option(
-        True,
-        "--strict-events/--lenient-events",
-        help="fail on unsupported replay events/perk picks (default: strict)",
-    ),
     strict_integrity: bool = typer.Option(
         True,
         "--strict-integrity/--lenient-integrity",
@@ -1606,8 +1581,7 @@ def cmd_replay_verify_checkpoints(
         raise typer.Exit(code=1) from exc
     if expected.replay_sha256 and str(expected.replay_sha256) != str(replay_sha256):
         mismatch = (
-            "checkpoints replay_sha256 mismatch "
-            f"(checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})"
+            f"checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})"
         )
         if strict_integrity:
             typer.echo(f"replay verification failed: {mismatch}", err=True)
@@ -1621,7 +1595,7 @@ def cmd_replay_verify_checkpoints(
         result = run_replay(
             replay,
             max_ticks=max_ticks,
-            strict_events=bool(strict_events),
+            strict_events=True,
             trace_rng=bool(trace_rng),
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
@@ -1662,90 +1636,3 @@ def cmd_replay_diff_checkpoints(
     if diff.first_rng_only_tick is not None:
         message += f"; rng-only drift starts at tick={diff.first_rng_only_tick}"
     typer.echo(message)
-
-
-@replay_app.command("convert-capture")
-def cmd_replay_convert_capture(
-    capture_file: Path = typer.Argument(
-        ...,
-        help="capture file (.json/.json.gz/.msgpack.zst)",
-    ),
-    output_file: Path = typer.Argument(..., help="output checkpoints sidecar (.crd.chk)"),
-    replay_file: Path | None = typer.Option(
-        None,
-        "--replay",
-        help="output replay path (.crd); default: derive from checkpoints path",
-    ),
-    replay_sha256: str = typer.Option(
-        "",
-        help="optional replay sha256 to store in the converted sidecar",
-    ),
-    seed: int | None = typer.Option(
-        None,
-        help="seed override for replay reconstruction (default: infer from capture rng telemetry)",
-    ),
-    player_count: int | None = typer.Option(
-        None,
-        help="player count override for replay reconstruction (default: infer from capture telemetry)",
-    ),
-    game_mode_id: int | None = typer.Option(
-        None,
-        help="game mode override for replay reconstruction (default: infer from capture telemetry)",
-    ),
-    aim_scheme_player: list[str] = typer.Option(
-        [],
-        "--aim-scheme-player",
-        help=(
-            "override replay reconstruction aim scheme as PLAYER=SCHEME (repeatable); "
-            "use for captures missing config_aim_scheme telemetry"
-        ),
-    ),
-) -> None:
-    """Convert capture data into replay + checkpoint artifacts."""
-    import hashlib
-
-    from ..original.capture import (
-        convert_capture_to_checkpoints,
-        convert_capture_to_replay,
-        default_capture_replay_path,
-        load_capture,
-        parse_player_int_overrides,
-    )
-    from ..replay import dump_replay
-    from ..replay.checkpoints import dump_checkpoints_file
-
-    capture = load_capture(Path(capture_file))
-    try:
-        aim_scheme_overrides = parse_player_int_overrides(
-            aim_scheme_player,
-            option_name="--aim-scheme-player",
-        )
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
-    try:
-        replay = convert_capture_to_replay(
-            capture,
-            seed=seed,
-            player_count=player_count,
-            game_mode_id=game_mode_id,
-            aim_scheme_overrides_by_player=aim_scheme_overrides,
-        )
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
-    replay_path = (
-        Path(replay_file) if replay_file is not None else default_capture_replay_path(Path(output_file))
-    )
-    replay_blob = dump_replay(replay)
-    replay_path.write_bytes(replay_blob)
-    digest = hashlib.sha256(replay_blob).hexdigest()
-
-    checkpoints = convert_capture_to_checkpoints(
-        capture,
-        replay_sha256=str(replay_sha256 or digest),
-    )
-    dump_checkpoints_file(Path(output_file), checkpoints)
-    typer.echo(f"wrote replay ({len(replay.inputs)} ticks) to {replay_path}")
-    typer.echo(f"wrote {len(checkpoints.checkpoints)} checkpoints to {output_file}")
-    typer.echo("note: replay uses best-effort input reconstruction; checkpoints remain the authoritative diff target")

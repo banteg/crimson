@@ -6,13 +6,19 @@ import msgspec
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 2
+TRACE_SCHEMA_VERSION = 3
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
+TRACE_REQUIRED_CHANNELS_V3 = (
+    "checkpoint",
+    "sim_state",
+    "entity_samples",
+    "rng_marks",
+    "rng_stream",
+)
+
 _DEFAULT_CHANNEL_VERSION = 1
-_CHANNEL_VERSION_OVERRIDES = {
-    "zig_tick_trace": 6,
-}
+_CHANNEL_VERSION_OVERRIDES: dict[str, int] = {}
 
 _CHUNK_KIND_META = b"META"
 _CHUNK_KIND_TICK = b"TICK"

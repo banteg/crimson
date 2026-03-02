@@ -1,7 +1,7 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
 
-pub const replay_format_version: i32 = 6;
+pub const replay_format_version: i32 = 7;
 pub const weapon_usage_count: usize = 53;
 pub const max_players: usize = 4;
 pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
@@ -343,12 +343,14 @@ pub const ReplayEventSummary = struct {
 pub const Replay = struct {
     header: ReplayHeader,
     inputs: []ReplayTickInputs,
+    dt_ms_i32: []i32,
     events: []ReplayEvent,
 
     pub fn deinit(self: Replay, allocator: std.mem.Allocator) void {
         self.header.deinit(allocator);
         for (self.inputs) |tick| allocator.free(tick);
         allocator.free(self.inputs);
+        allocator.free(self.dt_ms_i32);
         allocator.free(self.events);
     }
 
@@ -580,6 +582,7 @@ const ReplayEventWire = union(enum) {
 const ReplayWire = struct {
     header: ReplayHeaderWire,
     inputs: []const []const ReplayInputWire,
+    dt_ms_i32: []const i32 = &.{},
     events: []const ReplayEventWire = &.{},
 };
 
@@ -658,6 +661,7 @@ pub fn parseReplaySummary(
     }
 
     try validateInputShape(wire.inputs, header.player_count);
+    try validateDtMsI32Rows(wire.dt_ms_i32, wire.inputs.len);
     const events = try parseEventSummary(wire.events, wire.inputs.len);
 
     return .{
@@ -688,9 +692,13 @@ pub fn parseReplay(
     }
 
     try validateInputShape(wire.inputs, header.player_count);
+    try validateDtMsI32Rows(wire.dt_ms_i32, wire.inputs.len);
 
     const inputs = try buildInputs(allocator, wire.inputs);
     errdefer freeInputs(allocator, inputs);
+
+    const dt_ms_i32 = try buildDtMsI32(allocator, wire.dt_ms_i32, wire.inputs.len);
+    errdefer allocator.free(dt_ms_i32);
 
     const events = try buildEvents(allocator, wire.events, wire.inputs.len);
     errdefer allocator.free(events);
@@ -698,6 +706,7 @@ pub fn parseReplay(
     return .{
         .header = header,
         .inputs = inputs,
+        .dt_ms_i32 = dt_ms_i32,
         .events = events,
     };
 }
@@ -789,6 +798,30 @@ fn buildEvents(
         events[idx] = try parseReplayEvent(wire_event, input_len);
     }
     return events;
+}
+
+fn buildDtMsI32(
+    allocator: std.mem.Allocator,
+    wire_dt_ms_i32: []const i32,
+    input_len: usize,
+) ReplayCodecError![]i32 {
+    try validateDtMsI32Rows(wire_dt_ms_i32, input_len);
+    const out = allocator.alloc(i32, wire_dt_ms_i32.len) catch return error.OutOfMemory;
+    for (wire_dt_ms_i32, 0..) |value, idx| {
+        out[idx] = value;
+    }
+    return out;
+}
+
+fn validateDtMsI32Rows(
+    wire_dt_ms_i32: []const i32,
+    input_len: usize,
+) ReplayCodecError!void {
+    if (wire_dt_ms_i32.len == 0) return;
+    if (wire_dt_ms_i32.len != input_len) return error.UnsupportedInputShape;
+    for (wire_dt_ms_i32) |value| {
+        if (value <= 0) return error.UnsupportedInputShape;
+    }
 }
 
 fn freeInputs(allocator: std.mem.Allocator, inputs: []ReplayTickInputs) void {

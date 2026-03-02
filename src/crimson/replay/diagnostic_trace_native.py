@@ -45,6 +45,7 @@ class ReplayTickTraceVec2(msgspec.Struct):
 class ReplayTickTraceWeaponState(msgspec.Struct):
     weapon_id: int | str
     ammo: float
+    clip_size: int = 0
     reload_active: bool = False
     reload_timer: float = 0.0
     reload_timer_max: float = 0.0
@@ -83,6 +84,64 @@ class ReplayTickTraceGameplayState(msgspec.Struct):
     debug_last_picked_bonus_amount: int = 0
 
 
+class ReplayTickTraceCreatureSample(msgspec.Struct):
+    index: int
+    type_id: int
+    hp: float
+    pos: ReplayTickTraceVec2
+    flags: int
+    ai_mode: int
+    link_index: int
+    heading: float
+    target_heading: float
+    orbit_angle: float
+    orbit_radius: float
+    lifecycle_stage: float
+
+
+class ReplayTickTraceProjectileSample(msgspec.Struct):
+    index: int
+    type_id: int
+    angle: float
+    pos: ReplayTickTraceVec2
+    vel: ReplayTickTraceVec2
+    life_timer: float
+    speed_scale: float
+    damage_pool: float
+    hit_radius: float
+    travel_budget: float
+    owner_id: int
+
+
+class ReplayTickTraceSecondaryProjectileSample(msgspec.Struct):
+    index: int
+    type_id: int
+    angle: float
+    pos: ReplayTickTraceVec2
+    vel: ReplayTickTraceVec2
+    speed: float
+    trail_timer: float
+    owner_id: int
+    target_id: int
+
+
+class ReplayTickTraceBonusSample(msgspec.Struct):
+    index: int
+    bonus_id: int
+    picked: bool
+    time_left: float
+    time_max: float
+    pos: ReplayTickTraceVec2
+    amount: int
+
+
+class ReplayTickTraceEntitySamples(msgspec.Struct):
+    creatures: list[ReplayTickTraceCreatureSample] = msgspec.field(default_factory=list)
+    projectiles: list[ReplayTickTraceProjectileSample] = msgspec.field(default_factory=list)
+    secondary_projectiles: list[ReplayTickTraceSecondaryProjectileSample] = msgspec.field(default_factory=list)
+    bonuses: list[ReplayTickTraceBonusSample] = msgspec.field(default_factory=list)
+
+
 class ReplayTickTraceRow(msgspec.Struct):
     schema_version: int
     tick_index: int
@@ -91,6 +150,7 @@ class ReplayTickTraceRow(msgspec.Struct):
     summary: ReplayTickTraceSummary
     gameplay_state: ReplayTickTraceGameplayState
     player_state: ReplayTickTracePlayerState
+    entities: ReplayTickTraceEntitySamples = msgspec.field(default_factory=ReplayTickTraceEntitySamples)
 
 
 _ROW_DECODER = msgspec.msgpack.Decoder(type=ReplayTickTraceRow)

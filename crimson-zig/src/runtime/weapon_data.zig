@@ -19,7 +19,7 @@ pub const WeaponStats = struct {
 
 pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
     .none = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .pistol = .{ .clip_size = 10, .reload_time = 1.2, .shot_cooldown = 0.7117, .pellet_count = 1, .travel_budget = 55.0, .damage_scale = 4.1, .flags = 5, .spread_heat_inc = 0.22 },
+    .pistol = .{ .clip_size = 12, .reload_time = 1.2, .shot_cooldown = 0.7117, .pellet_count = 1, .travel_budget = 55.0, .damage_scale = 4.1, .flags = 5, .spread_heat_inc = 0.22 },
     .assault_rifle = .{ .clip_size = 25, .reload_time = 1.2, .shot_cooldown = 0.117, .pellet_count = 1, .travel_budget = 50.0, .damage_scale = 1.0, .flags = 1, .spread_heat_inc = 0.09 },
     .shotgun = .{ .clip_size = 12, .reload_time = 1.9, .shot_cooldown = 0.85, .pellet_count = 12, .travel_budget = 60.0, .damage_scale = 1.2, .flags = 1, .spread_heat_inc = 0.27 },
     .sawed_off_shotgun = .{ .clip_size = 12, .reload_time = 1.9, .shot_cooldown = 0.87, .pellet_count = 12, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 1, .spread_heat_inc = 0.13 },

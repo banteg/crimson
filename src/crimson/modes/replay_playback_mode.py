@@ -23,7 +23,6 @@ from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
-    CaptureBootstrapEvent,
     Replay,
     apply_replay_bootstrap,
     load_replay_file,
@@ -54,6 +53,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
 _SKIP_SHORT_SECONDS = 5.0
@@ -92,7 +92,7 @@ class ReplayPlaybackMode:
         self._replay_path = Path(replay_path)
         self._config = config
         self._console = console
-        self._max_ticks = (max(0, int(max_ticks)) if max_ticks is not None else None)
+        self._max_ticks = max(0, int(max_ticks)) if max_ticks is not None else None
         self._strict_events = bool(strict_events)
         self._trace_rng = bool(trace_rng)
         self._rtx = bool(rtx)
@@ -317,10 +317,7 @@ class ReplayPlaybackMode:
         for event in replay.events:
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
         self._events_by_tick = events_by_tick
-        self._defer_menu_open = any(
-            isinstance(event, CaptureBootstrapEvent)
-            for event in replay.events
-        )
+        self._defer_menu_open = False
 
         world_size = float(replay.header.world_size)
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
@@ -455,11 +452,6 @@ class ReplayPlaybackMode:
                 clear_fx_queues_each_tick=False,
             )
         elif int(replay.header.game_mode_id) == int(GameMode.RUSH):
-            if any(
-                not isinstance(event, CaptureBootstrapEvent)
-                for event in replay.events
-            ):
-                raise ValueError("rush replay does not support events")
             self._survival = None
             self._rush = RushDeterministicSession(
                 world=world.world_state,
@@ -532,7 +524,7 @@ class ReplayPlaybackMode:
         for player in world.players:
             if player.weapon.weapon_id != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
-            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+            player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
     def _apply_tick_events(self, events: list[object], *, tick_index: int, dt_frame: float) -> None:
         replay = self._replay
@@ -591,7 +583,8 @@ class ReplayPlaybackMode:
         self._apply_tick_events(self._events_by_tick.get(int(tick_index), []), tick_index=tick_index, dt_frame=dt_frame)
 
         player_inputs = [
-            msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])
+            msgspec.structs.replace(inp, reload_pressed=False)
+            for inp in unpack_tick_inputs(replay.inputs[int(tick_index)])
         ]
         tick = session.step_tick(
             dt_frame=float(dt_frame),

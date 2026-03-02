@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
 const replay_codec = @import("../replay_codec.zig");
+const bonuses_mod = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const owner_ref = @import("owner_ref.zig");
@@ -136,6 +137,12 @@ pub const ReplayScaffoldResult = struct {
 };
 
 pub const ReplayTickTrace = replay_diagnostic_trace.ReplayTickTrace;
+pub fn deinitReplayTickTraceRows(
+    allocator: std.mem.Allocator,
+    rows: []ReplayTickTrace,
+) void {
+    replay_diagnostic_trace.deinitReplayTickTraceSlice(allocator, rows);
+}
 
 pub const DtFrameOverride = struct {
     tick_index: usize,
@@ -209,7 +216,8 @@ pub fn runReplayScaffoldWithTrace(
         }
     }
     const capture_spawn_events_authoritative = original_capture_replay and has_capture_creature_spawn_events;
-    const apply_world_dt_steps = !(original_capture_replay and options.dt_frame_overrides != null);
+    const has_dt_frame_overrides = options.dt_frame_overrides != null or replay.dt_ms_i32.len != 0;
+    const apply_world_dt_steps = !(original_capture_replay and has_dt_frame_overrides);
     const defer_menu_open_events = original_capture_replay;
 
     var quest_start_weapon_id_for_reset: i32 = options.quest_start_weapon_id orelse @intFromEnum(game_ids.WeaponId.pistol);
@@ -286,7 +294,12 @@ pub fn runReplayScaffoldWithTrace(
             return error.UnsupportedEventOrdering;
         }
 
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, tick_index, context.dt_nominal);
+        const dt_tick = resolveDtFrame(
+            options.dt_frame_overrides,
+            replay.dt_ms_i32,
+            tick_index,
+            context.dt_nominal,
+        );
         const tick_event_start = context.event_index;
         var tick_event_end = tick_event_start;
         while (tick_event_end < events.len and events[tick_event_end].tickIndex() == tick_index) : (tick_event_end += 1) {}
@@ -316,12 +329,16 @@ pub fn runReplayScaffoldWithTrace(
             const player0 = players[0];
             try trace.append(
                 trace_allocator,
-                buildTickTrace(
+                try buildTickTrace(
+                    trace_allocator,
                     tick_index,
                     narrowF32(trace_elapsed_ms),
                     &context.state,
                     player0,
                     &context.creatures,
+                    &context.projectiles,
+                    &context.secondary_projectiles,
+                    &context.bonuses,
                     step_result.rng_after_perk_effects,
                     step_result.rng_after_creatures,
                     step_result.rng_after_projectiles,
@@ -343,7 +360,12 @@ pub fn runReplayScaffoldWithTrace(
     }
     var terminal_menu_open_seen = false;
     while (context.event_index < events.len and events[context.event_index].tickIndex() == terminal_tick) : (context.event_index += 1) {
-        const dt_tick = resolveDtFrame(options.dt_frame_overrides, terminal_tick, context.dt_nominal);
+        const dt_tick = resolveDtFrame(
+            options.dt_frame_overrides,
+            replay.dt_ms_i32,
+            terminal_tick,
+            context.dt_nominal,
+        );
         const outcome = try replay_events.applyReplayEvent(
             events[context.event_index],
             &context.state,
@@ -422,11 +444,15 @@ pub fn runReplayScaffoldWithTrace(
 }
 
 fn buildTickTrace(
+    allocator: std.mem.Allocator,
     tick_index: usize,
     elapsed_ms_sim: f32,
     state: *const state_mod.GameplayState,
     player: state_mod.PlayerState,
     creatures: *const creatures_mod.CreaturePool,
+    projectiles: *const projectiles_mod.ProjectilePool,
+    secondary_projectiles: *const secondary_projectiles_mod.SecondaryProjectilePool,
+    bonuses: *const bonuses_mod.BonusPool,
     rng_after_perk_effects: u32,
     rng_after_creatures: u32,
     rng_after_projectiles: u32,
@@ -437,13 +463,17 @@ fn buildTickTrace(
     rng_after_wave_spawns: u32,
     rng_after_spawns: u32,
     rng_after_bonus_update: u32,
-) ReplayTickTrace {
-    return replay_diagnostic_trace.buildReplayTickTrace(
+) !ReplayTickTrace {
+    return replay_diagnostic_trace.buildReplayTickTraceWithEntities(
+        allocator,
         tick_index,
         elapsed_ms_sim,
         state,
         player,
         creatures,
+        projectiles,
+        secondary_projectiles,
+        bonuses,
         rng_after_perk_effects,
         rng_after_creatures,
         rng_after_projectiles,
@@ -542,12 +572,19 @@ fn hashMix(seed: u64, value: u64) u64 {
 
 fn resolveDtFrame(
     overrides: ?[]const DtFrameOverride,
+    replay_dt_ms_i32: []const i32,
     tick_index: usize,
     default_dt: f32,
 ) f32 {
     if (overrides) |entries| {
         for (entries) |entry| {
             if (entry.tick_index == tick_index) return entry.dt_frame;
+        }
+    }
+    if (tick_index < replay_dt_ms_i32.len) {
+        const dt_ms = replay_dt_ms_i32[tick_index];
+        if (dt_ms > 0) {
+            return @as(f32, @floatFromInt(dt_ms)) / 1000.0;
         }
     }
     return default_dt;
@@ -570,6 +607,7 @@ const ParsedQuestLevel = struct {
     major: i32,
     minor: i32,
 };
+const rush_forced_ammo: f32 = 30.0;
 
 fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
     const dot = std.mem.indexOfScalar(u8, value, '.') orelse return null;
@@ -601,7 +639,7 @@ fn enforceRushLoadout(players: []state_mod.PlayerState) void {
         if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
-        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
+        player.weapon.ammo = rush_forced_ammo;
     }
 }
 
@@ -1070,6 +1108,7 @@ test "survival scaffold bootstrap player shot cooldown blocks first-tick fire" {
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
+            defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             const result = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,
@@ -1478,6 +1517,7 @@ test "rush scaffold original capture bootstrap keeps packed move vector behavior
 
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -1883,6 +1923,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
 
     var baseline_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer baseline_trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, baseline_trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay_baseline,
         &baseline_trace,
@@ -1927,6 +1968,7 @@ test "quest scaffold applies capture bootstrap quest session timers" {
 
     var bootstrapped_trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer bootstrapped_trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, bootstrapped_trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay_bootstrapped,
         &bootstrapped_trace,
@@ -1998,6 +2040,7 @@ test "quest scaffold disables runtime spawn slot ticks when capture spawns are a
     const empty_entries = [_]spawn_mod.QuestSpawnEntry{};
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     _ = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -2210,6 +2253,7 @@ test "quest scaffold resets run state on capture transition to terminal state" {
 
     var trace: std.ArrayList(ReplayTickTrace) = .empty;
     defer trace.deinit(allocator);
+    defer deinitReplayTickTraceRows(allocator, trace.items);
     const result = try runReplayScaffoldWithTrace(
         replay,
         &trace,
@@ -2354,6 +2398,7 @@ test "quest scaffold disables world dt perk steps for original capture dt overri
 
             var trace: std.ArrayList(ReplayTickTrace) = .empty;
             defer trace.deinit(allocator_inner);
+            defer deinitReplayTickTraceRows(allocator_inner, trace.items);
             _ = try runReplayScaffoldWithTrace(
                 replay,
                 &trace,
@@ -2507,6 +2552,7 @@ fn buildTestReplay(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
+    const dt_ms_i32 = try allocator.alloc(i32, 0);
 
     return .{
         .header = .{
@@ -2533,6 +2579,7 @@ fn buildTestReplay(
             .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
+        .dt_ms_i32 = dt_ms_i32,
         .events = events,
     };
 }
@@ -2564,6 +2611,7 @@ fn buildTestReplayMulti(
     for (cfg.events, 0..) |event, idx| {
         events[idx] = event;
     }
+    const dt_ms_i32 = try allocator.alloc(i32, 0);
 
     return .{
         .header = .{
@@ -2590,6 +2638,7 @@ fn buildTestReplayMulti(
             .input_quantization = try allocator.dupe(u8, "f32"),
         },
         .inputs = ticks,
+        .dt_ms_i32 = dt_ms_i32,
         .events = events,
     };
 }

@@ -1,10 +1,11 @@
-# type: ignore[invalid-assignment,invalid-argument-type,no-matching-overload]
 from __future__ import annotations
 
-import math
+import json
 from collections.abc import Sequence
+from typing import cast
 
 import msgspec
+from deepdiff import DeepDiff
 
 from ..replay.checkpoints import ReplayCheckpoint
 
@@ -36,6 +37,17 @@ DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
     "after_rush_spawns",
 )
 
+_DEEPDIFF_CATEGORY_ORDER: tuple[str, ...] = (
+    "type_changes",
+    "values_changed",
+    "dictionary_item_removed",
+    "iterable_item_removed",
+    "set_item_removed",
+    "dictionary_item_added",
+    "iterable_item_added",
+    "set_item_added",
+)
+
 
 class ReplayDiffFailure(msgspec.Struct, frozen=True):
     kind: str
@@ -52,10 +64,10 @@ class ReplayDiffResult(msgspec.Struct, frozen=True):
     failure: ReplayDiffFailure | None = None
 
 
-class ReplayFieldDiff(msgspec.Struct, frozen=True):
-    field: str
-    expected: object
-    actual: object
+class CheckpointDeepDiff(msgspec.Struct, frozen=True):
+    payload: dict[str, object]
+    pretty: str
+    diff_count: int
 
 
 def _checkpoint_to_obj(
@@ -74,201 +86,105 @@ def _checkpoint_to_obj(
     return obj
 
 
-def _int_is_unknown(value: object) -> bool:
-    return isinstance(value, int) and int(value) < 0
+def _path_matches_ignored_prefix(path: str, prefixes: Sequence[str]) -> bool:
+    for prefix in prefixes:
+        target = f"root.{prefix}"
+        if path == target:
+            return True
+        if path.startswith(f"{target}."):
+            return True
+        if path.startswith(f"{target}["):
+            return True
+    return False
 
 
-def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
-    for key in ("elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending"):
-        if _int_is_unknown((exp[key] if key in exp else None)):
-            exp[key] = (act[key] if key in act else None)
-
-    exp_bonus = (exp["bonus_timers"] if "bonus_timers" in exp else None)
-    act_bonus = (act["bonus_timers"] if "bonus_timers" in act else None)
-    if isinstance(exp_bonus, dict) and isinstance(act_bonus, dict):
-        for key, value in list(exp_bonus.items()):
-            if _int_is_unknown(value):
-                exp_bonus[key] = (act_bonus[key] if key in act_bonus else None)
-
-    exp_perk = (exp["perk"] if "perk" in exp else None)
-    act_perk = (act["perk"] if "perk" in act else None)
-    if isinstance(exp_perk, dict) and isinstance(act_perk, dict):
-        if _int_is_unknown((exp_perk["pending_count"] if "pending_count" in exp_perk else None)):
-            exp["perk"] = act_perk
-
-    exp_deaths = (exp["deaths"] if "deaths" in exp else None)
-    if isinstance(exp_deaths, list) and len(exp_deaths) == 1:
-        row = exp_deaths[0]
-        if isinstance(row, dict):
-            is_unknown_death = (
-                _int_is_unknown((row["creature_index"] if "creature_index" in row else None))
-                and _int_is_unknown((row["type_id"] if "type_id" in row else None))
-                and _int_is_unknown((row["xp_awarded"] if "xp_awarded" in row else None))
-            )
-            if is_unknown_death:
-                exp["deaths"] = (act["deaths"] if "deaths" in act else None)
-
-
-def _path_join(path: str, suffix: str) -> str:
-    if not path:
-        return suffix
-    return f"{path}.{suffix}"
-
-
-def _values_equal(expected: object, actual: object, *, float_abs_tol: float) -> bool:
-    abs_tol = max(0.0, float(float_abs_tol)) + 1e-12
-    if isinstance(expected, float) and isinstance(actual, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
-    if isinstance(actual, float) and isinstance(expected, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
-    return expected == actual
-
-
-def _collect_field_diffs(
+def _normalize_deepdiff_payload(
+    raw_payload: dict[str, object],
     *,
-    path: str,
-    expected: object,
-    actual: object,
-    out: list[ReplayFieldDiff],
+    ignore_field_prefixes: Sequence[str],
     max_diffs: int | None,
-    float_abs_tol: float,
-) -> None:
-    if max_diffs is not None and len(out) >= int(max_diffs):
-        return
+) -> tuple[dict[str, object], int]:
+    out: dict[str, object] = {}
+    total = 0
+    limit = (None if max_diffs is None else max(1, int(max_diffs)))
 
-    if isinstance(expected, dict) and isinstance(actual, dict):
-        keys = sorted({*expected.keys(), *actual.keys()})
-        for key in keys:
-            key_str = str(key)
-            has_exp = key in expected or key_str in expected
-            has_act = key in actual or key_str in actual
-            if key_str in expected:
-                exp_value = expected[key_str]
-            elif key in expected:
-                exp_value = expected[key]
-            else:
-                exp_value = None
-            if key_str in actual:
-                act_value = actual[key_str]
-            elif key in actual:
-                act_value = actual[key]
-            else:
-                act_value = None
-            if not has_exp or not has_act:
-                out.append(
-                    ReplayFieldDiff(
-                        field=_path_join(path, key_str),
-                        expected=exp_value if has_exp else "<missing>",
-                        actual=act_value if has_act else "<missing>",
-                    ),
-                )
-                if max_diffs is not None and len(out) >= int(max_diffs):
-                    return
-                continue
-            _collect_field_diffs(
-                path=_path_join(path, key_str),
-                expected=exp_value,
-                actual=act_value,
-                out=out,
-                max_diffs=max_diffs,
-                float_abs_tol=float_abs_tol,
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        return
+    for category in _DEEPDIFF_CATEGORY_ORDER:
+        if limit is not None and total >= limit:
+            break
+        payload = raw_payload.get(category)
+        if payload is None:
+            continue
 
-    if isinstance(expected, list) and isinstance(actual, list):
-        if len(expected) != len(actual):
-            out.append(
-                ReplayFieldDiff(
-                    field=_path_join(path, "_len"),
-                    expected=int(len(expected)),
-                    actual=int(len(actual)),
-                ),
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        for idx, (exp_value, act_value) in enumerate(zip(expected, actual)):
-            _collect_field_diffs(
-                path=f"{path}[{idx}]" if path else f"[{idx}]",
-                expected=exp_value,
-                actual=act_value,
-                out=out,
-                max_diffs=max_diffs,
-                float_abs_tol=float_abs_tol,
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        return
+        match payload:
+            case dict() as mapping:
+                category_out: dict[str, object] = {}
+                for key in sorted(mapping.keys(), key=str):
+                    if not isinstance(key, str):
+                        raise TypeError(f"deepdiff dict category {category} had non-string key")
+                    path = str(key)
+                    if limit is not None and total >= limit:
+                        break
+                    if _path_matches_ignored_prefix(path, ignore_field_prefixes):
+                        continue
+                    row = mapping[key]
+                    category_out[path] = row
+                    total += 1
+                if category_out:
+                    out[category] = category_out
+            case list() as paths:
+                category_out_list: list[str] = []
+                for path in paths:
+                    if limit is not None and total >= limit:
+                        break
+                    if not isinstance(path, str):
+                        raise TypeError(f"deepdiff list category {category} had non-string path value")
+                    path_text = str(path)
+                    if _path_matches_ignored_prefix(path_text, ignore_field_prefixes):
+                        continue
+                    category_out_list.append(path_text)
+                    total += 1
+                if category_out_list:
+                    out[category] = category_out_list
+            case _:
+                raise TypeError(f"unsupported deepdiff category payload for {category}: {type(payload).__name__}")
 
-    # Capture checkpoints quantize global bonus timers to integer ms in JS.
-    # A one-ms jitter can appear from float edge cases and self-heal on the
-    # next tick without affecting deterministic simulation behavior.
-    if path.startswith("bonus_timers.") and isinstance(expected, int) and isinstance(actual, int):
-        timer_key = path.removeprefix("bonus_timers.")
-        if timer_key in {"2", "4", "6", "9", "11"}:
-            if int(expected) > 0 and int(actual) > 0 and abs(int(expected) - int(actual)) <= 1:
-                return
-
-    if not _values_equal(expected, actual, float_abs_tol=float_abs_tol):
-        out.append(
-            ReplayFieldDiff(
-                field=path or "<root>",
-                expected=expected,
-                actual=actual,
-            ),
-        )
+    return out, total
 
 
-def checkpoint_field_diffs(
+def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
     *,
-    include_hash_fields: bool = True,
-    include_rng_fields: bool = True,
-    normalize_unknown: bool = True,
-    unknown_events_wildcard: bool = True,
-    elapsed_baseline: tuple[int, int] | None = None,
+    ignore_field_prefixes: Sequence[str] = (),
     max_diffs: int | None = None,
-    float_abs_tol: float = 0.0001,
-) -> list[ReplayFieldDiff]:
-    exp_obj = _checkpoint_to_obj(
+    float_abs_tol: float = 0.0,
+) -> CheckpointDeepDiff | None:
+    deep = DeepDiff(
         expected,
-        include_hash_fields=bool(include_hash_fields),
-        include_rng_fields=bool(include_rng_fields),
-    )
-    act_obj = _checkpoint_to_obj(
         actual,
-        include_hash_fields=bool(include_hash_fields),
-        include_rng_fields=bool(include_rng_fields),
+        ignore_order=False,
+        verbose_level=2,
+        math_epsilon=max(0.0, float(float_abs_tol)),
     )
 
-    if elapsed_baseline is not None:
-        exp_base, act_base = elapsed_baseline
-        exp_elapsed = (exp_obj["elapsed_ms"] if "elapsed_ms" in exp_obj else None)
-        act_elapsed = (act_obj["elapsed_ms"] if "elapsed_ms" in act_obj else None)
-        if isinstance(exp_elapsed, int) and isinstance(act_elapsed, int):
-            if int(exp_elapsed) >= 0 and int(act_elapsed) >= 0:
-                exp_obj["elapsed_ms"] = int(exp_elapsed) - int(exp_base)
-                act_obj["elapsed_ms"] = int(act_elapsed) - int(act_base)
-
-    if normalize_unknown:
-        normalize_unknown_fields(exp_obj, act_obj)
-
-    # Legacy sidecars (without `events`) store unknown sentinel values.
-    if unknown_events_wildcard and int(expected.events.hit_count) < 0:
-        exp_obj["events"] = (act_obj["events"] if "events" in act_obj else None)
-
-    diffs: list[ReplayFieldDiff] = []
-    _collect_field_diffs(
-        path="",
-        expected=exp_obj,
-        actual=act_obj,
-        out=diffs,
+    raw_json = json.loads(str(deep.to_json()))
+    if isinstance(raw_json, dict):
+        raw_payload = cast("dict[str, object]", raw_json)
+    else:
+        raise TypeError("deepdiff payload must decode to object")
+    payload, diff_count = _normalize_deepdiff_payload(
+        raw_payload,
+        ignore_field_prefixes=tuple(str(prefix) for prefix in ignore_field_prefixes),
         max_diffs=max_diffs,
-        float_abs_tol=float_abs_tol,
     )
-    return diffs
+    if int(diff_count) <= 0:
+        return None
+
+    return CheckpointDeepDiff(
+        payload=payload,
+        pretty=json.dumps(payload, sort_keys=True, indent=2, default=repr),
+        diff_count=int(diff_count),
+    )
 
 
 def compare_checkpoints(
@@ -316,11 +232,6 @@ def compare_checkpoints(
 
         exp_no_rng = _checkpoint_to_obj(exp, include_hash_fields=False, include_rng_fields=False)
         act_no_rng = _checkpoint_to_obj(act, include_hash_fields=False, include_rng_fields=False)
-        normalize_unknown_fields(exp_no_rng, act_no_rng)
-        # Legacy sidecars (without `events`) store unknown sentinel values.
-        if int(exp.events.hit_count) < 0:
-            exp_no_rng["events"] = (act_no_rng["events"] if "events" in act_no_rng else None)
-
         if exp_no_rng == act_no_rng:
             if first_rng_only_tick is None:
                 first_rng_only_tick = tick

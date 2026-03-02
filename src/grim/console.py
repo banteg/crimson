@@ -126,8 +126,6 @@ def _load_script_from_paq(console: "ConsoleState", target: Path) -> str | None:
                     return data.decode("utf-8", errors="ignore")
         except OSError:
             continue
-        except Exception:
-            continue
     return None
 
 

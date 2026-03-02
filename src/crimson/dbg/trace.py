@@ -103,6 +103,115 @@ def _write_chunk(
     )
 
 
+def _write_trace_from_iter(
+    path: Path,
+    *,
+    meta: TraceMeta,
+    ticks: Iterable[TickRecord],
+    chunk_ticks: int,
+) -> TraceSummary:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    chunk_size = max(1, int(chunk_ticks))
+
+    with path.open("wb") as handle:
+        handle.write(TRACE_MAGIC)
+        handle.write(_FILE_HEADER_STRUCT.pack(TRACE_FORMAT_VERSION))
+
+        _write_chunk(
+            handle,
+            kind=CHUNK_KIND_META,
+            start_tick=-1,
+            end_tick=-1,
+            payload=_ENCODER.encode(meta),
+        )
+
+        tick_indices: list[TickBlockIndexEntry] = []
+        channel_counts: dict[str, int] = {}
+        first_tick: int | None = None
+        last_tick: int | None = None
+        tick_count = 0
+        current_block: list[TickRecord] = []
+
+        def flush_block() -> None:
+            nonlocal first_tick, last_tick, tick_count
+            if not current_block:
+                return
+            block = TickBlock(
+                start_tick=int(current_block[0].tick_index),
+                end_tick=int(current_block[-1].tick_index),
+                ticks=list(current_block),
+            )
+            tick_indices.append(
+                _write_chunk(
+                    handle,
+                    kind=CHUNK_KIND_TICK,
+                    start_tick=int(block.start_tick),
+                    end_tick=int(block.end_tick),
+                    payload=_ENCODER.encode(block),
+                ),
+            )
+            for row in current_block:
+                row_tick = int(row.tick_index)
+                if first_tick is None:
+                    first_tick = row_tick
+                if last_tick is not None and row_tick < int(last_tick):
+                    raise TraceError(
+                        f"tick rows must be in non-decreasing order, got {row_tick} after {int(last_tick)}",
+                    )
+                last_tick = row_tick
+                tick_count += 1
+                for channel_name in row.channels:
+                    channel_counts[channel_name] = channel_counts.get(channel_name, 0) + 1
+            current_block.clear()
+
+        for tick in ticks:
+            current_block.append(tick)
+            if len(current_block) >= int(chunk_size):
+                flush_block()
+        flush_block()
+
+        footer = TraceFooter(
+            trace_format_version=TRACE_FORMAT_VERSION,
+            tick_blocks=tick_indices,
+            tick_count=int(tick_count),
+            first_tick=(None if first_tick is None else int(first_tick)),
+            last_tick=(None if last_tick is None else int(last_tick)),
+            channel_counts={key: value for key, value in sorted(channel_counts.items())},
+        )
+        footer_payload = _ENCODER.encode(footer)
+        footer_index = _write_chunk(
+            handle,
+            kind=CHUNK_KIND_FOOTER,
+            start_tick=-1,
+            end_tick=-1,
+            payload=footer_payload,
+        )
+        handle.write(
+            _TRAILER_STRUCT.pack(
+                TRAILER_MAGIC,
+                footer_index.file_offset,
+            ),
+        )
+
+    return TraceSummary(meta=meta, footer=footer)
+
+
+def write_trace_iter(
+    path: Path,
+    *,
+    meta: TraceMeta,
+    ticks: Iterable[TickRecord],
+    chunk_ticks: int = 256,
+) -> TraceSummary:
+    return _write_trace_from_iter(
+        path,
+        meta=meta,
+        ticks=ticks,
+        chunk_ticks=max(1, int(chunk_ticks)),
+    )
+
+
 def _chunk_payload_from_file(stream: io.BufferedReader, *, offset: int) -> tuple[str, int, int, bytes]:
     stream.seek(offset)
     header = stream.read(_CHUNK_HEADER_STRUCT.size)
@@ -133,71 +242,13 @@ def write_trace(
     ticks: Sequence[TickRecord],
     chunk_ticks: int = 256,
 ) -> TraceSummary:
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    sorted_ticks = sorted((tick for tick in ticks), key=lambda row: row.tick_index)
-    chunk_size = max(1, chunk_ticks)
-
-    with path.open("wb") as handle:
-        handle.write(TRACE_MAGIC)
-        handle.write(_FILE_HEADER_STRUCT.pack(TRACE_FORMAT_VERSION))
-
-        _write_chunk(
-            handle,
-            kind=CHUNK_KIND_META,
-            start_tick=-1,
-            end_tick=-1,
-            payload=_ENCODER.encode(meta),
-        )
-
-        tick_indices: list[TickBlockIndexEntry] = []
-        channel_counts: dict[str, int] = {}
-        for block_start in range(0, len(sorted_ticks), chunk_size):
-            block_rows = sorted_ticks[block_start : block_start + chunk_size]
-            if not block_rows:
-                continue
-            block = TickBlock(
-                start_tick=block_rows[0].tick_index,
-                end_tick=block_rows[-1].tick_index,
-                ticks=list(block_rows),
-            )
-            tick_indices.append(
-                _write_chunk(
-                    handle,
-                    kind=CHUNK_KIND_TICK,
-                    start_tick=block.start_tick,
-                    end_tick=block.end_tick,
-                    payload=_ENCODER.encode(block),
-                ),
-            )
-            for row in block_rows:
-                for channel_name in row.channels:
-                    channel_counts[channel_name] = channel_counts.get(channel_name, 0) + 1
-
-        footer = TraceFooter(
-            trace_format_version=TRACE_FORMAT_VERSION,
-            tick_blocks=tick_indices,
-            tick_count=len(sorted_ticks),
-            first_tick=(None if not sorted_ticks else sorted_ticks[0].tick_index),
-            last_tick=(None if not sorted_ticks else sorted_ticks[-1].tick_index),
-            channel_counts={key: value for key, value in sorted(channel_counts.items())},
-        )
-        footer_payload = _ENCODER.encode(footer)
-        footer_index = _write_chunk(
-            handle,
-            kind=CHUNK_KIND_FOOTER,
-            start_tick=-1,
-            end_tick=-1,
-            payload=footer_payload,
-        )
-        handle.write(
-            _TRAILER_STRUCT.pack(
-                TRAILER_MAGIC,
-                footer_index.file_offset,
-            ),
-        )
-
-    return TraceSummary(meta=meta, footer=footer)
+    sorted_ticks = sorted((tick for tick in ticks), key=lambda row: int(row.tick_index))
+    return _write_trace_from_iter(
+        path,
+        meta=meta,
+        ticks=sorted_ticks,
+        chunk_ticks=max(1, int(chunk_ticks)),
+    )
 
 
 def _load_meta_at_offset(stream: io.BufferedReader, *, offset: int) -> TraceMeta:

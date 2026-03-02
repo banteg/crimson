@@ -11,8 +11,8 @@ import msgspec
 
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 6
-ReplayFormatVersion: TypeAlias = Literal[6]
+REPLAY_FORMAT_VERSION = 7
+ReplayFormatVersion: TypeAlias = Literal[7]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -35,13 +35,6 @@ AIM_SCHEME_SHIFT = 13
 AIM_SCHEME_MASK = 0x7
 
 InputQuantization: TypeAlias = Literal["f32"]
-
-CAPTURE_BOOTSTRAP_EVENT_KIND = "orig_capture_bootstrap"
-CAPTURE_PERK_PENDING_EVENT_KIND = "orig_capture_perk_pending"
-CAPTURE_PERK_APPLY_EVENT_KIND = "orig_capture_perk_apply"
-CAPTURE_CREATURE_SPAWN_EVENT_KIND = "orig_capture_creature_spawn"
-CAPTURE_STATE_TRANSITION_EVENT_KIND = "orig_capture_state_transition"
-
 
 _RELEASE_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -236,6 +229,7 @@ class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     shots_fired: int = 0
     shots_hit: int = 0
 
+
 class ReplayHeader(msgspec.Struct, frozen=True):
     game_mode_id: int
     seed: int
@@ -270,151 +264,11 @@ class PerkMenuOpenEvent(msgspec.Struct, tag="perk_menu_open", frozen=True):
     player_index: int
 
 
-class CaptureBootstrapQuestSession(msgspec.Struct, frozen=True):
-    spawn_timeline_ms: float | None
-    no_creatures_timer_ms: float | None
-    completion_transition_ms: float | None
-
-
-class CaptureBootstrapPlayer(msgspec.Struct, frozen=True):
-    weapon_id: WeaponId
-    pos_x: float
-    pos_y: float
-    health: float
-    ammo: float
-    experience: int
-    level: int
-    clip_size: int | None
-    reload_active: bool | None
-    reload_timer: float | None
-    reload_timer_max: float | None
-    shot_cooldown: float | None
-    spread_heat: float | None
-    aim_x: float | None
-    aim_y: float | None
-    aim_heading: float | None
-    alt_weapon_id: WeaponId | None
-    alt_clip_size: int | None
-    alt_ammo: float | None
-    alt_reload_active: bool | None
-    alt_reload_timer: float | None
-    alt_reload_timer_max: float | None
-    alt_shot_cooldown: float | None
-    shield_ms: int | None
-    fire_bullets_ms: int | None
-    speed_bonus_ms: int | None
-    hot_tempered_timer: float | None
-    man_bomb_timer: float | None
-    living_fortress_timer: float | None
-    fire_cough_timer: float | None
-
-class CaptureBootstrapEvent(
-    msgspec.Struct,
-    tag=CAPTURE_BOOTSTRAP_EVENT_KIND,
-    frozen=True,
-):
-    tick_index: int
-    elapsed_ms: int
-    score_xp: int
-    perk_pending: int
-    perk_pending_count: int
-    perk_choices_dirty: bool
-    perk_choices: list[int]
-    player_nonzero_counts: list[list[list[int]]]
-    players: list[CaptureBootstrapPlayer]
-    digital_move_enabled_by_player: list[bool]
-    weapon_power_up_ms: int
-    reflex_boost_ms: int
-    energizer_ms: int
-    double_experience_ms: int
-    freeze_ms: int
-    perk_interval_man_bomb: float | None
-    perk_interval_fire_cough: float | None
-    perk_interval_hot_tempered: float | None
-    quest_session: CaptureBootstrapQuestSession | None
-
-
-class CapturePerkApplyEvent(
-    msgspec.Struct,
-    tag=CAPTURE_PERK_APPLY_EVENT_KIND,
-    frozen=True,
-):
-    tick_index: int
-    perk_id: int
-    outside_before: bool
-    pending_before: int | None
-    pending_after: int | None
-
-
-class CapturePerkPendingEvent(
-    msgspec.Struct,
-    tag=CAPTURE_PERK_PENDING_EVENT_KIND,
-    frozen=True,
-):
-    tick_index: int
-    perk_pending: int
-
-
-class CaptureCreatureSpawnRow(msgspec.Struct, frozen=True):
-    template_id: int
-    pos_x: float
-    pos_y: float
-    heading: float
-
-
-class CaptureCreatureSpawnAddedHeadRow(msgspec.Struct, frozen=True):
-    index: int
-    heading: float | None
-    target_heading: float | None
-    ai_mode: int | None
-    link_index: int | None
-    hp: float | None
-    lifecycle_stage: float | None
-    orbit_angle: float | None
-    orbit_radius: float | None
-    flags: int | None
-    type_id: int | None
-    pos_x: float | None
-    pos_y: float | None
-
-
-class CaptureCreatureSpawnEvent(
-    msgspec.Struct,
-    tag=CAPTURE_CREATURE_SPAWN_EVENT_KIND,
-    frozen=True,
-):
-    tick_index: int
-    spawns: list[CaptureCreatureSpawnRow]
-    added_head: list[CaptureCreatureSpawnAddedHeadRow]
-
-
-class CaptureStateTransitionRow(msgspec.Struct, frozen=True):
-    target_state: int
-    before_state: int | None
-    after_state: int | None
-
-
-class CaptureStateTransitionEvent(
-    msgspec.Struct,
-    tag=CAPTURE_STATE_TRANSITION_EVENT_KIND,
-    frozen=True,
-):
-    tick_index: int
-    transitions: list[CaptureStateTransitionRow]
-
-
-ReplayEvent: TypeAlias = (
-    PerkPickEvent
-    | PerkMenuOpenEvent
-    | CaptureBootstrapEvent
-    | CapturePerkApplyEvent
-    | CapturePerkPendingEvent
-    | CaptureCreatureSpawnEvent
-    | CaptureStateTransitionEvent
-)
+ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent
 
 
 class Replay(msgspec.Struct):
     header: ReplayHeader
     inputs: list[PackedTickInputs]
+    dt_ms_i32: list[int] = msgspec.field(default_factory=list)
     events: list[ReplayEvent] = msgspec.field(default_factory=list)

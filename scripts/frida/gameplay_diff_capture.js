@@ -4,35 +4,64 @@
 // - per-gameplay tick records with stable checkpoint payloads
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
-// - emits capture stream rows (`capture_meta` + `tick`) either to JSON files
-//   (default) or to host messaging when sink=host
+// - emits a single JSONL stream with explicit run markers:
+//   session_start, run_start, tick, run_end, session_end
 //
 // Attach:
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
-//   or via scripts/frida/gameplay_diff_capture_host.py for msgpack output
+//   or via scripts/frida/gameplay_diff_capture_host.py for stop+finalize orchestration
 //
 // Output:
-//   C:\share\frida\gameplay_diff_capture.json (default non-quest fallback)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.json (default quests)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.json (repeat attempts)
-//   Host launcher writes:
-//   C:\share\frida\gameplay_diff_capture.msgpack.zst (non-quest fallback)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.msgpack.zst (quests)
-//   C:\share\frida\gameplay_diff_capture.quest_<major>_<minor>.run<k>.msgpack.zst (repeat attempts)
-//   Default sink is direct JSON file writes.
-//   Set CRIMSON_FRIDA_CAPTURE_SINK=host to force Frida message streaming.
+//   C:\share\frida\gameplay_diff_capture.jsonl
+//   (one continuous stream; host finalizer splits into per-run .cdt outputs)
 
 const DEFAULT_LOG_DIR = "C:\\share\\frida";
-const DEFAULT_OUT_NAME = "gameplay_diff_capture.json";
-const DEFAULT_QUEST_OUT_PREFIX = "gameplay_diff_capture.quest_";
+const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 5;
+const CAPTURE_FORMAT_VERSION = 8;
+const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
+const GAME_MODE_SURVIVAL = 1;
+const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
+const BONUS_ID_ENERGIZER = "2";
+const BONUS_ID_WEAPON_POWER_UP = "4";
+const BONUS_ID_DOUBLE_EXPERIENCE = "6";
+const BONUS_ID_REFLEX_BOOST = "9";
+const BONUS_ID_FREEZE = "11";
+const ENTITY_KIND_CODES = {
+  creature: 1,
+  projectile: 2,
+  secondary_projectile: 3,
+  bonus: 4,
+};
+const TERRAIN_DENSITY_BASE = 800;
+const TERRAIN_DENSITY_OVERLAY = 0x23;
+const TERRAIN_DENSITY_DETAIL = 0x0f;
+const TERRAIN_DENSITY_SHIFT = 19;
+const TERRAIN_RAND_DRAWS_PER_STAMP = 3;
+const TERRAIN_BOOTSTRAP_LAYERS = 3;
+const TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT = 1024;
+const TERRAIN_UNLOCK_THRESHOLDS = [0x28, 0x1e, 0x14];
+const REPLAY_FIRE_DOWN_FLAG = 1 << 0;
+const REPLAY_FIRE_PRESSED_FLAG = 1 << 1;
+const REPLAY_RELOAD_PRESSED_FLAG = 1 << 2;
+const REPLAY_MOVE_KEYS_PRESENT_FLAG = 1 << 3;
+const REPLAY_MOVE_FORWARD_FLAG = 1 << 4;
+const REPLAY_MOVE_BACKWARD_FLAG = 1 << 5;
+const REPLAY_TURN_LEFT_FLAG = 1 << 6;
+const REPLAY_TURN_RIGHT_FLAG = 1 << 7;
+const REPLAY_MOVE_MODE_PRESENT_FLAG = 1 << 8;
+const REPLAY_MOVE_MODE_SHIFT = 9;
+const REPLAY_MOVE_MODE_MASK = 0x7;
+const REPLAY_AIM_SCHEME_PRESENT_FLAG = 1 << 12;
+const REPLAY_AIM_SCHEME_SHIFT = 13;
+const REPLAY_AIM_SCHEME_MASK = 0x7;
+const REPLAY_RELOAD_DOWN_FLAG = 1 << 16;
 
 function getEnv(key) {
   try {
@@ -101,31 +130,9 @@ function parseStringSet(raw, fallbackCsv) {
   return out;
 }
 
-function parseCaptureSink(raw, fallback) {
-  const value = raw == null ? "" : String(raw).trim().toLowerCase();
-  if (value === "file" || value === "host") return value;
-  return fallback;
-}
-
-function resolveCaptureSink() {
-  let injectedSink = null;
-  try {
-    injectedSink = parseCaptureSink(globalThis.__CRIMSON_FRIDA_CAPTURE_SINK, null);
-  } catch (_) {
-    injectedSink = null;
-  }
-  if (injectedSink != null) return injectedSink;
-  const envSink = parseCaptureSink(getEnv("CRIMSON_FRIDA_CAPTURE_SINK"), null);
-  if (envSink != null) return envSink;
-  return "file";
-}
-
 const CONFIG_ENV_KEYS = [
-  "CRIMSON_FRIDA_CAPTURE_SINK",
   "CRIMSON_FRIDA_DIR",
   "CRIMSON_FRIDA_OUT_PATH",
-  "CRIMSON_FRIDA_QUEST_OUT_DIR",
-  "CRIMSON_FRIDA_QUEST_OUT_PREFIX",
   "CRIMSON_FRIDA_APPEND",
   "CRIMSON_FRIDA_CONSOLE_ALL_EVENTS",
   "CRIMSON_FRIDA_CONSOLE_EVENTS",
@@ -204,11 +211,7 @@ function toHex(value, width) {
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
 
 const CONFIG = {
-  captureSink: resolveCaptureSink(),
   outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
-  splitQuestFiles: true,
-  questOutDir: getEnv("CRIMSON_FRIDA_QUEST_OUT_DIR") || LOG_DIR,
-  questOutPrefix: getEnv("CRIMSON_FRIDA_QUEST_OUT_PREFIX") || DEFAULT_QUEST_OUT_PREFIX,
   logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
   consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
@@ -224,17 +227,17 @@ const CONFIG = {
   flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", false),
   maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
   maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
-  maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
+  maxRngHeadPerTick: -1,
   maxRngCallerKinds: parseLimitEnv("CRIMSON_FRIDA_RNG_CALLERS", -1, 0),
   enableRngRollLog: parseBoolEnv("CRIMSON_FRIDA_RNG_ROLL_LOG", true),
   maxRngRollLogEvents: parseLimitEnv("CRIMSON_FRIDA_MAX_RNG_ROLL_LOG_EVENTS", -1, 0),
   maxRngOutsideTickHead: parseLimitEnv("CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", 256, 0),
   enableRngStateMirror: parseBoolEnv("CRIMSON_FRIDA_RNG_STATE_MIRROR", true),
   maxCreatureDeltaIds: parseLimitEnv("CRIMSON_FRIDA_CREATURE_DELTA_IDS", 256, 1),
-  creatureSampleLimit: parseLimitEnv("CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", -1, 0),
-  projectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", -1, 0),
-  secondaryProjectileSampleLimit: parseLimitEnv("CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", -1, 0),
-  bonusSampleLimit: parseLimitEnv("CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", -1, 0),
+  creatureSampleLimit: -1,
+  projectileSampleLimit: -1,
+  secondaryProjectileSampleLimit: -1,
+  bonusSampleLimit: -1,
   enableInputHooks: parseBoolEnv("CRIMSON_FRIDA_INPUT_HOOKS", true),
   enableRngHooks: parseBoolEnv("CRIMSON_FRIDA_RNG_HOOKS", true),
   enableSfxHooks: parseBoolEnv("CRIMSON_FRIDA_SFX", true),
@@ -461,8 +464,18 @@ const outState = {
   captureStarted: false,
   captureClosed: false,
   captureTickCount: 0,
-  captureTickCountCurrentFile: 0,
-  captureFilesWritten: [],
+  runActive: false,
+  currentRunId: 0,
+  currentRunTickCount: 0,
+  currentRunModeId: -1,
+  currentRunQuestMajor: -1,
+  currentRunQuestMinor: -1,
+  currentRunKey: "",
+  currentRunBootstrapQuestAttemptPending: false,
+  currentRunElapsedRawStartMs: null,
+  currentRunElapsedRawLastMs: null,
+  currentRunElapsedNormalizedMs: null,
+  lastTickIndexGlobal: null,
   shutdownComplete: false,
   gameplayFrame: 0,
   currentStatePrev: null,
@@ -491,21 +504,68 @@ const outState = {
   perkApplyOutsideTickPendingHead: [],
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
-  lastSeed: null,
+  lastSrandSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
   lastCreatureDigest: null,
   questAttemptPendingByLevel: {},
   questAttemptStartsByLevel: {},
+  entityUidStates: null,
 };
 
-const UNKNOWN_DEATH = {
-  creature_index: -1,
-  type_id: -1,
-  reward_value: 0,
-  xp_awarded: -1,
-  owner_id: -1,
-};
+function newEntityUidState() {
+  return {
+    generationByIndex: {},
+    activeIndices: {},
+    seenInTick: {},
+  };
+}
+
+function resetEntityUidStates() {
+  outState.entityUidStates = {
+    creature: newEntityUidState(),
+    projectile: newEntityUidState(),
+    secondary_projectile: newEntityUidState(),
+    bonus: newEntityUidState(),
+  };
+}
+
+function beginEntityUidTick(kind) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return;
+  state.seenInTick = {};
+}
+
+function endEntityUidTick(kind) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return;
+  state.activeIndices = state.seenInTick || {};
+  state.seenInTick = {};
+}
+
+function nextEntityUid(kind, index) {
+  const states = outState.entityUidStates || {};
+  const state = states[kind];
+  if (!state) return { uid: 0, generation: 0 };
+  const idx = index | 0;
+  const key = String(idx);
+  if (!state.activeIndices[key]) {
+    const previous = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
+    state.generationByIndex[key] = (previous + 1) | 0;
+  }
+  state.seenInTick[key] = true;
+  const generation = state.generationByIndex[key] == null ? 0 : state.generationByIndex[key] | 0;
+  const kindCode = ENTITY_KIND_CODES[kind] == null ? 0 : ENTITY_KIND_CODES[kind] & 0xf;
+  const uid = kindCode * 562949953421312 + (generation & 0xfffff) * 536870912 + (idx & 0x1fffffff);
+  return {
+    uid: uid,
+    generation: generation,
+  };
+}
+
+resetEntityUidStates();
 
 function questLevelKey(major, minor) {
   const stageMajor = major == null ? -1 : major | 0;
@@ -541,7 +601,7 @@ function noteQuestAttemptStart(source, gameModeId, major, minor) {
 }
 
 function consumeQuestAttemptRolloverForTick(tickObj) {
-  if (!CONFIG.splitQuestFiles || !tickObj) return false;
+  if (!tickObj) return false;
   const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
   if (gameModeId !== GAME_MODE_QUESTS) return false;
   const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
@@ -557,32 +617,156 @@ function consumeQuestAttemptRolloverForTick(tickObj) {
   return true;
 }
 
-function resolveCaptureOutPathForTick(tickObj) {
-  if (!CONFIG.splitQuestFiles || !tickObj) return CONFIG.outPath;
-  const gameModeId = tickObj.game_mode_id == null ? -1 : tickObj.game_mode_id | 0;
-  if (gameModeId !== GAME_MODE_QUESTS) return CONFIG.outPath;
-  const levelKey = questLevelKey(tickObj.quest_stage_major, tickObj.quest_stage_minor);
-  if (!levelKey) return CONFIG.outPath;
-  return joinPath(CONFIG.questOutDir, CONFIG.questOutPrefix + levelKey + ".json");
+function tickModeId(tickObj) {
+  if (!tickObj || tickObj.game_mode_id == null) return -1;
+  return tickObj.game_mode_id | 0;
 }
 
-function appendRunSuffix(path, runIndex) {
-  const idx = String(path).lastIndexOf(".");
-  if (idx <= 0) return String(path) + ".run" + String(runIndex);
-  return String(path).slice(0, idx) + ".run" + String(runIndex) + String(path).slice(idx);
+function tickQuestMajor(tickObj) {
+  if (!tickObj || tickObj.quest_stage_major == null) return -1;
+  return tickObj.quest_stage_major | 0;
 }
 
-function ensureUniqueCaptureOutPath(path) {
-  if (!CONFIG.splitQuestFiles || CONFIG.logMode === "append") return String(path);
-  const used = outState.captureFilesWritten || [];
-  if (used.indexOf(path) < 0) return String(path);
-  let runIndex = 2;
-  let candidate = appendRunSuffix(path, runIndex);
-  while (used.indexOf(candidate) >= 0) {
-    runIndex += 1;
-    candidate = appendRunSuffix(path, runIndex);
+function tickQuestMinor(tickObj) {
+  if (!tickObj || tickObj.quest_stage_minor == null) return -1;
+  return tickObj.quest_stage_minor | 0;
+}
+
+function runKeyForTick(tickObj) {
+  return (
+    String(tickModeId(tickObj)) +
+    "|" +
+    String(tickQuestMajor(tickObj)) +
+    "|" +
+    String(tickQuestMinor(tickObj))
+  );
+}
+
+function requireRunStartSeedU32(tickObj) {
+  if (outState.lastSrandSeed != null) return outState.lastSrandSeed >>> 0;
+  const tickIndex =
+    tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
+  const errorRow = {
+    event: "error",
+    error: "missing_run_start_seed",
+    run_id: (outState.currentRunId | 0) + 1,
+    tick_index_global: tickIndex,
+    seed_source: "crt_srand",
+  };
+  _captureWriteJsonLine(errorRow, true);
+  writeLine(errorRow);
+  shutdownCapture("missing_run_start_seed");
+  return null;
+}
+
+function requireRunBootstrap(modeId, tickObj) {
+  const mode = modeId | 0;
+  if (mode === GAME_MODE_SURVIVAL || mode === GAME_MODE_RUSH) {
+    if (outState.lastSrandSeed == null) {
+      const tickIndex =
+        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null;
+      const errorRow = {
+        event: "error",
+        error: "missing_bootstrap_seed",
+        mode_id: mode,
+        run_id: (outState.currentRunId | 0) + 1,
+        tick_index_global: tickIndex,
+      };
+      _captureWriteJsonLine(errorRow, true);
+      writeLine(errorRow);
+      shutdownCapture("missing_bootstrap_seed");
+      return null;
+    }
+    return {
+      kind: "terrain_v1",
+      seed: outState.lastSrandSeed >>> 0,
+    };
   }
-  return candidate;
+  return {
+    kind: "none",
+    seed: 0,
+  };
+}
+
+function terrainStampingDraws(width, height, layers) {
+  const w = Math.max(0, width | 0);
+  const h = Math.max(0, height | 0);
+  const layerCount = Math.max(0, Math.min(3, layers | 0));
+  const area = Math.imul(w, h);
+  let stamps = 0;
+  if (layerCount >= 1) stamps += (Math.imul(area, TERRAIN_DENSITY_BASE) >>> TERRAIN_DENSITY_SHIFT) | 0;
+  if (layerCount >= 2) stamps += (Math.imul(area, TERRAIN_DENSITY_OVERLAY) >>> TERRAIN_DENSITY_SHIFT) | 0;
+  if (layerCount >= 3) stamps += (Math.imul(area, TERRAIN_DENSITY_DETAIL) >>> TERRAIN_DENSITY_SHIFT) | 0;
+  return Math.max(0, Math.imul(stamps, TERRAIN_RAND_DRAWS_PER_STAMP));
+}
+
+function questUnlockIndexFromTick(tickObj) {
+  const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : null;
+  const status = checkpoint && checkpoint.status ? checkpoint.status : null;
+  const fromCheckpoint =
+    status && status.quest_unlock_index != null ? status.quest_unlock_index | 0 : null;
+  if (fromCheckpoint != null && fromCheckpoint >= 0) return fromCheckpoint | 0;
+  const statusSnapshot = readStatusSnapshotCompact();
+  const fromMemory =
+    statusSnapshot && statusSnapshot.quest_unlock_index != null
+      ? statusSnapshot.quest_unlock_index | 0
+      : null;
+  if (fromMemory != null && fromMemory >= 0) return fromMemory | 0;
+  return 0;
+}
+
+function simulateTerrainBootstrapSeedAfter(seedBeforeU32, questUnlockIndex, worldSize, layers) {
+  let state = seedBeforeU32 >>> 0;
+  let selectionDraws = 0;
+  const unlock = questUnlockIndex | 0;
+  for (let i = 0; i < TERRAIN_UNLOCK_THRESHOLDS.length; i++) {
+    const threshold = TERRAIN_UNLOCK_THRESHOLDS[i] | 0;
+    if (unlock < threshold) continue;
+    state = stepCrtRandState(state);
+    selectionDraws += 1;
+    const value15 = (state >>> 16) & 0x7fff;
+    if ((value15 & 7) === 3) break;
+  }
+  const terrainSeedU32 = state >>> 0;
+  const stampingDraws = terrainStampingDraws(worldSize, worldSize, layers);
+  for (let i = 0; i < stampingDraws; i++) {
+    state = stepCrtRandState(state);
+  }
+  return {
+    seed_before_u32: seedBeforeU32 >>> 0,
+    seed_after_u32: state >>> 0,
+    terrain_seed_u32: terrainSeedU32 >>> 0,
+    selection_draws: selectionDraws | 0,
+    stamping_draws: stampingDraws | 0,
+    quest_unlock_index: unlock,
+    world_size: worldSize | 0,
+    layers: layers | 0,
+  };
+}
+
+function resolveRunStartSeed(modeId, tickObj, runBootstrap) {
+  const runSeedFromSrand = requireRunStartSeedU32(tickObj);
+  if (runSeedFromSrand == null) return null;
+
+  if (modeId === GAME_MODE_SURVIVAL || modeId === GAME_MODE_RUSH) {
+    const questUnlock = questUnlockIndexFromTick(tickObj);
+    const worldSize = TERRAIN_BOOTSTRAP_WORLD_SIZE_DEFAULT;
+    const sim = simulateTerrainBootstrapSeedAfter(
+      runBootstrap.seed >>> 0,
+      questUnlock | 0,
+      worldSize,
+      TERRAIN_BOOTSTRAP_LAYERS
+    );
+    return {
+      seed: sim.seed_after_u32 >>> 0,
+      source: "terrain_bootstrap_sim",
+    };
+  }
+
+  return {
+    seed: runSeedFromSrand >>> 0,
+    source: "crt_srand",
+  };
 }
 
 function openOutFile() {
@@ -623,15 +807,30 @@ function _captureWrite(text, flushNow) {
 
 function _captureWriteJsonLine(obj, flushNow) {
   if (!obj) return false;
-  if (CONFIG.captureSink === "host") {
-    try {
-      send({ kind: "capture_row", row: obj });
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
+}
+
+function _captureForceFlush() {
+  try {
+    if (!outState.outFile) return;
+    outState.outFile.flush();
+  } catch (_) {}
+}
+
+function emitSessionStartRow(meta, outPath) {
+  const processObj = meta && meta.process ? meta.process : {};
+  return {
+    event: "session_start",
+    schema_version: FRIDA_JSONL_SCHEMA_VERSION,
+    capture_format_version: CAPTURE_FORMAT_VERSION,
+    session_id: outState.sessionId,
+    out_path: outPath || CONFIG.outPath,
+    platform: processObj.platform == null ? "" : String(processObj.platform),
+    arch: processObj.arch == null ? "" : String(processObj.arch),
+    script_version: String(CAPTURE_FORMAT_VERSION),
+    config: meta && meta.config ? meta.config : {},
+    session_fingerprint: meta && meta.session_fingerprint ? meta.session_fingerprint : {},
+  };
 }
 
 function startCaptureFile(meta, outPath) {
@@ -641,66 +840,566 @@ function startCaptureFile(meta, outPath) {
   outState.outWarned = false;
   outState.captureStarted = false;
   outState.captureClosed = false;
-  outState.captureTickCountCurrentFile = 0;
-  const captureMeta = Object.assign({}, meta || {}, { out_path: targetOutPath });
-  const started = _captureWriteJsonLine({ event: "capture_meta", capture: captureMeta }, true);
+  const started = _captureWriteJsonLine(
+    emitSessionStartRow(meta || {}, targetOutPath),
+    true,
+  );
+  if (started) _captureForceFlush();
   outState.captureStarted = started;
   outState.captureClosed = !started;
-  if (started) {
-    outState.captureFilesWritten.push(targetOutPath);
-  }
   if (!started && !outState.outWarned) {
     outState.outWarned = true;
     console.log("gameplay_diff_capture: file logging unavailable; capture file not writable");
   }
 }
 
-function switchCaptureFile(outPath, reason, tickObj) {
-  const requestedOutPath = outPath || CONFIG.outPath;
-  const samePath = outState.currentOutPath === requestedOutPath;
-  if (samePath && outState.captureStarted && !outState.captureClosed) return;
-  const prevOutPath = outState.currentOutPath;
-  if (outState.captureStarted && !outState.captureClosed) {
-    closeCaptureFile();
-  }
-  const targetOutPath = ensureUniqueCaptureOutPath(requestedOutPath);
-  startCaptureFile(outState.captureMetaTemplate || {}, targetOutPath);
-  if (!samePath || targetOutPath !== requestedOutPath) {
-    writeLine({
-      event: "capture_file_switch",
-      reason: reason || "switch",
-      from_out_path: prevOutPath,
-      requested_out_path: requestedOutPath,
-      to_out_path: targetOutPath,
-      tick_index: tickObj && tickObj.tick_index != null ? tickObj.tick_index : null,
-      game_mode_id: tickObj && tickObj.game_mode_id != null ? tickObj.game_mode_id : null,
-      quest_stage_major: tickObj && tickObj.quest_stage_major != null ? tickObj.quest_stage_major : null,
-      quest_stage_minor: tickObj && tickObj.quest_stage_minor != null ? tickObj.quest_stage_minor : null,
-    });
-  }
+function closeActiveRun(reason, tickObj) {
+  if (!outState.runActive) return;
+  const wrote = _captureWriteJsonLine(
+    {
+      event: "run_end",
+      run_id: outState.currentRunId | 0,
+      reason: reason || "run_end",
+      mode_id: outState.currentRunModeId | 0,
+      quest_stage_major: outState.currentRunQuestMajor | 0,
+      quest_stage_minor: outState.currentRunQuestMinor | 0,
+      tick_index_global:
+        tickObj && tickObj.tick_index != null
+          ? tickObj.tick_index | 0
+          : outState.lastTickIndexGlobal == null
+            ? null
+            : outState.lastTickIndexGlobal | 0,
+      ticks_written: outState.currentRunTickCount | 0,
+    },
+    true,
+  );
+  if (wrote) _captureForceFlush();
+  outState.runActive = false;
+  outState.currentRunTickCount = 0;
+  outState.currentRunModeId = -1;
+  outState.currentRunQuestMajor = -1;
+  outState.currentRunQuestMinor = -1;
+  outState.currentRunKey = "";
+  outState.currentRunBootstrapQuestAttemptPending = false;
+  outState.currentRunElapsedRawStartMs = null;
+  outState.currentRunElapsedRawLastMs = null;
+  outState.currentRunElapsedNormalizedMs = null;
+  resetEntityUidStates();
 }
 
-function ensureCaptureFileForTick(tickObj) {
-  const outPath = resolveCaptureOutPathForTick(tickObj);
-  const forceQuestAttemptRollover = consumeQuestAttemptRolloverForTick(tickObj);
-  if (
-    !outState.captureStarted ||
-    outState.captureClosed ||
-    outState.currentOutPath !== outPath ||
-    forceQuestAttemptRollover
-  ) {
-    switchCaptureFile(outPath, forceQuestAttemptRollover ? "quest_attempt" : "tick_route", tickObj);
+function startRunForTick(tickObj, reason) {
+  const startReason = reason || "run_start";
+  const modeId = tickModeId(tickObj);
+  const questMajor = tickQuestMajor(tickObj);
+  const questMinor = tickQuestMinor(tickObj);
+  const runKey = runKeyForTick(tickObj);
+  const runBootstrap = requireRunBootstrap(modeId, tickObj);
+  if (!runBootstrap) return false;
+  const runSeed = resolveRunStartSeed(modeId, tickObj, runBootstrap);
+  if (!runSeed) return false;
+  outState.currentRunId = (outState.currentRunId | 0) + 1;
+  outState.currentRunTickCount = 0;
+  outState.currentRunModeId = modeId;
+  outState.currentRunQuestMajor = questMajor;
+  outState.currentRunQuestMinor = questMinor;
+  outState.currentRunKey = runKey;
+  outState.currentRunBootstrapQuestAttemptPending =
+    startReason === "first_tick" && (outState.currentRunModeId | 0) === GAME_MODE_QUESTS;
+  outState.currentRunElapsedRawStartMs = null;
+  outState.currentRunElapsedRawLastMs = null;
+  outState.currentRunElapsedNormalizedMs = null;
+  resetEntityUidStates();
+  outState.runActive = true;
+  const wrote = _captureWriteJsonLine(
+    {
+      event: "run_start",
+      run_id: outState.currentRunId | 0,
+      reason: startReason,
+      mode_id: outState.currentRunModeId | 0,
+      quest_stage_major: outState.currentRunQuestMajor | 0,
+      quest_stage_minor: outState.currentRunQuestMinor | 0,
+      seed: runSeed.seed >>> 0,
+      bootstrap_kind: String(runBootstrap.kind),
+      bootstrap_seed: runBootstrap.seed >>> 0,
+      seed_source: String(runSeed.source),
+      player_count: runPlayerCountFromTick(tickObj),
+      tick_index_global:
+        tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+    },
+    true,
+  );
+  if (wrote) _captureForceFlush();
+  return true;
+}
+
+function ensureRunForTick(tickObj) {
+  let needsRollover = outState.runActive ? consumeQuestAttemptRolloverForTick(tickObj) : false;
+  if (!outState.runActive) {
+    return startRunForTick(tickObj, "first_tick");
   }
+  const nextRunKey = runKeyForTick(tickObj);
+  if (
+    needsRollover &&
+    nextRunKey === outState.currentRunKey &&
+    outState.currentRunBootstrapQuestAttemptPending
+  ) {
+    // First quest tick can inherit a pre-game quest_attempt marker that belongs
+    // to the current attempt, not a true run rollover.
+    needsRollover = false;
+    outState.currentRunBootstrapQuestAttemptPending = false;
+  }
+  if (needsRollover || nextRunKey !== outState.currentRunKey) {
+    closeActiveRun(needsRollover ? "quest_attempt" : "mode_or_stage_change", tickObj);
+    return startRunForTick(tickObj, needsRollover ? "quest_attempt" : "mode_or_stage_change");
+  }
+  return true;
+}
+
+function phaseMarkerNames(markers) {
+  if (!Array.isArray(markers)) return [];
+  const out = [];
+  for (let i = 0; i < markers.length; i++) {
+    const marker = markers[i];
+    if (marker && typeof marker.type === "string") {
+      out.push(String(marker.type));
+      continue;
+    }
+    out.push(String(marker));
+  }
+  return out;
+}
+
+function intOr(value, fallback) {
+  if (value == null) return fallback;
+  if (typeof value === "number" && Number.isFinite(value)) return value | 0;
+  return fallback;
+}
+
+function asReplayF32(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return captureNumber(value);
+  }
+  return 0;
+}
+
+function packReplayInputFlags(inputRow) {
+  const row = inputRow && typeof inputRow === "object" ? inputRow : {};
+  let flags = 0;
+  if (row.fire_down === true) flags |= REPLAY_FIRE_DOWN_FLAG;
+  if (row.fire_pressed === true) flags |= REPLAY_FIRE_PRESSED_FLAG;
+  if (row.reload_pressed === true) flags |= REPLAY_RELOAD_PRESSED_FLAG;
+  if (row.reload_active === true) flags |= REPLAY_RELOAD_DOWN_FLAG;
+
+  const hasMoveKeys =
+    row.move_forward_pressed != null ||
+    row.move_backward_pressed != null ||
+    row.turn_left_pressed != null ||
+    row.turn_right_pressed != null;
+  if (hasMoveKeys) {
+    flags |= REPLAY_MOVE_KEYS_PRESENT_FLAG;
+    if (row.move_forward_pressed === true) flags |= REPLAY_MOVE_FORWARD_FLAG;
+    if (row.move_backward_pressed === true) flags |= REPLAY_MOVE_BACKWARD_FLAG;
+    if (row.turn_left_pressed === true) flags |= REPLAY_TURN_LEFT_FLAG;
+    if (row.turn_right_pressed === true) flags |= REPLAY_TURN_RIGHT_FLAG;
+  }
+
+  if (typeof row.move_mode === "number" && Number.isFinite(row.move_mode)) {
+    flags |= REPLAY_MOVE_MODE_PRESENT_FLAG;
+    flags |= ((row.move_mode | 0) & REPLAY_MOVE_MODE_MASK) << REPLAY_MOVE_MODE_SHIFT;
+  }
+  if (typeof row.aim_scheme === "number" && Number.isFinite(row.aim_scheme)) {
+    flags |= REPLAY_AIM_SCHEME_PRESENT_FLAG;
+    flags |= ((row.aim_scheme | 0) & REPLAY_AIM_SCHEME_MASK) << REPLAY_AIM_SCHEME_SHIFT;
+  }
+  return flags | 0;
+}
+
+function replayInputsFromTick(tickObj) {
+  const rows = tickObj && Array.isArray(tickObj.input_approx) ? tickObj.input_approx : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
+    out.push([
+      asReplayF32(row.move_dx),
+      asReplayF32(row.move_dy),
+      asReplayF32(row.aim_x),
+      asReplayF32(row.aim_y),
+      packReplayInputFlags(row),
+    ]);
+  }
+  return out;
+}
+
+function runPlayerCountFromTick(tickObj) {
+  const checkpointPlayers =
+    tickObj &&
+    tickObj.checkpoint &&
+    Array.isArray(tickObj.checkpoint.players)
+      ? tickObj.checkpoint.players
+      : [];
+  if (checkpointPlayers.length > 0) return checkpointPlayers.length | 0;
+  return Math.max(1, outState.playerCountResolved | 0);
+}
+
+function canonicalRngMarksFromStream(checkpoint, rngStreamRows) {
+  const rows = Array.isArray(rngStreamRows) ? rngStreamRows : [];
+  const callsTotal = rows.length | 0;
+  let inferredTotal = 0;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i] && rows[i].inferred === true) inferredTotal += 1;
+  }
+
+  const firstRow = rows.length > 0 ? rows[0] : null;
+  const lastRow = rows.length > 0 ? rows[rows.length - 1] : null;
+  const checkpointRngState = intOr(checkpoint && checkpoint.rng_state, -1);
+
+  return {
+    calls_total: callsTotal | 0,
+    inferred_total: inferredTotal | 0,
+    first_value_15: intOr(firstRow && firstRow.value_15, -1),
+    last_value_15: intOr(lastRow && lastRow.value_15, -1),
+    first_state_before_u32: intOr(firstRow && firstRow.state_before_u32, -1),
+    last_state_after_u32: intOr(lastRow && lastRow.state_after_u32, -1),
+    checkpoint_rng_state: checkpointRngState | 0,
+  };
+}
+
+function numberOr(value, fallback) {
+  const parsed = captureNumber(value);
+  return parsed == null ? fallback : parsed;
+}
+
+function _bonusTimerFromCheckpoint(bonusTimers, key) {
+  if (!bonusTimers || typeof bonusTimers !== "object") return 0;
+  const value = intOr(bonusTimers[key], null);
+  if (value == null || value < 0) return 0;
+  return value | 0;
+}
+
+function simStateFromTick(tickObj, checkpoint) {
+  const checkpointObj = checkpoint && typeof checkpoint === "object" ? checkpoint : {};
+  const after = tickObj && tickObj.after && typeof tickObj.after === "object" ? tickObj.after : {};
+  const checkpointPlayers = Array.isArray(checkpointObj.players) ? checkpointObj.players : [];
+  const afterPlayers = Array.isArray(after.players) ? after.players : [];
+  const playerCount = Math.max(checkpointPlayers.length, afterPlayers.length);
+  const players = [];
+
+  for (let i = 0; i < playerCount; i++) {
+    const cp = checkpointPlayers[i] && typeof checkpointPlayers[i] === "object" ? checkpointPlayers[i] : {};
+    const ap = afterPlayers[i] && typeof afterPlayers[i] === "object" ? afterPlayers[i] : {};
+    const cpPos = cp.pos && typeof cp.pos === "object" ? cp.pos : {};
+    players.push({
+      index: intOr(ap.index, intOr(cp.index, i)),
+      pos: {
+        x: numberOr(ap.pos_x, numberOr(cpPos.x, 0)),
+        y: numberOr(ap.pos_y, numberOr(cpPos.y, 0)),
+      },
+      health: numberOr(ap.health, numberOr(cp.health, 0)),
+      weapon: {
+        weapon_id: intOr(ap.weapon_id, intOr(cp.weapon_id, 0)),
+        ammo: numberOr(ap.ammo_f32, numberOr(cp.ammo, 0)),
+        clip_size: intOr(ap.clip_size_i32, 0),
+        reload_active: intOr(ap.reload_active_i32, 0) !== 0,
+        reload_timer: numberOr(ap.reload_timer, 0),
+        reload_timer_max: numberOr(ap.reload_timer_max, 0),
+        shot_cooldown: numberOr(ap.shot_cooldown, 0),
+      },
+      experience: intOr(ap.experience, intOr(cp.experience, 0)),
+      level: intOr(ap.level, intOr(cp.level, 0)),
+    });
+  }
+
+  const checkpointStatus =
+    checkpointObj.status && typeof checkpointObj.status === "object" ? checkpointObj.status : {};
+  const checkpointBonusTimers =
+    checkpointObj.bonus_timers && typeof checkpointObj.bonus_timers === "object"
+      ? checkpointObj.bonus_timers
+      : {};
+  const usageCountsRaw = Array.isArray(checkpointStatus.weapon_usage_counts)
+    ? checkpointStatus.weapon_usage_counts
+    : [];
+  const usageCounts = [];
+  for (let i = 0; i < usageCountsRaw.length; i++) {
+    usageCounts.push(intOr(usageCountsRaw[i], 0));
+  }
+
+  const perk = checkpointObj.perk && typeof checkpointObj.perk === "object" ? checkpointObj.perk : {};
+  const perkPending = intOr(checkpointObj.perk_pending, intOr(perk.pending_count, 0));
+  const perkChoicesDirty =
+    perk.choices_dirty == null ? perkPending <= 0 : !!perk.choices_dirty;
+
+  return {
+    gameplay: {
+      mode_id: tickModeId(tickObj),
+      quest_stage_major: tickQuestMajor(tickObj),
+      quest_stage_minor: tickQuestMinor(tickObj),
+      perk_pending_count: perkPending | 0,
+      perk_choices_dirty: !!perkChoicesDirty,
+      bonus_timers: {
+        weapon_power_up_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_WEAPON_POWER_UP),
+        reflex_boost_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_REFLEX_BOOST),
+        energizer_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_ENERGIZER),
+        double_experience_ms: _bonusTimerFromCheckpoint(
+          checkpointBonusTimers,
+          BONUS_ID_DOUBLE_EXPERIENCE,
+        ),
+        freeze_ms: _bonusTimerFromCheckpoint(checkpointBonusTimers, BONUS_ID_FREEZE),
+      },
+      status: {
+        quest_unlock_index: intOr(checkpointStatus.quest_unlock_index, 0),
+        quest_unlock_index_full: intOr(checkpointStatus.quest_unlock_index_full, 0),
+        weapon_usage_counts: usageCounts,
+      },
+    },
+    players: players,
+  };
+}
+
+function entitySamplesFromTick(tickObj) {
+  const samples = tickObj && tickObj.samples ? tickObj.samples : {};
+  const creaturesRaw = Array.isArray(samples.creatures) ? samples.creatures : [];
+  const projectilesRaw = Array.isArray(samples.projectiles) ? samples.projectiles : [];
+  const secondaryRaw = Array.isArray(samples.secondary_projectiles)
+    ? samples.secondary_projectiles
+    : [];
+  const bonusesRaw = Array.isArray(samples.bonuses) ? samples.bonuses : [];
+
+  beginEntityUidTick("creature");
+  beginEntityUidTick("projectile");
+  beginEntityUidTick("secondary_projectile");
+  beginEntityUidTick("bonus");
+
+  const creatures = [];
+  for (let i = 0; i < creaturesRaw.length; i++) {
+    const row = creaturesRaw[i] && typeof creaturesRaw[i] === "object" ? creaturesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("creature", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    creatures.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "creature",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      hp: numberOr(row.hp, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      flags: intOr(row.flags, 0),
+      ai_mode: intOr(row.ai_mode, 0),
+      link_index: intOr(row.link_index, -1),
+      heading: numberOr(row.heading, 0),
+      target_heading: numberOr(row.target_heading, 0),
+      orbit_angle: numberOr(row.orbit_angle, 0),
+      orbit_radius: numberOr(row.orbit_radius, 0),
+      lifecycle_stage: numberOr(row.lifecycle_stage, 0),
+    });
+  }
+
+  const projectiles = [];
+  for (let i = 0; i < projectilesRaw.length; i++) {
+    const row = projectilesRaw[i] && typeof projectilesRaw[i] === "object" ? projectilesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("projectile", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
+    projectiles.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "projectile",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      angle: numberOr(row.angle, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      vel: {
+        x: numberOr(vel.x, 0),
+        y: numberOr(vel.y, 0),
+      },
+      life_timer: numberOr(row.life_timer, 0),
+      speed_scale: numberOr(row.speed_scale, 0),
+      damage_pool: numberOr(row.damage_pool, 0),
+      hit_radius: numberOr(row.hit_radius, 0),
+      travel_budget: numberOr(row.travel_budget, numberOr(row.base_damage, 0)),
+      owner_id: intOr(row.owner_id, -1),
+    });
+  }
+
+  const secondary_projectiles = [];
+  for (let i = 0; i < secondaryRaw.length; i++) {
+    const row = secondaryRaw[i] && typeof secondaryRaw[i] === "object" ? secondaryRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("secondary_projectile", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    const vel = row.vel && typeof row.vel === "object" ? row.vel : {};
+    const velX = numberOr(vel.x, 0);
+    const velY = numberOr(vel.y, 0);
+    const speedAuto = numberOr(Math.sqrt(velX * velX + velY * velY), 0);
+    secondary_projectiles.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "secondary_projectile",
+      index: index,
+      active: true,
+      type_id: intOr(row.type_id, 0),
+      angle: numberOr(row.angle, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      vel: {
+        x: velX,
+        y: velY,
+      },
+      speed: numberOr(row.speed, speedAuto),
+      trail_timer: numberOr(row.trail_timer, 0),
+      owner_id: intOr(row.owner_id, -1),
+      target_id: intOr(row.target_id, -1),
+    });
+  }
+
+  const bonuses = [];
+  for (let i = 0; i < bonusesRaw.length; i++) {
+    const row = bonusesRaw[i] && typeof bonusesRaw[i] === "object" ? bonusesRaw[i] : {};
+    const index = intOr(row.index, -1);
+    if (index < 0) continue;
+    const uidState = nextEntityUid("bonus", index);
+    const pos = row.pos && typeof row.pos === "object" ? row.pos : {};
+    bonuses.push({
+      uid: uidState.uid,
+      generation: uidState.generation,
+      pool_kind: "bonus",
+      index: index,
+      active: true,
+      bonus_id: intOr(row.bonus_id, 0),
+      picked: intOr(row.state, 0) !== 0,
+      time_left: numberOr(row.time_left, 0),
+      time_max: numberOr(row.time_max, 0),
+      pos: {
+        x: numberOr(pos.x, 0),
+        y: numberOr(pos.y, 0),
+      },
+      amount: intOr(row.amount_i32, intOr(row.amount_f32, 0)),
+    });
+  }
+
+  endEntityUidTick("creature");
+  endEntityUidTick("projectile");
+  endEntityUidTick("secondary_projectile");
+  endEntityUidTick("bonus");
+
+  return {
+    creatures: creatures,
+    projectiles: projectiles,
+    secondary_projectiles: secondary_projectiles,
+    bonuses: bonuses,
+  };
+}
+
+function rngStreamFromTick(tickObj) {
+  const rows = tickObj && tickObj.rng && Array.isArray(tickObj.rng.head) ? tickObj.rng.head : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i] && typeof rows[i] === "object" ? rows[i] : {};
+    const tickCallIndex = intOr(row.tick_call_index, i + 1);
+    const value15 = intOr(row.value_15, intOr(row.value, 0) & 0x7fff);
+    const stateBefore = intOr(row.state_before_u32, 0) >>> 0;
+    const stateAfter = intOr(row.state_after_u32, 0) >>> 0;
+    out.push({
+      tick_call_index: tickCallIndex,
+      value_15: value15,
+      state_before_u32: stateBefore,
+      state_after_u32: stateAfter,
+      caller_static: row.caller_static == null ? null : String(row.caller_static),
+      branch_id: row.branch_id == null ? null : String(row.branch_id),
+      inferred: false,
+    });
+  }
+  return out;
+}
+
+function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
+  const dt = dtMsI32 == null ? null : dtMsI32 | 0;
+  if (dt == null || dt <= 0) return intOr(rawElapsedMs, -1);
+
+  const raw = intOr(rawElapsedMs, -1);
+  const isFirstRunTick =
+    (outState.currentRunTickCount | 0) <= 0 || outState.currentRunElapsedNormalizedMs == null;
+  if (isFirstRunTick) {
+    outState.currentRunElapsedRawStartMs = raw;
+    outState.currentRunElapsedRawLastMs = raw;
+    outState.currentRunElapsedNormalizedMs = dt;
+    return outState.currentRunElapsedNormalizedMs | 0;
+  }
+
+  outState.currentRunElapsedRawLastMs = raw;
+  outState.currentRunElapsedNormalizedMs = (outState.currentRunElapsedNormalizedMs | 0) + dt;
+  return outState.currentRunElapsedNormalizedMs | 0;
+}
+
+function buildTraceTickRow(tickObj) {
+  const checkpoint = tickObj && tickObj.checkpoint ? tickObj.checkpoint : {};
+  const rngStream = rngStreamFromTick(tickObj);
+  const rngMarks = canonicalRngMarksFromStream(checkpoint, rngStream);
+  checkpoint.state_hash = "";
+  checkpoint.command_hash = "";
+  checkpoint.rng_marks = rngMarks;
+  const modeId = tickModeId(tickObj);
+  const dtMsI32 =
+    tickObj.frame_dt_ms_i32 != null
+      ? intOr(tickObj.frame_dt_ms_i32, null)
+      : tickObj &&
+          tickObj.diagnostics &&
+          tickObj.diagnostics.timing &&
+          tickObj.diagnostics.timing.frame_dt_ms_after_i32 != null
+        ? intOr(tickObj.diagnostics.timing.frame_dt_ms_after_i32, null)
+        : null;
+  const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
+  const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
+  checkpoint.elapsed_ms = elapsedMs;
+  const simState = simStateFromTick(tickObj, checkpoint);
+
+  return {
+    event: "tick",
+    run_id: outState.currentRunId | 0,
+    tick_index_global: tickObj && tickObj.tick_index != null ? tickObj.tick_index | 0 : null,
+    elapsed_ms: elapsedMs,
+    dt_ms_i32: dtMsI32,
+    mode_id: modeId,
+    quest_stage_major: tickQuestMajor(tickObj),
+    quest_stage_minor: tickQuestMinor(tickObj),
+    phase_markers: phaseMarkerNames(tickObj.phase_markers),
+    replay_inputs: replayInputsFromTick(tickObj),
+    channels: {
+      checkpoint: checkpoint,
+      rng_marks: rngMarks,
+      rng_stream: rngStream,
+      sim_state: simState,
+      entity_samples: entitySamplesFromTick(tickObj),
+    },
+  };
 }
 
 function writeCaptureTick(tickObj) {
   if (!tickObj) return;
-  ensureCaptureFileForTick(tickObj);
   if (!outState.captureStarted || outState.captureClosed) return;
-  const wrote = _captureWriteJsonLine({ event: "tick", tick: tickObj }, true);
+  if (!ensureRunForTick(tickObj)) return;
+  const wrote = _captureWriteJsonLine(buildTraceTickRow(tickObj), true);
   if (wrote) {
     outState.captureTickCount += 1;
-    outState.captureTickCountCurrentFile += 1;
+    outState.currentRunTickCount += 1;
+    if (outState.currentRunBootstrapQuestAttemptPending && (outState.currentRunTickCount | 0) > 1) {
+      outState.currentRunBootstrapQuestAttemptPending = false;
+    }
+    outState.lastTickIndexGlobal = tickObj.tick_index == null ? null : tickObj.tick_index | 0;
     return;
   }
   if (!outState.outWarned) {
@@ -736,6 +1435,20 @@ function shutdownCapture(reason) {
     finalizeTick();
   } catch (_) {}
   try {
+    closeActiveRun("shutdown", null);
+  } catch (_) {}
+  try {
+    const wroteSessionEnd = _captureWriteJsonLine(
+      {
+        event: "session_end",
+        session_id: outState.sessionId,
+        ticks_written: outState.captureTickCount | 0,
+      },
+      true,
+    );
+    if (wroteSessionEnd) _captureForceFlush();
+  } catch (_) {}
+  try {
     closeCaptureFile();
   } catch (_) {}
   try {
@@ -743,11 +1456,10 @@ function shutdownCapture(reason) {
       event: "capture_shutdown",
       reason: why,
       ticks_written: outState.captureTickCount,
-      ticks_written_current_file: outState.captureTickCountCurrentFile,
       capture_started: outState.captureStarted,
       capture_closed: outState.captureClosed,
       out_path: outState.currentOutPath || CONFIG.outPath,
-      capture_files_written: outState.captureFilesWritten,
+      run_id: outState.currentRunId | 0,
     });
   } catch (_) {}
 }
@@ -2066,7 +2778,7 @@ function ownerIdToPlayerIndex(ownerId) {
 }
 
 function updatePlayerInputKeyState(tick, queryName, keyCode, pressed, callerStaticHex) {
-  if (!tick || !isPlayerUpdateCaller(callerStaticHex)) return;
+  if (!tick) return;
   if (!Number.isFinite(keyCode)) return;
   const bindings = tick.before && tick.before.input_bindings && tick.before.input_bindings.players;
   const altBindings =
@@ -2793,6 +3505,27 @@ function checkpointPlayersFromCompact(players) {
   return out;
 }
 
+function checkpointDeathsFromEventHeads(eventHeadsByKind) {
+  const byKind = asObject(eventHeadsByKind);
+  const rows = Array.isArray(byKind.creature_death) ? byKind.creature_death : [];
+  const out = [];
+  for (let i = 0; i < rows.length; i++) {
+    const payload = asObject(rows[i]);
+    const before = asObject(payload.before);
+    const creatureIndex = intOr(payload.creature_index, -1);
+    const typeId = intOr(payload.type_id, intOr(before.type_id, -1));
+    if (creatureIndex < 0 && typeId < 0) continue;
+    out.push({
+      creature_index: creatureIndex,
+      type_id: typeId,
+      reward_value: intOr(payload.reward_value, 0),
+      xp_awarded: intOr(payload.xp_awarded, 0),
+      owner_id: intOr(payload.owner_id, -1),
+    });
+  }
+  return out;
+}
+
 function buildInputApprox(afterPlayers, tick) {
   const out = [];
   const keyRows = tick && Array.isArray(tick.input_player_keys) ? tick.input_player_keys : [];
@@ -2800,6 +3533,14 @@ function buildInputApprox(afterPlayers, tick) {
     const p = afterPlayers[i];
     const fired = tick.fire_by_player[i] || 0;
     const keyRow = keyRows[i] && typeof keyRows[i] === "object" ? keyRows[i] : null;
+    let fireDown = keyRow ? keyRow.fire_down : null;
+    let firePressed = keyRow ? keyRow.fire_pressed : null;
+    if (fired > 0) {
+      // Fire hooks are authoritative. If a shot happened this tick, keep replay
+      // fire intent active so reconstructed inputs cannot silently drop shots.
+      fireDown = true;
+      firePressed = true;
+    }
     const moving =
       p.move_dx != null &&
       p.move_dy != null &&
@@ -2821,8 +3562,8 @@ function buildInputApprox(afterPlayers, tick) {
       move_backward_pressed: keyRow ? keyRow.move_backward_pressed : null,
       turn_left_pressed: keyRow ? keyRow.turn_left_pressed : null,
       turn_right_pressed: keyRow ? keyRow.turn_right_pressed : null,
-      fire_down: keyRow ? keyRow.fire_down : null,
-      fire_pressed: keyRow ? keyRow.fire_pressed : null,
+      fire_down: fireDown,
+      fire_pressed: firePressed,
       reload_pressed: keyRow ? keyRow.reload_pressed : null,
     });
   }
@@ -2935,32 +3676,19 @@ function finalizeTick() {
   const checkpointPlayers = checkpointPlayersFromCompact(afterPlayers);
   const perkPendingCount = globals.perk_pending_count == null ? -1 : globals.perk_pending_count;
   const perkChoicesDirty = readDataI32("perk_choices_dirty");
+  const perkPendingForCheckpoint = perkPendingCount > 0 ? perkPendingCount : 0;
+  const perkChoices =
+    perkPendingForCheckpoint > 0 ? readPerkChoicesCompact() : [];
   const perkSnapshot = {
-    pending_count: perkPendingCount,
-    choices_dirty: perkChoicesDirty != null ? perkChoicesDirty !== 0 : false,
-    choices: readPerkChoicesCompact(),
+    pending_count: perkPendingForCheckpoint,
+    choices_dirty:
+      perkPendingForCheckpoint > 0
+        ? (perkChoicesDirty != null ? perkChoicesDirty !== 0 : false)
+        : true,
+    choices: perkChoices,
     player_nonzero_counts: readPlayerPerkNonzeroCountsCompact(),
   };
   const killCount = globals.creature_kill_count == null ? -1 : globals.creature_kill_count;
-
-  const stateHashSeed = {
-    globals: {
-      time_played_ms: globals.time_played_ms,
-      creature_active_count: globals.creature_active_count,
-      creature_kill_count: globals.creature_kill_count,
-      perk_pending_count: globals.perk_pending_count,
-      perk_choices_dirty: perkChoicesDirty,
-      quest_spawn_timeline: globals.quest_spawn_timeline,
-      quest_stage_major: globals.quest_stage_major,
-      quest_stage_minor: globals.quest_stage_minor,
-      perk_doctor_target_creature_id: globals.perk_doctor_target_creature_id,
-      shock_chain_links_left: globals.shock_chain_links_left,
-      shock_chain_projectile_id: globals.shock_chain_projectile_id,
-    },
-    players: checkpointPlayers,
-    perk: perkSnapshot,
-    bonus_timers: bonusTimers,
-  };
 
   const rngCallersSorted = Object.keys(tick.rng.caller_counts)
     .map((k) => ({ caller_static: k, calls: tick.rng.caller_counts[k] }))
@@ -2975,8 +3703,8 @@ function finalizeTick() {
     (tick.input_queries.any_key.true_calls || 0);
 
   const eventSummary = {
-    hit_count: -1,
-    pickup_count: -1,
+    hit_count: tick.event_counts.projectile_find_hit || 0,
+    pickup_count: tick.event_counts.bonus_apply || 0,
     sfx_count: tick.event_counts.sfx || 0,
     sfx_head: tick.sfx_ids.slice(0, 4),
     rng_call_count: tick.rng.calls,
@@ -3057,17 +3785,25 @@ function finalizeTick() {
   };
   const perkApplyOutsideBefore = tick.perk_apply_outside_before || { calls: 0, dropped: 0, head: [] };
   const creatureLifecycleDiagnostics = creatureLifecycle || null;
+  const creatureCountForCheckpoint =
+    creatureLifecycle &&
+    typeof creatureLifecycle.after_count === "number" &&
+    Number.isFinite(creatureLifecycle.after_count)
+      ? creatureLifecycle.after_count | 0
+      : globals.creature_active_count == null
+        ? -1
+        : globals.creature_active_count;
 
   const checkpoint = {
     tick_index: tick.tick_index,
-    state_hash: String(hashHex(stateHashSeed)),
-    command_hash: String(toHex(tick.command_hash_state >>> 0, 8)),
+    state_hash: "",
+    command_hash: "",
     rng_state: tick.rng.last_value == null ? -1 : tick.rng.last_value,
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
     kills: killCount,
-    creature_count: globals.creature_active_count == null ? -1 : globals.creature_active_count,
-    perk_pending: perkPendingCount,
+    creature_count: creatureCountForCheckpoint,
+    perk_pending: perkPendingForCheckpoint,
     players: checkpointPlayers,
     status: {
       quest_unlock_index:
@@ -3081,24 +3817,8 @@ function finalizeTick() {
         : [],
     },
     bonus_timers: bonusTimers,
-    rng_marks: {
-      rand_calls: tick.rng.calls,
-      rand_hash: toHex(tick.rng.hash_state >>> 0, 8),
-      rand_last: tick.rng.last_value,
-      rand_head: tick.rng.head,
-      rand_callers: rngCallers,
-      rand_caller_overflow: tick.rng.caller_overflow,
-      rand_seq_first: tick.rng.first_seq,
-      rand_seq_last: tick.rng.last_seq,
-      rand_seed_epoch_enter: tick.rng.seed_epoch_enter,
-      rand_seed_epoch_last: tick.rng.seed_epoch_last,
-      rand_outside_before_calls: tick.rng.outside_before_calls,
-      rand_outside_before_dropped: tick.rng.outside_before_dropped,
-      rand_outside_before_head: tick.rng.outside_before_head,
-      rand_mirror_mismatch_total: outState.rngMirrorMismatchCount,
-      rand_mirror_unknown_total: outState.rngMirrorUnknownCalls,
-    },
-    deaths: [UNKNOWN_DEATH],
+    rng_marks: {},
+    deaths: checkpointDeathsFromEventHeads(tick.event_heads),
     perk: perkSnapshot,
     events: eventSummary,
     debug: {
@@ -3485,6 +4205,18 @@ function installHooks() {
             console_open: readDataU32("console_open_flag"),
             primary_latch: readDataU32("input_primary_latch"),
           };
+          const tick = outState.currentTick;
+          if (tick) {
+            const state = ensurePlayerKeyState(tick, 0);
+            if (state) {
+              if (ctx.query_key === "primary_down") {
+                state.fire_down = state.fire_down === true ? true : !!pressed;
+              }
+              if (ctx.query_key === "primary_edge") {
+                state.fire_pressed = state.fire_pressed === true ? true : !!pressed;
+              }
+            }
+          }
           registerInputQuery(ctx.query_key, pressed, ctx.token, payload);
           emitRawEvent(Object.assign({ event: name }, payload));
         },
@@ -3600,8 +4332,21 @@ function installHooks() {
   if (CONFIG.enableRngHooks) {
     attachHook("crt_srand", fnPtrs.crt_srand, {
       onEnter(args) {
+        let seedU32 = null;
+        try {
+          seedU32 = args[0].toUInt32() >>> 0;
+        } catch (_) {
+          seedU32 = null;
+        }
+        if (seedU32 == null) {
+          const errorRow = { event: "hook_error", name: "crt_srand", error: "missing_seed_arg" };
+          _captureWriteJsonLine(errorRow, true);
+          writeLine(errorRow);
+          shutdownCapture("crt_srand_missing_seed");
+          return;
+        }
         srandContextByTid[this.threadId] = {
-          seed_u32: args[0] ? args[0].toUInt32() >>> 0 : null,
+          seed_u32: seedU32 >>> 0,
           caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
         };
       },
@@ -3609,9 +4354,9 @@ function installHooks() {
         const ctx = srandContextByTid[this.threadId];
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
-        outState.lastSeed = ctx.seed_u32;
+        outState.lastSrandSeed = ctx.seed_u32 >>> 0;
         outState.rngSeedEpoch += 1;
-        if (CONFIG.enableRngStateMirror && ctx.seed_u32 != null) {
+        if (CONFIG.enableRngStateMirror) {
           outState.rngMirrorStateU32 = ctx.seed_u32 >>> 0;
         }
         emitRawEvent({
@@ -4653,11 +5398,8 @@ function main() {
   outState.sessionId = outState.sessionFingerprint.session_id;
 
   const captureConfig = {
-    capture_sink: CONFIG.captureSink,
     out_path: CONFIG.outPath,
-    split_quest_files: CONFIG.splitQuestFiles,
-    quest_out_dir: CONFIG.questOutDir,
-    quest_out_prefix: CONFIG.questOutPrefix,
+    jsonl_schema_version: FRIDA_JSONL_SCHEMA_VERSION,
     capture_profile: "exhaustive_default",
     config_env_overrides: collectConfigEnvOverrides(),
     log_mode: CONFIG.logMode,
@@ -4731,9 +5473,7 @@ function main() {
     pointers_resolved: ptrs,
   };
   outState.captureMetaTemplate = captureMeta;
-  if (!CONFIG.splitQuestFiles) {
-    startCaptureFile(captureMeta, CONFIG.outPath);
-  }
+  startCaptureFile(captureMeta, CONFIG.outPath);
 
   writeLine({
     event: "start",
@@ -4761,7 +5501,8 @@ function main() {
       return {
         capture_started: !!outState.captureStarted,
         capture_closed: !!outState.captureClosed,
-        capture_sink: CONFIG.captureSink,
+        run_active: !!outState.runActive,
+        run_id: outState.currentRunId | 0,
         ticks_written: outState.captureTickCount | 0,
         out_path: outState.currentOutPath || CONFIG.outPath,
       };

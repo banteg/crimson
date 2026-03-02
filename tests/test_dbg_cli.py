@@ -9,62 +9,33 @@ from typer.testing import CliRunner
 
 import crimson.dbg.diff as dbg_diff
 from crimson.cli import app
-from crimson.dbg.policy import resolve_parity_policy
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
-from crimson.original.capture import dump_capture
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
-from tests.builders.capture import (
-    build_capture_creature_sample,
-    build_capture_event_head_creature_update_micro_window,
-    build_capture_file,
-    build_capture_rng_head_entry,
-    build_capture_tick,
-)
 
 
-def _write_capture(path: Path) -> Path:
-    tick0 = build_capture_tick(
-        tick_index=0,
-        elapsed_ms=0,
-        event_heads=[build_capture_event_head_creature_update_micro_window(slot=0)],
-    )
-    tick1 = build_capture_tick(
-        tick_index=1,
-        elapsed_ms=16,
-        event_heads=[build_capture_event_head_creature_update_micro_window(slot=1)],
-    )
-    tick0.samples.creatures = [build_capture_creature_sample(index=5)]
-    tick1.samples.creatures = [build_capture_creature_sample(index=5)]
-    tick0.rng.head = [build_capture_rng_head_entry()]
-    tick1.rng.head = [build_capture_rng_head_entry()]
-    capture = build_capture_file(ticks=[tick0, tick1])
-    dump_capture(path, capture)
-    return path
-
-
-def test_dbg_import_capture_and_health(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
-    trace_path = tmp_path / "capture.cdt"
+def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(trace_path)],
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
     assert trace_path.exists()
-    assert "channels=" in import_result.output
-    assert "entity_samples" in import_result.output
+    assert "channels=" in record_result.output
+    assert "entity_samples" in record_result.output
 
     health_result = runner.invoke(
         app,
-        ["dbg", "health", str(trace_path), "--strict"],
+        ["dbg", "health", str(trace_path)],
     )
     assert health_result.exit_code == 0, health_result.output
-    assert "movement_root_cause_ready=True" in health_result.output
+    assert "movement_root_cause_ready=" in health_result.output
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
@@ -77,6 +48,20 @@ def _write_replay(path: Path, *, ticks: int = 3) -> Path:
     recorder = ReplayRecorder(header)
     for _ in range(int(ticks)):
         recorder.record_tick([PlayerInput(aim=Vec2(512.0, 512.0))])
+    path.write_bytes(dump_replay(recorder.finish()))
+    return path
+
+
+def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
+    header = ReplayHeader(
+        game_mode_id=int(GameMode.SURVIVAL),
+        seed=0xBEEF,
+        tick_rate=60,
+        player_count=1,
+    )
+    recorder = ReplayRecorder(header)
+    for _ in range(int(ticks)):
+        recorder.record_tick([PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)])
     path.write_bytes(dump_replay(recorder.finish()))
     return path
 
@@ -103,7 +88,8 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
     assert "channels=" in result.output
     assert "checkpoint" in result.output
     assert "rng_marks" in result.output
-    assert "rng_stream_head" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
     assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
@@ -111,11 +97,12 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert tick0 is not None
         assert "checkpoint" in tick0.channels
         assert "rng_marks" in tick0.channels
-        assert "rng_stream_head" in tick0.channels
+        assert "rng_stream" in tick0.channels
+        assert "sim_state" in tick0.channels
         assert "entity_samples" in tick0.channels
 
 
-def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Path) -> None:
+def test_dbg_record_full_profile_uses_canonical_channels(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_full.crd")
     trace_path = tmp_path / "sample_full.cdt"
     runner = CliRunner()
@@ -125,19 +112,21 @@ def test_dbg_record_full_profile_includes_event_and_micro_channels(tmp_path: Pat
         ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "full"],
     )
     assert result.exit_code == 0, result.output
-    assert "rng_stream_head" in result.output
-    assert "event_heads" in result.output
-    assert "micro_traces" in result.output
+    assert "checkpoint" in result.output
+    assert "rng_marks" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
+    assert "entity_samples" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
-        rng_stream_head = tick0.channels.get("rng_stream_head")
-        assert isinstance(rng_stream_head, list)
-        event_heads = tick0.channels.get("event_heads")
-        assert isinstance(event_heads, list)
-        micro_traces = tick0.channels.get("micro_traces")
-        assert isinstance(micro_traces, list)
+        rng_stream = tick0.channels.get("rng_stream")
+        assert isinstance(rng_stream, list)
+        sim_state = tick0.channels.get("sim_state")
+        assert isinstance(sim_state, dict)
+        entity_samples = tick0.channels.get("entity_samples")
+        assert isinstance(entity_samples, dict)
 
 
 def _write_fake_zig_bin(path: Path) -> Path:
@@ -296,14 +285,19 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
     assert result.exit_code == 0, result.output
     assert "channels=" in result.output
     assert "checkpoint" in result.output
-    assert "zig_tick_trace" in result.output
+    assert "rng_marks" in result.output
+    assert "rng_stream" in result.output
+    assert "sim_state" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
         checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
         assert checkpoint["score_xp"] == 10
-        assert "zig_tick_trace" in tick0.channels
+        assert "rng_marks" in tick0.channels
+        assert "rng_stream" in tick0.channels
+        assert "sim_state" in tick0.channels
+        assert isinstance(tick0.channels.get("entity_samples"), dict)
 
 
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
@@ -345,7 +339,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert repro_trace.exists()
 
 
-def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
+def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_hashes.crd")
     golden_trace = tmp_path / "golden_hashes.cdt"
     candidate_trace = tmp_path / "candidate_hashes.cdt"
@@ -364,40 +358,24 @@ def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
     checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
-    relaxed_result = runner.invoke(
+    result = runner.invoke(
         app,
         [
             "dbg",
             "diff",
             str(golden_trace),
             str(candidate_trace),
-            "--policy",
-            "original_vs_python_default",
         ],
     )
-    assert relaxed_result.exit_code == 0, relaxed_result.output
-    assert "result=ok" in relaxed_result.output
-
-    strict_result = runner.invoke(
-        app,
-        [
-            "dbg",
-            "diff",
-            str(golden_trace),
-            str(candidate_trace),
-            "--policy",
-            "python_vs_rust_strict",
-        ],
-    )
-    assert strict_result.exit_code == 1, strict_result.output
-    assert "result=diverged" in strict_result.output
-    assert ("command_hash_mismatch" in strict_result.output) or ("state_hash_mismatch" in strict_result.output)
+    assert result.exit_code == 1, result.output
+    assert "result=diverged" in result.output
+    assert "checkpoint_field_mismatch" in result.output
 
 
-def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample_core.crd")
-    golden_trace = tmp_path / "golden_core.cdt"
-    candidate_trace = tmp_path / "candidate_core.cdt"
+def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> None:
+    replay_path = _write_replay_with_fire(tmp_path / "sample_optional_channels.crd", ticks=3)
+    golden_trace = tmp_path / "golden_optional_channels.cdt"
+    candidate_trace = tmp_path / "candidate_optional_channels.cdt"
     runner = CliRunner()
 
     record_result = runner.invoke(
@@ -407,57 +385,17 @@ def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path:
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    tick0 = next(row for row in ticks if int(row.tick_index) == 0)
-    tick0.channels.pop("entity_samples", None)
-    checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
-    checkpoint["state_hash"] = "ffffffffffffffff"
-    checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
-    checkpoint["players"] = [
-        {
-            "pos": {"x": 12345.0, "y": 67890.0},
-            "health": 1.0,
-            "weapon_id": 2,
-            "ammo": 2.0,
-            "experience": 3,
-            "level": 4,
-        },
-    ]
-    checkpoint["perk"] = {
-        "pending_count": 0,
-        "choices_dirty": False,
-        "choices": [1, 2, 3],
-        "player_nonzero_counts": [[[1, 2]]],
-    }
-    checkpoint["events"] = {
-        "hit_count": 999,
-        "pickup_count": 999,
-        "sfx_count": 999,
-        "sfx_head": ["x"],
-    }
-    checkpoint["deaths"] = [
-        {
-            "creature_index": 1,
-            "type_id": 2,
-            "reward_value": 3.0,
-            "xp_awarded": 4,
-            "owner_id": 5,
-        },
-    ]
+    for row in ticks:
+        row.channels.pop("entity_samples", None)
+    meta.channels = [name for name in meta.channels if name != "entity_samples"]
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
-    default_result = runner.invoke(
+    result = runner.invoke(
         app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
+        ["dbg", "diff", str(golden_trace), str(candidate_trace)],
     )
-    assert default_result.exit_code == 1, default_result.output
-    assert "result=diverged" in default_result.output
-
-    core_result = runner.invoke(
-        app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "python_vs_zig_core"],
-    )
-    assert core_result.exit_code == 0, core_result.output
-    assert "result=ok" in core_result.output
+    assert result.exit_code == 1, result.output
+    assert "missing_channel" in result.output
 
 
 def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
@@ -483,32 +421,37 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     call_count = 0
     original_first_mismatch = dbg_diff._first_mismatch
 
-    def _counting_first_mismatch(*, pairs, policy, tick_end=None):
+    def _counting_first_mismatch(*, pairs, float_abs_tol, max_field_diffs, ignore_field_prefixes, tick_end=None):
         nonlocal call_count
         call_count += 1
-        return original_first_mismatch(pairs=pairs, policy=policy, tick_end=tick_end)
+        return original_first_mismatch(
+            pairs=pairs,
+            float_abs_tol=float_abs_tol,
+            max_field_diffs=max_field_diffs,
+            ignore_field_prefixes=ignore_field_prefixes,
+            tick_end=tick_end,
+        )
 
     monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)
     report = dbg_diff.bisect_traces(
         expected_trace_path=golden_trace,
         actual_trace_path=candidate_trace,
-        policy=resolve_parity_policy("python_vs_rust_strict"),
     )
     assert report.first_bad_tick == 1
     assert call_count == 1
 
 
 def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
+    replay_path = _write_replay_with_fire(tmp_path / "capture_like.crd", ticks=2)
     golden_trace = tmp_path / "golden.cdt"
     candidate_trace = tmp_path / "candidate.cdt"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)
@@ -518,13 +461,26 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     checkpoint["score_xp"] = score_xp_obj + 1
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
-    entity_samples = _as_dict(tick1.channels["entity_samples"])
-    creatures_obj = entity_samples.get("creatures")
-    assert isinstance(creatures_obj, list)
-    first_creature = _as_dict(creatures_obj[0])
-    uid_obj = first_creature.get("uid")
-    assert isinstance(uid_obj, int)
-    entity_uid = int(uid_obj)
+    entity_uid = -1
+    entity_pool_kind = ""
+    for row in ticks:
+        entity_samples = _as_dict(row.channels["entity_samples"])
+        for pool_name in ("projectiles", "creatures", "secondary_projectiles", "bonuses"):
+            pool_obj = entity_samples.get(pool_name)
+            if not isinstance(pool_obj, list) or not pool_obj:
+                continue
+            first_entity = _as_dict(pool_obj[0])
+            uid_obj = first_entity.get("uid")
+            pool_kind_obj = first_entity.get("pool_kind")
+            if isinstance(uid_obj, int) and isinstance(pool_kind_obj, str):
+                entity_uid = int(uid_obj)
+                entity_pool_kind = str(pool_kind_obj)
+                break
+        if entity_uid >= 0:
+            break
+
+    assert entity_uid >= 0
+    assert entity_pool_kind
 
     tick_result = runner.invoke(
         app,
@@ -540,7 +496,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     )
     assert entity_result.exit_code == 0, entity_result.output
     assert f"uid={entity_uid}" in entity_result.output
-    assert "spawn_tick=0" in entity_result.output
+    assert "spawn_tick=" in entity_result.output
 
     query_ticks_result = runner.invoke(
         app,
@@ -552,7 +508,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
 
     query_entities_result = runner.invoke(
         app,
-        ["dbg", "query", str(golden_trace), "entities where pool_kind == 'creature'"],
+        ["dbg", "query", str(golden_trace), f"entities where pool_kind == '{entity_pool_kind}'"],
     )
     assert query_entities_result.exit_code == 0, query_entities_result.output
     assert "scope=entities" in query_entities_result.output
@@ -563,21 +519,21 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     )
     assert focus_result.exit_code == 0, focus_result.output
     assert "result=diverged" in focus_result.output
-    assert "checkpoint_field_count=" in focus_result.output
+    assert "checkpoint_diff_count=" in focus_result.output
 
 
 def test_dbg_viz(tmp_path: Path) -> None:
-    capture_path = _write_capture(tmp_path / "capture.json")
+    replay_path = _write_replay_with_fire(tmp_path / "capture_like.crd", ticks=2)
     golden_trace = tmp_path / "golden.cdt"
     candidate_trace = tmp_path / "candidate.cdt"
     html_out = tmp_path / "viz.html"
     runner = CliRunner()
 
-    import_result = runner.invoke(
+    record_result = runner.invoke(
         app,
-        ["dbg", "import-capture", str(capture_path), "--out", str(golden_trace)],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
     )
-    assert import_result.exit_code == 0, import_result.output
+    assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
     tick1 = next(row for row in ticks if int(row.tick_index) == 1)

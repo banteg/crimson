@@ -18,6 +18,7 @@ pub const capture_state_reset_target: i32 = 12;
 const ai7_link_timer_rollover_min: i32 = -1723;
 const ai7_link_timer_rollover_max: i32 = -700;
 const max_test_quest_spawn_entries: usize = 1024;
+const rush_forced_ammo: f32 = 30.0;
 
 pub const CaptureStateError = error{
     InvalidCaptureEnumValue,
@@ -72,7 +73,7 @@ pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {
         if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
-        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
+        player.weapon.ammo = rush_forced_ammo;
     }
 }
 

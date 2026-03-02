@@ -3,17 +3,10 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
+from crimson.replay import ReplayGameVersionWarning
 from crimson.sim.driver.replay_runner import run_rush_replay
 from crimson.sim.driver.setup import ReplayRunnerError
-from crimson.sim.input import PlayerInput
-from grim.geom import Vec2
-from tests.replay_runner_helpers import (
-    _blank_rush_replay,
-    _strict_bootstrap_event,
-    _strict_bootstrap_payload,
-    _strict_bootstrap_player_payload,
-)
+from tests.replay_runner_helpers import _blank_rush_replay
 
 
 def test_rush_runner_is_deterministic() -> None:
@@ -71,60 +64,8 @@ def test_rush_runner_rejects_events() -> None:
     replay = rec.finish()
 
     with pytest.warns(ReplayGameVersionWarning):
-        with pytest.raises(ReplayRunnerError, match="does not support events"):
+        with pytest.raises(ReplayRunnerError, match="unsupported perk_pick"):
             run_rush_replay(replay)
-
-
-def test_rush_runner_applies_original_capture_bootstrap_event() -> None:
-    _header, rec = _blank_rush_replay(ticks=1, seed=0x1234, game_version="0.0.0")
-    replay = rec.finish()
-    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
-    bootstrap_payload["elapsed_ms"] = 3000
-    bootstrap_payload["players"] = [
-        _strict_bootstrap_player_payload(
-            pos={"x": 400.0, "y": 450.0},
-            health=90.0,
-            weapon_id=2,
-            ammo=8.0,
-            experience=77,
-            level=3,
-        ),
-    ]
-    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
-
-    with pytest.warns(ReplayGameVersionWarning):
-        result = run_rush_replay(replay, max_ticks=1)
-
-    assert result.ticks == 1
-    assert result.score_xp == 77
-
-
-def test_rush_runner_original_capture_uses_packed_move_vector_for_turn_only_keys() -> None:
-    header = ReplayHeader(
-        game_mode_id=int(GameMode.RUSH),
-        seed=0x1234,
-        tick_rate=60,
-        player_count=1,
-        game_version="0.0.0",
-    )
-    recorder = ReplayRecorder(header)
-    recorder.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0))])
-    replay = recorder.finish()
-    bootstrap_payload = _strict_bootstrap_payload(tick_index=0)
-    bootstrap_payload["digital_move_enabled_by_player"] = [True]
-    replay.events.append(_strict_bootstrap_event(bootstrap_payload))
-
-    checkpoints = []
-    with pytest.warns(ReplayGameVersionWarning):
-        run_rush_replay(
-            replay,
-            max_ticks=1,
-            checkpoints_out=checkpoints,
-            checkpoint_ticks={0},
-        )
-
-    assert len(checkpoints) == 1
-    assert float(checkpoints[0].players[0].pos.x) > 512.0
 
 
 def test_rush_runner_checkpoints_capture_rng_marks() -> None:

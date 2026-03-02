@@ -354,13 +354,7 @@ def _load_altair() -> Any:
 
 
 def _save_svg(*, path: Path, chart: Any) -> None:
-    try:
-        chart.save(str(path))
-    except Exception as exc:  # pragma: no cover
-        raise RuntimeError(
-            "failed to write svg via Altair/Vega-Lite; ensure `vl-convert-python` is installed "
-            "(run `uv sync --extra charts`)",
-        ) from exc
+    chart.save(str(path))
 
 
 def _write_empty_svg(path: Path, *, title: str) -> None:

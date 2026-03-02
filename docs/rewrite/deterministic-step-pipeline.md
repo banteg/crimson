@@ -214,45 +214,19 @@ It reports first divergence tick with command/state/rng context.
 
 ## Differential testing path
 
-For original-game capture comparison, use capture-native verification first:
+For original-game comparison, use unified trace (`.cdt`) tooling.
+Frida capture host finalizes raw JSONL directly into `.cdt`.
 
 ```bash
-uv run crimson original verify-capture capture.msgpack.zst
+uv run scripts/frida/gameplay_diff_capture_host.py --raw-path gameplay_diff_capture.jsonl --output-dir traces
 ```
 
-This compares checkpoint state fields at captured ticks and reports first
-divergence with field-level context. By default it ignores command/state hash
-domains from the original executable and rewrite RNG mark/state domains.
-
-Original-capture sidecars now have a dedicated schema + converter:
+Then compare original-vs-rewrite traces directly:
 
 ```bash
-uv run crimson original convert-capture capture.msgpack.zst expected.crd.chk
+uv run crimson dbg diff traces/original.cdt traces/rewrite.cdt --policy python_vs_zig_core
+uv run crimson dbg bisect traces/original.cdt traces/rewrite.cdt --policy python_vs_zig_core
+uv run crimson dbg focus traces/original.cdt traces/rewrite.cdt --tick <n> --policy python_vs_zig_core
 ```
 
-`convert-capture` accepts canonical gameplay-diff capture files only (`.msgpack.zst`,
-`.json`, or `.json.gz`).
-
-The same command now also writes a replay file next to the checkpoints
-(default: `expected.crd`, override with `--replay`).
-This replay is reconstructed from captured input telemetry and is intended for
-inspection/debugging. It also bootstraps initial state from the first captured
-tick, but checkpoint sidecars remain the authoritative verification artifact.
-
-Converted replay outputs are now canonicalized at the conversion boundary:
-
-- replay headers are emitted with `input_quantization="f32"`,
-- replay input vectors are quantized to float32,
-- original-capture bootstrap/event float payload fields emitted by conversion
-  are quantized to float32.
-
-Regenerating converted artifacts after this cutover intentionally changes replay
-and checkpoint SHA values. Regenerate and keep `.crd` + `.crd.chk` pairs
-together when refreshing fixtures.
-
-Some domains are still intentionally sparse in raw traces (for example detailed
-death-ledger ownership/reward attribution), and remain explicit "unknown"
-sentinels so differential comparison can focus on captured fields without false
-mismatches.
-
-The converted file can be compared directly with rewrite checkpoints using `replay diff-checkpoints`.
+This removes replay-side conversion bridges and keeps all implementations on one structural trace format.
