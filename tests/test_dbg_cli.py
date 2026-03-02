@@ -282,14 +282,16 @@ def test_dbg_record_zig_impl(tmp_path: Path, monkeypatch) -> None:
     assert result.exit_code == 0, result.output
     assert "channels=" in result.output
     assert "checkpoint" in result.output
-    assert "zig_tick_trace" in result.output
+    assert "rng_marks" in result.output
+    assert "rng_stream_head" in result.output
 
     with TraceReader(trace_path) as trace:
         tick0 = trace.tick(0)
         assert tick0 is not None
         checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
         assert checkpoint["score_xp"] == 10
-        assert "zig_tick_trace" in tick0.channels
+        assert "rng_marks" in tick0.channels
+        assert "rng_stream_head" in tick0.channels
 
 
 def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
@@ -444,6 +446,33 @@ def test_dbg_diff_python_vs_zig_core_policy_ignores_untracked_channels(tmp_path:
     )
     assert core_result.exit_code == 0, core_result.output
     assert "result=ok" in core_result.output
+
+
+def test_dbg_diff_default_policy_skips_optional_channel_families_when_absent_globally(tmp_path: Path) -> None:
+    replay_path = _write_replay_with_fire(tmp_path / "sample_optional_channels.crd", ticks=3)
+    golden_trace = tmp_path / "golden_optional_channels.cdt"
+    candidate_trace = tmp_path / "candidate_optional_channels.cdt"
+    runner = CliRunner()
+
+    record_result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+    )
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    for row in ticks:
+        row.channels.pop("entity_samples", None)
+        row.channels.pop("event_heads", None)
+        row.channels.pop("micro_traces", None)
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    result = runner.invoke(
+        app,
+        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "original_vs_python_default"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "result=ok" in result.output
 
 
 def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:

@@ -74,7 +74,7 @@ def _enforce_rush_loadout(world: GameWorld) -> None:
     for player in world.players:
         if player.weapon.weapon_id != WeaponId.ASSAULT_RIFLE:
             weapon_assign_player(player, WeaponId.ASSAULT_RIFLE)
-        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+        player.weapon.ammo = 30.0
 
 
 def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:

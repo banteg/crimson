@@ -47,6 +47,19 @@ class _TickPair(msgspec.Struct, frozen=True):
     actual_checkpoint: ReplayCheckpoint | None
 
 
+def _trace_has_channel(
+    pairs: list[_TickPair],
+    *,
+    side: str,
+    channel_name: str,
+) -> bool:
+    for pair in pairs:
+        row = pair.expected_row if side == "expected" else pair.actual_row
+        if row is not None and channel_name in row.channels:
+            return True
+    return False
+
+
 def _extract_checkpoint(row: TickRecord | None) -> ReplayCheckpoint | None:
     if row is None:
         return None
@@ -129,6 +142,21 @@ def _first_mismatch(
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
     elapsed_baseline: tuple[int, int] | None = None
+    compare_entity_channels = (
+        bool(policy.include_entity_channels)
+        and _trace_has_channel(pairs, side="expected", channel_name="entity_samples")
+        and _trace_has_channel(pairs, side="actual", channel_name="entity_samples")
+    )
+    compare_event_heads = (
+        bool(policy.include_event_channels)
+        and _trace_has_channel(pairs, side="expected", channel_name="event_heads")
+        and _trace_has_channel(pairs, side="actual", channel_name="event_heads")
+    )
+    compare_micro_traces = (
+        bool(policy.include_event_channels)
+        and _trace_has_channel(pairs, side="expected", channel_name="micro_traces")
+        and _trace_has_channel(pairs, side="actual", channel_name="micro_traces")
+    )
     for pair in pairs:
         tick = pair.tick_index
         if tick_end is not None and tick > tick_end:
@@ -235,7 +263,7 @@ def _first_mismatch(
                     ),
                 )
 
-        if bool(policy.include_entity_channels):
+        if compare_entity_channels:
             exp_entities = channel_dict(pair.expected_row, "entity_samples")
             act_entities = channel_dict(pair.actual_row, "entity_samples")
             entities_ok, entities_detail = _compare_entity_samples(exp_entities, act_entities)
@@ -249,7 +277,7 @@ def _first_mismatch(
                     ),
                 )
 
-        if bool(policy.include_event_channels):
+        if compare_event_heads:
             exp_events = channel_list(pair.expected_row, "event_heads")
             act_events = channel_list(pair.actual_row, "event_heads")
             if len(exp_events) != len(act_events):
@@ -265,6 +293,7 @@ def _first_mismatch(
                     ),
                 )
 
+        if compare_micro_traces:
             exp_micro = channel_list(pair.expected_row, "micro_traces")
             act_micro = channel_list(pair.actual_row, "micro_traces")
             if len(exp_micro) != len(act_micro):

@@ -53,6 +53,7 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
 _SKIP_SHORT_SECONDS = 5.0
@@ -523,7 +524,7 @@ class ReplayPlaybackMode:
         for player in world.players:
             if player.weapon.weapon_id != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
-            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+            player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
     def _apply_tick_events(self, events: list[object], *, tick_index: int, dt_frame: float) -> None:
         replay = self._replay

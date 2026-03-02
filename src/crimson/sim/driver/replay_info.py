@@ -46,6 +46,7 @@ _CORE_EVENT_KINDS = frozenset(
 )
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
 
 
 class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
@@ -91,7 +92,7 @@ def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if player.weapon.weapon_id != RUSH_WEAPON_ID:
             weapon_assign_player(player, RUSH_WEAPON_ID)
-        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+        player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
 
 def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:

@@ -33,6 +33,7 @@ from .setup import (
 )
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
 
 
 def _dt_ms_overrides_from_replay(replay: Replay) -> dict[int, int] | None:
@@ -52,8 +53,8 @@ def _enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if player.weapon.weapon_id != RUSH_WEAPON_ID:
             weapon_assign_player(player, RUSH_WEAPON_ID)
-        # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-        player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+        # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
+        player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
 
 def run_survival_replay(

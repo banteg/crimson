@@ -42,7 +42,7 @@ _ENTITY_KIND_CODES = {
 _CRT_RAND_MULT = 214013
 _CRT_RAND_INC = 2531011
 _CRT_RAND_MASK = 0xFFFFFFFF
-_CRT_RAND_CALL_SEARCH_LIMIT = 4096
+_CRT_RAND_CALL_SEARCH_LIMIT = 65536
 _DEFAULT_ZIG_BIN = Path("crimson-zig/zig-out/bin/crimson-zig")
 _ZIG_RNG_MARK_KEYS: tuple[str, ...] = (
     "rng_after_perk_effects",
@@ -160,7 +160,11 @@ def _infer_rand_calls_between_states(before_state: int, after_state: int, *, max
     return None
 
 
-def _rng_stream_head_from_checkpoint(checkpoint: ReplayCheckpoint, *, max_rows: int = 128) -> list[dict[str, object]]:
+def _rng_stream_head_from_checkpoint(
+    checkpoint: ReplayCheckpoint,
+    *,
+    max_rows: int | None = None,
+) -> list[dict[str, object]]:
     marks = checkpoint.rng_marks
     before_state = _state_mark(marks, "before_events")
     if before_state is None:
@@ -181,7 +185,10 @@ def _rng_stream_head_from_checkpoint(checkpoint: ReplayCheckpoint, *, max_rows: 
     if total_calls is None:
         return []
 
-    limit = min(max(0, total_calls), max(0, max_rows))
+    if max_rows is None or int(max_rows) < 0:
+        limit = max(0, total_calls)
+    else:
+        limit = min(max(0, total_calls), max(0, int(max_rows)))
     state = before_state & _CRT_RAND_MASK
     rows: list[dict[str, object]] = []
     for call_index in range(limit):
@@ -649,14 +656,32 @@ def _run_zig_verify_trace(
         return rows, verify_payload
 
 
-def _zig_rng_marks(rng: ReplayTickRng) -> dict[str, int]:
+def _zig_rng_marks(
+    rng: ReplayTickRng,
+    *,
+    rng_before_tick: int,
+) -> dict[str, int]:
     marks: dict[str, int] = {}
     for key in _ZIG_RNG_MARK_KEYS:
         marks[key] = int(getattr(rng, key))
+    before_tick = int(rng_before_tick)
+    after_world_step = int(rng.rng_after_bonus_update)
+    after_tick = int(rng.rng_state)
+    marks["before_world_step"] = before_tick
+    marks["after_world_step"] = after_world_step
+    marks["before_events"] = before_tick
+    marks["after_events"] = after_tick
+    marks["before_post_events"] = after_world_step
+    marks["after_post_events"] = after_tick
     return marks
 
 
-def _zig_checkpoint_from_row(row: ReplayTickTraceRow, *, player_count: int) -> ReplayCheckpoint:
+def _zig_checkpoint_from_row(
+    row: ReplayTickTraceRow,
+    *,
+    player_count: int,
+    rng_before_tick: int,
+) -> ReplayCheckpoint:
     tick_index = int(row.tick_index)
     timing = row.timing
     rng = row.rng
@@ -713,7 +738,7 @@ def _zig_checkpoint_from_row(row: ReplayTickTraceRow, *, player_count: int) -> R
             str(BonusId.FREEZE): int(max(0, bonus_freeze_ms)),
         },
         command_hash="",
-        rng_marks=_zig_rng_marks(rng),
+        rng_marks=_zig_rng_marks(rng, rng_before_tick=rng_before_tick),
         deaths=[],
         perk=ReplayPerkSnapshot(
             pending_count=perk_pending,
@@ -751,10 +776,16 @@ def _record_replay_to_trace_zig(
     replay_dt_rows = list(replay.dt_ms_i32)
     include_rng = profile in {"standard", "full"}
     include_full_event_channels = profile == "full"
+    rng_before_tick = int(replay.header.seed)
     for row in sorted_rows:
-        checkpoint = _zig_checkpoint_from_row(row, player_count=int(replay.header.player_count))
+        checkpoint = _zig_checkpoint_from_row(
+            row,
+            player_count=int(replay.header.player_count),
+            rng_before_tick=rng_before_tick,
+        )
+        rng_before_tick = int(row.rng.rng_state)
         if tick_limit is not None and int(checkpoint.tick_index) >= int(tick_limit):
-            continue
+            break
         tick_dt_ms_i32: int | None = None
         if 0 <= int(checkpoint.tick_index) < len(replay_dt_rows):
             dt_raw = int(replay_dt_rows[int(checkpoint.tick_index)])
@@ -762,11 +793,10 @@ def _record_replay_to_trace_zig(
                 tick_dt_ms_i32 = int(dt_raw)
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
-            "zig_tick_trace": row,
         }
         if include_rng:
             channels["rng_marks"] = dict(sorted(checkpoint.rng_marks.items()))
-            channels["rng_stream_head"] = []
+            channels["rng_stream_head"] = _rng_stream_head_from_checkpoint(checkpoint)
         if include_full_event_channels:
             channels["event_heads"] = []
             channels["event_summary"] = checkpoint.events

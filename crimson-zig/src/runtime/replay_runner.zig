@@ -588,6 +588,7 @@ const ParsedQuestLevel = struct {
     major: i32,
     minor: i32,
 };
+const rush_forced_ammo: f32 = 30.0;
 
 fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
     const dot = std.mem.indexOfScalar(u8, value, '.') orelse return null;
@@ -619,7 +620,7 @@ fn enforceRushLoadout(players: []state_mod.PlayerState) void {
         if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
         }
-        player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
+        player.weapon.ammo = rush_forced_ammo;
     }
 }
 

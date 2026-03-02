@@ -51,6 +51,7 @@ from .components.highscore_record_builder import build_highscore_record_for_game
 
 WORLD_SIZE = 1024.0
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
+RUSH_FORCED_AMMO = 30.0
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -134,8 +135,8 @@ class RushMode(BaseGameplayMode):
         for player in self.world.players:
             if player.weapon.weapon_id != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID)
-            # `rush_mode_update` forces weapon+ammo every frame; keep ammo topped up.
-            player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))
+            # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
+            player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
     def open(self) -> None:
         super().open()
