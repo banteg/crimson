@@ -8,7 +8,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
 from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
 from .checkpoint_codec import channel_to_checkpoint
-from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
+from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, CheckpointDeepDiff, checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -24,7 +24,7 @@ from .trace import TraceReader, write_trace
 class TraceMismatch(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
-    field_diffs: tuple[ReplayFieldDiff, ...] = ()
+    checkpoint_diff: CheckpointDeepDiff | None = None
     first_rng_mark: str | None = None
     detail: dict[str, object] | None = None
 
@@ -138,30 +138,24 @@ def _first_mismatch(
         if elapsed_baseline is None and expected.elapsed_ms >= 0 and actual.elapsed_ms >= 0:
             elapsed_baseline = (expected.elapsed_ms, actual.elapsed_ms)
 
-        field_diffs = checkpoint_field_diffs(
+        checkpoint_diff = checkpoint_deepdiff(
             expected,
             actual,
             include_hash_fields=bool(policy.include_hash_fields),
             include_rng_fields=bool(policy.include_rng_fields),
-            normalize_unknown=bool(policy.normalize_unknown),
-            unknown_events_wildcard=bool(policy.unknown_events_wildcard),
+            ignore_field_prefixes=policy.ignore_field_prefixes,
             elapsed_baseline=elapsed_baseline,
             max_diffs=policy.max_field_diffs,
             float_abs_tol=float(policy.float_abs_tol),
+            float_ulp_tol=int(policy.float_ulp_tol),
         )
-        if policy.ignore_field_prefixes:
-            field_diffs = [
-                diff
-                for diff in field_diffs
-                if not _field_matches_ignored_prefix(str(diff.field), policy.ignore_field_prefixes)
-            ]
-        if field_diffs:
+        if checkpoint_diff is not None:
             return (
                 checked_count,
                 TraceMismatch(
                     kind="checkpoint_field_mismatch",
                     tick_index=tick,
-                    field_diffs=tuple(field_diffs),
+                    checkpoint_diff=checkpoint_diff,
                 ),
             )
 
@@ -231,17 +225,6 @@ def _first_mismatch(
                 )
 
     return checked_count, None
-
-
-def _field_matches_ignored_prefix(field: str, prefixes: tuple[str, ...]) -> bool:
-    for prefix in prefixes:
-        if field == prefix:
-            return True
-        if field.startswith(f"{prefix}."):
-            return True
-        if field.startswith(f"{prefix}["):
-            return True
-    return False
 
 
 def _load_pairs(
@@ -445,18 +428,20 @@ def bisect_traces(
 def mismatch_to_json(mismatch: TraceMismatch | None) -> dict[str, object] | None:
     if mismatch is None:
         return None
+    checkpoint_diff = mismatch.checkpoint_diff
     return {
         "kind": mismatch.kind,
         "tick_index": mismatch.tick_index,
         "first_rng_mark": mismatch.first_rng_mark,
-        "field_diffs": [
-            {
-                "field": diff.field,
-                "expected": diff.expected,
-                "actual": diff.actual,
+        "checkpoint_diff": (
+            None
+            if checkpoint_diff is None
+            else {
+                "diff_count": int(checkpoint_diff.diff_count),
+                "payload": msgspec.to_builtins(checkpoint_diff.payload),
+                "pretty": str(checkpoint_diff.pretty),
             }
-            for diff in mismatch.field_diffs
-        ],
+        ),
         "detail": (None if mismatch.detail is None else msgspec.to_builtins(mismatch.detail)),
     }
 

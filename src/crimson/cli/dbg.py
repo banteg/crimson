@@ -196,8 +196,11 @@ def cmd_dbg_diff(
     )
     if mismatch.first_rng_mark is not None:
         typer.echo(f"first_rng_mark={mismatch.first_rng_mark}", err=True)
-    for diff in mismatch.field_diffs:
-        typer.echo(f"field_diff {diff.field}: expected={diff.expected!r} actual={diff.actual!r}", err=True)
+    if mismatch.checkpoint_diff is not None:
+        typer.echo(f"checkpoint_diff_count={mismatch.checkpoint_diff.diff_count}", err=True)
+        if mismatch.checkpoint_diff.pretty:
+            typer.echo("checkpoint_diff:", err=True)
+            typer.echo(mismatch.checkpoint_diff.pretty, err=True)
     if mismatch.detail is not None:
         typer.echo("detail=" + json.dumps(mismatch.detail, sort_keys=True), err=True)
     raise typer.Exit(code=1)
@@ -509,8 +512,8 @@ def cmd_dbg_focus(
         + str(payload.get("tick_index"))
         + " policy="
         + str(payload.get("policy"))
-        + " checkpoint_field_count="
-        + str(payload.get("checkpoint_field_count")),
+        + " checkpoint_diff_count="
+        + str(payload.get("checkpoint_diff_count")),
     )
     rng_marks = _as_dict(payload.get("rng_marks"))
     typer.echo("first_rng_mark=" + str(rng_marks.get("first_mismatch_mark")))

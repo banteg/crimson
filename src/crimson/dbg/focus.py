@@ -11,7 +11,7 @@ from .channel_helpers import (
     sim_state_channel,
 )
 from .checkpoint_codec import channel_to_checkpoint
-from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
+from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_deepdiff
 from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
@@ -47,21 +47,17 @@ def focus_tick(
     expected_checkpoint = channel_to_checkpoint(expected_row.channels.get("checkpoint"))
     candidate_checkpoint = channel_to_checkpoint(candidate_row.channels.get("checkpoint"))
 
-    checkpoint_diffs = checkpoint_field_diffs(
+    checkpoint_diff = checkpoint_deepdiff(
         expected_checkpoint,
         candidate_checkpoint,
         include_hash_fields=bool(policy.include_hash_fields),
         include_rng_fields=bool(policy.include_rng_fields),
-        normalize_unknown=bool(policy.normalize_unknown),
-        unknown_events_wildcard=bool(policy.unknown_events_wildcard),
+        ignore_field_prefixes=policy.ignore_field_prefixes,
         elapsed_baseline=None,
         max_diffs=int(policy.max_field_diffs),
         float_abs_tol=float(policy.float_abs_tol),
+        float_ulp_tol=int(policy.float_ulp_tol),
     )
-    checkpoint_fields = [
-        {"field": str(item.field), "expected": item.expected, "candidate": item.actual}
-        for item in checkpoint_diffs
-    ]
 
     expected_rng = {str(key): int(value) for key, value in expected_checkpoint.rng_marks.items()}
     candidate_rng = {str(key): int(value) for key, value in candidate_checkpoint.rng_marks.items()}
@@ -103,7 +99,7 @@ def focus_tick(
     )
 
     diverged = bool(
-        checkpoint_fields
+        checkpoint_diff is not None
         or mismatching_rng
         or not bool(rng_stream.get("ok"))
         or entity_diverged
@@ -115,8 +111,15 @@ def focus_tick(
         "tick_index": int(tick),
         "policy": str(policy.name),
         "diverged": diverged,
-        "checkpoint_field_count": int(len(checkpoint_fields)),
-        "checkpoint_fields": checkpoint_fields,
+        "checkpoint_diff_count": (0 if checkpoint_diff is None else int(checkpoint_diff.diff_count)),
+        "checkpoint_diff": (
+            None
+            if checkpoint_diff is None
+            else {
+                "payload": checkpoint_diff.payload,
+                "pretty": checkpoint_diff.pretty,
+            }
+        ),
         "rng_marks": {
             "first_mismatch_mark": first_rng_mark,
             "mismatching_marks": mismatching_rng,

@@ -381,7 +381,7 @@ def test_dbg_diff_hash_fields_respect_policy(tmp_path: Path) -> None:
             str(golden_trace),
             str(candidate_trace),
             "--policy",
-            "python_vs_rust_strict",
+            "python_vs_zig_strict",
         ],
     )
     assert strict_result.exit_code == 1, strict_result.output
@@ -513,7 +513,7 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     report = dbg_diff.bisect_traces(
         expected_trace_path=golden_trace,
         actual_trace_path=candidate_trace,
-        policy=resolve_parity_policy("python_vs_rust_strict"),
+        policy=resolve_parity_policy("python_vs_zig_strict"),
     )
     assert report.first_bad_tick == 1
     assert call_count == 1
@@ -597,7 +597,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     )
     assert focus_result.exit_code == 0, focus_result.output
     assert "result=diverged" in focus_result.output
-    assert "checkpoint_field_count=" in focus_result.output
+    assert "checkpoint_diff_count=" in focus_result.output
 
 
 def test_dbg_viz(tmp_path: Path) -> None:
