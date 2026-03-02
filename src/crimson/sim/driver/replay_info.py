@@ -23,6 +23,7 @@ from .playback_driver import (
     QuestSessionConfig,
     RushSessionConfig,
     SurvivalSessionConfig,
+    dt_overrides_from_replay,
 )
 from .setup import ReplayRunnerError
 
@@ -344,6 +345,7 @@ def _run_replay_info(
     mode = int(replay.header.game_mode_id)
     if mode not in (int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)):
         raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
+    replay_dt_overrides = dt_overrides_from_replay(replay)
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -351,7 +353,9 @@ def _run_replay_info(
         version_mismatch_action="verification",
     )
     config = PlaybackDriverConfig(
-        timing=PlaybackTimingConfig(),
+        timing=PlaybackTimingConfig(
+            dt_frame_overrides=replay_dt_overrides,
+        ),
         events=PlaybackEventConfig(
             strict_events=bool(strict_events),
             defer_menu_open=False,
@@ -367,7 +371,7 @@ def _run_replay_info(
             rush=RushSessionConfig(
                 strict_events_override=True,
                 enforce_loadout=True,
-                use_dt_frame_ms_i32=False,
+                use_dt_frame_ms_i32=True,
             ),
             quest=QuestSessionConfig(
                 partition_events=True,

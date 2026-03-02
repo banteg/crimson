@@ -27,9 +27,10 @@ from ..sessions import (
     SurvivalDeterministicSession,
 )
 from ..step_pipeline import DeterministicStepResult
+from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_events import apply_replay_tick_events, partition_tick_events
-from .replay_timing import resolve_dt_frame, resolve_dt_frame_ms_i32, should_apply_world_dt_steps_for_replay
+from .replay_timing import resolve_dt_frame, should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
     RunResult,
@@ -52,16 +53,16 @@ TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[[int, WorldState, float, list[object], list[object], list[object]], None]
 
 
-def dt_ms_overrides_from_replay(replay: Replay) -> dict[int, int] | None:
-    dt_rows = replay.dt_ms_i32
+def dt_overrides_from_replay(replay: Replay) -> dict[int, float] | None:
+    dt_rows = replay.dt
     if not dt_rows:
         return None
-    out: dict[int, int] = {}
-    for tick_index, dt_ms in enumerate(dt_rows):
-        dt_i32 = int(dt_ms)
-        if dt_i32 <= 0:
+    out: dict[int, float] = {}
+    for tick_index, dt in enumerate(dt_rows):
+        dt_value = float(dt)
+        if not (dt_value >= 0.0):
             continue
-        out[int(tick_index)] = int(dt_i32)
+        out[int(tick_index)] = float(dt_value)
     return out if out else None
 
 
@@ -117,7 +118,6 @@ class PlaybackDriverOptions(msgspec.Struct, frozen=True):
 @dataclass(slots=True, frozen=True)
 class PlaybackTimingConfig:
     dt_frame_overrides: dict[int, float] | None = None
-    dt_frame_ms_i32_overrides: dict[int, int] | None = None
     inter_tick_rand_draws: int = 0
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None
 
@@ -376,7 +376,6 @@ class PlaybackDriver:
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
             original_capture_replay=False,
             dt_frame_overrides=self.config.timing.dt_frame_overrides,
-            dt_frame_ms_i32_overrides=self.config.timing.dt_frame_ms_i32_overrides,
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
         self.session: DeterministicSession = self._mode_runtime.session
@@ -592,11 +591,7 @@ class PlaybackDriver:
             default_dt_frame=float(self.dt_frame),
             dt_frame_overrides=timing.dt_frame_overrides,
         )
-        dt_tick_ms_i32 = resolve_dt_frame_ms_i32(
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32_overrides=timing.dt_frame_ms_i32_overrides,
-        )
+        dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(dt_tick))))
 
         tick_events = self.events_by_tick.get(int(tick_index), [])
         defer_menu_open_value = (
@@ -627,7 +622,7 @@ class PlaybackDriver:
             player_inputs = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
             tick = self.session.step_tick(
                 dt_frame=float(dt_tick),
-                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                dt_frame_ms_i32=int(dt_tick_ms_i32),
                 inputs=player_inputs,
                 trace_rng=bool(self.options.trace_rng),
             )
@@ -654,7 +649,7 @@ class PlaybackDriver:
         outcome = PlaybackTickOutcome(
             tick_index=int(tick_index),
             dt_tick=float(dt_tick),
-            dt_tick_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+            dt_tick_ms_i32=int(dt_tick_ms_i32),
             tick_events=list(tick_events),
             pre_step_events=list(pre_step_events),
             post_step_events=list(post_step_events),
