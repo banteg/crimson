@@ -19,8 +19,8 @@ Baseline measured on 2026-03-03 via AST scan of `src/**/*.py`:
 
 | Metric | Before cleanup | Expected after cleanup (Phase 4) |
 | --- | ---: | ---: |
-| Total `msgspec.Struct` classes in `src/` | 389 | 360-372 |
-| `msgspec.Struct` classes in primary cleanup areas (`net`, `sim`, `dbg`, `replay`, `cli`, `ui`, `frontend`) | 241 | 218-232 |
+| Total `msgspec.Struct` classes in `src/` | 388 | 359-371 |
+| `msgspec.Struct` classes in primary cleanup areas (`net`, `sim`, `dbg`, `replay`, `cli`, `ui`, `frontend`) | 240 | 217-231 |
 | CLI replay payload structs in `src/crimson/cli/replay.py` (`class _*Payload`) | 20 | 6-10 |
 | Known duplicate class names (current: `Packet`, `_DropdownLayout`, `_PendingReliable`) | 3 | 0-1 |
 | Status snapshot representations (`lockstep`, `replay`, `dbg`, persistence blob schema) | 4 | 2-3 |
