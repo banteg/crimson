@@ -6,6 +6,7 @@ const replay_codec = @import("../../replay_codec.zig");
 const effects = @import("effects.zig");
 const events = @import("events.zig");
 const movement = @import("../movement.zig");
+const timing = @import("../timing.zig");
 const capture_state = @import("capture_state.zig");
 const context_mod = @import("context.zig");
 const diagnostic_trace_mod = @import("diagnostic_trace.zig");
@@ -22,14 +23,6 @@ const weapons_runtime = @import("../weapons.zig");
 
 const narrowF32 = native_math.roundF32;
 const SimulationContext = context_mod.SimulationContext;
-
-fn ftolMsI32(dt_seconds: f32) i32 {
-    const scaled = narrowF32(dt_seconds * 1000.0);
-    if (!std.math.isFinite(scaled)) return 0;
-    if (scaled <= @as(f32, @floatFromInt(std.math.minInt(i32)))) return std.math.minInt(i32);
-    if (scaled >= @as(f32, @floatFromInt(std.math.maxInt(i32)))) return std.math.maxInt(i32);
-    return @intFromFloat(scaled);
-}
 
 pub const StepError = events.EventError ||
     creatures_mod.CreatureRuntimeError ||
@@ -239,7 +232,7 @@ pub fn stepTick(
     );
 
     const dt_ms = narrowF32(frame.dt * 1000.0);
-    frame.dt_ms_i32 = ftolMsI32(frame.dt);
+    frame.dt_ms_i32 = timing.ftolMsI32(frame.dt);
     const dt_sim_ms = frame.dt_sim * 1000.0;
     const elapsed_before_ms: f32 = if (context.game_mode == .rush)
         @floatFromInt(context.elapsed_ms_sim_rush)

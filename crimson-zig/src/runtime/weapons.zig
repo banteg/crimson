@@ -14,6 +14,7 @@ const survival_progression = @import("survival_progression.zig");
 const spawn_mod = @import("spawn.zig");
 const weapon_data = @import("weapon_data.zig");
 const math = @import("math.zig");
+const timing = @import("timing.zig");
 
 const narrowF32 = native_math.roundF32;
 const native_pi: f32 = native_math.native_pi;
@@ -217,7 +218,7 @@ pub fn stepPlayerForTick(
     const reload_key_released = !input_flags.reload_active_any;
     if (has_alt_weapon_perk) {
         var cooldown_ms = state.player_alt_weapon_swap_cooldown_ms;
-        const dt_ms: i32 = if (dt > 0.0) @intFromFloat(@round(dt * 1000.0)) else 0;
+        const dt_ms: i32 = if (dt > 0.0) timing.ftolMsI32(dt) else 0;
         if (cooldown_ms < 1) {
             cooldown_ms = 0;
         } else {
