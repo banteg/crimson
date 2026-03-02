@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.net.lockstep import HostLockstepState
-from crimson.replay import ReplayGameVersionWarning, ReplayHeader, ReplayRecorder
+from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame
@@ -76,7 +74,6 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
         seed=0x1234,
         tick_rate=60,
         player_count=2,
-        game_version="0.0.0",
     )
     recorder = ReplayRecorder(header)
     for tick in range(5):
@@ -98,20 +95,18 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     checkpoints0 = []
     checkpoints1 = []
 
-    with pytest.warns(ReplayGameVersionWarning):
-        result0 = run_replay(
-            replay,
-            strict_events=True,
-            checkpoints_out=checkpoints0,
-            checkpoint_ticks=set(range(5)),
-        )
-    with pytest.warns(ReplayGameVersionWarning):
-        result1 = run_replay(
-            replay,
-            strict_events=True,
-            checkpoints_out=checkpoints1,
-            checkpoint_ticks=set(range(5)),
-        )
+    result0 = run_replay(
+        replay,
+        strict_events=True,
+        checkpoints_out=checkpoints0,
+        checkpoint_ticks=set(range(5)),
+    )
+    result1 = run_replay(
+        replay,
+        strict_events=True,
+        checkpoints_out=checkpoints1,
+        checkpoint_ticks=set(range(5)),
+    )
 
     assert result0 == result1
     assert [len(ck.players) for ck in checkpoints0] == [2, 2, 2, 2, 2]

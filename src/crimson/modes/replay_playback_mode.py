@@ -97,6 +97,8 @@ class ReplayPlaybackMode:
         rtx: bool = False,
         show_replay_widget: bool = True,
     ) -> None:
+        if not bool(strict_events):
+            raise ValueError("strict_events=False is unsupported; replay playback is always strict")
         self._ctx = ctx
         self._replay_path = Path(replay_path)
         self._config = config
@@ -359,7 +361,6 @@ class ReplayPlaybackMode:
             replay.header,
             rng=world.state.rng,
             world_size=float(world_size),
-            strict=True,
         )
         if bootstrap is not None:
             world.apply_bootstrap_terrain(

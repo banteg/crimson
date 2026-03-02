@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Literal, cast
+from typing import cast
 
 import typer
 
@@ -23,9 +23,6 @@ def _as_dict(value: object) -> dict[str, object]:
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay file (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    profile: Literal["minimal", "standard", "full"] = typer.Option(
-        "standard", "--profile", help="minimal|standard|full",
-    ),
     max_ticks: int | None = typer.Option(None, "--max-ticks", min=0, help="optional replay tick cap"),
     chunk_ticks: int = typer.Option(256, "--chunk-ticks", min=1, help="ticks per compressed CDT block"),
 ) -> None:
@@ -34,13 +31,10 @@ def cmd_dbg_record(
     from ..dbg.trace import TraceError
     from ..sim.driver.setup import ReplayRunnerError
 
-    profile_name = profile.strip().lower()
-
     try:
         summary = record_replay_to_trace(
             replay_path=Path(replay_file),
             out_path=Path(out),
-            profile=profile,
             max_ticks=max_ticks,
             strict_events=True,
             chunk_ticks=chunk_ticks,
@@ -51,7 +45,6 @@ def cmd_dbg_record(
 
     tick_range = summary.meta.tick_range
     typer.echo(f"trace={out}")
-    typer.echo(f"profile={profile_name}")
     typer.echo(
         "ticks "
         f"start={tick_range.get('start_tick')} "
@@ -66,7 +59,6 @@ def cmd_dbg_health(
     trace_file: Path = typer.Argument(..., help="trace file (.cdt)"),
     tick_start: int | None = typer.Option(None, "--tick-start", help="optional inclusive lower tick bound"),
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
-    strict: bool = typer.Option(False, "--strict", help="exit non-zero when required debug channels are missing"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
     """Summarize CDT telemetry coverage and channel availability."""
@@ -130,7 +122,7 @@ def cmd_dbg_health(
         json_out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
         typer.echo(f"json_report={json_out}")
 
-    if bool(strict) and not bool(ok):
+    if not bool(ok):
         raise typer.Exit(code=1)
 
 

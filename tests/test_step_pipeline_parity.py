@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import msgspec
-import pytest
 
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
@@ -13,7 +12,6 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import (
     Replay,
-    ReplayGameVersionWarning,
     ReplayHeader,
     ReplayRecorder,
     unpack_input_flags,
@@ -35,7 +33,6 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
         seed=int(seed),
         tick_rate=60,
         player_count=1,
-        game_version="0.0.0",
     )
     rec = ReplayRecorder(header)
     for idx in range(int(ticks)):
@@ -287,13 +284,12 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_survival_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
-    with pytest.warns(ReplayGameVersionWarning):
-        run_replay(
-            replay,
-            strict_events=True,
-            checkpoints_out=headless,
-            checkpoint_ticks=set(range(len(replay.inputs))),
-        )
+    run_replay(
+        replay,
+        strict_events=True,
+        checkpoints_out=headless,
+        checkpoint_ticks=set(range(len(replay.inputs))),
+    )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
     assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
@@ -305,12 +301,11 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_rush_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
-    with pytest.warns(ReplayGameVersionWarning):
-        run_replay(
-            replay,
-            checkpoints_out=headless,
-            checkpoint_ticks=set(range(len(replay.inputs))),
-        )
+    run_replay(
+        replay,
+        checkpoints_out=headless,
+        checkpoint_ticks=set(range(len(replay.inputs))),
+    )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
     assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
@@ -327,13 +322,12 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_quest_checkpoints(replay, spawn_entries=spawn_entries)
     headless: list[ReplayCheckpoint] = []
-    with pytest.warns(ReplayGameVersionWarning):
-        run_replay(
-            replay,
-            spawn_entries=spawn_entries,
-            checkpoints_out=headless,
-            checkpoint_ticks=set(range(len(replay.inputs))),
-        )
+    run_replay(
+        replay,
+        spawn_entries=spawn_entries,
+        checkpoints_out=headless,
+        checkpoint_ticks=set(range(len(replay.inputs))),
+    )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
     assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]

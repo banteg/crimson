@@ -171,12 +171,14 @@ def _write_trace_from_iter(
                 flush_block()
         flush_block()
 
+        footer_first_tick = -1 if first_tick is None else int(first_tick)
+        footer_last_tick = -1 if last_tick is None else int(last_tick)
         footer = TraceFooter(
             trace_format_version=TRACE_FORMAT_VERSION,
             tick_blocks=tick_indices,
             tick_count=int(tick_count),
-            first_tick=(None if first_tick is None else int(first_tick)),
-            last_tick=(None if last_tick is None else int(last_tick)),
+            first_tick=int(footer_first_tick),
+            last_tick=int(footer_last_tick),
             channel_counts={key: value for key, value in sorted(channel_counts.items())},
         )
         footer_payload = _ENCODER.encode(footer)

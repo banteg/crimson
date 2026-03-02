@@ -25,9 +25,30 @@ def _meta() -> TraceMeta:
 
 def test_trace_roundtrip_random_access(tmp_path: Path) -> None:
     rows = [
-        TickRecord(tick_index=0, elapsed_ms=0, mode_id=1, channels={"checkpoint": {"score_xp": 0}}),
-        TickRecord(tick_index=1, elapsed_ms=16, mode_id=1, channels={"checkpoint": {"score_xp": 5}}),
-        TickRecord(tick_index=2, elapsed_ms=33, mode_id=1, channels={"checkpoint": {"score_xp": 9}}),
+        TickRecord(
+            tick_index=0,
+            elapsed_ms=0,
+            dt_ms_i32=16,
+            mode_id=1,
+            phase_markers=[],
+            channels={"checkpoint": {"score_xp": 0}},
+        ),
+        TickRecord(
+            tick_index=1,
+            elapsed_ms=16,
+            dt_ms_i32=16,
+            mode_id=1,
+            phase_markers=[],
+            channels={"checkpoint": {"score_xp": 5}},
+        ),
+        TickRecord(
+            tick_index=2,
+            elapsed_ms=33,
+            dt_ms_i32=16,
+            mode_id=1,
+            phase_markers=[],
+            channels={"checkpoint": {"score_xp": 9}},
+        ),
     ]
     out_path = tmp_path / "trace.cdt"
     summary = write_trace(out_path, meta=_meta(), ticks=rows, chunk_ticks=2)
@@ -92,7 +113,16 @@ def test_trace_reader_rejects_old_schema_version(tmp_path: Path) -> None:
         tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
         config={},
     )
-    rows = [TickRecord(tick_index=0, elapsed_ms=0, mode_id=1, channels={"checkpoint": {"score_xp": 0}})]
+    rows = [
+        TickRecord(
+            tick_index=0,
+            elapsed_ms=0,
+            dt_ms_i32=16,
+            mode_id=1,
+            phase_markers=[],
+            channels={"checkpoint": {"score_xp": 0}},
+        ),
+    ]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
 
     with pytest.raises(TraceError, match="unsupported trace schema version"):
@@ -113,7 +143,16 @@ def test_trace_reader_rejects_unknown_schema_version(tmp_path: Path) -> None:
         tick_range={"start_tick": 0, "end_tick": 0, "tick_count": 1},
         config={},
     )
-    rows = [TickRecord(tick_index=0, elapsed_ms=0, mode_id=1, channels={"checkpoint": {"score_xp": 0}})]
+    rows = [
+        TickRecord(
+            tick_index=0,
+            elapsed_ms=0,
+            dt_ms_i32=16,
+            mode_id=1,
+            phase_markers=[],
+            channels={"checkpoint": {"score_xp": 0}},
+        ),
+    ]
     write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
 
     with pytest.raises(TraceError, match="unsupported trace schema version"):

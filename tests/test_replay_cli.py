@@ -1597,18 +1597,16 @@ def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Pa
     assert "replay_sha256 mismatch" in result.output
 
 
-def test_replay_verify_checkpoints_can_run_lenient_integrity(tmp_path: Path) -> None:
+def test_replay_verify_checkpoints_rejects_removed_lenient_integrity_flag(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    sidecar = _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
+    _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path), "--lenient-integrity"])
 
-    assert result.exit_code == 0, result.output
-    assert "warning: checkpoints replay_sha256 mismatch" in result.output
-    loaded = load_checkpoints_file(sidecar)
-    assert loaded.replay_sha256 != hashlib.sha256(replay_path.read_bytes()).hexdigest()
+    assert result.exit_code == 2
+    assert "No such option" in unstyle(result.output)
 
 
 def test_replay_diff_checkpoints_still_reports_success(tmp_path: Path) -> None:

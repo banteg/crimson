@@ -36,8 +36,6 @@ _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
 _BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
 _SUPPORTED_CAPTURE_FORMAT_VERSION = 8
-_FIRST_TICK_MAX_ELAPSED_MULTIPLIER = 8
-_FIRST_TICK_MAX_ELAPSED_FLOOR_MS = 1000
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -249,26 +247,6 @@ def _canonical_channels_payload(
     )
     built = msgspec.to_builtins(normalized)
     return checkpoint, cast("dict[str, object]", built)
-
-
-def _validate_first_tick_elapsed_for_replay(
-    *,
-    run: _OpenRun,
-    checkpoint: ReplayCheckpoint,
-    dt_ms_i32: int,
-    field: str,
-) -> None:
-    if int(run.tick_count) != 0:
-        return
-    elapsed_ms = int(checkpoint.elapsed_ms)
-    dt_ms = max(1, int(dt_ms_i32))
-    upper_bound = max(int(_FIRST_TICK_MAX_ELAPSED_FLOOR_MS), int(dt_ms) * int(_FIRST_TICK_MAX_ELAPSED_MULTIPLIER))
-    if int(elapsed_ms) > int(upper_bound):
-        raise FridaFinalizeError(
-            f"{field}.checkpoint.elapsed_ms={elapsed_ms} is too large for first replayable tick "
-            f"(dt_ms_i32={dt_ms}, max={upper_bound}); run likely started mid-session. "
-            "Start capture before entering gameplay mode.",
-        )
 
 
 def _replay_tick_inputs_from_row(
@@ -604,15 +582,9 @@ def finalize_frida_jsonl_to_traces(
                             expected_players=int(active_run.replay_player_count),
                             field=f"{raw_path}.lines[{line_no}].replay_inputs",
                         )
-                        checkpoint, channels = _canonical_channels_payload(
+                        _checkpoint, channels = _canonical_channels_payload(
                             channels=tick_row.channels,
                             local_tick=int(active_run.next_local_tick),
-                            field=f"{raw_path}.lines[{line_no}].channels",
-                        )
-                        _validate_first_tick_elapsed_for_replay(
-                            run=active_run,
-                            checkpoint=checkpoint,
-                            dt_ms_i32=int(tick_row.dt_ms_i32),
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
                         active_run.replay_status = _replay_status_from_channels(tick_row.channels)

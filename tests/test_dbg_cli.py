@@ -21,7 +21,7 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(trace_path)],
     )
     assert record_result.exit_code == 0, record_result.output
     assert trace_path.exists()
@@ -34,6 +34,20 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
     )
     assert health_result.exit_code == 0, health_result.output
     assert "movement_root_cause_ready=" in health_result.output
+
+
+def test_dbg_record_rejects_removed_profile_option(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample.crd")
+    trace_path = tmp_path / "sample.cdt"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
+    )
+
+    assert result.exit_code == 2
+    assert "No such option" in result.output
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
@@ -73,14 +87,14 @@ def _as_dict(value: object) -> dict[str, object]:
     return out
 
 
-def test_dbg_record_standard_profile(tmp_path: Path) -> None:
+def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     trace_path = tmp_path / "sample.cdt"
     runner = CliRunner()
 
     result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(trace_path)],
     )
     assert result.exit_code == 0, result.output
     assert "channels=" in result.output
@@ -100,14 +114,14 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
         assert "entity_samples" in tick0.channels
 
 
-def test_dbg_record_full_profile_uses_canonical_channels(tmp_path: Path) -> None:
+def test_dbg_record_uses_canonical_channels(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_full.crd")
     trace_path = tmp_path / "sample_full.cdt"
     runner = CliRunner()
 
     result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "full"],
+        ["dbg", "record", str(replay_path), "--out", str(trace_path)],
     )
     assert result.exit_code == 0, result.output
     assert "checkpoint" in result.output
@@ -136,7 +150,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 
@@ -174,7 +188,7 @@ def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) 
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 
@@ -207,7 +221,7 @@ def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> 
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 
@@ -233,7 +247,7 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 
@@ -273,7 +287,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 
@@ -355,7 +369,7 @@ def test_dbg_viz(tmp_path: Path) -> None:
 
     record_result = runner.invoke(
         app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace), "--profile", "standard"],
+        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
     )
     assert record_result.exit_code == 0, record_result.output
 

@@ -427,7 +427,6 @@ class PlaybackDriver:
                 self.replay.header,
                 rng=world.state.rng,
                 world_size=float(self.world_size),
-                strict=True,
             )
         else:
             world.state.rng.srand(int(self.replay.header.seed))
