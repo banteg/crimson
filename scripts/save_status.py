@@ -46,7 +46,7 @@ def apply_updates(data: dict, updates: dict) -> None:
     for key, value in weapon_updates.items():
         idx = int(key)
         if not (0 <= idx < WEAPON_USAGE_COUNT):
-            raise ValueError(f"weapon_usage index out of range: {idx}")
+            raise ValueError(f"weapon_usage slot out of range: {idx}")
         data["weapon_usage_counts"][idx] = int(value) & 0xFFFFFFFF
 
     quest_updates = updates.get("quest_play_counts", {})
@@ -196,7 +196,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help=(
             "key=value updates (repeatable). Keys: quest_unlock_index, "
-            "quest_unlock_index_full, game_sequence_id, weapon_usage.<id>, "
+            "quest_unlock_index_full, game_sequence_id, weapon_usage.<slot>, "
             "quest_play.<index>, mode_play.<survival|rush|typo|other>"
         ),
     )

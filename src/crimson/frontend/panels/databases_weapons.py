@@ -216,6 +216,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
 
     def _build_weapon_database_ids(self) -> list[int]:
+        from ...weapon_usage import weapon_usage_slot_for_weapon_id
         from ...weapons import WEAPON_TABLE, WeaponId
 
         available: list[bool] | None = None
@@ -264,10 +265,12 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                 if weapon_id == WeaponId.PISTOL:
                     include = True
                 else:
-                    try:
-                        include = bool(status.weapon_usage_count(weapon_id) != 0)
-                    except IndexError:
-                        include = False
+                    usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
+                    include = bool(
+                        status is not None
+                        and usage_slot is not None
+                        and status.weapon_usage_count_slot(usage_slot) != 0,
+                    )
             if include:
                 used.append(weapon_id)
         used.sort()

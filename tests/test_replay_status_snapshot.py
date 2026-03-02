@@ -13,4 +13,4 @@ def test_status_from_snapshot_applies_weapon_usage_counts() -> None:
         quest_unlock_index_full=0,
         weapon_usage_counts=tuple(counts),
     )
-    assert status.weapon_usage_count(WeaponId.PISTOL) == 7
+    assert status.weapon_usage_count_slot(WeaponId.PISTOL) == 7

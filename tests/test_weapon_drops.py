@@ -75,7 +75,7 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
 
 def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     status = _status_default()
-    status.increment_weapon_usage(WeaponId.PISTOL)
+    status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL)
 
     state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status

@@ -12,6 +12,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..sim.timing import ftol_ms_i32
+from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
 REPLAY_FORMAT_VERSION = 8
@@ -19,7 +20,7 @@ ReplayFormatVersion: TypeAlias = Literal[8]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
-WEAPON_USAGE_COUNT = 53
+WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
