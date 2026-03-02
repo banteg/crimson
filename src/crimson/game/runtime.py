@@ -4,7 +4,6 @@ import datetime as dt
 import faulthandler
 import random
 import time
-import traceback
 import webbrowser
 from pathlib import Path
 
@@ -406,12 +405,6 @@ def run_game(config: GameConfig) -> None:
         )
         if state is not None:
             state.status.save_if_dirty()
-    except Exception as exc:
-        crash_file.write(f"python exception ({type(exc).__name__}: {exc}):\n")
-        crash_file.write(traceback.format_exc())
-        crash_file.write("\n")
-        crash_file.flush()
-        raise
     finally:
         close_lan_debug_log()
         faulthandler.disable()

@@ -14,7 +14,7 @@ from grim.rand import CrtRand
 from ..game_modes import GameMode
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
-from ..replay.types import WEAPON_USAGE_COUNT, Replay, ReplayHeader, ReplayStatusSnapshot
+from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayHeader, ReplayStatusSnapshot
 from ..sim.bootstrap import run_terrain_bootstrap
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot
 from .rng import canonical_rng_marks
@@ -34,7 +34,7 @@ _GAME_MODE_QUESTS = 3
 _GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
 _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
-_BOOTSTRAP_KINDS = {"none", "terrain_v1"}
+_BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
 _SUPPORTED_CAPTURE_FORMAT_VERSION = 8
 _FIRST_TICK_MAX_ELAPSED_MULTIPLIER = 8
 _FIRST_TICK_MAX_ELAPSED_FLOOR_MS = 1000
@@ -173,7 +173,7 @@ class _OpenRun(msgspec.Struct):
     quest_stage_major: int
     quest_stage_minor: int
     replay_seed: int
-    replay_bootstrap_kind: str
+    replay_bootstrap_kind: BootstrapKind
     replay_bootstrap_seed: int
     replay_player_count: int
     temp_path: Path
@@ -207,10 +207,10 @@ def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
         raise FridaFinalizeError(f"{field} invalid capture row: {exc}") from exc
 
 
-def _validate_bootstrap_kind(kind: str, *, field: str) -> str:
+def _validate_bootstrap_kind(kind: str, *, field: str) -> BootstrapKind:
     if kind not in _BOOTSTRAP_KINDS:
         raise FridaFinalizeError(f"{field} must be one of {sorted(_BOOTSTRAP_KINDS)!r}, got {kind!r}")
-    return str(kind)
+    return cast("BootstrapKind", kind)
 
 
 def _canonical_channels_payload(
@@ -478,7 +478,7 @@ def _write_run_trace(
         quest_level=(
             f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""
         ),
-        bootstrap_kind=str(run.replay_bootstrap_kind),
+        bootstrap_kind=run.replay_bootstrap_kind,
         bootstrap_seed=int(run.replay_bootstrap_seed),
         player_count=int(run.replay_player_count),
         status=run.replay_status,

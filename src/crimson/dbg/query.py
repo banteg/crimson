@@ -250,26 +250,35 @@ def entity_history(
     tick_end: int | None = None,
 ) -> dict[str, object]:
     snapshots: list[dict[str, object]] = []
+    spawn_tick: int | None = None
+    despawn_tick: int | None = None
     with TraceReader(Path(trace_path)) as trace:
         for row in trace.iter_ticks(tick_start=tick_start, tick_end=tick_end):
+            tick_value = int(row.tick_index)
             for entity in _entity_rows(row):
-                if int(entity["uid"]) != int(entity_uid):
+                uid_obj = entity.get("uid")
+                if not isinstance(uid_obj, int):
+                    continue
+                if int(uid_obj) != int(entity_uid):
                     continue
                 snapshot = dict(entity)
-                snapshot["tick_index"] = row.tick_index
+                snapshot["tick_index"] = tick_value
                 snapshots.append(snapshot)
+                if spawn_tick is None:
+                    spawn_tick = tick_value
+                despawn_tick = tick_value
 
     if not snapshots:
         raise ValueError(f"entity uid {entity_uid} not found in requested range")
+    assert spawn_tick is not None
+    assert despawn_tick is not None
 
     first = snapshots[0]
-    spawn_tick = int(snapshots[0]["tick_index"])
-    despawn_tick = int(snapshots[-1]["tick_index"])
     return {
         "entity_uid": entity_uid,
         "pool_kind": str(first.get("pool_kind", "unknown")),
-        "spawn_tick": spawn_tick,
-        "despawn_tick": despawn_tick,
+        "spawn_tick": int(spawn_tick),
+        "despawn_tick": int(despawn_tick),
         "samples": snapshots,
     }
 

@@ -118,8 +118,10 @@ def _channels_stub(
     if checkpoint_overrides:
         checkpoint.update(dict(checkpoint_overrides))
     if rng_marks is None:
+        rng_state_obj = checkpoint.get("rng_state", -1)
+        assert isinstance(rng_state_obj, int)
         marks = canonical_rng_marks(
-            rng_state=int(checkpoint.get("rng_state", -1)),
+            rng_state=int(rng_state_obj),
             rng_stream=[],
         )
     else:

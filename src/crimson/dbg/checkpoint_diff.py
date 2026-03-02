@@ -1,4 +1,3 @@
-# type: ignore[invalid-assignment,invalid-argument-type,no-matching-overload]
 from __future__ import annotations
 
 import json
