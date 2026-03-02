@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
+from typing import cast
 
-from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
+from .channel_helpers import ENTITY_SAMPLE_KINDS, checkpoint_channel, entity_samples_channel
 from .diff import diff_traces
 from .policy import ParityPolicy
 from .schema import TickRecord
@@ -13,34 +14,38 @@ from .trace import TraceReader
 def _entity_counts(row: TickRecord | None) -> dict[str, int]:
     if row is None:
         return {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
-    entity_samples = as_object_dict(row.channels.get("entity_samples"))
-    if entity_samples is None:
+    samples = entity_samples_channel(row)
+    if samples is None:
         return {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
-    return {kind: len(as_object_list(entity_samples.get(kind))) for kind in ENTITY_SAMPLE_KINDS}
+    return {
+        "creatures": len(samples.creatures),
+        "projectiles": len(samples.projectiles),
+        "secondary_projectiles": len(samples.secondary_projectiles),
+        "bonuses": len(samples.bonuses),
+    }
 
 
 def _checkpoint_value(row: TickRecord | None, key: str) -> object:
     if row is None:
         return None
-    checkpoint = as_object_dict(row.channels.get("checkpoint"))
+    checkpoint = checkpoint_channel(row)
     if checkpoint is None:
         return None
-    return checkpoint.get(key)
+    match str(key):
+        case "score_xp":
+            return int(checkpoint.score_xp)
+        case "kills":
+            return int(checkpoint.kills)
+        case _:
+            return None
 
 
 def _score_value(value: object) -> int:
-    if isinstance(value, bool):
-        return int(value)
-    if isinstance(value, int):
-        return value
-    if isinstance(value, float):
-        return int(value)
-    if isinstance(value, str):
-        try:
-            return int(value)
-        except ValueError:
+    match value:
+        case int() as score:
+            return int(score)
+        case _:
             return 0
-    return 0
 
 
 def _timeline_rows(
@@ -114,15 +119,13 @@ def _default_focus_tick(
 
 
 def _render_html(*, payload: dict[str, object]) -> str:
-    rows_obj = payload.get("rows")
-    rows = list(rows_obj) if isinstance(rows_obj, list) else []
+    rows = cast("list[dict[str, object]]", payload.get("rows", []))
     body_rows: list[str] = []
     focus_tick = payload.get("focus_tick")
-    for item in rows:
-        row = as_object_dict(item) or {}
+    for row in rows:
         tick = row.get("tick_index")
-        expected_entities = as_object_dict(row.get("expected_entities")) or {}
-        candidate_entities = as_object_dict(row.get("candidate_entities")) or {}
+        expected_entities = cast("dict[str, object]", row.get("expected_entities", {}))
+        candidate_entities = cast("dict[str, object]", row.get("candidate_entities", {}))
         classes: list[str] = []
         if bool(row.get("diverged")):
             classes.append("diverged")

@@ -45,6 +45,7 @@ class ReplayTickTraceVec2(msgspec.Struct):
 class ReplayTickTraceWeaponState(msgspec.Struct):
     weapon_id: int | str
     ammo: float
+    clip_size: int = 0
     reload_active: bool = False
     reload_timer: float = 0.0
     reload_timer_max: float = 0.0

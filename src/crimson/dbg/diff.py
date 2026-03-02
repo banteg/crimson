@@ -6,7 +6,7 @@ import msgspec
 
 from ..replay.checkpoints import ReplayCheckpoint
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
-from .channel_helpers import channel_dict, channel_list
+from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
 from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, ReplayFieldDiff, checkpoint_field_diffs
 from .policy import ParityPolicy
@@ -187,8 +187,8 @@ def _first_mismatch(
                     ),
                 )
 
-            exp_rng_stream = channel_list(pair.expected_row, "rng_stream")
-            act_rng_stream = channel_list(pair.actual_row, "rng_stream")
+            act_rng_stream = rng_stream_channel(pair.actual_row)
+            exp_rng_stream = rng_stream_channel(pair.expected_row)
             rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
             if not rng_ok:
                 return (
@@ -202,8 +202,8 @@ def _first_mismatch(
 
         if compare_sim_state_channels:
             sim_ok, sim_detail = compare_sim_state(
-                channel_dict(pair.expected_row, "sim_state"),
-                channel_dict(pair.actual_row, "sim_state"),
+                sim_state_channel(pair.expected_row),
+                sim_state_channel(pair.actual_row),
             )
             if not sim_ok:
                 return (
@@ -217,8 +217,8 @@ def _first_mismatch(
 
         if compare_entity_channels:
             entities_ok, entities_detail = compare_entity_samples(
-                channel_dict(pair.expected_row, "entity_samples"),
-                channel_dict(pair.actual_row, "entity_samples"),
+                entity_samples_channel(pair.expected_row),
+                entity_samples_channel(pair.actual_row),
             )
             if not entities_ok:
                 return (

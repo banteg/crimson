@@ -3,7 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state
-from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
+from .channel_helpers import (
+    ENTITY_SAMPLE_KINDS,
+    entity_rows,
+    entity_samples_channel,
+    rng_stream_channel,
+    sim_state_channel,
+)
 from .checkpoint_codec import channel_to_checkpoint
 from .checkpoint_diff import DEFAULT_RNG_MARK_ORDER, checkpoint_field_diffs
 from .policy import ParityPolicy
@@ -14,18 +20,12 @@ from .trace import TraceReader
 def _entity_uid_set(row: TickRecord | None, kind: str) -> set[int]:
     if row is None:
         return set()
-    entity_samples = as_object_dict(row.channels.get("entity_samples"))
-    if entity_samples is None:
+    samples = entity_samples_channel(row)
+    if samples is None:
         return set()
-    rows = as_object_list(entity_samples.get(kind))
     out: set[int] = set()
-    for item in rows:
-        mapped = as_object_dict(item)
-        if mapped is None:
-            continue
-        uid_value = mapped.get("uid")
-        if isinstance(uid_value, int):
-            out.add(int(uid_value))
+    for item in entity_rows(samples, kind=kind):
+        out.add(int(item.uid))
     return out
 
 
@@ -71,8 +71,8 @@ def focus_tick(
         first_rng_mark = next((mark for mark in DEFAULT_RNG_MARK_ORDER if mark in mismatching_rng), mismatching_rng[0])
 
     rng_ok, rng_stream_detail = compare_rng_stream(
-        as_object_list(expected_row.channels.get("rng_stream")),
-        as_object_list(candidate_row.channels.get("rng_stream")),
+        rng_stream_channel(expected_row),
+        rng_stream_channel(candidate_row),
     )
     rng_stream = dict(rng_stream_detail or {})
     rng_stream["ok"] = bool(rng_ok)
@@ -94,12 +94,12 @@ def focus_tick(
             "extra_uids": extra[:32],
         }
     entity_samples_ok, entity_samples_detail = compare_entity_samples(
-        expected_row.channels.get("entity_samples"),
-        candidate_row.channels.get("entity_samples"),
+        entity_samples_channel(expected_row),
+        entity_samples_channel(candidate_row),
     )
     sim_state_ok, sim_state_detail = compare_sim_state(
-        expected_row.channels.get("sim_state"),
-        candidate_row.channels.get("sim_state"),
+        sim_state_channel(expected_row),
+        sim_state_channel(candidate_row),
     )
 
     diverged = bool(

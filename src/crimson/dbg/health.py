@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
+from .channel_helpers import entity_samples_channel, rng_stream_channel, sim_state_channel
 from .schema import TRACE_REQUIRED_CHANNELS_V3
 from .trace import TraceReader
 
@@ -31,24 +31,19 @@ def summarize_trace_health(
                 ticks_with_dt += 1
             for channel_name, channel_value in tick.channels.items():
                 channels_present[channel_name] = int(channels_present.get(channel_name, 0)) + 1
-                if channel_name == "rng_stream" and isinstance(channel_value, list):
-                    rng_stream_rows += len(channel_value)
-                elif channel_name == "sim_state" and isinstance(channel_value, dict):
-                    sim_state_rows += 1
-                elif channel_name == "entity_samples" and isinstance(channel_value, dict):
-                    entity_samples = cast("dict[str, object]", channel_value)
-                    creatures = entity_samples.get("creatures")
-                    projectiles = entity_samples.get("projectiles")
-                    secondary = entity_samples.get("secondary_projectiles")
-                    bonuses = entity_samples.get("bonuses")
-                    if isinstance(creatures, list):
-                        sample_creature_rows += len(creatures)
-                    if isinstance(projectiles, list):
-                        sample_projectile_rows += len(projectiles)
-                    if isinstance(secondary, list):
-                        sample_secondary_rows += len(secondary)
-                    if isinstance(bonuses, list):
-                        sample_bonus_rows += len(bonuses)
+                _ = channel_value
+                if channel_name == "rng_stream":
+                    rng_stream_rows += len(rng_stream_channel(tick))
+                elif channel_name == "sim_state":
+                    if sim_state_channel(tick) is not None:
+                        sim_state_rows += 1
+                elif channel_name == "entity_samples":
+                    samples = entity_samples_channel(tick)
+                    if samples is not None:
+                        sample_creature_rows += len(samples.creatures)
+                        sample_projectile_rows += len(samples.projectiles)
+                        sample_secondary_rows += len(samples.secondary_projectiles)
+                        sample_bonus_rows += len(samples.bonuses)
 
         issues: list[str] = []
         if ticks_total == 0:

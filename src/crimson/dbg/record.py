@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 import msgspec
 
@@ -63,18 +63,6 @@ _CRT_RAND_INC = 2531011
 _CRT_RAND_MASK = 0xFFFFFFFF
 _CRT_RAND_CALL_SEARCH_LIMIT = 65536
 _DEFAULT_ZIG_BIN = Path("crimson-zig/zig-out/bin/crimson-zig")
-_ZIG_RNG_MARK_KEYS: tuple[str, ...] = (
-    "rng_after_perk_effects",
-    "rng_after_creatures",
-    "rng_after_projectiles",
-    "rng_after_secondary_projectiles",
-    "rng_after_particles",
-    "rng_after_player_update",
-    "rng_after_stage_spawns",
-    "rng_after_wave_spawns",
-    "rng_after_spawns",
-    "rng_after_bonus_update",
-)
 
 
 class _EntityUidState(msgspec.Struct):
@@ -115,43 +103,52 @@ def _fingerprint(path: Path) -> dict[str, object]:
 
 
 def _require_numeric(value: object, *, field: str) -> float:
-    if isinstance(value, bool):
-        raise TypeError(f"{field} must be numeric, got bool")
-    if isinstance(value, int):
-        return float(value)
-    if isinstance(value, float):
-        return value
-    raise TypeError(f"{field} must be numeric, got {type(value).__name__}")
+    match value:
+        case bool():
+            raise TypeError(f"{field} must be numeric, got bool")
+        case int() as int_value:
+            return float(int_value)
+        case float() as float_value:
+            return float_value
+        case _:
+            raise TypeError(f"{field} must be numeric, got {type(value).__name__}")
 
 
 def _require_object_dict(value: object, *, field: str) -> dict[str, object]:
-    if not isinstance(value, dict):
-        raise TypeError(f"{field} must be a mapping")
-    out: dict[str, object] = {}
-    for key, item in value.items():
-        if isinstance(key, str):
-            out[key] = item
-        else:
-            raise TypeError(f"{field} contains non-string key")
-    return out
+    match value:
+        case dict() as mapping:
+            out: dict[str, object] = {}
+            for key, item in mapping.items():
+                match key:
+                    case str() as key_str:
+                        out[key_str] = item
+                    case _:
+                        raise TypeError(f"{field} contains non-string key")
+            return out
+        case _:
+            raise TypeError(f"{field} must be a mapping")
 
 
 def _require_int(value: object, *, field: str) -> int:
-    if isinstance(value, bool):
-        raise TypeError(f"{field} must be int, got bool")
-    if isinstance(value, int):
-        return value
-    raise TypeError(f"{field} must be int, got {type(value).__name__}")
+    match value:
+        case bool():
+            raise TypeError(f"{field} must be int, got bool")
+        case int() as int_value:
+            return int_value
+        case _:
+            raise TypeError(f"{field} must be int, got {type(value).__name__}")
 
 
 def _weapon_id_from_wire(value: int | str) -> WeaponId:
-    if isinstance(value, int):
-        return WeaponId(int(value))
-    key = str(value).strip()
-    try:
-        return WeaponId[str(key).upper()]
-    except KeyError as exc:
-        raise ValueError(f"unsupported zig weapon_id value: {value!r}") from exc
+    match value:
+        case int() as weapon_id:
+            return WeaponId(int(weapon_id))
+        case str() as weapon_name:
+            key = weapon_name.strip()
+            try:
+                return WeaponId[str(key).upper()]
+            except KeyError as exc:
+                raise ValueError(f"unsupported zig weapon_id value: {value!r}") from exc
 
 
 def _state_mark(marks: dict[str, int], key: str) -> int | None:
@@ -362,11 +359,13 @@ def _parse_quest_level(value: str) -> tuple[int, int]:
 
 
 def _status_snapshot_from_mapping(status_obj: object | None) -> SnapshotStatus:
-    status_mapping = status_obj if isinstance(status_obj, dict) else None
-    return status_payload_from_mapping(
-        status_mapping,
-        usage_count=int(WEAPON_USAGE_COUNT),
-    )
+    if status_obj is None:
+        return status_payload_from_mapping(None, usage_count=int(WEAPON_USAGE_COUNT))
+    match status_obj:
+        case dict() as mapping:
+            return status_payload_from_mapping(mapping, usage_count=int(WEAPON_USAGE_COUNT))
+        case _:
+            raise TypeError("world status payload must be a mapping")
 
 
 def _status_snapshot_from_replay_header(replay: Replay) -> SnapshotStatus:
@@ -382,17 +381,13 @@ def _status_snapshot_from_replay_header(replay: Replay) -> SnapshotStatus:
 
 
 def _to_builtin_dict(value: object, *, field: str) -> dict[str, object]:
-    built = msgspec.to_builtins(value)
-    if not isinstance(built, dict):
-        raise TypeError(f"{field} did not encode to object")
-    return built
+    _ = field
+    return cast("dict[str, object]", msgspec.to_builtins(value))
 
 
 def _to_builtin_list(value: object, *, field: str) -> list[object]:
-    built = msgspec.to_builtins(value)
-    if not isinstance(built, list):
-        raise TypeError(f"{field} did not encode to list")
-    return built
+    _ = field
+    return cast("list[object]", msgspec.to_builtins(value))
 
 
 def _canonical_entity_samples(payload: dict[str, object]) -> dict[str, object]:
@@ -478,7 +473,7 @@ def _sim_state_from_zig_row(row: ReplayTickTraceRow, *, replay: Replay) -> dict[
                 weapon=SnapshotWeapon(
                     weapon_id=int(_weapon_id_from_wire(player.weapon.weapon_id)),
                     ammo=float(player.weapon.ammo),
-                    clip_size=int(getattr(player.weapon, "clip_size", 0)),
+                    clip_size=int(player.weapon.clip_size),
                     reload_active=bool(player.weapon.reload_active),
                     reload_timer=float(player.weapon.reload_timer),
                     reload_timer_max=float(player.weapon.reload_timer_max),
@@ -596,12 +591,8 @@ def _record_replay_to_trace_python(
     replay_dt_rows = list(replay.dt_ms_i32)
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = checkpoint.tick_index
-        entity_samples_obj = entity_samples_by_tick.get(tick_index)
-        if not isinstance(entity_samples_obj, dict):
-            raise TypeError(f"missing canonical entity_samples for tick {tick_index}")
-        sim_state_obj = sim_state_by_tick.get(tick_index)
-        if not isinstance(sim_state_obj, dict):
-            raise TypeError(f"missing canonical sim_state for tick {tick_index}")
+        entity_samples_obj = entity_samples_by_tick[tick_index]
+        sim_state_obj = sim_state_by_tick[tick_index]
 
         channels: dict[str, object] = {
             "checkpoint": checkpoint_to_channel(checkpoint),
@@ -702,7 +693,13 @@ def _run_zig_verify_trace(
             raise ValueError(f"zig replay verify failed: {detail or f'exit={run.returncode}'}")
         verify_payload = _decode_json_object(stdout_lines[-1], field="zig verify payload")
         status = verify_payload.get("status")
-        if run.returncode != 0 and not (isinstance(status, str) and status.endswith("_mismatch")):
+        status_is_mismatch = False
+        match status:
+            case str() as status_text:
+                status_is_mismatch = bool(status_text.endswith("_mismatch"))
+            case _:
+                status_is_mismatch = False
+        if run.returncode != 0 and not status_is_mismatch:
             stderr_text = run.stderr.decode("utf-8", errors="replace").strip()
             stdout_text = run.stdout.decode("utf-8", errors="replace").strip()
             detail = stderr_text if stderr_text else stdout_text
@@ -719,9 +716,18 @@ def _zig_rng_marks(
     *,
     rng_before_tick: int,
 ) -> dict[str, int]:
-    marks: dict[str, int] = {}
-    for key in _ZIG_RNG_MARK_KEYS:
-        marks[key] = int(getattr(rng, key))
+    marks: dict[str, int] = {
+        "rng_after_perk_effects": int(rng.rng_after_perk_effects),
+        "rng_after_creatures": int(rng.rng_after_creatures),
+        "rng_after_projectiles": int(rng.rng_after_projectiles),
+        "rng_after_secondary_projectiles": int(rng.rng_after_secondary_projectiles),
+        "rng_after_particles": int(rng.rng_after_particles),
+        "rng_after_player_update": int(rng.rng_after_player_update),
+        "rng_after_stage_spawns": int(rng.rng_after_stage_spawns),
+        "rng_after_wave_spawns": int(rng.rng_after_wave_spawns),
+        "rng_after_spawns": int(rng.rng_after_spawns),
+        "rng_after_bonus_update": int(rng.rng_after_bonus_update),
+    }
     before_tick = int(rng_before_tick)
     after_world_step = int(rng.rng_after_bonus_update)
     after_tick = int(rng.rng_state)
@@ -999,14 +1005,20 @@ def _record_replay_to_trace_zig(
 
     producer_version = ""
     verify_payload_producer_obj = verify_payload.get("producer")
-    if isinstance(verify_payload_producer_obj, dict):
-        verify_payload_producer = _require_object_dict(
-            verify_payload_producer_obj,
-            field="zig verify payload.producer",
-        )
-        impl_version = verify_payload_producer.get("impl_version")
-        if isinstance(impl_version, str):
-            producer_version = impl_version
+    match verify_payload_producer_obj:
+        case dict() as verify_payload_producer_obj:
+            verify_payload_producer = _require_object_dict(
+                verify_payload_producer_obj,
+                field="zig verify payload.producer",
+            )
+            impl_version = verify_payload_producer.get("impl_version")
+            match impl_version:
+                case str() as impl_version_str:
+                    producer_version = impl_version_str
+                case _:
+                    producer_version = ""
+        case _:
+            producer_version = ""
 
     meta = _build_trace_meta(
         replay_path=replay_path,

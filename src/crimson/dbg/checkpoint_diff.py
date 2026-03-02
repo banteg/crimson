@@ -75,7 +75,11 @@ def _checkpoint_to_obj(
 
 
 def _int_is_unknown(value: object) -> bool:
-    return isinstance(value, int) and int(value) < 0
+    match value:
+        case int() as int_value:
+            return int(int_value) < 0
+        case _:
+            return False
 
 
 def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> None:
@@ -85,21 +89,26 @@ def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> 
 
     exp_bonus = (exp["bonus_timers"] if "bonus_timers" in exp else None)
     act_bonus = (act["bonus_timers"] if "bonus_timers" in act else None)
-    if isinstance(exp_bonus, dict) and isinstance(act_bonus, dict):
-        for key, value in list(exp_bonus.items()):
-            if _int_is_unknown(value):
-                exp_bonus[key] = (act_bonus[key] if key in act_bonus else None)
+    match (exp_bonus, act_bonus):
+        case (dict() as exp_bonus_map, dict() as act_bonus_map):
+            for key, value in list(exp_bonus_map.items()):
+                if _int_is_unknown(value):
+                    exp_bonus_map[key] = (act_bonus_map[key] if key in act_bonus_map else None)
+        case _:
+            pass
 
     exp_perk = (exp["perk"] if "perk" in exp else None)
     act_perk = (act["perk"] if "perk" in act else None)
-    if isinstance(exp_perk, dict) and isinstance(act_perk, dict):
-        if _int_is_unknown((exp_perk["pending_count"] if "pending_count" in exp_perk else None)):
-            exp["perk"] = act_perk
+    match (exp_perk, act_perk):
+        case (dict() as exp_perk_map, dict() as act_perk_map):
+            if _int_is_unknown((exp_perk_map["pending_count"] if "pending_count" in exp_perk_map else None)):
+                exp["perk"] = act_perk_map
+        case _:
+            pass
 
     exp_deaths = (exp["deaths"] if "deaths" in exp else None)
-    if isinstance(exp_deaths, list) and len(exp_deaths) == 1:
-        row = exp_deaths[0]
-        if isinstance(row, dict):
+    match exp_deaths:
+        case [dict() as row]:
             is_unknown_death = (
                 _int_is_unknown((row["creature_index"] if "creature_index" in row else None))
                 and _int_is_unknown((row["type_id"] if "type_id" in row else None))
@@ -107,6 +116,8 @@ def normalize_unknown_fields(exp: dict[str, object], act: dict[str, object]) -> 
             )
             if is_unknown_death:
                 exp["deaths"] = (act["deaths"] if "deaths" in act else None)
+        case _:
+            pass
 
 
 def _path_join(path: str, suffix: str) -> str:
@@ -117,11 +128,13 @@ def _path_join(path: str, suffix: str) -> str:
 
 def _values_equal(expected: object, actual: object, *, float_abs_tol: float) -> bool:
     abs_tol = max(0.0, float(float_abs_tol)) + 1e-12
-    if isinstance(expected, float) and isinstance(actual, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
-    if isinstance(actual, float) and isinstance(expected, (int, float)):
-        return math.isclose(float(expected), float(actual), rel_tol=0.0, abs_tol=abs_tol)
-    return expected == actual
+    match (expected, actual):
+        case (float() as exp_float, int() | float() as act_num):
+            return math.isclose(float(exp_float), float(act_num), rel_tol=0.0, abs_tol=abs_tol)
+        case (int() | float() as exp_num, float() as act_float):
+            return math.isclose(float(exp_num), float(act_float), rel_tol=0.0, abs_tol=abs_tol)
+        case _:
+            return expected == actual
 
 
 def _collect_field_diffs(
@@ -136,79 +149,85 @@ def _collect_field_diffs(
     if max_diffs is not None and len(out) >= int(max_diffs):
         return
 
-    if isinstance(expected, dict) and isinstance(actual, dict):
-        keys = sorted({*expected.keys(), *actual.keys()})
-        for key in keys:
-            key_str = str(key)
-            has_exp = key in expected or key_str in expected
-            has_act = key in actual or key_str in actual
-            if key_str in expected:
-                exp_value = expected[key_str]
-            elif key in expected:
-                exp_value = expected[key]
-            else:
-                exp_value = None
-            if key_str in actual:
-                act_value = actual[key_str]
-            elif key in actual:
-                act_value = actual[key]
-            else:
-                act_value = None
-            if not has_exp or not has_act:
+    match (expected, actual):
+        case (dict() as expected_map, dict() as actual_map):
+            keys = sorted({*expected_map.keys(), *actual_map.keys()})
+            for key in keys:
+                key_str = str(key)
+                has_exp = key in expected_map or key_str in expected_map
+                has_act = key in actual_map or key_str in actual_map
+                if key_str in expected_map:
+                    exp_value = expected_map[key_str]
+                elif key in expected_map:
+                    exp_value = expected_map[key]
+                else:
+                    exp_value = None
+                if key_str in actual_map:
+                    act_value = actual_map[key_str]
+                elif key in actual_map:
+                    act_value = actual_map[key]
+                else:
+                    act_value = None
+                if not has_exp or not has_act:
+                    out.append(
+                        ReplayFieldDiff(
+                            field=_path_join(path, key_str),
+                            expected=exp_value if has_exp else "<missing>",
+                            actual=act_value if has_act else "<missing>",
+                        ),
+                    )
+                    if max_diffs is not None and len(out) >= int(max_diffs):
+                        return
+                    continue
+                _collect_field_diffs(
+                    path=_path_join(path, key_str),
+                    expected=exp_value,
+                    actual=act_value,
+                    out=out,
+                    max_diffs=max_diffs,
+                    float_abs_tol=float_abs_tol,
+                )
+                if max_diffs is not None and len(out) >= int(max_diffs):
+                    return
+            return
+        case (list() as expected_list, list() as actual_list):
+            if len(expected_list) != len(actual_list):
                 out.append(
                     ReplayFieldDiff(
-                        field=_path_join(path, key_str),
-                        expected=exp_value if has_exp else "<missing>",
-                        actual=act_value if has_act else "<missing>",
+                        field=_path_join(path, "_len"),
+                        expected=int(len(expected_list)),
+                        actual=int(len(actual_list)),
                     ),
                 )
                 if max_diffs is not None and len(out) >= int(max_diffs):
                     return
-                continue
-            _collect_field_diffs(
-                path=_path_join(path, key_str),
-                expected=exp_value,
-                actual=act_value,
-                out=out,
-                max_diffs=max_diffs,
-                float_abs_tol=float_abs_tol,
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        return
-
-    if isinstance(expected, list) and isinstance(actual, list):
-        if len(expected) != len(actual):
-            out.append(
-                ReplayFieldDiff(
-                    field=_path_join(path, "_len"),
-                    expected=int(len(expected)),
-                    actual=int(len(actual)),
-                ),
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        for idx, (exp_value, act_value) in enumerate(zip(expected, actual)):
-            _collect_field_diffs(
-                path=f"{path}[{idx}]" if path else f"[{idx}]",
-                expected=exp_value,
-                actual=act_value,
-                out=out,
-                max_diffs=max_diffs,
-                float_abs_tol=float_abs_tol,
-            )
-            if max_diffs is not None and len(out) >= int(max_diffs):
-                return
-        return
+            for idx, (exp_value, act_value) in enumerate(zip(expected_list, actual_list)):
+                _collect_field_diffs(
+                    path=f"{path}[{idx}]" if path else f"[{idx}]",
+                    expected=exp_value,
+                    actual=act_value,
+                    out=out,
+                    max_diffs=max_diffs,
+                    float_abs_tol=float_abs_tol,
+                )
+                if max_diffs is not None and len(out) >= int(max_diffs):
+                    return
+            return
+        case _:
+            pass
 
     # Capture checkpoints quantize global bonus timers to integer ms in JS.
     # A one-ms jitter can appear from float edge cases and self-heal on the
     # next tick without affecting deterministic simulation behavior.
-    if path.startswith("bonus_timers.") and isinstance(expected, int) and isinstance(actual, int):
-        timer_key = path.removeprefix("bonus_timers.")
-        if timer_key in {"2", "4", "6", "9", "11"}:
-            if int(expected) > 0 and int(actual) > 0 and abs(int(expected) - int(actual)) <= 1:
-                return
+    match (expected, actual):
+        case (int() as expected_int, int() as actual_int):
+            if path.startswith("bonus_timers."):
+                timer_key = path.removeprefix("bonus_timers.")
+                if timer_key in {"2", "4", "6", "9", "11"}:
+                    if int(expected_int) > 0 and int(actual_int) > 0 and abs(int(expected_int) - int(actual_int)) <= 1:
+                        return
+        case _:
+            pass
 
     if not _values_equal(expected, actual, float_abs_tol=float_abs_tol):
         out.append(
@@ -247,10 +266,13 @@ def checkpoint_field_diffs(
         exp_base, act_base = elapsed_baseline
         exp_elapsed = (exp_obj["elapsed_ms"] if "elapsed_ms" in exp_obj else None)
         act_elapsed = (act_obj["elapsed_ms"] if "elapsed_ms" in act_obj else None)
-        if isinstance(exp_elapsed, int) and isinstance(act_elapsed, int):
-            if int(exp_elapsed) >= 0 and int(act_elapsed) >= 0:
-                exp_obj["elapsed_ms"] = int(exp_elapsed) - int(exp_base)
-                act_obj["elapsed_ms"] = int(act_elapsed) - int(act_base)
+        match (exp_elapsed, act_elapsed):
+            case (int() as exp_elapsed_int, int() as act_elapsed_int):
+                if int(exp_elapsed_int) >= 0 and int(act_elapsed_int) >= 0:
+                    exp_obj["elapsed_ms"] = int(exp_elapsed_int) - int(exp_base)
+                    act_obj["elapsed_ms"] = int(act_elapsed_int) - int(act_base)
+            case _:
+                pass
 
     if normalize_unknown:
         normalize_unknown_fields(exp_obj, act_obj)

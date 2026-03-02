@@ -3,10 +3,17 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
+from typing import cast
 
 import msgspec
 
-from .channel_helpers import ENTITY_SAMPLE_KINDS, as_object_dict, as_object_list
+from .channel_helpers import (
+    ENTITY_SAMPLE_KINDS,
+    checkpoint_channel,
+    entity_rows,
+    entity_samples_channel,
+    rng_marks_channel,
+)
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -71,26 +78,29 @@ def _parse_expression(expression: str) -> tuple[str, _Predicate]:
 def _resolve_path(root: dict[str, object], path: str) -> object:
     current: object = root
     for part in path.split("."):
-        mapped = as_object_dict(current)
-        if mapped is None:
-            return None
-        current = mapped.get(part)
+        match current:
+            case dict() as mapped:
+                current = mapped.get(part)
+            case _:
+                return None
     return current
 
 
 def _to_float(value: object) -> float | None:
-    if isinstance(value, bool):
-        return float(int(value))
-    if isinstance(value, int):
-        return float(value)
-    if isinstance(value, float):
-        return value
-    if isinstance(value, str):
-        try:
-            return float(value)
-        except ValueError:
+    match value:
+        case bool() as v:
+            return float(int(v))
+        case int() as v:
+            return float(v)
+        case float() as v:
+            return v
+        case str() as v:
+            try:
+                return float(v)
+            except ValueError:
+                return None
+        case _:
             return None
-    return None
 
 
 def _eval_operand(
@@ -147,46 +157,45 @@ def _compare_values(left: object, op: str, right: object) -> bool:
 
 
 def _entity_rows(row: TickRecord) -> list[dict[str, object]]:
-    entity_samples = as_object_dict(row.channels.get("entity_samples"))
-    if entity_samples is None:
+    samples = entity_samples_channel(row)
+    if samples is None:
         return []
     out: list[dict[str, object]] = []
     for kind in ENTITY_SAMPLE_KINDS:
-        rows = as_object_list(entity_samples.get(kind))
-        for item in rows:
-            mapped = as_object_dict(item)
-            if mapped is None:
-                continue
-            payload = dict(mapped)
-            if "pool_kind" not in payload:
-                payload["pool_kind"] = kind
-            out.append(payload)
+        for item in entity_rows(samples, kind=kind):
+            out.append(cast("dict[str, object]", msgspec.to_builtins(item)))
     return out
 
 
 def _event_type_counts(row: TickRecord) -> dict[str, int]:
-    checkpoint = as_object_dict(row.channels.get("checkpoint"))
-    if checkpoint is not None:
-        events = as_object_dict(checkpoint.get("events"))
-        if events is not None:
-            return {
-                "hit_count": int(events.get("hit_count", 0)) if isinstance(events.get("hit_count"), (int, float)) else 0,
-                "pickup_count": int(events.get("pickup_count", 0))
-                if isinstance(events.get("pickup_count"), (int, float))
-                else 0,
-                "sfx_count": int(events.get("sfx_count", 0)) if isinstance(events.get("sfx_count"), (int, float)) else 0,
-            }
-    return {}
+    checkpoint = checkpoint_channel(row)
+    if checkpoint is None:
+        return {}
+    return {
+        "hit_count": int(checkpoint.events.hit_count),
+        "pickup_count": int(checkpoint.events.pickup_count),
+        "sfx_count": int(checkpoint.events.sfx_count),
+    }
 
 
 def tick_summary_from_row(row: TickRecord) -> dict[str, object]:
-    checkpoint = as_object_dict(row.channels.get("checkpoint")) or {}
-    rng_marks = as_object_dict(row.channels.get("rng_marks")) or {}
-    entity_samples = as_object_dict(row.channels.get("entity_samples")) or {}
-
-    entity_counts: dict[str, int] = {}
-    for kind in ENTITY_SAMPLE_KINDS:
-        entity_counts[kind] = len(as_object_list(entity_samples.get(kind)))
+    checkpoint_obj = checkpoint_channel(row)
+    checkpoint = (
+        cast("dict[str, object]", msgspec.to_builtins(checkpoint_obj))
+        if checkpoint_obj is not None
+        else {}
+    )
+    rng_marks = dict(rng_marks_channel(row))
+    samples = entity_samples_channel(row)
+    if samples is None:
+        entity_counts = {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
+    else:
+        entity_counts = {
+            "creatures": len(samples.creatures),
+            "projectiles": len(samples.projectiles),
+            "secondary_projectiles": len(samples.secondary_projectiles),
+            "bonuses": len(samples.bonuses),
+        }
 
     event_counts = _event_type_counts(row)
     event_count_total = sum(event_counts.values())
@@ -244,10 +253,7 @@ def entity_history(
     with TraceReader(Path(trace_path)) as trace:
         for row in trace.iter_ticks(tick_start=tick_start, tick_end=tick_end):
             for entity in _entity_rows(row):
-                uid_value = entity.get("uid")
-                if not isinstance(uid_value, int):
-                    continue
-                if uid_value != entity_uid:
+                if int(entity["uid"]) != int(entity_uid):
                     continue
                 snapshot = dict(entity)
                 snapshot["tick_index"] = row.tick_index
@@ -257,10 +263,8 @@ def entity_history(
         raise ValueError(f"entity uid {entity_uid} not found in requested range")
 
     first = snapshots[0]
-    spawn_tick = snapshots[0].get("tick_index")
-    despawn_tick = snapshots[-1].get("tick_index")
-    if not isinstance(spawn_tick, int) or not isinstance(despawn_tick, int):
-        raise TypeError("entity snapshot missing integer tick_index")
+    spawn_tick = int(snapshots[0]["tick_index"])
+    despawn_tick = int(snapshots[-1]["tick_index"])
     return {
         "entity_uid": entity_uid,
         "pool_kind": str(first.get("pool_kind", "unknown")),

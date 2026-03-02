@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
+from typing import cast
 
 import msgspec
 
@@ -158,10 +159,7 @@ def validate_sim_state(value: object, *, field: str) -> dict[str, object]:
         validated = msgspec.convert(value, type=SimStateSnapshot)
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise ValueError(f"{field} must be a valid SimStateSnapshot payload") from exc
-    out = _to_builtin(validated)
-    if not isinstance(out, dict):
-        raise ValueError(f"{field} must decode to an object")
-    return out
+    return cast("dict[str, object]", _to_builtin(validated))
 
 
 def validate_rng_stream(value: object, *, field: str) -> list[object]:
@@ -169,10 +167,7 @@ def validate_rng_stream(value: object, *, field: str) -> list[object]:
         validated = msgspec.convert(value, type=list[RngStreamRow])
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise ValueError(f"{field} must be a valid rng_stream payload") from exc
-    out = _to_builtin(validated)
-    if not isinstance(out, list):
-        raise ValueError(f"{field} must decode to a list")
-    return out
+    return cast("list[object]", _to_builtin(validated))
 
 
 def validate_entity_samples(value: object, *, field: str) -> dict[str, object]:
@@ -180,10 +175,7 @@ def validate_entity_samples(value: object, *, field: str) -> dict[str, object]:
         validated = msgspec.convert(value, type=EntitySamplesSnapshot)
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise ValueError(f"{field} must be a valid EntitySamplesSnapshot payload") from exc
-    out = _to_builtin(validated)
-    if not isinstance(out, dict):
-        raise ValueError(f"{field} must decode to an object")
-    return out
+    return cast("dict[str, object]", _to_builtin(validated))
 
 
 def status_payload_from_mapping(
@@ -191,32 +183,26 @@ def status_payload_from_mapping(
     *,
     usage_count: int,
 ) -> SnapshotStatus:
-    if status is None:
-        return SnapshotStatus(
-            quest_unlock_index=0,
-            quest_unlock_index_full=0,
-            weapon_usage_counts=[0] * max(0, int(usage_count)),
+    expected_usage_count = max(0, int(usage_count))
+    status_payload: dict[str, object] = {
+        "quest_unlock_index": 0,
+        "quest_unlock_index_full": 0,
+        "weapon_usage_counts": [0] * expected_usage_count,
+    }
+    if status is not None:
+        status_payload["quest_unlock_index"] = status.get("quest_unlock_index", 0)
+        status_payload["quest_unlock_index_full"] = status.get("quest_unlock_index_full", 0)
+        status_payload["weapon_usage_counts"] = status.get(
+            "weapon_usage_counts",
+            [0] * expected_usage_count,
         )
-    counts_raw = status.get("weapon_usage_counts")
-    counts_list = list(counts_raw) if isinstance(counts_raw, Sequence) and not isinstance(counts_raw, (str, bytes, bytearray)) else []
-    counts: list[int] = []
-    for item in counts_list[: max(0, int(usage_count))]:
-        if isinstance(item, bool):
-            counts.append(int(item))
-        elif isinstance(item, int):
-            counts.append(int(item))
-        elif isinstance(item, float):
-            counts.append(int(item))
-        else:
-            counts.append(0)
-    while len(counts) < int(max(0, usage_count)):
-        counts.append(0)
-    quest_unlock_index = status.get("quest_unlock_index")
-    quest_unlock_index_full = status.get("quest_unlock_index_full")
-    return SnapshotStatus(
-        quest_unlock_index=int(quest_unlock_index) if isinstance(quest_unlock_index, (int, float)) and not isinstance(quest_unlock_index, bool) else 0,
-        quest_unlock_index_full=int(quest_unlock_index_full)
-        if isinstance(quest_unlock_index_full, (int, float)) and not isinstance(quest_unlock_index_full, bool)
-        else 0,
-        weapon_usage_counts=counts,
-    )
+    try:
+        validated = msgspec.convert(status_payload, type=SnapshotStatus)
+    except (msgspec.ValidationError, TypeError, ValueError) as exc:
+        raise ValueError("status payload must be a valid SnapshotStatus object") from exc
+    counts = list(validated.weapon_usage_counts)
+    if len(counts) < int(expected_usage_count):
+        counts.extend([0] * (int(expected_usage_count) - len(counts)))
+    elif len(counts) > int(expected_usage_count):
+        counts = counts[: int(expected_usage_count)]
+    return msgspec.structs.replace(validated, weapon_usage_counts=counts)

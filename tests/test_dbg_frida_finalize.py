@@ -435,7 +435,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="valid ReplayCheckpoint payload"):
+    with pytest.raises(FridaFinalizeError, match="invalid capture row: Expected `int`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -456,7 +456,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="seed is null; update gameplay_diff_capture.js"):
+    with pytest.raises(FridaFinalizeError, match="Expected `int`, got `null` - at `\\$\\.seed`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -594,7 +594,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="must contain exactly canonical channels"):
+    with pytest.raises(FridaFinalizeError, match="missing required field `sim_state`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -623,7 +623,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="must contain exactly canonical channels"):
+    with pytest.raises(FridaFinalizeError, match="unknown field `event_heads`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -635,5 +635,5 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_capture_format_version(t
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="missing capture_format_version; expected 8"):
+    with pytest.raises(FridaFinalizeError, match="missing required field `capture_format_version`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
