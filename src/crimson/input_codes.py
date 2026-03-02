@@ -460,7 +460,7 @@ def _parse_keybinds_blob(blob: bytes | bytearray | None) -> tuple[int, ...]:
 def config_keybinds(config: CrimsonConfig | None) -> tuple[int, ...]:
     if config is None:
         return ()
-    return _parse_keybinds_blob(config.keybinds_blob())
+    return _parse_keybinds_blob(config.keybinds)
 
 
 def config_keybinds_for_player(config: CrimsonConfig | None, *, player_index: int) -> tuple[int, ...]:
