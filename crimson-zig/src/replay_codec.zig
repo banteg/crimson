@@ -573,7 +573,7 @@ const ReplayEventWire = union(enum) {
 
     pub fn msgpackFormat() msgpack.UnionFormat {
         return .{ .as_tagged = .{
-            .tag_field = "kind",
+            .tag_field = "type",
             .tag_value = .field_name,
         } };
     }

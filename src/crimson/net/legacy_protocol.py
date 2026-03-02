@@ -116,7 +116,7 @@ def current_build_id() -> str:
     return version
 
 
-class Hello(msgspec.Struct, tag_field="kind", tag="hello", forbid_unknown_fields=True):
+class Hello(msgspec.Struct, tag="hello", forbid_unknown_fields=True):
     protocol_version: int = PROTOCOL_VERSION
     build_id: str = ""
     mode_id: int = 0
@@ -128,7 +128,7 @@ class Hello(msgspec.Struct, tag_field="kind", tag="hello", forbid_unknown_fields
     host: bool = False
 
 
-class Welcome(msgspec.Struct, tag_field="kind", tag="welcome", forbid_unknown_fields=True):
+class Welcome(msgspec.Struct, tag="welcome", forbid_unknown_fields=True):
     accepted: bool = False
     reason: str = ""
     session_id: str = ""
@@ -154,7 +154,7 @@ class LobbySlot(msgspec.Struct, forbid_unknown_fields=True):
     peer_name: str = ""
 
 
-class LobbyState(msgspec.Struct, tag_field="kind", tag="lobby_state", forbid_unknown_fields=True):
+class LobbyState(msgspec.Struct, tag="lobby_state", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
     player_count: int = 1
@@ -164,7 +164,7 @@ class LobbyState(msgspec.Struct, tag_field="kind", tag="lobby_state", forbid_unk
     quest_level: str = ""
 
 
-class Ready(msgspec.Struct, tag_field="kind", tag="ready", forbid_unknown_fields=True):
+class Ready(msgspec.Struct, tag="ready", forbid_unknown_fields=True):
     slot_index: int = -1
     ready: bool = False
 
@@ -188,7 +188,7 @@ class StatusSnapshot(msgspec.Struct, forbid_unknown_fields=True):
     unknown_tail: bytes = b""
 
 
-class MatchStart(msgspec.Struct, tag_field="kind", tag="match_start", forbid_unknown_fields=True):
+class MatchStart(msgspec.Struct, tag="match_start", forbid_unknown_fields=True):
     session_id: str = ""
     mode_id: int = 0
     player_count: int = 1
@@ -205,44 +205,44 @@ class InputSample(msgspec.Struct, forbid_unknown_fields=True):
     packed_input: PackedPlayerInput = msgspec.field(default_factory=list)
 
 
-class InputBatch(msgspec.Struct, tag_field="kind", tag="input_batch", forbid_unknown_fields=True):
+class InputBatch(msgspec.Struct, tag="input_batch", forbid_unknown_fields=True):
     slot_index: int = -1
     samples: list[InputSample] = msgspec.field(default_factory=list)
 
 
-class TickFrame(msgspec.Struct, tag_field="kind", tag="tick_frame", forbid_unknown_fields=True):
+class TickFrame(msgspec.Struct, tag="tick_frame", forbid_unknown_fields=True):
     tick_index: int = 0
     frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
     command_hash: str = ""
     state_hash: str = ""
 
 
-class PauseState(msgspec.Struct, tag_field="kind", tag="pause_state", forbid_unknown_fields=True):
+class PauseState(msgspec.Struct, tag="pause_state", forbid_unknown_fields=True):
     paused: bool = False
     reason: str = ""
 
 
-class KeepAlive(msgspec.Struct, tag_field="kind", tag="keep_alive", forbid_unknown_fields=True):
+class KeepAlive(msgspec.Struct, tag="keep_alive", forbid_unknown_fields=True):
     """Best-effort keepalive packet to prevent timeouts during stalls/pauses."""
 
     tick_index: int = 0
 
 
-class PerkMenuOpen(msgspec.Struct, tag_field="kind", tag="perk_menu_open", forbid_unknown_fields=True):
+class PerkMenuOpen(msgspec.Struct, tag="perk_menu_open", forbid_unknown_fields=True):
     """Host-authored perk menu open event (deterministic, tick-indexed)."""
 
     tick_index: int = -1
     player_index: int = 0
 
 
-class PerkMenuClose(msgspec.Struct, tag_field="kind", tag="perk_menu_close", forbid_unknown_fields=True):
+class PerkMenuClose(msgspec.Struct, tag="perk_menu_close", forbid_unknown_fields=True):
     """Host-authored perk menu close/cancel event (deterministic, tick-indexed)."""
 
     tick_index: int = -1
     player_index: int = 0
 
 
-class PerkPick(msgspec.Struct, tag_field="kind", tag="perk_pick", forbid_unknown_fields=True):
+class PerkPick(msgspec.Struct, tag="perk_pick", forbid_unknown_fields=True):
     """Host-authored perk pick event (deterministic, tick-indexed)."""
 
     tick_index: int = -1
@@ -250,20 +250,20 @@ class PerkPick(msgspec.Struct, tag_field="kind", tag="perk_pick", forbid_unknown
     choice_index: int = 0
 
 
-class DesyncNotice(msgspec.Struct, tag_field="kind", tag="desync_notice", forbid_unknown_fields=True):
+class DesyncNotice(msgspec.Struct, tag="desync_notice", forbid_unknown_fields=True):
     tick_index: int = -1
     expected_command_hash: str = ""
     actual_command_hash: str = ""
 
 
-class DebugLogBatch(msgspec.Struct, tag_field="kind", tag="debug_log_batch", forbid_unknown_fields=True):
+class DebugLogBatch(msgspec.Struct, tag="debug_log_batch", forbid_unknown_fields=True):
     """Client-to-host debug log forwarding payload (best-effort)."""
 
     slot_index: int = -1
     lines: list[str] = msgspec.field(default_factory=list)
 
 
-class ResyncBegin(msgspec.Struct, tag_field="kind", tag="resync_begin", forbid_unknown_fields=True):
+class ResyncBegin(msgspec.Struct, tag="resync_begin", forbid_unknown_fields=True):
     stream_id: str = ""
     total_chunks: int = 0
     compressed_size: int = 0
@@ -271,18 +271,18 @@ class ResyncBegin(msgspec.Struct, tag_field="kind", tag="resync_begin", forbid_u
     checkpoints_size: int = 0
 
 
-class ResyncChunk(msgspec.Struct, tag_field="kind", tag="resync_chunk", forbid_unknown_fields=True):
+class ResyncChunk(msgspec.Struct, tag="resync_chunk", forbid_unknown_fields=True):
     stream_id: str = ""
     chunk_index: int = 0
     payload: bytes = b""
 
 
-class ResyncCommit(msgspec.Struct, tag_field="kind", tag="resync_commit", forbid_unknown_fields=True):
+class ResyncCommit(msgspec.Struct, tag="resync_commit", forbid_unknown_fields=True):
     stream_id: str = ""
     tick_index: int = -1
 
 
-class Disconnect(msgspec.Struct, tag_field="kind", tag="disconnect", forbid_unknown_fields=True):
+class Disconnect(msgspec.Struct, tag="disconnect", forbid_unknown_fields=True):
     reason: str = ""
 
 

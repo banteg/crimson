@@ -493,7 +493,6 @@ class GameWorld(msgspec.Struct):
             ),
             zero_gate_active=zero_gate_active_from_state(
                 demo_mode_active=bool(self.state.demo_mode_active),
-                perk_pending_count=int(self.state.perk_selection.pending_count),
             ),
         )
 
