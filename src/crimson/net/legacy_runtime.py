@@ -10,6 +10,7 @@ from typing import cast
 import msgspec
 
 from ..replay.types import PackedPlayerInput
+from ..sim.timing import ftol_ms_i32
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
 from .deterministic_status import hash_status_snapshot
 from .lobby import ClientLobby, HostLobby
@@ -322,7 +323,7 @@ class LanRuntime(msgspec.Struct):
         now_ms = _now_ms()
         tick_rate = max(1, int(self.cfg.tick_rate) or 1)
         delay_ticks = max(0, int(self.cfg.input_delay_ticks))
-        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
+        delay_ms = ftol_ms_i32(float(delay_ticks) * 1000.0 / float(tick_rate))
 
         if self.error:
             lines.append(f"net: error={self.error}")
@@ -1494,7 +1495,7 @@ class LanRuntime(msgspec.Struct):
 
         tick_rate = max(1, int(self.cfg.tick_rate) or 1)
         delay_ticks = max(0, int(self.cfg.input_delay_ticks))
-        delay_ms = int(round(float(delay_ticks) * 1000.0 / float(tick_rate)))
+        delay_ms = ftol_ms_i32(float(delay_ticks) * 1000.0 / float(tick_rate))
 
         role = str(self.cfg.role)
         if role == "host":
