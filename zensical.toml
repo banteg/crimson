@@ -44,6 +44,7 @@ nav = [
     { "Contracts" = [
       { "Overview" = "rewrite/contracts/index.md" },
       { "Deterministic step pipeline" = "rewrite/deterministic-step-pipeline.md" },
+      { "CDT trace format" = "rewrite/cdt-trace-format.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
       { "Netplay (rollback primary)" = "rewrite/netplay-rollback.md" },

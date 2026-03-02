@@ -102,8 +102,7 @@ def test_dbg_record_standard_profile(tmp_path: Path) -> None:
             rng_stream_obj = row.channels.get("rng_stream")
             assert isinstance(rng_stream_obj, list)
             for stream_row in rng_stream_obj:
-                assert isinstance(stream_row, dict)
-                inferred_obj = stream_row.get("inferred")
+                inferred_obj = _as_dict(stream_row).get("inferred")
                 assert isinstance(inferred_obj, bool)
                 assert not inferred_obj
 
