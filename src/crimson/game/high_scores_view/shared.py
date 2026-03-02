@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from ...game_modes import GameMode
 from ...quests.types import parse_level
 
 if TYPE_CHECKING:
@@ -43,18 +44,20 @@ def parse_quest_level(level: str | None) -> tuple[int, int]:
         return (0, 0)
 
 
-def mode_label(mode_id: int, quest_major: int, quest_minor: int) -> str:
-    if int(mode_id) == 1:
-        return "Survival"
-    if int(mode_id) == 2:
-        return "Rush"
-    if int(mode_id) == 4:
-        return "Typ-o Shooter"
-    if int(mode_id) == 3:
-        if int(quest_major) > 0 and int(quest_minor) > 0:
-            return f"Quest {int(quest_major)}.{int(quest_minor)}"
-        return "Quests"
-    return f"Mode {int(mode_id)}"
+def mode_label(mode_id: GameMode, quest_major: int, quest_minor: int) -> str:
+    match mode_id:
+        case GameMode.SURVIVAL:
+            return "Survival"
+        case GameMode.RUSH:
+            return "Rush"
+        case GameMode.TYPO:
+            return "Typ-o Shooter"
+        case GameMode.QUESTS:
+            if int(quest_major) > 0 and int(quest_minor) > 0:
+                return f"Quest {int(quest_major)}.{int(quest_minor)}"
+            return "Quests"
+        case _:
+            return "Unknown"
 
 
 def quest_title(major: int, minor: int) -> str:

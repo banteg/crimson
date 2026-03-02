@@ -64,7 +64,7 @@ class TypoShooterMode(BaseGameplayMode):
         super().__init__(
             ctx,
             world_size=WORLD_SIZE,
-            default_game_mode_id=int(GameMode.TYPO),
+            default_game_mode_id=GameMode.TYPO,
             demo_mode_active=False,
             difficulty_level=0,
             hardcore=False,
@@ -213,7 +213,7 @@ class TypoShooterMode(BaseGameplayMode):
             player=self.player,
             survival_elapsed_ms=int(self._typo.elapsed_ms),
             creature_kill_count=int(self.creatures.kill_count),
-            game_mode_id=int(GameMode.TYPO),
+            game_mode_id=GameMode.TYPO,
             shots_fired=int(self._typing.shots_fired),
             shots_hit=int(self._typing.shots_hit),
             clamp_shots_hit=False,

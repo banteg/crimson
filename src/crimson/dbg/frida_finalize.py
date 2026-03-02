@@ -457,7 +457,7 @@ def _write_run_trace(
         and int(run.quest_stage_minor) > 0
     )
     replay_header = ReplayHeader(
-        game_mode_id=int(run.mode_id),
+        game_mode_id=GameMode(int(run.mode_id)),
         seed=int(run.replay_seed),
         quest_level=(
             f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}" if is_quest_run else ""

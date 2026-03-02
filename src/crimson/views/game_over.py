@@ -6,6 +6,7 @@ from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..game_modes import GameMode
 from ..persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
@@ -13,6 +14,13 @@ from ..weapons import WeaponId
 from .registry import register_view
 
 _BASE_DIR = Path("artifacts") / "game_over_debug"
+
+
+def _config_game_mode(config: CrimsonConfig) -> GameMode:
+    try:
+        return GameMode(config.game_mode)
+    except ValueError:
+        return GameMode.DEMO
 
 
 def _config_player_name_bytes(name: str) -> bytes:
@@ -26,7 +34,7 @@ def _seed_highscores(config: CrimsonConfig) -> None:
     records: list[HighScoreRecord] = []
     for idx in range(100):
         record = HighScoreRecord.blank()
-        record.game_mode_id = config.game_mode
+        record.game_mode_id = _config_game_mode(config)
         record.set_name(f"bot{idx:03d}")
         record.score_xp = 10_000 - idx
         record.survival_elapsed_ms = (idx + 1) * 1000
@@ -75,7 +83,7 @@ class GameOverDebugView:
 
     def _reset_record(self) -> None:
         record = HighScoreRecord.blank()
-        record.game_mode_id = int(self._config.game_mode)
+        record.game_mode_id = _config_game_mode(self._config)
         record.score_xp = 20_000 if self._qualifies else 1
         record.survival_elapsed_ms = 123_456
         record.creature_kill_count = 123

@@ -16,13 +16,10 @@ def apply_replay_tick_events(
     tick_index: int,
     dt: float,
     world: WorldState,
-    game_mode_id: int,
-    strict_events: bool,
+    game_mode_id: GameMode,
     on_capture_state_transition=None,
 ) -> int | None:
     _ = on_capture_state_transition
-    if not bool(strict_events):
-        raise ReplayRunnerError("strict_events=False is unsupported; replay event handling is always strict")
     state = world.state
     players = world.players
     perk_state = state.perk_selection
@@ -31,8 +28,11 @@ def apply_replay_tick_events(
     for event in events:
         if isinstance(event, PerkMenuOpenEvent):
             menu_open_seen = True
-            if int(game_mode_id) == int(GameMode.RUSH):
-                raise ReplayRunnerError(f"unsupported perk_menu_open in rush replay at tick={tick_index}")
+            match game_mode_id:
+                case GameMode.RUSH:
+                    raise ReplayRunnerError(f"unsupported perk_menu_open in rush replay at tick={tick_index}")
+                case _:
+                    pass
             perk_selection_current_choices(
                 state,
                 players,
@@ -43,8 +43,11 @@ def apply_replay_tick_events(
             continue
 
         if isinstance(event, PerkPickEvent):
-            if int(game_mode_id) == int(GameMode.RUSH):
-                raise ReplayRunnerError(f"unsupported perk_pick in rush replay at tick={tick_index}")
+            match game_mode_id:
+                case GameMode.RUSH:
+                    raise ReplayRunnerError(f"unsupported perk_pick in rush replay at tick={tick_index}")
+                case _:
+                    pass
             picked = perk_selection_pick(
                 state,
                 players,

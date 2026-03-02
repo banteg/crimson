@@ -136,7 +136,6 @@ def run_replay_render_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
@@ -165,7 +164,6 @@ def run_replay_render_benchmark(
     baseline_result = run_replay(
         replay,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
     )
 
@@ -246,7 +244,6 @@ def run_replay_render_benchmark(
                     cfg=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
@@ -414,7 +411,6 @@ def run_replay_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    strict_events: bool = True,
     trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
@@ -466,7 +462,6 @@ def run_replay_benchmark(
                 result = run_replay(
                     replay,
                     max_ticks=max_ticks,
-                    strict_events=bool(strict_events),
                     trace_rng=bool(trace_rng),
                     tick_progress_callback=tick_callback,
                 )
@@ -569,7 +564,6 @@ def _run_render_once(
     cfg: CrimsonConfig,
     console: ConsoleState,
     max_ticks: int | None,
-    strict_events: bool,
     trace_rng: bool,
     rtx: bool,
     telemetry_session: RenderTelemetrySession | None = None,
@@ -583,7 +577,6 @@ def _run_render_once(
         config=cfg,
         console=console,
         max_ticks=max_ticks,
-        strict_events=bool(strict_events),
         trace_rng=bool(trace_rng),
         rtx=bool(rtx),
     )
@@ -647,16 +640,23 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
     if world is None:
         raise ReplayBenchmarkError("render benchmark failed: replay playback world was not available")
 
-    if replay.header.game_mode_id == int(GameMode.QUESTS):
-        elapsed_ms = int(mode._quest_spawn_timeline_ms)
-    else:
-        elapsed_ms = int(world._elapsed_ms)
+    mode_raw = int(replay.header.game_mode_id)
+    try:
+        game_mode_id = GameMode(mode_raw)
+    except ValueError as exc:
+        raise ReplayBenchmarkError(f"render benchmark failed: unsupported game_mode_id={mode_raw}") from exc
+
+    match game_mode_id:
+        case GameMode.QUESTS:
+            elapsed_ms = int(mode._quest_spawn_timeline_ms)
+        case _:
+            elapsed_ms = int(world._elapsed_ms)
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
     score_xp = int(world.players[0].experience) if world.players else 0
     return RunResult(
-        game_mode_id=int(replay.header.game_mode_id),
+        game_mode_id=game_mode_id,
         tick_rate=int(replay.header.tick_rate),
         ticks=int(mode.tick_index),
         elapsed_ms=int(elapsed_ms),

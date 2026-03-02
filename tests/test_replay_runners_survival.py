@@ -74,8 +74,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
         tick_index: int,
         dt: float,
         world,
-        game_mode_id: int,
-        strict_events: bool,
+        game_mode_id: GameMode,
         on_capture_state_transition=None,
     ):
         order.append("events")
@@ -84,8 +83,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
             tick_index=int(tick_index),
             dt=float(dt),
             world=world,
-            game_mode_id=int(game_mode_id),
-            strict_events=bool(strict_events),
+            game_mode_id=GameMode(int(game_mode_id)),
             on_capture_state_transition=on_capture_state_transition,
         )
 
@@ -188,15 +186,6 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
 
 
-def test_survival_runner_rejects_strict_events_false() -> None:
-    _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
-    replay = rec.finish()
-
-    with pytest.raises(ReplayRunnerError, match="strict_events=False is unsupported"):
-        run_replay(replay, strict_events=False)
-
-
 def test_survival_runner_applies_terminal_tick_events() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     rec.record_perk_menu_open(player_index=0, tick_index=3)
@@ -219,7 +208,6 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
 
     run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=checkpoints,
         checkpoint_ticks={3},
     )

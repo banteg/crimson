@@ -19,7 +19,6 @@ from .playback_driver import (
     RushSessionConfig,
     SurvivalSessionConfig,
     TickRngTraceObserver,
-    resolve_quest_level_from_replay,
 )
 from .setup import ReplayRunnerError, RunResult
 
@@ -28,13 +27,7 @@ __all__ = [
     "RunResult",
     "TickRngTraceObserver",
     "run_replay",
-    "_resolve_quest_level",
 ]
-
-
-# Back-compat alias used by replay playback mode.
-def _resolve_quest_level(replay: Replay) -> str:
-    return resolve_quest_level_from_replay(replay)
 
 
 def run_replay(
@@ -42,7 +35,6 @@ def run_replay(
     *,
     max_ticks: int | None = None,
     warn_on_version_mismatch: bool = True,
-    strict_events: bool = True,
     trace_rng: bool = False,
     checkpoint_use_world_step_creature_count: bool = False,
     checkpoints_out: list[ReplayCheckpoint] | None = None,
@@ -58,9 +50,12 @@ def run_replay(
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
-    if not bool(strict_events):
-        raise ReplayRunnerError("strict_events=False is unsupported; replay execution is always strict")
-    mode_id = int(replay.header.game_mode_id)
+    mode_id = replay.header.game_mode_id
+    match mode_id:
+        case GameMode.RUSH:
+            terminal_events_use_resolved_dt = False
+        case _:
+            terminal_events_use_resolved_dt = True
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -73,10 +68,9 @@ def run_replay(
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
         ),
         events=PlaybackEventConfig(
-            strict_events=bool(strict_events),
             defer_menu_open=False,
             apply_terminal_tick_events=True,
-            terminal_events_use_resolved_dt=(mode_id != int(GameMode.RUSH)),
+            terminal_events_use_resolved_dt=terminal_events_use_resolved_dt,
         ),
         session_defaults=PlaybackSessionDefaults(
             clear_fx_queues_each_tick=True,
@@ -85,7 +79,6 @@ def run_replay(
         sessions=PlaybackSessionConfigs(
             survival=SurvivalSessionConfig(partition_events=True),
             rush=RushSessionConfig(
-                strict_events_override=True,
                 enforce_loadout=True,
             ),
             quest=QuestSessionConfig(

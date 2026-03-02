@@ -33,7 +33,7 @@ _TERRAIN_TEXTURES: dict[TerrainTextureId, tuple[str, str]] = {
 }
 
 
-def terrain_texture_by_id(terrain_id: int | TerrainTextureId) -> tuple[str, str] | None:
+def terrain_texture_by_id(terrain_id: TerrainTextureId) -> tuple[str, str] | None:
     """Return (texture_cache_key, paq_relative_path) for a terrain texture ID."""
     try:
         key = TerrainTextureId(int(terrain_id))

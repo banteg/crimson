@@ -7,6 +7,7 @@ from grim.terrain_render import GroundRenderer
 from ...frontend.menu import ensure_menu_ground, menu_ground_camera
 from ...frontend.transitions import _draw_screen_fade
 from ...game_modes import GameMode
+from ...quests import quest_by_level
 from ...quests.types import parse_level
 from ..types import GameState, HighScoresRequest
 from .shared import _next_quest_level, _player_name_default
@@ -54,13 +55,7 @@ class QuestResultsView:
         self._quest_stage_major = int(major)
         self._quest_stage_minor = int(minor)
 
-        try:
-            from ...quests import quest_by_level
-        except ImportError as exc:
-            self._log_nonfatal("quest registry import failed", exc)
-            quest = None
-        else:
-            quest = quest_by_level(str(outcome.level or ""))
+        quest = quest_by_level(str(outcome.level or ""))
 
         self._quest_title = str(quest.title or "") if quest is not None else ""
         if quest is not None:
@@ -91,7 +86,7 @@ class QuestResultsView:
                     self._unlock_perk_name = f"perk_{perk_id}"
 
         record = HighScoreRecord.blank()
-        record.game_mode_id = int(GameMode.QUESTS)
+        record.game_mode_id = GameMode.QUESTS
         record.quest_stage_major = major
         record.quest_stage_minor = minor
         record.score_xp = int(outcome.experience)
@@ -243,7 +238,7 @@ class QuestResultsView:
         if self._ui is not None:
             highlight_rank = self._ui.highlight_rank
         self.state.pending_high_scores = HighScoresRequest(
-            game_mode_id=int(GameMode.QUESTS),
+            game_mode_id=GameMode.QUESTS,
             quest_stage_major=int(self._quest_stage_major),
             quest_stage_minor=int(self._quest_stage_minor),
             highlight_rank=highlight_rank,

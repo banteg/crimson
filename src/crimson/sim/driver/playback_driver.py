@@ -14,7 +14,7 @@ from ...effects import FxQueue, FxQueueRotated
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
-from ...quests.types import QuestContext, SpawnEntry
+from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...weapon_runtime import weapon_assign_player
@@ -69,6 +69,34 @@ def resolve_quest_level_from_replay(replay: Replay) -> str:
     return ""
 
 
+def resolve_replay_quest_setup(
+    replay: Replay,
+    *,
+    world_size: float,
+    player_count: int,
+) -> tuple[QuestDefinition, tuple[SpawnEntry, ...]]:
+    quest_level = resolve_quest_level_from_replay(replay)
+    quest = quest_by_level(quest_level) if quest_level else None
+    if quest is None:
+        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
+
+    ctx = QuestContext(
+        width=int(world_size),
+        height=int(world_size),
+        player_count=int(player_count),
+    )
+    spawn_entries = tuple(
+        build_quest_spawn_table(
+            quest,
+            ctx,
+            seed=int(replay.header.seed),
+            hardcore=bool(replay.header.hardcore),
+            full_version=True,
+        ),
+    )
+    return quest, spawn_entries
+
+
 def enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if player.weapon.weapon_id != RUSH_WEAPON_ID:
@@ -120,7 +148,6 @@ class PlaybackWorldConfig:
 
 @dataclass(slots=True, frozen=True)
 class PlaybackEventConfig:
-    strict_events: bool = True
     defer_menu_open: bool = False
     apply_terminal_tick_events: bool = True
     terminal_events_use_resolved_dt: bool = True
@@ -139,7 +166,6 @@ class SurvivalSessionConfig:
 
 @dataclass(slots=True, frozen=True)
 class RushSessionConfig:
-    strict_events_override: bool | None = True
     enforce_loadout: bool = True
 
 
@@ -213,9 +239,6 @@ class SurvivalPlaybackRuntime:
     session: SurvivalDeterministicSession
     partition_events: bool
 
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        return bool(default_strict_events)
-
     def partition_tick_events(
         self,
         tick_events: list[object],
@@ -246,12 +269,6 @@ class SurvivalPlaybackRuntime:
 @dataclass(slots=True)
 class RushPlaybackRuntime:
     session: RushDeterministicSession
-    strict_events_override: bool | None
-
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        if self.strict_events_override is None:
-            return bool(default_strict_events)
-        return bool(self.strict_events_override)
 
     def partition_tick_events(
         self,
@@ -286,9 +303,6 @@ class QuestPlaybackRuntime:
     session: QuestDeterministicSession
     partition_events: bool
     result_uses_spawn_timeline_ms: bool
-
-    def strict_events(self, *, default_strict_events: bool) -> bool:
-        return bool(default_strict_events)
 
     def partition_tick_events(
         self,
@@ -344,9 +358,11 @@ class PlaybackDriver:
         if self.options.version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(self.options.version_mismatch_action))
 
-        self.mode_id = int(replay.header.game_mode_id)
-        if self.mode_id not in (int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)):
-            raise ReplayRunnerError(f"unsupported replay game_mode_id={self.mode_id}")
+        mode_raw = int(replay.header.game_mode_id)
+        try:
+            self.mode_id = GameMode(mode_raw)
+        except ValueError as exc:
+            raise ReplayRunnerError(f"unsupported replay game_mode_id={mode_raw}") from exc
 
         tick_rate = int(replay.header.tick_rate)
         if tick_rate <= 0:
@@ -406,7 +422,7 @@ class PlaybackDriver:
             weapon_usage_counts=self.replay.header.status.weapon_usage_counts,
         )
 
-        if self.mode_id in (int(GameMode.SURVIVAL), int(GameMode.RUSH)):
+        if self.mode_id in (GameMode.SURVIVAL, GameMode.RUSH):
             apply_replay_bootstrap(
                 self.replay.header,
                 rng=world.state.rng,
@@ -439,30 +455,16 @@ class PlaybackDriver:
         start_weapon_id = quest_config.start_weapon_id
 
         if spawn_entries is None:
-            quest_level = resolve_quest_level_from_replay(self.replay)
-            quest = quest_by_level(quest_level) if quest_level else None
-            if quest is None:
-                raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
+            quest, spawn_entries = resolve_replay_quest_setup(
+                self.replay,
+                world_size=float(self.world_size),
+                player_count=int(self.replay.header.player_count),
+            )
 
             if quest_stage_major is None or quest_stage_minor is None:
                 quest_stage_major, quest_stage_minor = quest.level_key
             if start_weapon_id is None:
                 start_weapon_id = quest.start_weapon_id
-
-            ctx = QuestContext(
-                width=int(self.world_size),
-                height=int(self.world_size),
-                player_count=int(self.replay.header.player_count),
-            )
-            spawn_entries = tuple(
-                build_quest_spawn_table(
-                    quest,
-                    ctx,
-                    seed=int(self.replay.header.seed),
-                    hardcore=bool(self.replay.header.hardcore),
-                    full_version=True,
-                ),
-            )
         else:
             spawn_entries = tuple(spawn_entries)
 
@@ -472,87 +474,86 @@ class PlaybackDriver:
         damage_scale_by_type = build_damage_scale_by_type()
         defaults = self.config.session_defaults
         sessions = self.config.sessions
-        mode_id = int(self.mode_id)
+        match self.mode_id:
+            case GameMode.SURVIVAL:
+                session = SurvivalDeterministicSession(
+                    world=self.world,
+                    world_size=float(self.world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    fx_queue=self.fx_queue,
+                    fx_queue_rotated=self.fx_queue_rotated,
+                    detail_preset=int(self.replay.header.detail_preset),
+                    fx_toggle=int(self.replay.header.fx_toggle),
+                    game_tune_started=bool(defaults.game_tune_started),
+                    apply_world_dt_steps=bool(apply_world_dt_steps),
+                    clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
+                )
+                return SurvivalPlaybackRuntime(
+                    session=session,
+                    partition_events=bool(sessions.survival.partition_events),
+                )
+            case GameMode.RUSH:
+                rush_config = sessions.rush
+                if bool(rush_config.enforce_loadout):
+                    enforce_rush_loadout(self.world)
+                session = RushDeterministicSession(
+                    world=self.world,
+                    world_size=float(self.world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    fx_queue=self.fx_queue,
+                    fx_queue_rotated=self.fx_queue_rotated,
+                    detail_preset=int(self.replay.header.detail_preset),
+                    fx_toggle=int(self.replay.header.fx_toggle),
+                    game_tune_started=bool(defaults.game_tune_started),
+                    clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
+                    enforce_loadout=(lambda: enforce_rush_loadout(self.world))
+                    if bool(rush_config.enforce_loadout)
+                    else None,
+                )
+                return RushPlaybackRuntime(
+                    session=session,
+                )
+            case GameMode.QUESTS:
+                quest_config = sessions.quest
+                spawn_entries, quest_stage_major, quest_stage_minor, start_weapon_id = self._resolve_quest_setup(
+                    quest_config,
+                )
 
-        if mode_id == int(GameMode.SURVIVAL):
-            session = SurvivalDeterministicSession(
-                world=self.world,
-                world_size=float(self.world_size),
-                damage_scale_by_type=damage_scale_by_type,
-                fx_queue=self.fx_queue,
-                fx_queue_rotated=self.fx_queue_rotated,
-                detail_preset=int(self.replay.header.detail_preset),
-                fx_toggle=int(self.replay.header.fx_toggle),
-                game_tune_started=bool(defaults.game_tune_started),
-                apply_world_dt_steps=bool(apply_world_dt_steps),
-                clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-            )
-            return SurvivalPlaybackRuntime(
-                session=session,
-                partition_events=bool(sessions.survival.partition_events),
-            )
+                if quest_stage_major is not None:
+                    self.world.state.quest_stage_major = int(quest_stage_major)
+                if quest_stage_minor is not None:
+                    self.world.state.quest_stage_minor = int(quest_stage_minor)
 
-        if mode_id == int(GameMode.RUSH):
-            rush_config = sessions.rush
-            if bool(rush_config.enforce_loadout):
-                enforce_rush_loadout(self.world)
-            session = RushDeterministicSession(
-                world=self.world,
-                world_size=float(self.world_size),
-                damage_scale_by_type=damage_scale_by_type,
-                fx_queue=self.fx_queue,
-                fx_queue_rotated=self.fx_queue_rotated,
-                detail_preset=int(self.replay.header.detail_preset),
-                fx_toggle=int(self.replay.header.fx_toggle),
-                game_tune_started=bool(defaults.game_tune_started),
-                clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-                enforce_loadout=(lambda: enforce_rush_loadout(self.world))
-                if bool(rush_config.enforce_loadout)
-                else None,
-            )
-            return RushPlaybackRuntime(
-                session=session,
-                strict_events_override=rush_config.strict_events_override,
-            )
+                weapon_id = start_weapon_id or WeaponId.PISTOL
+                if weapon_id <= WeaponId.NONE:
+                    weapon_id = WeaponId.PISTOL
+                for player in self.world.players:
+                    weapon_assign_player(player, weapon_id, state=self.world.state)
 
-        quest_config = sessions.quest
-        spawn_entries, quest_stage_major, quest_stage_minor, start_weapon_id = self._resolve_quest_setup(
-            quest_config,
-        )
+                if bool(quest_config.disable_capture_spawn_events_authoritative):
+                    self.world.creatures.capture_spawn_events_authoritative = False
 
-        if quest_stage_major is not None:
-            self.world.state.quest_stage_major = int(quest_stage_major)
-        if quest_stage_minor is not None:
-            self.world.state.quest_stage_minor = int(quest_stage_minor)
-
-        weapon_id = start_weapon_id or WeaponId.PISTOL
-        if weapon_id <= WeaponId.NONE:
-            weapon_id = WeaponId.PISTOL
-        for player in self.world.players:
-            weapon_assign_player(player, weapon_id, state=self.world.state)
-
-        if bool(quest_config.disable_capture_spawn_events_authoritative):
-            self.world.creatures.capture_spawn_events_authoritative = False
-
-        session = QuestDeterministicSession(
-            world=self.world,
-            world_size=float(self.world_size),
-            damage_scale_by_type=damage_scale_by_type,
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
-            spawn_entries=tuple(spawn_entries),
-            detail_preset=int(self.replay.header.detail_preset),
-            fx_toggle=int(self.replay.header.fx_toggle),
-            game_tune_started=bool(defaults.game_tune_started),
-            apply_world_dt_steps=bool(apply_world_dt_steps),
-            clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-            finalize_post_render_lifecycle_each_tick=bool(quest_config.finalize_post_render_lifecycle_each_tick),
-        )
-        return QuestPlaybackRuntime(
-            session=session,
-            partition_events=bool(quest_config.partition_events),
-            result_uses_spawn_timeline_ms=bool(quest_config.result_uses_spawn_timeline_ms),
-        )
+                session = QuestDeterministicSession(
+                    world=self.world,
+                    world_size=float(self.world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    fx_queue=self.fx_queue,
+                    fx_queue_rotated=self.fx_queue_rotated,
+                    spawn_entries=tuple(spawn_entries),
+                    detail_preset=int(self.replay.header.detail_preset),
+                    fx_toggle=int(self.replay.header.fx_toggle),
+                    game_tune_started=bool(defaults.game_tune_started),
+                    apply_world_dt_steps=bool(apply_world_dt_steps),
+                    clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
+                    finalize_post_render_lifecycle_each_tick=bool(quest_config.finalize_post_render_lifecycle_each_tick),
+                )
+                return QuestPlaybackRuntime(
+                    session=session,
+                    partition_events=bool(quest_config.partition_events),
+                    result_uses_spawn_timeline_ms=bool(quest_config.result_uses_spawn_timeline_ms),
+                )
+            case _:
+                raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
     def run_tick(self, tick_index: int, *, defer_menu_open: bool | None = None) -> PlaybackTickOutcome:
         if tick_index < 0 or tick_index >= int(self.tick_limit):
@@ -586,9 +587,6 @@ class PlaybackDriver:
             defer_menu_open=bool(defer_menu_open_value),
         )
 
-        strict_events = self._mode_runtime.strict_events(
-            default_strict_events=bool(self.config.events.strict_events),
-        )
         rng_before_events = int(state.rng.state)
         with _tick_rng_trace(state.rng, enabled=bool(self.options.trace_rng)) as tick_rng_rows:
             apply_replay_tick_events(
@@ -596,8 +594,7 @@ class PlaybackDriver:
                 tick_index=int(tick_index),
                 dt=float(dt_tick),
                 world=self.world,
-                game_mode_id=int(self.mode_id),
-                strict_events=bool(strict_events),
+                game_mode_id=self.mode_id,
             )
             rng_after_events = int(state.rng.state)
             step_timing = self.session.timing_for_dt(float(dt_tick))
@@ -618,8 +615,7 @@ class PlaybackDriver:
                     tick_index=int(tick_index),
                     dt=float(dt_tick),
                     world=self.world,
-                    game_mode_id=int(self.mode_id),
-                    strict_events=bool(strict_events),
+                    game_mode_id=self.mode_id,
                 )
             rng_after_post_events = int(state.rng.state)
 
@@ -665,9 +661,6 @@ class PlaybackDriver:
             dt_tick = float(self.dt)
 
         terminal_events = self.events_by_tick.get(int(tick_index), [])
-        strict_events = self._mode_runtime.strict_events(
-            default_strict_events=bool(events_config.strict_events),
-        )
 
         rng_before_events = int(self.world.state.rng.state)
         apply_replay_tick_events(
@@ -675,8 +668,7 @@ class PlaybackDriver:
             tick_index=int(tick_index),
             dt=float(dt_tick),
             world=self.world,
-            game_mode_id=int(self.mode_id),
-            strict_events=bool(strict_events),
+            game_mode_id=self.mode_id,
         )
         rng_after_events = int(self.world.state.rng.state)
 
@@ -818,7 +810,7 @@ class PlaybackDriver:
         score_xp = int(self.world.players[0].experience) if self.world.players else 0
 
         return RunResult(
-            game_mode_id=int(self.mode_id),
+            game_mode_id=self.mode_id,
             tick_rate=int(self.tick_rate),
             ticks=int(ticks),
             elapsed_ms=int(self._mode_runtime.run_result_elapsed_ms()),

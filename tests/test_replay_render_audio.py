@@ -125,7 +125,6 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_p
         config=_FakeConfig(),
         console=object(),
         max_ticks=None,
-        strict_events=True,
         trace_rng=False,
         output_path=tmp_path / "audio.raw",
         replay_tick_rate=60,

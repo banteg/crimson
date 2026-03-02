@@ -347,7 +347,7 @@ class QuestFailedView:
 
         record = HighScoreRecord.blank()
         record.set_name(_player_name_default(self.state.config) or "Player")
-        record.game_mode_id = int(GameMode.QUESTS)
+        record.game_mode_id = GameMode.QUESTS
         record.quest_stage_major = major
         record.quest_stage_minor = minor
         record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))

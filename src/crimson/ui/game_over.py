@@ -12,6 +12,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from ..game_modes import GameMode
 from ..persistence.highscores import (
     NAME_MAX_EDIT,
     TABLE_MAX,
@@ -292,7 +293,10 @@ class GameOverUi(msgspec.Struct):
             rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
-            game_mode_id = self.config.game_mode
+            try:
+                game_mode_id = GameMode(self.config.game_mode)
+            except ValueError:
+                game_mode_id = GameMode.DEMO
             candidate = record.copy()
             candidate.game_mode_id = game_mode_id
             self._candidate_record = candidate
@@ -451,6 +455,11 @@ class GameOverUi(msgspec.Struct):
         hint_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.7))
 
         card_origin = pos.offset(dx=4.0 * scale)
+        mode_raw = int(record.game_mode_id)
+        try:
+            mode_id = GameMode(mode_raw)
+        except ValueError:
+            mode_id = GameMode.DEMO
 
         # Left column: Score + value + Rank.
         score_label = "Score"
@@ -462,11 +471,12 @@ class GameOverUi(msgspec.Struct):
             label_color,
         )
 
-        if int(record.game_mode_id) in (2, 3):
-            seconds = float(int(record.survival_elapsed_ms)) * 0.001
-            score_value = f"{seconds:.2f} secs"
-        else:
-            score_value = f"{int(record.score_xp)}"
+        match mode_id:
+            case GameMode.RUSH | GameMode.QUESTS:
+                seconds = float(int(record.survival_elapsed_ms)) * 0.001
+                score_value = f"{seconds:.2f} secs"
+            case _:
+                score_value = f"{int(record.score_xp)}"
         score_value_w = self._text_width(score_value, 1.0 * scale)
         self._draw_small(
             score_value,
@@ -497,54 +507,55 @@ class GameOverUi(msgspec.Struct):
 
         # Right column: Game time + gauge, or Experience in quest mode.
         col2_pos = card_origin.offset(dx=96.0 * scale)
-        if int(record.game_mode_id) == 3:
-            self._draw_small("Experience", col2_pos, 1.0 * scale, label_color)
-            xp_value = f"{int(record.score_xp)}"
-            xp_w = self._text_width(xp_value, 1.0 * scale)
-            self._draw_small(
-                xp_value,
-                col2_pos + Vec2(32.0 * scale - xp_w * 0.5, 15.0 * scale),
-                1.0 * scale,
-                label_color,
-            )
-            self._hover_time = max(0.0, float(self._hover_time) - dt_hover)
-        else:
-            self._draw_small("Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
-            time_rect_pos = col2_pos + Vec2(8.0 * scale, 16.0 * scale)
-            time_rect = Rect.from_top_left(time_rect_pos, 64.0 * scale, 29.0 * scale)
-            hovering_time = time_rect.contains(mouse)
-            self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
+        match mode_id:
+            case GameMode.QUESTS:
+                self._draw_small("Experience", col2_pos, 1.0 * scale, label_color)
+                xp_value = f"{int(record.score_xp)}"
+                xp_w = self._text_width(xp_value, 1.0 * scale)
+                self._draw_small(
+                    xp_value,
+                    col2_pos + Vec2(32.0 * scale - xp_w * 0.5, 15.0 * scale),
+                    1.0 * scale,
+                    label_color,
+                )
+                self._hover_time = max(0.0, float(self._hover_time) - dt_hover)
+            case _:
+                self._draw_small("Game time", col2_pos.offset(dx=6.0 * scale), 1.0 * scale, label_color)
+                time_rect_pos = col2_pos + Vec2(8.0 * scale, 16.0 * scale)
+                time_rect = Rect.from_top_left(time_rect_pos, 64.0 * scale, 29.0 * scale)
+                hovering_time = time_rect.contains(mouse)
+                self._hover_time = float(max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))))
 
-            elapsed_ms = int(record.survival_elapsed_ms)
-            if hud_assets is not None and hud_assets.clock_table is not None:
-                src = rl.Rectangle(0.0, 0.0, float(hud_assets.clock_table.width), float(hud_assets.clock_table.height))
-                clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
-                dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
-                rl.draw_texture_pro(
-                    hud_assets.clock_table,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * alpha)),
-                )
-            if hud_assets is not None and hud_assets.clock_pointer is not None:
-                src = rl.Rectangle(
-                    0.0, 0.0, float(hud_assets.clock_pointer.width), float(hud_assets.clock_pointer.height),
-                )
-                # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
-                # offset by half-size so the 32x32 quad stays aligned with the table.
-                clock_pointer_pos = col2_pos + Vec2(24.0 * scale, 30.0 * scale)
-                dst = rl.Rectangle(clock_pointer_pos.x, clock_pointer_pos.y, 32.0 * scale, 32.0 * scale)
-                seconds = max(0, elapsed_ms // 1000)
-                rotation = float(seconds) * 6.0
-                origin = rl.Vector2(16.0 * scale, 16.0 * scale)
-                rl.draw_texture_pro(
-                    hud_assets.clock_pointer, src, dst, origin, rotation, rl.Color(255, 255, 255, int(255 * alpha)),
-                )
+                elapsed_ms = int(record.survival_elapsed_ms)
+                if hud_assets is not None and hud_assets.clock_table is not None:
+                    src = rl.Rectangle(0.0, 0.0, float(hud_assets.clock_table.width), float(hud_assets.clock_table.height))
+                    clock_table_pos = col2_pos + Vec2(8.0 * scale, 14.0 * scale)
+                    dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0 * scale, 32.0 * scale)
+                    rl.draw_texture_pro(
+                        hud_assets.clock_table,
+                        src,
+                        dst,
+                        rl.Vector2(0.0, 0.0),
+                        0.0,
+                        rl.Color(255, 255, 255, int(255 * alpha)),
+                    )
+                if hud_assets is not None and hud_assets.clock_pointer is not None:
+                    src = rl.Rectangle(
+                        0.0, 0.0, float(hud_assets.clock_pointer.width), float(hud_assets.clock_pointer.height),
+                    )
+                    # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
+                    # offset by half-size so the 32x32 quad stays aligned with the table.
+                    clock_pointer_pos = col2_pos + Vec2(24.0 * scale, 30.0 * scale)
+                    dst = rl.Rectangle(clock_pointer_pos.x, clock_pointer_pos.y, 32.0 * scale, 32.0 * scale)
+                    seconds = max(0, elapsed_ms // 1000)
+                    rotation = float(seconds) * 6.0
+                    origin = rl.Vector2(16.0 * scale, 16.0 * scale)
+                    rl.draw_texture_pro(
+                        hud_assets.clock_pointer, src, dst, origin, rotation, rl.Color(255, 255, 255, int(255 * alpha)),
+                    )
 
-            time_text = format_time_mm_ss(elapsed_ms)
-            self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
+                time_text = format_time_mm_ss(elapsed_ms)
+                self._draw_small(time_text, col2_pos + Vec2(40.0 * scale, 19.0 * scale), 1.0 * scale, label_color)
 
         # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).
         row_pos = card_origin.offset(dy=52.0 * scale)

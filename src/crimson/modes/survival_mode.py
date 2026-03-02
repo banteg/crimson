@@ -49,8 +49,8 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import WEAPON_USAGE_COUNT
-from ..sim.bootstrap import run_terrain_bootstrap
+from ..replay.types import normalize_weapon_usage_counts
+from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSession
@@ -101,7 +101,7 @@ class SurvivalMode(BaseGameplayMode):
         super().__init__(
             ctx,
             world_size=WORLD_SIZE,
-            default_game_mode_id=int(GameMode.SURVIVAL),
+            default_game_mode_id=GameMode.SURVIVAL,
             demo_mode_active=False,
             difficulty_level=0,
             hardcore=False,
@@ -370,22 +370,9 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
-        weapon_usage_counts: tuple[int, ...] = ()
-        if status is not None:
-            raw_counts = status.data.get("weapon_usage_counts")
-            if isinstance(raw_counts, list):
-                coerced: list[int] = []
-                for value in raw_counts[:WEAPON_USAGE_COUNT]:
-                    try:
-                        coerced.append(int(value) & 0xFFFFFFFF)
-                    except (TypeError, ValueError, OverflowError):
-                        coerced.append(0)
-                weapon_usage_counts = tuple(coerced)
-        if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
-            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
-                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts),
-            )
-            weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
             quest_unlock_index_full=int(status.quest_unlock_index_full)
@@ -397,9 +384,9 @@ class SurvivalMode(BaseGameplayMode):
         if record_replay:
             self._replay_recorder = ReplayRecorder(
                 ReplayHeader(
-                    game_mode_id=int(GameMode.SURVIVAL),
+                    game_mode_id=GameMode.SURVIVAL,
                     seed=int(self.state.rng.state),
-                    bootstrap_kind="terrain_v1",
+                    bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
                     tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
@@ -492,7 +479,7 @@ class SurvivalMode(BaseGameplayMode):
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        game_mode_id = self.config.game_mode
+        game_mode_id = GameMode(self.config.game_mode)
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,

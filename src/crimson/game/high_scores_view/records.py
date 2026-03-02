@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import TYPE_CHECKING
 
+from ...game_modes import GameMode
 from ..types import GameState, HighScoresRequest
 from .shared import parse_quest_level
 
@@ -14,9 +15,9 @@ def resolve_request(state: GameState) -> HighScoresRequest:
     request = state.pending_high_scores
     state.pending_high_scores = None
     if request is None:
-        request = HighScoresRequest(game_mode_id=state.config.game_mode)
+        request = HighScoresRequest(game_mode_id=GameMode(state.config.game_mode))
 
-    if int(request.game_mode_id) == 3 and (
+    if request.game_mode_id == GameMode.QUESTS and (
         int(request.quest_stage_major) <= 0 or int(request.quest_stage_minor) <= 0
     ):
         major, minor = parse_quest_level(state.pending_quest_level)
@@ -71,14 +72,14 @@ def load_records(state: GameState, request: HighScoresRequest) -> list[HighScore
 
     path = scores_path_for_mode(
         state.base_dir,
-        int(request.game_mode_id),
+        request.game_mode_id,
         hardcore=state.config.hardcore,
         quest_stage_major=int(request.quest_stage_major),
         quest_stage_minor=int(request.quest_stage_minor),
         player_count=state.config.player_count,
     )
     try:
-        records = read_highscore_table(path, game_mode_id=int(request.game_mode_id))
+        records = read_highscore_table(path, game_mode_id=request.game_mode_id)
     except (OSError, ValueError):
         return []
     date_mode = int(state.config.highscore_date_mode)

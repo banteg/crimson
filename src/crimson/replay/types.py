@@ -9,6 +9,8 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..game_modes import GameMode
+from ..math_parity import f32
 from ..sim.timing import ftol_ms_i32
 from ..weapons import WeaponId
 
@@ -91,6 +93,22 @@ def current_replay_game_version() -> str:
 
 def _default_game_version() -> str:
     return current_replay_game_version()
+
+
+def quantize_f32(value: float) -> float:
+    return float(f32(float(value)))
+
+
+def normalize_weapon_usage_counts(values: object) -> tuple[int, ...]:
+    if not isinstance(values, (list, tuple)):
+        return (0,) * WEAPON_USAGE_COUNT
+    normalized: list[int] = [0] * WEAPON_USAGE_COUNT
+    for idx, value in enumerate(values[:WEAPON_USAGE_COUNT]):
+        try:
+            normalized[idx] = int(value) & 0xFFFFFFFF
+        except (TypeError, ValueError, OverflowError):
+            normalized[idx] = 0
+    return tuple(normalized)
 
 
 def pack_input_flags(
@@ -232,7 +250,7 @@ class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
 
 
 class ReplayHeader(msgspec.Struct, frozen=True):
-    game_mode_id: int
+    game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
     # Quests can recover their spawn script deterministically from the level id.

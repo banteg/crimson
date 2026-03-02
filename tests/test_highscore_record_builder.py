@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.modes.components.highscore_record_builder import (
     build_highscore_record_for_game_over,
@@ -37,7 +38,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
         player=player,
         survival_elapsed_ms=5000,
         creature_kill_count=7,
-        game_mode_id=1,
+        game_mode_id=GameMode.SURVIVAL,
     )
 
     assert record.score_xp == 1234
@@ -46,7 +47,7 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     assert record.most_used_weapon_id == 2
     assert record.shots_fired == 20
     assert record.shots_hit == 15
-    assert record.game_mode_id == 1
+    assert record.game_mode_id == GameMode.SURVIVAL
 
 
 def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
@@ -58,7 +59,7 @@ def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
         player=player,
         survival_elapsed_ms=0,
         creature_kill_count=0,
-        game_mode_id=4,
+        game_mode_id=GameMode.TYPO,
         shots_fired=3,
         shots_hit=5,
         clamp_shots_hit=False,
@@ -66,4 +67,3 @@ def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
 
     assert record.shots_fired == 3
     assert record.shots_hit == 5
-

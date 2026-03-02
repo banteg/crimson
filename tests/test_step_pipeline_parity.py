@@ -30,7 +30,7 @@ from grim.geom import Vec2
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
     header = ReplayHeader(
-        game_mode_id=int(mode),
+        game_mode_id=GameMode(int(mode)),
         seed=int(seed),
         tick_rate=60,
         player_count=1,
@@ -297,7 +297,6 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
     headless: list[ReplayCheckpoint] = []
     run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=headless,
         checkpoint_ticks=set(range(len(replay.inputs))),
     )

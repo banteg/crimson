@@ -16,9 +16,6 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..quests import quest_by_level
-from ..quests.runtime import build_quest_spawn_table
-from ..quests.types import QuestContext
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
     Replay,
@@ -26,6 +23,8 @@ from ..replay import (
     load_replay_file,
     warn_on_game_version_mismatch,
 )
+from ..replay.types import ReplayHeader
+from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.driver.playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
@@ -39,7 +38,7 @@ from ..sim.driver.playback_driver import (
     QuestSessionConfig,
     RushSessionConfig,
     SurvivalSessionConfig,
-    resolve_quest_level_from_replay,
+    resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -82,6 +81,14 @@ _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
 
 
+def _world_reset_seed_for_replay(header: ReplayHeader) -> int:
+    match str(header.bootstrap_kind):
+        case kind if kind == BOOTSTRAP_KIND_TERRAIN_V1:
+            return int(header.bootstrap_seed)
+        case _:
+            return int(header.seed)
+
+
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -91,19 +98,15 @@ class ReplayPlaybackMode:
         config: CrimsonConfig,
         console: ConsoleState,
         max_ticks: int | None = None,
-        strict_events: bool = True,
         trace_rng: bool = False,
         rtx: bool = False,
         show_replay_widget: bool = True,
     ) -> None:
-        if not bool(strict_events):
-            raise ValueError("strict_events=False is unsupported; replay playback is always strict")
         self._ctx = ctx
         self._replay_path = Path(replay_path)
         self._config = config
         self._console = console
         self._max_ticks = max(0, int(max_ticks)) if max_ticks is not None else None
-        self._strict_events = bool(strict_events)
         self._trace_rng = bool(trace_rng)
         self._rtx = bool(rtx)
         self._show_replay_widget = bool(show_replay_widget)
@@ -345,10 +348,10 @@ class ReplayPlaybackMode:
             audio_rng=audio_rng,
             rtx_mode=mode_from_rtx_flag(self._rtx),
         )
-        seed_for_reset = int(replay.header.seed)
-        if str(replay.header.bootstrap_kind) != "none":
-            seed_for_reset = int(replay.header.bootstrap_seed)
-        world.reset(seed=int(seed_for_reset), player_count=int(replay.header.player_count))
+        world.reset(
+            seed=_world_reset_seed_for_replay(replay.header),
+            player_count=int(replay.header.player_count),
+        )
         world.open()
         self._hud_state.preserve_bugs = bool(world.state.preserve_bugs)
         world.state.status = status_from_snapshot(
@@ -370,72 +373,65 @@ class ReplayPlaybackMode:
 
         self._world = world
 
-        mode_id = int(replay.header.game_mode_id)
+        mode_id = replay.header.game_mode_id
         spawn_entries = None
         quest_stage_major: int | None = None
         quest_stage_minor: int | None = None
         start_weapon_id: WeaponId | None = None
-        if mode_id == int(GameMode.QUESTS):
-            quest_level = resolve_quest_level_from_replay(replay)
-            quest = quest_by_level(quest_level) if quest_level else None
-            if quest is None:
-                raise ValueError(f"unsupported quest replay: unknown quest_level={quest_level!r}")
-
-            self._quest_title = str(quest.title)
-            self._quest_level = quest_level_label(quest.major, quest.minor)
-            self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
-            self._quest_complete_texture = self._load_quest_complete_texture(world)
-            quest_stage_major, quest_stage_minor = quest.level_key
-            world.state.quest_stage_major = int(quest_stage_major)
-            world.state.quest_stage_minor = int(quest_stage_minor)
-
-            base_id, overlay_id, detail_id = quest.terrain_ids or (
-                TerrainTextureId.Q1_BASE,
-                TerrainTextureId.Q1_OVERLAY,
-                TerrainTextureId.Q1_BASE,
-            )
-            base = terrain_texture_by_id(int(base_id))
-            overlay = terrain_texture_by_id(int(overlay_id))
-            detail = terrain_texture_by_id(int(detail_id))
-            if base is not None and overlay is not None:
-                base_key, base_path = base
-                overlay_key, overlay_path = overlay
-                detail_key = detail[0] if detail is not None else None
-                detail_path = detail[1] if detail is not None else None
-                world.set_terrain(
-                    base_key=base_key,
-                    overlay_key=overlay_key,
-                    base_path=base_path,
-                    overlay_path=overlay_path,
-                    detail_key=detail_key,
-                    detail_path=detail_path,
+        match mode_id:
+            case GameMode.QUESTS:
+                quest, spawn_entries = resolve_replay_quest_setup(
+                    replay,
+                    world_size=float(world.world_size),
+                    player_count=len(world.players),
                 )
 
-            start_weapon_id = quest.start_weapon_id
-            if start_weapon_id <= WeaponId.NONE:
-                start_weapon_id = WeaponId.PISTOL
-            for player in world.players:
-                weapon_assign_player(player, start_weapon_id)
+                self._quest_title = str(quest.title)
+                self._quest_level = quest_level_label(quest.major, quest.minor)
+                self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
+                self._quest_complete_texture = self._load_quest_complete_texture(world)
+                quest_stage_major, quest_stage_minor = quest.level_key
+                world.state.quest_stage_major = int(quest_stage_major)
+                world.state.quest_stage_minor = int(quest_stage_minor)
 
-            ctx = QuestContext(
-                width=int(world.world_size),
-                height=int(world.world_size),
-                player_count=len(world.players),
-            )
-            spawn_entries = tuple(
-                build_quest_spawn_table(
-                    quest,
-                    ctx,
-                    seed=int(replay.header.seed),
-                    hardcore=bool(replay.header.hardcore),
-                    full_version=True,
-                ),
-            )
-            self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-            self._quest_spawn_timeline_ms = 0.0
-        else:
-            self._quest_total_spawn_count = 0
-            self._quest_spawn_timeline_ms = 0.0
+                default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+                terrain_ids = quest.terrain_ids
+                if terrain_ids is None:
+                    base_id, overlay_id, detail_id = default_terrain
+                else:
+                    try:
+                        base_id = TerrainTextureId(int(terrain_ids[0]))
+                        overlay_id = TerrainTextureId(int(terrain_ids[1]))
+                        detail_id = TerrainTextureId(int(terrain_ids[2]))
+                    except ValueError:
+                        base_id, overlay_id, detail_id = default_terrain
+                base = terrain_texture_by_id(base_id)
+                overlay = terrain_texture_by_id(overlay_id)
+                detail = terrain_texture_by_id(detail_id)
+                if base is not None and overlay is not None:
+                    base_key, base_path = base
+                    overlay_key, overlay_path = overlay
+                    detail_key = detail[0] if detail is not None else None
+                    detail_path = detail[1] if detail is not None else None
+                    world.set_terrain(
+                        base_key=base_key,
+                        overlay_key=overlay_key,
+                        base_path=base_path,
+                        overlay_path=overlay_path,
+                        detail_key=detail_key,
+                        detail_path=detail_path,
+                    )
+
+                start_weapon_id = quest.start_weapon_id
+                if start_weapon_id <= WeaponId.NONE:
+                    start_weapon_id = WeaponId.PISTOL
+                for player in world.players:
+                    weapon_assign_player(player, start_weapon_id)
+                self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
+                self._quest_spawn_timeline_ms = 0.0
+            case _:
+                self._quest_total_spawn_count = 0
+                self._quest_spawn_timeline_ms = 0.0
 
         try:
             self._driver = PlaybackDriver(
@@ -455,7 +451,6 @@ class ReplayPlaybackMode:
                         use_existing_world_state=True,
                     ),
                     events=PlaybackEventConfig(
-                        strict_events=bool(self._strict_events),
                         defer_menu_open=False,
                         apply_terminal_tick_events=True,
                         terminal_events_use_resolved_dt=False,
@@ -467,7 +462,6 @@ class ReplayPlaybackMode:
                     sessions=PlaybackSessionConfigs(
                         survival=SurvivalSessionConfig(partition_events=True),
                         rush=RushSessionConfig(
-                            strict_events_override=None,
                             enforce_loadout=True,
                         ),
                         quest=QuestSessionConfig(
@@ -484,7 +478,7 @@ class ReplayPlaybackMode:
                 ),
             )
         except ReplayRunnerError as exc:  # pragma: no cover
-            raise ValueError(f"unsupported replay game_mode_id: {mode_id}") from exc
+            raise ValueError(f"unsupported replay game_mode_id: {int(mode_id)}") from exc
 
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
@@ -732,7 +726,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_title(self) -> None:
         replay = self._replay
-        if replay is None or int(replay.header.game_mode_id) != int(GameMode.QUESTS):
+        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
         font = self._grim_mono
         if font is None:
@@ -746,7 +740,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_complete_banner(self) -> None:
         replay = self._replay
-        if replay is None or int(replay.header.game_mode_id) != int(GameMode.QUESTS):
+        if replay is None or replay.header.game_mode_id != GameMode.QUESTS:
             return
         tex = self._quest_complete_texture
         if tex is None:
@@ -762,12 +756,18 @@ class ReplayPlaybackMode:
 
         replay = self._replay
         if world is not None and replay is not None and self._hud_assets is not None and world.players:
-            hud_flags = hud_flags_for_game_mode(int(replay.header.game_mode_id))
+            mode_id = replay.header.game_mode_id
+            hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
-            if int(replay.header.game_mode_id) == int(GameMode.QUESTS):
-                total = int(self._quest_total_spawn_count)
-                kills = int(world.creatures.kill_count)
-                quest_progress_ratio = float(kills) / float(total) if total > 0 else None
+            elapsed_ms = float(world._elapsed_ms)
+            match mode_id:
+                case GameMode.QUESTS:
+                    total = int(self._quest_total_spawn_count)
+                    kills = int(world.creatures.kill_count)
+                    quest_progress_ratio = float(kills) / float(total) if total > 0 else None
+                    elapsed_ms = float(self._quest_spawn_timeline_ms)
+                case _:
+                    pass
             draw_hud_overlay(
                 HudRenderContext(
                     assets=self._hud_assets,
@@ -783,11 +783,7 @@ class ReplayPlaybackMode:
                 player=world.players[0],
                 players=world.players,
                 bonus_hud=world.state.bonus_hud,
-                elapsed_ms=float(
-                    self._quest_spawn_timeline_ms
-                    if int(replay.header.game_mode_id) == int(GameMode.QUESTS)
-                    else world._elapsed_ms,
-                ),
+                elapsed_ms=elapsed_ms,
                 frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
                 quest_progress_ratio=quest_progress_ratio,
             )

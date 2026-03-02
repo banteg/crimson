@@ -90,15 +90,6 @@ def test_quest_runner_rejects_invalid_perk_pick_event() -> None:
         run_replay(replay, spawn_entries=())
 
 
-def test_quest_runner_rejects_strict_events_false() -> None:
-    _header, rec = _blank_quest_replay(ticks=3, seed=101)
-    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
-    replay = rec.finish()
-
-    with pytest.raises(ReplayRunnerError, match="strict_events=False is unsupported"):
-        run_replay(replay, spawn_entries=(), strict_events=False)
-
-
 def test_quest_replay_info_elapsed_matches_run_replay() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()

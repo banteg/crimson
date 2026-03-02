@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias
 
 import msgspec
 
+from ..game_modes import GameMode
 from ..paths import default_runtime_dir
+from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
 
 
@@ -95,7 +97,7 @@ class PendingNetworkSession(msgspec.Struct):
 
 
 class HighScoresRequest(msgspec.Struct):
-    game_mode_id: int
+    game_mode_id: GameMode
     quest_stage_major: int = 0
     quest_stage_minor: int = 0
     highlight_rank: int | None = None
@@ -111,10 +113,6 @@ class FrontView(Protocol):
     def draw(self) -> None: ...
 
     def take_action(self) -> str | None: ...
-
-
-class PauseBackground(Protocol):
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None: ...
 
 
 class GameState(msgspec.Struct):

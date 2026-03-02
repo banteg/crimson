@@ -215,7 +215,7 @@ class QuestResultsUi(msgspec.Struct):
         hardcore = self.config.hardcore
         self._scores_path = scores_path_for_mode(
             self.base_dir,
-            int(GameMode.QUESTS),
+            GameMode.QUESTS,
             hardcore=hardcore,
             quest_stage_major=int(self.quest_stage_major),
             quest_stage_minor=int(self.quest_stage_minor),
@@ -223,7 +223,7 @@ class QuestResultsUi(msgspec.Struct):
         )
 
         try:
-            records = read_highscore_table(self._scores_path, game_mode_id=int(GameMode.QUESTS))
+            records = read_highscore_table(self._scores_path, game_mode_id=GameMode.QUESTS)
             self.rank = int(rank_index(records, self.record))
         except (OSError, ValueError):
             self.rank = TABLE_MAX

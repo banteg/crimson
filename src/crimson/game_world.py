@@ -236,10 +236,17 @@ class GameWorld(msgspec.Struct):
     ) -> None:
         """Apply a deterministic terrain selection/seed without consuming gameplay RNG."""
 
-        base_id, overlay_id, detail_id = (int(terrain_ids[0]), int(terrain_ids[1]), int(terrain_ids[2]))
-        base_spec = terrain_texture_by_id(int(base_id))
-        overlay_spec = terrain_texture_by_id(int(overlay_id))
-        detail_spec = terrain_texture_by_id(int(detail_id))
+        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+        try:
+            base_id = TerrainTextureId(int(terrain_ids[0]))
+            overlay_id = TerrainTextureId(int(terrain_ids[1]))
+            detail_id = TerrainTextureId(int(terrain_ids[2]))
+        except ValueError:
+            base_id, overlay_id, detail_id = default_terrain
+
+        base_spec = terrain_texture_by_id(base_id)
+        overlay_spec = terrain_texture_by_id(overlay_id)
+        detail_spec = terrain_texture_by_id(detail_id)
 
         def _load(spec: tuple[str, str] | None) -> rl.Texture | None:
             if spec is None:
@@ -254,7 +261,6 @@ class GameWorld(msgspec.Struct):
         overlay = _load(overlay_spec)
         detail = _load(detail_spec) or overlay or base
 
-        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
         if base is None and (base_id, overlay_id, detail_id) != default_terrain:
             # Fall back to default terrain if the chosen one is unavailable.
             base = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE))

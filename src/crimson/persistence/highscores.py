@@ -8,6 +8,7 @@ import msgspec
 
 from grim.config import CrimsonConfig
 
+from ..game_modes import GameMode
 from ..quests.types import parse_level
 from ..weapons import WeaponId
 
@@ -17,6 +18,14 @@ TABLE_MAX = 100
 
 NAME_SIZE = 0x20
 NAME_MAX_EDIT = 0x14  # game_over_screen_update sets ui_text_input maxlen=0x14
+
+
+def _known_game_mode(value: int) -> GameMode:
+    raw = int(value)
+    try:
+        return GameMode(raw)
+    except ValueError:
+        return GameMode.DEMO
 
 
 def _clamp_u32(value: int) -> int:
@@ -114,11 +123,11 @@ class HighScoreRecord(msgspec.Struct):
         struct.pack_into("<I", self.data, 0x24, int(value) & 0xFFFFFFFF)
 
     @property
-    def game_mode_id(self) -> int:
-        return int(self.data[0x28])
+    def game_mode_id(self) -> GameMode:
+        return _known_game_mode(int(self.data[0x28]))
 
     @game_mode_id.setter
-    def game_mode_id(self, value: int) -> None:
+    def game_mode_id(self, value: GameMode) -> None:
         self.data[0x28] = int(value) & 0xFF
 
     @property
@@ -232,9 +241,36 @@ def _with_player_count_suffix(path: Path, *, player_count: int) -> Path:
     return path.with_name(f"{path.stem}_{count}{path.suffix}")
 
 
+def _scores_path_for_mode_root(
+    *,
+    root: Path,
+    game_mode_id: GameMode,
+    hardcore: bool,
+    quest_stage_major: int,
+    quest_stage_minor: int,
+) -> Path:
+    mode = _known_game_mode(int(game_mode_id))
+    match mode:
+        case GameMode.SURVIVAL:
+            return root / "survival.hi"
+        case GameMode.RUSH:
+            return root / "rush.hi"
+        case GameMode.TYPO:
+            return root / "typo.hi"
+        case GameMode.QUESTS:
+            # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
+            # and `quest*.hi` when hardcore is ON.
+            prefix = "quest" if bool(hardcore) else "questhc"
+            major = int(quest_stage_major)
+            minor = int(quest_stage_minor)
+            return root / f"{prefix}{major}_{minor}.hi"
+        case _:
+            return root / "unknown.hi"
+
+
 def scores_path_for_mode(
     base_dir: Path,
-    game_mode_id: int,
+    game_mode_id: GameMode,
     *,
     hardcore: bool = False,
     quest_stage_major: int = 0,
@@ -242,58 +278,50 @@ def scores_path_for_mode(
     player_count: int = 1,
 ) -> Path:
     root = scores_dir_for_base_dir(base_dir)
-    mode = int(game_mode_id)
-    if mode == 1:
-        path = root / "survival.hi"
-    elif mode == 2:
-        path = root / "rush.hi"
-    elif mode == 4:
-        path = root / "typo.hi"
-    elif mode == 3:
-        # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
-        # and `quest*.hi` when hardcore is ON.
-        prefix = "quest" if hardcore else "questhc"
-        major = int(quest_stage_major)
-        minor = int(quest_stage_minor)
-        path = root / f"{prefix}{major}_{minor}.hi"
-    else:
-        path = root / "unknown.hi"
-
+    path = _scores_path_for_mode_root(
+        root=root,
+        game_mode_id=game_mode_id,
+        hardcore=bool(hardcore),
+        quest_stage_major=int(quest_stage_major),
+        quest_stage_minor=int(quest_stage_minor),
+    )
     return _with_player_count_suffix(path, player_count=int(player_count))
 
 
 def scores_path_for_config(base_dir: Path, config: CrimsonConfig, *, quest_stage_major: int = 0, quest_stage_minor: int = 0) -> Path:
-    mode = config.game_mode
+    mode = _known_game_mode(config.game_mode)
     root = scores_dir_for_base_dir(base_dir)
-    if mode == 1:
-        path = root / "survival.hi"
-    elif mode == 2:
-        path = root / "rush.hi"
-    elif mode == 4:
-        path = root / "typo.hi"
-    elif mode == 3:
-        hardcore = config.hardcore
-        if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
-            major = config.quest_stage_major
-            minor = config.quest_stage_minor
-            if major == 0 and minor == 0:
-                level = config.quest_level
-                if isinstance(level, str):
-                    try:
-                        major, minor = parse_level(level)
-                    except ValueError:
-                        major = 0
-                        minor = 0
-            quest_stage_major = major
-            quest_stage_minor = minor
-        # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
-        # and `quest*.hi` when hardcore is ON.
-        prefix = "quest" if hardcore else "questhc"
-        major = int(quest_stage_major)
-        minor = int(quest_stage_minor)
-        path = root / f"{prefix}{major}_{minor}.hi"
-    else:
-        path = root / "unknown.hi"
+    match mode:
+        case GameMode.QUESTS:
+            hardcore = config.hardcore
+            if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
+                major = config.quest_stage_major
+                minor = config.quest_stage_minor
+                if major == 0 and minor == 0:
+                    level = config.quest_level
+                    if isinstance(level, str):
+                        try:
+                            major, minor = parse_level(level)
+                        except ValueError:
+                            major = 0
+                            minor = 0
+                quest_stage_major = major
+                quest_stage_minor = minor
+            path = _scores_path_for_mode_root(
+                root=root,
+                game_mode_id=mode,
+                hardcore=bool(hardcore),
+                quest_stage_major=int(quest_stage_major),
+                quest_stage_minor=int(quest_stage_minor),
+            )
+        case _:
+            path = _scores_path_for_mode_root(
+                root=root,
+                game_mode_id=mode,
+                hardcore=config.hardcore,
+                quest_stage_major=int(quest_stage_major),
+                quest_stage_minor=int(quest_stage_minor),
+            )
 
     return _with_player_count_suffix(path, player_count=config.player_count)
 
@@ -350,48 +378,53 @@ def write_highscore_records(path: Path, records: list[HighScoreRecord]) -> None:
             fp.write(struct.pack("<I", checksum))
 
 
-def read_highscore_table(path: Path, *, game_mode_id: int) -> list[HighScoreRecord]:
+def read_highscore_table(path: Path, *, game_mode_id: GameMode) -> list[HighScoreRecord]:
     records = read_highscore_records(path)
     records = [r for r in records if int(r.game_mode_id) == int(game_mode_id)]
     return sort_highscores(records, game_mode_id=game_mode_id)[:TABLE_MAX]
 
 
-def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: int) -> list[HighScoreRecord]:
-    mode = int(game_mode_id)
-    if mode == 2:
-        return sorted(records, key=lambda r: int(r.survival_elapsed_ms), reverse=True)
-    if mode == 3:
-        def _quest_key(r: HighScoreRecord) -> tuple[int, int]:
-            value = int(r.survival_elapsed_ms)
-            if value == 0:
-                return (1, 0)
-            return (0, value)
-        return sorted(records, key=_quest_key)
-    return sorted(records, key=lambda r: int(r.score_xp), reverse=True)
+def sort_highscores(records: list[HighScoreRecord], *, game_mode_id: GameMode) -> list[HighScoreRecord]:
+    mode = _known_game_mode(int(game_mode_id))
+    match mode:
+        case GameMode.RUSH:
+            return sorted(records, key=lambda r: int(r.survival_elapsed_ms), reverse=True)
+        case GameMode.QUESTS:
+            def _quest_key(r: HighScoreRecord) -> tuple[int, int]:
+                value = int(r.survival_elapsed_ms)
+                if value == 0:
+                    return (1, 0)
+                return (0, value)
+
+            return sorted(records, key=_quest_key)
+        case _:
+            return sorted(records, key=lambda r: int(r.score_xp), reverse=True)
 
 
 def rank_index(records_sorted: list[HighScoreRecord], record: HighScoreRecord) -> int:
-    mode = int(record.game_mode_id)
-    if mode == 2:
-        score = int(record.survival_elapsed_ms)
-        for idx, entry in enumerate(records_sorted):
-            if score > int(entry.survival_elapsed_ms):
-                return idx
-        return len(records_sorted)
-    if mode == 3:
-        score = int(record.survival_elapsed_ms)
-        for idx, entry in enumerate(records_sorted):
-            other = int(entry.survival_elapsed_ms)
-            if other == 0:
-                return idx
-            if score < other:
-                return idx
-        return len(records_sorted)
-    score = int(record.score_xp)
-    for idx, entry in enumerate(records_sorted):
-        if score > int(entry.score_xp):
-            return idx
-    return len(records_sorted)
+    mode = _known_game_mode(int(record.game_mode_id))
+    match mode:
+        case GameMode.RUSH:
+            score = int(record.survival_elapsed_ms)
+            for idx, entry in enumerate(records_sorted):
+                if score > int(entry.survival_elapsed_ms):
+                    return idx
+            return len(records_sorted)
+        case GameMode.QUESTS:
+            score = int(record.survival_elapsed_ms)
+            for idx, entry in enumerate(records_sorted):
+                other = int(entry.survival_elapsed_ms)
+                if other == 0:
+                    return idx
+                if score < other:
+                    return idx
+            return len(records_sorted)
+        case _:
+            score = int(record.score_xp)
+            for idx, entry in enumerate(records_sorted):
+                if score > int(entry.score_xp):
+                    return idx
+            return len(records_sorted)
 
 
 def upsert_highscore_record(path: Path, record: HighScoreRecord) -> tuple[list[HighScoreRecord], int]:

@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 import crimson.ui.game_over as game_over_module
+from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
 from crimson.ui.hud import HudAssets
@@ -121,7 +122,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
     record = HighScoreRecord.blank()
-    record.game_mode_id = 1
+    record.game_mode_id = GameMode.SURVIVAL
 
     char_events = [ord("w"), ord("w"), 0]
     key_events = [0]
@@ -172,7 +173,7 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     poll_text = mocker.patch.object(game_over_module, "poll_text_input", return_value="ww")
 
     record = HighScoreRecord.blank()
-    record.game_mode_id = 1
+    record.game_mode_id = GameMode.SURVIVAL
 
     ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "user"
@@ -260,7 +261,7 @@ def test_game_over_hit_ratio_tooltip_respects_preserve_bugs(
     ui._hover_hit_ratio = 1.0
 
     record = HighScoreRecord.blank()
-    record.game_mode_id = 1
+    record.game_mode_id = GameMode.SURVIVAL
     record.score_xp = 1000
     record.survival_elapsed_ms = 12_000
     record.creature_kill_count = 20

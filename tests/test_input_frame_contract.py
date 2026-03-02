@@ -70,7 +70,7 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
 
 def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     header = ReplayHeader(
-        game_mode_id=int(GameMode.SURVIVAL),
+        game_mode_id=GameMode.SURVIVAL,
         seed=0x1234,
         tick_rate=60,
         player_count=2,
@@ -97,13 +97,11 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
 
     result0 = run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=checkpoints0,
         checkpoint_ticks=set(range(5)),
     )
     result1 = run_replay(
         replay,
-        strict_events=True,
         checkpoints_out=checkpoints1,
         checkpoint_ticks=set(range(5)),
     )

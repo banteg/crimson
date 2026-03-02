@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...game_modes import GameMode
 from ...gameplay import GameplayState
 from ...persistence.highscores import HighScoreRecord
 from ...sim.state_types import PlayerState
@@ -27,7 +28,7 @@ def build_highscore_record_for_game_over(
     player: PlayerState,
     survival_elapsed_ms: int,
     creature_kill_count: int,
-    game_mode_id: int,
+    game_mode_id: GameMode,
     shots_fired: int | None = None,
     shots_hit: int | None = None,
     clamp_shots_hit: bool = True,
@@ -52,5 +53,5 @@ def build_highscore_record_for_game_over(
 
     record.shots_fired = fired
     record.shots_hit = hit
-    record.game_mode_id = int(game_mode_id)
+    record.game_mode_id = game_mode_id
     return record

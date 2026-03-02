@@ -37,9 +37,6 @@ from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
-from ..quests.runtime import tick_quest_completion_transition as _legacy_tick_quest_completion_transition
-from ..quests.timeline import quest_spawn_table_empty as _legacy_quest_spawn_table_empty
-from ..quests.timeline import tick_quest_mode_spawns as _legacy_tick_quest_mode_spawns
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
@@ -54,7 +51,7 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import WEAPON_USAGE_COUNT
+from ..replay.types import normalize_weapon_usage_counts
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
@@ -89,9 +86,6 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
 # Compatibility aliases used by existing monkeypatch-based tests.
-tick_quest_mode_spawns = _legacy_tick_quest_mode_spawns
-tick_quest_completion_transition = _legacy_tick_quest_completion_transition
-quest_spawn_table_empty = _legacy_quest_spawn_table_empty
 _quest_complete_banner_alpha = quest_complete_banner_alpha
 _quest_level_label = quest_level_label
 
@@ -168,7 +162,7 @@ class QuestMode(BaseGameplayMode):
         super().__init__(
             ctx,
             world_size=WORLD_SIZE,
-            default_game_mode_id=int(GameMode.QUESTS),
+            default_game_mode_id=GameMode.QUESTS,
             demo_mode_active=bool(demo_mode_active),
             difficulty_level=0,
             hardcore=False,
@@ -417,14 +411,20 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
-        base_id, overlay_id, detail_id = quest.terrain_ids or (
-            TerrainTextureId.Q1_BASE,
-            TerrainTextureId.Q1_OVERLAY,
-            TerrainTextureId.Q1_BASE,
-        )
-        base = terrain_texture_by_id(int(base_id))
-        overlay = terrain_texture_by_id(int(overlay_id))
-        detail = terrain_texture_by_id(int(detail_id))
+        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+        terrain_ids = quest.terrain_ids
+        if terrain_ids is None:
+            base_id, overlay_id, detail_id = default_terrain
+        else:
+            try:
+                base_id = TerrainTextureId(int(terrain_ids[0]))
+                overlay_id = TerrainTextureId(int(terrain_ids[1]))
+                detail_id = TerrainTextureId(int(terrain_ids[2]))
+            except ValueError:
+                base_id, overlay_id, detail_id = default_terrain
+        base = terrain_texture_by_id(base_id)
+        overlay = terrain_texture_by_id(overlay_id)
+        detail = terrain_texture_by_id(detail_id)
         if base is not None and overlay is not None:
             base_key, base_path = base
             overlay_key, overlay_path = overlay
@@ -485,22 +485,9 @@ class QuestMode(BaseGameplayMode):
             clear_fx_queues_each_tick=False,
         )
 
-        weapon_usage_counts: tuple[int, ...] = ()
-        if status is not None:
-            raw_counts = status.data.get("weapon_usage_counts")
-            if isinstance(raw_counts, list):
-                coerced: list[int] = []
-                for value in raw_counts[:WEAPON_USAGE_COUNT]:
-                    try:
-                        coerced.append(int(value) & 0xFFFFFFFF)
-                    except (TypeError, ValueError, OverflowError):
-                        coerced.append(0)
-                weapon_usage_counts = tuple(coerced)
-        if len(weapon_usage_counts) != WEAPON_USAGE_COUNT:
-            weapon_usage_counts = tuple(weapon_usage_counts) + (0,) * max(
-                0, WEAPON_USAGE_COUNT - len(weapon_usage_counts),
-            )
-            weapon_usage_counts = weapon_usage_counts[:WEAPON_USAGE_COUNT]
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
         status_snapshot = ReplayStatusSnapshot(
             quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
             quest_unlock_index_full=int(status.quest_unlock_index_full)
@@ -512,7 +499,7 @@ class QuestMode(BaseGameplayMode):
         if record_replay:
             self._replay_recorder = ReplayRecorder(
                 ReplayHeader(
-                    game_mode_id=int(GameMode.QUESTS),
+                    game_mode_id=GameMode.QUESTS,
                     seed=int(self.state.rng.state),
                     quest_level=str(quest.level),
                     tick_rate=int(self._sim_clock.tick_rate),

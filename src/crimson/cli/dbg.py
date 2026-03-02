@@ -41,7 +41,6 @@ def cmd_dbg_record(
             replay_path=Path(replay_file),
             out_path=Path(out),
             impl=impl,
-            strict_events=True,
             chunk_ticks=chunk_ticks,
             warnings_out=warnings_out,
         )

@@ -14,16 +14,16 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
 
-def _record(*, mode: int, time_ms: int) -> HighScoreRecord:
+def _record(*, mode: GameMode, time_ms: int) -> HighScoreRecord:
     record = HighScoreRecord.blank()
-    record.game_mode_id = int(mode)
+    record.game_mode_id = mode
     record.survival_elapsed_ms = int(time_ms)
     return record
 
 
-def _record_xp(*, mode: int, xp: int) -> HighScoreRecord:
+def _record_xp(*, mode: GameMode, xp: int) -> HighScoreRecord:
     record = HighScoreRecord.blank()
-    record.game_mode_id = int(mode)
+    record.game_mode_id = mode
     record.score_xp = int(xp)
     return record
 
@@ -122,7 +122,7 @@ def test_quest_highscores_sort_by_time_ascending_with_zero_last() -> None:
         _record(mode=GameMode.QUESTS, time_ms=0),
         _record(mode=GameMode.QUESTS, time_ms=1000),
     ]
-    sorted_records = sort_highscores(records, game_mode_id=int(GameMode.QUESTS))
+    sorted_records = sort_highscores(records, game_mode_id=GameMode.QUESTS)
     assert [int(r.survival_elapsed_ms) for r in sorted_records] == [1000, 2000, 5000, 0]
 
 
@@ -133,7 +133,7 @@ def test_quest_rank_index_inserts_smaller_time_higher() -> None:
             _record(mode=GameMode.QUESTS, time_ms=2000),
             _record(mode=GameMode.QUESTS, time_ms=5000),
         ],
-        game_mode_id=int(GameMode.QUESTS),
+        game_mode_id=GameMode.QUESTS,
     )
     record = _record(mode=GameMode.QUESTS, time_ms=1500)
     assert rank_index(records_sorted, record) == 1
@@ -146,7 +146,7 @@ def test_rush_highscores_sort_by_time_descending() -> None:
         _record(mode=GameMode.RUSH, time_ms=0),
         _record(mode=GameMode.RUSH, time_ms=1000),
     ]
-    sorted_records = sort_highscores(records, game_mode_id=int(GameMode.RUSH))
+    sorted_records = sort_highscores(records, game_mode_id=GameMode.RUSH)
     assert [int(r.survival_elapsed_ms) for r in sorted_records] == [5000, 2000, 1000, 0]
 
 
@@ -157,7 +157,7 @@ def test_rush_rank_index_inserts_larger_time_higher() -> None:
             _record(mode=GameMode.RUSH, time_ms=2000),
             _record(mode=GameMode.RUSH, time_ms=1000),
         ],
-        game_mode_id=int(GameMode.RUSH),
+        game_mode_id=GameMode.RUSH,
     )
     record = _record(mode=GameMode.RUSH, time_ms=1500)
     assert rank_index(records_sorted, record) == 2
@@ -171,7 +171,7 @@ def test_xp_highscores_sort_by_xp_descending(game_mode: GameMode) -> None:
         _record_xp(mode=game_mode, xp=5000),
         _record_xp(mode=game_mode, xp=0),
     ]
-    sorted_records = sort_highscores(records, game_mode_id=int(game_mode))
+    sorted_records = sort_highscores(records, game_mode_id=game_mode)
     assert [int(r.score_xp) for r in sorted_records] == [5000, 2500, 100, 0]
 
 
@@ -183,7 +183,7 @@ def test_xp_rank_index_inserts_larger_xp_higher(game_mode: GameMode) -> None:
             _record_xp(mode=game_mode, xp=2000),
             _record_xp(mode=game_mode, xp=1000),
         ],
-        game_mode_id=int(game_mode),
+        game_mode_id=game_mode,
     )
     record = _record_xp(mode=game_mode, xp=1500)
     assert rank_index(records_sorted, record) == 2

@@ -20,6 +20,7 @@ from ...frontend.high_scores_layout import (
     HS_SCORE_FRAME_Y,
     HS_TITLE_UNDERLINE_Y,
 )
+from ...game_modes import GameMode
 from ...ui.perk_menu import button_draw, button_width
 from ..types import HighScoresRequest
 from .shared import mode_label, quest_title
@@ -34,20 +35,23 @@ def draw_main_panel(
     font: SmallFontData,
     left_panel_top_left: Vec2,
     scale: float,
-    mode_id: int,
+    mode_id: GameMode,
     quest_major: int,
     quest_minor: int,
     request: HighScoresRequest | None,
 ) -> int | None:
-    title = (
-        "High scores - Quests"
-        if int(mode_id) == 3
-        else f"High scores - {mode_label(mode_id, quest_major, quest_minor)}"
-    )
+    match mode_id:
+        case GameMode.QUESTS:
+            title = "High scores - Quests"
+        case _:
+            title = f"High scores - {mode_label(mode_id, quest_major, quest_minor)}"
     title_x = 269.0
-    if int(mode_id) == 1:
-        # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
-        title_x = 266.0
+    match mode_id:
+        case GameMode.SURVIVAL:
+            # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
+            title_x = 266.0
+        case _:
+            pass
     title_draw_pos = left_panel_top_left + Vec2(title_x * scale, 41.0 * scale)
     draw_small_text(
         font,
@@ -66,7 +70,7 @@ def draw_main_panel(
         ul_h,
         rl.Color(255, 255, 255, int(255 * 0.7)),
     )
-    if int(mode_id) == 3:
+    if mode_id == GameMode.QUESTS:
         hardcore = view.state.config.hardcore
         if hardcore:
             quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
@@ -170,11 +174,12 @@ def draw_main_panel(
             if len(name) > 16:
                 name = name[:16]
 
-            if int(mode_id) in (2, 3):
-                elapsed_ms = int(entry.survival_elapsed_ms)
-                value = f"{max(0, elapsed_ms) // 1000}"
-            else:
-                value = f"{int(entry.score_xp)}"
+            match mode_id:
+                case GameMode.RUSH | GameMode.QUESTS:
+                    elapsed_ms = int(entry.survival_elapsed_ms)
+                    value = f"{max(0, elapsed_ms) // 1000}"
+                case _:
+                    value = f"{int(entry.score_xp)}"
 
             color = rl.Color(255, 255, 255, int(255 * 0.7))
             if selected_rank is not None and int(selected_rank) == idx:

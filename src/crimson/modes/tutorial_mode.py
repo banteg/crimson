@@ -63,7 +63,7 @@ class TutorialMode(BaseGameplayMode):
         super().__init__(
             ctx,
             world_size=1024.0,
-            default_game_mode_id=int(GameMode.TUTORIAL),
+            default_game_mode_id=GameMode.TUTORIAL,
             demo_mode_active=bool(demo_mode_active),
             difficulty_level=0,
             hardcore=False,

@@ -12,6 +12,7 @@ from crimson.frontend.assets import MenuAssets
 from crimson.frontend.panels.base import PANEL_TIMELINE_START_MS
 from crimson.game.high_scores_view import HighScoresView
 from crimson.game.types import GameState, HighScoresRequest, PauseBackground
+from crimson.game_modes import GameMode
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
@@ -109,7 +110,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
-    state.pending_high_scores = HighScoresRequest(game_mode_id=1)
+    state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
 
     play_sfx = mocker.Mock()
 
@@ -167,7 +168,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
         resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
-    state.pending_high_scores = HighScoresRequest(game_mode_id=1)
+    state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
     draw_pause_background_mock = mocker.Mock()
     state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 

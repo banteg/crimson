@@ -32,7 +32,7 @@ def _coerce_int(value: object, default: int = 0) -> int:
     return default
 
 
-def input_configure_for_label(config_id: AimScheme | int) -> str:
+def input_configure_for_label(config_id: AimScheme) -> str:
     """Port of `input_configure_for_label` (0x00447c90)."""
 
     labels = {
@@ -43,7 +43,7 @@ def input_configure_for_label(config_id: AimScheme | int) -> str:
         AimScheme.DUAL_ACTION_PAD: "Dual Action Pad",
         AimScheme.COMPUTER: "Computer",
     }
-    return labels.get(aim_scheme_from_value(int(config_id)), "Unknown")
+    return labels.get(config_id, "Unknown")
 
 
 def input_scheme_label(scheme: MovementControlType) -> str:
@@ -101,7 +101,7 @@ def controls_method_labels(config_data: Mapping[str, object], *, player_index: i
     return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 
-def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme | int) -> tuple[AimScheme, ...]:
+def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme) -> tuple[AimScheme, ...]:
     ids = [
         AimScheme.MOUSE,
         AimScheme.KEYBOARD,
@@ -109,7 +109,7 @@ def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme | int) -> tup
         AimScheme.MOUSE_RELATIVE,
         AimScheme.DUAL_ACTION_PAD,
     ]
-    if aim_scheme_from_value(int(current_aim_scheme)) is AimScheme.COMPUTER:
+    if current_aim_scheme is AimScheme.COMPUTER:
         # Original menu keeps "Computer" hidden unless loaded from config.
         ids.append(AimScheme.COMPUTER)
     return tuple(ids)

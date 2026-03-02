@@ -76,6 +76,7 @@ from ...frontend.high_scores_layout import (
     hs_right_options_x_shift,
 )
 from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
+from ...game_modes import GameMode
 from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
 if TYPE_CHECKING:
@@ -454,13 +455,22 @@ def _draw_right_panel_local_score(
         text_color,
     )
 
-    mode_id = int(entry.game_mode_id)
+    mode_raw = int(entry.game_mode_id)
+    try:
+        mode_id = GameMode(mode_raw)
+    except ValueError:
+        mode_id = GameMode.DEMO
     elapsed_ms = int(entry.survival_elapsed_ms)
     score_xp = int(entry.score_xp)
+    match mode_id:
+        case GameMode.QUESTS:
+            time_label = "Experience"
+        case _:
+            time_label = "Game time"
 
     draw_small_text(
         font,
-        "Experience" if mode_id == 3 else "Game time",
+        time_label,
         card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
         text_scale,
         game_time_color,
@@ -476,18 +486,18 @@ def _draw_right_panel_local_score(
     # Native highscore card:
     # - Rush/Quest: score is survival time in seconds (ms * 0.001), rendered with 2 decimals.
     # - Others: score is XP (u32).
-    if mode_id in (2, 3):
-        score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
-    else:
-        score_value = f"{score_xp}"
     score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale)
-    if mode_id in (2, 3):
-        # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
-        # centered in the left score column in native.
-        score_label_w = measure_small_text_width(font, "Score", text_scale)
-        score_value_w = measure_small_text_width(font, score_value, text_scale)
-        score_col_center_x = HS_LOCAL_SCORE_LABEL_X * scale + score_label_w * 0.5
-        score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y * scale)
+    match mode_id:
+        case GameMode.RUSH | GameMode.QUESTS:
+            score_value = f"{max(0, elapsed_ms) * 0.001:.2f} secs"
+            # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
+            # centered in the left score column in native.
+            score_label_w = measure_small_text_width(font, "Score", text_scale)
+            score_value_w = measure_small_text_width(font, score_value, text_scale)
+            score_col_center_x = HS_LOCAL_SCORE_LABEL_X * scale + score_label_w * 0.5
+            score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y * scale)
+        case _:
+            score_value = f"{score_xp}"
     draw_small_text(
         font,
         score_value,
@@ -496,28 +506,29 @@ def _draw_right_panel_local_score(
         value_color,
     )
 
-    if mode_id == 3:
-        draw_small_text(
-            font,
-            f"{score_xp}",
-            card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
-            text_scale,
-            game_time_color,
-        )
-    else:
-        _draw_clock_gauge(
-            view,
-            elapsed_ms=elapsed_ms,
-            pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
-            scale=scale,
-        )
-        draw_small_text(
-            font,
-            format_elapsed_mm_ss(elapsed_ms),
-            card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
-            text_scale,
-            game_time_color,
-        )
+    match mode_id:
+        case GameMode.QUESTS:
+            draw_small_text(
+                font,
+                f"{score_xp}",
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                text_scale,
+                game_time_color,
+            )
+        case _:
+            _draw_clock_gauge(
+                view,
+                elapsed_ms=elapsed_ms,
+                pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
+                scale=scale,
+            )
+            draw_small_text(
+                font,
+                format_elapsed_mm_ss(elapsed_ms),
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                text_scale,
+                game_time_color,
+            )
 
     draw_small_text(
         font,
