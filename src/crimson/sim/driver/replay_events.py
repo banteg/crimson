@@ -14,7 +14,7 @@ def apply_replay_tick_events(
     events: list[object],
     *,
     tick_index: int,
-    dt_frame: float,
+    dt: float,
     world: WorldState,
     game_mode_id: int,
     strict_events: bool,
@@ -52,7 +52,7 @@ def apply_replay_tick_events(
                 int(event.choice_index),
                 game_mode=int(game_mode_id),
                 player_count=len(players),
-                dt=float(dt_frame),
+                dt=float(dt),
                 creatures=cast("list[CreatureForPerks]", world.creatures.entries),
             )
             if picked is None:

@@ -105,7 +105,7 @@ class QuestSessionLike(Protocol):
     completion_transition_ms: float
     game_tune_started: bool
 
-    def timing_for_dt(self, dt_frame: float) -> FrameTiming: ...
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
 
     def step_tick(
         self,

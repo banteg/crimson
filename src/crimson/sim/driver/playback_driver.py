@@ -352,7 +352,7 @@ class PlaybackDriver:
         if tick_rate <= 0:
             raise ReplayRunnerError(f"invalid tick_rate: {tick_rate}")
         self.tick_rate = int(tick_rate)
-        self.dt_frame = 1.0 / float(self.tick_rate)
+        self.dt = 1.0 / float(self.tick_rate)
 
         self.world_size = self._resolve_world_size()
         self.world = self._prepare_world()
@@ -595,7 +595,7 @@ class PlaybackDriver:
             apply_replay_tick_events(
                 pre_step_events,
                 tick_index=int(tick_index),
-                dt_frame=float(dt_tick),
+                dt=float(dt_tick),
                 world=self.world,
                 game_mode_id=int(self.mode_id),
                 strict_events=bool(strict_events),
@@ -616,7 +616,7 @@ class PlaybackDriver:
                 apply_replay_tick_events(
                     post_step_events,
                     tick_index=int(tick_index),
-                    dt_frame=float(dt_tick),
+                    dt=float(dt_tick),
                     world=self.world,
                     game_mode_id=int(self.mode_id),
                     strict_events=bool(strict_events),
@@ -662,7 +662,7 @@ class PlaybackDriver:
         if bool(events_config.terminal_events_use_resolved_dt) and self.replay.dt:
             dt_tick = float(self.replay.dt[-1])
         else:
-            dt_tick = float(self.dt_frame)
+            dt_tick = float(self.dt)
 
         terminal_events = self.events_by_tick.get(int(tick_index), [])
         strict_events = self._mode_runtime.strict_events(
@@ -673,7 +673,7 @@ class PlaybackDriver:
         apply_replay_tick_events(
             terminal_events,
             tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
+            dt=float(dt_tick),
             world=self.world,
             game_mode_id=int(self.mode_id),
             strict_events=bool(strict_events),

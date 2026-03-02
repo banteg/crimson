@@ -48,10 +48,10 @@ class SurvivalDeterministicSession(msgspec.Struct):
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
 
-    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+    def timing_for_dt(self, dt: float) -> FrameTiming:
         state = self.world.state
         return FrameTiming.compute(
-            float(dt_frame),
+            float(dt),
             time_scale_active_entry=bool(state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
@@ -175,10 +175,10 @@ class RushDeterministicSession(msgspec.Struct):
     elapsed_ms: int = 0
     spawn_cooldown_ms: float = 0.0
 
-    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+    def timing_for_dt(self, dt: float) -> FrameTiming:
         state = self.world.state
         return FrameTiming.compute(
-            float(dt_frame),
+            float(dt),
             time_scale_active_entry=bool(state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
@@ -205,7 +205,7 @@ class RushDeterministicSession(msgspec.Struct):
             ]
 
         dt_ms_i32 = int(timing.dt_ms_i32)
-        dt_frame_ms = float(dt_ms_i32)
+        dt_ms = float(dt_ms_i32)
         elapsed_before_ms = int(self.elapsed_ms)
 
         if self.enforce_loadout is not None:
@@ -219,7 +219,7 @@ class RushDeterministicSession(msgspec.Struct):
             # It reads survival_elapsed_ms before the frame-loop increments it.
             cooldown, spawns = tick_rush_mode_spawns(
                 self.spawn_cooldown_ms,
-                dt_frame_ms,
+                dt_ms,
                 state.rng,
                 player_count=len(self.world.players),
                 survival_elapsed_ms=int(elapsed_before_ms),
@@ -306,10 +306,10 @@ class QuestDeterministicSession(msgspec.Struct):
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
 
-    def timing_for_dt(self, dt_frame: float) -> FrameTiming:
+    def timing_for_dt(self, dt: float) -> FrameTiming:
         state = self.world.state
         return FrameTiming.compute(
-            float(dt_frame),
+            float(dt),
             time_scale_active_entry=bool(state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
                 reflex_boost_timer=float(state.bonuses.reflex_boost),
@@ -328,8 +328,8 @@ class QuestDeterministicSession(msgspec.Struct):
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick:
-        dt_frame_ms = float(timing.dt_ms_i32)
-        self.elapsed_ms += float(dt_frame_ms)
+        dt_ms = float(timing.dt_ms_i32)
+        self.elapsed_ms += float(dt_ms)
 
         state = self.world.state
         rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
@@ -365,7 +365,7 @@ class QuestDeterministicSession(msgspec.Struct):
         entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
             self.spawn_entries,
             quest_spawn_timeline_ms=float(self.spawn_timeline_ms),
-            frame_dt_ms=float(dt_frame_ms),
+            frame_dt_ms=float(dt_ms),
             terrain_width=float(self.world_size),
             creatures_none_active=bool(creatures_none_active),
             no_creatures_timer_ms=float(self.no_creatures_timer_ms),
@@ -396,7 +396,7 @@ class QuestDeterministicSession(msgspec.Struct):
         if any_alive_after:
             completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
                 float(self.completion_transition_ms),
-                frame_dt_ms=float(dt_frame_ms),
+                frame_dt_ms=float(dt_ms),
                 creatures_none_active=bool(creatures_none_active),
                 spawn_table_empty=bool(spawn_table_empty_now),
             )
@@ -436,7 +436,7 @@ DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterm
 class DeterministicSession(Protocol):
     elapsed_ms: int | float
 
-    def timing_for_dt(self, dt_frame: float) -> FrameTiming: ...
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
 
     def step_tick(
         self,
