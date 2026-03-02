@@ -40,7 +40,7 @@ Introduce a canonical frame timing struct computed once per deterministic tick e
 - `__ftol` semantics for Crimsonland are treated as x87 chop/truncation, not nearest-even.
 - `f32` seconds is the primary timing representation in runtime and replay.
 - Replay format change is a hard break: no migration path and no legacy replay support.
-- Hard break policy applies to replay payloads; trace schema remains versioned, and any legacy trace support (if needed) must be a small temporary parse shim.
+- Hard break policy applies to replay payloads and trace payloads: no migration path and no legacy compatibility layer.
 - Timing values do change mid-tick in native flow; sub-tick phase sampling is required for divergence localization.
 - All integer-ms timing values are derived via one helper, not recomputed ad-hoc at call sites.
 - `dt_player_local` is always a non-null float in domain code (no optional/`None` state).
@@ -209,9 +209,8 @@ Implementation guidance:
 1. Keep per-tick `dt` as the authoritative replay timing output (sampled at `gpur_enter`).
 2. Add structured sub-tick `timing_samples` payload for phase analysis with one row per timing write.
 3. Preserve timing evidence through finalize (schema extension required) instead of dropping it.
-4. Bump trace schema version for `timing_samples` channel additions.
-5. If old trace compatibility is required, isolate it in a single parse shim module that is small, local, temporary, and marked with a removal note.
-6. Extend `dbg diff`/bisect to compare `timing_samples` and report first timing-phase mismatch.
+4. Bump trace schema version for `timing_samples` channel additions and reject older trace versions (hard break, no migration).
+5. Extend `dbg diff`/bisect to compare `timing_samples` and report first timing-phase mismatch.
 
 ### Phase 5: API Surface Subtraction
 1. Audit all float-ms (`dt * 1000.0`) consumers.
@@ -230,6 +229,7 @@ Implementation guidance:
    - `run_replay` and `run_replay_info` agree on elapsed/tick timing for same replay inputs.
    - Runtime timing APIs contain no dt override/fallback branches.
    - Replay codecs reject missing/legacy replay timing rows by version (no implicit fallback path).
+   - Trace/finalize readers reject older trace schema versions (no compat parser path).
    - No remaining ad-hoc dt->ms conversions in parity-critical paths.
    - `ast-grep` rules fail on any new raw `dt * 1000` integer conversion outside the helper.
    - Recorder-produced replays always include `dt` rows with finite non-negative values and row count equal to input ticks.
