@@ -82,8 +82,9 @@ Text rules are forgettable; structural rules enforce themselves.
 
 ### required pre-commit checks
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
-- `pre-commit` runs fast checks only (ruff/import-linter/ty/docs/ast-grep) and is file-scoped.
+- `pre-commit` runs fast checks only (ruff/import-linter/ty/docs/ast-grep/ziglint) and is file-scoped.
 - `pre-push` runs heavy checks (pytest/build/zig) and is file-scoped.
+- ziglint behavior is configured in `crimson-zig/.ziglint.zon` (`Z024` disabled).
 - Manual runs:
   - `prek run --stage pre-commit`
   - `prek run --stage pre-push`

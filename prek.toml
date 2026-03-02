@@ -9,6 +9,7 @@ hooks = [
     { id = "docs-check", name = "docs-check", entry = "uv run scripts/check_docs.py", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(docs/|readme\\.md|zensical\\.toml|scripts/check_docs\\.py|justfile)" },
     { id = "sg-scan", name = "sg-scan", entry = "sg scan", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|scripts/|tools/|docs/|analysis/|crimson-zig/|sgconfig\\.yml|justfile)" },
     { id = "sg-test", name = "sg-test", entry = "sg test", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(tools/ast-grep/|sgconfig\\.yml|justfile)" },
+    { id = "zig-lint", name = "zig-lint", entry = "ziglint", language = "system", stages = ["pre-commit"], files = "^crimson-zig/(src/.*\\.zig|build\\.zig)$", priority = 260 },
     { id = "py-pytest", name = "py-pytest", entry = "uv run pytest", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(src/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "py-build", name = "py-build", entry = "uv build", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(src/|pyproject\\.toml|uv\\.lock|readme\\.md|justfile)" },
     { id = "zig-test", name = "zig-test", entry = "bash -uc 'cd crimson-zig && zig build test --summary all'", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^crimson-zig/", priority = 300 },
