@@ -157,6 +157,48 @@ Implementation guidance:
   - replay override precedence
   - integer ms conversion edge cases (single helper behavior)
 
+### Phase 6: Author Delta-Time Porting Reference
+
+1. Create a dedicated reference page: `docs/rewrite/parity/delta-time.md`.
+2. Link it from `docs/rewrite/parity/index.md`.
+3. Treat this page as the source-of-truth for all dt semantics used by Python/Zig rewrites and tooling.
+
+Required sections for `delta-time.md`:
+
+- **Runtime timing model overview**
+  - Define `frame_dt` (seconds) vs `frame_dt_ms` (integer milliseconds).
+  - Clarify where each value is read/written in native flow.
+- **Mutation timeline within one gameplay tick**
+  - Outer-loop `REFLEX_BOOSTED` scaling.
+  - `gameplay_update_and_render` gameplay-pass scaling + `frame_dt_ms` re-derive.
+  - Player-local remap/restore inside `player_update`.
+  - End-of-function restore behavior.
+  - Zeroing/gating paths and their conditions.
+- **Conversion contract (`__ftol`)**
+  - Document Crimsonland-specific truncation/chop semantics.
+  - Include tie examples (`+0.5`, `+2.5`, `-1.5`) and expected integer outputs.
+  - Provide exact Python/Zig/C++ equivalents.
+- **Units and field semantics for rewrite**
+  - `dt_tick` vs `dt_sim` vs `dt_player_local`.
+  - `*_ms` convenience vs `*_ms_i32` authoritative cadence.
+  - Override precedence (`dt_tick_ms_i32_override` over derived conversion).
+- **Consumer map**
+  - Which systems consume second-domain dt.
+  - Which systems consume integer-ms cadence (survival/rush/quest timers/cooldowns, etc.).
+- **Replay/capture/debug semantics**
+  - What capture records per tick (`dt_ms_i32`) and why.
+  - Where sub-tick timing samples are needed for divergence localization.
+  - How finalize/diff pipelines should preserve/compare timing evidence.
+- **Porting pitfalls and invariants**
+  - Common drift causes (mixed rounding rules, duplicate derivations, missing restore ordering).
+  - Invariants implementers must assert in tests.
+
+Acceptance criteria for this documentation task:
+
+- A new contributor can implement `ftol_ms_i32()` and replay dt override logic without reading decompile first.
+- The page includes direct references to decompile anchors already listed in this PRD.
+- The page includes at least one end-to-end “tick timeline” worked example with before/after dt values.
+
 ## 5. Decompile Reference Map (For Implementers)
 
 Use these exact anchors while implementing:
