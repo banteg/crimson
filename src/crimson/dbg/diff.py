@@ -14,7 +14,7 @@ from .channel_helpers import (
 from .checkpoint_diff import checkpoint_deepdiff
 from .schema import (
     TRACE_FORMAT_VERSION,
-    TRACE_REQUIRED_CHANNELS_V3,
+    TRACE_REQUIRED_CHANNELS,
     TRACE_SCHEMA_VERSION,
     TickRecord,
     TraceMeta,
@@ -189,7 +189,7 @@ def diff_traces(
     with TraceReader(Path(expected_trace_path)) as expected_trace, TraceReader(Path(actual_trace_path)) as actual_trace:
         expected_channels = {str(channel) for channel in expected_trace.meta.channels}
         actual_channels = {str(channel) for channel in actual_trace.meta.channels}
-        for required_channel in TRACE_REQUIRED_CHANNELS_V3:
+        for required_channel in TRACE_REQUIRED_CHANNELS:
             channel_name = str(required_channel)
             if channel_name not in expected_channels or channel_name not in actual_channels:
                 return TraceDiffReport(
@@ -290,24 +290,15 @@ def bisect_traces(
                 if pair.actual_row is not None:
                     channels["candidate"] = msgspec.to_builtins(pair.actual_row.channels)
                 channels["focus_tick"] = tick == first_bad
+                source_row = pair.expected_row if pair.expected_row is not None else pair.actual_row
+                if source_row is None:
+                    raise ValueError(f"internal error: missing both rows for tick {tick}")
                 repro_rows.append(
                     TickRecord(
                         tick_index=tick,
-                        elapsed_ms=(
-                            pair.expected_row.elapsed_ms
-                            if pair.expected_row is not None
-                            else (pair.actual_row.elapsed_ms if pair.actual_row is not None else 0)
-                        ),
-                        dt_ms_i32=(
-                            pair.expected_row.dt_ms_i32
-                            if pair.expected_row is not None
-                            else (pair.actual_row.dt_ms_i32 if pair.actual_row is not None else None)
-                        ),
-                        mode_id=(
-                            pair.expected_row.mode_id
-                            if pair.expected_row is not None
-                            else (pair.actual_row.mode_id if pair.actual_row is not None else -1)
-                        ),
+                        elapsed_ms=int(source_row.elapsed_ms),
+                        dt_ms_i32=int(source_row.dt_ms_i32),
+                        mode_id=int(source_row.mode_id),
                         phase_markers=[],
                         channels=channels,
                     ),

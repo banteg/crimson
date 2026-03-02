@@ -37,7 +37,6 @@ def apply_replay_bootstrap(
     *,
     rng: ReplayRng,
     world_size: float,
-    strict: bool = True,
 ) -> AppliedReplayBootstrap | None:
     """Seed/advance `rng` to tick-0 state for a replay header.
 
@@ -52,10 +51,7 @@ def apply_replay_bootstrap(
         return None
 
     if kind != BOOTSTRAP_KIND_TERRAIN_V1:
-        if strict:
-            raise ReplayBootstrapError(f"unsupported replay bootstrap_kind={kind!r}")
-        rng.srand(int(header.seed))
-        return None
+        raise ReplayBootstrapError(f"unsupported replay bootstrap_kind={kind!r}")
 
     bootstrap_seed = int(header.bootstrap_seed)
     width = max(1, int(float(world_size)))
@@ -70,10 +66,9 @@ def apply_replay_bootstrap(
         layers=3,
     )
 
-    if strict:
-        if int(header.seed) != int(terrain.seed_after):
-            raise ReplayBootstrapError(
-                f"bootstrap seed mismatch: header.seed={int(header.seed)} != computed={int(terrain.seed_after)}",
-            )
+    if int(header.seed) != int(terrain.seed_after):
+        raise ReplayBootstrapError(
+            f"bootstrap seed mismatch: header.seed={int(header.seed)} != computed={int(terrain.seed_after)}",
+        )
 
     return AppliedReplayBootstrap(terrain=terrain)

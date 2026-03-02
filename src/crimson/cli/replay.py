@@ -808,7 +808,7 @@ def cmd_replay_verify(
     """Headlessly simulate a replay and report resulting run stats."""
     import hashlib
 
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_runner import ReplayRunnerError, run_replay
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
@@ -829,7 +829,7 @@ def cmd_replay_verify(
             strict_events=True,
             trace_rng=bool(trace_rng),
         )
-    except (ReplayCodecError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -963,7 +963,7 @@ def cmd_replay_info(
     """Simulate a replay and emit a timeline of gameplay events."""
     import hashlib
 
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_info import event_counts_by_kind, run_replay_info
     from ..sim.driver.replay_runner import ReplayRunnerError
 
@@ -986,7 +986,7 @@ def cmd_replay_info(
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
-    except (ReplayCodecError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay info failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -1130,7 +1130,7 @@ def cmd_replay_benchmark(
     """Benchmark replay throughput, with optional profiler hotspots."""
     import hashlib
 
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_benchmark import (
         ReplayBenchmarkError,
         run_replay_benchmark,
@@ -1202,7 +1202,7 @@ def cmd_replay_benchmark(
                 profile_out=profile_out,
                 show_progress=(str(output_format) == "human"),
             )
-    except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayGameVersionError, ReplayBenchmarkError, ReplayRunnerError) as exc:
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -1447,7 +1447,7 @@ def cmd_replay_render(
     ),
 ) -> None:
     """Render replay playback to video using ffmpeg."""
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_render import ReplayRenderError, run_replay_render_video
     from ..sim.driver.replay_runner import ReplayRunnerError
 
@@ -1492,7 +1492,7 @@ def cmd_replay_render(
             mute_audio=not bool(audio),
             progress=cast("Any", progress_callback),
         )
-    except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayGameVersionError, ReplayRenderError, ReplayRunnerError) as exc:
         typer.echo(f"replay render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     finally:
@@ -1521,11 +1521,6 @@ def cmd_replay_verify_checkpoints(
         help="checkpoint sidecar path (default: <replay>.chk)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    strict_integrity: bool = typer.Option(
-        True,
-        "--strict-integrity/--lenient-integrity",
-        help="fail if checkpoints replay_sha256 differs from replay file (default: strict)",
-    ),
     trace_rng: bool = typer.Option(
         False,
         "--trace-rng",
@@ -1542,7 +1537,7 @@ def cmd_replay_verify_checkpoints(
     import hashlib
 
     from ..dbg.checkpoint_diff import compare_checkpoints
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..replay.checkpoints import (
         ReplayCheckpointsError,
         default_checkpoints_path,
@@ -1583,10 +1578,8 @@ def cmd_replay_verify_checkpoints(
         mismatch = (
             f"checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})"
         )
-        if strict_integrity:
-            typer.echo(f"replay verification failed: {mismatch}", err=True)
-            raise typer.Exit(code=1)
-        typer.echo(f"warning: {mismatch}", err=True)
+        typer.echo(f"replay verification failed: {mismatch}", err=True)
+        raise typer.Exit(code=1)
 
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
     actual = []
@@ -1600,7 +1593,7 @@ def cmd_replay_verify_checkpoints(
             checkpoints_out=actual,
             checkpoint_ticks=checkpoint_ticks,
         )
-    except ReplayRunnerError as exc:
+    except (ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 

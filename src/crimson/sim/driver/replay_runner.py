@@ -61,13 +61,13 @@ def run_replay(
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
+    if not bool(strict_events):
+        raise ReplayRunnerError("strict_events=False is unsupported; replay execution is always strict")
     mode_id = int(replay.header.game_mode_id)
     replay_dt_ms_overrides = dt_ms_overrides_from_replay(replay)
-    effective_dt_ms_overrides = (
-        dt_frame_ms_i32_overrides
-        if dt_frame_ms_i32_overrides is not None
-        else replay_dt_ms_overrides
-    )
+    effective_dt_ms_overrides = dt_frame_ms_i32_overrides
+    if effective_dt_ms_overrides is None and dt_frame_overrides is None:
+        effective_dt_ms_overrides = replay_dt_ms_overrides
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,

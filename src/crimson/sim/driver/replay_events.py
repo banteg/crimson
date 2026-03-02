@@ -21,6 +21,8 @@ def apply_replay_tick_events(
     on_capture_state_transition=None,
 ) -> int | None:
     _ = on_capture_state_transition
+    if not bool(strict_events):
+        raise ReplayRunnerError("strict_events=False is unsupported; replay event handling is always strict")
     state = world.state
     players = world.players
     perk_state = state.perk_selection
@@ -30,9 +32,7 @@ def apply_replay_tick_events(
         if isinstance(event, PerkMenuOpenEvent):
             menu_open_seen = True
             if int(game_mode_id) == int(GameMode.RUSH):
-                if strict_events:
-                    raise ReplayRunnerError(f"unsupported perk_menu_open in rush replay at tick={tick_index}")
-                continue
+                raise ReplayRunnerError(f"unsupported perk_menu_open in rush replay at tick={tick_index}")
             perk_selection_current_choices(
                 state,
                 players,
@@ -44,9 +44,7 @@ def apply_replay_tick_events(
 
         if isinstance(event, PerkPickEvent):
             if int(game_mode_id) == int(GameMode.RUSH):
-                if strict_events:
-                    raise ReplayRunnerError(f"unsupported perk_pick in rush replay at tick={tick_index}")
-                continue
+                raise ReplayRunnerError(f"unsupported perk_pick in rush replay at tick={tick_index}")
             picked = perk_selection_pick(
                 state,
                 players,
@@ -58,10 +56,9 @@ def apply_replay_tick_events(
                 creatures=cast("list[CreatureForPerks]", world.creatures.entries),
             )
             if picked is None:
-                if strict_events:
-                    if menu_open_seen and int(perk_state.pending_count) <= 0:
-                        continue
-                    raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
+                if menu_open_seen and int(perk_state.pending_count) <= 0:
+                    continue
+                raise ReplayRunnerError(f"perk_pick failed at tick={tick_index} choice_index={event.choice_index}")
                 continue
             perk_selection_current_choices(
                 state,
@@ -72,8 +69,7 @@ def apply_replay_tick_events(
             )
             continue
 
-        if strict_events:
-            raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
+        raise ReplayRunnerError(f"unsupported replay event type: {type(event).__name__}")
 
     return None
 

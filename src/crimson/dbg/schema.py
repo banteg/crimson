@@ -6,10 +6,10 @@ import msgspec
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 3
+TRACE_SCHEMA_VERSION = 4
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
-TRACE_REQUIRED_CHANNELS_V3 = (
+TRACE_REQUIRED_CHANNELS = (
     "checkpoint",
     "sim_state",
     "entity_samples",
@@ -18,7 +18,6 @@ TRACE_REQUIRED_CHANNELS_V3 = (
 )
 
 _DEFAULT_CHANNEL_VERSION = 1
-_CHANNEL_VERSION_OVERRIDES: dict[str, int] = {}
 
 _CHUNK_KIND_META = b"META"
 _CHUNK_KIND_TICK = b"TICK"
@@ -51,16 +50,16 @@ class TraceMeta(msgspec.Struct):
 class TickRecord(msgspec.Struct):
     tick_index: int
     elapsed_ms: int
-    dt_ms_i32: int | None = None
-    mode_id: int = -1
-    phase_markers: list[str] = msgspec.field(default_factory=list)
-    channels: dict[str, object] = msgspec.field(default_factory=dict)
+    dt_ms_i32: int
+    mode_id: int
+    phase_markers: list[str]
+    channels: dict[str, object]
 
 
 class TickBlock(msgspec.Struct):
     start_tick: int
     end_tick: int
-    ticks: list[TickRecord] = msgspec.field(default_factory=list)
+    ticks: list[TickRecord]
 
 
 class TickBlockIndexEntry(msgspec.Struct):
@@ -76,14 +75,10 @@ class TraceFooter(msgspec.Struct):
     trace_format_version: int
     tick_blocks: list[TickBlockIndexEntry]
     tick_count: int
-    first_tick: int | None
-    last_tick: int | None
+    first_tick: int
+    last_tick: int
     channel_counts: dict[str, int]
 
 
-def channel_version_for(channel: str) -> int:
-    return int(_CHANNEL_VERSION_OVERRIDES.get(channel, _DEFAULT_CHANNEL_VERSION))
-
-
 def channel_versions_for(channels: Iterable[str]) -> dict[str, int]:
-    return {str(channel): channel_version_for(str(channel)) for channel in channels}
+    return {str(channel): int(_DEFAULT_CHANNEL_VERSION) for channel in channels}

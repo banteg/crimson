@@ -31,7 +31,7 @@ from .types import (
     unpack_input_move_key_flags,
     unpack_packed_player_input,
 )
-from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
+from .versioning import ReplayGameVersionError, warn_on_game_version_mismatch
 
 __all__ = [
     "FIRE_DOWN_FLAG",
@@ -58,7 +58,7 @@ __all__ = [
     "ReplayHeader",
     "ReplayRecorder",
     "ReplayStatusSnapshot",
-    "ReplayGameVersionWarning",
+    "ReplayGameVersionError",
     "dump_replay",
     "dump_replay_file",
     "load_replay",

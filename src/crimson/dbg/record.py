@@ -4,7 +4,7 @@ import hashlib
 import platform
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, cast
+from typing import cast
 
 import msgspec
 
@@ -34,7 +34,6 @@ from .rng import canonical_rng_marks
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceSummary, write_trace
 
-RecordProfile = Literal["minimal", "standard", "full"]
 
 class _EntityGenerationState(msgspec.Struct):
     generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
@@ -282,7 +281,6 @@ def _build_trace_meta(
     replay: Replay,
     tick_rows: list[TickRecord],
     channels_seen: set[str],
-    profile: RecordProfile,
     strict_events: bool,
     max_ticks: int | None,
 ) -> TraceMeta:
@@ -309,7 +307,6 @@ def _build_trace_meta(
             "tick_count": len(tick_rows),
         },
         config={
-            "profile": profile,
             "strict_events": bool(strict_events),
             "max_ticks": max_ticks,
         },
@@ -320,7 +317,6 @@ def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
-    profile: RecordProfile,
     max_ticks: int | None,
     strict_events: bool,
     chunk_ticks: int,
@@ -398,10 +394,11 @@ def _record_replay_to_trace_python(
             "rng_stream": msgspec.to_builtins(rng_stream),
         }
 
-        tick_dt_ms_i32: int | None = None
-        if 0 <= tick_index < len(replay_dt_rows):
-            dt_raw = int(replay_dt_rows[tick_index])
-            tick_dt_ms_i32 = int(dt_raw)
+        if not (0 <= tick_index < len(replay_dt_rows)):
+            raise ValueError(f"missing replay dt_ms_i32 row for tick {tick_index}")
+        tick_dt_ms_i32 = int(replay_dt_rows[tick_index])
+        if tick_dt_ms_i32 <= 0:
+            raise ValueError(f"invalid replay dt_ms_i32 at tick {tick_index}: {tick_dt_ms_i32}")
 
         channels_seen.update(channels.keys())
         tick_rows.append(
@@ -420,7 +417,6 @@ def _record_replay_to_trace_python(
         replay=replay,
         tick_rows=tick_rows,
         channels_seen=channels_seen,
-        profile=profile,
         strict_events=strict_events,
         max_ticks=max_ticks,
     )
@@ -436,7 +432,6 @@ def record_replay_to_trace(
     *,
     replay_path: Path,
     out_path: Path,
-    profile: RecordProfile = "standard",
     max_ticks: int | None = None,
     strict_events: bool = True,
     chunk_ticks: int = 256,
@@ -446,7 +441,6 @@ def record_replay_to_trace(
     return _record_replay_to_trace_python(
         replay_path=replay_path,
         out_path=out_path,
-        profile=profile,
         max_ticks=max_ticks,
         strict_events=strict_events,
         chunk_ticks=chunk_ticks,

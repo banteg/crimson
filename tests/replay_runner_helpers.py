@@ -5,19 +5,20 @@ from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import ReplayHeader, ReplayRecorder
+from crimson.replay.types import current_replay_game_version
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 
 
 def _blank_survival_replay(
-    *, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0",
+    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
         game_mode_id=int(GameMode.SURVIVAL),
         seed=int(seed),
         tick_rate=60,
         player_count=1,
-        game_version=game_version,
+        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):
@@ -26,14 +27,14 @@ def _blank_survival_replay(
 
 
 def _blank_rush_replay(
-    *, ticks: int, seed: int = 0xBEEF, game_version: str = "0.0.0",
+    *, ticks: int, seed: int = 0xBEEF, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
         game_mode_id=int(GameMode.RUSH),
         seed=int(seed),
         tick_rate=60,
         player_count=1,
-        game_version=game_version,
+        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):
@@ -42,14 +43,14 @@ def _blank_rush_replay(
 
 
 def _blank_quest_replay(
-    *, ticks: int, seed: int = 101, game_version: str = "0.0.0",
+    *, ticks: int, seed: int = 101, game_version: str | None = None,
 ) -> tuple[ReplayHeader, ReplayRecorder]:
     header = ReplayHeader(
         game_mode_id=int(GameMode.QUESTS),
         seed=int(seed),
         tick_rate=60,
         player_count=1,
-        game_version=game_version,
+        game_version=(str(current_replay_game_version()) if game_version is None else str(game_version)),
     )
     rec = ReplayRecorder(header)
     for _ in range(int(ticks)):

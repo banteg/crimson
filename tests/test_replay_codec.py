@@ -13,7 +13,7 @@ from crimson.replay import (
     PerkPickEvent,
     ReplayClaimedStatsSnapshot,
     ReplayCodecError,
-    ReplayGameVersionWarning,
+    ReplayGameVersionError,
     ReplayHeader,
     ReplayRecorder,
     ReplayStatusSnapshot,
@@ -254,14 +254,14 @@ def test_replay_recorder_validates_player_count() -> None:
         rec.record_tick([PlayerInput()])
 
 
-def test_replay_version_mismatch_warns() -> None:
+def test_replay_version_mismatch_raises() -> None:
     header = ReplayHeader(game_mode_id=1, seed=1, player_count=1, game_version="0.0.0")
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput()])
     replay = rec.finish()
 
-    with pytest.warns(ReplayGameVersionWarning, match="mismatch"):
-        assert warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
+    with pytest.raises(ReplayGameVersionError, match="mismatch"):
+        warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
 
 
 def test_current_replay_game_version_appends_git_sha_for_non_release_head(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -109,10 +109,7 @@ def _default_focus_tick(
     if report.tick_start is not None:
         return int(report.tick_start)
     with TraceReader(Path(golden_trace)) as trace:
-        first_tick = trace.footer.first_tick
-        if first_tick is not None:
-            return int(first_tick)
-    return 0
+        return int(trace.footer.first_tick)
 
 
 def _render_html(*, payload: dict[str, object]) -> str:

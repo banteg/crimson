@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .channel_helpers import entity_samples_channel, rng_stream_channel_required, sim_state_channel
-from .schema import TRACE_REQUIRED_CHANNELS_V3
+from .schema import TRACE_REQUIRED_CHANNELS
 from .trace import TraceReader
 
 
@@ -48,7 +48,7 @@ def summarize_trace_health(
         issues: list[str] = []
         if ticks_total == 0:
             issues.append("trace window has no ticks")
-        for required_channel in TRACE_REQUIRED_CHANNELS_V3:
+        for required_channel in TRACE_REQUIRED_CHANNELS:
             if channels_present.get(str(required_channel), 0) <= 0:
                 issues.append(f"{required_channel} channel missing")
 

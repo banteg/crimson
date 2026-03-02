@@ -348,7 +348,7 @@ def _run_replay_info(
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
         trace_rng=False,
-        version_mismatch_action=None,
+        version_mismatch_action="verification",
     )
     config = PlaybackDriverConfig(
         timing=PlaybackTimingConfig(),
@@ -493,6 +493,8 @@ def run_replay_info(
     player_index: int | None = None,
     include_extra_events: bool = True,
 ) -> ReplayInfoResult:
+    if not bool(strict_events):
+        raise ReplayRunnerError("strict_events=False is unsupported; replay info extraction is always strict")
     player_filter = _validate_player_filter(replay=replay, player_index=player_index)
     return _run_replay_info(
         replay,

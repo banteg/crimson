@@ -556,7 +556,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -575,8 +575,11 @@ def test_finalize_frida_jsonl_to_traces_rejects_mid_session_first_tick_elapsed(t
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="run likely started mid-session"):
-        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    assert result.deleted_raw is False
+    assert len(result.traces) == 1
+    assert result.traces[0].tick_count == 1
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_channel(

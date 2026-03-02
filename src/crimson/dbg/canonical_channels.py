@@ -13,11 +13,11 @@ class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class SnapshotWeapon(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     weapon_id: int
     ammo: float
-    clip_size: int = 0
-    reload_active: bool = False
-    reload_timer: float = 0.0
-    reload_timer_max: float = 0.0
-    shot_cooldown: float = 0.0
+    clip_size: int
+    reload_active: bool
+    reload_timer: float
+    reload_timer_max: float
+    shot_cooldown: float
 
 
 class SnapshotPlayer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -32,15 +32,15 @@ class SnapshotPlayer(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class SnapshotStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     quest_unlock_index: int
     quest_unlock_index_full: int
-    weapon_usage_counts: list[int] = msgspec.field(default_factory=list)
+    weapon_usage_counts: list[int]
 
 
 class SnapshotBonusTimers(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    weapon_power_up_ms: int = 0
-    reflex_boost_ms: int = 0
-    energizer_ms: int = 0
-    double_experience_ms: int = 0
-    freeze_ms: int = 0
+    weapon_power_up_ms: int
+    reflex_boost_ms: int
+    energizer_ms: int
+    double_experience_ms: int
+    freeze_ms: int
 
 
 class SnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -55,7 +55,7 @@ class SnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
 class SimStateSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     gameplay: SnapshotGameplay
-    players: list[SnapshotPlayer] = msgspec.field(default_factory=list)
+    players: list[SnapshotPlayer]
 
 
 class RngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -135,10 +135,10 @@ class BonusEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=True)
 
 
 class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    creatures: list[CreatureEntitySample] = msgspec.field(default_factory=list)
-    projectiles: list[ProjectileEntitySample] = msgspec.field(default_factory=list)
-    secondary_projectiles: list[SecondaryProjectileEntitySample] = msgspec.field(default_factory=list)
-    bonuses: list[BonusEntitySample] = msgspec.field(default_factory=list)
+    creatures: list[CreatureEntitySample]
+    projectiles: list[ProjectileEntitySample]
+    secondary_projectiles: list[SecondaryProjectileEntitySample]
+    bonuses: list[BonusEntitySample]
 
 
 def bonus_timer_ms(value: float) -> int:
