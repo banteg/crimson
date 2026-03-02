@@ -81,9 +81,16 @@ Text rules are forgettable; structural rules enforce themselves.
 ## verification commands
 
 ### required pre-commit checks
-- Zig-only changes (`crimson-zig/`):  just check-zig`
-- Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.):  `just check`
-- Mixed Zig + Python/docs/tooling changes:  run **both** `just check-zig` and `just check`
+- Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
+- `pre-commit` runs fast checks only (ruff/import-linter/ty/docs/ast-grep) and is file-scoped.
+- `pre-push` runs heavy checks (pytest/build/zig) and is file-scoped.
+- Manual runs:
+  - `prek run --stage pre-commit`
+  - `prek run --stage pre-push`
+- CI-equivalent local run:
+  - Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.): `just check && uv build`
+  - Zig-only changes (`crimson-zig/`): `just check-zig`
+  - Mixed Zig + Python/docs/tooling changes: run both
 
 ## quick playbooks
 
