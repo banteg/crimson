@@ -18,7 +18,7 @@ def test_survival_runner_is_deterministic() -> None:
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.SURVIVAL)
     assert result0.ticks == 10
-    assert result0.elapsed_ms == 10 * int(round(1000.0 / 60.0))
+    assert result0.elapsed_ms == 10 * int(1000.0 / 60.0)
     assert result0.score_xp == 0
     assert result0.creature_kill_count == 0
     assert result0.most_used_weapon_id == 1

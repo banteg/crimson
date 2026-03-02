@@ -14,6 +14,8 @@ from crimson.replay.types import WEAPON_USAGE_COUNT
 from crimson.sim.bootstrap import run_terrain_bootstrap
 from grim.rand import CrtRand
 
+CAPTURE_FORMAT_VERSION = 9
+
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -138,6 +140,7 @@ def _channels_stub(
         "entity_samples": _entity_samples_stub(creatures=creatures),
         "rng_marks": dict(marks),
         "rng_stream": [],
+        "timing_samples": [],
     }
 
 
@@ -198,7 +201,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
         [
             {
                 "event": "session_start",
-                "capture_format_version": 8,
+                "capture_format_version": CAPTURE_FORMAT_VERSION,
                 "platform": "windows",
                 "arch": "x86",
                 "script_version": "5",
@@ -211,6 +214,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "tick_index_global": 100,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 1,
                 "phase_markers": ["a"],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -227,6 +231,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 "tick_index_global": 101,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -281,13 +286,14 @@ def test_finalize_frida_jsonl_to_traces_allows_missing_session_end_when_run_clos
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -307,13 +313,14 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
             {
                 "event": "tick",
                 "run_id": 4,
                 "elapsed_ms": 33,
                 "dt_ms_i32": 33,
+                "dt": 0.033,
                 "mode_id": 2,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -330,7 +337,7 @@ def test_finalize_frida_jsonl_to_traces_finalizes_active_run_when_capture_abrupt
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": 8}])
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [{"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION}])
 
     with pytest.raises(FridaFinalizeError, match="missing session_end"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
@@ -340,13 +347,14 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -359,6 +367,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "run_id": 2,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 2,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -371,6 +380,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 "run_id": 3,
                 "elapsed_ms": 33,
                 "dt_ms_i32": 33,
+                "dt": 0.033,
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -401,13 +411,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=1, seed=51, player_count=1),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -453,7 +464,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actiona
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -474,7 +485,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_mode_without_bootstrap_m
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -497,7 +508,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             {
                 "event": "run_start",
                 "run_id": 1,
@@ -515,6 +526,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_terrain_seed_mismatch(tmp_path: 
                 "run_id": 1,
                 "elapsed_ms": 0,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 1,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -542,6 +554,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -552,7 +565,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 8"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 9"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -560,13 +573,14 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 25_000,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -590,13 +604,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=3, seed=93, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),
@@ -619,13 +634,14 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            {"event": "session_start", "capture_format_version": 8},
+            {"event": "session_start", "capture_format_version": CAPTURE_FORMAT_VERSION},
             _run_start_row(run_id=1, mode_id=3, seed=94, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
                 "run_id": 1,
                 "elapsed_ms": 16,
                 "dt_ms_i32": 16,
+                "dt": 0.016,
                 "mode_id": 3,
                 "phase_markers": [],
                 "replay_inputs": _replay_inputs_stub(player_count=1),

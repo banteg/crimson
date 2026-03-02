@@ -50,6 +50,7 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
             },
         },
         "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
+        "dt": [1.0 / 60.0],
         "events": [],
     }
 
@@ -226,6 +227,7 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
             },
         },
         "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],
+        "dt": [1.0 / 60.0],
         "events": [],
     }
 
