@@ -17,9 +17,9 @@ from .step_pipeline import (
     DeterministicStepResult,
     StepPipelineOptions,
     run_deterministic_step,
-    time_scale_reflex_boost_bonus,
+    time_scale_reflex_boost_factor,
 )
-from .timing import ftol_ms_i32
+from .timing import FrameTiming, ftol_ms_i32
 from .world_state import WorldState
 
 
@@ -58,18 +58,22 @@ class SurvivalDeterministicSession(msgspec.Struct):
     ) -> DeterministicSessionTick:
         dt_frame = float(dt_frame)
         state = self.world.state
-        dt_sim = time_scale_reflex_boost_bonus(
-            reflex_boost_timer=float(state.bonuses.reflex_boost),
-            time_scale_active=bool(state.time_scale_active),
-            dt=float(dt_frame),
+        timing = FrameTiming.compute(
+            float(dt_frame),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=False,
         )
-        dt_sim_ms = float(dt_sim) * 1000.0
+        dt_sim_ms = float(timing.dt_sim) * 1000.0
         if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
             # Use captured integer ms for native cadence counters when available,
             # then apply reflex scaling with integer semantics.
             base_dt_ms_i32 = int(dt_frame_ms_i32)
             if bool(state.time_scale_active) and float(dt_frame) > 0.0:
-                dt_sim_ms = float(max(0, int(ftol_ms_i32(float(dt_sim)))))
+                dt_sim_ms = float(max(0, int(ftol_ms_i32(float(timing.dt_sim)))))
             else:
                 dt_sim_ms = float(base_dt_ms_i32)
         elapsed_before_ms = float(self.elapsed_ms)
@@ -117,7 +121,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            dt=float(dt_frame),
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -225,7 +229,7 @@ class RushDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            dt=float(dt_frame),
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
@@ -308,7 +312,16 @@ class QuestDeterministicSession(msgspec.Struct):
         trace_rng: bool = False,
     ) -> QuestDeterministicSessionTick:
         dt_frame = float(dt_frame)
-        dt_frame_ms = float(dt_frame) * 1000.0
+        timing = FrameTiming.compute(
+            float(dt_frame),
+            time_scale_active_entry=bool(self.world.state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(self.world.state.bonuses.reflex_boost),
+                time_scale_active=bool(self.world.state.time_scale_active),
+            ),
+            zero_gate_active=False,
+        )
+        dt_frame_ms = float(timing.dt_ms_i32)
         if dt_frame_ms_i32 is not None and int(dt_frame_ms_i32) > 0:
             # Keep quest spawn timeline/counters on captured integer-ms cadence.
             dt_frame_ms = float(int(dt_frame_ms_i32))
@@ -319,7 +332,7 @@ class QuestDeterministicSession(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world,
-            dt_frame=float(dt_frame),
+            dt=float(dt_frame),
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,

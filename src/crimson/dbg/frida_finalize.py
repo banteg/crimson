@@ -468,7 +468,7 @@ def _write_run_trace(
         Replay(
             header=replay_header,
             inputs=list(run.replay_inputs),
-            dt_ms_i32=list(run.replay_dt_ms_i32),
+            dt=[float(value) / 1000.0 for value in run.replay_dt_ms_i32],
             events=[],
         ),
     )

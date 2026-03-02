@@ -480,7 +480,7 @@ class GameWorld(msgspec.Struct):
 
         step = run_deterministic_step(
             world=self.world_state,
-            dt_frame=float(dt),
+            dt=float(dt),
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
                 damage_scale_by_type=self._damage_scale_by_type,

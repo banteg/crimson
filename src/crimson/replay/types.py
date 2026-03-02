@@ -9,10 +9,11 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..sim.timing import ftol_ms_i32
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 7
-ReplayFormatVersion: TypeAlias = Literal[7]
+REPLAY_FORMAT_VERSION = 8
+ReplayFormatVersion: TypeAlias = Literal[8]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -270,5 +271,9 @@ ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent
 class Replay(msgspec.Struct):
     header: ReplayHeader
     inputs: list[PackedTickInputs]
-    dt_ms_i32: list[int] = msgspec.field(default_factory=list)
+    dt: list[float] = msgspec.field(default_factory=list)
     events: list[ReplayEvent] = msgspec.field(default_factory=list)
+
+    @property
+    def dt_ms_i32(self) -> list[int]:
+        return [int(ftol_ms_i32(float(value))) for value in self.dt]
