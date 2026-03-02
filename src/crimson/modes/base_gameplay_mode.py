@@ -38,7 +38,6 @@ from ..render.rtx.mode import RtxRenderMode
 from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
-from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 
@@ -79,21 +78,6 @@ class LanRuntimeLike(Protocol):
         now_ms: int | None = None,
     ) -> None: ...
     def debug_overlay_lines(self) -> list[str]: ...
-
-
-class DeterministicSessionLike(Protocol):
-    detail_preset: int
-    fx_toggle: int
-    game_tune_started: bool
-
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-    ) -> DeterministicSessionTick: ...
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -892,7 +876,7 @@ class BaseGameplayMode:
         ticks_to_run: int,
         dt_tick: float,
         input_frame: list[PlayerInput],
-        session: DeterministicSessionLike,
+        session: Any,
         recorder: Any | None,
         on_tick: Callable[[DeterministicSessionTick, int | None], bool],
     ) -> None:
