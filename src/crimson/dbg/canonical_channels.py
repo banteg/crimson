@@ -4,6 +4,8 @@ from typing import cast
 
 import msgspec
 
+from ..sim.timing import ftol_ms_i32
+
 
 class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     x: float
@@ -158,7 +160,7 @@ class EntitySamplesSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=T
 
 
 def bonus_timer_ms(value: float) -> int:
-    return int(round(float(value) * 1000.0))
+    return max(0, int(ftol_ms_i32(float(value))))
 
 
 def _to_builtin(value: object) -> object:
