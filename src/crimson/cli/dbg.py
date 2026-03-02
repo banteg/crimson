@@ -139,7 +139,6 @@ def cmd_dbg_health(
 def cmd_dbg_diff(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -151,25 +150,15 @@ def cmd_dbg_diff(
     tick_end: int | None = typer.Option(None, "--tick-end", help="optional inclusive upper tick bound"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON output path"),
 ) -> None:
-    """Compare two traces and report the first mismatch using parity policy rules."""
+    """Compare two traces and report the first mismatch."""
     from ..dbg.diff import diff_report_to_json, diff_traces
-    from ..dbg.policy import resolve_parity_policy
-
-    try:
-        parity_policy = resolve_parity_policy(
-            policy,
-            float_abs_tol=float_abs_tol,
-            max_field_diffs=max_field_diffs,
-        )
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
 
     try:
         report = diff_traces(
             expected_trace_path=Path(golden_trace),
             actual_trace_path=Path(candidate_trace),
-            policy=parity_policy,
+            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
+            max_field_diffs=max_field_diffs,
             tick_start=tick_start,
             tick_end=tick_end,
         )
@@ -184,14 +173,14 @@ def cmd_dbg_diff(
         typer.echo(f"json_report={json_out}")
 
     if report.ok:
-        typer.echo(f"result=ok checked={report.checked_count} policy={report.policy}")
+        typer.echo(f"result=ok checked={report.checked_count}")
         return
 
     mismatch = report.mismatch
     assert mismatch is not None
     typer.echo(
         f"result=diverged kind={mismatch.kind} tick={mismatch.tick_index} "
-        f"checked={report.checked_count} policy={report.policy}",
+        f"checked={report.checked_count}",
         err=True,
     )
     if mismatch.checkpoint_diff is not None:
@@ -208,7 +197,6 @@ def cmd_dbg_diff(
 def cmd_dbg_bisect(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
-    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -225,23 +213,13 @@ def cmd_dbg_bisect(
 ) -> None:
     """Bisect divergence and optionally emit a compact repro trace window."""
     from ..dbg.diff import bisect_report_to_json, bisect_traces
-    from ..dbg.policy import resolve_parity_policy
-
-    try:
-        parity_policy = resolve_parity_policy(
-            policy,
-            float_abs_tol=float_abs_tol,
-            max_field_diffs=max_field_diffs,
-        )
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
 
     try:
         report = bisect_traces(
             expected_trace_path=Path(golden_trace),
             actual_trace_path=Path(candidate_trace),
-            policy=parity_policy,
+            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
+            max_field_diffs=max_field_diffs,
             tick_start=tick_start,
             tick_end=tick_end,
             window_before=window_before,
@@ -259,14 +237,14 @@ def cmd_dbg_bisect(
         typer.echo(f"json_report={json_out}")
 
     if report.ok:
-        typer.echo(f"result=ok checked={report.checked_count} policy={report.policy}")
+        typer.echo(f"result=ok checked={report.checked_count}")
         return
 
     mismatch = report.mismatch
     assert mismatch is not None
     typer.echo(
         f"result=diverged first_bad_tick={report.first_bad_tick} "
-        f"kind={mismatch.kind} checked={report.checked_count} policy={report.policy}",
+        f"kind={mismatch.kind} checked={report.checked_count}",
     )
     if report.repro_trace_path is not None:
         typer.echo(f"repro_trace={report.repro_trace_path}")
@@ -457,7 +435,6 @@ def cmd_dbg_focus(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick: int = typer.Option(..., "--tick", help="focus tick index"),
-    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     float_abs_tol: float | None = typer.Option(None, "--float-abs-tol", min=0.0, help="override float abs tolerance"),
     max_field_diffs: int | None = typer.Option(
         None,
@@ -470,24 +447,14 @@ def cmd_dbg_focus(
 ) -> None:
     """Generate a focused side-by-side report for one tick."""
     from ..dbg.focus import focus_tick
-    from ..dbg.policy import resolve_parity_policy
-
-    try:
-        parity_policy = resolve_parity_policy(
-            policy,
-            float_abs_tol=float_abs_tol,
-            max_field_diffs=max_field_diffs,
-        )
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
 
     try:
         payload = focus_tick(
             golden_trace=Path(golden_trace),
             candidate_trace=Path(candidate_trace),
             tick_index=tick,
-            policy=parity_policy,
+            float_abs_tol=(0.0 if float_abs_tol is None else float(float_abs_tol)),
+            max_field_diffs=max_field_diffs,
         )
     except ValueError as exc:
         typer.echo(f"dbg focus failed: {exc}", err=True)
@@ -508,8 +475,6 @@ def cmd_dbg_focus(
         + result
         + " tick="
         + str(payload.get("tick_index"))
-        + " policy="
-        + str(payload.get("policy"))
         + " checkpoint_diff_count="
         + str(payload.get("checkpoint_diff_count")),
     )
@@ -544,21 +509,13 @@ def cmd_dbg_viz(
     golden_trace: Path = typer.Argument(..., help="golden trace (.cdt)"),
     candidate_trace: Path = typer.Argument(..., help="candidate trace (.cdt)"),
     tick: int | None = typer.Option(None, "--tick", help="focus tick (auto when omitted)"),
-    policy: str = typer.Option("strict", "--policy", help="parity policy name"),
     window_before: int = typer.Option(64, "--window-before", min=0, help="ticks before focus tick"),
     window_after: int = typer.Option(64, "--window-after", min=0, help="ticks after focus tick"),
     out: Path | None = typer.Option(None, "--out", help="output HTML path"),
     json_out: Path | None = typer.Option(None, "--json-out", help="optional JSON summary output path"),
 ) -> None:
     """Render a static HTML divergence timeline around a focus tick."""
-    from ..dbg.policy import resolve_parity_policy
     from ..dbg.viz import write_viz_html
-
-    try:
-        parity_policy = resolve_parity_policy(policy)
-    except ValueError as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(code=2) from exc
 
     html_out = Path(out) if out is not None else Path(candidate_trace).with_suffix(".viz.html")
 
@@ -566,7 +523,6 @@ def cmd_dbg_viz(
         payload = write_viz_html(
             golden_trace=Path(golden_trace),
             candidate_trace=Path(candidate_trace),
-            policy=parity_policy,
             tick=tick,
             window_before=window_before,
             window_after=window_after,

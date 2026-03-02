@@ -9,7 +9,6 @@ from typer.testing import CliRunner
 
 import crimson.dbg.diff as dbg_diff
 from crimson.cli import app
-from crimson.dbg.policy import resolve_parity_policy
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
@@ -366,8 +365,6 @@ def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) 
             "diff",
             str(golden_trace),
             str(candidate_trace),
-            "--policy",
-            "strict",
         ],
     )
     assert result.exit_code == 1, result.output
@@ -395,7 +392,7 @@ def test_dbg_diff_default_policy_requires_canonical_channels(tmp_path: Path) -> 
 
     result = runner.invoke(
         app,
-        ["dbg", "diff", str(golden_trace), str(candidate_trace), "--policy", "strict"],
+        ["dbg", "diff", str(golden_trace), str(candidate_trace)],
     )
     assert result.exit_code == 1, result.output
     assert "missing_channel" in result.output
@@ -424,16 +421,21 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     call_count = 0
     original_first_mismatch = dbg_diff._first_mismatch
 
-    def _counting_first_mismatch(*, pairs, policy, tick_end=None):
+    def _counting_first_mismatch(*, pairs, float_abs_tol, max_field_diffs, ignore_field_prefixes, tick_end=None):
         nonlocal call_count
         call_count += 1
-        return original_first_mismatch(pairs=pairs, policy=policy, tick_end=tick_end)
+        return original_first_mismatch(
+            pairs=pairs,
+            float_abs_tol=float_abs_tol,
+            max_field_diffs=max_field_diffs,
+            ignore_field_prefixes=ignore_field_prefixes,
+            tick_end=tick_end,
+        )
 
     monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)
     report = dbg_diff.bisect_traces(
         expected_trace_path=golden_trace,
         actual_trace_path=candidate_trace,
-        policy=resolve_parity_policy("strict"),
     )
     assert report.first_bad_tick == 1
     assert call_count == 1

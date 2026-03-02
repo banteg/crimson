@@ -12,7 +12,6 @@ from .channel_helpers import (
     sim_state_channel_required,
 )
 from .checkpoint_diff import CheckpointDeepDiff, checkpoint_deepdiff
-from .policy import ParityPolicy
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS_V3,
@@ -34,7 +33,6 @@ class TraceMismatch(msgspec.Struct, frozen=True):
 class TraceDiffReport(msgspec.Struct, frozen=True):
     ok: bool
     checked_count: int
-    policy: str
     tick_start: int | None
     tick_end: int | None
     mismatch: TraceMismatch | None = None
@@ -42,7 +40,6 @@ class TraceDiffReport(msgspec.Struct, frozen=True):
 
 class TraceBisectReport(msgspec.Struct, frozen=True):
     ok: bool
-    policy: str
     first_bad_tick: int | None
     checked_count: int
     mismatch: TraceMismatch | None
@@ -58,7 +55,9 @@ class _TickPair(msgspec.Struct, frozen=True):
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
-    policy: ParityPolicy,
+    float_abs_tol: float,
+    max_field_diffs: int | None,
+    ignore_field_prefixes: tuple[str, ...],
     tick_end: int | None = None,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
@@ -83,9 +82,9 @@ def _first_mismatch(
         checkpoint_diff = checkpoint_deepdiff(
             expected,
             actual,
-            ignore_field_prefixes=policy.ignore_field_prefixes,
-            max_diffs=policy.max_field_diffs,
-            float_abs_tol=float(policy.float_abs_tol),
+            ignore_field_prefixes=ignore_field_prefixes,
+            max_diffs=max_field_diffs,
+            float_abs_tol=float_abs_tol,
         )
         if checkpoint_diff is not None:
             return (
@@ -171,7 +170,9 @@ def diff_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    policy: ParityPolicy,
+    float_abs_tol: float = 0.0,
+    max_field_diffs: int | None = None,
+    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
 ) -> TraceDiffReport:
@@ -184,7 +185,6 @@ def diff_traces(
                 return TraceDiffReport(
                     ok=False,
                     checked_count=0,
-                    policy=policy.name,
                     tick_start=tick_start,
                     tick_end=tick_end,
                     mismatch=TraceMismatch(
@@ -206,7 +206,9 @@ def diff_traces(
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
-                policy=policy,
+                float_abs_tol=float(float_abs_tol),
+                max_field_diffs=max_field_diffs,
+                ignore_field_prefixes=tuple(ignore_field_prefixes),
                 tick_end=tick_end,
             )
         except TraceError as exc:
@@ -214,7 +216,6 @@ def diff_traces(
         return TraceDiffReport(
             ok=(mismatch is None),
             checked_count=checked_count,
-            policy=policy.name,
             tick_start=tick_start,
             tick_end=tick_end,
             mismatch=mismatch,
@@ -225,7 +226,9 @@ def bisect_traces(
     *,
     expected_trace_path: Path,
     actual_trace_path: Path,
-    policy: ParityPolicy,
+    float_abs_tol: float = 0.0,
+    max_field_diffs: int | None = None,
+    ignore_field_prefixes: tuple[str, ...] = (),
     tick_start: int | None = None,
     tick_end: int | None = None,
     window_before: int = 12,
@@ -242,7 +245,6 @@ def bisect_traces(
         if not pairs:
             return TraceBisectReport(
                 ok=True,
-                policy=policy.name,
                 first_bad_tick=None,
                 checked_count=0,
                 mismatch=None,
@@ -251,13 +253,18 @@ def bisect_traces(
 
         end_tick_bound = pairs[-1].tick_index if tick_end is None else tick_end
         try:
-            checked_count, mismatch = _first_mismatch(pairs=pairs, policy=policy, tick_end=end_tick_bound)
+            checked_count, mismatch = _first_mismatch(
+                pairs=pairs,
+                float_abs_tol=float(float_abs_tol),
+                max_field_diffs=max_field_diffs,
+                ignore_field_prefixes=tuple(ignore_field_prefixes),
+                tick_end=end_tick_bound,
+            )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
         if mismatch is None:
             return TraceBisectReport(
                 ok=True,
-                policy=policy.name,
                 first_bad_tick=None,
                 checked_count=checked_count,
                 mismatch=None,
@@ -317,7 +324,6 @@ def bisect_traces(
                 source={
                     "expected_trace": str(expected_trace_path),
                     "actual_trace": str(actual_trace_path),
-                    "policy": policy.name,
                     "first_bad_tick": first_bad,
                 },
                 channels=["golden", "candidate", "focus_tick"],
@@ -337,7 +343,6 @@ def bisect_traces(
 
         return TraceBisectReport(
             ok=False,
-            policy=policy.name,
             first_bad_tick=first_bad,
             checked_count=checked_count,
             mismatch=final_mismatch,
@@ -369,7 +374,6 @@ def diff_report_to_json(report: TraceDiffReport) -> dict[str, object]:
     return {
         "schema_version": 1,
         "status": ("ok" if report.ok else "diverged"),
-        "policy": report.policy,
         "checked_count": report.checked_count,
         "tick_start": report.tick_start,
         "tick_end": report.tick_end,
@@ -381,7 +385,6 @@ def bisect_report_to_json(report: TraceBisectReport) -> dict[str, object]:
     return {
         "schema_version": 1,
         "status": ("ok" if report.ok else "diverged"),
-        "policy": report.policy,
         "checked_count": report.checked_count,
         "first_bad_tick": report.first_bad_tick,
         "mismatch": mismatch_to_json(report.mismatch),

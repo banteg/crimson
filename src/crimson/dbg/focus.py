@@ -12,7 +12,6 @@ from .channel_helpers import (
     sim_state_channel_required,
 )
 from .checkpoint_diff import checkpoint_deepdiff
-from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -30,7 +29,8 @@ def focus_tick(
     golden_trace: Path,
     candidate_trace: Path,
     tick_index: int,
-    policy: ParityPolicy,
+    float_abs_tol: float = 0.0,
+    max_field_diffs: int | None = None,
 ) -> dict[str, object]:
     tick = int(tick_index)
     with TraceReader(Path(golden_trace)) as expected, TraceReader(Path(candidate_trace)) as candidate:
@@ -46,9 +46,8 @@ def focus_tick(
     checkpoint_diff = checkpoint_deepdiff(
         expected_checkpoint,
         candidate_checkpoint,
-        ignore_field_prefixes=policy.ignore_field_prefixes,
-        max_diffs=policy.max_field_diffs,
-        float_abs_tol=float(policy.float_abs_tol),
+        max_diffs=max_field_diffs,
+        float_abs_tol=float(float_abs_tol),
     )
 
     expected_rng = {str(key): int(value) for key, value in expected_checkpoint.rng_marks.items()}
@@ -101,7 +100,6 @@ def focus_tick(
 
     return {
         "tick_index": int(tick),
-        "policy": str(policy.name),
         "diverged": diverged,
         "checkpoint_diff_count": (0 if checkpoint_diff is None else int(checkpoint_diff.diff_count)),
         "checkpoint_diff": (

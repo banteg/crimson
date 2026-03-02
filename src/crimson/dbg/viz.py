@@ -6,7 +6,6 @@ from typing import cast
 
 from .channel_helpers import ENTITY_SAMPLE_KINDS, checkpoint_channel, entity_samples_channel
 from .diff import diff_traces
-from .policy import ParityPolicy
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -100,12 +99,10 @@ def _default_focus_tick(
     *,
     golden_trace: Path,
     candidate_trace: Path,
-    policy: ParityPolicy,
 ) -> int:
     report = diff_traces(
         expected_trace_path=Path(golden_trace),
         actual_trace_path=Path(candidate_trace),
-        policy=policy,
     )
     if report.mismatch is not None:
         return int(report.mismatch.tick_index)
@@ -257,7 +254,6 @@ def write_viz_html(
     *,
     golden_trace: Path,
     candidate_trace: Path,
-    policy: ParityPolicy,
     tick: int | None = None,
     window_before: int = 64,
     window_after: int = 64,
@@ -269,7 +265,6 @@ def write_viz_html(
         else _default_focus_tick(
             golden_trace=Path(golden_trace),
             candidate_trace=Path(candidate_trace),
-            policy=policy,
         )
     )
     left = int(focus_tick) - max(0, int(window_before))
