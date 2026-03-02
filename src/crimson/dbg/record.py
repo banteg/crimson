@@ -223,6 +223,24 @@ def _rng_stream_from_checkpoint(
     return rows
 
 
+def _rng_stream_from_draws(draws: list[tuple[int, int, int]]) -> list[RngStreamRow]:
+    rows: list[RngStreamRow] = []
+    for index, row in enumerate(draws):
+        state_before_u32, value_15, state_after_u32 = row
+        rows.append(
+            RngStreamRow(
+                tick_call_index=int(index) + 1,
+                value_15=int(value_15),
+                state_before_u32=int(state_before_u32),
+                state_after_u32=int(state_after_u32),
+                caller_static=None,
+                branch_id=None,
+                inferred=False,
+            ),
+        )
+    return rows
+
+
 def _entity_samples_for_world(
     world: WorldState,
     *,
@@ -551,6 +569,7 @@ def _record_replay_to_trace_python(
 
     entity_samples_by_tick: dict[int, dict[str, object]] = {}
     sim_state_by_tick: dict[int, dict[str, object]] = {}
+    rng_stream_by_tick: dict[int, list[RngStreamRow]] = {}
     creature_state = _EntityUidState()
     projectile_state = _EntityUidState()
     secondary_state = _EntityUidState()
@@ -568,6 +587,9 @@ def _record_replay_to_trace_python(
         )
         sim_state_by_tick[tick_index] = _sim_state_from_world(world, replay=replay)
 
+    def _tick_rng_trace_observer(tick_index: int, draws: list[tuple[int, int, int]]) -> None:
+        rng_stream_by_tick[int(tick_index)] = _rng_stream_from_draws(draws)
+
     try:
         run_replay(
             replay,
@@ -577,6 +599,7 @@ def _record_replay_to_trace_python(
             checkpoints_out=checkpoints,
             checkpoint_ticks=checkpoint_ticks,
             tick_observer=_tick_observer,
+            tick_rng_trace_observer=_tick_rng_trace_observer,
         )
     except ReplayRunnerError as exc:
         raise ValueError(f"replay recording failed: {exc}") from exc
@@ -586,9 +609,11 @@ def _record_replay_to_trace_python(
     replay_dt_rows = list(replay.dt_ms_i32)
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = checkpoint.tick_index
+        if int(tick_index) not in rng_stream_by_tick:
+            raise ValueError(f"missing runtime rng stream for tick {tick_index}")
         entity_samples_obj = entity_samples_by_tick[tick_index]
         sim_state_obj = sim_state_by_tick[tick_index]
-        rng_stream = _canonical_rng_stream(_rng_stream_from_checkpoint(checkpoint))
+        rng_stream = list(rng_stream_by_tick[int(tick_index)])
         trace_rng_marks = canonical_rng_marks(
             rng_state=int(checkpoint.rng_state),
             rng_stream=rng_stream,

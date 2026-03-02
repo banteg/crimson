@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from typing import TypeAlias
 
 import msgspec
+
+from grim.rand import CrtRand, RngTraceSink
 
 from ...game_modes import GameMode
 from ...quests import quest_by_level
@@ -34,6 +38,29 @@ from .setup import (
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
+
+RngTraceDraw: TypeAlias = tuple[int, int, int]
+TickRngTraceObserver: TypeAlias = Callable[[int, list[RngTraceDraw]], None]
+
+
+@contextmanager
+def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw]]:
+    draws: list[RngTraceDraw] = []
+    if not enabled or not isinstance(rng, CrtRand):
+        yield draws
+        return
+
+    previous_sink = rng.trace_sink
+
+    def _sink(state_before_u32: int, state_after_u32: int, value_15: int) -> None:
+        draws.append((int(state_before_u32), int(value_15), int(state_after_u32)))
+
+    trace_sink: RngTraceSink = _sink
+    rng.set_trace_sink(trace_sink)
+    try:
+        yield draws
+    finally:
+        rng.set_trace_sink(previous_sink)
 
 
 def _dt_ms_overrides_from_replay(replay: Replay) -> dict[int, int] | None:
@@ -74,6 +101,7 @@ def run_survival_replay(
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
+    tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.SURVIVAL):
         raise ReplayRunnerError(
@@ -169,38 +197,41 @@ def run_survival_replay(
         )
 
         rng_before_events = int(state.rng.state)
-        apply_replay_tick_events(
-            pre_step_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.SURVIVAL),
-            strict_events=bool(strict_events),
-        )
-        rng_after_events = int(state.rng.state)
-
-        player_inputs = unpack_tick_inputs(inputs[tick_index])
-
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=player_inputs,
-            trace_rng=bool(trace_rng),
-        )
-        step = tick.step
-        events = step.events
-
-        rng_before_post_events = int(state.rng.state)
-        if post_step_events:
+        with _tick_rng_trace(state.rng, enabled=bool(trace_rng)) as tick_rng_rows:
             apply_replay_tick_events(
-                post_step_events,
+                pre_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=world,
                 game_mode_id=int(GameMode.SURVIVAL),
                 strict_events=bool(strict_events),
             )
-        rng_after_post_events = int(state.rng.state)
+            rng_after_events = int(state.rng.state)
+
+            player_inputs = unpack_tick_inputs(inputs[tick_index])
+
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                inputs=player_inputs,
+                trace_rng=bool(trace_rng),
+            )
+            step = tick.step
+            events = step.events
+
+            rng_before_post_events = int(state.rng.state)
+            if post_step_events:
+                apply_replay_tick_events(
+                    post_step_events,
+                    tick_index=int(tick_index),
+                    dt_frame=float(dt_tick),
+                    world=world,
+                    game_mode_id=int(GameMode.SURVIVAL),
+                    strict_events=bool(strict_events),
+                )
+            rng_after_post_events = int(state.rng.state)
+        if tick_rng_trace_observer is not None:
+            tick_rng_trace_observer(int(tick_index), list(tick_rng_rows))
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoint_rng_marks = dict(tick.rng_marks)
@@ -307,6 +338,7 @@ def run_rush_replay(
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
+    tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.RUSH):
         raise ReplayRunnerError(
@@ -392,28 +424,31 @@ def run_rush_replay(
         )
 
         rng_before_events = int(state.rng.state)
-        apply_replay_tick_events(
-            events_by_tick.get(int(tick_index), []),
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.RUSH),
-            strict_events=True,
-        )
-        rng_after_events = int(state.rng.state)
+        with _tick_rng_trace(state.rng, enabled=bool(trace_rng)) as tick_rng_rows:
+            apply_replay_tick_events(
+                events_by_tick.get(int(tick_index), []),
+                tick_index=int(tick_index),
+                dt_frame=float(dt_tick),
+                world=world,
+                game_mode_id=int(GameMode.RUSH),
+                strict_events=True,
+            )
+            rng_after_events = int(state.rng.state)
 
-        player_inputs = [
-            msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])
-        ]
+            player_inputs = [
+                msgspec.structs.replace(inp, reload_pressed=False) for inp in unpack_tick_inputs(inputs[tick_index])
+            ]
 
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=player_inputs,
-            trace_rng=bool(trace_rng),
-        )
-        step = tick.step
-        events = step.events
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                inputs=player_inputs,
+                trace_rng=bool(trace_rng),
+            )
+            step = tick.step
+            events = step.events
+        if tick_rng_trace_observer is not None:
+            tick_rng_trace_observer(int(tick_index), list(tick_rng_rows))
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoint_rng_marks = dict(tick.rng_marks)
@@ -522,6 +557,7 @@ def run_quest_replay(
     inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
+    tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
     if int(replay.header.game_mode_id) != int(GameMode.QUESTS):
         raise ReplayRunnerError(
@@ -655,39 +691,42 @@ def run_quest_replay(
             defer_menu_open=False,
         )
         rng_before_events = int(state.rng.state)
-        apply_replay_tick_events(
-            pre_step_events,
-            tick_index=int(tick_index),
-            dt_frame=float(dt_tick),
-            world=world,
-            game_mode_id=int(GameMode.QUESTS),
-            strict_events=bool(strict_events),
-        )
-        rng_after_events = int(state.rng.state)
-
-        player_inputs = unpack_tick_inputs(inputs[tick_index])
-
-        tick = session.step_tick(
-            dt_frame=float(dt_tick),
-            dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
-            inputs=player_inputs,
-            trace_rng=bool(trace_rng),
-        )
-        step = tick.step
-        events = step.events
-
-        rng_before_post_events = int(state.rng.state)
-        if post_step_events:
+        with _tick_rng_trace(state.rng, enabled=bool(trace_rng)) as tick_rng_rows:
             apply_replay_tick_events(
-                post_step_events,
+                pre_step_events,
                 tick_index=int(tick_index),
                 dt_frame=float(dt_tick),
                 world=world,
                 game_mode_id=int(GameMode.QUESTS),
                 strict_events=bool(strict_events),
             )
-        world.creatures.finalize_post_render_lifecycle()
-        rng_after_post_events = int(state.rng.state)
+            rng_after_events = int(state.rng.state)
+
+            player_inputs = unpack_tick_inputs(inputs[tick_index])
+
+            tick = session.step_tick(
+                dt_frame=float(dt_tick),
+                dt_frame_ms_i32=(int(dt_tick_ms_i32) if dt_tick_ms_i32 is not None else None),
+                inputs=player_inputs,
+                trace_rng=bool(trace_rng),
+            )
+            step = tick.step
+            events = step.events
+
+            rng_before_post_events = int(state.rng.state)
+            if post_step_events:
+                apply_replay_tick_events(
+                    post_step_events,
+                    tick_index=int(tick_index),
+                    dt_frame=float(dt_tick),
+                    world=world,
+                    game_mode_id=int(GameMode.QUESTS),
+                    strict_events=bool(strict_events),
+                )
+            world.creatures.finalize_post_render_lifecycle()
+            rng_after_post_events = int(state.rng.state)
+        if tick_rng_trace_observer is not None:
+            tick_rng_trace_observer(int(tick_index), list(tick_rng_rows))
 
         if checkpoints_out is not None and checkpoint_ticks is not None and int(tick_index) in checkpoint_ticks:
             checkpoint_rng_marks = dict(tick.rng_marks)
@@ -782,6 +821,7 @@ def run_replay(
     checkpoint_ticks: set[int] | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
     tick_observer: Callable[[int, WorldState], None] | None = None,
+    tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
     dt_frame_ms_i32_overrides = _dt_ms_overrides_from_replay(replay)
     mode = int(replay.header.game_mode_id)
@@ -798,6 +838,7 @@ def run_replay(
             dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
+            tick_rng_trace_observer=tick_rng_trace_observer,
         )
     if mode == int(GameMode.RUSH):
         return run_rush_replay(
@@ -811,6 +852,7 @@ def run_replay(
             dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
+            tick_rng_trace_observer=tick_rng_trace_observer,
         )
     if mode == int(GameMode.QUESTS):
         return run_quest_replay(
@@ -825,5 +867,6 @@ def run_replay(
             dt_frame_ms_i32_overrides=dt_frame_ms_i32_overrides,
             tick_progress_callback=tick_progress_callback,
             tick_observer=tick_observer,
+            tick_rng_trace_observer=tick_rng_trace_observer,
         )
     raise ReplayRunnerError(f"unsupported replay game_mode_id={mode}")
