@@ -164,13 +164,13 @@ class WorldRenderCtx(msgspec.Struct):
     def elapsed_ms(self) -> float:
         if self.frame is not None:
             return self.frame.elapsed_ms
-        return float(self.renderer._world._elapsed_ms)
+        return float(self.renderer._world.sim_world.elapsed_ms)
 
     @property
     def bonus_anim_phase(self) -> float:
         if self.frame is not None:
             return self.frame.bonus_anim_phase
-        return float(self.renderer._world._bonus_anim_phase)
+        return float(self.renderer._world.sim_world.bonus_anim_phase)
 
     @property
     def lan_player_rings_enabled(self) -> bool:

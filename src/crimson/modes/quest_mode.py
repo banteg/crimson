@@ -214,7 +214,7 @@ class QuestMode(BaseGameplayMode):
         return self._session_factory(
             world=self.world.world_state,
             world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
+            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
             fx_queue=self.world.fx_queue,
             fx_queue_rotated=self.world.fx_queue_rotated,
             spawn_entries=spawn_entries,

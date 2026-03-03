@@ -169,7 +169,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     session = RushDeterministicSession(
         world=world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
         fx_queue=world.fx_queue,
         fx_queue_rotated=world.fx_queue_rotated,
         detail_preset=5,
@@ -247,7 +247,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     session = QuestDeterministicSession(
         world=world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
         fx_queue=world.fx_queue,
         fx_queue_rotated=world.fx_queue_rotated,
         spawn_entries=tuple(spawn_entries),

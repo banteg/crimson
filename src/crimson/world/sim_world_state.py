@@ -126,3 +126,9 @@ class SimWorldState(msgspec.Struct):
             self.bonus_anim_phase += float(dt_sim) * 1.3
 
         self.game_tune_started = bool(game_tune_started)
+
+    def close_session(self) -> None:
+        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.last_presentation = PresentationStepCommands()
+        self.last_command_hash = ""
+        self.game_tune_started = False

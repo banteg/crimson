@@ -755,7 +755,7 @@ class BaseGameplayMode:
     def _trace_lan_state_heartbeat(self) -> None:
         if not self._lan_enabled:
             return
-        elapsed_ms = float(self.world._elapsed_ms)
+        elapsed_ms = float(self.world.sim_world.elapsed_ms)
         if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
             return
         self._lan_trace_last_ms = float(elapsed_ms)
@@ -1151,7 +1151,7 @@ class BaseGameplayMode:
         return self.world.camera
 
     def console_elapsed_ms(self) -> float:
-        return float(self.world._elapsed_ms)
+        return float(self.world.sim_world.elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
         if self.world.ground is None:

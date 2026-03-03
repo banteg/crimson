@@ -499,7 +499,7 @@ class ReplayPlaybackMode:
                     ),
                     session_defaults=PlaybackSessionDefaults(
                         clear_fx_queues_each_tick=False,
-                        game_tune_started=bool(world._game_tune_started),
+                        game_tune_started=bool(world.sim_world.game_tune_started),
                     ),
                     sessions=PlaybackSessionConfigs(
                         survival=SurvivalSessionConfig(partition_events=True),
@@ -849,7 +849,7 @@ class ReplayPlaybackMode:
             mode_id = replay.header.game_mode_id
             hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
-            elapsed_ms = float(world._elapsed_ms)
+            elapsed_ms = float(world.sim_world.elapsed_ms)
             match mode_id:
                 case GameMode.QUESTS:
                     total = int(self._quest_total_spawn_count)

@@ -29,7 +29,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministic
     return QuestDeterministicSession(
         world=world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
         fx_queue=world.fx_queue,
         fx_queue_rotated=world.fx_queue_rotated,
         spawn_entries=entries,

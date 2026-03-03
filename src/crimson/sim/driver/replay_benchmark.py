@@ -676,7 +676,7 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
         case GameMode.QUESTS:
             elapsed_ms = int(mode._quest_spawn_timeline_ms)
         case _:
-            elapsed_ms = int(world._elapsed_ms)
+            elapsed_ms = int(world.sim_world.elapsed_ms)
 
     shots_fired, shots_hit = player0_shots(world.state)
     most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)

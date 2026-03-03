@@ -140,12 +140,12 @@ class RushMode(BaseGameplayMode):
         return self._session_factory(
             world=self.world.world_state,
             world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
+            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
             fx_queue=self.world.fx_queue,
             fx_queue_rotated=self.world.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
-            game_tune_started=bool(self.world._game_tune_started),
+            game_tune_started=bool(self.world.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             enforce_loadout=self._enforce_rush_loadout,
         )

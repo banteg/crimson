@@ -89,22 +89,6 @@ class GameWorld(msgspec.Struct):
         return self.sim_world.creatures
 
     @property
-    def _damage_scale_by_type(self) -> dict[int, float]:
-        return self.sim_world.damage_scale_by_type
-
-    @property
-    def _elapsed_ms(self) -> float:
-        return float(self.sim_world.elapsed_ms)
-
-    @property
-    def _bonus_anim_phase(self) -> float:
-        return float(self.sim_world.bonus_anim_phase)
-
-    @property
-    def _game_tune_started(self) -> bool:
-        return bool(self.sim_world.game_tune_started)
-
-    @property
     def last_events(self) -> WorldEvents:
         return self.sim_world.last_events
 
@@ -307,10 +291,7 @@ class GameWorld(msgspec.Struct):
 
     def close(self) -> None:
         self.render_resources.close()
-        self.sim_world.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.sim_world.last_presentation = PresentationStepCommands()
-        self.sim_world.last_command_hash = ""
-        self.sim_world.game_tune_started = False
+        self.sim_world.close_session()
 
     def update(
         self,
@@ -438,8 +419,8 @@ class GameWorld(msgspec.Struct):
             creatures=self.creatures,
             camera=self.camera,
             demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self._elapsed_ms),
-            bonus_anim_phase=float(self._bonus_anim_phase),
+            elapsed_ms=float(self.sim_world.elapsed_ms),
+            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
             lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
             lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
