@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..game_modes import GameMode
 from ..net.lockstep_protocol import INPUT_DELAY_TICKS as LOCKSTEP_INPUT_DELAY_TICKS
-from ..net.session_settings import SessionSettings, session_settings_for_lockstep
+from ..net.session_settings import LockstepSessionSettings, session_settings_for_lockstep
 from .types import BootstrapKind, ReplayHeader, ReplayStatusSnapshot
 
 
@@ -10,7 +10,7 @@ def session_settings_from_replay_header(
     header: ReplayHeader,
     *,
     input_delay_ticks: int = LOCKSTEP_INPUT_DELAY_TICKS,
-) -> SessionSettings:
+) -> LockstepSessionSettings:
     return session_settings_for_lockstep(
         mode_id=int(header.game_mode_id),
         player_count=int(header.player_count),
@@ -22,7 +22,7 @@ def session_settings_from_replay_header(
 
 
 def replay_header_from_session_settings(
-    settings: SessionSettings,
+    settings: LockstepSessionSettings,
     *,
     seed: int,
     bootstrap_kind: BootstrapKind = "none",
@@ -56,4 +56,3 @@ def replay_header_from_session_settings(
         player_count=int(settings.player_count),
         status=ReplayStatusSnapshot() if status is None else status,
     )
-
