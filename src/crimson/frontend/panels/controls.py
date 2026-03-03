@@ -454,7 +454,7 @@ class ControlsMenuView(PanelMenuView):
         self.state.config.set_player_mode_flag(player_index=player_index, value=move_mode.value)
 
     def _set_player_aim_scheme(self, *, player_index: int, aim_scheme: AimScheme) -> None:
-        self.state.config.set_aim_scheme_for_player(player_index=player_index, value=int(aim_scheme.value))
+        self.state.config.set_aim_scheme_for_player(player_index=player_index, value=aim_scheme)
 
     @staticmethod
     def _move_method_ids(*, move_mode: MovementControlType) -> tuple[MovementControlType, ...]:

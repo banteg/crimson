@@ -280,7 +280,7 @@ def test_player_update_mode4_reload_gate_blocks_manual_reload_without_cursor_key
         PlayerInput(
             aim=Vec2(51.0, 50.0),
             reload_pressed=True,
-            move_mode=int(MovementControlType.MOUSE_POINT_CLICK),
+            move_mode=MovementControlType.MOUSE_POINT_CLICK,
             move_to_cursor_pressed=False,
         ),
         0.1,
@@ -648,7 +648,7 @@ def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.5, turn_speed=1.0)
     input_state = PlayerInput(
         aim=Vec2(200.0, 100.0),
-        move_mode=int(MovementControlType.RELATIVE),
+        move_mode=MovementControlType.RELATIVE,
         move_forward_pressed=False,
         move_backward_pressed=False,
         turn_left_pressed=False,
@@ -755,8 +755,8 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     input_state = PlayerInput(
         move=Vec2(),
         aim=Vec2(500.0, 500.0),
-        move_mode=int(MovementControlType.STATIC),
-        aim_scheme=int(AimScheme.KEYBOARD),
+        move_mode=MovementControlType.STATIC,
+        aim_scheme=AimScheme.KEYBOARD,
         turn_left_pressed=False,
         turn_right_pressed=True,
         move_forward_pressed=False,

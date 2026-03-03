@@ -428,31 +428,31 @@ def _direction_from_heading_native(heading: float) -> Vec2:
     return Vec2(math.cos(radians), math.sin(radians))
 
 
-def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState) -> int:
+def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState) -> MovementControlType:
     move_mode = input_state.move_mode
     if move_mode is not None:
-        return int(move_mode)
+        return move_mode
     if state.demo_mode_active:
-        return int(MovementControlType.COMPUTER)
+        return MovementControlType.COMPUTER
     if (
         input_state.move_forward_pressed is not None
         and input_state.move_backward_pressed is not None
         and input_state.turn_left_pressed is not None
         and input_state.turn_right_pressed is not None
     ):
-        return int(MovementControlType.STATIC)
+        return MovementControlType.STATIC
     if input_state.move_to_cursor_pressed:
-        return int(MovementControlType.MOUSE_POINT_CLICK)
-    return int(MovementControlType.DUAL_ACTION_PAD)
+        return MovementControlType.MOUSE_POINT_CLICK
+    return MovementControlType.DUAL_ACTION_PAD
 
 
-def _resolve_aim_scheme_for_update(input_state: PlayerInput, state: GameplayState) -> int:
+def _resolve_aim_scheme_for_update(input_state: PlayerInput, state: GameplayState) -> AimScheme:
     aim_scheme = input_state.aim_scheme
     if aim_scheme is not None:
-        return int(aim_scheme)
+        return aim_scheme
     if state.demo_mode_active:
-        return int(AimScheme.COMPUTER)
-    return int(AimScheme.MOUSE)
+        return AimScheme.COMPUTER
+    return AimScheme.MOUSE
 
 
 def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
@@ -517,27 +517,27 @@ def _player_update_aim_by_scheme(
     player: PlayerState,
     input_state: PlayerInput,
     dt: float,
-    movement_mode: int,
-    aim_scheme: int,
+    movement_mode: MovementControlType,
+    aim_scheme: AimScheme,
     demo_mode_active: bool,
 ) -> None:
     target_aim = input_state.aim
 
-    if not demo_mode_active and int(aim_scheme) != int(AimScheme.COMPUTER):
-        if int(aim_scheme) == int(AimScheme.KEYBOARD):
-            if int(movement_mode) in (int(MovementControlType.RELATIVE), int(MovementControlType.STATIC)):
+    if not demo_mode_active and aim_scheme != AimScheme.COMPUTER:
+        if aim_scheme == AimScheme.KEYBOARD:
+            if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
                 if bool(input_state.turn_right_pressed):
                     player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
                 if bool(input_state.turn_left_pressed):
                     player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))))
                 target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-        elif int(aim_scheme) == int(AimScheme.JOYSTICK):
+        elif aim_scheme == AimScheme.JOYSTICK:
             if bool(input_state.turn_right_pressed):
                 player.aim_heading = float(f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
             if bool(input_state.turn_left_pressed):
                 player.aim_heading = float(f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))))
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-        elif int(aim_scheme) == int(AimScheme.UNKNOWN):
+        elif aim_scheme == AimScheme.UNKNOWN:
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
 
     player.aim = target_aim
@@ -662,11 +662,11 @@ def player_update(
     move_delta_override: Vec2 | None = None
     player_controlled_movement = (
         (not state.demo_mode_active)
-        and int(move_mode) != int(MovementControlType.COMPUTER)
-        and int(aim_scheme) != int(AimScheme.COMPUTER)
+        and move_mode != MovementControlType.COMPUTER
+        and aim_scheme != AimScheme.COMPUTER
     )
     if player_controlled_movement:
-        if int(move_mode) == int(MovementControlType.RELATIVE):
+        if move_mode == MovementControlType.RELATIVE:
             turning_left = bool(input_state.turn_left_pressed)
             turning_right = bool(input_state.turn_right_pressed)
             moving_forward = bool(input_state.move_forward_pressed)
@@ -716,7 +716,7 @@ def player_update(
                     movement_dt=movement_dt,
                     speed_scale=25.0,
                 )
-        elif int(move_mode) == int(MovementControlType.STATIC):
+        elif move_mode == MovementControlType.STATIC:
             moving_forward = (
                 bool(input_state.move_forward_pressed)
                 if input_state.move_forward_pressed is not None
@@ -793,7 +793,7 @@ def player_update(
         else:
             moving_input = raw_mag > (
                 0.0
-                if int(move_mode) == int(MovementControlType.MOUSE_POINT_CLICK)
+                if move_mode == MovementControlType.MOUSE_POINT_CLICK
                 else 0.2
             )
             turn_alignment_scale = 1.0
@@ -934,7 +934,7 @@ def player_update(
         bool(input_state.reload_pressed)
         and (not state.demo_mode_active)
         and (not has_alt_weapon_perk)
-        and int(move_mode) != int(MovementControlType.MOUSE_POINT_CLICK)
+        and move_mode != MovementControlType.MOUSE_POINT_CLICK
         and float(player.weapon.reload_timer) == 0.0
         and bool(single_player_mode)
     )
@@ -945,8 +945,8 @@ def player_update(
         player=player,
         input_state=input_state,
         dt=dt,
-        movement_mode=int(move_mode),
-        aim_scheme=int(aim_scheme),
+        movement_mode=move_mode,
+        aim_scheme=aim_scheme,
         demo_mode_active=bool(state.demo_mode_active),
     )
 

@@ -515,8 +515,8 @@ class LocalInputInterpreter:
         return PlayerInput(
             move=move_vec,
             aim=aim,
-            move_mode=int(move_mode_type.value),
-            aim_scheme=int(aim_scheme.value),
+            move_mode=move_mode_type,
+            aim_scheme=aim_scheme,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
