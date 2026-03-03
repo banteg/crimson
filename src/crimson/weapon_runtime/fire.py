@@ -115,8 +115,6 @@ def player_fire_weapon(
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
-    if weapon is None:
-        return
 
     if not bool(force_pre_swap_fire_gate) and player.weapon.shot_cooldown > 0.0:
         return

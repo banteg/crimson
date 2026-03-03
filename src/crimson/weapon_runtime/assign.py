@@ -11,8 +11,11 @@ from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
-def weapon_entry(weapon_id: WeaponId) -> Weapon | None:
-    return WEAPON_BY_ID.get(weapon_id)
+def weapon_entry(weapon_id: WeaponId) -> Weapon:
+    entry = WEAPON_BY_ID.get(weapon_id)
+    if entry is None:
+        raise ValueError(f"missing weapon entry for weapon_id={int(weapon_id)}")
+    return entry
 
 
 class _WeaponAssignCtx(msgspec.Struct):
@@ -65,7 +68,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
 
-    clip_size = int(weapon.clip_size) if weapon is not None else 0
+    clip_size = int(weapon.clip_size)
     clip_ctx = _WeaponAssignCtx(player=player, clip_size=max(0, clip_size))
     for modifier in _WEAPON_ASSIGN_CLIP_MODIFIERS:
         modifier(clip_ctx)
@@ -123,7 +126,7 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         return
 
     weapon = weapon_entry(player.weapon.weapon_id)
-    reload_time = float(weapon.reload_time) if weapon is not None else 0.0
+    reload_time = float(weapon.reload_time)
 
     if not player.weapon.reload_active:
         player.weapon.reload_active = True
