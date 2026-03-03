@@ -33,7 +33,7 @@ from ...ui.perk_menu import (
 
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
-OnPickFn = Callable[[int], bool | None]
+OnPickFn = Callable[[int], bool]
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -231,9 +231,9 @@ class PerkMenuController:
                 if callback is None:
                     raise RuntimeError("deferred perk pick callback missing")
                 accepted = callback(int(choice_index))
-                if accepted is None:
-                    return True
-                return bool(accepted)
+                if not isinstance(accepted, bool):
+                    raise TypeError("deferred perk pick callback must return bool")
+                return accepted
 
             picked = perk_selection_pick(
                 ctx.state,
