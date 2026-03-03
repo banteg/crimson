@@ -175,8 +175,6 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
-        self._runtime = None
-        self._runtime_updates_per_frame = 0
         self._replay_input_provider = ReplayInputProvider(player_count=0, tick_inputs=[])
 
     @property
@@ -714,15 +712,6 @@ class ReplayPlaybackMode:
         self._tick_index = int(runner.next_tick_index)
         self._mark_finished_if_complete()
 
-    def _tick_network_runtime(self) -> None:
-        self._runtime_updates_per_frame = 0
-        runtime = self._runtime
-        if runtime is None:
-            return
-        runtime.open()
-        runtime.update()
-        self._runtime_updates_per_frame = 1
-
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
 
@@ -763,7 +752,6 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
 
     def update(self, dt: float) -> None:
-        self._tick_network_runtime()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
             return

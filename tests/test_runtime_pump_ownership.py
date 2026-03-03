@@ -7,6 +7,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.modes.quest_mode import QuestMode
+from crimson.modes.replay_playback_mode import ReplayPlaybackMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 
@@ -66,25 +67,10 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
     assert state.runtime_updates_per_frame == 0
 
 
-def test_replay_frame_driver_pumps_runtime_once_when_present(replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    runtime = _DummyRuntime()
-    setattr(view, "_runtime", runtime)
-
-    view._tick_network_runtime()
-
-    assert runtime.open_calls == 1
-    assert runtime.update_calls == 1
-    assert getattr(view, "_runtime_updates_per_frame") == 1
-
-
-def test_replay_headless_context_without_runtime_pumps_zero(replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    setattr(view, "_runtime", None)
-
-    view._tick_network_runtime()
-
-    assert getattr(view, "_runtime_updates_per_frame") == 0
+def test_replay_mode_no_longer_pumps_network_runtime() -> None:
+    source = inspect.getsource(ReplayPlaybackMode.update)
+    assert "_tick_network_runtime(" not in source
+    assert "_runtime_updates_per_frame" not in source
 
 
 def test_gameplay_mode_lan_update_paths_do_not_pump_runtime_directly() -> None:
