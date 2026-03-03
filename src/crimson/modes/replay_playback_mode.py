@@ -21,6 +21,7 @@ from ..replay import (
     Replay,
     apply_replay_bootstrap,
     load_replay_file,
+    unpack_tick_inputs,
     warn_on_game_version_mismatch,
 )
 from ..replay.types import ReplayHeader
@@ -41,6 +42,7 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
+from ..sim.input_providers import ReplayInputProvider
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -146,6 +148,7 @@ class ReplayPlaybackMode:
         self._audio_rng: random.Random | None = None
         self._runtime = None
         self._runtime_updates_per_frame = 0
+        self._replay_input_provider = ReplayInputProvider(player_count=0, tick_inputs=[])
 
     @property
     def tick_index(self) -> int:
@@ -313,6 +316,10 @@ class ReplayPlaybackMode:
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay
+        self._replay_input_provider = ReplayInputProvider(
+            player_count=max(0, int(replay.header.player_count)),
+            tick_inputs=[unpack_tick_inputs(row) for row in replay.inputs],
+        )
         warn_on_game_version_mismatch(replay, action="playback")
 
         tick_rate = int(replay.header.tick_rate)

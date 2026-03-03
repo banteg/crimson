@@ -37,6 +37,7 @@ from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..sim.input import PlayerInput
+from ..sim.input_providers import LocalInputProvider, NetworkInputProvider
 from ..sim.sessions import DeterministicSessionTick
 from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
@@ -167,6 +168,11 @@ class BaseGameplayMode:
         self._sim_ms = 0.0
         self._presentation_plan_ms = 0.0
         self._presentation_apply_ms = 0.0
+        self._local_input_provider = LocalInputProvider(
+            player_count=max(0, len(self.world.players)),
+            build_inputs=lambda: self._build_local_inputs(dt=0.0),
+        )
+        self._network_input_provider = NetworkInputProvider(player_count=max(0, len(self.world.players)))
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -779,6 +785,11 @@ class BaseGameplayMode:
             terrain_texture_scale=float(ground.texture_scale) if ground is not None else 0.0,
         )
         self._local_input.reset(players=self.world.players)
+        self._local_input_provider = LocalInputProvider(
+            player_count=max(0, len(self.world.players)),
+            build_inputs=lambda: self._build_local_inputs(dt=0.0),
+        )
+        self._network_input_provider = NetworkInputProvider(player_count=max(0, len(self.world.players)))
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0

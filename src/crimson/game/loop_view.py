@@ -30,7 +30,9 @@ from ..frontend.transitions import _update_screen_fade
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
+from ..render.backend import RaylibBackend
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
+from ..render.sink import NullSink, WindowSink
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
@@ -182,6 +184,9 @@ class GameLoopView:
             },
         )
         self._runtime_updates_per_frame = 0
+        self._render_backend = RaylibBackend()
+        self._window_sink = WindowSink()
+        self._null_sink = NullSink()
 
     def _pending_session(self):
         return self.state.pending_network_session

@@ -595,17 +595,17 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-1 Checklist: Interfaces and Adapters (No Behavior Change)
 
-- [ ] Create `src/crimson/sim/input_providers.py` with `InputProvider` protocol.
-- [ ] Create `src/crimson/sim/hooks.py` with `TickHook` protocol and no-op hook bus.
-- [ ] Create `src/crimson/render/backend.py` with `RenderBackend` protocol.
-- [ ] Create `src/crimson/render/sink.py` with `RenderSink` protocol.
-- [ ] Add adapter stubs: `LocalInputProvider`, `ReplayInputProvider` (placeholder), `NetworkInputProvider` (placeholder), `WindowSink`, `NullSink`.
-- [ ] Wire zero-impact construction paths (adapters instantiated but not yet primary control path).
-- [ ] Add `tests/test_input_provider_semantics.py` for stall/EOS/empty-input contracts.
-- [ ] Add `tests/test_input_normalization_contract.py` for canonical ordering/merge rules.
-- [ ] Add `tests/test_tick_runner_hook_order.py` skeleton validating stage order contracts.
-- [ ] Confirm no behavior change in gameplay/replay entrypoints.
-- [ ] Run full test gate suite.
+- [x] Create `src/crimson/sim/input_providers.py` with `InputProvider` protocol.
+- [x] Create `src/crimson/sim/hooks.py` with `TickHook` protocol and no-op hook bus.
+- [x] Create `src/crimson/render/backend.py` with `RenderBackend` protocol.
+- [x] Create `src/crimson/render/sink.py` with `RenderSink` protocol.
+- [x] Add adapter stubs: `LocalInputProvider`, `ReplayInputProvider` (placeholder), `NetworkInputProvider` (placeholder), `WindowSink`, `NullSink`.
+- [x] Wire zero-impact construction paths (adapters instantiated but not yet primary control path).
+- [x] Add `tests/test_input_provider_semantics.py` for stall/EOS/empty-input contracts.
+- [x] Add `tests/test_input_normalization_contract.py` for canonical ordering/merge rules.
+- [x] Add `tests/test_tick_runner_hook_order.py` skeleton validating stage order contracts.
+- [x] Confirm no behavior change in gameplay/replay entrypoints.
+- [x] Run full test gate suite.
 
 ### PR-2 Checklist: Single Network Owner
 
