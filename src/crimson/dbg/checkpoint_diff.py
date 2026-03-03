@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from typing import Literal, TypeAlias
 
 import msgspec
 
@@ -36,12 +37,35 @@ DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
     "after_rush_spawns",
 )
 
-class ReplayDiffFailure(msgspec.Struct, frozen=True):
-    kind: str
+class _MissingCheckpointFailure(msgspec.Struct, frozen=True):
     tick_index: int
     expected: ReplayCheckpoint
-    actual: ReplayCheckpoint | None = None
+    kind: Literal["missing_checkpoint"] = "missing_checkpoint"
+    actual: None = None
+    first_rng_mark: None = None
+
+
+class _CommandMismatchFailure(msgspec.Struct, frozen=True):
+    tick_index: int
+    expected: ReplayCheckpoint
+    actual: ReplayCheckpoint
+    kind: Literal["command_mismatch"] = "command_mismatch"
+    first_rng_mark: None = None
+
+
+class _StateMismatchFailure(msgspec.Struct, frozen=True):
+    tick_index: int
+    expected: ReplayCheckpoint
+    actual: ReplayCheckpoint
+    kind: Literal["state_mismatch"] = "state_mismatch"
     first_rng_mark: str | None = None
+
+
+ReplayDiffFailure: TypeAlias = (
+    _MissingCheckpointFailure
+    | _CommandMismatchFailure
+    | _StateMismatchFailure
+)
 
 
 class ReplayDiffResult(msgspec.Struct, frozen=True):
@@ -108,11 +132,9 @@ def compare_checkpoints(
                 ok=False,
                 checked_count=checked_count,
                 first_rng_only_tick=first_rng_only_tick,
-                failure=ReplayDiffFailure(
-                    kind="missing_checkpoint",
+                failure=_MissingCheckpointFailure(
                     tick_index=tick,
                     expected=exp,
-                    actual=None,
                 ),
             )
 
@@ -121,8 +143,7 @@ def compare_checkpoints(
                 ok=False,
                 checked_count=checked_count,
                 first_rng_only_tick=first_rng_only_tick,
-                failure=ReplayDiffFailure(
-                    kind="command_mismatch",
+                failure=_CommandMismatchFailure(
                     tick_index=tick,
                     expected=exp,
                     actual=act,
@@ -157,8 +178,7 @@ def compare_checkpoints(
             ok=False,
             checked_count=checked_count,
             first_rng_only_tick=first_rng_only_tick,
-            failure=ReplayDiffFailure(
-                kind="state_mismatch",
+            failure=_StateMismatchFailure(
                 tick_index=tick,
                 expected=exp,
                 actual=act,
