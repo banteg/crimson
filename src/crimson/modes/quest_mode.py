@@ -4,7 +4,7 @@ import datetime as dt
 import hashlib
 import random
 from collections.abc import Callable, Sequence
-from typing import cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -99,7 +99,7 @@ class _QuestRunState(msgspec.Struct):
 
 
 class QuestRunOutcome(msgspec.Struct, frozen=True):
-    kind: str  # "completed" | "failed"
+    kind: Literal["completed", "failed"]
     level: str
     base_time_ms: int
     player_health: float

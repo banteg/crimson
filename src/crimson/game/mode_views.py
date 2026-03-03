@@ -288,10 +288,8 @@ class QuestGameView(_BaseModeGameView):
             self.state.quest_outcome = outcome
             if outcome.kind == "completed":
                 self._action = "quest_results"
-            elif outcome.kind == "failed":
-                self._action = "quest_failed"
             else:
-                self._action = "back_to_menu"
+                self._action = "quest_failed"
         else:
             self._action = "back_to_menu"
         self._clear_close_requested()
