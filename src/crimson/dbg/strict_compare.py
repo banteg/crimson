@@ -2,16 +2,51 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from typing import cast
+from typing import Literal, TypeAlias, cast
 
 import msgspec
 
 
-class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+class _TypeMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     path: str
-    kind: str
-    expected: object | None = None
-    actual: object | None = None
+    expected: str
+    actual: str
+    kind: Literal["type_mismatch"] = "type_mismatch"
+
+
+class _MissingExpected(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str
+    actual: object
+    kind: Literal["missing_expected"] = "missing_expected"
+
+
+class _MissingActual(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str
+    expected: object
+    kind: Literal["missing_actual"] = "missing_actual"
+
+
+class _LengthMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str
+    expected: int
+    actual: int
+    kind: Literal["length_mismatch"] = "length_mismatch"
+
+
+class _ValueMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    path: str
+    expected: object
+    actual: object
+    kind: Literal["value_mismatch"] = "value_mismatch"
+
+
+FieldMismatch: TypeAlias = (
+    _TypeMismatch
+    | _MissingExpected
+    | _MissingActual
+    | _LengthMismatch
+    | _ValueMismatch
+)
 
 
 def _path_or_root(path: str) -> str:
@@ -53,20 +88,56 @@ def _to_builtin(value: object) -> object:
     return msgspec.to_builtins(value)
 
 
-def _append(
+def _append_type_mismatch(
     out: list[FieldMismatch],
     *,
     path: str,
-    kind: str,
-    expected: object | None = None,
-    actual: object | None = None,
+    expected: str,
+    actual: str,
 ) -> None:
     out.append(
-        FieldMismatch(
+        _TypeMismatch(
             path=_path_or_root(path),
-            kind=str(kind),
-            expected=_to_builtin(expected) if expected is not None else None,
-            actual=_to_builtin(actual) if actual is not None else None,
+            expected=str(expected),
+            actual=str(actual),
+        ),
+    )
+
+
+def _append_missing_expected(out: list[FieldMismatch], *, path: str, actual: object) -> None:
+    out.append(
+        _MissingExpected(
+            path=_path_or_root(path),
+            actual=_to_builtin(actual),
+        ),
+    )
+
+
+def _append_missing_actual(out: list[FieldMismatch], *, path: str, expected: object) -> None:
+    out.append(
+        _MissingActual(
+            path=_path_or_root(path),
+            expected=_to_builtin(expected),
+        ),
+    )
+
+
+def _append_length_mismatch(out: list[FieldMismatch], *, path: str, expected: int, actual: int) -> None:
+    out.append(
+        _LengthMismatch(
+            path=_path_or_root(path),
+            expected=int(expected),
+            actual=int(actual),
+        ),
+    )
+
+
+def _append_value_mismatch(out: list[FieldMismatch], *, path: str, expected: object, actual: object) -> None:
+    out.append(
+        _ValueMismatch(
+            path=_path_or_root(path),
+            expected=_to_builtin(expected),
+            actual=_to_builtin(actual),
         ),
     )
 
@@ -76,7 +147,12 @@ def _collect(expected: object, actual: object, *, path: str, out: list[FieldMism
         return
 
     if type(expected) is not type(actual):
-        _append(out, path=path, kind="type_mismatch", expected=type(expected).__name__, actual=type(actual).__name__)
+        _append_type_mismatch(
+            out,
+            path=path,
+            expected=type(expected).__name__,
+            actual=type(actual).__name__,
+        )
         return
 
     if _is_struct_instance(expected):
@@ -96,10 +172,10 @@ def _collect(expected: object, actual: object, *, path: str, out: list[FieldMism
         for key in keys:
             key_path = _path_key(path, key)
             if key not in expected_map:
-                _append(out, path=key_path, kind="missing_expected", actual=actual_map[key])
+                _append_missing_expected(out, path=key_path, actual=actual_map[key])
                 continue
             if key not in actual_map:
-                _append(out, path=key_path, kind="missing_actual", expected=expected_map[key])
+                _append_missing_actual(out, path=key_path, expected=expected_map[key])
                 continue
             _collect(expected_map[key], actual_map[key], path=key_path, out=out)
         return
@@ -108,17 +184,17 @@ def _collect(expected: object, actual: object, *, path: str, out: list[FieldMism
         expected_seq = cast("Sequence[object]", expected)
         actual_seq = cast("Sequence[object]", actual)
         if len(expected_seq) != len(actual_seq):
-            _append(out, path=path, kind="length_mismatch", expected=len(expected_seq), actual=len(actual_seq))
+            _append_length_mismatch(out, path=path, expected=len(expected_seq), actual=len(actual_seq))
         shared_len = min(len(expected_seq), len(actual_seq))
         for index in range(shared_len):
             _collect(expected_seq[index], actual_seq[index], path=_path_index(path, index), out=out)
         for index in range(shared_len, len(expected_seq)):
-            _append(out, path=_path_index(path, index), kind="missing_actual", expected=expected_seq[index])
+            _append_missing_actual(out, path=_path_index(path, index), expected=expected_seq[index])
         for index in range(shared_len, len(actual_seq)):
-            _append(out, path=_path_index(path, index), kind="missing_expected", actual=actual_seq[index])
+            _append_missing_expected(out, path=_path_index(path, index), actual=actual_seq[index])
         return
 
-    _append(out, path=path, kind="value_mismatch", expected=expected, actual=actual)
+    _append_value_mismatch(out, path=path, expected=expected, actual=actual)
 
 
 def strict_mismatches(expected: object, actual: object, *, root_path: str = "") -> list[FieldMismatch]:
