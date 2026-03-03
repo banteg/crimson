@@ -80,42 +80,75 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
     assert not view._finished
 
 
-def test_replay_driver_session_forwards_provider_inputs_to_playback_driver(replay_playback_view) -> None:
+def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
+    replay = Replay(
+        header=ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0),
+        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]]],
+    )
     captured: dict[str, object] = {}
 
+    class _StopOpen(Exception):
+        pass
+
+    class _FakeWorld:
+        def __init__(self, *args, **kwargs) -> None:
+            _ = args, kwargs
+            self.world_size = 1000.0
+            self.players = []
+            self.texture_cache = None
+            self.audio = None
+            self.audio_bridge = SimpleNamespace(router=None)
+            self.render_resources = SimpleNamespace(
+                fx_queue=[],
+                fx_queue_rotated=[],
+            )
+            self.sim_world = SimpleNamespace(
+                world_state=SimpleNamespace(),
+                game_tune_started=False,
+            )
+            self.state = SimpleNamespace(
+                preserve_bugs=False,
+                status=None,
+                rng=SimpleNamespace(state=0),
+            )
+
+        def reset(self, *, seed: int, player_count: int) -> None:
+            _ = seed, player_count
+
+        def open(self) -> None:
+            return
+
+        def close(self) -> None:
+            return
+
     class _FakeDriver:
-        def run_tick(
-            self,
-            tick_index: int,
-            *,
-            defer_menu_open: bool | None = None,
-            player_inputs: list[PlayerInput] | None = None,
-        ) -> object:
-            captured["tick_index"] = int(tick_index)
-            captured["defer_menu_open"] = bool(defer_menu_open)
-            captured["player_inputs"] = list(player_inputs or [])
-            return object()
+        def __init__(self, *_args, **_kwargs) -> None:
+            self.survival_session = object()
+            self.rush_session = None
+            self.quest_session = None
 
-    view._driver = _FakeDriver()
-    view._survival = object()
-    view._defer_menu_open = True
-    session = replay_playback_mode._ReplayDriverSession(view)
-    inputs = [PlayerInput(fire_down=True)]
+        def open(self) -> None:
+            return
 
-    session.step_tick(timing=1.0 / 60.0, inputs=inputs)
+        def build_tick_runner(self, *, defer_menu_open: bool | None = None, input_provider: object | None = None) -> object:
+            captured["defer_menu_open"] = defer_menu_open
+            captured["input_provider"] = input_provider
+            raise _StopOpen()
 
-    assert captured["tick_index"] == 0
-    assert captured["defer_menu_open"] is True
-    assert captured["player_inputs"] == inputs
+    mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
+    mocker.patch.object(replay_playback_mode, "load_hud_assets", return_value=None)
+    mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
+    mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
+    mocker.patch.object(replay_playback_mode, "apply_replay_bootstrap", return_value=None)
+    mocker.patch.object(replay_playback_mode, "GameWorld", _FakeWorld)
+    mocker.patch.object(replay_playback_mode, "PlaybackDriver", _FakeDriver)
 
+    with pytest.raises(_StopOpen):
+        view.open()
 
-def test_replay_driver_tick_fails_fast_when_provider_inputs_missing(replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    view._driver = SimpleNamespace(run_tick=lambda *_args, **_kwargs: object())
-
-    with pytest.raises(RuntimeError, match="provided no inputs"):
-        view._run_driver_tick(0, inputs=None)
+    assert captured["defer_menu_open"] is False
+    assert captured["input_provider"] is view._replay_input_provider
 
 
 def test_replay_open_wires_lazy_input_provider_resolver(mocker, replay_playback_view) -> None:

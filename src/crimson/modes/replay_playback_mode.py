@@ -43,7 +43,6 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.input import PlayerInput
 from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
 from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
@@ -95,29 +94,6 @@ def _world_reset_seed_for_replay(header: ReplayHeader) -> int:
             return int(header.seed)
 
 
-class _ReplayDriverSession:
-    def __init__(self, mode: "ReplayPlaybackMode") -> None:
-        self._mode = mode
-        self._next_tick_index = 0
-
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
-
-    def step_tick(
-        self,
-        *,
-        timing: float,
-        inputs: list[PlayerInput] | None,
-    ) -> PlaybackTickOutcome:
-        _ = timing
-        tick = self._mode._run_driver_tick(
-            int(self._next_tick_index),
-            inputs=inputs,
-        )
-        self._next_tick_index += 1
-        return tick
-
-
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -166,7 +142,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._driver: PlaybackDriver | None = None
-        self._driver_session: _ReplayDriverSession | None = None
         self._tick_runner: TickRunner | None = None
         self._survival = None
         self._rush = None
@@ -369,7 +344,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._defer_menu_open = False
         self._driver = None
-        self._driver_session = None
         self._tick_runner = None
 
         world_size = float(replay.header.world_size)
@@ -518,7 +492,6 @@ class ReplayPlaybackMode:
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
         self._quest = self._driver.quest_session
-        self._driver_session = None
         self._tick_runner = self._driver.build_tick_runner(
             defer_menu_open=(bool(self._defer_menu_open) if self._survival is not None else False),
             input_provider=self._replay_input_provider,
@@ -534,7 +507,6 @@ class ReplayPlaybackMode:
         self._quest_complete_texture = None
         self._hud_assets = None
         self._driver = None
-        self._driver_session = None
         self._tick_runner = None
         self._survival = None
         self._rush = None
@@ -628,24 +600,6 @@ class ReplayPlaybackMode:
         if self._rush is not None:
             return bool(self._rush.game_tune_started)
         return False
-
-    def _run_driver_tick(
-        self,
-        tick_index: int,
-        *,
-        inputs: list[PlayerInput] | None = None,
-    ) -> PlaybackTickOutcome:
-        driver = self._driver
-        if driver is None:
-            raise ReplayEndOfStream("replay driver unavailable")
-        if inputs is None:
-            raise RuntimeError("replay tick runner provided no inputs for playback tick")
-        defer_menu_open = bool(self._defer_menu_open) if self._survival is not None else False
-        return driver.run_tick(
-            int(tick_index),
-            defer_menu_open=bool(defer_menu_open),
-            player_inputs=list(inputs),
-        )
 
     def _on_runner_tick_complete(self, _tick_index: int, tick: object) -> bool:
         outcome = cast(PlaybackTickOutcome, tick)
