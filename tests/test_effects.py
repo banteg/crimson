@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CreatureState
-from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
+from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
@@ -88,7 +88,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
     p1 = pool.entries[idx1]
     p1.render_flag = False
-    p1.style_id = 1
+    p1.style_id = ParticleStyleId.BLOW_TORCH
     pool.update(1.0)
     assert not p1.active
 

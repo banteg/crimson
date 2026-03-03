@@ -42,7 +42,7 @@ _ROCKET_STYLE_BY_TYPE: dict[int, SecondaryRocketStyle] = {
 
 
 def draw_secondary_rocket(ctx: SecondaryProjectileDrawCtx) -> bool:
-    style = _ROCKET_STYLE_BY_TYPE.get(int(ctx.proj_type))
+    style = _ROCKET_STYLE_BY_TYPE.get(ctx.proj_type)
     if style is None:
         return False
 
@@ -75,7 +75,7 @@ def draw_secondary_rocket(ctx: SecondaryProjectileDrawCtx) -> bool:
 
 
 def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
-    if int(ctx.proj_type) != int(SecondaryProjectileTypeId.ROCKET_MINIGUN):
+    if ctx.proj_type != SecondaryProjectileTypeId.ROCKET_MINIGUN:
         return False
     rl.draw_circle(
         int(ctx.screen_pos.x),

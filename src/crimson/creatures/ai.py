@@ -29,7 +29,7 @@ class CreatureAIStateLike(Protocol):
     pos: Vec2
     hp: float
     flags: CreatureFlags
-    ai_mode: int
+    ai_mode: CreatureAiMode
     link_index: int
     target_offset: Vec2 | None
     phase_seed: float

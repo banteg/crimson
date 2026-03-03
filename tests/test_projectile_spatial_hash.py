@@ -4,6 +4,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import SecondaryProjectilePool
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
+from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 
@@ -44,7 +45,12 @@ def test_creature_spatial_hash_sync_updates_membership() -> None:
 
 def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
     pool = SecondaryProjectilePool(size=1)
-    pool.spawn(pos=Vec2(96.0, 0.0), angle=0.0, type_id=1, time_to_live=2.0)
+    pool.spawn(
+        pos=Vec2(96.0, 0.0),
+        angle=0.0,
+        type_id=SecondaryProjectileTypeId.ROCKET,
+        time_to_live=2.0,
+    )
     creatures: list[CreatureState] = [
         _creature(pos=Vec2(130.0, -9.0), hp=1000.0, size=500.0),
         _creature(pos=Vec2(70.0, -9.0), hp=1000.0, size=500.0),

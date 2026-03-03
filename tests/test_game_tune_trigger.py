@@ -22,7 +22,7 @@ def _audio_state_stub() -> AudioState:
 
 def _hits(count: int) -> list[ProjectileHit]:
     return [
-        ProjectileHit(type_id=int(ProjectileTemplateId.PISTOL), origin=Vec2(), hit=Vec2(), target=Vec2())
+        ProjectileHit(type_id=ProjectileTemplateId.PISTOL, origin=Vec2(), hit=Vec2(), target=Vec2())
         for _ in range(int(count))
     ]
 

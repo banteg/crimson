@@ -23,8 +23,8 @@ class ProjectileDecalCtx(msgspec.Struct):
 
 
 def _hook_large_streak_projectiles(ctx: ProjectileDecalCtx) -> bool:
-    type_id = int(ctx.hit.type_id)
-    if type_id not in (ProjectileTemplateId.GAUSS_GUN.value, ProjectileTemplateId.FIRE_BULLETS.value):
+    type_id = ctx.hit.type_id
+    if type_id not in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS):
         return False
     queue_large_hit_decal_streak(
         hit=ctx.hit,

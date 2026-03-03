@@ -41,7 +41,7 @@ def _as_texture(texture: _TextureLike) -> rl.Texture:
 
 def _projectile(
     *,
-    type_id: int,
+    type_id: ProjectileTemplateId | int,
     pos: Vec2 | None = None,
     origin: Vec2 | None = None,
     life_timer: float = 1.0,
@@ -50,7 +50,7 @@ def _projectile(
     travel_budget: float = 0.0,
 ) -> Projectile:
     return Projectile(
-        type_id=int(type_id),
+        type_id=cast("ProjectileTemplateId", int(type_id)),
         pos=Vec2() if pos is None else pos,
         origin=Vec2() if origin is None else origin,
         life_timer=float(life_timer),

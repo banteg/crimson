@@ -16,7 +16,7 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
 
     player = world.players[0]
     hit = ProjectileHit(
-        type_id=int(ProjectileTemplateId.PISTOL),
+        type_id=ProjectileTemplateId.PISTOL,
         origin=Vec2(float(player.pos.x - 10.0), float(player.pos.y - 10.0)),
         hit=player.pos,
         target=player.pos,

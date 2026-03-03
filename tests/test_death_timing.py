@@ -126,7 +126,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     world.state.secondary_projectiles.spawn(
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
-        type_id=int(SecondaryProjectileTypeId.DETONATION),
+        type_id=SecondaryProjectileTypeId.DETONATION,
         time_to_live=1.0,
         owner=OwnerRef.from_player(0),
     )

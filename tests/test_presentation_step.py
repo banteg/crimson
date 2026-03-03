@@ -38,12 +38,12 @@ def _death(
     )
 
 
-def _hits(count: int, *, type_id: int = int(ProjectileTemplateId.PISTOL)) -> list[ProjectileHit]:
+def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PISTOL) -> list[ProjectileHit]:
     hits: list[ProjectileHit] = []
     for _ in range(int(count)):
         hits.append(
             ProjectileHit(
-                type_id=int(type_id),
+                type_id=type_id,
                 origin=Vec2(0.0, 0.0),
                 hit=Vec2(1.0, 1.0),
                 target=Vec2(1.0, 1.0),
@@ -270,7 +270,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTemplateId.BLADE_GUN)),
+        hits=_hits(1, type_id=ProjectileTemplateId.BLADE_GUN),
         rand=lambda: int(next(rng_values)),
         detail_preset=5,
         gore_disabled=0,
@@ -299,7 +299,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTemplateId.FIRE_BULLETS)),
+        hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
         rand=rng,
         detail_preset=5,
         gore_disabled=0,
@@ -335,7 +335,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_gore_disabl
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTemplateId.FIRE_BULLETS)),
+        hits=_hits(1, type_id=ProjectileTemplateId.FIRE_BULLETS),
         rand=rng,
         detail_preset=5,
         gore_disabled=1,

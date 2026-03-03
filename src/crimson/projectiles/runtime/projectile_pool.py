@@ -410,7 +410,7 @@ class ProjectilePool:
 
                     target = creature.pos
                     hit = ProjectileHit(
-                        type_id=int(type_id),
+                        type_id=type_id,
                         origin=proj.origin,
                         hit=proj.pos,
                         target=target,
@@ -607,7 +607,7 @@ class ProjectilePool:
             creature = creatures[hit_idx]
             hits.append(
                 ProjectileHit(
-                    type_id=int(proj.type_id),
+                    type_id=proj.type_id,
                     origin=proj.origin,
                     hit=proj.pos,
                     target=creature.pos,

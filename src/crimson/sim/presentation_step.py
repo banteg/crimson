@@ -237,11 +237,11 @@ def queue_projectile_decals_pre_hit(
             )
         freeze_shard_spawn = _spawn_freeze_shard
 
-    type_id = int(hit.type_id)
+    type_id = hit.type_id
 
     base_angle = (hit.hit - hit.origin).to_angle()
 
-    if type_id == ProjectileTemplateId.BLADE_GUN.value:
+    if type_id == ProjectileTemplateId.BLADE_GUN:
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,

@@ -821,7 +821,7 @@ def weapon_entry_for_projectile_type_id(type_id: ProjectileTemplateId) -> Weapon
     Native `projectile_spawn` indexes weapon metadata by projectile type id.
     The type id is the weapon id used as the projectile stats template.
     """
-    return WEAPON_BY_ID[WeaponId(type_id.value)]
+    return WEAPON_BY_ID[WeaponId(type_id)]
 
 
 def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTemplateId:

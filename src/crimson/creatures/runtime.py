@@ -230,7 +230,7 @@ class CreatureState(msgspec.Struct):
     force_target: int = 0
     target: Vec2 = Vec2()
     target_player: int = 0
-    ai_mode: int = CreatureAiMode.ORBIT_PLAYER
+    ai_mode: CreatureAiMode = CreatureAiMode.ORBIT_PLAYER
     flags: CreatureFlags = CreatureFlags(0)
 
     # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
@@ -552,7 +552,7 @@ class CreaturePool:
         env: SpawnEnv | None = None,
         effects: EffectPool | None = None,
     ) -> None:
-        self._entries = [CreatureState() for _ in range(int(size))]
+        self._entries: list[CreatureState] = [CreatureState() for _ in range(int(size))]
         self.spawn_slots: list[SpawnSlotInit] = []
         self.env = env
         self.effects = effects
@@ -1361,7 +1361,7 @@ class CreaturePool:
         entry.force_target = 0
 
         entry.flags = init.flags or CreatureFlags(0)
-        entry.ai_mode = int(init.ai_mode)
+        entry.ai_mode = CreatureAiMode(init.ai_mode)
 
         hp = float(init.health or 0.0)
         if hp <= 0.0:
