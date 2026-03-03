@@ -4,11 +4,13 @@ from functools import partial
 
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
+from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
-    player_fire_weapon,
+    WeaponFireCtx,
+    fire_weapon,
     weapon_assign_player,
 )
 from crimson.weapon_runtime.spawn import projectile_spawn
@@ -26,25 +28,29 @@ def test_shots_fired_and_hit_increment() -> None:
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(
-        player,
-        PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-        dt=0.016,
-        state=state,
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
+        ),
     )
 
     assert state.shots_fired[0] == 1
     assert state.shots_hit[0] == 0
 
     creature = _creature(pos=Vec2(22.0, 0.0))
-    hits = state.projectiles.update(
-        0.1,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            damage_scale_by_type={},
-            rng=state.rng.rand,
-            runtime_state=state,
+    hits = state.projectiles.step(
+        PrimaryStepCtx(
+            dt=0.1,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                damage_scale_by_type={},
+                rng=state.rng.rand,
+                runtime_state=state,
+            ),
         ),
     )
     assert hits
@@ -58,22 +64,26 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(
-        player,
-        PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-        dt=0.016,
-        state=state,
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
+            dt=0.016,
+            state=state,
+        ),
     )
 
     corpse = _creature(pos=Vec2(22.0, 0.0), lifecycle_stage=8.0)
-    hits = state.projectiles.update(
-        0.1,
-        [corpse],
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            damage_scale_by_type={},
-            rng=state.rng.rand,
-            runtime_state=state,
+    hits = state.projectiles.step(
+        PrimaryStepCtx(
+            dt=0.1,
+            creatures=[corpse],
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                damage_scale_by_type={},
+                rng=state.rng.rand,
+                runtime_state=state,
+            ),
         ),
     )
 
@@ -83,30 +93,38 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
 
 def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets() -> None:
     state = GameplayState()
-    state.secondary_projectiles.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=SecondaryProjectileTypeId.ROCKET,
-        owner=OwnerRef.from_local_player(0),
+    state.secondary_projectiles.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner=OwnerRef.from_local_player(0),
+        ),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
 
-    state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
+    state.secondary_projectiles.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=state),
+    )
 
     assert state.shots_hit[0] == 1
 
 
 def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit() -> None:
     state = GameplayState()
-    state.secondary_projectiles.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=SecondaryProjectileTypeId.ROCKET,
-        owner=OwnerRef.from_local_player(0),
+    state.secondary_projectiles.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner=OwnerRef.from_local_player(0),
+        ),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]
 
-    state.secondary_projectiles.update_pulse_gun(0.1, creatures, runtime_state=state)
+    state.secondary_projectiles.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=state),
+    )
 
     assert state.shots_hit[0] == 0
 

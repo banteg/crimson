@@ -10,7 +10,8 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
-    player_fire_weapon,
+    WeaponFireCtx,
+    fire_weapon,
     weapon_assign_player,
 )
 from crimson.weapons import WeaponId
@@ -29,7 +30,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.MULTI_PLASMA, state=state)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
@@ -59,7 +60,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
@@ -83,7 +84,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
     start_ammo = float(player.weapon.ammo)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
     assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
 
 
@@ -109,7 +110,7 @@ def test_shotgun_family_fires_expected_pellets(
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId(weapon_id), state=state)
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
 
     spawned = _active_projectiles(state)
     assert len(spawned) == expected_count

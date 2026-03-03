@@ -9,7 +9,7 @@ from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
-from crimson.weapon_runtime import player_fire_weapon
+from crimson.weapon_runtime import WeaponFireCtx, fire_weapon
 from crimson.weapons import WeaponId, weapon_entry_for_projectile_type_id
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
@@ -30,6 +30,6 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     base_cooldown = float(weapon.shot_cooldown)
     expected_cooldown = base_cooldown * 1.05
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), dt=0.0, state=state))
     assert_float_close(player.weapon.shot_cooldown, expected_cooldown)
     assert_float_close(player.spread_heat, 0.02)

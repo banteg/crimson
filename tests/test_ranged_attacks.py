@@ -6,6 +6,7 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
+from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -125,15 +126,17 @@ def test_ranged_projectile_can_damage_player() -> None:
         assert player_index == 0
         player.health -= float(damage)
 
-    state.projectiles.update(
-        0.001,
-        [],
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            rng=state.rng.rand,
-            runtime_state=state,
-            players=[player],
-            apply_player_damage=_apply_player_damage,
+    state.projectiles.step(
+        PrimaryStepCtx(
+            dt=0.001,
+            creatures=[],
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                rng=state.rng.rand,
+                runtime_state=state,
+                players=[player],
+                apply_player_damage=_apply_player_damage,
+            ),
         ),
     )
 
@@ -172,15 +175,17 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         player_damage_called = True
         player.health -= float(damage)
 
-    state.projectiles.update(
-        0.1,
-        pool.entries[:2],
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            rng=state.rng.rand,
-            runtime_state=state,
-            players=[player],
-            apply_player_damage=_apply_player_damage,
+    state.projectiles.step(
+        PrimaryStepCtx(
+            dt=0.1,
+            creatures=pool.entries[:2],
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                rng=state.rng.rand,
+                runtime_state=state,
+                players=[player],
+                apply_player_damage=_apply_player_damage,
+            ),
         ),
     )
 

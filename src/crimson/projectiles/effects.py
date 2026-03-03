@@ -85,22 +85,23 @@ def _spawn_ion_hit_effects(
     ring_scale = 0.0
     ring_strength = 0.0
     burst_scale = 0.0
-    if type_id == ProjectileTemplateId.ION_MINIGUN:
-        ring_scale = 1.5
-        ring_strength = 0.1
-        burst_scale = 0.8
-    elif type_id == ProjectileTemplateId.ION_RIFLE:
-        ring_scale = 1.2
-        ring_strength = 0.4
-        burst_scale = 1.2
-    elif type_id == ProjectileTemplateId.ION_CANNON:
-        ring_scale = 1.0
-        ring_strength = 1.0
-        burst_scale = 2.2
-        if sfx_queue is not None:
-            sfx_queue.append("sfx_shockwave")
-    else:
-        return
+    match type_id:
+        case ProjectileTemplateId.ION_MINIGUN:
+            ring_scale = 1.5
+            ring_strength = 0.1
+            burst_scale = 0.8
+        case ProjectileTemplateId.ION_RIFLE:
+            ring_scale = 1.2
+            ring_strength = 0.4
+            burst_scale = 1.2
+        case ProjectileTemplateId.ION_CANNON:
+            ring_scale = 1.0
+            ring_strength = 1.0
+            burst_scale = 2.2
+            if sfx_queue is not None:
+                sfx_queue.append("sfx_shockwave")
+        case _:
+            return
 
     detail = int(detail_preset)
 

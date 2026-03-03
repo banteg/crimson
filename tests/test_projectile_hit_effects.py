@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -24,14 +24,16 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
         travel_budget=10.0,
     )
 
-    pool.update(
-        0.016,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=4096.0,
-            detail_preset=5,
-            rng=lambda: 0,
-            runtime_state=runtime_state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=lambda: 0,
+                runtime_state=runtime_state,
+            ),
         ),
     )
 
@@ -59,14 +61,16 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
         travel_budget=30.0,
     )
 
-    pool.update(
-        0.016,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=4096.0,
-            detail_preset=5,
-            rng=lambda: 0,
-            runtime_state=runtime_state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=lambda: 0,
+                runtime_state=runtime_state,
+            ),
         ),
     )
 
@@ -96,14 +100,16 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
         travel_budget=30.0,
     )
 
-    pool.update(
-        0.016,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=4096.0,
-            detail_preset=5,
-            rng=lambda: 0,
-            players=[player],
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=lambda: 0,
+                players=[player],
+            ),
         ),
     )
 
@@ -123,14 +129,16 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
         travel_budget=10.0,
     )
 
-    pool.update(
-        0.016,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=4096.0,
-            detail_preset=5,
-            rng=lambda: 0,
-            runtime_state=runtime_state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=lambda: 0,
+                runtime_state=runtime_state,
+            ),
         ),
     )
 
@@ -168,14 +176,16 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
         travel_budget=10.0,
     )
 
-    pool.update(
-        0.016,
-        [creature],
-        options=make_projectile_update_options(
-            world_size=4096.0,
-            detail_preset=5,
-            rng=lambda: 0,
-            runtime_state=runtime_state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[creature],
+            options=make_projectile_update_options(
+                world_size=4096.0,
+                detail_preset=5,
+                rng=lambda: 0,
+                runtime_state=runtime_state,
+            ),
         ),
     )
 

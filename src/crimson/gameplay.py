@@ -32,13 +32,16 @@ from .projectiles.types import ProjectileTemplateId
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
 from .weapon_runtime import (
+    WeaponFireCtx as _WeaponFireCtx,
+)
+from .weapon_runtime import (
+    fire_weapon as _fire_weapon,
+)
+from .weapon_runtime import (
     owner_ref_for_player as _owner_ref_for_player,
 )
 from .weapon_runtime import (
     owner_ref_for_player_projectiles as _owner_ref_for_player_projectiles,
-)
-from .weapon_runtime import (
-    player_fire_weapon as _player_fire_weapon,
 )
 from .weapon_runtime import (
     player_start_reload as _player_start_reload,
@@ -999,16 +1002,18 @@ def player_update(
     if input_state.fire_down:
         state.survival_reward_fire_seen = True
 
-    _player_fire_weapon(
-        player,
-        input_state,
-        dt,
-        state,
-        detail_preset=int(detail_preset),
-        creatures=creatures,
-        players=players,
-        force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
-        on_player_lethal=on_player_lethal,
+    _fire_weapon(
+        _WeaponFireCtx(
+            player=player,
+            input_state=input_state,
+            dt=float(dt),
+            state=state,
+            detail_preset=int(detail_preset),
+            creatures=creatures,
+            players=players,
+            force_pre_swap_fire_gate=bool(force_pre_swap_fire_gate),
+            on_player_lethal=on_player_lethal,
+        ),
     )
 
     while player.move_phase > 14.0:

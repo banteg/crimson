@@ -7,7 +7,8 @@ from crimson.math_parity import NATIVE_HALF_PI
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
-    player_fire_weapon,
+    WeaponFireCtx,
+    fire_weapon,
     weapon_assign_player,
 )
 from crimson.weapons import WeaponId
@@ -24,7 +25,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS, state=state)
     assert player.weapon.ammo == player.weapon.clip_size
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
     assert len(spawned) == player.weapon.clip_size
