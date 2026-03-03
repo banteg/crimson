@@ -15,11 +15,11 @@ from tqdm import tqdm
 
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ...game_modes import GameMode
 from ...modes.replay_playback_mode import ReplayPlaybackMode
-from ...render.backend import RaylibBackend
 from ...replay import Replay
 from .render_telemetry import RenderTelemetryFrameSnapshot, RenderTelemetrySession
 from .render_telemetry_charts import write_render_telemetry_charts
@@ -606,8 +606,6 @@ def _run_render_once(
         rtx=bool(rtx),
     )
     mode.open()
-    render_backend = RaylibBackend(begin_end_drawing=True)
-    render_backend.open()
     try:
         replay = mode._replay
         if replay is None:
@@ -632,7 +630,11 @@ def _run_render_once(
             update_ns = max(0, int(time.perf_counter_ns()) - int(update_start_ns))
 
             draw_start_ns = time.perf_counter_ns()
-            render_backend.draw_frame(mode.draw)
+            rl.begin_drawing()
+            try:
+                mode.draw()
+            finally:
+                rl.end_drawing()
             draw_ns = max(0, int(time.perf_counter_ns()) - int(draw_start_ns))
             frame_ns = max(0, int(time.perf_counter_ns()) - int(frame_start_ns))
 
@@ -657,7 +659,6 @@ def _run_render_once(
             telemetry_frames=(telemetry_session.frames if telemetry_session is not None else ()),
         )
     finally:
-        render_backend.close()
         mode.close()
 
 

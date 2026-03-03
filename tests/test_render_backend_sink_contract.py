@@ -11,20 +11,6 @@ from crimson.render.sink import NullSink, VideoSink, WindowSink
 def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
     events: list[str] = []
 
-    class _Backend:
-        def open(self) -> None:
-            events.append("backend.open")
-
-        def resize(self, *, width: int, height: int) -> None:
-            events.append(f"backend.resize:{int(width)}x{int(height)}")
-
-        def draw_frame(self, draw_frame) -> None:
-            events.append("backend.draw")
-            draw_frame()
-
-        def close(self) -> None:
-            events.append("backend.close")
-
     class _Sink:
         fail_fast = False
 
@@ -40,7 +26,13 @@ def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
         def close(self) -> None:
             events.append("sink.close")
 
-    pipeline = RenderPipeline(backend=_Backend(), sink=_Sink())
+    pipeline = RenderPipeline(
+        sink=_Sink(),
+        on_resize=lambda width, height: events.append(f"resize:{int(width)}x{int(height)}"),
+        begin_end_drawing=True,
+        begin_draw=lambda: events.append("draw.begin"),
+        end_draw=lambda: events.append("draw.end"),
+    )
     pipeline.render(draw_frame=lambda: events.append("draw.frame.1"), width=640, height=480)
     pipeline.render(draw_frame=lambda: events.append("draw.frame.2"), width=640, height=480)
     pipeline.render(draw_frame=lambda: events.append("draw.frame.3"), width=800, height=600)
@@ -48,22 +40,23 @@ def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
     pipeline.close()
 
     assert events == [
-        "backend.open",
-        "backend.resize:640x480",
+        "resize:640x480",
         "sink.open",
-        "backend.draw",
+        "draw.begin",
         "draw.frame.1",
+        "draw.end",
         "sink.present",
-        "backend.draw",
+        "draw.begin",
         "draw.frame.2",
+        "draw.end",
         "sink.present",
-        "backend.resize:800x600",
-        "backend.draw",
+        "resize:800x600",
+        "draw.begin",
         "draw.frame.3",
+        "draw.end",
         "sink.present",
         "sink.flush",
         "sink.close",
-        "backend.close",
     ]
 
 

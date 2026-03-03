@@ -11,7 +11,6 @@ from typing import Literal
 
 import msgspec
 
-from ...render.backend import RaylibBackend
 from ...render.pipeline import RenderPipeline
 from ...render.sink import VideoSink
 from ...replay import Replay
@@ -240,7 +239,6 @@ def run_replay_render_video(
                 overwrite=True if capture_audio else overwrite,
             )
             render_pipeline = RenderPipeline(
-                backend=RaylibBackend(begin_end_drawing=True),
                 sink=VideoSink(
                     output_path=video_out_path,
                     open_transport=video_transport.open,
@@ -248,6 +246,9 @@ def run_replay_render_video(
                     flush_transport=video_transport.flush,
                     close_transport=video_transport.close,
                 ),
+                begin_end_drawing=True,
+                begin_draw=rl.begin_drawing,
+                end_draw=rl.end_drawing,
             )
             render_pipeline.open(width=capture_width, height=capture_height)
             assert render_pipeline is not None
