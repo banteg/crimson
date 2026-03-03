@@ -20,7 +20,7 @@ class RocketRule(msgspec.Struct, frozen=True, tag=True):
     extra_decals: int = 0x14
     extra_radius: float = 90.0
     burst_scale: float | None = 0.4
-    burst_min_detail: int = 3
+    burst_min_detail: int = 2
     freeze_shard_target_pos: bool = False
 
 
