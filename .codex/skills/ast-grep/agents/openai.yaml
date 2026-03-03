@@ -1,0 +1,4 @@
+interface:
+  display_name: "ast-grep"
+  short_description: "Use sg for Python/Zig structural search and codemods"
+  default_prompt: "Use $ast-grep to explore Python/Zig code structurally, apply a mechanical codemod, and verify with sg scan and sg test."
