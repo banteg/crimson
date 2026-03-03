@@ -9,11 +9,12 @@ from grim.raylib_api import rl
 
 from ...game.types import (
     LockstepEndpoint,
+    LockstepSessionConfig,
     NetcodeMode,
-    NetworkSessionConfig,
     NetworkSessionMode,
     PendingNetworkSession,
     RollbackEndpoint,
+    RollbackSessionConfig,
 )
 from ...net.relay_protocol import ROOM_CODE_LENGTH
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -79,14 +80,14 @@ class NetworkSessionPanelView(PanelMenuView):
             self._quest_level = str(cfg.quest_level or "1.1")
             netcode_raw = str(cfg.netcode_mode).strip().lower()
             self._netcode_mode = "lockstep" if netcode_raw == "lockstep" else "rollback"
-            if str(cfg.netcode_mode) == "lockstep":
-                endpoint = cfg.lockstep_endpoint()
+            if cfg.netcode_mode == "lockstep":
+                endpoint = cfg.endpoint
                 self._bind_host = str(endpoint.bind_host or "0.0.0.0")
                 self._host = str(endpoint.host or "127.0.0.1")
                 self._room_code = ""
                 self._port_text = str(max(1, int(endpoint.port)))
             else:
-                endpoint = cfg.rollback_endpoint()
+                endpoint = cfg.endpoint
                 self._bind_host = str(endpoint.relay_host or "127.0.0.1")
                 self._host = str(endpoint.relay_host or "127.0.0.1")
                 self._room_code = "".join(ch for ch in str(endpoint.room_code).upper() if ch.isalnum())[
@@ -291,6 +292,16 @@ class NetworkSessionPanelView(PanelMenuView):
                 host=str(self._host.strip()),
                 port=int(port),
             )
+            config = LockstepSessionConfig(
+                mode=mode,
+                endpoint=endpoint,
+                player_count=max(1, min(4, int(self._player_count))),
+                quest_level=str(self._quest_level.strip()),
+                rollback_max_ticks=8,
+                reconnect_timeout_ms=15_000,
+                input_delay_ticks=1,
+                preserve_bugs=False,
+            )
         else:
             if not self._host.strip():
                 self._error = "Relay host is required for rollback sessions."
@@ -303,12 +314,8 @@ class NetworkSessionPanelView(PanelMenuView):
                 relay_port=int(port),
                 room_code=str(self._room_code.strip().upper()),
             )
-
-        pending = PendingNetworkSession(
-            role=("host" if self._role == "host" else "join"),
-            config=NetworkSessionConfig(
+            config = RollbackSessionConfig(
                 mode=mode,
-                netcode_mode=self._netcode_mode,
                 endpoint=endpoint,
                 player_count=max(1, min(4, int(self._player_count))),
                 quest_level=str(self._quest_level.strip()),
@@ -316,7 +323,11 @@ class NetworkSessionPanelView(PanelMenuView):
                 reconnect_timeout_ms=15_000,
                 input_delay_ticks=1,
                 preserve_bugs=False,
-            ),
+            )
+
+        pending = PendingNetworkSession(
+            role=("host" if self._role == "host" else "join"),
+            config=config,
             auto_start=False,
         )
         self.state.pending_network_session = pending

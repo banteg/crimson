@@ -192,12 +192,12 @@ class GameLoopView:
         if pending is None:
             return
         cfg = pending.config
-        if str(cfg.netcode_mode) == "lockstep":
-            endpoint = cfg.lockstep_endpoint()
+        if cfg.netcode_mode == "lockstep":
+            endpoint = cfg.endpoint
             host = str(endpoint.host)
             port = int(endpoint.port)
         else:
-            endpoint = cfg.rollback_endpoint()
+            endpoint = cfg.endpoint
             host = str(endpoint.relay_host)
             port = int(endpoint.relay_port)
         from ..net.lockstep_protocol import current_build_id
@@ -319,7 +319,7 @@ class GameLoopView:
         if runtime is not None:
             runtime.close()
 
-        netcode_mode = str(cfg.netcode_mode).strip().lower()
+        netcode_mode = cfg.netcode_mode
         if netcode_mode == "lockstep":
             from ..net.lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
         else:
@@ -332,7 +332,7 @@ class GameLoopView:
             sim_status_snapshot = status_snapshot_from_status(self.state.status)
 
         if netcode_mode == "lockstep":
-            endpoint = cfg.lockstep_endpoint()
+            endpoint = cfg.endpoint
             runtime = LockstepRuntime(
                 LockstepRuntimeConfig(
                     role=str(pending.role),
@@ -348,7 +348,7 @@ class GameLoopView:
                 ),
             )
         else:
-            endpoint = cfg.rollback_endpoint()
+            endpoint = cfg.endpoint
             runtime = RollbackRuntime(
                 RollbackRuntimeConfig(
                     role=str(pending.role),
@@ -373,7 +373,7 @@ class GameLoopView:
             forward_action=forward_action,
             role=str(pending.role),
             mode=str(expected_mode),
-            netcode_mode=str(netcode_mode),
+            netcode_mode=netcode_mode,
             auto_start=bool(pending.auto_start),
             player_count=int(player_count),
             connected_players=int(self.state.network_connected_players),

@@ -48,7 +48,13 @@ def cmd_net_host(
     ),
 ) -> None:
     """Host a network session (rollback default)."""
-    from ..game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
+    from ..game.types import (
+        LockstepEndpoint,
+        LockstepSessionConfig,
+        PendingNetworkSession,
+        RollbackEndpoint,
+        RollbackSessionConfig,
+    )
 
     resolved_netcode = _parse_netcode_mode(netcode)
     resolved_mode = _parse_session_mode(mode)
@@ -74,6 +80,16 @@ def cmd_net_host(
             host=str(host).strip() or "127.0.0.1",
             port=int(port),
         )
+        config = LockstepSessionConfig(
+            mode=resolved_mode,
+            endpoint=endpoint,
+            player_count=int(players),
+            quest_level=normalized_quest_level,
+            rollback_max_ticks=int(rollback_max_ticks),
+            reconnect_timeout_ms=int(reconnect_timeout_ms),
+            input_delay_ticks=int(input_delay_ticks),
+            preserve_bugs=False,
+        )
     else:
         if str(host).strip() != "127.0.0.1" or int(port) != 31993:
             raise typer.BadParameter(
@@ -85,12 +101,8 @@ def cmd_net_host(
             relay_port=int(relay_port),
             room_code=str(room_code).strip().upper(),
         )
-
-    pending = PendingNetworkSession(
-        role="host",
-        config=NetworkSessionConfig(
+        config = RollbackSessionConfig(
             mode=resolved_mode,
-            netcode_mode=resolved_netcode,
             endpoint=endpoint,
             player_count=int(players),
             quest_level=normalized_quest_level,
@@ -98,7 +110,11 @@ def cmd_net_host(
             reconnect_timeout_ms=int(reconnect_timeout_ms),
             input_delay_ticks=int(input_delay_ticks),
             preserve_bugs=False,
-        ),
+        )
+
+    pending = PendingNetworkSession(
+        role="host",
+        config=config,
         auto_start=True,
     )
     _run_game_with_pending_session(
@@ -149,7 +165,13 @@ def cmd_net_join(
     ),
 ) -> None:
     """Join a network session."""
-    from ..game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
+    from ..game.types import (
+        LockstepEndpoint,
+        LockstepSessionConfig,
+        PendingNetworkSession,
+        RollbackEndpoint,
+        RollbackSessionConfig,
+    )
 
     resolved_netcode = _parse_netcode_mode(netcode)
     normalized_host = str(host).strip()
@@ -174,6 +196,16 @@ def cmd_net_join(
             host=normalized_host,
             port=int(port),
         )
+        config = LockstepSessionConfig(
+            mode=_parse_session_mode(mode),
+            endpoint=endpoint,
+            player_count=1,
+            quest_level=normalized_quest_level,
+            rollback_max_ticks=int(rollback_max_ticks),
+            reconnect_timeout_ms=int(reconnect_timeout_ms),
+            input_delay_ticks=int(input_delay_ticks),
+            preserve_bugs=False,
+        )
     else:
         if not room_code:
             raise typer.BadParameter("room code is required in rollback mode", param_hint="--code")
@@ -186,12 +218,8 @@ def cmd_net_join(
             relay_port=int(relay_port),
             room_code=room_code,
         )
-
-    pending = PendingNetworkSession(
-        role="join",
-        config=NetworkSessionConfig(
+        config = RollbackSessionConfig(
             mode=_parse_session_mode(mode),
-            netcode_mode=resolved_netcode,
             endpoint=endpoint,
             player_count=1,
             quest_level=normalized_quest_level,
@@ -199,7 +227,11 @@ def cmd_net_join(
             reconnect_timeout_ms=int(reconnect_timeout_ms),
             input_delay_ticks=int(input_delay_ticks),
             preserve_bugs=False,
-        ),
+        )
+
+    pending = PendingNetworkSession(
+        role="join",
+        config=config,
         auto_start=True,
     )
     _run_game_with_pending_session(

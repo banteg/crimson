@@ -238,12 +238,12 @@ class NetworkLobbyPanelView(PanelMenuView):
         room_code = ""
         relay_text = "127.0.0.1:31993"
         if cfg is not None:
-            if str(cfg.netcode_mode) == "lockstep":
-                endpoint = cfg.lockstep_endpoint()
+            if cfg.netcode_mode == "lockstep":
+                endpoint = cfg.endpoint
                 room_code = "-"
                 relay_text = f"{endpoint.host}:{int(endpoint.port)}"
             else:
-                endpoint = cfg.rollback_endpoint()
+                endpoint = cfg.endpoint
                 room_code = str(endpoint.room_code).upper().strip() or "-"
                 relay_text = f"{endpoint.relay_host}:{int(endpoint.relay_port)}"
 

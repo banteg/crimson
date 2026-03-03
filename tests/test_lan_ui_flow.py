@@ -4,7 +4,7 @@ from typing import Literal
 
 from crimson.frontend.panels.play_game import PlayGameMenuView
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
+from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.game_modes import GameMode
 
 
@@ -25,9 +25,8 @@ def _lockstep_pending(
 ) -> PendingNetworkSession:
     return PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=LockstepSessionConfig(
             mode=mode,
-            netcode_mode="lockstep",
             endpoint=LockstepEndpoint(
                 bind_host="0.0.0.0",
                 host="127.0.0.1",

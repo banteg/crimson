@@ -6,7 +6,7 @@ from typing import Any, cast
 import crimson.frontend.panels.network_lobby as lan_lobby_module
 from crimson.frontend.panels.network_lobby import NetworkLobbyPanelView
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
+from crimson.game.types import PendingNetworkSession, RollbackEndpoint, RollbackSessionConfig
 from crimson.net.relay_protocol import RoomState
 from grim.geom import Vec2
 
@@ -47,7 +47,7 @@ def test_network_session_panel_writes_pending_network_session(make_game_state) -
     assert pending.config.mode == "rush"
     assert pending.config.player_count == 3
     assert pending.config.netcode_mode == "rollback"
-    endpoint = pending.config.rollback_endpoint()
+    endpoint = pending.config.endpoint
     assert endpoint.relay_host == "203.0.113.20"
     assert endpoint.relay_port == 32031
     assert endpoint.room_code == "RB42"
@@ -57,9 +57,8 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
     state = make_game_state()
     state.pending_network_session = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=RollbackSessionConfig(
             mode="rush",
-            netcode_mode="rollback",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
@@ -87,9 +86,8 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=RollbackSessionConfig(
             mode="survival",
-            netcode_mode="rollback",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
@@ -143,9 +141,8 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=RollbackSessionConfig(
             mode="quests",
-            netcode_mode="rollback",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,

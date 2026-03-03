@@ -52,7 +52,7 @@ def test_net_host_lockstep_builds_pending_session_and_runs_game(mocker, tmp_path
     assert pending.config.mode == "rush"
     assert pending.config.player_count == 3
     assert pending.config.netcode_mode == "lockstep"
-    endpoint = pending.config.lockstep_endpoint()
+    endpoint = pending.config.endpoint
     assert endpoint.bind_host == "127.0.0.1"
     assert endpoint.host == "192.168.1.10"
     assert endpoint.port == 32001
@@ -109,7 +109,8 @@ def test_net_join_lockstep_builds_pending_join_session(mocker, tmp_path: Path) -
     assert pending.role == "join"
     assert pending.auto_start is True
     assert pending.config.mode == "survival"
-    endpoint = pending.config.lockstep_endpoint()
+    assert pending.config.netcode_mode == "lockstep"
+    endpoint = pending.config.endpoint
     assert endpoint.host == "192.168.1.42"
     assert endpoint.port == 31993
 

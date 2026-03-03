@@ -44,11 +44,11 @@ def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path)
     assert pending.auto_start is True
     assert pending.config.mode == "rush"
     assert pending.config.player_count == 3
-    endpoint = pending.config.rollback_endpoint()
+    assert pending.config.netcode_mode == "rollback"
+    endpoint = pending.config.endpoint
     assert endpoint.relay_host == "203.0.113.10"
     assert endpoint.relay_port == 32011
     assert endpoint.room_code == "AB12CD"
-    assert pending.config.netcode_mode == "rollback"
 
 
 def test_net_host_quests_requires_quest_level(mocker, tmp_path: Path) -> None:
@@ -99,11 +99,11 @@ def test_net_join_command_builds_pending_join_session(mocker, tmp_path: Path) ->
     assert config.pending_network_session is pending
     assert pending.role == "join"
     assert pending.auto_start is True
-    endpoint = pending.config.rollback_endpoint()
+    assert pending.config.netcode_mode == "rollback"
+    endpoint = pending.config.endpoint
     assert endpoint.room_code == "ROOM42"
     assert endpoint.relay_host == "198.51.100.15"
     assert endpoint.relay_port == 31999
-    assert pending.config.netcode_mode == "rollback"
 
 
 def test_net_join_lockstep_requires_host(mocker, tmp_path: Path) -> None:
