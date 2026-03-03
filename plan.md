@@ -227,7 +227,7 @@ Requirements:
 
 Introduce two seams:
 
-1. `RenderBackend` (draw API abstraction)
+1. `RenderPipeline` (draw orchestration abstraction)
 2. `RenderSink` (frame destination)
 
 Minimum sinks:
@@ -238,11 +238,11 @@ Minimum sinks:
 Requirements:
 - Same render pass logic feeds window and video.
 - Replay render path reuses shared draw pipeline, not a bespoke one.
-- `RenderBackend` owns GPU resource lifecycle (`open`, `resize`, `close`) and draw command execution.
+- `RenderPipeline` owns resize/lifecycle orchestration and optional begin/end drawing ownership.
 - `RenderSink` owns destination/transport lifecycle (`open`, `present`, `flush`, `close`).
-- Frame pacing ownership is outside backend/sink (owned by frame loop / runner context).
+- Frame pacing ownership is outside pipeline/sink (owned by frame loop / runner context).
 - Sink failure policy must be explicit:
-- `WindowSink`: log + continue unless unrecoverable backend failure.
+- `WindowSink`: present-frame callback is optional and no-op when absent.
 - `VideoSink`: fail-fast and surface non-zero/export error.
 - `NullSink`: always succeed/no-op.
 
@@ -307,7 +307,7 @@ Requirements:
 - calls `input_provider.begin_frame(...)`
 - pumps runtime exactly once if runtime exists for the current context
 - calls `tick_runner.advance_frame(dt)` and receives `TickBatchResult`
-- sends ordered `presentation_plans` + world snapshot to render backend/sink
+- sends ordered `presentation_plans` + world snapshot to shared render pipeline/sink
 
 `GameLoopView` is the `FrameDriver` for interactive gameplay contexts.
 `ReplayPlaybackMode` / replay runners are frame drivers for replay contexts.
@@ -382,14 +382,14 @@ Exit criteria:
 ### PR-1: Interfaces and Adapters (No Behavior Change)
 
 Changes:
-- Add protocols for `InputProvider`, `TickHook`, `RenderBackend`, `RenderSink`.
+- Add protocols for `InputProvider`, `TickHook`, `RenderSink`.
 - Add local adapter implementations wrapping existing logic.
 
 Primary files:
 - `src/crimson/sim/tick_runner.py` (interfaces + placeholder runner)
 - `src/crimson/sim/input_providers.py`
 - `src/crimson/sim/hooks.py`
-- `src/crimson/render/backend.py`
+- `src/crimson/render/pipeline.py`
 - `src/crimson/render/sink.py`
 
 Exit criteria:
@@ -469,14 +469,14 @@ Exit criteria:
 - Golden replay parity preserved.
 - Headless verify plans presentation but skips apply safely.
 
-### PR-7: Render Backend/Sink + Video Path
+### PR-7: Render Pipeline/Sink + Video Path
 
 Changes:
-- Use `RenderBackend` and `RenderSink` in live and replay render paths.
+- Use shared `RenderPipeline` and `RenderSink` in replay render paths.
 - Move replay video output to `VideoSink`.
 
 Primary files:
-- `src/crimson/render/backend.py`
+- `src/crimson/render/pipeline.py`
 - `src/crimson/render/sink.py`
 - `src/crimson/sim/driver/replay_render.py`
 - `src/crimson/game/loop_view.py`
@@ -570,7 +570,7 @@ Required new invariant-focused tests (add during refactor):
 - `tests/test_tick_runner_stall_debt.py`
 - validates mid-frame stall preserves clock debt and commits only completed ticks.
 - `tests/test_render_backend_sink_contract.py`
-- validates lifecycle, resize, and sink failure behavior contracts.
+- validates render pipeline lifecycle, resize, and sink failure behavior contracts.
 - `tests/test_presentation_plan_granularity.py`
 - validates per-tick plan generation and in-frame ordered apply behavior.
 - `tests/test_replay_pause_step_clock_semantics.py`
@@ -597,7 +597,7 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 - [x] Create `src/crimson/sim/input_providers.py` with `InputProvider` protocol.
 - [x] Create `src/crimson/sim/hooks.py` with `TickHook` protocol and no-op hook bus.
-- [x] Create `src/crimson/render/backend.py` with `RenderBackend` protocol.
+- [x] Create `src/crimson/render/pipeline.py` with shared render orchestration helper.
 - [x] Create `src/crimson/render/sink.py` with `RenderSink` protocol.
 - [x] Add adapter stubs: `LocalInputProvider`, `ReplayInputProvider` (placeholder), `NetworkInputProvider` (placeholder), `WindowSink`, `NullSink`.
 - [x] Wire zero-impact construction paths (adapters instantiated but not yet primary control path).
@@ -656,11 +656,11 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 - [x] Keep command hash/checkpoint parity with baseline golden replays.
 - [x] Run full test gate suite.
 
-### PR-7 Checklist: Render Backend and Sink Migration
+### PR-7 Checklist: Render Pipeline and Sink Migration
 
-- [x] Implement `RaylibBackend` adapter wrapping current raylib draw operations.
+- [x] Use `RenderPipeline` as the single replay render orchestration path (no separate backend adapter).
 - [x] Implement `VideoSink` and migrate replay render output path to it.
-- [x] Route live and replay rendering through shared backend + sink entrypoint.
+- [x] Route replay rendering through shared pipeline + sink entrypoint.
 - [x] Keep `WindowSink` as default interactive target.
 - [x] Keep `NullSink` for headless verify.
 - [x] Add `tests/test_render_backend_sink_contract.py` for lifecycle/resize/error-policy behavior.
