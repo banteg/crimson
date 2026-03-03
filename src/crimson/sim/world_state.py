@@ -211,9 +211,8 @@ class WorldState(msgspec.Struct):
                     plan_death_sfx_now=_plan_death_sfx_now,
                     plan_death_sfx=not suppress_death_sfx,
                 ),
-            )
+        )
         prev_creature_damage_appliers = self._set_creature_damage_appliers(_apply_projectile_damage_to_creature)
-
         def _on_secondary_detonation_kill(creature_index: int) -> None:
             idx = int(creature_index)
             if not (0 <= idx < len(self.creatures.entries)) or float(self.creatures.entries[idx].hp) > 0.0:
@@ -415,7 +414,6 @@ class WorldState(msgspec.Struct):
         _mark("ws_after_sfx")
         self.state.player_death_hook_skip_indices.clear()
         self._restore_creature_damage_appliers(prev_creature_damage_appliers)
-
         return WorldEvents(
             hits=hits,
             deaths=tuple(deaths),
