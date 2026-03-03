@@ -78,8 +78,6 @@ class SecondaryProjectilePool:
         entry.pos = pos
         entry.owner = owner
         entry.target_id = -1
-        entry.target_hint_active = False
-        entry.target_hint = Vec2()
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -108,10 +106,6 @@ class SecondaryProjectilePool:
                     creatures=creatures,
                     origin=origin,
                 )
-            elif target_hint is not None:
-                # Keep legacy fallback for tests/debug views that omit creature snapshots.
-                entry.target_hint_active = True
-                entry.target_hint = target_hint
 
         return index
 
@@ -248,13 +242,9 @@ class SecondaryProjectilePool:
                 # Type 2: homing projectile.
                 target_id = entry.target_id
                 if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
-                    search_pos = entry.pos
-                    if entry.target_hint_active:
-                        entry.target_hint_active = False
-                        search_pos = entry.target_hint
                     entry.target_id = _creature_find_nearest_for_secondary(
                         creatures=creatures,
-                        origin=search_pos,
+                        origin=entry.pos,
                     )
                     target_id = entry.target_id
 

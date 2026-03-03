@@ -156,9 +156,6 @@ class SecondaryProjectile(msgspec.Struct):
     owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
     trail_timer: float = 0.0
     target_id: int = -1
-    # Compatibility fallback for contexts that cannot supply creature snapshots at spawn time.
-    target_hint_active: bool = False
-    target_hint: Vec2 = Vec2()
 
 
 __all__ = [
