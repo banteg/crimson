@@ -37,95 +37,57 @@ class TickResult(msgspec.Struct, frozen=True):
     payload: object | None = None
 
 
-class TickHook(Protocol):
-    def on_tick_begin(self, ctx: TickContext) -> None: ...
-
-    def on_tick_stall(self, ctx: TickContext) -> None: ...
-
-    def on_pre_sim(self, ctx: TickContext) -> None: ...
-
-    def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None: ...
-
-    def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None: ...
-
-    def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None: ...
-
-    def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None: ...
-
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None: ...
-
-
-class NoopTickHook:
-    def on_tick_begin(self, ctx: TickContext) -> None:
-        _ = ctx
-
-    def on_tick_stall(self, ctx: TickContext) -> None:
-        _ = ctx
-
-    def on_pre_sim(self, ctx: TickContext) -> None:
-        _ = ctx
-
-    def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
-        _ = ctx, result
-
-    def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None:
-        _ = ctx, result
-
-    def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
-        _ = ctx, hashes
-
-    def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None:
-        _ = ctx, result
-
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
-        _ = ctx, result
-
-
 class TickHookBus:
-    def __init__(self, hooks: Iterable[TickHook] | None = None) -> None:
-        self._hooks: list[TickHook] = list(hooks or [])
+    def __init__(self, hooks: Iterable[object] | None = None) -> None:
+        self._hooks: list[object] = list(hooks or [])
 
     @property
-    def hooks(self) -> tuple[TickHook, ...]:
+    def hooks(self) -> tuple[object, ...]:
         return tuple(self._hooks)
 
-    def add_hook(self, hook: TickHook) -> None:
+    def add_hook(self, hook: object) -> None:
         self._hooks.append(hook)
+
+    @staticmethod
+    def _invoke(hook: object, method_name: str, *args: object) -> None:
+        method = getattr(hook, method_name, None)
+        if callable(method):
+            method(*args)
 
     def on_tick_begin(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            hook.on_tick_begin(ctx)
+            self._invoke(hook, "on_tick_begin", ctx)
 
     def on_tick_stall(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            hook.on_tick_stall(ctx)
+            self._invoke(hook, "on_tick_stall", ctx)
 
     def on_pre_sim(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            hook.on_pre_sim(ctx)
+            self._invoke(hook, "on_pre_sim", ctx)
 
     def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            hook.on_world_step_done(ctx, result)
+            self._invoke(hook, "on_world_step_done", ctx, result)
 
     def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            hook.on_pre_hash(ctx, result)
+            self._invoke(hook, "on_pre_hash", ctx, result)
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
         for hook in self._hooks:
-            hook.on_post_hash(ctx, hashes)
+            self._invoke(hook, "on_post_hash", ctx, hashes)
 
     def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            hook.on_post_presentation(ctx, result)
+            self._invoke(hook, "on_post_presentation", ctx, result)
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            hook.on_tick_end(ctx, result)
+            self._invoke(hook, "on_tick_end", ctx, result)
 
 
-class ReplayRecorderHook(NoopTickHook):
+class ReplayRecorderHook:
     def __init__(self, recorder: ReplayRecorderLike | None) -> None:
         self._recorder = recorder
         self.recorded_tick_by_runner_tick: dict[int, int] = {}
@@ -147,7 +109,7 @@ class ReplayRecorderHook(NoopTickHook):
         self.recorded_tick_by_runner_tick[int(ctx.tick_index)] = int(tick_index)
 
 
-class CheckpointHook(NoopTickHook):
+class CheckpointHook:
     def __init__(
         self,
         *,
@@ -173,7 +135,7 @@ class CheckpointHook(NoopTickHook):
         callback(int(replay_tick), payload)
 
 
-class NetworkSyncHook(NoopTickHook):
+class NetworkSyncHook:
     def __init__(self, *, on_hash: Callable[[int, TickHashes], None] | None = None) -> None:
         self._on_hash = on_hash
 
@@ -187,7 +149,7 @@ class NetworkSyncHook(NoopTickHook):
         callback(int(ctx.tick_index), hashes)
 
 
-class ProfilerHook(NoopTickHook):
+class ProfilerHook:
     def __init__(self) -> None:
         self.sim_ms = 0.0
         self.presentation_plan_ms = 0.0

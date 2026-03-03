@@ -46,7 +46,6 @@ from ..sim.clock import FixedStepClock
 from ..sim.hooks import (
     CheckpointHook,
     NetworkSyncHook,
-    NoopTickHook,
     ProfilerHook,
     ReplayRecorderHook,
     TickContext,
@@ -138,7 +137,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         return player_inputs
 
 
-class _LanFinalizeHook(NoopTickHook):
+class _LanFinalizeHook:
     def __init__(self, *, mode: "BaseGameplayMode", sample_provider: _LanRuntimeInputProvider) -> None:
         self._mode = mode
         self._sample_provider = sample_provider
