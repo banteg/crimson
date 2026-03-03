@@ -135,8 +135,8 @@ class TypoShooterMode(BaseGameplayMode):
                 return self._names.find_by_name(name, active_mask=active)
 
             result = self._typing.enter(find_target=_find_target)
-            if had_text and self.world.audio_router is not None:
-                self.world.audio_router.play_sfx_resolved("sfx_ui_typeenter")
+            if had_text and self.world.audio_bridge.router is not None:
+                self.world.audio_bridge.router.play_sfx_resolved("sfx_ui_typeenter")
             if result.fire_requested and result.target_creature_idx is not None:
                 target_idx = int(result.target_creature_idx)
                 if 0 <= target_idx < len(self.creatures.entries):
@@ -157,8 +157,8 @@ class TypoShooterMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) or rl.is_key_pressed_repeat(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
             key = _typeclick_key()
-            if self.world.audio_router is not None:
-                self.world.audio_router.play_sfx_resolved(key)
+            if self.world.audio_bridge.router is not None:
+                self.world.audio_bridge.router.play_sfx_resolved(key)
         else:
             codepoint = int(rl.get_char_pressed())
             if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
@@ -169,8 +169,8 @@ class TypoShooterMode(BaseGameplayMode):
                 if ch:
                     self._typing.push_char(ch)
                     key = _typeclick_key()
-                    if self.world.audio_router is not None:
-                        self.world.audio_router.play_sfx_resolved(key)
+                    if self.world.audio_bridge.router is not None:
+                        self.world.audio_bridge.router.play_sfx_resolved(key)
 
         return fire_pressed, reload_pressed
 

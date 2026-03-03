@@ -62,7 +62,7 @@ class WorldRenderCtx(msgspec.Struct):
     def ground(self) -> GroundRenderer | None:
         if self.frame is not None:
             return self.frame.ground
-        return self.renderer._world.ground
+        return self.renderer._world.render_resources.ground
 
     @property
     def state(self) -> GameplayState:

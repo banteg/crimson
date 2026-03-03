@@ -479,10 +479,10 @@ class ReplayPlaybackMode:
                 config=PlaybackDriverConfig(
                     timing=PlaybackTimingConfig(),
                     world=PlaybackWorldConfig(
-                        world=world.world_state,
+                        world=world.sim_world.world_state,
                         world_size=float(world.world_size),
-                        fx_queue=world.fx_queue,
-                        fx_queue_rotated=world.fx_queue_rotated,
+                        fx_queue=world.render_resources.fx_queue,
+                        fx_queue_rotated=world.render_resources.fx_queue_rotated,
                         use_existing_world_state=True,
                     ),
                     events=PlaybackEventConfig(
@@ -603,7 +603,7 @@ class ReplayPlaybackMode:
             if outcome.completion_transition_ms is not None:
                 self._quest_completion_transition_ms = float(outcome.completion_transition_ms)
             if bool(outcome.play_hit_sfx):
-                world.audio_router.play_sfx("sfx_questhit")
+                world.audio_bridge.router.play_sfx("sfx_questhit")
             if bool(outcome.play_completion_music) and world.audio is not None:
                 play_music(world.audio, "crimsonquest")
                 playback = world.audio.music.playbacks.get("crimsonquest")
@@ -723,9 +723,9 @@ class ReplayPlaybackMode:
         target = min(int(self._tick_limit()), int(self._tick_index) + int(ticks))
         world = self._world
         prev_sfx_enabled: bool | None = None
-        if world is not None and world.audio_router is not None:
-            prev_sfx_enabled = bool(world.audio_router.sfx_enabled)
-            world.audio_router.sfx_enabled = False
+        if world is not None and world.audio_bridge.router is not None:
+            prev_sfx_enabled = bool(world.audio_bridge.router.sfx_enabled)
+            world.audio_bridge.router.sfx_enabled = False
         try:
             while self._tick_index < target and not self._finished:
                 self._tick_one()
@@ -733,14 +733,14 @@ class ReplayPlaybackMode:
                     # Gameplay drains decal queues during render (`draw()` -> `_bake_fx_queues`).
                     # Fast-seek runs many ticks without drawing, so mirror that behavior per tick:
                     # bake when render targets are ready, otherwise clear to avoid queue saturation.
-                    if world.ground is not None and world.render_resources.fx_textures is not None:
+                    if world.render_resources.ground is not None and world.render_resources.fx_textures is not None:
                         world._bake_fx_queues()
                     else:
-                        world.fx_queue.clear()
-                        world.fx_queue_rotated.clear()
+                        world.render_resources.fx_queue.clear()
+                        world.render_resources.fx_queue_rotated.clear()
         finally:
-            if prev_sfx_enabled is not None and world is not None and world.audio_router is not None:
-                world.audio_router.sfx_enabled = bool(prev_sfx_enabled)
+            if prev_sfx_enabled is not None and world is not None and world.audio_bridge.router is not None:
+                world.audio_bridge.router.sfx_enabled = bool(prev_sfx_enabled)
         # Avoid accidental overshoot from stale accumulated frame time after seek.
         self._dt_accum = 0.0
 
@@ -792,8 +792,8 @@ class ReplayPlaybackMode:
         # steps `WorldState` directly (bypassing `GameWorld.update()`), so we
         # must process pending ground work explicitly.
         world = self._world
-        if world is not None and world.ground is not None:
-            world.ground.process_pending()
+        if world is not None and world.render_resources.ground is not None:
+            world.render_resources.ground.process_pending()
 
     def _draw_quest_title(self) -> None:
         replay = self._replay

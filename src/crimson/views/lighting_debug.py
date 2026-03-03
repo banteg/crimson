@@ -1794,8 +1794,8 @@ class LightingDebugView:
         self._world.state.sprite_effects.reset()
         self._world.state.effects.reset()
         self._world.state.bonus_pool.reset()
-        self._world.fx_queue.clear()
-        self._world.fx_queue_rotated.clear()
+        self._world.render_resources.fx_queue.clear()
+        self._world.render_resources.fx_queue_rotated.clear()
         self._transient_lights.clear()
         self._invalidate_shadow_history()
 

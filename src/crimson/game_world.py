@@ -12,23 +12,16 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
 
-from .audio_router import AudioRouter
 from .creatures.anim import creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
-from .creatures.spawn import SpawnEnv
-from .effects import FxQueue, FxQueueRotated
 from .game_modes import GameMode
 from .gameplay import GameplayState
 from .render.frame import RenderFrame
 from .render.rtx.mode import RtxRenderMode
 from .render.world import WorldRenderer
 from .sim.input import PlayerInput
-from .sim.presentation_step import (
-    PresentationStepCommands,
-    queue_projectile_decals,
-)
+from .sim.presentation_step import queue_projectile_decals
 from .sim.state_types import PlayerState
 from .sim.step_pipeline import (
     DeterministicStepResult,
@@ -37,7 +30,7 @@ from .sim.step_pipeline import (
     time_scale_reflex_boost_factor,
 )
 from .sim.timing import FrameTiming, zero_gate_active_from_state
-from .sim.world_state import ProjectileHit, WorldEvents, WorldState
+from .sim.world_state import ProjectileHit, WorldState
 from .world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 
 
@@ -64,18 +57,6 @@ class GameWorld(msgspec.Struct):
     lan_local_player_slot_index: int = 0
 
     @property
-    def audio_router(self) -> AudioRouter:
-        return self.audio_bridge.router
-
-    @property
-    def world_state(self) -> WorldState:
-        return self.sim_world.world_state
-
-    @property
-    def spawn_env(self) -> SpawnEnv:
-        return self.sim_world.spawn_env
-
-    @property
     def state(self) -> GameplayState:
         return self.sim_world.state
 
@@ -86,34 +67,6 @@ class GameWorld(msgspec.Struct):
     @property
     def creatures(self) -> CreaturePool:
         return self.sim_world.creatures
-
-    @property
-    def last_events(self) -> WorldEvents:
-        return self.sim_world.last_events
-
-    @property
-    def last_presentation(self) -> PresentationStepCommands:
-        return self.sim_world.last_presentation
-
-    @property
-    def last_command_hash(self) -> str:
-        return self.sim_world.last_command_hash
-
-    @property
-    def ground(self) -> GroundRenderer | None:
-        return self.render_resources.ground
-
-    @ground.setter
-    def ground(self, value: GroundRenderer | None) -> None:
-        self.render_resources.ground = value
-
-    @property
-    def fx_queue(self) -> FxQueue:
-        return self.render_resources.fx_queue
-
-    @property
-    def fx_queue_rotated(self) -> FxQueueRotated:
-        return self.render_resources.fx_queue_rotated
 
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
@@ -171,8 +124,8 @@ class GameWorld(msgspec.Struct):
             player_count=int(player_count),
             spawn_pos=spawn_pos,
         )
-        self.fx_queue.clear()
-        self.fx_queue_rotated.clear()
+        self.render_resources.fx_queue.clear()
+        self.render_resources.fx_queue_rotated.clear()
         self.camera = Vec2(-1.0, -1.0)
         if self.render_resources.ground is not None:
             # Terrain generation seed should be stable across headless/interactive and must not
@@ -270,7 +223,7 @@ class GameWorld(msgspec.Struct):
         )
 
         step = run_deterministic_step(
-            world=self.world_state,
+            world=self.sim_world.world_state,
             timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
@@ -284,8 +237,8 @@ class GameWorld(msgspec.Struct):
                 game_tune_started=bool(self.sim_world.game_tune_started),
             ),
             inputs=inputs,
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             defer_camera_shake_update=defer_camera_shake_update,
             rng_marks_out=rng_marks_out,
         )
@@ -331,7 +284,7 @@ class GameWorld(msgspec.Struct):
         queue_projectile_decals(
             state=self.state,
             players=self.players,
-            fx_queue=self.fx_queue,
+            fx_queue=self.render_resources.fx_queue,
             hits=hits,
             rand=rand,
             detail_preset=detail_preset,

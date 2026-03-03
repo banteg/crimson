@@ -198,11 +198,11 @@ class QuestMode(BaseGameplayMode):
 
     def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> QuestDeterministicSession:
         return self._session_factory(
-            world=self.world.world_state,
+            world=self.world.sim_world.world_state,
             world_size=float(self.world.world_size),
             damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
+            fx_queue=self.world.render_resources.fx_queue,
+            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
             spawn_entries=spawn_entries,
             detail_preset=5,
             gore_disabled=0,
@@ -306,7 +306,7 @@ class QuestMode(BaseGameplayMode):
             )
 
             if tick.play_hit_sfx:
-                self.world.audio_router.play_sfx("sfx_questhit")
+                self.world.audio_bridge.router.play_sfx("sfx_questhit")
             if tick.play_completion_music and self.world.audio is not None:
                 play_music(self.world.audio, "crimsonquest")
                 playback = self.world.audio.music.playbacks.get("crimsonquest")
@@ -376,7 +376,7 @@ class QuestMode(BaseGameplayMode):
             font=self._small,
             assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self.world.audio_router.play_sfx,
+            play_sfx=self.world.audio_bridge.router.play_sfx,
         )
 
     def select_level(self, level: str | None) -> None:
@@ -517,7 +517,7 @@ class QuestMode(BaseGameplayMode):
 
     def _handle_input(self) -> None:
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self.world.audio_router.play_sfx("sfx_ui_buttonclick")
+            self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             self._perk_menu.close()
             return
 
@@ -527,11 +527,11 @@ class QuestMode(BaseGameplayMode):
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
-                self.world.audio_router.play_sfx("sfx_ui_buttonclick")
+                self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
-                self.world.audio_router.play_sfx("sfx_ui_levelup")
+                self.world.audio_bridge.router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
@@ -736,13 +736,13 @@ class QuestMode(BaseGameplayMode):
         session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
         session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
+        if self.world.audio_bridge.router is not None:
+            self.world.audio_bridge.router.audio = self.world.audio
+            self.world.audio_bridge.router.audio_rng = self.world.audio_rng
+            self.world.audio_bridge.router.demo_mode_active = self.world.demo_mode_active
+        if self.world.render_resources.ground is not None:
             self.world.sync_ground_settings()
-            self.world.ground.process_pending()
+            self.world.render_resources.ground.process_pending()
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             self._quest.spawn_entries = tuple(session.spawn_entries)
@@ -753,7 +753,7 @@ class QuestMode(BaseGameplayMode):
             _ = tick_index
 
             if tick.play_hit_sfx:
-                self.world.audio_router.play_sfx("sfx_questhit")
+                self.world.audio_bridge.router.play_sfx("sfx_questhit")
             if tick.play_completion_music and self.world.audio is not None:
                 play_music(self.world.audio, "crimsonquest")
                 playback = self.world.audio.music.playbacks.get("crimsonquest")

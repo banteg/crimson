@@ -123,11 +123,11 @@ class SurvivalMode(BaseGameplayMode):
 
     def _new_sim_session(self) -> SurvivalDeterministicSession:
         return self._session_factory(
-            world=self.world.world_state,
+            world=self.world.sim_world.world_state,
             world_size=float(self.world.world_size),
             damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
+            fx_queue=self.world.render_resources.fx_queue,
+            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.world.sim_world.game_tune_started),
@@ -206,7 +206,7 @@ class SurvivalMode(BaseGameplayMode):
             font=self._small,
             assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self.world.audio_router.play_sfx,
+            play_sfx=self.world.audio_bridge.router.play_sfx,
         )
 
     def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
@@ -347,7 +347,7 @@ class SurvivalMode(BaseGameplayMode):
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             if bool(self._lan_enabled) and str(self._lan_role) == "join":
                 return
-            self.world.audio_router.play_sfx("sfx_ui_buttonclick")
+            self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             self._perk_menu.close()
             return
 
@@ -357,11 +357,11 @@ class SurvivalMode(BaseGameplayMode):
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
-                self.world.audio_router.play_sfx("sfx_ui_buttonclick")
+                self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
-                self.world.audio_router.play_sfx("sfx_ui_levelup")
+                self.world.audio_bridge.router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
@@ -517,8 +517,8 @@ class SurvivalMode(BaseGameplayMode):
                                 pending_count=int(self.state.perk_selection.pending_count),
                                 choice_index=int(choice_index),
                             )
-                        elif self.world.audio_router is not None:
-                            self.world.audio_router.play_sfx("sfx_ui_bonus")
+                        elif self.world.audio_bridge.router is not None:
+                            self.world.audio_bridge.router.play_sfx("sfx_ui_bonus")
                         self._perk_menu.close()
                     case _:
                         continue

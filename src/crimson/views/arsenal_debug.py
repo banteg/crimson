@@ -153,8 +153,8 @@ class ArsenalDebugView:
         self._world.state.sprite_effects.reset()
         self._world.state.effects.reset()
         self._world.state.bonus_pool.reset()
-        self._world.fx_queue.clear()
-        self._world.fx_queue_rotated.clear()
+        self._world.render_resources.fx_queue.clear()
+        self._world.render_resources.fx_queue_rotated.clear()
 
         player = self._player
         if player is None:
@@ -359,9 +359,9 @@ class ArsenalDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
-        if self._world.ground is not None:
+        if self._world.render_resources.ground is not None:
             self._world.sync_ground_settings()
-            self._world.ground.process_pending()
+            self._world.render_resources.ground.process_pending()
 
         self._world.draw(draw_aim_indicators=True)
 

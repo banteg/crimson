@@ -682,8 +682,8 @@ class BaseGameplayMode:
             dt=float(dt_tick),
             creatures=ctx.creatures,
         )
-        if picked is not None and self.world.audio_router is not None:
-            self.world.audio_router.play_sfx("sfx_ui_bonus")
+        if picked is not None and self.world.audio_bridge.router is not None:
+            self.world.audio_bridge.router.play_sfx("sfx_ui_bonus")
         return True
 
     def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
@@ -734,7 +734,7 @@ class BaseGameplayMode:
         self._replay_checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=self.world.world_state,
+                world=self.world.sim_world.world_state,
                 elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
                 rng_marks=rng_marks,
                 deaths=deaths,
@@ -889,7 +889,7 @@ class BaseGameplayMode:
             return False
         if self._lan_initial_terrain_ready:
             return False
-        ground = self.world.ground
+        ground = self.world.render_resources.ground
         if ground is None:
             return False
         return ground.generation_pending()
@@ -899,7 +899,7 @@ class BaseGameplayMode:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = False
             return
-        ground = self.world.ground
+        ground = self.world.render_resources.ground
         if ground is None:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = True
@@ -1201,7 +1201,7 @@ class BaseGameplayMode:
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self.world.open()
         self._bind_world()
-        ground = self.world.ground
+        ground = self.world.render_resources.ground
         lan_debug_log(
             "mode_world_reset",
             mode=self.__class__.__name__,
@@ -1280,7 +1280,7 @@ class BaseGameplayMode:
             dt,
             record=record,
             player_name_default=self._player_name_default(),
-            play_sfx=self.world.audio_router.play_sfx,
+            play_sfx=self.world.audio_bridge.router.play_sfx,
             rand=None,
             mouse=self._ui_mouse_pos(),
         )
@@ -1308,18 +1308,18 @@ class BaseGameplayMode:
         self.world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
-        ground = self.world.ground
-        self.world.ground = None
+        ground = self.world.render_resources.ground
+        self.world.render_resources.ground = None
         return ground
 
     def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
         if ground is None:
             return
-        current = self.world.ground
+        current = self.world.render_resources.ground
         if current is not None and current is not ground and current.render_target is not None:
             rl.unload_render_texture(current.render_target)
             current.render_target = None
-        self.world.ground = ground
+        self.world.render_resources.ground = ground
         self.world.sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
@@ -1329,12 +1329,12 @@ class BaseGameplayMode:
         return float(self.world.sim_world.elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
-        if self.world.ground is None:
+        if self.world.render_resources.ground is None:
             return
         # Keep this deterministic without consuming gameplay RNG.
         self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
         terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
-        self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
+        self.world.render_resources.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
@@ -1624,9 +1624,9 @@ class BaseGameplayMode:
             self.close_requested = True
             return None
         self.world.sync_audio_bridge_state()
-        if self.world.ground is not None:
+        if self.world.render_resources.ground is not None:
             self.world.sync_ground_settings()
-            self.world.ground.process_pending()
+            self.world.render_resources.ground.process_pending()
         if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return None
         return role
@@ -1641,7 +1641,7 @@ class BaseGameplayMode:
         return str(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=self.world.world_state,
+                world=self.world.sim_world.world_state,
                 elapsed_ms=float(elapsed_ms),
                 creature_count_override=int(creature_count_world_step),
             ).state_hash,
@@ -1886,13 +1886,13 @@ class BaseGameplayMode:
     ) -> None:
         if float(dt_frame) <= 0.0:
             return
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
+        if self.world.audio_bridge.router is not None:
+            self.world.audio_bridge.router.audio = self.world.audio
+            self.world.audio_bridge.router.audio_rng = self.world.audio_rng
+            self.world.audio_bridge.router.demo_mode_active = self.world.demo_mode_active
+        if self.world.render_resources.ground is not None:
             self.world.sync_ground_settings()
-            self.world.ground.process_pending()
+            self.world.render_resources.ground.process_pending()
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
 

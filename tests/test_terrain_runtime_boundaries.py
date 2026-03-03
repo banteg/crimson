@@ -35,9 +35,9 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     )
 
     assert int(world.state.rng.state) == before_rng_state
-    assert world.ground is not None
-    assert bool(world.ground.generation_pending())
-    assert int(world.ground._pending_generate_seed or -1) == 1337
+    assert world.render_resources.ground is not None
+    assert bool(world.render_resources.ground.generation_pending())
+    assert int(world.render_resources.ground._pending_generate_seed or -1) == 1337
 
 
 def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
@@ -69,12 +69,12 @@ def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: P
     )
 
     assert int(world.state.rng.state) == before_rng_state
-    assert world.ground is not None
-    assert bool(world.ground.generation_pending())
-    assert int(world.ground._pending_generate_seed or -1) == before_rng_state
-    assert world.ground.texture is base
-    assert world.ground.overlay is overlay
-    assert world.ground.overlay_detail is detail
+    assert world.render_resources.ground is not None
+    assert bool(world.render_resources.ground.generation_pending())
+    assert int(world.render_resources.ground._pending_generate_seed or -1) == before_rng_state
+    assert world.render_resources.ground.texture is base
+    assert world.render_resources.ground.overlay is overlay
+    assert world.render_resources.ground.overlay_detail is detail
 
 
 def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir: Path) -> None:
@@ -84,9 +84,9 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
     world.reset(seed=4242, player_count=1)
 
     assert int(world.state.rng.state) == 4242
-    assert world.ground is not None
-    assert bool(world.ground.generation_pending())
-    assert int(world.ground._pending_generate_seed or -1) == 4242
+    assert world.render_resources.ground is not None
+    assert bool(world.render_resources.ground.generation_pending())
+    assert int(world.render_resources.ground._pending_generate_seed or -1) == 4242
 
 
 def test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows() -> None:

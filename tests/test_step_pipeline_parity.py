@@ -105,7 +105,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             defer_camera_shake_update=True,
             rng_marks_out=world_step_marks,
         )
-        world_events = world.last_events
+        world_events = world.sim_world.last_events
         rng_after_world_step = int(world.state.rng.state)
 
         player_level = world.players[0].level if world.players else 1
@@ -139,7 +139,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(elapsed_ms),
                 rng_marks={
                     **world_step_marks,
@@ -149,7 +149,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 },
                 deaths=world_events.deaths,
                 events=world_events,
-                command_hash=str(world.last_command_hash),
+                command_hash=str(world.sim_world.last_command_hash),
             ),
         )
 
@@ -167,11 +167,11 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     )
 
     session = RushDeterministicSession(
-        world=world.world_state,
+        world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
-        fx_queue=world.fx_queue,
-        fx_queue_rotated=world.fx_queue_rotated,
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         detail_preset=5,
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
@@ -199,7 +199,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(tick.elapsed_ms),
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
@@ -245,11 +245,11 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         weapon_assign_player(player, weapon_id, state=world.state)
 
     session = QuestDeterministicSession(
-        world=world.world_state,
+        world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
-        fx_queue=world.fx_queue,
-        fx_queue_rotated=world.fx_queue_rotated,
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         spawn_entries=tuple(spawn_entries),
         detail_preset=5,
         gore_disabled=0,
@@ -278,7 +278,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(tick.spawn_timeline_ms),
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,

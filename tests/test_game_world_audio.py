@@ -31,8 +31,8 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
     player = world.players[0]
 
@@ -55,7 +55,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     )
     player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
 
-    world.audio_router.handle_player_audio(
+    world.audio_bridge.router.handle_player_audio(
         player,
         prev_shot_seq=prev_shot_seq,
         prev_reload_active=prev_reload_active,
@@ -72,8 +72,8 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
     player = world.players[0]
 
@@ -96,7 +96,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     )
     player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
 
-    world.audio_router.handle_player_audio(
+    world.audio_bridge.router.handle_player_audio(
         player,
         prev_shot_seq=prev_shot_seq,
         prev_reload_active=prev_reload_active,
@@ -214,11 +214,11 @@ def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
     world.state.bonuses.reflex_boost = 0.75
-    world.audio_router.play_sfx("sfx_pistol_fire")
+    world.audio_bridge.router.play_sfx("sfx_pistol_fire")
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_pistol_fire"

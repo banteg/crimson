@@ -99,11 +99,11 @@ class RushMode(BaseGameplayMode):
 
     def _new_sim_session(self) -> RushDeterministicSession:
         return self._session_factory(
-            world=self.world.world_state,
+            world=self.world.sim_world.world_state,
             world_size=float(self.world.world_size),
             damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
+            fx_queue=self.world.render_resources.fx_queue,
+            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.world.sim_world.game_tune_started),

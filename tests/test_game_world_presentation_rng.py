@@ -24,4 +24,4 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
     world._queue_projectile_decals([hit], rand=world.state.rng.rand)
 
     assert int(world.state.rng.state) != sim_before
-    assert world.fx_queue.count > 0
+    assert world.render_resources.fx_queue.count > 0
