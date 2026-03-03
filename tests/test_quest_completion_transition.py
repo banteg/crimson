@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from crimson.modes.quest_mode import _quest_complete_banner_alpha
 from crimson.quests.runtime import QUEST_COMPLETION_TRANSITION_MS, tick_quest_completion_transition
+from crimson.views.quest_run_overlay import quest_complete_banner_alpha
 
 
 def test_tick_quest_completion_transition_resets_when_not_idle_complete() -> None:
@@ -69,9 +69,9 @@ def test_tick_quest_completion_transition_triggers_completion_music_in_native_wi
 
 
 def test_quest_complete_banner_alpha_matches_native_envelope() -> None:
-    assert _quest_complete_banner_alpha(0.0) == 0.0
-    assert _quest_complete_banner_alpha(250.0) == 0.5
-    assert _quest_complete_banner_alpha(500.0) == 1.0
-    assert _quest_complete_banner_alpha(1500.0) == 1.0
-    assert _quest_complete_banner_alpha(1750.0) == 0.5
-    assert _quest_complete_banner_alpha(2000.0) == 0.0
+    assert quest_complete_banner_alpha(0.0) == 0.0
+    assert quest_complete_banner_alpha(250.0) == 0.5
+    assert quest_complete_banner_alpha(500.0) == 1.0
+    assert quest_complete_banner_alpha(1500.0) == 1.0
+    assert quest_complete_banner_alpha(1750.0) == 0.5
+    assert quest_complete_banner_alpha(2000.0) == 0.0

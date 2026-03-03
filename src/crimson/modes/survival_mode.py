@@ -3,8 +3,8 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import random
-from collections.abc import Sequence
-from typing import Protocol, cast
+from collections.abc import Callable, Sequence
+from typing import cast
 
 import msgspec
 
@@ -59,7 +59,7 @@ from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
-from .base_gameplay_mode import BaseGameplayMode, DeterministicSessionLike
+from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -74,17 +74,13 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
+SurvivalSessionFactory = Callable[..., SurvivalDeterministicSession]
+
 
 class _SurvivalState(msgspec.Struct):
     elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown: float = 0.0
-
-
-class SurvivalSessionLike(DeterministicSessionLike, Protocol):
-    elapsed_ms: float
-    stage: int
-    spawn_cooldown_ms: float
 
 
 class SurvivalMode(BaseGameplayMode):
@@ -97,6 +93,7 @@ class SurvivalMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: SurvivalSessionFactory = SurvivalDeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -126,10 +123,24 @@ class SurvivalMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
-        self._sim_session: SurvivalSessionLike | None = None
+        self._session_factory = session_factory
+        self._sim_session: SurvivalDeterministicSession | None = self._new_sim_session()
         self._lan_last_tick_index: int = -1
         self._lan_perk_events: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
         self._lan_perk_close_suppress: bool = False
+
+    def _new_sim_session(self) -> SurvivalDeterministicSession:
+        return self._session_factory(
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=bool(self.world._game_tune_started),
+            clear_fx_queues_each_tick=False,
+        )
 
     def _reset_perk_prompt(self) -> None:
         if bool(self._lan_enabled) and str(self._lan_role) == "host":
@@ -354,17 +365,7 @@ class SurvivalMode(BaseGameplayMode):
         )
         self.world.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
 
-        self._sim_session = SurvivalDeterministicSession(
-            world=self.world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
-            detail_preset=5,
-            fx_toggle=0,
-            game_tune_started=bool(self.world._game_tune_started),
-            clear_fx_queues_each_tick=False,
-        )
+        self._sim_session = self._new_sim_session()
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
