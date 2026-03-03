@@ -129,7 +129,7 @@ def _hit_sfx_for_type(
 def plan_hit_sfx_keys(
     hits: list[ProjectileHit],
     *,
-    game_mode: int,
+    game_mode: GameMode,
     demo_mode_active: bool,
     game_tune_started: bool,
     rand: Callable[[], int],
@@ -143,7 +143,7 @@ def plan_hit_sfx_keys(
     end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
     keys: list[str] = []
     for idx in range(0, end):
-        if (not demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not local_game_tune_started):
+        if (not demo_mode_active) and game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
             # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
             # bullet/shock hit sound for that same hit. Native
@@ -372,7 +372,7 @@ def apply_world_presentation_step(
     event_sfx: list[str],
     prev_audio: Sequence[tuple[int, bool, float]],
     prev_perk_pending: int,
-    game_mode: int,
+    game_mode: GameMode,
     demo_mode_active: bool,
     perk_progression_enabled: bool,
     rand: Callable[[], int],
@@ -402,12 +402,12 @@ def apply_world_presentation_step(
                 gore_disabled=int(gore_disabled),
             )
             if freeze_bonus_active(state=state):
-                if (not bool(demo_mode_active)) and int(game_mode) != int(GameMode.RUSH) and (not bool(game_tune_started)):
+                if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):
                     commands.trigger_game_tune = True
             else:
                 commands.trigger_game_tune, planned_hit_sfx = plan_hit_sfx_keys(
                     hits,
-                    game_mode=int(game_mode),
+                    game_mode=game_mode,
                     demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
                     rand=rand_for("hit_sfx"),

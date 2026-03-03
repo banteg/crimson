@@ -2879,7 +2879,7 @@ class LightingDebugView:
             self._world.update(
                 sim_dt,
                 inputs=[self._build_input()],
-                game_mode=int(GameMode.SURVIVAL),
+                game_mode=GameMode.SURVIVAL,
             )
         elif self._world.players:
             self._player = self._world.players[0]

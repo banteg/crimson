@@ -22,9 +22,9 @@ def weapon_refresh_available(state: GameplayState) -> None:
         unlock_index = int(status.quest_unlock_index)
         unlock_index_full = int(status.quest_unlock_index_full)
 
-    game_mode = int(state.game_mode)
+    game_mode = state.game_mode
     if (
-        int(state._weapon_available_game_mode) == game_mode
+        int(state._weapon_available_game_mode) == int(game_mode)
         and int(state._weapon_available_unlock_index) == unlock_index
         and int(state._weapon_available_unlock_index_full) == unlock_index_full
     ):
@@ -49,7 +49,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
                 available[weapon_id] = True
 
     # Survival default loadout: Assault Rifle, Shotgun, Submachine Gun.
-    if game_mode == int(GameMode.SURVIVAL):
+    if game_mode == GameMode.SURVIVAL:
         for weapon_id in (WeaponId.ASSAULT_RIFLE, WeaponId.SHOTGUN, WeaponId.SUBMACHINE_GUN):
             idx = int(weapon_id)
             if 0 <= idx < len(available):
@@ -62,7 +62,7 @@ def weapon_refresh_available(state: GameplayState) -> None:
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
 
-    state._weapon_available_game_mode = game_mode
+    state._weapon_available_game_mode = int(game_mode)
     state._weapon_available_unlock_index = unlock_index
     state._weapon_available_unlock_index_full = unlock_index_full
 
@@ -95,7 +95,7 @@ def weapon_pick_random_available(state: GameplayState) -> int:
 
         # Quest 5-10 special-case: suppress Ion Cannon.
         if (
-            int(state.game_mode) == int(GameMode.QUESTS)
+            state.game_mode == GameMode.QUESTS
             and int(state.quest_stage_major) == 5
             and int(state.quest_stage_minor) == 10
             and weapon_id == WeaponId.ION_CANNON

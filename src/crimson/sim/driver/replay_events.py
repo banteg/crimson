@@ -37,7 +37,7 @@ def apply_replay_tick_events(
                 state,
                 players,
                 perk_state,
-                game_mode=int(game_mode_id),
+                game_mode=game_mode_id,
                 player_count=len(players),
             )
             continue
@@ -53,7 +53,7 @@ def apply_replay_tick_events(
                 players,
                 perk_state,
                 int(event.choice_index),
-                game_mode=int(game_mode_id),
+                game_mode=game_mode_id,
                 player_count=len(players),
                 dt=float(dt),
                 creatures=cast("list[CreatureForPerks]", world.creatures.entries),
@@ -67,7 +67,7 @@ def apply_replay_tick_events(
                 state,
                 players,
                 perk_state,
-                game_mode=int(game_mode_id),
+                game_mode=game_mode_id,
                 player_count=len(players),
             )
             continue

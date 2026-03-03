@@ -8,6 +8,7 @@ from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
 
+from ...game_modes import GameMode
 from ...gameplay import GameplayState
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
@@ -44,7 +45,7 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     players: list[PlayerState]
     creatures: Sequence[CreatureForPerks]
     player: PlayerState
-    game_mode: int
+    game_mode: GameMode
     player_count: int
     gore_disabled: int
 
@@ -111,7 +112,7 @@ class PerkMenuController:
 
     def _prewrapped_perk_desc(
         self,
-        perk_id: int,
+        perk_id: PerkId,
         font: SmallFontData,
         *,
         gore_disabled: int,
@@ -122,7 +123,7 @@ class PerkMenuController:
         if cached is not None:
             return cached
         desc = perk_display_description(
-            int(perk_id),
+            perk_id,
             gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
@@ -183,7 +184,7 @@ class PerkMenuController:
             ctx.state,
             ctx.players,
             ctx.perk_state,
-            game_mode=int(ctx.game_mode),
+            game_mode=ctx.game_mode,
             player_count=int(ctx.player_count),
         )
         if not choices:
@@ -210,7 +211,7 @@ class PerkMenuController:
             ctx.state,
             ctx.players,
             ctx.perk_state,
-            game_mode=int(ctx.game_mode),
+            game_mode=ctx.game_mode,
             player_count=int(ctx.player_count),
         )
         if not choices:
@@ -249,7 +250,7 @@ class PerkMenuController:
         preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
-                int(perk_id),
+                perk_id,
                 gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,
             )
@@ -265,7 +266,7 @@ class PerkMenuController:
                         ctx.players,
                         ctx.perk_state,
                         idx,
-                        game_mode=int(ctx.game_mode),
+                        game_mode=ctx.game_mode,
                         player_count=int(ctx.player_count),
                         dt=float(dt),
                         creatures=ctx.creatures,
@@ -305,7 +306,7 @@ class PerkMenuController:
                 ctx.players,
                 ctx.perk_state,
                 self._selected_index,
-                game_mode=int(ctx.game_mode),
+                game_mode=ctx.game_mode,
                 player_count=int(ctx.player_count),
                 dt=float(dt),
                 creatures=ctx.creatures,
@@ -327,7 +328,7 @@ class PerkMenuController:
             ctx.state,
             ctx.players,
             ctx.perk_state,
-            game_mode=int(ctx.game_mode),
+            game_mode=ctx.game_mode,
             player_count=int(ctx.player_count),
         )
         if not choices:
@@ -379,7 +380,7 @@ class PerkMenuController:
         preserve_bugs = bool(ctx.state.preserve_bugs)
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
-                int(perk_id),
+                perk_id,
                 gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,
             )
@@ -390,13 +391,13 @@ class PerkMenuController:
 
         selected = choices[self._selected_index]
         desc = perk_display_description(
-            int(selected),
+            selected,
             gore_disabled=int(ctx.gore_disabled),
             preserve_bugs=preserve_bugs,
         )
         if ctx.font is not None:
             desc = self._prewrapped_perk_desc(
-                int(selected),
+                selected,
                 ctx.font,
                 gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,

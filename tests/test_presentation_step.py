@@ -62,7 +62,7 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
 
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         game_tune_started=False,
         rand=_rand,
@@ -83,7 +83,7 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
 
     trigger_game_tune, keys = plan_hit_sfx_keys(
         _hits(2),
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         game_tune_started=True,
         rand=_rand,
@@ -158,7 +158,7 @@ def test_apply_world_presentation_step_orders_sfx() -> None:
         event_sfx=["sfx_custom_1", "sfx_custom_2", "sfx_custom_3", "sfx_custom_4", "sfx_custom_5"],
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
         rand=lambda: 0,
@@ -399,7 +399,7 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         event_sfx=[],
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         demo_mode_active=False,
         perk_progression_enabled=True,
         rand=rng,

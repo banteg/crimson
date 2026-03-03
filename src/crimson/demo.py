@@ -673,7 +673,7 @@ class DemoView:
             dt,
             inputs=inputs,
             auto_pick_perks=False,
-            game_mode=int(GameMode.DEMO),
+            game_mode=GameMode.DEMO,
             perk_progression_enabled=False,
         )
 

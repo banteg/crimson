@@ -190,25 +190,25 @@ def test_xp_rank_index_inserts_larger_xp_higher(game_mode: GameMode) -> None:
 
 
 def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
-    meta = PERK_BY_ID.get(int(PerkId.ALTERNATE_WEAPON))
+    meta = PERK_BY_ID.get(PerkId.ALTERNATE_WEAPON)
     assert meta is not None
 
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=int(GameMode.QUESTS), player_count=2) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=2) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=2) is False
 
 
 def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
-    meta = PERK_BY_ID.get(int(PerkId.GRIM_DEAL))
+    meta = PERK_BY_ID.get(PerkId.GRIM_DEAL)
     assert meta is not None
 
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=int(GameMode.QUESTS), player_count=1) is False
+    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=GameMode.SURVIVAL, player_count=1) is True
+    assert perk_can_offer(state, player, PerkId.GRIM_DEAL, game_mode=GameMode.QUESTS, player_count=1) is False
 
 
 @pytest.mark.parametrize(
@@ -226,27 +226,27 @@ def test_mode_flags_match_native_allowlist_behavior(
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     expected_survival_1p, expected_quest_1p, expected_survival_2p, expected_quest_2p = expected
-    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=1) is expected_survival_1p
-    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is expected_quest_1p
-    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=2) is expected_survival_2p
-    assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=2) is expected_quest_2p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=1) is expected_survival_1p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is expected_quest_1p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=2) is expected_survival_2p
+    assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=2) is expected_quest_2p
 
 
 def test_mode_flag_gated_perks_reject_quest_and_two_player() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     for perk_id in (PerkId.FATAL_LOTTERY, PerkId.FINAL_REVENGE, PerkId.HIGHLANDER):
-        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=1) is True
-        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is False
-        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.SURVIVAL), player_count=2) is False
-        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=2) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=1) is True
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=2) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=2) is False
 
 
 def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
     baseline = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     for perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER):
-        assert perk_can_offer(baseline, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is True
+        assert perk_can_offer(baseline, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is True
 
     state = GameplayState()
     state.hardcore = True
@@ -254,18 +254,18 @@ def test_hardcore_quest_2_10_blocks_poison_related_perks() -> None:
     state.quest_stage_minor = 10
 
     for perk_id in (PerkId.POISON_BULLETS, PerkId.VEINS_OF_POISON, PerkId.PLAGUEBEARER):
-        assert perk_can_offer(state, player, perk_id, game_mode=int(GameMode.QUESTS), player_count=1) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is False
 
 
 def test_perk_flags_match_native_ctor_defaults_and_known_overrides() -> None:
-    assert PERK_BY_ID[int(PerkId.SHARPSHOOTER)].flags == (
+    assert PERK_BY_ID[PerkId.SHARPSHOOTER].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED
     )
-    assert PERK_BY_ID[int(PerkId.INSTANT_WINNER)].flags == (
+    assert PERK_BY_ID[PerkId.INSTANT_WINNER].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.TWO_PLAYER_ALLOWED | PerkFlags.STACKABLE
     )
-    assert PERK_BY_ID[int(PerkId.RANDOM_WEAPON)].flags == (
+    assert PERK_BY_ID[PerkId.RANDOM_WEAPON].flags == (
         PerkFlags.QUEST_MODE_ALLOWED | PerkFlags.STACKABLE
     )
-    assert PERK_BY_ID[int(PerkId.BREATHING_ROOM)].flags == PerkFlags.TWO_PLAYER_ALLOWED
-    assert PERK_BY_ID[int(PerkId.GRIM_DEAL)].flags == PerkFlags(0)
+    assert PERK_BY_ID[PerkId.BREATHING_ROOM].flags == PerkFlags.TWO_PLAYER_ALLOWED
+    assert PERK_BY_ID[PerkId.GRIM_DEAL].flags == PerkFlags(0)

@@ -266,7 +266,7 @@ class TypoShooterMode(BaseGameplayMode):
             dt_world,
             inputs=[input_state],
             auto_pick_perks=False,
-            game_mode=int(GameMode.TYPO),
+            game_mode=GameMode.TYPO,
             perk_progression_enabled=False,
         )
         enforce_typo_player_frame(self.player, state=self.state)

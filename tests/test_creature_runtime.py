@@ -825,7 +825,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
 
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -851,7 +851,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None
 
 def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -878,7 +878,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
 
 def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()

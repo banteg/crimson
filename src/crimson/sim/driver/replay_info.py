@@ -7,7 +7,7 @@ import msgspec
 
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
-from ...perks.ids import perk_display_name
+from ...perks.ids import PerkId, perk_display_name
 from ...replay import PerkMenuOpenEvent, Replay, ReplayEvent
 from ...weapons import WeaponId, weapon_display_name
 from ..state_types import BonusPickupEvent, PlayerState
@@ -254,7 +254,7 @@ def _append_snapshot_diff_events(
             if int(after_count) <= int(before_count):
                 continue
             perk_name = perk_display_name(
-                int(perk_id),
+                PerkId(perk_id),
                 gore_disabled=int(gore_disabled),
                 preserve_bugs=bool(preserve_bugs),
             )

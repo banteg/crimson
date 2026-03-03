@@ -276,7 +276,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
-                    game_mode=int(GameMode.TUTORIAL),
+                    game_mode=GameMode.TUTORIAL,
                 ),
             )
 
@@ -294,7 +294,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="  Rush  ",
                     tooltip="Face a rush of aliens in Rush mode.",
                     action="start_rush",
-                    game_mode=int(GameMode.RUSH),
+                    game_mode=GameMode.RUSH,
                     show_count=True,
                 ),
                 _PlayGameModeEntry(
@@ -302,7 +302,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Survival",
                     tooltip="Gain perks and weapons and fight back.",
                     action="start_survival",
-                    game_mode=int(GameMode.SURVIVAL),
+                    game_mode=GameMode.SURVIVAL,
                     show_count=True,
                 ),
             ],
@@ -315,7 +315,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Typ'o'Shooter",
                     tooltip="Use your typing skills as the weapon to lay\nthem down.",
                     action="start_typo",
-                    game_mode=int(GameMode.TYPO),
+                    game_mode=GameMode.TYPO,
                     show_count=True,
                 ),
             )
@@ -327,7 +327,7 @@ class PlayGameMenuView(PanelMenuView):
                     label="Tutorial",
                     tooltip="Learn how to play Crimsonland.",
                     action="start_tutorial",
-                    game_mode=int(GameMode.TUTORIAL),
+                    game_mode=GameMode.TUTORIAL,
                 ),
             )
 

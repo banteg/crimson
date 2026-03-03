@@ -36,7 +36,7 @@ def _status_default() -> save_status.GameStatus:
 
 def test_weapon_refresh_available_includes_survival_defaults() -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.SURVIVAL)
+    state.game_mode = GameMode.SURVIVAL
 
     weapon_refresh_available(state)
 
@@ -53,7 +53,7 @@ def test_weapon_refresh_available_unlocks_quest_weapon_ids() -> None:
 
     state = GameplayState()
     state.status = status
-    state.game_mode = int(GameMode.QUESTS)
+    state.game_mode = GameMode.QUESTS
 
     weapon_refresh_available(state)
 
@@ -68,7 +68,7 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
 
     state = GameplayState(rng=_as_rng(_SeqRng([1, 0])))
     state.status = status
-    state.game_mode = int(GameMode.QUESTS)
+    state.game_mode = GameMode.QUESTS
 
     assert weapon_pick_random_available(state) == WeaponId.PISTOL
 
@@ -79,6 +79,6 @@ def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
 
     state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status
-    state.game_mode = int(GameMode.SURVIVAL)
+    state.game_mode = GameMode.SURVIVAL
 
     assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE

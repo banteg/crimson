@@ -112,7 +112,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -133,7 +133,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 

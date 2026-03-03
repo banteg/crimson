@@ -110,7 +110,7 @@ class GameplayState(msgspec.Struct):
     plaguebearer_infection_count: int = 0
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
     sfx_queue: list[str] = msgspec.field(default_factory=list)
-    game_mode: int = int(GameMode.SURVIVAL)
+    game_mode: GameMode = GameMode.SURVIVAL
     demo_mode_active: bool = False
     hardcore: bool = False
     preserve_bugs: bool = False
@@ -256,7 +256,7 @@ def survival_progression_update(
     state: GameplayState,
     players: list[PlayerState],
     *,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int | None = None,
     auto_pick: bool = True,
     dt: float | None = None,

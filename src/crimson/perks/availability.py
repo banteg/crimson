@@ -53,7 +53,7 @@ def perks_rebuild_available(state: GameplayState) -> None:
 
 
 def perk_can_offer(
-    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: int, player_count: int,
+    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: GameMode, player_count: int,
 ) -> bool:
     """Return whether `perk_id` is eligible for selection.
 
@@ -65,7 +65,7 @@ def perk_can_offer(
 
     # Hardcore quest 2-10 blocks poison-related perks.
     if (
-        int(game_mode) == int(GameMode.QUESTS)
+        game_mode == GameMode.QUESTS
         and state.hardcore
         and int(state.quest_stage_major) == 2
         and int(state.quest_stage_minor) == 10
@@ -73,7 +73,7 @@ def perk_can_offer(
     ):
         return False
 
-    meta = PERK_BY_ID.get(int(perk_id))
+    meta = PERK_BY_ID.get(perk_id)
     if meta is None:
         return False
 
@@ -82,7 +82,7 @@ def perk_can_offer(
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
     # - in two-player mode, offered perks must have bit 0x2 set
-    if int(game_mode) == int(GameMode.QUESTS) and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
+    if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
     if int(player_count) == 2 and (flags & PerkFlags.TWO_PLAYER_ALLOWED) == 0:
         return False

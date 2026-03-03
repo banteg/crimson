@@ -7,6 +7,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+from ...perks import PerkId
 from ..high_scores_layout import perks_db_right_detail_x_shift
 from ..types import FrontendContext
 from .databases_base import _DatabaseBaseView
@@ -24,7 +25,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
 
     def __init__(self, state: FrontendContext) -> None:
         super().__init__(state)
-        self._perk_ids: list[int] = []
+        self._perk_ids: list[PerkId] = []
         self._list_scroll_index: int = 0
         self._selected_row_index: int = 0
         self._hovered_row_index: int = -1
@@ -172,7 +173,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         hovered_perk_id = self._hovered_perk_id()
         if hovered_perk_id is None:
             return
-        perk_id = int(hovered_perk_id)
+        perk_id = hovered_perk_id
         perk_name = self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno" if preserve_bugs else "perk"
@@ -315,14 +316,14 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
             self._begin_close_transition("back_to_previous")
 
-    def _hovered_perk_id(self) -> int | None:
+    def _hovered_perk_id(self) -> PerkId | None:
         if 0 <= int(self._hovered_row_index) < len(self._perk_ids):
-            return int(self._perk_ids[int(self._hovered_row_index)])
+            return self._perk_ids[int(self._hovered_row_index)]
         return None
 
-    def _selected_perk_id(self) -> int | None:
+    def _selected_perk_id(self) -> PerkId | None:
         if 0 <= int(self._selected_row_index) < len(self._perk_ids):
-            return int(self._perk_ids[int(self._selected_row_index)])
+            return self._perk_ids[int(self._selected_row_index)]
         return None
 
     def _scrollbar_geometry(
@@ -342,7 +343,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         thumb_top = track_y + 1.0 * scale + ((track_h - 3.0 * scale - thumb_h) / float(scroll_span)) * float(start)
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
-    def _build_perk_database_ids(self) -> list[int]:
+    def _build_perk_database_ids(self) -> list[PerkId]:
         from ...perks.availability import perks_rebuild_available
         from ...sim.state_types import PERK_COUNT_SIZE, GameplayState
 
@@ -358,42 +359,42 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         stub._perk_available_unlock_index = -1
         perks_rebuild_available(cast(GameplayState, stub))
 
-        perk_ids = [idx for idx, available in enumerate(stub.perk_available) if available and idx > 0]
+        perk_ids = [PerkId(idx) for idx, available in enumerate(stub.perk_available) if available and idx > 0]
         perk_ids.sort()
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_name
 
         return perk_display_name(
-            int(perk_id),
+            perk_id,
             gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_desc(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_desc(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_description
 
         return perk_display_description(
-            int(perk_id),
+            perk_id,
             gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_prereq_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str | None:
+    def _perk_prereq_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 
-        meta = PERK_BY_ID.get(int(perk_id))
+        meta = PERK_BY_ID.get(perk_id)
         if meta is None:
             return None
         prereq = meta.prereq
         if not prereq:
             return None
         return perk_display_name(
-            int(prereq[0]),
+            prereq[0],
             gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
@@ -404,7 +405,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def _gore_disabled(self) -> int:
         return self.state.config.gore_disabled
 
-    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, gore_disabled: int) -> str:
+    def _prewrapped_perk_desc(self, perk_id: PerkId, font: SmallFontData, *, gore_disabled: int) -> str:
         key = (int(perk_id), int(gore_disabled), int(bool(self._preserve_bugs())))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:

@@ -11,7 +11,7 @@ from .ids import PERK_BY_ID, PerkFlags, PerkId
 from .runtime.apply import perk_apply
 from .state import CreatureForPerks, PerkSelectionState
 
-PERK_ID_MAX = max(PERK_BY_ID)
+PERK_ID_MAX = max(int(perk_id) for perk_id in PERK_BY_ID)
 
 _DEATH_CLOCK_BLOCKED: frozenset[PerkId] = frozenset(
     (
@@ -47,7 +47,7 @@ def perk_choice_count(player: PlayerState) -> int:
     return 5
 
 
-def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: int, player_count: int) -> PerkId:
+def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: GameMode, player_count: int) -> PerkId:
     """Randomly select an eligible perk id.
 
     Port of `perk_select_random` (0x0042fbd0).
@@ -71,7 +71,7 @@ def _perk_offerable_mask(
     state: GameplayState,
     player: PlayerState,
     *,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int,
 ) -> list[bool]:
     """Build a cached `perk_select_random` eligibility mask for `1..PERK_ID_MAX`."""
@@ -93,7 +93,7 @@ def perk_generate_choices(
     player: PlayerState,
     *,
     players: list[PlayerState] | None = None,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int,
     count: int | None = None,
 ) -> list[PerkId]:
@@ -165,7 +165,7 @@ def perk_generate_choices(
             if perk_id in _PERK_RARITY_GATE and (int(state.rng.rand()) & 3) == 1:
                 continue
 
-            meta = PERK_BY_ID.get(int(perk_id))
+            meta = PERK_BY_ID.get(perk_id)
             flags = meta.flags if meta is not None else PerkFlags(0)
             stackable = (flags & PerkFlags.STACKABLE) != 0
 
@@ -181,7 +181,7 @@ def perk_generate_choices(
         choices[choice_index] = perk_id
         choice_index += 1
 
-    if int(game_mode) == int(GameMode.TUTORIAL):
+    if game_mode == GameMode.TUTORIAL:
         choices = [
             PerkId.SHARPSHOOTER,
             PerkId.LONG_DISTANCE_RUNNER,
@@ -192,7 +192,7 @@ def perk_generate_choices(
             PerkId.FASTSHOT,
         ]
 
-    return choices[: int(count)]
+    return choices[:count]
 
 
 def perk_auto_pick(
@@ -200,7 +200,7 @@ def perk_auto_pick(
     players: list[PlayerState],
     perk_state: PerkSelectionState,
     *,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int | None = None,
     dt: float | None = None,
     creatures: Sequence[CreatureForPerks] | None = None,
@@ -214,17 +214,14 @@ def perk_auto_pick(
     picks: list[PerkId] = []
     while perk_state.pending_count > 0:
         if perk_state.choices_dirty or not perk_state.choices:
-            perk_state.choices = [
-                int(perk)
-                for perk in perk_generate_choices(
-                    state,
-                    players[0],
-                    players=players,
-                    game_mode=game_mode,
-                    player_count=player_count,
-                    count=7,
-                )
-            ]
+            perk_state.choices = perk_generate_choices(
+                state,
+                players[0],
+                players=players,
+                game_mode=game_mode,
+                player_count=player_count,
+                count=7,
+            )
             perk_state.choices_dirty = False
         if not perk_state.choices:
             break
@@ -233,7 +230,7 @@ def perk_auto_pick(
         if not visible_choices:
             break
         idx = int(state.rng.rand() % len(visible_choices))
-        perk_id = PerkId(visible_choices[idx])
+        perk_id = visible_choices[idx]
         perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
         picks.append(perk_id)
         perk_state.pending_count -= 1
@@ -246,7 +243,7 @@ def perk_selection_current_choices(
     players: list[PlayerState],
     perk_state: PerkSelectionState,
     *,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int | None = None,
 ) -> list[PerkId]:
     """Return the current perk choices, generating them if needed.
@@ -260,20 +257,17 @@ def perk_selection_current_choices(
     if player_count is None:
         player_count = len(players)
     if perk_state.choices_dirty or not perk_state.choices:
-        perk_state.choices = [
-            int(perk)
-            for perk in perk_generate_choices(
-                state,
-                players[0],
-                players=players,
-                game_mode=game_mode,
-                player_count=player_count,
-                count=7,
-            )
-        ]
+        perk_state.choices = perk_generate_choices(
+            state,
+            players[0],
+            players=players,
+            game_mode=game_mode,
+            player_count=player_count,
+            count=7,
+        )
         perk_state.choices_dirty = False
     visible_count = max(1, int(perk_choice_count(players[0])))
-    return [PerkId(perk_id) for perk_id in perk_state.choices[:visible_count]]
+    return perk_state.choices[:visible_count]
 
 
 def perk_selection_pick(
@@ -282,7 +276,7 @@ def perk_selection_pick(
     perk_state: PerkSelectionState,
     choice_index: int,
     *,
-    game_mode: int,
+    game_mode: GameMode,
     player_count: int | None = None,
     dt: float | None = None,
     creatures: Sequence[CreatureForPerks] | None = None,

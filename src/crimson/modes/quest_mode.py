@@ -350,7 +350,7 @@ class QuestMode(BaseGameplayMode):
             players=players,
             creatures=cast("list[CreatureForPerks]", self.creatures.entries),
             player=self.player,
-            game_mode=int(GameMode.QUESTS),
+            game_mode=GameMode.QUESTS,
             player_count=len(players),
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,

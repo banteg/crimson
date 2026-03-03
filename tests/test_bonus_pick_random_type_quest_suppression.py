@@ -48,7 +48,7 @@ def test_bonus_pick_random_type_quest_suppression(
     expected_bonus_id: BonusId,
 ) -> None:
     state = GameplayState(rng=_SeqRng(rng_values))  # type: ignore[arg-type]
-    state.game_mode = int(GameMode.QUESTS)
+    state.game_mode = GameMode.QUESTS
     state.hardcore = hardcore
     state.quest_stage_major = quest_stage_major
     state.quest_stage_minor = quest_stage_minor

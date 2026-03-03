@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from types import SimpleNamespace
+from typing import cast
 
 import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.modes.components.perk_menu_controller import PerkMenuContext, PerkMenuController
+from crimson.perks import PerkId
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.state_types import PlayerState
 from crimson.ui.perk_menu import PerkMenuAssets
+from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -56,7 +60,11 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
     menu = PerkMenuController()
     play_sfx = mocker.Mock()
 
-    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
 
     ctx = PerkMenuContext(
         state=GameplayState(),
@@ -64,7 +72,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
         players=[],
         creatures=[],
         player=_dummy_player(),
-        game_mode=1,
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
         font=None,
@@ -84,7 +92,11 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
     menu.open = True
 
     play_sfx = mocker.Mock()
-    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
@@ -99,7 +111,7 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
         players=[],
         creatures=[],
         player=_dummy_player(),
-        game_mode=1,
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
         font=None,
@@ -119,7 +131,11 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
     menu = PerkMenuController(on_pick=on_pick)
     menu.open = True
 
-    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
     mocker.patch.object(perk_menu_controller_module, "perk_selection_pick", side_effect=lambda *args, **kwargs: object())
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
@@ -134,7 +150,7 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
         players=[],
         creatures=[],
         player=_dummy_player(),
-        game_mode=1,
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
         font=None,
@@ -153,7 +169,11 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
     menu.open = True
 
     play_sfx = mocker.Mock()
-    mocker.patch.object(perk_menu_controller_module, "perk_selection_current_choices", side_effect=lambda *args, **kwargs: [1])
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
     _patch_perk_menu_raylib(mocker)
@@ -164,7 +184,7 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
         players=[],
         creatures=[],
         player=_dummy_player(),
-        game_mode=1,
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
         gore_disabled=0,
         font=None,
@@ -192,6 +212,7 @@ def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> Non
 
 def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     menu = PerkMenuController()
+    font = cast(SmallFontData, object())
     measure_small_text_width = mocker.patch.object(
         perk_menu_controller_module,
         "measure_small_text_width",
@@ -203,9 +224,19 @@ def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
         side_effect=lambda _perk_id, *, gore_disabled=0, preserve_bugs=False: "alpha beta gamma",
     )
 
-    first = menu._prewrapped_perk_desc(5, object(), gore_disabled=0, preserve_bugs=False)  # type: ignore[arg-type]
+    first = menu._prewrapped_perk_desc(
+        PerkId.LONG_DISTANCE_RUNNER,
+        font,
+        gore_disabled=0,
+        preserve_bugs=False,
+    )
     count_after_first = measure_small_text_width.call_count
-    second = menu._prewrapped_perk_desc(5, object(), gore_disabled=0, preserve_bugs=False)  # type: ignore[arg-type]
+    second = menu._prewrapped_perk_desc(
+        PerkId.LONG_DISTANCE_RUNNER,
+        font,
+        gore_disabled=0,
+        preserve_bugs=False,
+    )
 
     assert first == second
     assert measure_small_text_width.call_count == count_after_first

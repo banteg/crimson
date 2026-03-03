@@ -69,7 +69,7 @@ def _bonus_pick_suppress_active_shock_chain(ctx: _BonusPickCtx) -> bool:
 
 
 def _bonus_pick_suppress_quest_minor10_nuke(ctx: _BonusPickCtx) -> bool:
-    if not (int(ctx.state.game_mode) == int(GameMode.QUESTS) and int(ctx.state.quest_stage_minor) == 10):
+    if not (ctx.state.game_mode == GameMode.QUESTS and int(ctx.state.quest_stage_minor) == 10):
         return False
     if ctx.bonus_id != BonusId.NUKE:
         return False
@@ -80,7 +80,7 @@ def _bonus_pick_suppress_quest_minor10_nuke(ctx: _BonusPickCtx) -> bool:
 
 
 def _bonus_pick_suppress_quest_minor10_freeze(ctx: _BonusPickCtx) -> bool:
-    if not (int(ctx.state.game_mode) == int(GameMode.QUESTS) and int(ctx.state.quest_stage_minor) == 10):
+    if not (ctx.state.game_mode == GameMode.QUESTS and int(ctx.state.quest_stage_minor) == 10):
         return False
     if ctx.bonus_id != BonusId.FREEZE:
         return False

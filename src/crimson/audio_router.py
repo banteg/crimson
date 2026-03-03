@@ -169,7 +169,7 @@ class AudioRouter(msgspec.Struct):
         self,
         hits: list[ProjectileHit],
         *,
-        game_mode: int,
+        game_mode: GameMode,
         rand: Callable[[], int],
         beam_types: frozenset[int],
     ) -> None:
@@ -179,7 +179,7 @@ class AudioRouter(msgspec.Struct):
         end = min(len(hits), _MAX_HIT_SFX_PER_FRAME)
         game_tune_started = bool(self.audio.music.game_tune_started)
         for idx in range(0, end):
-            if (not self.demo_mode_active) and int(game_mode) != int(GameMode.RUSH) and (not game_tune_started):
+            if (not self.demo_mode_active) and game_mode != GameMode.RUSH and (not game_tune_started):
                 trigger_game_tune(self.audio, rand=rand)
                 game_tune_started = True
                 continue

@@ -175,7 +175,7 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry | None:
-        if int(state.game_mode) == int(GameMode.RUSH):
+        if state.game_mode == GameMode.RUSH:
             return None
         if bonus_id == BonusId.UNUSED:
             return None
@@ -213,7 +213,7 @@ class BonusPool:
         world_width: float = 1024.0,
         world_height: float = 1024.0,
     ) -> BonusEntry:
-        if int(state.game_mode) == int(GameMode.RUSH):
+        if state.game_mode == GameMode.RUSH:
             return self._sentinel
         if (
             pos.x < BONUS_SPAWN_MARGIN
@@ -264,14 +264,14 @@ class BonusPool:
     ) -> BonusEntry | None:
         from ..perks import PerkId
 
-        game_mode = int(state.game_mode)
-        if game_mode == int(GameMode.TYPO):
+        game_mode = state.game_mode
+        if game_mode == GameMode.TYPO:
             return None
         if state.demo_mode_active:
             return None
-        if game_mode == int(GameMode.RUSH):
+        if game_mode == GameMode.RUSH:
             return None
-        if game_mode == int(GameMode.TUTORIAL):
+        if game_mode == GameMode.TUTORIAL:
             return None
         if state.bonus_spawn_guard:
             return None
@@ -402,7 +402,7 @@ class BonusPool:
 
             decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
             entry.time_left -= decay
-            if not entry.picked and int(state.game_mode) == int(GameMode.TUTORIAL):
+            if not entry.picked and state.game_mode == GameMode.TUTORIAL:
                 entry.time_left = 5.0
             expired_to_unused = False
             if entry.time_left < 0.0:
