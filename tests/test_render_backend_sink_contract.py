@@ -67,20 +67,16 @@ def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
     ]
 
 
-def test_window_sink_logs_and_continues_on_present_error() -> None:
-    logs: list[str] = []
-
+def test_window_sink_raises_on_present_error() -> None:
     def _raise_present() -> None:
         raise RuntimeError("boom")
 
-    sink = WindowSink(present_frame=_raise_present, log_error=logs.append)
+    sink = WindowSink(present_frame=_raise_present)
     sink.open()
-    sink.present()
+    with pytest.raises(RuntimeError, match="boom"):
+        sink.present()
     sink.flush()
     sink.close()
-
-    assert len(logs) == 1
-    assert "window sink present failed" in logs[0]
 
 
 def test_video_sink_transport_and_fail_fast_behavior(tmp_path: Path) -> None:

@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Protocol
 
 RenderPresent = Callable[[], None]
-RenderErrorLogger = Callable[[str], None]
 
 
 class RenderSink(Protocol):
@@ -25,10 +24,8 @@ class WindowSink:
         self,
         *,
         present_frame: RenderPresent | None = None,
-        log_error: RenderErrorLogger | None = None,
     ) -> None:
         self._present_frame = present_frame
-        self._log_error = log_error
         self._opened = False
 
     def open(self) -> None:
@@ -37,11 +34,7 @@ class WindowSink:
     def present(self) -> None:
         if self._present_frame is None:
             return
-        try:
-            self._present_frame()
-        except Exception as exc:  # pragma: no cover - defensive logging policy seam
-            if self._log_error is not None:
-                self._log_error(f"window sink present failed: {exc}")
+        self._present_frame()
 
     def flush(self) -> None:
         pass
