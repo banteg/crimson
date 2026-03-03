@@ -833,6 +833,6 @@ def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTemplateI
             raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
         return type_ids[0]
     try:
-        return ProjectileTemplateId(int(weapon_id))
+        return ProjectileTemplateId(weapon_id)
     except ValueError as exc:
         raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}") from exc

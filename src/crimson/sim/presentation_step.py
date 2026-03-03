@@ -120,7 +120,7 @@ def _hit_sfx_for_type(
     rand: Callable[[], int],
 ) -> str | None:
     _ = beam_types
-    ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(int(type_id))).ammo_class
+    ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
     return _rand_choice(rand, _BULLET_HIT_SFX)
@@ -241,7 +241,7 @@ def queue_projectile_decals_pre_hit(
 
     base_angle = (hit.hit - hit.origin).to_angle()
 
-    if type_id == int(ProjectileTemplateId.BLADE_GUN):
+    if type_id == ProjectileTemplateId.BLADE_GUN.value:
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,

@@ -406,17 +406,17 @@ _SECONDARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
 
 _ION_PROJECTILE_TYPES: frozenset[int] = frozenset(
     {
-        int(ProjectileTemplateId.ION_RIFLE),
-        int(ProjectileTemplateId.ION_MINIGUN),
+        ProjectileTemplateId.ION_RIFLE.value,
+        ProjectileTemplateId.ION_MINIGUN.value,
     },
 )
 
 _OMNI_PROJECTILE_TYPES: frozenset[int] = frozenset(
     {
-        int(ProjectileTemplateId.ION_RIFLE),
-        int(ProjectileTemplateId.ION_MINIGUN),
-        int(ProjectileTemplateId.PLASMA_RIFLE),
-        int(ProjectileTemplateId.PLASMA_CANNON),
+        ProjectileTemplateId.ION_RIFLE.value,
+        ProjectileTemplateId.ION_MINIGUN.value,
+        ProjectileTemplateId.PLASMA_RIFLE.value,
+        ProjectileTemplateId.PLASMA_CANNON.value,
     },
 )
 

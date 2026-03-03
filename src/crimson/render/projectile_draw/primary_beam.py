@@ -68,7 +68,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     grid = 4
     frame = 2
 
-    is_fire_bullets = type_id == int(ProjectileTemplateId.FIRE_BULLETS)
+    is_fire_bullets = type_id == ProjectileTemplateId.FIRE_BULLETS.value
     is_ion = type_id in ION_TYPES
 
     origin = proj_origin(ctx.proj, ctx.pos)

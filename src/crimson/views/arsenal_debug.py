@@ -86,7 +86,7 @@ def _fmt_hex(value: int | None) -> str:
 
 def _projectile_type_label(type_id: int) -> str:
     try:
-        name = ProjectileTemplateId(int(type_id)).name.lower().replace("_", " ")
+        name = ProjectileTemplateId(type_id).name.lower().replace("_", " ")
     except ValueError:
         name = "unknown"
     return f"{name} (id {type_id})"

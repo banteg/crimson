@@ -1183,7 +1183,7 @@ class CreaturePool:
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
-                        projectile_type = ProjectileTemplateId(int(creature.orbit_radius))
+                        projectile_type = ProjectileTemplateId(creature.orbit_radius)
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),

@@ -217,7 +217,7 @@ class ProjectilePool:
             value = damage_scale_by_type.get(type_id)
             if value is not None:
                 return float(value)
-            return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(int(type_id))).damage_scale)
+            return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).damage_scale)
 
         def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:
             dx = float(f32(float(origin.x) - float(pos.x)))
@@ -258,7 +258,7 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
-            behavior = projectile_behavior_for_type_id(ProjectileTemplateId(int(proj.type_id)))
+            behavior = projectile_behavior_for_type_id(ProjectileTemplateId(proj.type_id))
 
             if proj.life_timer <= 0.0:
                 proj.active = False
