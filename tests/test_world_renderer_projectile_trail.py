@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import crimson.render.world.projectiles as world_projectiles
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.projectiles import draw_bullet_trail

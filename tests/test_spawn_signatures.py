@@ -9,7 +9,8 @@ from crimson.gameplay import (
     player_update,
 )
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId

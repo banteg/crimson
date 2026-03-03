@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..owner_ref import OwnerRef
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 from ..weapon_runtime.spawn import owner_ref_for_player, spawn_projectile_ring
 from .apply_context import BonusApplyCtx
 

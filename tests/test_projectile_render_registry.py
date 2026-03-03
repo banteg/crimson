@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.render.projectile_render_registry import (
     beam_effect_scale,
     known_proj_rgb,

@@ -4,7 +4,8 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.factories import make_projectile_update_options

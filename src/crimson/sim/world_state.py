@@ -27,7 +27,8 @@ from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
-from ..projectiles import ProjectileHit, ProjectileUpdateOptions
+from ..projectiles.runtime import ProjectileUpdateOptions
+from ..projectiles.types import ProjectileHit
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (

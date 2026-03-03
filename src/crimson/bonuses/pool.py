@@ -9,7 +9,7 @@ from grim.geom import Vec2
 
 from ..game_modes import GameMode
 from ..perks.helpers import perk_active
-from ..projectiles import CreatureDamageApplier
+from ..projectiles.types import CreatureDamageApplier
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name

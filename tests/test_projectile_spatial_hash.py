@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import SecondaryProjectilePool
+from crimson.projectiles.runtime import SecondaryProjectilePool
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature

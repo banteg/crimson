@@ -5,7 +5,7 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import GameplayState, player_update
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime.spawn import projectile_spawn

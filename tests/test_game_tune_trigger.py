@@ -5,7 +5,7 @@ from unittest.mock import call
 import crimson.audio_router as audio_router
 from crimson.audio_router import AudioRouter
 from crimson.game_modes import GameMode
-from crimson.projectiles import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from grim.config import CrimsonConfig
 
     from ...creatures.runtime import CreaturePool
-    from ...projectiles import Projectile, SecondaryProjectile
+    from ...projectiles.types import Projectile, SecondaryProjectile
     from ...sim.state_types import PlayerState
 
 

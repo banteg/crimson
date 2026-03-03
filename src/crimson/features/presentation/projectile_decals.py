@@ -10,7 +10,7 @@ from grim.geom import Vec2
 
 from ...bonuses.fire_bullets import queue_large_hit_decal_streak
 from ...effects import FxQueue
-from ...projectiles import ProjectileHit, ProjectileTypeId
+from ...projectiles.types import ProjectileHit, ProjectileTypeId
 
 
 class ProjectileDecalCtx(msgspec.Struct):

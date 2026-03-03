@@ -5,7 +5,7 @@ import math
 from grim.color import RGBA
 from grim.geom import Vec2
 
-from ...projectiles import ProjectileTypeId
+from ...projectiles.types import ProjectileTypeId
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks

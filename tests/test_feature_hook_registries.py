@@ -18,7 +18,7 @@ from crimson.perks.runtime.manifest import (
     WORLD_DT_STEPS,
 )
 from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
-from crimson.projectiles import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState

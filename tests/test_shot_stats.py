@@ -4,7 +4,7 @@ from functools import partial
 
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (

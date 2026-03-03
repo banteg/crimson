@@ -3,7 +3,8 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.factories import make_projectile_update_options

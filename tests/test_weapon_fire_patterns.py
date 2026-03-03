@@ -6,7 +6,7 @@ import pytest
 
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (

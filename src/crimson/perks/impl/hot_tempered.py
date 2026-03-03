@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from ...owner_ref import OwnerRef
-from ...projectiles import ProjectileTypeId
+from ...projectiles.types import ProjectileTypeId
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
