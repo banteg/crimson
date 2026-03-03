@@ -3263,7 +3263,7 @@ class LightingDebugView:
             )
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(self._world.render_resources.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("lighting-debug", "Lighting debug")

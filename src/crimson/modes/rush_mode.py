@@ -361,7 +361,7 @@ class RushMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self.world.particles_texture,
+            self.world.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

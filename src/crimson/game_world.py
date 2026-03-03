@@ -115,10 +115,6 @@ class GameWorld(msgspec.Struct):
     def fx_queue_rotated(self) -> FxQueueRotated:
         return self.render_resources.fx_queue_rotated
 
-    @property
-    def particles_texture(self) -> rl.Texture | None:
-        return self.render_resources.particles_texture
-
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
             audio=self.audio,

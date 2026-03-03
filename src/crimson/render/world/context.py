@@ -98,7 +98,7 @@ class WorldRenderCtx(msgspec.Struct):
     def particles_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.particles_texture
-        return self.renderer._world.particles_texture
+        return self.renderer._world.render_resources.particles_texture
 
     @property
     def bullet_texture(self) -> rl.Texture | None:

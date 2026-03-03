@@ -32,7 +32,7 @@ class _StateStub:
 
 class _WorldStub:
     def __init__(self, entries: list[EffectEntry]) -> None:
-        self.particles_texture = _TextureStub()
+        self.render_resources = SimpleNamespace(particles_texture=_TextureStub())
         self.state = _StateStub(effects=_EffectPoolStub(entries=entries))
 
 
