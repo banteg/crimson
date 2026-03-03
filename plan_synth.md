@@ -434,6 +434,105 @@ uv run pytest \
   tests/test_rollback_resync_v5.py
 ```
 
+## Detailed Execution Checklist
+
+Use this as the implementation punch-list. Do not start the next PR until all items in the current PR block are done.
+
+### PR-0 Checklist: Safety Nets and Instrumentation
+
+- [ ] Add `runtime_updates_per_frame` counter at loop owner (`GameLoopView`) and reset/report each frame.
+- [ ] Add assertion/log when runtime pump count is not exactly 1 per frame in LAN mode.
+- [ ] Add `input_stall_count` and `ticks_advanced_per_frame` counters to runtime telemetry/debug output.
+- [ ] Add stage timer scaffolding fields (`sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`) with placeholder values.
+- [ ] Run `uv run pytest` with the full test gate suite.
+
+### PR-1 Checklist: Interfaces and Adapters (No Behavior Change)
+
+- [ ] Create `src/crimson/sim/input_providers.py` with `InputProvider` protocol.
+- [ ] Create `src/crimson/sim/hooks.py` with `TickHook` protocol and no-op hook bus.
+- [ ] Create `src/crimson/render/backend.py` with `RenderBackend` protocol.
+- [ ] Create `src/crimson/render/sink.py` with `RenderSink` protocol.
+- [ ] Add adapter stubs: `LocalInputProvider`, `ReplayInputProvider` (placeholder), `NetworkInputProvider` (placeholder), `WindowSink`, `NullSink`.
+- [ ] Wire zero-impact construction paths (adapters instantiated but not yet primary control path).
+- [ ] Confirm no behavior change in gameplay/replay entrypoints.
+- [ ] Run full test gate suite.
+
+### PR-2 Checklist: Single Network Owner
+
+- [ ] Keep `runtime.update()` in `GameLoopView._tick_network_runtime()` as the only authoritative pump.
+- [ ] Remove direct `runtime.update()` calls from:
+- [ ] `src/crimson/modes/survival_mode.py`
+- [ ] `src/crimson/modes/rush_mode.py`
+- [ ] `src/crimson/modes/quest_mode.py`
+- [ ] Add regression assertion that mode update paths do not pump runtime.
+- [ ] Validate lockstep and rollback host/client flows with tests.
+- [ ] Run full test gate suite.
+
+### PR-3 Checklist: TickRunner Extraction
+
+- [ ] Implement `TickRunner` in `src/crimson/sim/tick_runner.py` using `FixedStepClock`.
+- [ ] Move shared logic from `BaseGameplayMode._run_deterministic_session_ticks` into `TickRunner`.
+- [ ] Delegate Survival/Rush/Quest mode tick advancement to `TickRunner`.
+- [ ] Keep output behavior identical (same tick counts and apply ordering).
+- [ ] Delete or reduce `_run_deterministic_session_ticks` to thin wrapper/shim.
+- [ ] Run full test gate suite.
+
+### PR-4 Checklist: Hook Bus Migration
+
+- [ ] Implement concrete hooks: replay recording, checkpoint capture, profiling timing, net hash sync.
+- [ ] Move inline replay/checkpoint wiring out of mode update paths into hooks.
+- [ ] Ensure hook order matches required stage boundaries (pre-sim, post-sim, post-presentation, end).
+- [ ] Emit hook timing metrics in telemetry output.
+- [ ] Run full test gate suite.
+
+### PR-5 Checklist: Replay Path Unification
+
+- [ ] Implement `ReplayInputProvider` against replay playback driver input stream.
+- [ ] Make `ReplayPlaybackMode` use `TickRunner` for deterministic stepping.
+- [ ] Remove bespoke replay stepping/orchestration loop from `ReplayPlaybackMode`.
+- [ ] Keep replay controls (pause/step/speed) mapped through provider/runner boundaries.
+- [ ] Run replay-specific tests plus full test gate suite.
+
+### PR-6 Checklist: Presentation Plan/Apply Split
+
+- [ ] Extract deterministic `plan_world_presentation_step(...)` from current presentation path.
+- [ ] Extract side-effectful `apply_presentation_plan(...)` for audio/visual/output application.
+- [ ] Ensure planning runs inside tick flow in live, replay, and headless verify modes.
+- [ ] Ensure apply runs only in output/render phase and can be skipped in headless.
+- [ ] Keep command hash/checkpoint parity with baseline golden replays.
+- [ ] Run full test gate suite.
+
+### PR-7 Checklist: Render Backend and Sink Migration
+
+- [ ] Implement `RaylibBackend` adapter wrapping current raylib draw operations.
+- [ ] Implement `VideoSink` and migrate replay render output path to it.
+- [ ] Route live and replay rendering through shared backend + sink entrypoint.
+- [ ] Keep `WindowSink` as default interactive target.
+- [ ] Keep `NullSink` for headless benchmark/verify.
+- [ ] Run replay render and replay benchmark smoke checks.
+- [ ] Run full test gate suite.
+
+### PR-8 Checklist: `GameWorld` Split and Final Cleanup
+
+- [ ] Introduce `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime` modules.
+- [ ] Move GPU lifecycle and render resources out of `GameWorld`.
+- [ ] Move audio routing/state out of `GameWorld`.
+- [ ] Keep temporary compatibility facade only if needed for transitional call-sites.
+- [ ] Remove compatibility shims once all call-sites migrated.
+- [ ] Remove collapsed legacy paths:
+- [ ] per-mode LAN orchestration duplication (`_update_lan_match` variants)
+- [ ] mode-local runtime pumping
+- [ ] replay bespoke stepping loop
+- [ ] duplicated checkpoint/record code in mode update methods
+- [ ] Run full test gate suite.
+
+### Final Merge Checklist
+
+- [ ] Architecture matches \"Concrete End Shape\" exactly.
+- [ ] No duplicate orchestration paths remain.
+- [ ] All acceptance criteria in this PRD are met.
+- [ ] `plan_synth.md` remains the single source of truth for loop architecture refactor.
+
 ## Risks and Mitigations
 
 1. Determinism drift during presentation split.
