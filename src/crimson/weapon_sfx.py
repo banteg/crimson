@@ -21,43 +21,35 @@ def _parse_dat_ref(value: str) -> int | None:
         return None
 
 
-def resolve_weapon_sfx_ref(value: str | None, *, max_depth: int = 16) -> str | None:
+def _resolve_table_sfx_ref(addr: int) -> str:
+    offset = addr - WEAPON_TABLE_BASE_ADDR
+    if offset < 0:
+        raise ValueError(f"weapon sfx DAT ref below weapon table base: 0x{addr:08x}")
+
+    weapon_id, field_offset = divmod(offset, WEAPON_TABLE_STRIDE_BYTES)
+    weapon = WEAPON_BY_ID[weapon_id]
+    if field_offset == WEAPON_TABLE_FIRE_SFX_OFFSET:
+        return weapon.fire_sound
+    if field_offset == WEAPON_TABLE_RELOAD_SFX_OFFSET:
+        return weapon.reload_sound
+    raise ValueError(
+        f"weapon sfx DAT ref points to unsupported field offset 0x{field_offset:02x} (addr=0x{addr:08x})",
+    )
+
+
+def resolve_weapon_sfx_ref(value: str) -> str:
     """
     Resolve weapon-table references like `_DAT_004d93bc` into a concrete sfx key (e.g. `sfx_shotgun_reload`).
     """
 
-    current = value
-    seen_addrs: set[int] = set()
+    if value.startswith("sfx_"):
+        return value
 
-    for _ in range(max(1, int(max_depth))):
-        if current is None:
-            return None
-        if current.startswith("sfx_"):
-            return current
+    addr = _parse_dat_ref(value)
+    if addr is None:
+        raise ValueError(f"unsupported weapon sfx ref format: {value!r}")
 
-        addr = _parse_dat_ref(current)
-        if addr is None:
-            return current
-        if addr in seen_addrs:
-            return current
-        seen_addrs.add(addr)
-
-        offset = addr - WEAPON_TABLE_BASE_ADDR
-        if offset < 0:
-            return current
-        entry_index, field_offset = divmod(offset, WEAPON_TABLE_STRIDE_BYTES)
-        weapon_id = entry_index
-        weapon = WEAPON_BY_ID.get(weapon_id)
-        if weapon is None:
-            return current
-
-        if field_offset == WEAPON_TABLE_FIRE_SFX_OFFSET:
-            current = weapon.fire_sound
-            continue
-        if field_offset == WEAPON_TABLE_RELOAD_SFX_OFFSET:
-            current = weapon.reload_sound
-            continue
-
-        return current
-
-    return current
+    resolved = _resolve_table_sfx_ref(addr)
+    if not resolved.startswith("sfx_"):
+        raise ValueError(f"weapon sfx ref did not resolve to sfx key: {value!r} -> {resolved!r}")
+    return resolved

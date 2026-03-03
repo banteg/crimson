@@ -86,19 +86,16 @@ _BONUS_NATIVE_AMOUNT_WEAPON_ID_SUPPRESSION: dict[BonusId, WeaponId] = {
 def _weapon_id_from_native_payload_value(payload: BonusPayload) -> WeaponId | None:
     # Keep native amount-domain behavior: any payload numeric value that happens
     # to match a weapon id can trip suppression checks under `--preserve-bugs`.
-    weapon = WEAPON_BY_ID.get(int(bonus_payload_value(payload)))
-    if weapon is None:
+    weapon_id = int(bonus_payload_value(payload))
+    if weapon_id not in WEAPON_BY_ID:
         return None
-    return weapon.weapon_id
+    return WeaponId(weapon_id)
 
 
 def _weapon_id_from_weapon_payload(payload: BonusPayload) -> WeaponId | None:
     if not isinstance(payload, BonusWeaponPayload):
         return None
-    weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
-    if weapon is None:
-        return None
-    return weapon.weapon_id
+    return WeaponId(int(payload.weapon_id))
 
 
 def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
@@ -475,10 +472,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
     if bonus_id == BonusId.WEAPON:
         if not isinstance(payload, BonusWeaponPayload):
             return "Weapon"
-        weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
-        if weapon is not None:
-            return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
-        return "Weapon"
+        return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
     if bonus_id == BonusId.POINTS:
         points = int(payload.points) if isinstance(payload, BonusPointsPayload) else int(entry.amount)
         points_label = bonus_display_name(BonusId.POINTS, preserve_bugs=bool(preserve_bugs))

@@ -19,7 +19,7 @@ def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
 
     perk_apply(state, [owner, other], PerkId.AMMO_MANIAC)
 
-    base_owner = int(WEAPON_BY_ID[int(owner_weapon)].clip_size or 0)
+    base_owner = int(WEAPON_BY_ID[int(owner_weapon)].clip_size)
     extra_owner = max(1, int(float(base_owner) * 0.25))
     assert owner.weapon.clip_size == base_owner + extra_owner
     assert owner.weapon.ammo == owner.weapon.clip_size
@@ -27,7 +27,7 @@ def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
     assert_float_close(owner.weapon.reload_timer, 0.0)
     assert_float_close(owner.weapon.shot_cooldown, 0.0)
 
-    base_other = int(WEAPON_BY_ID[int(other_weapon)].clip_size or 0)
+    base_other = int(WEAPON_BY_ID[int(other_weapon)].clip_size)
     extra_other = max(1, int(float(base_other) * 0.25))
     assert other.weapon.clip_size == base_other + extra_other
     assert other.weapon.ammo == other.weapon.clip_size

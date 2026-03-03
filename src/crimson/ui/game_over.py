@@ -76,9 +76,8 @@ COLOR_SCORE_VALUE = rl.Color(230, 230, 255, 255)
 
 def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
     weapon_id = int(weapon_id_native)
-    entry = WEAPON_BY_ID.get(weapon_id)
-    icon_index = entry.icon_index if entry is not None else None
-    if icon_index is None or icon_index < 0 or icon_index > 31:
+    icon_index = WEAPON_BY_ID[weapon_id].icon_index
+    if icon_index < 0 or icon_index > 31:
         return None
     grid = 8
     cell_w = float(texture.width) / grid

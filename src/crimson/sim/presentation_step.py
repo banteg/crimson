@@ -93,24 +93,16 @@ def plan_player_audio_sfx(
         if float(player.fire_bullets_timer) > 0.0:
             fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
             plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-            key = resolve_weapon_sfx_ref(fire_bullets.fire_sound)
-            if key is not None:
-                keys.append(key)
-            key = resolve_weapon_sfx_ref(plasma_minigun.fire_sound)
-            if key is not None:
-                keys.append(key)
+            keys.append(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
+            keys.append(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
         else:
-            key = resolve_weapon_sfx_ref(weapon.fire_sound)
-            if key is not None:
-                keys.append(key)
+            keys.append(resolve_weapon_sfx_ref(weapon.fire_sound))
 
     reload_active = player.weapon.reload_active
     reload_timer = float(player.weapon.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
-        key = resolve_weapon_sfx_ref(weapon.reload_sound)
-        if key is not None:
-            keys.append(key)
+        keys.append(resolve_weapon_sfx_ref(weapon.reload_sound))
 
     return keys
 
@@ -129,8 +121,7 @@ def _hit_sfx_for_type(
     rand: Callable[[], int],
 ) -> str | None:
     _ = beam_types
-    weapon = WEAPON_BY_ID.get(type_id)
-    ammo_class = weapon.ammo_class if weapon is not None else None
+    ammo_class = WEAPON_BY_ID[type_id].ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
     return _rand_choice(rand, _BULLET_HIT_SFX)

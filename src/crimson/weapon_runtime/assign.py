@@ -12,10 +12,7 @@ from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
 def weapon_entry(weapon_id: WeaponId) -> Weapon:
-    entry = WEAPON_BY_ID.get(weapon_id)
-    if entry is None:
-        raise ValueError(f"missing weapon entry for weapon_id={int(weapon_id)}")
-    return entry
+    return WEAPON_BY_ID[weapon_id]
 
 
 class _WeaponAssignCtx(msgspec.Struct):
@@ -84,9 +81,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     if weapon is not None:
         from ..weapon_sfx import resolve_weapon_sfx_ref
 
-        key = resolve_weapon_sfx_ref(weapon.reload_sound)
-        if key is not None:
-            state.sfx_queue.append(key)
+        state.sfx_queue.append(resolve_weapon_sfx_ref(weapon.reload_sound))
 
 
 def most_used_weapon_id_for_player(

@@ -74,10 +74,8 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
 
     quest = quest_by_level("1.1")
     assert quest is not None
-    weapon = WEAPON_BY_ID.get(quest.start_weapon_id)
-    assert weapon is not None
+    weapon = WEAPON_BY_ID[quest.start_weapon_id]
     expected_reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
-    assert expected_reload_sfx is not None
     assert tick0.events.sfx_head == [expected_reload_sfx]
 
 

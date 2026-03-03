@@ -465,9 +465,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
         player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
-        weapon = WEAPON_BY_ID.get(weapon_id)
-        assert weapon is not None
-        assert weapon.pellet_count is not None
+        weapon = WEAPON_BY_ID[weapon_id]
 
         type_ids = _active_type_ids(pool)
         assert len(type_ids) == int(weapon.pellet_count)
@@ -532,8 +530,6 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
-    assert fire_bullets_weapon is not None
-    assert fire_bullets_weapon.spread_heat_inc is not None
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
@@ -555,8 +551,6 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
-    assert fire_bullets_weapon is not None
-    assert fire_bullets_weapon.spread_heat_inc is not None
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3

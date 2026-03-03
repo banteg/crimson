@@ -183,9 +183,7 @@ def test_tick_transient_lights_decays_and_removes_expired_entries() -> None:
 def test_profile_auto_interval_uses_weapon_cooldown_for_all_profiles() -> None:
     for profile in EMISSIVE_PROFILES:
         assert profile.rate_weapon_id is not None
-        weapon = WEAPON_BY_ID.get(profile.rate_weapon_id)
-        assert weapon is not None
-        assert weapon.shot_cooldown is not None
+        weapon = WEAPON_BY_ID[profile.rate_weapon_id]
         interval = LightingDebugView._profile_auto_interval(profile)
         assert_float_close(interval, float(weapon.shot_cooldown))
 

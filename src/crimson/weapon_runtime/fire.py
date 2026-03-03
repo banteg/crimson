@@ -157,11 +157,9 @@ def player_fire_weapon(
 
     shot_cooldown = float(f32(float(weapon.shot_cooldown)))
     weapon_spread_heat = float(weapon.spread_heat_inc)
-    fire_bullets_spread_heat = weapon_spread_heat
-    if fire_bullets_weapon is not None:
-        fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
+    fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
 
-    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
+    if is_fire_bullets and pellet_count == 1:
         shot_cooldown = float(f32(float(fire_bullets_weapon.shot_cooldown)))
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat

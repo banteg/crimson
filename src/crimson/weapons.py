@@ -787,8 +787,9 @@ _WEAPON_FIXED_NAMES: dict[int, str] = {
 
 
 def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
-    entry = WEAPON_BY_ID.get(weapon_id)
-    if entry is None:
+    try:
+        entry = WEAPON_BY_ID[weapon_id]
+    except KeyError:
         return f"weapon_{weapon_id}"
     name = entry.name
     if bool(preserve_bugs):
@@ -838,9 +839,9 @@ WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
     45: (0x2D,),  # Fire Bullets
 }
 
-def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
+def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon:
     # Native `projectile_spawn` indexes the weapon table by `type_id`.
-    return WEAPON_BY_ID.get(type_id)
+    return WEAPON_BY_ID[type_id]
 
 
 def projectile_type_id_from_weapon_id(weapon_id: WeaponId) -> int | None:

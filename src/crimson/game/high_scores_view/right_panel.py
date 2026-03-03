@@ -667,9 +667,7 @@ def _draw_wicon(
 def _weapon_label_and_icon(view: "HighScoresView", weapon_id: int) -> tuple[str, int | None]:
     from ...weapons import WEAPON_BY_ID, weapon_display_name
 
-    weapon = WEAPON_BY_ID.get(weapon_id)
-    if weapon is None:
-        return f"Weapon {int(weapon_id)}", None
+    weapon = WEAPON_BY_ID[weapon_id]
     name = weapon_display_name(weapon.weapon_id, preserve_bugs=bool(view.state.preserve_bugs))
     return name, weapon.icon_index
 

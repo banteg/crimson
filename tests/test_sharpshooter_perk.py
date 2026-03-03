@@ -26,7 +26,7 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     assert_float_close(player.spread_heat, 0.02)
 
     weapon = WEAPON_BY_ID[int(ProjectileTypeId.ASSAULT_RIFLE)]
-    base_cooldown = float(weapon.shot_cooldown) if weapon.shot_cooldown is not None else 0.0
+    base_cooldown = float(weapon.shot_cooldown)
     expected_cooldown = base_cooldown * 1.05
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0, state)

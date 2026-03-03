@@ -982,9 +982,7 @@ def player_update(
                 weapon = _weapon_entry(player.weapon.weapon_id)
                 from .weapon_sfx import resolve_weapon_sfx_ref
 
-                key = resolve_weapon_sfx_ref(weapon.reload_sound)
-                if key is not None:
-                    state.sfx_queue.append(key)
+                state.sfx_queue.append(resolve_weapon_sfx_ref(weapon.reload_sound))
                 player.weapon.shot_cooldown = float(player.weapon.shot_cooldown) + 0.1
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:

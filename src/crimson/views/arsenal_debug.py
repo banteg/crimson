@@ -299,7 +299,7 @@ class ArsenalDebugView:
                 f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
                 f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.travel_budget)}",
                 f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
-                f"sfx fire {fire_sfx or '—'}  reload {reload_sfx or '—'}",
+                f"sfx fire {fire_sfx}  reload {reload_sfx}",
             ],
         )
         return lines
@@ -386,7 +386,7 @@ class ArsenalDebugView:
         y = 12.0
         line = float(ui_line_height(self._small))
 
-        weapon = WEAPON_BY_ID.get(self._player.weapon.weapon_id) if self._player is not None else None
+        weapon = WEAPON_BY_ID[self._player.weapon.weapon_id] if self._player is not None else None
         for text in self._weapon_debug_lines(weapon):
             draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line
