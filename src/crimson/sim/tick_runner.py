@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, Protocol, cast
+from typing import Generic, Protocol, TypeVar
 
 import msgspec
 
@@ -19,6 +19,10 @@ class TickStepPayload(Protocol):
 
 class TickPayload(Protocol):
     step: TickStepPayload
+
+
+TimingT = TypeVar("TimingT")
+TickT = TypeVar("TickT", bound=TickPayload)
 
 
 def _extract_tick_payload(*, tick_index: int, tick: TickPayload) -> tuple[TickStepPayload, str, float, object]:
@@ -46,10 +50,10 @@ def _extract_tick_payload(*, tick_index: int, tick: TickPayload) -> tuple[TickSt
     )
 
 
-class TickSession(Protocol):
-    def timing_for_dt(self, dt: float) -> Any: ...
+class TickSession(Protocol[TimingT, TickT]):
+    def timing_for_dt(self, dt: float) -> TimingT: ...
 
-    def step_tick(self, *, timing: Any, inputs: list[PlayerInput] | None) -> TickPayload: ...
+    def step_tick(self, *, timing: TimingT, inputs: list[PlayerInput] | None) -> TickT: ...
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
@@ -67,16 +71,16 @@ class TickBatchResult(msgspec.Struct):
     presentation_plans: list[object] = msgspec.field(default_factory=list)
 
 
-class TickRunner:
+class TickRunner(Generic[TimingT, TickT]):
     def __init__(
         self,
         *,
-        session: object,
+        session: TickSession[TimingT, TickT],
         input_provider: InputProvider,
         hook_bus: TickHookBus | None = None,
         config: TickRunnerConfig | None = None,
     ) -> None:
-        self._session = cast(TickSession, session)
+        self._session = session
         self._input_provider = input_provider
         self._hook_bus = hook_bus if hook_bus is not None else TickHookBus()
         self._config = config if config is not None else TickRunnerConfig()
@@ -100,7 +104,7 @@ class TickRunner:
         dt_seconds: float,
         *,
         max_ticks: int | None = None,
-        on_tick_complete: Callable[[int, object], bool] | None = None,
+        on_tick_complete: Callable[[int, TickT], bool] | None = None,
     ) -> TickBatchResult:
         self._input_provider.begin_frame(
             FrameContext(
