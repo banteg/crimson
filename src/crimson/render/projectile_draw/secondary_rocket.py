@@ -8,7 +8,7 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
-from ...projectiles import SecondaryProjectileTypeId
+from ...projectiles.types import SecondaryProjectileTypeId
 from .types import SecondaryProjectileDrawCtx
 
 

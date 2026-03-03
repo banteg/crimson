@@ -7,7 +7,6 @@ from crimson.quests import quest_by_level
 from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
-from crimson.weapon_sfx import resolve_weapon_sfx_ref
 from crimson.weapons import WEAPON_BY_ID
 from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
 
@@ -74,10 +73,8 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
 
     quest = quest_by_level("1.1")
     assert quest is not None
-    weapon = WEAPON_BY_ID.get(quest.start_weapon_id)
-    assert weapon is not None
-    expected_reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
-    assert expected_reload_sfx is not None
+    weapon = WEAPON_BY_ID[quest.start_weapon_id]
+    expected_reload_sfx = weapon.reload_sound
     assert tick0.events.sfx_head == [expected_reload_sfx]
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 
 
 class PlasmaProjectileRenderConfig(msgspec.Struct, frozen=True):

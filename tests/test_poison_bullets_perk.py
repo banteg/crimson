@@ -6,7 +6,7 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState

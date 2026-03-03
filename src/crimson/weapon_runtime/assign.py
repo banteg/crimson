@@ -11,8 +11,8 @@ from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
 
-def weapon_entry(weapon_id: WeaponId) -> Weapon | None:
-    return WEAPON_BY_ID.get(weapon_id)
+def weapon_entry(weapon_id: WeaponId) -> Weapon:
+    return WEAPON_BY_ID[weapon_id]
 
 
 class _WeaponAssignCtx(msgspec.Struct):
@@ -65,7 +65,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
 
-    clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
+    clip_size = int(weapon.clip_size)
     clip_ctx = _WeaponAssignCtx(player=player, clip_size=max(0, clip_size))
     for modifier in _WEAPON_ASSIGN_CLIP_MODIFIERS:
         modifier(clip_ctx)
@@ -78,12 +78,8 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     player.weapon.shot_cooldown = 0.0
     player.aux_timer = 2.0
 
-    if weapon is not None:
-        from ..weapon_sfx import resolve_weapon_sfx_ref
-
-        key = resolve_weapon_sfx_ref(weapon.reload_sound)
-        if key is not None:
-            state.sfx_queue.append(key)
+    if state is not None:
+        state.sfx_queue.append(weapon.reload_sound)
 
 
 def most_used_weapon_id_for_player(
@@ -123,7 +119,7 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         return
 
     weapon = weapon_entry(player.weapon.weapon_id)
-    reload_time = float(weapon.reload_time) if weapon is not None and weapon.reload_time is not None else 0.0
+    reload_time = float(weapon.reload_time)
 
     if not player.weapon.reload_active:
         player.weapon.reload_active = True

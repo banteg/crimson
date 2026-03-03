@@ -11,10 +11,10 @@ from ..effects import ParticleStyleId
 from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_for_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
 
@@ -115,8 +115,6 @@ def player_fire_weapon(
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
-    if weapon is None:
-        return
 
     if not bool(force_pre_swap_fire_gate) and player.weapon.shot_cooldown > 0.0:
         return
@@ -131,7 +129,7 @@ def player_fire_weapon(
         if perk_active(player, PerkId.REGRESSION_BULLETS):
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+            reload_time = float(weapon.reload_time)
             factor = 4.0 if ammo_class == 1 else 200.0
             player.experience = int(float(player.experience) - reload_time * factor)
             if player.experience < 0:
@@ -154,21 +152,15 @@ def player_fire_weapon(
         else:
             return
 
-    pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
+    pellet_count = int(weapon.pellet_count)
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
-    shot_cooldown = float(f32(float(weapon.shot_cooldown))) if weapon.shot_cooldown is not None else 0.0
-    weapon_spread_heat = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
-    fire_bullets_spread_heat = weapon_spread_heat
-    if fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
-        fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
+    shot_cooldown = float(f32(float(weapon.shot_cooldown)))
+    weapon_spread_heat = float(weapon.spread_heat_inc)
+    fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
 
-    if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
-        shot_cooldown = (
-            float(f32(float(fire_bullets_weapon.shot_cooldown)))
-            if fire_bullets_weapon.shot_cooldown is not None
-            else 0.0
-        )
+    if is_fire_bullets and pellet_count == 1:
+        shot_cooldown = float(f32(float(fire_bullets_weapon.shot_cooldown)))
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = spread_heat_base * 1.3
@@ -388,10 +380,7 @@ def player_fire_weapon(
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
-        type_id_raw = projectile_type_id_from_weapon_id(weapon_id)
-        if type_id_raw is None:
-            return
-        type_id = ProjectileTypeId(type_id_raw)
+        type_id = projectile_type_id_for_weapon_id(weapon_id)
         meta = travel_budget_for_type_id(type_id)
         jitter_step = _pellet_jitter_step(weapon_id)
         for _ in range(pellets):

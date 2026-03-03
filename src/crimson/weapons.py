@@ -3,30 +3,25 @@ from __future__ import annotations
 """
 Weapon definitions for the rewrite runtime.
 
-This file is **manually maintained** (do not auto-generate).
+Weapon ids use native 1-based values (e.g. `weapon_id=1` for Pistol).
+Projectile `type_id` values are a separate domain (`ProjectileTypeId`) that
+overlaps numerically with `WeaponId` but is not 1:1: multiple weapons can
+share a projectile template and some weapons use particle/secondary pools
+instead of the main projectile pool.
 
-It was originally seeded from `weapon_table_init` (`FUN_004519b0`) and the
-rewrite now uses the **native 1-based weapon ids** (e.g. pistol is
-`weapon_id=1`). In the native code, projectile `type_id` values passed into
-`projectile_spawn` are **weapon table indices** (same numeric domain as weapon
-ids). They are **not** a 1:1 mapping: multiple weapons can share a projectile
-type id (e.g. Sawed-off and Jackhammer use the Shotgun template), and some
-weapons bypass `projectile_spawn` entirely (particles / secondary pool).
-
-Use `projectile_type_id_from_weapon_id` for the primary projectile `type_id`
-(or `None` for non-projectile weapons), and `projectile_type_ids_from_weapon_id`
-when you need the full set.
+Use `projectile_type_id_for_weapon_id` for the primary projectile `type_id`.
+Weapons that use particle or secondary projectile pools raise `ValueError`.
 
 Reference material:
-- `docs/weapon-table.md` (native struct + fields)
-- `docs/weapon-id-map.md` (native ids + names)
+- `docs/re/static/reference/weapon-table.md`
+- `docs/re/static/reference/weapon-id-map.md`
 """
 
 from enum import IntEnum
 
 import msgspec
 
-MANUALLY_MAINTAINED = True
+from .projectiles.types import ProjectileTypeId
 
 
 class WeaponId(IntEnum):
@@ -88,19 +83,19 @@ class WeaponId(IntEnum):
 
 class Weapon(msgspec.Struct, frozen=True):
     weapon_id: WeaponId
-    name: str | None
+    name: str
     ammo_class: int | None
-    clip_size: int | None
-    shot_cooldown: float | None
-    reload_time: float | None
-    spread_heat_inc: float | None
-    fire_sound: str | None
-    reload_sound: str | None
-    icon_index: int | None
+    clip_size: int
+    shot_cooldown: float
+    reload_time: float
+    spread_heat_inc: float
+    fire_sound: str
+    reload_sound: str
+    icon_index: int
     flags: int | None
-    travel_budget: int | None
-    damage_scale: float | None
-    pellet_count: int | None
+    travel_budget: int
+    damage_scale: float
+    pellet_count: int
 
 WEAPON_TABLE = [
     Weapon(
@@ -144,7 +139,7 @@ WEAPON_TABLE = [
         reload_time=1.9,
         spread_heat_inc=0.27,
         fire_sound='sfx_shotgun_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=2,
         flags=1,
         travel_budget=60,
@@ -159,8 +154,8 @@ WEAPON_TABLE = [
         shot_cooldown=0.87,
         reload_time=1.9,
         spread_heat_inc=0.13,
-        fire_sound='_DAT_004d8434',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_shotgun_fire',
+        reload_sound='sfx_shotgun_reload',
         icon_index=3,
         flags=1,
         travel_budget=45,
@@ -176,7 +171,7 @@ WEAPON_TABLE = [
         reload_time=1.2,
         spread_heat_inc=0.082,
         fire_sound='sfx_hrpm_fire',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=4,
         flags=5,
         travel_budget=45,
@@ -192,7 +187,7 @@ WEAPON_TABLE = [
         reload_time=1.6,
         spread_heat_inc=0.42,
         fire_sound='sfx_gauss_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=5,
         flags=1,
         travel_budget=215,
@@ -208,7 +203,7 @@ WEAPON_TABLE = [
         reload_time=4.0,
         spread_heat_inc=0.062,
         fire_sound='sfx_autorifle_fire',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=6,
         flags=3,
         travel_budget=45,
@@ -224,7 +219,7 @@ WEAPON_TABLE = [
         reload_time=2.0,
         spread_heat_inc=0.015,
         fire_sound='sfx_flamer_fire_01',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=7,
         flags=8,
         travel_budget=45,
@@ -240,7 +235,7 @@ WEAPON_TABLE = [
         reload_time=1.2,
         spread_heat_inc=0.182,
         fire_sound='sfx_shock_fire',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=8,
         flags=None,
         travel_budget=30,
@@ -256,7 +251,7 @@ WEAPON_TABLE = [
         reload_time=1.4,
         spread_heat_inc=0.32,
         fire_sound='sfx_shock_fire',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=9,
         flags=None,
         travel_budget=45,
@@ -272,7 +267,7 @@ WEAPON_TABLE = [
         reload_time=1.3,
         spread_heat_inc=0.097,
         fire_sound='sfx_plasmaminigun_fire',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=10,
         flags=None,
         travel_budget=35,
@@ -320,7 +315,7 @@ WEAPON_TABLE = [
         reload_time=3.1,
         spread_heat_inc=0.11,
         fire_sound='sfx_plasmashotgun_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=13,
         flags=None,
         travel_budget=45,
@@ -336,7 +331,7 @@ WEAPON_TABLE = [
         reload_time=1.5,
         spread_heat_inc=0.01,
         fire_sound='sfx_flamer_fire_01',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=14,
         flags=8,
         travel_budget=45,
@@ -352,7 +347,7 @@ WEAPON_TABLE = [
         reload_time=1.8,
         spread_heat_inc=0.01,
         fire_sound='sfx_flamer_fire_01',
-        reload_sound='_DAT_004d83c0',
+        reload_sound='sfx_autorifle_reload',
         icon_index=15,
         flags=8,
         travel_budget=45,
@@ -416,7 +411,7 @@ WEAPON_TABLE = [
         reload_time=3.0,
         spread_heat_inc=0.16,
         fire_sound='sfx_shotgun_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=19,
         flags=1,
         travel_budget=45,
@@ -432,7 +427,7 @@ WEAPON_TABLE = [
         reload_time=1.35,
         spread_heat_inc=0.112,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=20,
         flags=8,
         travel_budget=15,
@@ -448,7 +443,7 @@ WEAPON_TABLE = [
         reload_time=1.8,
         spread_heat_inc=0.09,
         fire_sound='sfx_shockminigun_fire',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=21,
         flags=8,
         travel_budget=20,
@@ -464,7 +459,7 @@ WEAPON_TABLE = [
         reload_time=3.0,
         spread_heat_inc=0.68,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=22,
         flags=None,
         travel_budget=10,
@@ -480,7 +475,7 @@ WEAPON_TABLE = [
         reload_time=1.22,
         spread_heat_inc=0.04,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=23,
         flags=8,
         travel_budget=45,
@@ -511,8 +506,8 @@ WEAPON_TABLE = [
         shot_cooldown=0.2,
         reload_time=1.2,
         spread_heat_inc=0.04,
-        fire_sound='_DAT_004d92bc',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_bloodspill_01',
+        reload_sound='sfx_shotgun_reload',
         icon_index=25,
         flags=8,
         travel_budget=10,
@@ -528,7 +523,7 @@ WEAPON_TABLE = [
         reload_time=3.0,
         spread_heat_inc=0.68,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=25,
         flags=None,
         travel_budget=45,
@@ -544,7 +539,7 @@ WEAPON_TABLE = [
         reload_time=2.7,
         spread_heat_inc=0.6,
         fire_sound='sfx_shock_fire',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=25,
         flags=None,
         travel_budget=10,
@@ -560,7 +555,7 @@ WEAPON_TABLE = [
         reload_time=2.2,
         spread_heat_inc=0.28,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=28,
         flags=None,
         travel_budget=30,
@@ -576,7 +571,7 @@ WEAPON_TABLE = [
         reload_time=2.1,
         spread_heat_inc=0.27,
         fire_sound='sfx_gauss_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=30,
         flags=1,
         travel_budget=45,
@@ -592,7 +587,7 @@ WEAPON_TABLE = [
         reload_time=1.9,
         spread_heat_inc=0.27,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=31,
         flags=1,
         travel_budget=45,
@@ -608,7 +603,7 @@ WEAPON_TABLE = [
         reload_time=3.0,
         spread_heat_inc=0.18,
         fire_sound='sfx_flamer_fire_01',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=29,
         flags=None,
         travel_budget=45,
@@ -624,7 +619,7 @@ WEAPON_TABLE = [
         reload_time=2.0,
         spread_heat_inc=0.38,
         fire_sound='sfx_shock_fire_alt',
-        reload_sound='_DAT_004d86a8',
+        reload_sound='sfx_shock_reload',
         icon_index=30,
         flags=None,
         travel_budget=45,
@@ -640,7 +635,7 @@ WEAPON_TABLE = [
         reload_time=1.2,
         spread_heat_inc=0.04,
         fire_sound='sfx_bloodspill_01',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=40,
         flags=8,
         travel_budget=15,
@@ -655,8 +650,8 @@ WEAPON_TABLE = [
         shot_cooldown=0.1613,
         reload_time=1.2,
         spread_heat_inc=0.05,
-        fire_sound='_DAT_004d92bc',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_bloodspill_01',
+        reload_sound='sfx_shotgun_reload',
         icon_index=41,
         flags=8,
         travel_budget=45,
@@ -671,8 +666,8 @@ WEAPON_TABLE = [
         shot_cooldown=0.2,
         reload_time=1.2,
         spread_heat_inc=0.09,
-        fire_sound='_DAT_004d92bc',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_bloodspill_01',
+        reload_sound='sfx_shotgun_reload',
         icon_index=42,
         flags=8,
         travel_budget=10,
@@ -687,8 +682,8 @@ WEAPON_TABLE = [
         shot_cooldown=0.5,
         reload_time=1.2,
         spread_heat_inc=0.4,
-        fire_sound='_DAT_004d92bc',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_bloodspill_01',
+        reload_sound='sfx_shotgun_reload',
         icon_index=43,
         flags=None,
         travel_budget=45,
@@ -703,7 +698,7 @@ WEAPON_TABLE = [
         shot_cooldown=0.14,
         reload_time=1.2,
         spread_heat_inc=0.22,
-        fire_sound='_DAT_004d7b7c',
+        fire_sound='sfx_autorifle_fire',
         reload_sound='sfx_pistol_reload',
         icon_index=44,
         flags=1,
@@ -720,7 +715,7 @@ WEAPON_TABLE = [
         reload_time=5.0,
         spread_heat_inc=0.04,
         fire_sound='sfx_bloodspill_01',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=49,
         flags=9,
         travel_budget=45,
@@ -736,7 +731,7 @@ WEAPON_TABLE = [
         reload_time=2.0,
         spread_heat_inc=0.05,
         fire_sound='sfx_shock_fire',
-        reload_sound='_DAT_004d93bc',
+        reload_sound='sfx_shotgun_reload',
         icon_index=50,
         flags=9,
         travel_budget=45,
@@ -767,8 +762,8 @@ WEAPON_TABLE = [
         shot_cooldown=4.0,
         reload_time=8.0,
         spread_heat_inc=1.0,
-        fire_sound='_DAT_004d93b4',
-        reload_sound='_DAT_004d93bc',
+        fire_sound='sfx_explosion_large',
+        reload_sound='sfx_shotgun_reload',
         icon_index=52,
         flags=8,
         travel_budget=45,
@@ -777,9 +772,9 @@ WEAPON_TABLE = [
     ),
 ]
 
-WEAPON_BY_ID: dict[int, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
+WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
-_WEAPON_FIXED_NAMES: dict[int, str] = {
+_WEAPON_FIXED_NAMES: dict[WeaponId, str] = {
     WeaponId.PLAGUE_SPREADER_GUN: "Plague Spreader Gun",
     WeaponId.LIGHTNING_RIFLE: "Lightning Rifle",
     WeaponId.FIRE_BULLETS: "Fire Bullets",
@@ -787,10 +782,11 @@ _WEAPON_FIXED_NAMES: dict[int, str] = {
 
 
 def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
-    entry = WEAPON_BY_ID.get(weapon_id)
-    if entry is None:
+    try:
+        entry = WEAPON_BY_ID[weapon_id]
+    except KeyError:
         return f"weapon_{weapon_id}"
-    name = entry.name or f"weapon_{entry.weapon_id}"
+    name = entry.name
     if bool(preserve_bugs):
         return str(name)
     fixed = _WEAPON_FIXED_NAMES.get(weapon_id)
@@ -799,77 +795,82 @@ def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> 
     return str(name)
 
 
-WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
-    # Source: analysis/ghidra/raw/crimsonland.exe_decompiled.c (`player_fire_weapon`).
+WEAPON_PROJECTILE_TYPE_IDS: dict[WeaponId, tuple[ProjectileTypeId, ...]] = {
+    # Derived from native `player_fire_weapon` behavior.
     # Weapon ids not listed here use `type_id == weapon_id` in the native
     # `projectile_spawn` path.
-    1: (0x01,),  # Pistol
-    2: (0x02,),  # Assault Rifle
-    3: (0x03,),  # Shotgun
-    4: (0x03,),  # Sawed-off Shotgun
-    5: (0x05,),  # Submachine Gun
-    6: (0x06,),  # Gauss Gun
-    7: (0x01,),  # Mean Minigun
-    8: (),  # Flamethrower (particle path)
-    9: (0x09,),  # Plasma Rifle
-    10: (0x09, 0x0B),  # Multi-Plasma (spread includes 0x0B)
-    11: (0x0B,),  # Plasma Minigun
-    12: (),  # Rocket Launcher (secondary projectile pool)
-    13: (),  # Seeker Rockets (secondary projectile pool)
-    14: (0x0B,),  # Plasma Shotgun
-    15: (),  # Blow Torch (particle path)
-    16: (),  # HR Flamer (particle path)
-    17: (),  # Mini-Rocket Swarmers (secondary projectile pool)
-    18: (),  # Rocket Minigun (secondary projectile pool)
-    19: (0x13,),  # Pulse Gun
-    20: (0x03,),  # Jackhammer
-    21: (0x15,),  # Ion Rifle
-    22: (0x16,),  # Ion Minigun
-    23: (0x17,),  # Ion Cannon
-    24: (0x18,),  # Shrinkifier 5k
-    25: (0x19,),  # Blade Gun
-    28: (0x1C,),  # Plasma Cannon
-    29: (0x1D,),  # Splitter Gun
-    30: (0x06,),  # Gauss Shotgun
-    31: (0x16,),  # Ion Shotgun
-    41: (0x29,),  # Plague Spreader Gun
-    42: (),  # Bubblegun (particle slow)
-    43: (0x2B,),  # Rainbow Gun
-    45: (0x2D,),  # Fire Bullets
+    WeaponId.PISTOL: (ProjectileTypeId.PISTOL,),
+    WeaponId.ASSAULT_RIFLE: (ProjectileTypeId.ASSAULT_RIFLE,),
+    WeaponId.SHOTGUN: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.SAWED_OFF_SHOTGUN: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.SUBMACHINE_GUN: (ProjectileTypeId.SUBMACHINE_GUN,),
+    WeaponId.GAUSS_GUN: (ProjectileTypeId.GAUSS_GUN,),
+    WeaponId.MEAN_MINIGUN: (ProjectileTypeId.PISTOL,),
+    WeaponId.FLAMETHROWER: (),
+    WeaponId.PLASMA_RIFLE: (ProjectileTypeId.PLASMA_RIFLE,),
+    WeaponId.MULTI_PLASMA: (ProjectileTypeId.PLASMA_RIFLE, ProjectileTypeId.PLASMA_MINIGUN),
+    WeaponId.PLASMA_MINIGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.ROCKET_LAUNCHER: (),
+    WeaponId.SEEKER_ROCKETS: (),
+    WeaponId.PLASMA_SHOTGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.BLOW_TORCH: (),
+    WeaponId.HR_FLAMER: (),
+    WeaponId.MINI_ROCKET_SWARMERS: (),
+    WeaponId.ROCKET_MINIGUN: (),
+    WeaponId.PULSE_GUN: (ProjectileTypeId.PULSE_GUN,),
+    WeaponId.JACKHAMMER: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.ION_RIFLE: (ProjectileTypeId.ION_RIFLE,),
+    WeaponId.ION_MINIGUN: (ProjectileTypeId.ION_MINIGUN,),
+    WeaponId.ION_CANNON: (ProjectileTypeId.ION_CANNON,),
+    WeaponId.SHRINKIFIER_5K: (ProjectileTypeId.SHRINKIFIER,),
+    WeaponId.BLADE_GUN: (ProjectileTypeId.BLADE_GUN,),
+    WeaponId.PLASMA_CANNON: (ProjectileTypeId.PLASMA_CANNON,),
+    WeaponId.SPLITTER_GUN: (ProjectileTypeId.SPLITTER_GUN,),
+    WeaponId.GAUSS_SHOTGUN: (ProjectileTypeId.GAUSS_GUN,),
+    WeaponId.ION_SHOTGUN: (ProjectileTypeId.ION_MINIGUN,),
+    WeaponId.PLAGUE_SPREADER_GUN: (ProjectileTypeId.PLAGUE_SPREADER,),
+    WeaponId.BUBBLEGUN: (),
+    WeaponId.RAINBOW_GUN: (ProjectileTypeId.RAINBOW_GUN,),
+    WeaponId.FIRE_BULLETS: (ProjectileTypeId.FIRE_BULLETS,),
 }
 
-def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon | None:
-    # Native `projectile_spawn` indexes the weapon table by `type_id`.
-    return WEAPON_BY_ID.get(type_id)
+def weapon_entry_for_projectile_type_id(type_id: ProjectileTypeId) -> Weapon:
+    # Native `projectile_spawn` indexes weapon metadata by projectile type id.
+    return WEAPON_BY_PROJECTILE_TYPE_ID[type_id]
 
 
-def projectile_type_id_from_weapon_id(weapon_id: WeaponId) -> int | None:
-    """Return the primary projectile `type_id` used by `weapon_id`.
+WEAPON_BY_PROJECTILE_TYPE_ID: dict[ProjectileTypeId, Weapon] = {
+    ProjectileTypeId.PISTOL: WEAPON_BY_ID[WeaponId.PISTOL],
+    ProjectileTypeId.ASSAULT_RIFLE: WEAPON_BY_ID[WeaponId.ASSAULT_RIFLE],
+    ProjectileTypeId.SHOTGUN: WEAPON_BY_ID[WeaponId.SHOTGUN],
+    ProjectileTypeId.SUBMACHINE_GUN: WEAPON_BY_ID[WeaponId.SUBMACHINE_GUN],
+    ProjectileTypeId.GAUSS_GUN: WEAPON_BY_ID[WeaponId.GAUSS_GUN],
+    ProjectileTypeId.PLASMA_RIFLE: WEAPON_BY_ID[WeaponId.PLASMA_RIFLE],
+    ProjectileTypeId.PLASMA_MINIGUN: WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN],
+    ProjectileTypeId.PULSE_GUN: WEAPON_BY_ID[WeaponId.PULSE_GUN],
+    ProjectileTypeId.ION_RIFLE: WEAPON_BY_ID[WeaponId.ION_RIFLE],
+    ProjectileTypeId.ION_MINIGUN: WEAPON_BY_ID[WeaponId.ION_MINIGUN],
+    ProjectileTypeId.ION_CANNON: WEAPON_BY_ID[WeaponId.ION_CANNON],
+    ProjectileTypeId.SHRINKIFIER: WEAPON_BY_ID[WeaponId.SHRINKIFIER_5K],
+    ProjectileTypeId.BLADE_GUN: WEAPON_BY_ID[WeaponId.BLADE_GUN],
+    ProjectileTypeId.SPIDER_PLASMA: WEAPON_BY_ID[WeaponId.SPIDER_PLASMA],
+    ProjectileTypeId.PLASMA_CANNON: WEAPON_BY_ID[WeaponId.PLASMA_CANNON],
+    ProjectileTypeId.SPLITTER_GUN: WEAPON_BY_ID[WeaponId.SPLITTER_GUN],
+    ProjectileTypeId.PLAGUE_SPREADER: WEAPON_BY_ID[WeaponId.PLAGUE_SPREADER_GUN],
+    ProjectileTypeId.RAINBOW_GUN: WEAPON_BY_ID[WeaponId.RAINBOW_GUN],
+    ProjectileTypeId.FIRE_BULLETS: WEAPON_BY_ID[WeaponId.FIRE_BULLETS],
+}
 
-    Returns `None` for weapons that don't use the main projectile pool.
-    """
+
+def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTypeId:
+    """Return the primary projectile type for a weapon that uses the main pool."""
 
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return type_ids[0] if type_ids else None
-
-    # Default native behavior for projectile weapons is `type_id == weapon_id`.
-    if weapon_id in WEAPON_BY_ID:
-        return weapon_id
-    return None
-
-
-def projectile_type_ids_from_weapon_id(weapon_id: WeaponId) -> tuple[int, ...]:
-    """Return all projectile `type_id` values produced by `weapon_id`."""
-
-    type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
-    if type_ids is not None:
-        return type_ids
-    if weapon_id in WEAPON_BY_ID:
-        return (weapon_id,)
-    return ()
-
-
-WEAPON_BY_NAME = {
-    entry.name: entry for entry in WEAPON_TABLE if entry.name is not None
-}
+        if not type_ids:
+            raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
+        return type_ids[0]
+    try:
+        return ProjectileTypeId(int(weapon_id))
+    except ValueError as exc:
+        raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}") from exc

@@ -5,7 +5,6 @@ from pathlib import Path
 from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
-from crimson.weapon_sfx import resolve_weapon_sfx_ref
 from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
 from grim.view import ViewContext
@@ -47,10 +46,8 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
 
     quest = quest_by_level("1.1")
     assert quest is not None
-    weapon = WEAPON_BY_ID.get(quest.start_weapon_id)
-    assert weapon is not None
-    reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
-    assert reload_sfx is not None
+    weapon = WEAPON_BY_ID[quest.start_weapon_id]
+    reload_sfx = weapon.reload_sound
     assert mode.state.sfx_queue == [reload_sfx] * len(mode.world.players)
 
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 import pytest
 
 import crimson.render.projectile_draw.primary_beam as primary_beam
-from crimson.projectiles import Projectile, ProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTypeId
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
 from crimson.render.rtx.mode import RtxRenderMode
 from grim.geom import Vec2

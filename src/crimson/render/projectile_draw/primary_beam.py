@@ -9,7 +9,7 @@ from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...perks.helpers import perk_active
-from ...projectiles import ProjectileTypeId
+from ...projectiles.types import ProjectileTypeId
 from ...render.rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ...render.rtx.mode import RtxRenderMode
 from ...sim.world_defs import BEAM_TYPES, ION_TYPES

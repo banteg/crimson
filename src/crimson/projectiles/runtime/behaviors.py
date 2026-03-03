@@ -250,11 +250,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     ring_radius = size * 0.5 + 1.0
 
     plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTypeId.PLASMA_RIFLE)
-    plasma_meta = (
-        float(plasma_entry.travel_budget)
-        if plasma_entry and plasma_entry.travel_budget is not None
-        else hit.proj.travel_budget
-    )
+    plasma_meta = float(plasma_entry.travel_budget)
 
     runtime_state = ctx.runtime_state
     prev_guard = False

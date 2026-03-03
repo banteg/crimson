@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-from ...projectiles import Projectile
+from ...projectiles.types import Projectile
 
 RAD_TO_DEG = 57.29577951308232
 

@@ -11,15 +11,13 @@ from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import (
-    ProjectileCollisionProfile,
-    ProjectileHit,
+from crimson.projectiles.runtime import (
     ProjectilePool,
-    ProjectileTypeId,
     SecondaryProjectilePool,
     projectile_collision_profile,
 )
 from crimson.projectiles.runtime.collision import _within_native_find_radius
+from crimson.projectiles.types import ProjectileCollisionProfile, ProjectileHit, ProjectileTypeId
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 from tests.factories import make_projectile_update_options

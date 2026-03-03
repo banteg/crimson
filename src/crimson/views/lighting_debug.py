@@ -19,7 +19,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..owner_ref import OwnerRef
-from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -29,7 +29,7 @@ from .registry import register_view
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
-    from ..projectiles import Projectile, SecondaryProjectile
+    from ..projectiles.types import Projectile, SecondaryProjectile
     from ..sim.state_types import PlayerState
 
 WORLD_SIZE = 1024.0
@@ -2272,10 +2272,8 @@ class LightingDebugView:
     def _profile_auto_interval(profile: EmissiveProfile) -> float:
         weapon_id = profile.rate_weapon_id
         if weapon_id is not None:
-            entry = WEAPON_BY_ID.get(weapon_id)
-            cooldown = None if entry is None else entry.shot_cooldown
-            if cooldown is not None:
-                return max(0.001, float(cooldown))
+            cooldown = WEAPON_BY_ID[WeaponId(weapon_id)].shot_cooldown
+            return max(0.001, float(cooldown))
         return max(0.001, float(profile.auto_interval))
 
     def _collect_shadow_state(self) -> None:

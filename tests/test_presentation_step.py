@@ -9,7 +9,7 @@ from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
 from crimson.sim.presentation_step import (
     apply_world_presentation_step,
     plan_death_sfx_keys,

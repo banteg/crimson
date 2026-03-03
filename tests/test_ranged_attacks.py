@@ -6,7 +6,7 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.factories import make_creature_update_options, make_projectile_update_options

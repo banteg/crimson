@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_world import GameWorld
-from crimson.projectiles import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
 from grim.geom import Vec2
 
 

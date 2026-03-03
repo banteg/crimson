@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from ..creatures.spawn import CreatureTypeId
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 
 
 class CreatureAnimInfo(msgspec.Struct, frozen=True):

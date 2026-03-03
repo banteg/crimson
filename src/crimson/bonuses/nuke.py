@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from ..owner_ref import OwnerRef
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 

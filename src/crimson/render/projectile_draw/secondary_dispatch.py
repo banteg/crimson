@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from ...projectiles import SecondaryProjectileTypeId
+from ...projectiles.types import SecondaryProjectileTypeId
 from .secondary_detonation import draw_secondary_detonation
 from .secondary_rocket import draw_secondary_rocket, draw_secondary_type4_fallback
 from .types import SecondaryProjectileDrawCtx

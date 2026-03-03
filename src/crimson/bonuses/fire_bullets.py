@@ -8,7 +8,7 @@ from grim.geom import Vec2
 
 from ..effects import FxQueue
 from ..math_parity import f32
-from ..projectiles import ProjectileHit
+from ..projectiles.types import ProjectileHit
 from .apply_context import BonusApplyCtx, bonus_apply_seconds
 
 

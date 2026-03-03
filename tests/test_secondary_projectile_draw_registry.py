@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 
 import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
-from crimson.projectiles import SecondaryProjectile
+from crimson.projectiles.types import SecondaryProjectile
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 from grim.geom import Vec2
 

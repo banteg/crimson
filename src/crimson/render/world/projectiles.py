@@ -10,7 +10,7 @@ from grim.raylib_api import rd, rl
 
 from ...perks import PerkId
 from ...perks.helpers import perk_active
-from ...projectiles import ProjectileTypeId
+from ...projectiles.types import ProjectileTypeId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from ..projectile_draw import (
     ProjectileDrawCtx,
@@ -22,7 +22,7 @@ from ..projectile_render_registry import known_proj_rgb
 from .context import WorldRenderCtx
 
 if TYPE_CHECKING:
-    from ...projectiles import Projectile, SecondaryProjectile
+    from ...projectiles.types import Projectile, SecondaryProjectile
     from ..projectile_draw import ProjectileRendererLike
     from ..rtx.mode import RtxRenderMode
 

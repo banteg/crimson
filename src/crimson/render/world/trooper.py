@@ -237,8 +237,8 @@ def draw_player_trooper_sprite(
                         rl.end_blend_mode()
 
         if render_ctx.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
-            weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
-            flags = int(weapon.flags) if weapon is not None and weapon.flags is not None else 0
+            weapon = WEAPON_BY_ID[player.weapon.weapon_id]
+            flags = int(weapon.flags) if weapon.flags is not None else 0
             if (flags & 0x8) == 0:
                 flash_alpha = clamp(float(player.muzzle_flash_alpha) * 0.8, 0.0, 1.0) * alpha
                 if flash_alpha > 1e-3:

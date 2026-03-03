@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
-from crimson.projectiles import Projectile, ProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTypeId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
 from grim.geom import Vec2

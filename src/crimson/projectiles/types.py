@@ -70,18 +70,12 @@ class ProjectileTypeId(IntEnum):
     # Values are projectile type ids (not weapon ids). Based on the decompile
     # for `player_fire_weapon` and `projectile_update`.
     PISTOL = 0x01
-    MEAN_MINIGUN = 0x01
     ASSAULT_RIFLE = 0x02
     SHOTGUN = 0x03
-    SAWED_OFF_SHOTGUN = 0x03
-    JACKHAMMER = 0x03
     SUBMACHINE_GUN = 0x05
     GAUSS_GUN = 0x06
-    GAUSS_SHOTGUN = 0x06
     PLASMA_RIFLE = 0x09
-    MULTI_PLASMA = 0x09
     PLASMA_MINIGUN = 0x0B
-    PLASMA_SHOTGUN = 0x0B
     PULSE_GUN = 0x13
     ION_RIFLE = 0x15
     ION_MINIGUN = 0x16

@@ -7,7 +7,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
-from ...projectiles import ProjectileTypeId
+from ...projectiles.types import ProjectileTypeId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from .common import proj_origin
 from .types import ProjectileDrawCtx

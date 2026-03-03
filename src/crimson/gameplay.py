@@ -24,11 +24,11 @@ from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.selection import perk_auto_pick
 from .perks.state import CreatureForPerks, PerkEffectIntervals, PerkSelectionState
-from .projectiles import (
+from .projectiles.runtime import (
     ProjectilePool,
-    ProjectileTypeId,
     SecondaryProjectilePool,
 )
+from .projectiles.types import ProjectileTypeId
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
 from .weapon_runtime import (
@@ -980,12 +980,7 @@ def player_update(
             if _player_swap_alt_weapon(player):
                 swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
-                if weapon is not None and weapon.reload_sound is not None:
-                    from .weapon_sfx import resolve_weapon_sfx_ref
-
-                    key = resolve_weapon_sfx_ref(weapon.reload_sound)
-                    if key is not None:
-                        state.sfx_queue.append(key)
+                state.sfx_queue.append(weapon.reload_sound)
                 player.weapon.shot_cooldown = float(player.weapon.shot_cooldown) + 0.1
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:

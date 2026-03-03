@@ -12,7 +12,6 @@ See: `docs/creatures/update.md`.
 
 import math
 from collections.abc import Callable, Sequence
-from typing import cast
 
 import msgspec
 
@@ -41,10 +40,10 @@ from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
-from ..weapons import WEAPON_BY_ID
+from ..weapons import weapon_entry_for_projectile_type_id
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .damage_types import CreatureDamageType
 from .lifecycle import (
@@ -215,7 +214,7 @@ def _owner_to_player_index(owner: OwnerRef) -> int | None:
 
 
 def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
-    return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
+    return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
 class CreatureState(msgspec.Struct):

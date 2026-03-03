@@ -14,17 +14,15 @@ from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
-from ..weapon_sfx import resolve_weapon_sfx_ref
 from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
-    Weapon,
     WeaponId,
-    projectile_type_id_from_weapon_id,
+    projectile_type_id_for_weapon_id,
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
@@ -267,18 +265,20 @@ class ArsenalDebugView:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
         if special is not None:
             return special
-        type_id = projectile_type_id_from_weapon_id(weapon_id)
-        if type_id is None:
+        try:
+            type_id = projectile_type_id_for_weapon_id(weapon_id)
+        except ValueError:
             return "particle/secondary"
-        return _projectile_type_label(type_id)
+        return _projectile_type_label(int(type_id))
 
-    def _weapon_debug_lines(self, weapon: Weapon | None) -> list[str]:
+    def _weapon_debug_lines(self) -> list[str]:
         player = self._player
         if player is None:
             return ["Arsenal debug: missing player"]
 
+        weapon = WEAPON_BY_ID[player.weapon.weapon_id]
         weapon_id = player.weapon.weapon_id
-        name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
+        name = weapon.name
         index_label = f"{self._weapon_index + 1}/{max(1, len(self._weapon_ids))}"
 
         lines = [
@@ -289,17 +289,12 @@ class ArsenalDebugView:
             f"shot_cd {player.weapon.shot_cooldown:.3f}  spread {player.spread_heat:.3f}  muzzle {player.muzzle_flash_alpha:.2f}",
         ]
 
-        if weapon is None:
-            return lines
-
-        fire_sfx = resolve_weapon_sfx_ref(weapon.fire_sound)
-        reload_sfx = resolve_weapon_sfx_ref(weapon.reload_sound)
         lines.extend(
             [
                 f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
                 f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.travel_budget)}",
                 f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
-                f"sfx fire {fire_sfx or '—'}  reload {reload_sfx or '—'}",
+                f"sfx fire {weapon.fire_sound}  reload {weapon.reload_sound}",
             ],
         )
         return lines
@@ -386,8 +381,7 @@ class ArsenalDebugView:
         y = 12.0
         line = float(ui_line_height(self._small))
 
-        weapon = WEAPON_BY_ID.get(self._player.weapon.weapon_id) if self._player is not None else None
-        for text in self._weapon_debug_lines(weapon):
+        for text in self._weapon_debug_lines():
             draw_ui_text(self._small, text, Vec2(x, y), color=UI_TEXT)
             y += line
 

@@ -10,7 +10,7 @@ from grim.raylib_api import rl
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.payload import BonusPointsPayload, BonusWeaponPayload
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
-from ...weapons import WEAPON_BY_ID
+from ...weapons import WEAPON_BY_ID, WeaponId
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -88,9 +88,8 @@ def draw_bonus_pickups(
             payload = bonus.payload
             if not isinstance(payload, BonusWeaponPayload):
                 continue
-            weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
-            icon_index = int(weapon.icon_index) if weapon is not None and weapon.icon_index is not None else None
-            if icon_index is None or not (0 <= icon_index <= 31) or render_ctx.wicons_texture is None:
+            icon_index = int(WEAPON_BY_ID[WeaponId(int(payload.weapon_id))].icon_index)
+            if not (0 <= icon_index <= 31) or render_ctx.wicons_texture is None:
                 continue
 
             pulse = math.sin(float(render_ctx.bonus_anim_phase)) ** 4 * 0.25 + 0.75

@@ -23,7 +23,7 @@ from ..persistence.highscores import (
     upsert_highscore_record,
 )
 from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
-from ..weapons import WEAPON_BY_ID, weapon_display_name
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .cursor import draw_menu_cursor
 from .formatting import format_ordinal, format_time_mm_ss
 from .layout import menu_widescreen_y_shift, ui_scale
@@ -101,9 +101,8 @@ class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
 
 def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
     weapon_id = int(weapon_id_native)
-    entry = WEAPON_BY_ID.get(weapon_id)
-    icon_index = entry.icon_index if entry is not None else None
-    if icon_index is None or icon_index < 0 or icon_index > 31:
+    icon_index = WEAPON_BY_ID[WeaponId(weapon_id)].icon_index
+    if icon_index < 0 or icon_index > 31:
         return None
     grid = 8
     cell_w = float(texture.width) / grid

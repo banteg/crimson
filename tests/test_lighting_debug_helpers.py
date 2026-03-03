@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from crimson.projectiles import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.views.lighting_debug import (
     EMISSIVE_PROFILES,
@@ -21,7 +21,7 @@ from crimson.views.lighting_debug import (
     collect_shadow_occluders,
     tick_transient_lights,
 )
-from crimson.weapons import WEAPON_BY_ID
+from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
 from grim.view import ViewContext
 from tests.factories import make_creature_state as _creature
@@ -183,9 +183,7 @@ def test_tick_transient_lights_decays_and_removes_expired_entries() -> None:
 def test_profile_auto_interval_uses_weapon_cooldown_for_all_profiles() -> None:
     for profile in EMISSIVE_PROFILES:
         assert profile.rate_weapon_id is not None
-        weapon = WEAPON_BY_ID.get(profile.rate_weapon_id)
-        assert weapon is not None
-        assert weapon.shot_cooldown is not None
+        weapon = WEAPON_BY_ID[WeaponId(profile.rate_weapon_id)]
         interval = LightingDebugView._profile_auto_interval(profile)
         assert_float_close(interval, float(weapon.shot_cooldown))
 
