@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_survival_replay
@@ -214,3 +217,13 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [3]
     assert checkpoints[0].rng_marks == {}
+
+
+def test_playback_driver_run_tick_requires_player_inputs() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+
+    run_tick = cast(Any, driver.run_tick)
+    with pytest.raises(TypeError):
+        run_tick(0)

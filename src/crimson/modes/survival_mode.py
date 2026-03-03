@@ -50,7 +50,6 @@ from ..replay.checkpoints import (
 )
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.clock import FixedStepClock
 from ..sim.input_providers import InputCommand
 from ..sim.sessions import SurvivalDeterministicSession
 from ..ui.cursor import draw_menu_cursor
@@ -120,7 +119,6 @@ class SurvivalMode(BaseGameplayMode):
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._perk_menu_assets = None
         self._cursor_time = 0.0
-        self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -329,7 +327,7 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
         self._reset_gameplay_tick_runner_clock()
-        self._lan_capture_clock.reset()
+        self._reset_lan_capture_clock()
         self._survival = _SurvivalState()
         self._lan_last_tick_index = -1
         self._lan_perk_events.clear()
@@ -646,7 +644,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         self._trace_lan_terrain_generation()
         if bool(self._lan_terrain_generation_pending()):
-            self._lan_capture_clock.reset()
+            self._reset_lan_capture_clock()
             return
 
         if bool(self._paused):
@@ -658,7 +656,7 @@ class SurvivalMode(BaseGameplayMode):
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
 
-        dt_tick = float(self._lan_capture_clock.dt_tick)
+        dt_tick = float(self._lan_capture_tick_dt())
 
         def _drain_join_perk_events() -> None:
             if role != "join":
@@ -818,7 +816,7 @@ class SurvivalMode(BaseGameplayMode):
             self._hud_fade_ms = clamp(self._hud_fade_ms + dt_ui_ms, 0.0, PERK_MENU_TRANSITION_MS)
 
         if self._perk_menu.active:
-            self._lan_capture_clock.reset()
+            self._reset_lan_capture_clock()
             if self._death_transition_ready():
                 self._enter_game_over()
             return
@@ -868,10 +866,10 @@ class SurvivalMode(BaseGameplayMode):
             ):
                 return
             if self._perk_menu.active:
-                self._lan_capture_clock.reset()
+                self._reset_lan_capture_clock()
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt)
+        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
         self._queue_lan_local_inputs(
             runtime=runtime,
             ticks_to_capture=int(ticks_to_capture),
@@ -880,7 +878,7 @@ class SurvivalMode(BaseGameplayMode):
         _drain_join_perk_events()
         _apply_due_perk_events()
         if self._perk_menu.active:
-            self._lan_capture_clock.reset()
+            self._reset_lan_capture_clock()
             return
 
         self._consume_lan_tick_frames(

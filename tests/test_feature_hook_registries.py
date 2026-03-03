@@ -19,7 +19,7 @@ from crimson.perks.runtime.manifest import (
 )
 from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
-from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
+from crimson.sim.presentation_step import plan_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -124,4 +124,4 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
 
 def test_step_dispatch_functions_are_size_bounded() -> None:
     assert len(inspect.getsource(WorldState.step).splitlines()) <= 330
-    assert len(inspect.getsource(apply_world_presentation_step).splitlines()) <= 80
+    assert len(inspect.getsource(plan_world_presentation_step).splitlines()) <= 80

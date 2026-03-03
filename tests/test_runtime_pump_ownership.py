@@ -104,6 +104,13 @@ def test_lan_tick_consumption_uses_tick_runner_instead_of_direct_step_call() -> 
     assert "session.step_tick(" not in source
 
 
+def test_lan_tick_consumption_delegates_finalize_side_effects_to_helper() -> None:
+    source = inspect.getsource(BaseGameplayMode._consume_lan_tick_frames)
+    assert "_finalize_lan_tick(" in source
+    assert "runtime.note_desync(" not in source
+    assert "broadcast_tick_frame(" not in source
+
+
 def test_gameplay_modes_no_longer_use_mode_local_sim_clock() -> None:
     lan_methods = (
         SurvivalMode.update,
@@ -113,6 +120,12 @@ def test_gameplay_modes_no_longer_use_mode_local_sim_clock() -> None:
     for method in lan_methods:
         source = inspect.getsource(method)
         assert "_sim_clock" not in source
+
+
+def test_gameplay_modes_no_longer_define_mode_local_lan_capture_clock() -> None:
+    for mode_type in (SurvivalMode, RushMode, QuestMode):
+        source = inspect.getsource(mode_type.__init__)
+        assert "_lan_capture_clock" not in source
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:

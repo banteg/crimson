@@ -36,7 +36,6 @@ from ..replay.checkpoints import (
 )
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.clock import FixedStepClock
 from ..sim.sessions import RushDeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -91,7 +90,6 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
 
         self._ui_assets = None
-        self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -157,7 +155,7 @@ class RushMode(BaseGameplayMode):
         self._ui_assets = load_perk_menu_assets(self._assets_root)
         self._rush = _RushState()
         self._reset_gameplay_tick_runner_clock()
-        self._lan_capture_clock.reset()
+        self._reset_lan_capture_clock()
 
         status = self.state.status
         base_status = self.save_status
@@ -414,7 +412,7 @@ class RushMode(BaseGameplayMode):
             return
         self._trace_lan_terrain_generation()
         if bool(self._lan_terrain_generation_pending()):
-            self._lan_capture_clock.reset()
+            self._reset_lan_capture_clock()
             return
 
         if bool(self._paused):
@@ -423,7 +421,7 @@ class RushMode(BaseGameplayMode):
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
 
-        dt_tick = float(self._lan_capture_clock.dt_tick)
+        dt_tick = float(self._lan_capture_tick_dt())
 
         def _on_tick_applied(step: LanTickStep) -> LanStepAction:
             self._rush.elapsed_ms = float(step.tick.elapsed_ms)
@@ -455,7 +453,7 @@ class RushMode(BaseGameplayMode):
             ):
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt)
+        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
         self._queue_lan_local_inputs(
             runtime=runtime,
             ticks_to_capture=int(ticks_to_capture),

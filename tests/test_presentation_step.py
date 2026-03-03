@@ -13,9 +13,9 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import (
     PresentationStepCommands,
     apply_presentation_plan,
-    apply_world_presentation_step,
     plan_death_sfx_keys,
     plan_hit_sfx_keys,
+    plan_world_presentation_step,
     queue_projectile_decals,
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
@@ -135,7 +135,7 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
     )
 
 
-def test_apply_world_presentation_step_orders_sfx() -> None:
+def test_plan_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -143,7 +143,7 @@ def test_apply_world_presentation_step_orders_sfx() -> None:
 
     state.perk_selection.pending_count = 1
 
-    commands = apply_world_presentation_step(
+    commands = plan_world_presentation_step(
         state=state,
         players=[player],
         fx_queue=FxQueue(),
@@ -384,14 +384,14 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     assert fx_queue.count == 12
 
 
-def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
+def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     rng = MockCrand(0, fallback="repeat_last")
     before_calls = rng.calls
     before_state = rng.state
 
-    commands = apply_world_presentation_step(
+    commands = plan_world_presentation_step(
         state=state,
         players=[player],
         fx_queue=FxQueue(),

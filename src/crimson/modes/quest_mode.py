@@ -50,7 +50,6 @@ from ..replay.checkpoints import (
     resolve_checkpoint_sample_rate,
 )
 from ..replay.types import normalize_weapon_usage_counts
-from ..sim.clock import FixedStepClock
 from ..sim.input_providers import InputCommand
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -162,7 +161,6 @@ class QuestMode(BaseGameplayMode):
             on_pick=self._record_perk_pick,
             defer_pick_apply=True,
         )
-        self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._session_factory = session_factory
         self._sim_session: QuestDeterministicSession | None = self._new_sim_session(spawn_entries=())
         self._replay_recorder: ReplayRecorder | None = None
@@ -183,7 +181,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_pulse = 0.0
         self._perk_menu.reset()
         self._reset_gameplay_tick_runner_clock()
-        self._lan_capture_clock.reset()
+        self._reset_lan_capture_clock()
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
@@ -817,7 +815,7 @@ class QuestMode(BaseGameplayMode):
             return
         self._trace_lan_terrain_generation()
         if bool(self._lan_terrain_generation_pending()):
-            self._lan_capture_clock.reset()
+            self._reset_lan_capture_clock()
             return
 
         if bool(self._paused):
@@ -828,7 +826,7 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        dt_tick = float(self._lan_capture_clock.dt_tick)
+        dt_tick = float(self._lan_capture_tick_dt())
 
         def _before_step() -> None:
             session.detail_preset = int(self._deterministic_detail_preset())
@@ -922,7 +920,7 @@ class QuestMode(BaseGameplayMode):
             ):
                 return
 
-        ticks_to_capture = self._lan_capture_clock.advance(dt)
+        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
         self._queue_lan_local_inputs(
             runtime=runtime,
             ticks_to_capture=int(ticks_to_capture),
