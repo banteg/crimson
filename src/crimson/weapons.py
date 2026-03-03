@@ -3,30 +3,23 @@ from __future__ import annotations
 """
 Weapon definitions for the rewrite runtime.
 
-This file is **manually maintained** (do not auto-generate).
-
-It was originally seeded from `weapon_table_init` (`FUN_004519b0`) and the
-rewrite now uses the **native 1-based weapon ids** (e.g. pistol is
-`weapon_id=1`). In the native code, projectile `type_id` values passed into
-`projectile_spawn` are **weapon table indices** (same numeric domain as weapon
-ids). They are **not** a 1:1 mapping: multiple weapons can share a projectile
-type id (e.g. Sawed-off and Jackhammer use the Shotgun template), and some
-weapons bypass `projectile_spawn` entirely (particles / secondary pool).
+Weapon ids use native 1-based values (e.g. `weapon_id=1` for Pistol).
+Projectile `type_id` values share the same numeric domain, but the mapping is
+not 1:1: multiple weapons can share a projectile template and some weapons use
+particle/secondary pools instead of the main projectile pool.
 
 Use `projectile_type_id_from_weapon_id` for the primary projectile `type_id`
 (or `None` for non-projectile weapons), and `projectile_type_ids_from_weapon_id`
 when you need the full set.
 
 Reference material:
-- `docs/weapon-table.md` (native struct + fields)
-- `docs/weapon-id-map.md` (native ids + names)
+- `docs/re/static/reference/weapon-table.md`
+- `docs/re/static/reference/weapon-id-map.md`
 """
 
 from enum import IntEnum
 
 import msgspec
-
-MANUALLY_MAINTAINED = True
 
 
 class WeaponId(IntEnum):
@@ -801,7 +794,7 @@ def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> 
 
 
 WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
-    # Source: analysis/ghidra/raw/crimsonland.exe_decompiled.c (`player_fire_weapon`).
+    # Derived from native `player_fire_weapon` behavior.
     # Weapon ids not listed here use `type_id == weapon_id` in the native
     # `projectile_spawn` path.
     1: (0x01,),  # Pistol
