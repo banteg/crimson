@@ -448,7 +448,7 @@ class RollbackRuntime(msgspec.Struct):
             now_ms=int(now_ms),
         )
 
-    def _handle_message(self, *, message: object, now_ms: int) -> None:
+    def _handle_message(self, *, message: NetMessage, now_ms: int) -> None:
         lan_debug_log(
             "net_recv",
             role=str(self.cfg.role),

@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from crimson.net.relay_protocol import RbResyncBegin, RbResyncChunk, RbResyncCommit, RbResyncRequest, RoomStart
+from crimson.net.relay_protocol import (
+    NetMessage,
+    RbResyncBegin,
+    RbResyncChunk,
+    RbResyncCommit,
+    RbResyncRequest,
+    RoomStart,
+)
 from crimson.net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
@@ -13,7 +20,7 @@ from crimson.net.rollback_resync_v5 import (
 from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 
 
-def _sent_messages(send_packet: MagicMock) -> list[object]:
+def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
     return [call.args[-1].message for call in send_packet.call_args_list]
 
 

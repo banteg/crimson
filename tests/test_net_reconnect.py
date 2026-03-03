@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from crimson.net.relay_protocol import (
     ClientHello,
     ClientWelcome,
+    NetMessage,
     PeerDisconnect,
     RelaySlot,
     RoomJoin,
@@ -14,7 +15,7 @@ from crimson.net.relay_protocol import (
 from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 
 
-def _sent_messages(send_packet: MagicMock) -> list[object]:
+def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
     return [call.args[-1].message for call in send_packet.call_args_list]
 
 
