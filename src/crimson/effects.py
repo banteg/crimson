@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Sequence
 from enum import IntEnum
-from typing import Protocol
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -15,6 +15,9 @@ from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import f32
 from .owner_ref import OwnerRef
+
+if TYPE_CHECKING:
+    from .creatures.runtime import CreatureState
 
 __all__ = [
     "FX_QUEUE_CAPACITY",
@@ -59,21 +62,8 @@ class ParticleStyleId(IntEnum):
     BUBBLEGUN = 8
 
 
-class _CreatureForParticles(Protocol):
-    active: bool
-    pos: Vec2
-    hp: float
-    size: float
-    lifecycle_stage: float
-    tint: RGBA
-
-
-class CreatureDamageApplier(Protocol):
-    def __call__(self, creature_index: int, damage: float, damage_type: int, impulse: Vec2, owner: OwnerRef, /) -> None: ...
-
-
-class CreatureKillHandler(Protocol):
-    def __call__(self, creature_index: int, owner: OwnerRef, /) -> None: ...
+CreatureDamageApplier = Callable[[int, float, int, Vec2, OwnerRef], None]
+CreatureKillHandler = Callable[[int, OwnerRef], None]
 
 
 class Particle(msgspec.Struct):
@@ -192,7 +182,8 @@ class ParticlePool:
         self,
         dt: float,
         *,
-        creatures: Sequence[_CreatureForParticles] | None = None,
+        creatures: Sequence[CreatureState] | None = None,
+        apply_creature_damage: CreatureDamageApplier | None = None,
         kill_creature: CreatureKillHandler | None = None,
         fx_queue: FxQueue | None = None,
         sprite_effects: SpriteEffectPool | None = None,
@@ -209,6 +200,7 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
+        damage_applier = apply_creature_damage or self._creature_damage_applier
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
@@ -349,8 +341,8 @@ class ParticlePool:
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
-                            if self._creature_damage_applier is not None:
-                                self._creature_damage_applier(
+                            if damage_applier is not None:
+                                damage_applier(
                                     int(hit_idx),
                                     float(damage),
                                     4,

@@ -71,8 +71,17 @@ class ReplayRenderTelemetryTopTick(msgspec.Struct, frozen=True):
     value: float
 
 
-# Backward-compatible export name for callers/tests.
-ReplayRenderTelemetryFrame = RenderTelemetryFrameSnapshot
+class ReplayRenderTelemetryFrame(msgspec.Struct, frozen=True):
+    frame_index: int
+    tick_index_before_update: int
+    tick_index_after_update: int
+    update_ms: float
+    draw_ms: float
+    frame_ms: float
+    draw_calls_total: int
+    draw_calls_by_api: dict[str, int]
+    draw_calls_by_pass: dict[str, int]
+    pass_ms: dict[str, float]
 
 
 class ReplayRenderTelemetrySummary(msgspec.Struct, frozen=True):
@@ -95,10 +104,10 @@ class ReplayRenderTelemetryArtifacts(msgspec.Struct, frozen=True):
 
 
 class ReplayRenderTelemetryResult(msgspec.Struct, frozen=True):
-    frames: tuple[RenderTelemetryFrameSnapshot, ...]
+    frames: tuple[ReplayRenderTelemetryFrame, ...]
     summary: ReplayRenderTelemetrySummary
     artifacts: ReplayRenderTelemetryArtifacts | None = None
-    preview: tuple[RenderTelemetryFrameSnapshot, ...] = ()
+    preview: tuple[ReplayRenderTelemetryFrame, ...] = ()
 
 
 class ReplayBenchmarkResult(msgspec.Struct, frozen=True):
@@ -331,7 +340,7 @@ def run_replay_render_benchmark(
                 where="render telemetry run",
             )
 
-            frames = tuple(collected.telemetry_frames)
+            frames = tuple(_convert_telemetry_frame(frame) for frame in collected.telemetry_frames)
             summary = _summarize_render_telemetry(frames=frames)
 
             telemetry_json_path: Path | None = None
@@ -764,9 +773,24 @@ def _is_project_hotspot_path(path: str) -> bool:
     )
 
 
+def _convert_telemetry_frame(frame: RenderTelemetryFrameSnapshot) -> ReplayRenderTelemetryFrame:
+    return ReplayRenderTelemetryFrame(
+        frame_index=int(frame.frame_index),
+        tick_index_before_update=int(frame.tick_index_before_update),
+        tick_index_after_update=int(frame.tick_index_after_update),
+        update_ms=float(frame.update_ms),
+        draw_ms=float(frame.draw_ms),
+        frame_ms=float(frame.frame_ms),
+        draw_calls_total=int(frame.draw_calls_total),
+        draw_calls_by_api={str(key): int(value) for key, value in frame.draw_calls_by_api.items()},
+        draw_calls_by_pass={str(key): int(value) for key, value in frame.draw_calls_by_pass.items()},
+        pass_ms={str(key): float(value) for key, value in frame.pass_ms.items()},
+    )
+
+
 def _top_ticks(
     *,
-    frames: tuple[RenderTelemetryFrameSnapshot, ...],
+    frames: tuple[ReplayRenderTelemetryFrame, ...],
     top_n: int,
     key_fn: Any,
 ) -> tuple[ReplayRenderTelemetryTopTick, ...]:
@@ -782,7 +806,7 @@ def _top_ticks(
     )
 
 
-def _summarize_render_telemetry(*, frames: tuple[RenderTelemetryFrameSnapshot, ...]) -> ReplayRenderTelemetrySummary:
+def _summarize_render_telemetry(*, frames: tuple[ReplayRenderTelemetryFrame, ...]) -> ReplayRenderTelemetrySummary:
     frame_ms_values = [float(frame.frame_ms) for frame in frames]
     update_ms_values = [float(frame.update_ms) for frame in frames]
     draw_ms_values = [float(frame.draw_ms) for frame in frames]

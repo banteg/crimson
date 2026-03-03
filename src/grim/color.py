@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Protocol, SupportsFloat
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -9,20 +9,6 @@ from .math import clamp
 
 if TYPE_CHECKING:
     from grim.raylib_api import rl
-
-
-class SupportsRGBA(Protocol):
-    @property
-    def r(self) -> SupportsFloat: ...
-
-    @property
-    def g(self) -> SupportsFloat: ...
-
-    @property
-    def b(self) -> SupportsFloat: ...
-
-    @property
-    def a(self) -> SupportsFloat: ...
 
 
 class RGBA(msgspec.Struct, frozen=True):
@@ -38,7 +24,7 @@ class RGBA(msgspec.Struct, frozen=True):
         return cls(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
 
     @classmethod
-    def from_rl(cls, value: SupportsRGBA) -> RGBA:
+    def from_rl(cls, value: rl.Color) -> RGBA:
         inv_255 = 1.0 / 255.0
         return cls(
             float(value.r) * inv_255,

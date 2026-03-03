@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 import math
-import random
 import webbrowser
-from pathlib import Path
-from typing import TYPE_CHECKING, Protocol
 
 from grim.assets import PaqTextureCache, load_paq_entries
-from grim.audio import AudioState, update_audio
-from grim.config import CrimsonConfig
+from grim.audio import update_audio
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -17,6 +13,7 @@ from grim.rand import Crand
 from grim.raylib_api import rd, rl
 
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
+from .game.types import GameState
 from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
@@ -25,9 +22,6 @@ from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
-
-if TYPE_CHECKING:
-    from grim.assets import LogoAssets
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -59,18 +53,6 @@ _DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
 _DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
 
 
-class DemoState(Protocol):
-    assets_dir: Path
-    rng: random.Random
-    config: CrimsonConfig
-    texture_cache: PaqTextureCache | None
-    audio: AudioState | None
-    logos: LogoAssets | None
-    preserve_bugs: bool
-    demo_enabled: bool
-    quit_requested: bool
-
-
 def _weapon_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> str:
     return weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
 
@@ -86,7 +68,7 @@ class DemoView:
       - demo_mode_start       @ 0x00403390
     """
 
-    def __init__(self, state: DemoState) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
         self._world = GameWorld(
             assets_dir=state.assets_dir,

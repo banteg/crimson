@@ -8,7 +8,6 @@ from typing import Protocol, cast
 
 import msgspec
 
-from crimson.quest_level import QuestLevel
 from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, play_music
 from grim.config import (
@@ -34,13 +33,12 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
-from ..net.session_settings import session_settings_for_lockstep
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import ReplayClaimedStatsSnapshot, ReplayRecorder, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -52,13 +50,12 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
-from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import normalize_weapon_usage_counts
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
 from ..sim.timing import FrameTiming
-from ..status_snapshot import progress_status_from_game_status, replay_status_from_progress
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -142,8 +139,12 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
 
 
 def _quest_attempt_counter_index(major: int, minor: int) -> int | None:
-    level = QuestLevel.from_parts(major, minor)
-    return level.tracked_games_counter_index
+    tier = int(major)
+    quest = int(minor)
+    global_index = (tier - 1) * 10 + (quest - 1)
+    if not (0 <= global_index < 40):
+        return None
+    return global_index + 11
 
 
 class QuestMode(BaseGameplayMode):
@@ -408,7 +409,7 @@ class QuestMode(BaseGameplayMode):
         self._bind_world()
         self._local_input.reset(players=self.world.players)
         self.bind_status(status)
-        self.state.quest_level = QuestLevel.from_parts(*quest.level_key)
+        self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
         default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
         terrain_ids = quest.terrain_ids
@@ -484,26 +485,31 @@ class QuestMode(BaseGameplayMode):
             clear_fx_queues_each_tick=False,
         )
 
-        status_snapshot = replay_status_from_progress(progress_status_from_game_status(status))
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
+        status_snapshot = ReplayStatusSnapshot(
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
+            if status is not None
+            else 0,
+            weapon_usage_counts=weapon_usage_counts,
+        )
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
-            settings = session_settings_for_lockstep(
-                mode_id=int(GameMode.QUESTS),
-                player_count=len(self.world.players),
-                quest_level=str(quest.level),
-                preserve_bugs=bool(self.state.preserve_bugs),
-                tick_rate=int(self._sim_clock.tick_rate),
-                input_delay_ticks=0,
-            )
             self._replay_recorder = ReplayRecorder(
-                replay_header_from_session_settings(
-                    settings,
+                ReplayHeader(
+                    game_mode_id=GameMode.QUESTS,
                     seed=int(self.state.rng.state),
+                    quest_level=str(quest.level),
+                    tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
+                    preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=self.config.detail_preset,
                     fx_toggle=self.config.fx_toggle,
                     world_size=float(self.world.world_size),
+                    player_count=len(self.world.players),
                     status=status_snapshot,
                 ),
             )
@@ -1078,7 +1084,11 @@ class QuestMode(BaseGameplayMode):
                     assets=self._hud_assets,
                     state=self._hud_state,
                     font=self._small,
-                    flags=hud_flags,
+                    show_health=hud_flags.show_health,
+                    show_weapon=hud_flags.show_weapon,
+                    show_xp=hud_flags.show_xp,
+                    show_time=hud_flags.show_time,
+                    show_quest_hud=hud_flags.show_quest_hud,
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,

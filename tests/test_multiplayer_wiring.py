@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.game_world import GameWorld
@@ -9,6 +10,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.input import PlayerInput
+from crimson.sim.sessions import QuestDeterministicSession
 from crimson.sim.timing import FrameTiming
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
@@ -93,7 +95,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
         def step_tick(self, *, timing, inputs, trace_rng=False):
             return step_tick(timing=timing, inputs=inputs, trace_rng=trace_rng)
 
-    mode._sim_session = _FakeSession()
+    mode._sim_session = cast(QuestDeterministicSession, _FakeSession())
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)

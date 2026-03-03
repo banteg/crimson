@@ -30,6 +30,7 @@ from ..net.rollback_resync_v5 import (
     decode_mode_snapshot,
     encode_mode_snapshot,
 )
+from ..net.rollback_runtime import RollbackRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
@@ -44,45 +45,17 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
+    from ..game.types import GameState
     from ..gameplay import GameplayState
     from ..net.lockstep_protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
+    from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
 
-
-class _ScreenFade(Protocol):
-    screen_fade_alpha: float
-
-
-class DeterministicSessionLike(Protocol):
-    detail_preset: int
-    fx_toggle: int
-    game_tune_started: bool
-
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-    ) -> DeterministicSessionTick: ...
-
-
-class _ReplayRecorderLike(Protocol):
-    tick_index: int
-    recorded_tick_count: int
-
-    def record_tick(self, inputs: list[PlayerInput]) -> int: ...
-
-
-class _LanRuntimeSlotLike(Protocol):
-    local_slot_index: int
-
-
 @runtime_checkable
-class LanRuntimeLike(_LanRuntimeSlotLike, Protocol):
+class LanRuntimeLike(Protocol):
     error: str
+    local_slot_index: int
 
     def update(self) -> None: ...
     def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None: ...
@@ -110,13 +83,19 @@ class LanRuntimeLike(_LanRuntimeSlotLike, Protocol):
     def debug_overlay_lines(self) -> list[str]: ...
 
 
-@runtime_checkable
-class _LanRuntimeRollbackLike(Protocol):
-    def store_local_snapshot(self, tick_index: int, snapshot_blob: bytes) -> None: ...
-    def pop_rollback_from(self) -> int | None: ...
-    def pop_resync_snapshot(self) -> tuple[int, bytes] | None: ...
-    def mark_resync_applied(self, tick_index: int) -> None: ...
+class DeterministicSessionLike(Protocol):
+    detail_preset: int
+    fx_toggle: int
+    game_tune_started: bool
 
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
+
+    def step_tick(
+        self,
+        *,
+        timing: FrameTiming,
+        inputs: list[PlayerInput] | None,
+    ) -> DeterministicSessionTick: ...
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
@@ -194,10 +173,10 @@ class BaseGameplayMode:
         self._ui_mouse = Vec2()
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
-        self._screen_fade: _ScreenFade | None = None
+        self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
-        self._replay_recorder: _ReplayRecorderLike | None = None
+        self._replay_recorder: ReplayRecorder | None = None
         self._lan_runtime: LanRuntimeLike | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
@@ -226,11 +205,9 @@ class BaseGameplayMode:
         # the underlying `GameWorld.state`, so `_bind_world()` also re-applies it).
         self.state.status = self._status_sim
 
-    def bind_lan_runtime(self, runtime: LanRuntimeLike | _LanRuntimeSlotLike | None) -> None:
+    def bind_lan_runtime(self, runtime: object | None) -> None:
         self._lan_runtime = runtime if isinstance(runtime, LanRuntimeLike) else None
-        slot_index = 0
-        if runtime is not None:
-            slot_index = int(runtime.local_slot_index)
+        slot_index = int(getattr(runtime, "local_slot_index", 0))
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
     def set_lan_match_start(
@@ -348,7 +325,7 @@ class BaseGameplayMode:
         self._status_base = status
         self._refresh_effective_status(reset_lan_status=False)
 
-    def bind_screen_fade(self, fade: _ScreenFade | None) -> None:
+    def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
 
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
@@ -661,7 +638,7 @@ class BaseGameplayMode:
         snapshot: ModeStateSnapshotV2,
     ) -> None:
         runtime = self._lan_runtime
-        if runtime is None or (not isinstance(runtime, _LanRuntimeRollbackLike)):
+        if runtime is None or not isinstance(runtime, RollbackRuntime):
             return
         tick = max(0, int(snapshot.tick_index))
         if (tick % 4) != 0:
@@ -671,7 +648,7 @@ class BaseGameplayMode:
 
     def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
         runtime = self._lan_runtime
-        if runtime is None or (not isinstance(runtime, _LanRuntimeRollbackLike)):
+        if runtime is None or not isinstance(runtime, RollbackRuntime):
             return
         rollback_from = runtime.pop_rollback_from()
         if rollback_from is not None:
@@ -711,6 +688,12 @@ class BaseGameplayMode:
         if self._lan_enabled:
             return int(LAN_SIM_FX_TOGGLE)
         return self.config.fx_toggle
+
+    def update(self, dt: float) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
+
+    def draw(self) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}.draw() must be implemented by gameplay mode")
 
     def open(self) -> None:
         self.close_requested = False
@@ -901,7 +884,7 @@ class BaseGameplayMode:
         dt_tick: float,
         input_frame: list[PlayerInput],
         session: DeterministicSessionLike,
-        recorder: _ReplayRecorderLike | None,
+        recorder: ReplayRecorder | None,
         on_tick: Callable[[DeterministicSessionTick, int | None], bool],
     ) -> None:
         if self.world.audio_router is not None:

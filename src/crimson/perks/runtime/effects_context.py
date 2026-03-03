@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol
 
 import msgspec
 
@@ -11,16 +10,7 @@ from ...collision_math import native_find_size_margin
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import FxQueue
 from ...sim.state_types import GameplayState, PlayerState
-
-
-class CreatureForPerks(Protocol):
-    active: bool
-    pos: Vec2
-    hp: float
-    lifecycle_stage: float
-    collision_timer: float
-    reward_value: float
-    size: float
+from ..state import CreatureForPerks
 
 
 def creature_find_in_radius(creatures: Sequence[CreatureForPerks], *, pos: Vec2, radius: float, start_index: int) -> int:
