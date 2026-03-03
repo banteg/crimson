@@ -724,7 +724,7 @@ class QuestMode(BaseGameplayMode):
             self.world.audio_router.audio_rng = self.world.audio_rng
             self.world.audio_router.demo_mode_active = self.world.demo_mode_active
         if self.world.ground is not None:
-            self.world._sync_ground_settings()
+            self.world.sync_ground_settings()
             self.world.ground.process_pending()
 
         def _on_tick(tick, tick_index: int | None) -> bool:

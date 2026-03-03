@@ -58,85 +58,142 @@ class GameWorld(msgspec.Struct):
     render_resources: RenderResources = cast(RenderResources, None)
     audio_bridge: AudioBridge = cast(AudioBridge, None)
     terrain_runtime: TerrainRuntime = cast(TerrainRuntime, None)
-    audio_router: AudioRouter = cast(AudioRouter, None)
     renderer: WorldRenderer = cast(WorldRenderer, None)
-    world_state: WorldState = cast(WorldState, None)
-
-    spawn_env: SpawnEnv = cast(SpawnEnv, None)
-    state: GameplayState = cast(GameplayState, None)
-    players: list[PlayerState] = msgspec.field(default_factory=list)
-    creatures: CreaturePool = cast(CreaturePool, None)
     camera: Vec2 = Vec2(-1.0, -1.0)
-    _damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=dict)
-    ground: GroundRenderer | None = None
-    fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
-    fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
-    fx_textures: FxQueueTextures | None = None
-    creature_textures: dict[str, rl.Texture] = msgspec.field(default_factory=dict)
-    projs_texture: rl.Texture | None = None
-    particles_texture: rl.Texture | None = None
-    bullet_texture: rl.Texture | None = None
-    bullet_trail_texture: rl.Texture | None = None
-    arrow_texture: rl.Texture | None = None
-    bonuses_texture: rl.Texture | None = None
-    bodyset_texture: rl.Texture | None = None
-    clock_table_texture: rl.Texture | None = None
-    clock_pointer_texture: rl.Texture | None = None
-    aim_texture: rl.Texture | None = None
-    muzzle_flash_texture: rl.Texture | None = None
-    wicons_texture: rl.Texture | None = None
-    _elapsed_ms: float = 0.0
-    _bonus_anim_phase: float = 0.0
-    _game_tune_started: bool = False
-    last_events: WorldEvents = msgspec.field(
-        default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
-    )
-    last_presentation: PresentationStepCommands = msgspec.field(default_factory=PresentationStepCommands)
-    last_command_hash: str = ""
     lan_player_rings_enabled: bool = False
     lan_local_aim_indicators_only: bool = False
     lan_local_player_slot_index: int = 0
 
-    def _sync_sim_refs(self) -> None:
-        self.world_state = self.sim_world.world_state
-        self.spawn_env = self.sim_world.spawn_env
-        self.state = self.sim_world.state
-        self.players = self.sim_world.players
-        self.creatures = self.sim_world.creatures
-        self._damage_scale_by_type = self.sim_world.damage_scale_by_type
-        self._elapsed_ms = float(self.sim_world.elapsed_ms)
-        self._bonus_anim_phase = float(self.sim_world.bonus_anim_phase)
-        self._game_tune_started = bool(self.sim_world.game_tune_started)
-        self.last_events = self.sim_world.last_events
-        self.last_presentation = self.sim_world.last_presentation
-        self.last_command_hash = self.sim_world.last_command_hash
+    @property
+    def audio_router(self) -> AudioRouter:
+        return self.audio_bridge.router
 
-    def _sync_render_refs(self) -> None:
-        self.ground = self.render_resources.ground
-        self.fx_queue = self.render_resources.fx_queue
-        self.fx_queue_rotated = self.render_resources.fx_queue_rotated
-        self.fx_textures = self.render_resources.fx_textures
-        self.creature_textures = self.render_resources.creature_textures
-        self.projs_texture = self.render_resources.projs_texture
-        self.particles_texture = self.render_resources.particles_texture
-        self.bullet_texture = self.render_resources.bullet_texture
-        self.bullet_trail_texture = self.render_resources.bullet_trail_texture
-        self.arrow_texture = self.render_resources.arrow_texture
-        self.bonuses_texture = self.render_resources.bonuses_texture
-        self.bodyset_texture = self.render_resources.bodyset_texture
-        self.clock_table_texture = self.render_resources.clock_table_texture
-        self.clock_pointer_texture = self.render_resources.clock_pointer_texture
-        self.aim_texture = self.render_resources.aim_texture
-        self.muzzle_flash_texture = self.render_resources.muzzle_flash_texture
-        self.wicons_texture = self.render_resources.wicons_texture
+    @property
+    def world_state(self) -> WorldState:
+        return self.sim_world.world_state
 
-    def _sync_audio_bridge(self) -> None:
+    @property
+    def spawn_env(self) -> SpawnEnv:
+        return self.sim_world.spawn_env
+
+    @property
+    def state(self) -> GameplayState:
+        return self.sim_world.state
+
+    @property
+    def players(self) -> list[PlayerState]:
+        return self.sim_world.players
+
+    @property
+    def creatures(self) -> CreaturePool:
+        return self.sim_world.creatures
+
+    @property
+    def _damage_scale_by_type(self) -> dict[int, float]:
+        return self.sim_world.damage_scale_by_type
+
+    @property
+    def _elapsed_ms(self) -> float:
+        return float(self.sim_world.elapsed_ms)
+
+    @property
+    def _bonus_anim_phase(self) -> float:
+        return float(self.sim_world.bonus_anim_phase)
+
+    @property
+    def _game_tune_started(self) -> bool:
+        return bool(self.sim_world.game_tune_started)
+
+    @property
+    def last_events(self) -> WorldEvents:
+        return self.sim_world.last_events
+
+    @property
+    def last_presentation(self) -> PresentationStepCommands:
+        return self.sim_world.last_presentation
+
+    @property
+    def last_command_hash(self) -> str:
+        return self.sim_world.last_command_hash
+
+    @property
+    def ground(self) -> GroundRenderer | None:
+        return self.render_resources.ground
+
+    @ground.setter
+    def ground(self, value: GroundRenderer | None) -> None:
+        self.render_resources.ground = value
+
+    @property
+    def fx_queue(self) -> FxQueue:
+        return self.render_resources.fx_queue
+
+    @property
+    def fx_queue_rotated(self) -> FxQueueRotated:
+        return self.render_resources.fx_queue_rotated
+
+    @property
+    def fx_textures(self) -> FxQueueTextures | None:
+        return self.render_resources.fx_textures
+
+    @property
+    def creature_textures(self) -> dict[str, rl.Texture]:
+        return self.render_resources.creature_textures
+
+    @property
+    def projs_texture(self) -> rl.Texture | None:
+        return self.render_resources.projs_texture
+
+    @property
+    def particles_texture(self) -> rl.Texture | None:
+        return self.render_resources.particles_texture
+
+    @property
+    def bullet_texture(self) -> rl.Texture | None:
+        return self.render_resources.bullet_texture
+
+    @property
+    def bullet_trail_texture(self) -> rl.Texture | None:
+        return self.render_resources.bullet_trail_texture
+
+    @property
+    def arrow_texture(self) -> rl.Texture | None:
+        return self.render_resources.arrow_texture
+
+    @property
+    def bonuses_texture(self) -> rl.Texture | None:
+        return self.render_resources.bonuses_texture
+
+    @property
+    def bodyset_texture(self) -> rl.Texture | None:
+        return self.render_resources.bodyset_texture
+
+    @property
+    def clock_table_texture(self) -> rl.Texture | None:
+        return self.render_resources.clock_table_texture
+
+    @property
+    def clock_pointer_texture(self) -> rl.Texture | None:
+        return self.render_resources.clock_pointer_texture
+
+    @property
+    def aim_texture(self) -> rl.Texture | None:
+        return self.render_resources.aim_texture
+
+    @property
+    def muzzle_flash_texture(self) -> rl.Texture | None:
+        return self.render_resources.muzzle_flash_texture
+
+    @property
+    def wicons_texture(self) -> rl.Texture | None:
+        return self.render_resources.wicons_texture
+
+    def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
             audio=self.audio,
             audio_rng=self.audio_rng,
             demo_mode_active=bool(self.demo_mode_active),
         )
-        self.audio_router = self.audio_bridge.router
 
     def __post_init__(self) -> None:
         self.sim_world = SimWorldState(
@@ -162,9 +219,7 @@ class GameWorld(msgspec.Struct):
             world_size=float(self.world_size),
             render_resources=self.render_resources,
         )
-        self._sync_audio_bridge()
-        self._sync_sim_refs()
-        self._sync_render_refs()
+        self.sync_audio_bridge_state()
         self.camera = Vec2(-1.0, -1.0)
         self.renderer = WorldRenderer(self)
         player_count = 1
@@ -191,7 +246,6 @@ class GameWorld(msgspec.Struct):
         )
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
-        self._sync_sim_refs()
         self.camera = Vec2(-1.0, -1.0)
         if self.render_resources.ground is not None:
             # Terrain generation seed should be stable across headless/interactive and must not
@@ -202,15 +256,13 @@ class GameWorld(msgspec.Struct):
     def load_world_state(self, world_state: WorldState) -> None:
         """Atomically swap the authoritative world-state backing references."""
         self.sim_world.load_world_state(world_state)
-        self._sync_sim_refs()
 
     def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
         return self.render_resources.load_texture(name, cache_path=cache_path)
 
-    def _sync_ground_settings(self) -> None:
+    def sync_ground_settings(self) -> None:
         self.render_resources.config = self.config
         self.render_resources.sync_ground_settings()
-        self._sync_render_refs()
 
     def apply_bootstrap_terrain(
         self,
@@ -225,7 +277,6 @@ class GameWorld(msgspec.Struct):
             seed=int(seed),
             layers=int(layers),
         )
-        self._sync_render_refs()
 
     def set_terrain(
         self,
@@ -247,23 +298,19 @@ class GameWorld(msgspec.Struct):
         )
         terrain_seed = int(self.state.rng.state)
         self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
-        self._sync_render_refs()
 
     def open(self) -> None:
         self.render_resources.texture_cache = self.texture_cache
         self.render_resources.config = self.config
         self.render_resources.open(terrain_seed=int(self.state.rng.state))
         self.texture_cache = self.render_resources.texture_cache
-        self._sync_render_refs()
 
     def close(self) -> None:
         self.render_resources.close()
-        self._sync_render_refs()
         self.sim_world.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.sim_world.last_presentation = PresentationStepCommands()
         self.sim_world.last_command_hash = ""
         self.sim_world.game_tune_started = False
-        self._sync_sim_refs()
 
     def update(
         self,
@@ -276,7 +323,7 @@ class GameWorld(msgspec.Struct):
         defer_camera_shake_update: bool = False,
         rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
-        self._sync_audio_bridge()
+        self.sync_audio_bridge_state()
 
         detail_preset = 5
         gore_disabled = 0
@@ -285,7 +332,6 @@ class GameWorld(msgspec.Struct):
             gore_disabled = self.config.gore_disabled
 
         self.terrain_runtime.process_pending()
-        self._sync_render_refs()
 
         timing = FrameTiming.compute(
             float(dt),
@@ -342,14 +388,12 @@ class GameWorld(msgspec.Struct):
             dt_sim=float(step.dt_sim),
             game_tune_started=bool(game_tune_started),
         )
-        self._sync_sim_refs()
 
-        self._sync_audio_bridge()
+        self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(
             plan=step.presentation,
             apply_audio=bool(apply_audio),
         )
-        self.audio_router = self.audio_bridge.router
 
         if update_camera:
             self.update_camera(step.dt_sim)
@@ -372,7 +416,6 @@ class GameWorld(msgspec.Struct):
 
     def _bake_fx_queues(self) -> None:
         self.render_resources.bake_fx_queues(corpse_frame_for_type=self._corpse_frame_for_type)
-        self._sync_render_refs()
 
     @staticmethod
     def _corpse_frame_for_type(type_id: int) -> int:

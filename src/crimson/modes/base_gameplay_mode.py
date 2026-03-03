@@ -886,7 +886,7 @@ class BaseGameplayMode:
             rl.unload_render_texture(current.render_target)
             current.render_target = None
         self.world.ground = ground
-        self.world._sync_ground_settings()
+        self.world.sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
         return self.world.camera
@@ -954,9 +954,9 @@ class BaseGameplayMode:
         if str(runtime.error or ""):
             self.close_requested = True
             return None
-        self.world._sync_audio_bridge()
+        self.world.sync_audio_bridge_state()
         if self.world.ground is not None:
-            self.world._sync_ground_settings()
+            self.world.sync_ground_settings()
             self.world.ground.process_pending()
         if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return None
@@ -1136,7 +1136,7 @@ class BaseGameplayMode:
             self.world.audio_router.audio_rng = self.world.audio_rng
             self.world.audio_router.demo_mode_active = self.world.demo_mode_active
         if self.world.ground is not None:
-            self.world._sync_ground_settings()
+            self.world.sync_ground_settings()
             self.world.ground.process_pending()
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())

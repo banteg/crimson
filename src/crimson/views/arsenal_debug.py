@@ -360,7 +360,7 @@ class ArsenalDebugView:
         rl.clear_background(BG)
 
         if self._world.ground is not None:
-            self._world._sync_ground_settings()
+            self._world.sync_ground_settings()
             self._world.ground.process_pending()
 
         self._world.draw(draw_aim_indicators=True)

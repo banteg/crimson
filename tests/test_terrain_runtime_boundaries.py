@@ -79,7 +79,6 @@ def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: P
 def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir: Path) -> None:
     world = _build_world(assets_dir)
     world.render_resources.ground = GroundRenderer(texture=rl.Texture())
-    world._sync_render_refs()
 
     world.reset(seed=4242, player_count=1)
 
