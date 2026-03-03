@@ -99,5 +99,9 @@ class RenderPipeline:
     def close(self) -> None:
         if not self._opened:
             return
-        self._sink.close()
-        self._opened = False
+        try:
+            self._sink.close()
+        finally:
+            self._opened = False
+            self._width = -1
+            self._height = -1

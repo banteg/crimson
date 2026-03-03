@@ -84,6 +84,42 @@ def test_render_pipeline_closes_sink_when_open_fails() -> None:
     assert events == ["sink.open", "sink.close"]
 
 
+def test_render_pipeline_resets_open_state_when_close_fails() -> None:
+    events: list[str] = []
+
+    class _Sink:
+        def __init__(self) -> None:
+            self.raise_on_close = False
+
+        def open(self) -> None:
+            events.append("sink.open")
+
+        def present(self) -> None:
+            events.append("sink.present")
+
+        def flush(self) -> None:
+            events.append("sink.flush")
+
+        def close(self) -> None:
+            events.append("sink.close")
+            if self.raise_on_close:
+                raise RuntimeError("close failed")
+
+    sink = _Sink()
+    pipeline = RenderPipeline(sink=sink)
+    pipeline.render(draw_frame=lambda: events.append("draw.1"), width=640, height=480)
+
+    sink.raise_on_close = True
+    with pytest.raises(RuntimeError, match="close failed"):
+        pipeline.close()
+
+    sink.raise_on_close = False
+    pipeline.render(draw_frame=lambda: events.append("draw.2"), width=640, height=480)
+    pipeline.close()
+
+    assert events.count("sink.open") == 2
+
+
 def test_window_sink_raises_on_present_error() -> None:
     def _raise_present() -> None:
         raise RuntimeError("boom")
