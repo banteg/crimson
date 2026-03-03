@@ -22,6 +22,7 @@ from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
+from ..input import PlayerInput
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
@@ -562,7 +563,13 @@ class PlaybackDriver:
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
-    def run_tick(self, tick_index: int, *, defer_menu_open: bool | None = None) -> PlaybackTickOutcome:
+    def run_tick(
+        self,
+        tick_index: int,
+        *,
+        defer_menu_open: bool | None = None,
+        player_inputs: list[PlayerInput] | None = None,
+    ) -> PlaybackTickOutcome:
         if tick_index < 0 or tick_index >= int(self.tick_limit):
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
 
@@ -606,10 +613,13 @@ class PlaybackDriver:
             rng_after_events = int(state.rng.state)
             step_timing = self.session.timing_for_dt(float(dt_tick))
 
-            player_inputs = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
+            if player_inputs is None:
+                inputs_for_tick = unpack_tick_inputs(self.replay.inputs[int(tick_index)])
+            else:
+                inputs_for_tick = list(player_inputs)
             tick = self.session.step_tick(
                 timing=step_timing,
-                inputs=player_inputs,
+                inputs=inputs_for_tick,
                 trace_rng=bool(self.options.trace_rng),
             )
 

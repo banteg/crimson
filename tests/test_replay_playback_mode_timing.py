@@ -3,8 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import pytest
+
+import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
+from crimson.sim.input import PlayerInput
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -80,3 +84,45 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
 
     assert view._tick_index == 1
     assert not view._finished
+
+
+def test_replay_driver_session_forwards_provider_inputs_to_playback_driver(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    captured: dict[str, object] = {}
+
+    class _FakeDriver:
+        def run_tick(
+            self,
+            tick_index: int,
+            *,
+            defer_menu_open: bool | None = None,
+            player_inputs: list[PlayerInput] | None = None,
+        ) -> object:
+            captured["tick_index"] = int(tick_index)
+            captured["defer_menu_open"] = bool(defer_menu_open)
+            captured["player_inputs"] = list(player_inputs or [])
+            return object()
+
+    _set_private(view, "_driver", _FakeDriver())
+    _set_private(view, "_survival", object())
+    _set_private(view, "_defer_menu_open", True)
+    session = replay_playback_mode._ReplayDriverSession(view)
+    inputs = [PlayerInput(fire_down=True)]
+
+    session.step_tick(timing=1.0 / 60.0, inputs=inputs)
+
+    assert captured["tick_index"] == 0
+    assert captured["defer_menu_open"] is True
+    assert captured["player_inputs"] == inputs
+
+
+def test_replay_driver_tick_fails_fast_when_provider_inputs_missing(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    _set_private(
+        view,
+        "_driver",
+        SimpleNamespace(run_tick=lambda *_args, **_kwargs: object()),
+    )
+
+    with pytest.raises(RuntimeError, match="provided no inputs"):
+        view._run_driver_tick(0, inputs=None)

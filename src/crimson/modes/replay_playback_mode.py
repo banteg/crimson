@@ -43,6 +43,7 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
+from ..sim.input import PlayerInput
 from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
 from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -101,9 +102,17 @@ class _ReplayDriverSession:
     def timing_for_dt(self, dt: float) -> float:
         return float(dt)
 
-    def step_tick(self, *, timing: float, inputs) -> PlaybackTickOutcome:
-        _ = timing, inputs
-        tick = self._mode._run_driver_tick(int(self._next_tick_index))
+    def step_tick(
+        self,
+        *,
+        timing: float,
+        inputs: list[PlayerInput] | None,
+    ) -> PlaybackTickOutcome:
+        _ = timing
+        tick = self._mode._run_driver_tick(
+            int(self._next_tick_index),
+            inputs=inputs,
+        )
         self._next_tick_index += 1
         return tick
 
@@ -633,12 +642,23 @@ class ReplayPlaybackMode:
             return bool(self._rush.game_tune_started)
         return False
 
-    def _run_driver_tick(self, tick_index: int) -> PlaybackTickOutcome:
+    def _run_driver_tick(
+        self,
+        tick_index: int,
+        *,
+        inputs: list[PlayerInput] | None = None,
+    ) -> PlaybackTickOutcome:
         driver = self._driver
         if driver is None:
             raise ReplayEndOfStream("replay driver unavailable")
+        if inputs is None:
+            raise RuntimeError("replay tick runner provided no inputs for playback tick")
         defer_menu_open = bool(self._defer_menu_open) if self._survival is not None else False
-        return driver.run_tick(int(tick_index), defer_menu_open=bool(defer_menu_open))
+        return driver.run_tick(
+            int(tick_index),
+            defer_menu_open=bool(defer_menu_open),
+            player_inputs=list(inputs),
+        )
 
     def _on_runner_tick_complete(self, _tick_index: int, tick: object) -> bool:
         outcome = cast(PlaybackTickOutcome, tick)
