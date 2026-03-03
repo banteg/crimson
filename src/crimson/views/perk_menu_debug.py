@@ -58,7 +58,7 @@ class PerkMenuDebugView:
         self._assets: PerkMenuAssets | None = None
         self._layout = PerkMenuLayout()
 
-        self._perk_ids = [perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != int(PerkId.ANTIPERK)]
+        self._perk_ids = [perk_id for perk_id in sorted(PERK_BY_ID.keys()) if perk_id != PerkId.ANTIPERK]
         self._choice_count = 6
         self._selected = 0
         self._expert_owned = False
@@ -88,7 +88,7 @@ class PerkMenuDebugView:
             rl.unload_texture(self._small.texture)
             self._small = None
 
-    def _choices(self) -> list[int]:
+    def _choices(self) -> list[PerkId]:
         if not self._perk_ids:
             return []
         count = max(1, min(self._choice_count, len(self._perk_ids)))
@@ -268,7 +268,7 @@ class PerkMenuDebugView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
+            label = perk_display_name(perk_id, preserve_bugs=bool(self._preserve_bugs))
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
             if rect.contains(mouse):
@@ -353,14 +353,14 @@ class PerkMenuDebugView:
 
                 mouse = rl.get_mouse_position()
                 for idx, perk_id in enumerate(choices):
-                    label = perk_display_name(int(perk_id), preserve_bugs=bool(self._preserve_bugs))
+                    label = perk_display_name(perk_id, preserve_bugs=bool(self._preserve_bugs))
                     item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
                     rect = menu_item_hit_rect(self._small, label, pos=item_pos, scale=scale)
                     hovered = rect.contains(mouse) or (idx == self._selected)
                     draw_menu_item(self._small, label, pos=item_pos, scale=scale, hovered=hovered)
 
                 selected_id = choices[self._selected]
-                desc = perk_display_description(int(selected_id), preserve_bugs=bool(self._preserve_bugs))
+                desc = perk_display_description(selected_id, preserve_bugs=bool(self._preserve_bugs))
                 draw_wrapped_ui_text_in_rect(
                     self._small,
                     desc,

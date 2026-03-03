@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 
 import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
-from crimson.projectiles.types import SecondaryProjectile
+from crimson.projectiles.types import SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
 from grim.geom import Vec2
 
@@ -45,11 +45,11 @@ class _RendererStub:
 
 def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
     renderer = _RendererStub()
-    proj = SecondaryProjectile(type_id=1, pos=Vec2(), angle=0.0)
+    proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),
         proj=proj,
-        proj_type=1,
+        proj_type=SecondaryProjectileTypeId.ROCKET,
         screen_pos=Vec2(),
         angle=0.0,
         scale=1.0,
@@ -61,11 +61,11 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
     renderer.projs_texture = _TextureStub(width=0, height=128)
-    proj = SecondaryProjectile(type_id=1, pos=Vec2(), angle=0.0)
+    proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),
         proj=proj,
-        proj_type=1,
+        proj_type=SecondaryProjectileTypeId.ROCKET,
         screen_pos=Vec2(),
         angle=0.0,
         scale=1.0,
@@ -76,7 +76,7 @@ def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_inval
 
 def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch, mocker) -> None:
     renderer = _RendererStub()
-    proj = SecondaryProjectile(type_id=4, pos=Vec2(), angle=0.0)
+    proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN, pos=Vec2(), angle=0.0)
     calls: list[tuple[int, int, float]] = []
 
     def _draw_circle(x: int, y: int, radius: float, _color) -> None:
@@ -87,7 +87,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch, mock
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),
         proj=proj,
-        proj_type=4,
+        proj_type=SecondaryProjectileTypeId.ROCKET_MINIGUN,
         screen_pos=Vec2(10.0, 20.0),
         angle=0.0,
         scale=2.0,
@@ -100,7 +100,7 @@ def test_secondary_draw_registry_renders_type4_fallback_circle(monkeypatch, mock
 def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monkeypatch, mocker) -> None:
     renderer = _RendererStub()
     proj = SecondaryProjectile(
-        type_id=3,
+        type_id=SecondaryProjectileTypeId.DETONATION,
         pos=Vec2(),
         angle=0.0,
         detonation_t=0.25,
@@ -116,7 +116,7 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),
         proj=proj,
-        proj_type=3,
+        proj_type=SecondaryProjectileTypeId.DETONATION,
         screen_pos=Vec2(10.0, 20.0),
         angle=0.0,
         scale=2.0,

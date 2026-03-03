@@ -66,8 +66,9 @@ class QuestResultsView:
 
             from ...perks import PERK_BY_ID, PerkId, perk_display_name
 
-            perk_id = int(quest.unlock_perk_id) if quest.unlock_perk_id is not None else 0
-            if perk_id != int(PerkId.ANTIPERK):
+            perk_id_native = int(quest.unlock_perk_id) if quest.unlock_perk_id is not None else 0
+            if perk_id_native != int(PerkId.ANTIPERK):
+                perk_id = PerkId(perk_id_native)
                 perk_entry = PERK_BY_ID.get(perk_id)
                 if perk_entry is not None and perk_entry.name:
                     gore_disabled = self.state.config.gore_disabled
@@ -77,7 +78,7 @@ class QuestResultsView:
                         preserve_bugs=bool(self.state.preserve_bugs),
                     )
                 else:
-                    self._unlock_perk_name = f"perk_{perk_id}"
+                    self._unlock_perk_name = f"perk_{perk_id_native}"
 
         record = HighScoreRecord.blank()
         record.game_mode_id = GameMode.QUESTS

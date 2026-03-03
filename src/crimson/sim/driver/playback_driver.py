@@ -567,7 +567,7 @@ class PlaybackDriver:
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
 
         state = self.world.state
-        state.game_mode = int(self.mode_id)
+        state.game_mode = self.mode_id
         state.demo_mode_active = False
 
         timing = self.config.timing

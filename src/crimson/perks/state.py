@@ -7,6 +7,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..creatures.spawn import CreatureFlags
+from .ids import PerkId
 
 
 class CreatureForPerks(Protocol):
@@ -34,6 +35,6 @@ class PerkEffectIntervals(msgspec.Struct):
 
 class PerkSelectionState(msgspec.Struct):
     pending_count: int = 0
-    choices: list[int] = msgspec.field(default_factory=list)
+    choices: list[PerkId] = msgspec.field(default_factory=list)
     choices_dirty: bool = True
     capture_player_perk_counts_known: bool = True

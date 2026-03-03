@@ -24,7 +24,7 @@ def test_bonus_try_spawn_on_kill_suppressed_modes(
 ) -> None:
     state = GameplayState()
     if game_mode is not None:
-        state.game_mode = int(game_mode)
+        state.game_mode = game_mode
     state.demo_mode_active = demo_mode_active
 
     players = [PlayerState(index=0, pos=Vec2(256.0, 256.0))]

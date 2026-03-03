@@ -100,7 +100,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
         fx_queue=fx_queue,
         hits=[
             ProjectileHit(
-                type_id=int(ProjectileTemplateId.FIRE_BULLETS),
+                type_id=ProjectileTemplateId.FIRE_BULLETS,
                 origin=Vec2(0.0, 0.0),
                 hit=Vec2(1.0, 1.0),
                 target=Vec2(1.0, 1.0),

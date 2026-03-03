@@ -4,12 +4,15 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ..aim_schemes import AimScheme
+from ..movement_controls import MovementControlType
+
 
 class PlayerInput(msgspec.Struct, frozen=True):
     move: Vec2 = Vec2()
     aim: Vec2 = Vec2()
-    move_mode: int | None = None
-    aim_scheme: int | None = None
+    move_mode: MovementControlType | None = None
+    aim_scheme: AimScheme | None = None
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False

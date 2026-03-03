@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
@@ -99,7 +100,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     creature.max_hp = 10.0
     creature.pos = Vec2(100.0, 200.0)
     creature.move_speed = 1.0
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_scale = 1.0
     creature.anim_phase = 3.0
 
@@ -112,7 +113,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -133,7 +134,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 

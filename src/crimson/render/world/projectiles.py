@@ -136,7 +136,7 @@ def draw_projectile(
         return
 
     texture = render_ctx.projs_texture
-    type_id = int(proj.type_id)
+    type_id = proj.type_id
     proj_pos = proj.pos
     screen = render_ctx._world_to_screen_with(proj_pos, camera=camera, view_scale=view_scale)
     life = float(proj.life_timer)
@@ -189,14 +189,14 @@ def draw_projectile(
 
 
 def is_bullet_trail_type(type_id: int) -> bool:
-    return 0 <= type_id < 8 or type_id == ProjectileTemplateId.SPLITTER_GUN.value
+    return 0 <= type_id < 8 or type_id == ProjectileTemplateId.SPLITTER_GUN
 
 
 def bullet_sprite_size(type_id: int, *, scale: float) -> float:
     base = 4.0
-    if type_id == ProjectileTemplateId.ASSAULT_RIFLE.value:
+    if type_id == ProjectileTemplateId.ASSAULT_RIFLE:
         base = 6.0
-    elif type_id == ProjectileTemplateId.SUBMACHINE_GUN.value:
+    elif type_id == ProjectileTemplateId.SUBMACHINE_GUN:
         base = 8.0
     return max(2.0, base * scale)
 
@@ -221,9 +221,9 @@ def draw_bullet_trail(
 
     # Native uses projectile travel direction as the side-offset basis and still emits the
     # trail quad even when origin=head (degenerate impact frames).
-    if type_id in (ProjectileTemplateId.PISTOL.value, ProjectileTemplateId.ASSAULT_RIFLE.value):
+    if type_id in (ProjectileTemplateId.PISTOL, ProjectileTemplateId.ASSAULT_RIFLE):
         side_mul = 1.2
-    elif type_id == ProjectileTemplateId.GAUSS_GUN.value:
+    elif type_id == ProjectileTemplateId.GAUSS_GUN:
         side_mul = 1.1
     else:
         side_mul = 0.7
@@ -242,7 +242,7 @@ def draw_bullet_trail(
 
     # Native uses additive blending for bullet trails and sets color slots per projectile type.
     # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
-    if type_id == ProjectileTemplateId.GAUSS_GUN.value:
+    if type_id == ProjectileTemplateId.GAUSS_GUN:
         head_rgb = (51, 128, 255)  # (0.2, 0.5, 1.0)
     else:
         head_rgb = (128, 128, 128)  # (0.5, 0.5, 0.5)
@@ -361,14 +361,14 @@ def draw_secondary_projectile(
 
     proj_pos = proj.pos
     screen = render_ctx._world_to_screen_with(proj_pos, camera=camera, view_scale=view_scale)
-    proj_type = int(proj.type_id)
+    proj_type = proj.type_id
     angle = float(proj.angle)
 
     adapter = _ProjectileRendererAdapter(render_ctx, camera=camera, view_scale=view_scale)
     registry_ctx = SecondaryProjectileDrawCtx(
         renderer=cast("ProjectileRendererLike", adapter),
         proj=proj,
-        proj_type=int(proj_type),
+        proj_type=proj_type,
         screen_pos=screen,
         angle=float(angle),
         scale=float(scale),

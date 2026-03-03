@@ -36,12 +36,12 @@ def _begin_darken_src_zero_blend() -> None:
 
 def draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    if int(ctx.type_id) != ProjectileTemplateId.PULSE_GUN.value:
+    if ctx.type_id != ProjectileTemplateId.PULSE_GUN:
         return False
     if ctx.texture is None:
         return False
 
-    mapping = KNOWN_PROJ_FRAMES.get(int(ctx.type_id))
+    mapping = KNOWN_PROJ_FRAMES.get(ctx.type_id)
     if mapping is None:
         return True
     grid, frame = mapping
@@ -101,8 +101,8 @@ def draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
 
 def draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    type_id = int(ctx.type_id)
-    if type_id not in (ProjectileTemplateId.SPLITTER_GUN.value, ProjectileTemplateId.BLADE_GUN.value):
+    type_id = ctx.type_id
+    if type_id not in (ProjectileTemplateId.SPLITTER_GUN, ProjectileTemplateId.BLADE_GUN):
         return False
     if ctx.texture is None:
         return False
@@ -129,7 +129,7 @@ def draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
 
     rotation_rad = ctx.angle
     rgb = (1.0, 1.0, 1.0)
-    if type_id == ProjectileTemplateId.BLADE_GUN.value:
+    if type_id == ProjectileTemplateId.BLADE_GUN:
         rotation_rad = float(int(ctx.proj_index)) * 0.1 - float(renderer.elapsed_ms) * 0.1
         rgb = (0.8, 0.8, 0.8)
 
@@ -148,7 +148,7 @@ def draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
 
 def draw_plague_spreader(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    if int(ctx.type_id) != ProjectileTemplateId.PLAGUE_SPREADER.value:
+    if ctx.type_id != ProjectileTemplateId.PLAGUE_SPREADER:
         return False
     texture = ctx.texture
     if texture is None:

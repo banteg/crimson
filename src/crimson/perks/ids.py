@@ -500,7 +500,7 @@ _PERK_TABLE = [
     ),
 ]
 
-PERK_BY_ID = {int(entry.perk_id): entry for entry in _PERK_TABLE}
+PERK_BY_ID: dict[PerkId, PerkMeta] = {entry.perk_id: entry for entry in _PERK_TABLE}
 
 QUICK_LEARNER_NAME = "Quick Learner"
 QUICK_LEARNER_DESCRIPTION = (
@@ -520,31 +520,27 @@ _PERK_FIXED_DESCRIPTIONS = {
 }
 
 
-def perk_display_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(gore_disabled) != 0:
+def perk_display_name(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(gore_disabled) != 0:
         return QUICK_LEARNER_NAME
-    entry = PERK_BY_ID.get(int(perk_id))
-    if entry is None:
-        return f"Perk {int(perk_id)}"
+    entry = PERK_BY_ID[perk_id]
     if not preserve_bugs:
-        fixed = _PERK_FIXED_NAMES.get(int(perk_id))
+        fixed = _PERK_FIXED_NAMES.get(perk_id)
         if fixed is not None:
             return fixed
     return entry.name
 
 
-def perk_display_description(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
-    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(gore_disabled) != 0:
+def perk_display_description(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER and int(gore_disabled) != 0:
         return QUICK_LEARNER_DESCRIPTION
-    entry = PERK_BY_ID.get(int(perk_id))
-    if entry is None:
-        return "Unknown perk."
+    entry = PERK_BY_ID[perk_id]
     if not preserve_bugs:
-        fixed = _PERK_FIXED_DESCRIPTIONS.get(int(perk_id))
+        fixed = _PERK_FIXED_DESCRIPTIONS.get(perk_id)
         if fixed is not None:
             return fixed
     return entry.description
 
 
-def perk_label(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+def perk_label(perk_id: PerkId, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
     return perk_display_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)

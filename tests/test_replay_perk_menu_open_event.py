@@ -23,7 +23,7 @@ def _build_world(*, game_mode: GameMode = GameMode.SURVIVAL) -> WorldState:
     )
     reset_players(world.players, state=world.state, world_size=1024.0, player_count=1)
     state = world.state
-    state.game_mode = int(game_mode)
+    state.game_mode = game_mode
     state.rng.srand(0x1234)
     weapon_refresh_available(state)
     perks_rebuild_available(state)

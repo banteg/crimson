@@ -22,11 +22,11 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
     player = PlayerState(index=0, pos=Vec2())
     perk_state = PerkSelectionState(
         pending_count=1,
-        choices=[int(PerkId.INSTANT_WINNER)],
+        choices=[PerkId.INSTANT_WINNER],
         choices_dirty=False,
     )
 
-    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=3, player_count=1)
+    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=GameMode.QUESTS, player_count=1)
 
     assert picked == PerkId.INSTANT_WINNER
     assert perk_state.pending_count == 0
@@ -40,11 +40,11 @@ def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
     player = PlayerState(index=0, pos=Vec2(), health=100.0, level=1)
     perk_state = PerkSelectionState(
         pending_count=1,
-        choices=[int(PerkId.INFERNAL_CONTRACT)],
+        choices=[PerkId.INFERNAL_CONTRACT],
         choices_dirty=False,
     )
 
-    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=3, player_count=1)
+    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=GameMode.QUESTS, player_count=1)
 
     assert picked == PerkId.INFERNAL_CONTRACT
     assert player.level == 4
@@ -57,7 +57,7 @@ def test_perk_generate_choices_tutorial_returns_fixed_list() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
 
-    choices = perk_generate_choices(state, player, game_mode=int(GameMode.TUTORIAL), player_count=1)
+    choices = perk_generate_choices(state, player, game_mode=GameMode.TUTORIAL, player_count=1)
 
     assert choices == [
         PerkId.SHARPSHOOTER,
@@ -90,7 +90,7 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) ->
         state,
         [player],
         perk_state,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
     )
 
@@ -102,13 +102,13 @@ def test_perk_selection_current_choices_keeps_hidden_internal_entries(mocker) ->
         PerkId.TOUGH_RELOADER,
     ]
     assert perk_state.choices == [
-        int(PerkId.SHARPSHOOTER),
-        int(PerkId.FASTSHOT),
-        int(PerkId.AMMO_MANIAC),
-        int(PerkId.LONG_DISTANCE_RUNNER),
-        int(PerkId.TOUGH_RELOADER),
-        int(PerkId.PERK_MASTER),
-        int(PerkId.INSTANT_WINNER),
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTSHOT,
+        PerkId.AMMO_MANIAC,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.TOUGH_RELOADER,
+        PerkId.PERK_MASTER,
+        PerkId.INSTANT_WINNER,
     ]
     assert perk_state.choices_dirty is False
 
@@ -119,11 +119,11 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     p2 = PlayerState(index=1, pos=Vec2(), health=60.0)
     perk_state = PerkSelectionState(
         pending_count=1,
-        choices=[int(PerkId.THICK_SKINNED)],
+        choices=[PerkId.THICK_SKINNED],
         choices_dirty=False,
     )
 
-    picked = perk_selection_pick(state, [p1, p2], perk_state, 0, game_mode=3, player_count=2)
+    picked = perk_selection_pick(state, [p1, p2], perk_state, 0, game_mode=GameMode.QUESTS, player_count=2)
 
     assert picked == PerkId.THICK_SKINNED
     assert p1.perk_counts[int(PerkId.THICK_SKINNED)] == 1
@@ -138,13 +138,13 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
     perk_state = PerkSelectionState(
         pending_count=1,
         choices=[
-            int(PerkId.INSTANT_WINNER),
-            int(PerkId.FASTSHOT),
-            int(PerkId.AMMO_MANIAC),
-            int(PerkId.LONG_DISTANCE_RUNNER),
-            int(PerkId.SHARPSHOOTER),
-            int(PerkId.TOUGH_RELOADER),
-            int(PerkId.PERK_MASTER),
+            PerkId.INSTANT_WINNER,
+            PerkId.FASTSHOT,
+            PerkId.AMMO_MANIAC,
+            PerkId.LONG_DISTANCE_RUNNER,
+            PerkId.SHARPSHOOTER,
+            PerkId.TOUGH_RELOADER,
+            PerkId.PERK_MASTER,
         ],
         choices_dirty=False,
     )
@@ -162,7 +162,7 @@ def test_perk_auto_pick_uses_visible_choices_only() -> None:
         state,
         [player],
         perk_state,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         player_count=1,
     )
 

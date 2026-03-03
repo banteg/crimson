@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CreaturePool
-from crimson.creatures.spawn import CreatureFlags, CreatureInit
+from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.types import ProjectileTemplateId
@@ -28,7 +28,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature.pos = Vec2()
     creature.heading = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
-    creature.ai_mode = 2
+    creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.contact_damage = 0.0
 
     result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player]))
@@ -55,7 +55,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.hp = 10.0
     creature.pos = Vec2()
     creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
-    creature.ai_mode = 2
+    creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.move_speed = 0.0
     creature.contact_damage = 0.0
 
@@ -77,7 +77,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.pos = Vec2()
     creature.heading = 0.0
     creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
-    creature.ai_mode = 2
+    creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.orbit_radius = 26.0
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0

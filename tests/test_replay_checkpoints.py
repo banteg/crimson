@@ -4,6 +4,7 @@ import msgspec
 import pytest
 
 from crimson.owner_ref import OwnerRef
+from crimson.perks import PerkId
 from crimson.replay.checkpoints import (
     FORMAT_VERSION,
     ReplayCheckpoints,
@@ -40,7 +41,11 @@ def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
     player.perk_counts[1] = 1
     world.state.perk_selection.pending_count = 1
     world.state.perk_selection.choices_dirty = False
-    world.state.perk_selection.choices = [1, 2, 3]
+    world.state.perk_selection.choices = [
+        PerkId.BLOODY_MESS_QUICK_LEARNER,
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTLOADER,
+    ]
     ckpt = build_checkpoint(tick_index=0, world=world, elapsed_ms=0.0)
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, replay_sha256="0" * 64, sample_rate=60, checkpoints=[ckpt])
 
@@ -56,7 +61,11 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     world = base_world
     world.state.perk_selection.pending_count = 2
     world.state.perk_selection.choices_dirty = False
-    world.state.perk_selection.choices = [7, 10, 25]
+    world.state.perk_selection.choices = [
+        PerkId.INSTANT_WINNER,
+        PerkId.PLAGUEBEARER,
+        PerkId.POISON_BULLETS,
+    ]
     world.players[0].perk_counts[7] = 2
 
     ckpt = build_checkpoint(

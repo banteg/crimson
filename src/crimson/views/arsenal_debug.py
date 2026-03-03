@@ -351,7 +351,7 @@ class ArsenalDebugView:
 
         self._apply_debug_player_cheats()
         input_state = self._build_input()
-        self._world.update(dt, inputs=[input_state], game_mode=int(GameMode.SURVIVAL))
+        self._world.update(dt, inputs=[input_state], game_mode=GameMode.SURVIVAL)
 
         if self._audio is not None:
             update_audio(self._audio, dt)

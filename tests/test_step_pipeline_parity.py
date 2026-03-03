@@ -100,7 +100,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             dt,
             inputs=_inputs_for_tick(replay, tick_index),
             auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
+            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=True,
             defer_camera_shake_update=True,
             rng_marks_out=world_step_marks,

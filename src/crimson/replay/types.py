@@ -9,8 +9,10 @@ from typing import Literal, TypeAlias
 
 import msgspec
 
+from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
+from ..movement_controls import MovementControlType, movement_control_type_from_value
 from ..sim.timing import ftol_ms_i32
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
@@ -118,8 +120,8 @@ def pack_input_flags(
     fire_pressed: bool,
     reload_pressed: bool,
     reload_down: bool = False,
-    move_mode: int | None = None,
-    aim_scheme: int | None = None,
+    move_mode: MovementControlType | None = None,
+    aim_scheme: AimScheme | None = None,
     move_forward_pressed: bool | None = None,
     move_backward_pressed: bool | None = None,
     turn_left_pressed: bool | None = None,
@@ -181,16 +183,17 @@ def unpack_input_move_key_flags(flags: int) -> tuple[bool | None, bool | None, b
     )
 
 
-def unpack_input_mode_flags(flags: int) -> tuple[int | None, int | None]:
+def unpack_input_mode_flags(flags: int) -> tuple[MovementControlType | None, AimScheme | None]:
     flags = int(flags)
-    move_mode: int | None = None
-    aim_scheme: int | None = None
+    move_mode: MovementControlType | None = None
+    aim_scheme: AimScheme | None = None
     if bool(flags & MOVE_MODE_PRESENT_FLAG):
-        move_mode = (flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK
+        move_mode = movement_control_type_from_value((flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK)
     if bool(flags & AIM_SCHEME_PRESENT_FLAG):
-        aim_scheme = (flags >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
-        if aim_scheme == AIM_SCHEME_MASK:
-            aim_scheme = -1
+        aim_scheme_raw = (flags >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
+        if aim_scheme_raw == AIM_SCHEME_MASK:
+            aim_scheme_raw = -1
+        aim_scheme = aim_scheme_from_value(aim_scheme_raw)
     return move_mode, aim_scheme
 
 

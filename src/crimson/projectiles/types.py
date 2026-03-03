@@ -115,7 +115,7 @@ class ProjectileCollisionProfile(msgspec.Struct, frozen=True):
 
 
 class ProjectileHit(msgspec.Struct, frozen=True):
-    type_id: int
+    type_id: ProjectileTemplateId
     origin: Vec2
     hit: Vec2
     target: Vec2
@@ -127,7 +127,7 @@ class Projectile(msgspec.Struct):
     pos: Vec2 = Vec2()
     origin: Vec2 = Vec2()
     vel: Vec2 = Vec2()
-    type_id: int = 0
+    type_id: ProjectileTemplateId = ProjectileTemplateId.PISTOL
     life_timer: float = 0.0
     reserved: float = 0.0
     speed_scale: float = 1.0
@@ -146,7 +146,7 @@ class SecondaryProjectile(msgspec.Struct):
     vel: Vec2 = Vec2()
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
-    type_id: int = 0
+    type_id: SecondaryProjectileTypeId = SecondaryProjectileTypeId.NONE
     owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
     trail_timer: float = 0.0
     target_id: int = -1

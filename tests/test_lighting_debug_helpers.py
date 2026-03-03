@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from typing import cast
 
 from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
@@ -34,7 +35,7 @@ def _player(*, pos: Vec2, health: float = 100.0, size: float = 48.0) -> PlayerSt
 
 def _projectile(
     *,
-    type_id: int,
+    type_id: ProjectileTemplateId | int,
     pos: Vec2,
     active: bool = True,
     angle: float = 0.0,
@@ -42,7 +43,7 @@ def _projectile(
 ) -> Projectile:
     return Projectile(
         active=bool(active),
-        type_id=int(type_id),
+        type_id=cast("ProjectileTemplateId", int(type_id)),
         pos=pos,
         origin=pos if origin is None else origin,
         angle=float(angle),
@@ -51,7 +52,7 @@ def _projectile(
 
 def _secondary(
     *,
-    type_id: int,
+    type_id: SecondaryProjectileTypeId | int,
     pos: Vec2,
     active: bool = True,
     angle: float = 0.0,
@@ -60,7 +61,7 @@ def _secondary(
 ) -> SecondaryProjectile:
     return SecondaryProjectile(
         active=bool(active),
-        type_id=int(type_id),
+        type_id=cast("SecondaryProjectileTypeId", int(type_id)),
         pos=pos,
         angle=float(angle),
         vel=Vec2() if vel is None else vel,
@@ -99,7 +100,7 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
         _projectile(active=True, pos=Vec2(220.0, 100.0), type_id=0xDEAD),  # ignored, not emissive
     ]
     secondary = [
-        _secondary(active=True, pos=Vec2(300.0, 100.0), type_id=int(SecondaryProjectileTypeId.DETONATION)),
+        _secondary(active=True, pos=Vec2(300.0, 100.0), type_id=SecondaryProjectileTypeId.DETONATION),
     ]
 
     lights = collect_shadow_lights(projectiles, secondary, transients, max_lights=4)

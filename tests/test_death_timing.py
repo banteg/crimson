@@ -57,7 +57,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
     assert player.experience == 10
@@ -97,7 +97,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
             fx_queue=FxQueue(),
             fx_queue_rotated=FxQueueRotated(),
             auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
+            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )
 
@@ -126,7 +126,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     world.state.secondary_projectiles.spawn(
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
-        type_id=int(SecondaryProjectileTypeId.DETONATION),
+        type_id=SecondaryProjectileTypeId.DETONATION,
         time_to_live=1.0,
         owner=OwnerRef.from_player(0),
     )
@@ -148,7 +148,7 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -216,7 +216,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -270,7 +270,7 @@ def test_plague_kill_death_event_skips_world_death_sfx_planning(mocker) -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -336,7 +336,7 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -393,7 +393,7 @@ def test_death_sfx_rand_consumes_past_cap(mocker) -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -459,7 +459,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         auto_pick_perks=False,
-        game_mode=int(GameMode.SURVIVAL),
+        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
 
@@ -513,7 +513,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
             fx_queue=FxQueue(),
             fx_queue_rotated=FxQueueRotated(),
             auto_pick_perks=False,
-            game_mode=int(GameMode.SURVIVAL),
+            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )
     finally:

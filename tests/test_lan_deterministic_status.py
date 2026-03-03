@@ -48,7 +48,7 @@ def _make_status(*, pistol_used: bool) -> GameStatus:
 
 
 def _make_state(*, status: GameStatus, rng: _SeqRng) -> GameplayState:
-    state = GameplayState(rng=rng, game_mode=int(GameMode.SURVIVAL), demo_mode_active=False)
+    state = GameplayState(rng=rng, game_mode=GameMode.SURVIVAL, demo_mode_active=False)
     state.status = status
     return state
 

@@ -86,7 +86,7 @@ def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets(
     state.secondary_projectiles.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=int(SecondaryProjectileTypeId.ROCKET),
+        type_id=SecondaryProjectileTypeId.ROCKET,
         owner=OwnerRef.from_local_player(0),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
@@ -101,7 +101,7 @@ def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit(
     state.secondary_projectiles.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=int(SecondaryProjectileTypeId.ROCKET),
+        type_id=SecondaryProjectileTypeId.ROCKET,
         owner=OwnerRef.from_local_player(0),
     )
     creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]

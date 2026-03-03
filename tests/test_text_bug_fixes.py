@@ -7,7 +7,7 @@ from crimson.weapons import WeaponId, weapon_display_name
 
 
 def test_perk_display_name_fixes_fire_caugh_by_default() -> None:
-    perk_id = int(PerkId.FIRE_CAUGH)
+    perk_id = PerkId.FIRE_CAUGH
     assert perk_display_name(perk_id) == "Fire Cough"
     assert perk_display_name(perk_id, preserve_bugs=True) == "Fire Caugh"
 
@@ -28,11 +28,11 @@ def test_weapon_display_name_fixes_spelling_by_default() -> None:
 
 
 def test_perk_display_description_fixes_grammar_by_default() -> None:
-    anxious_loader = int(PerkId.ANXIOUS_LOADER)
-    perk_expert = int(PerkId.PERK_EXPERT)
-    dodger = int(PerkId.DODGER)
-    ninja = int(PerkId.NINJA)
-    living_fortress = int(PerkId.LIVING_FORTRESS)
+    anxious_loader = PerkId.ANXIOUS_LOADER
+    perk_expert = PerkId.PERK_EXPERT
+    dodger = PerkId.DODGER
+    ninja = PerkId.NINJA
+    living_fortress = PerkId.LIVING_FORTRESS
 
     assert "waiting for your gun" in perk_display_description(anxious_loader)
     assert "waiting your gun" in perk_display_description(anxious_loader, preserve_bugs=True)

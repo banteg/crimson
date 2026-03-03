@@ -10,6 +10,7 @@ from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
+    CreatureAiMode,
     CreatureFlags,
     CreatureInit,
     CreatureTypeId,
@@ -207,7 +208,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     owner.hp = 100.0
     owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     owner.flags = CreatureFlags(0)
-    owner.ai_mode = 0
+    owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.pos = Vec2(256.0, 256.0)
@@ -249,7 +250,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     owner.pos = Vec2(256.0, 256.0)
     owner.flags = HAS_SPAWN_SLOT_FLAG
-    owner.ai_mode = 0
+    owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.spawn_slot_index = 0
@@ -285,7 +286,7 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(-64.0, 1088.0)
@@ -309,7 +310,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.hp = 50.0
         creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         creature.flags = CreatureFlags(0)
-        creature.ai_mode = 0
+        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
         creature.move_speed = 2.0
         creature.size = 45.0
         creature.pos = start_pos
@@ -339,7 +340,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     link.hp = 100.0
     link.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     link.flags = CreatureFlags(0)
-    link.ai_mode = 0
+    link.ai_mode = CreatureAiMode.ORBIT_PLAYER
     link.move_speed = 0.0
     link.size = 45.0
     link.pos = Vec2(100.0, 100.0)
@@ -350,7 +351,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     near.hp = 100.0
     near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
-    near.ai_mode = 5
+    near.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
     near.link_index = 0
     near.target_offset = Vec2()
     near.move_speed = 2.0
@@ -364,7 +365,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     far.hp = 100.0
     far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
-    far.ai_mode = 5
+    far.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
     far.link_index = 0
     far.target_offset = Vec2()
     far.move_speed = 2.0
@@ -398,7 +399,7 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -423,7 +424,7 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 2.0
     creature.size = 45.0
     creature.contact_damage = 0.0
@@ -450,7 +451,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -477,7 +478,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -501,7 +502,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     far.hp = 50.0
     far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
-    far.ai_mode = 0
+    far.ai_mode = CreatureAiMode.ORBIT_PLAYER
     far.move_speed = 0.0
     far.size = 45.0
     far.contact_damage = 0.0
@@ -513,7 +514,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near.hp = 50.0
     near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
-    near.ai_mode = 0
+    near.ai_mode = CreatureAiMode.ORBIT_PLAYER
     near.move_speed = 0.0
     near.size = 45.0
     near.contact_damage = 0.0
@@ -535,7 +536,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     dead_target.hp = 0.0
     dead_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     dead_target.flags = CreatureFlags(0)
-    dead_target.ai_mode = 0
+    dead_target.ai_mode = CreatureAiMode.ORBIT_PLAYER
     dead_target.move_speed = 0.0
     dead_target.size = 45.0
     dead_target.contact_damage = 0.0
@@ -547,7 +548,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target.hp = 50.0
     live_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     live_target.flags = CreatureFlags(0)
-    live_target.ai_mode = 0
+    live_target.ai_mode = CreatureAiMode.ORBIT_PLAYER
     live_target.move_speed = 0.0
     live_target.size = 45.0
     live_target.contact_damage = 0.0
@@ -570,7 +571,7 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     far.hp = 50.0
     far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
-    far.ai_mode = 0
+    far.ai_mode = CreatureAiMode.ORBIT_PLAYER
     far.move_speed = 0.0
     far.size = 45.0
     far.contact_damage = 0.0
@@ -582,7 +583,7 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     near.hp = 50.0
     near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
-    near.ai_mode = 0
+    near.ai_mode = CreatureAiMode.ORBIT_PLAYER
     near.move_speed = 0.0
     near.size = 45.0
     near.contact_damage = 0.0
@@ -611,7 +612,7 @@ def test_small_creature_dies_on_contact() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.move_speed = 0.0
     creature.size = 30.0
     creature.contact_damage = 10.0
@@ -825,7 +826,7 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
 
 def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -851,7 +852,7 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None
 
 def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -878,7 +879,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
 
 def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
     state = GameplayState()
-    state.game_mode = int(GameMode.RUSH)
+    state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
@@ -1248,7 +1249,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.link_index = -33
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1279,7 +1280,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
-    creature.ai_mode = 7
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 1
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1304,7 +1305,7 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     creature.hp = 1.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-    creature.ai_mode = 0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
     creature.link_index = -10
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1328,7 +1329,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
-    creature.ai_mode = 7
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 400
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1356,7 +1357,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature.hp = 50.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags.AI7_LINK_TIMER
-    creature.ai_mode = 7
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 100
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1395,7 +1396,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature0.hp = 50.0
     creature0.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature0.flags = CreatureFlags.AI7_LINK_TIMER
-    creature0.ai_mode = 7
+    creature0.ai_mode = CreatureAiMode.HOLD_TIMER
     creature0.link_index = 100
     creature0.target_player = 0
     creature0.pos = Vec2(640.0, 512.0)
@@ -1409,7 +1410,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1.hp = 50.0
     creature1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature1.flags = CreatureFlags.AI7_LINK_TIMER
-    creature1.ai_mode = 7
+    creature1.ai_mode = CreatureAiMode.HOLD_TIMER
     creature1.link_index = 100
     creature1.target_player = 0
     creature1.pos = Vec2(680.0, 512.0)

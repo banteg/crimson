@@ -15,6 +15,7 @@ from ..creatures.damage import creature_apply_damage_with_lethal_followup
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
+from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
     player_frame_dt_after_roundtrip,
@@ -109,7 +110,7 @@ class WorldState(msgspec.Struct):
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         auto_pick_perks: bool,
-        game_mode: int,
+        game_mode: GameMode,
         perk_progression_enabled: bool,
         game_tune_started: bool = False,
         rng_marks: dict[str, int] | None = None,
@@ -246,7 +247,7 @@ class WorldState(msgspec.Struct):
             )
             hit_trigger, keys = plan_hit_sfx_keys(
                 [_hit],
-                game_mode=int(game_mode),
+                game_mode=game_mode,
                 demo_mode_active=self.state.demo_mode_active,
                 game_tune_started=hit_audio_game_tune_started,
                 rand=self.state.rng.rand,

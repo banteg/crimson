@@ -7,6 +7,7 @@ from collections.abc import Callable
 import msgspec
 
 from ..effects import FxQueue, FxQueueRotated
+from ..game_modes import GameMode
 from ..math_parity import f32
 from ..perks.availability import perks_rebuild_available
 from ..weapon_runtime import weapon_refresh_available
@@ -37,7 +38,7 @@ class StepPipelineOptions(msgspec.Struct, frozen=True):
     detail_preset: int
     gore_disabled: int
     auto_pick_perks: bool
-    game_mode: int
+    game_mode: GameMode
     demo_mode_active: bool
     perk_progression_enabled: bool
     game_tune_started: bool
@@ -117,7 +118,7 @@ def run_deterministic_step(
     inputs = normalize_input_frame(inputs, player_count=len(world.players)).as_list()
 
     _mark("gw_begin")
-    state.game_mode = int(options.game_mode)
+    state.game_mode = options.game_mode
     state.demo_mode_active = bool(options.demo_mode_active)
 
     weapon_refresh_available(state)
@@ -144,7 +145,7 @@ def run_deterministic_step(
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         auto_pick_perks=bool(options.auto_pick_perks),
-        game_mode=int(options.game_mode),
+        game_mode=options.game_mode,
         perk_progression_enabled=bool(options.perk_progression_enabled),
         game_tune_started=bool(options.game_tune_started),
         rng_marks=rng_marks_out,
@@ -174,7 +175,7 @@ def run_deterministic_step(
         event_sfx=events.sfx,
         prev_audio=prev_audio,
         prev_perk_pending=int(prev_perk_pending),
-        game_mode=int(options.game_mode),
+        game_mode=options.game_mode,
         demo_mode_active=bool(options.demo_mode_active),
         perk_progression_enabled=bool(options.perk_progression_enabled),
         rand=rand,

@@ -118,7 +118,7 @@ class TutorialMode(BaseGameplayMode):
             players=[self.player],
             creatures=cast("list[CreatureForPerks]", self.creatures.entries),
             player=self.player,
-            game_mode=int(GameMode.TUTORIAL),
+            game_mode=GameMode.TUTORIAL,
             player_count=1,
             gore_disabled=gore_disabled,
             fx_detail=fx_detail,
@@ -275,7 +275,7 @@ class TutorialMode(BaseGameplayMode):
                 dt_world,
                 inputs=[input_state],
                 auto_pick_perks=False,
-                game_mode=int(GameMode.TUTORIAL),
+                game_mode=GameMode.TUTORIAL,
                 perk_progression_enabled=True,
             )
 

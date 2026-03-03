@@ -63,7 +63,7 @@ def _as_texture(texture: _TextureStub) -> rl.Texture:
 def _beam_ctx(renderer: _RendererStub, *, life: float = 1.0) -> ProjectileDrawCtx:
     pos = Vec2(32.0, 0.0)
     proj = Projectile(
-        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
+        type_id=ProjectileTemplateId.FIRE_BULLETS,
         pos=pos,
         origin=Vec2(0.0, 0.0),
         life_timer=float(life),
@@ -176,7 +176,7 @@ def test_classic_ion_chain_strip_width_scales_with_effect_scale(mocker) -> None:
     )
     pos = Vec2(0.0, 0.0)
     proj = Projectile(
-        type_id=int(ProjectileTemplateId.ION_RIFLE),
+        type_id=ProjectileTemplateId.ION_RIFLE,
         pos=pos,
         origin=Vec2(64.0, 0.0),
         life_timer=0.2,

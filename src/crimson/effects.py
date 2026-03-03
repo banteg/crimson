@@ -78,7 +78,7 @@ class Particle(msgspec.Struct):
     intensity: float = 0.0
     angle: float = 0.0
     spin: float = 0.0
-    style_id: int = ParticleStyleId.FLAMETHROWER
+    style_id: ParticleStyleId = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
     owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
 
