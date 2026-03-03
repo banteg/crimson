@@ -30,10 +30,7 @@ from ..frontend.transitions import _update_screen_fade
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
-from ..render.backend import RaylibBackend
-from ..render.pipeline import RenderPipeline
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
-from ..render.sink import NullSink, WindowSink
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
@@ -185,10 +182,6 @@ class GameLoopView:
             },
         )
         self._runtime_updates_per_frame = 0
-        self._render_backend = RaylibBackend()
-        self._window_sink = WindowSink(log_error=self._log_render_sink_error)
-        self._null_sink = NullSink()
-        self._render_pipeline = RenderPipeline(backend=self._render_backend, sink=self._window_sink)
 
     def _pending_session(self):
         return self.state.pending_network_session
@@ -228,8 +221,6 @@ class GameLoopView:
     def open(self) -> None:
         rl.hide_cursor()
         self._boot.open()
-        width, height = self._current_render_size()
-        self._render_pipeline.open(width=int(width), height=int(height))
 
     def should_close(self) -> bool:
         return self.state.quit_requested
@@ -916,18 +907,6 @@ class GameLoopView:
         self._screenshot_requested = False
         return requested
 
-    def _log_render_sink_error(self, message: str) -> None:
-        self.state.console.log.log(str(message))
-
-    @staticmethod
-    def _current_render_size() -> tuple[int, int]:
-        try:
-            width = int(rl.get_render_width())
-            height = int(rl.get_render_height())
-        except RuntimeError:
-            width, height = 0, 0
-        return max(0, int(width)), max(0, int(height))
-
     def _draw_scene_layers(self) -> None:
         self._active.draw()
         info = self._demo_trial_info
@@ -956,12 +935,7 @@ class GameLoopView:
             rl.end_shader_mode()
 
     def draw(self) -> None:
-        width, height = self._current_render_size()
-        self._render_pipeline.render(
-            draw_frame=self._draw_with_gamma,
-            width=int(width),
-            height=int(height),
-        )
+        self._draw_with_gamma()
 
     def close(self) -> None:
         if self._menu_active:
@@ -976,7 +950,6 @@ class GameLoopView:
         if self.state.menu_ground is not None and self.state.menu_ground.render_target is not None:
             rl.unload_render_texture(self.state.menu_ground.render_target)
             self.state.menu_ground.render_target = None
-        self._render_pipeline.close()
         self._boot.close()
         self.state.console.close()
         rl.show_cursor()
