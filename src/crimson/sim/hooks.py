@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, cast
 
 import msgspec
 
 if TYPE_CHECKING:
     from .input import PlayerInput
-
-
-class ReplayRecorderLike(Protocol):
-    def record_tick(self, inputs: list["PlayerInput"]) -> int: ...
 
 
 class TickContext(msgspec.Struct, frozen=True):
@@ -88,11 +84,11 @@ class TickHookBus:
 
 
 class ReplayRecorderHook:
-    def __init__(self, recorder: ReplayRecorderLike | None) -> None:
+    def __init__(self, recorder: object | None) -> None:
         self._recorder = recorder
         self.recorded_tick_by_runner_tick: dict[int, int] = {}
 
-    def set_recorder(self, recorder: ReplayRecorderLike | None) -> None:
+    def set_recorder(self, recorder: object | None) -> None:
         self._recorder = recorder
 
     def clear_recorded_ticks(self) -> None:
@@ -105,7 +101,10 @@ class ReplayRecorderHook:
         if not ctx.inputs_present or ctx.inputs is None:
             return
         inputs = cast("list[PlayerInput]", ctx.inputs)
-        tick_index = recorder.record_tick(inputs)
+        record_tick = getattr(recorder, "record_tick", None)
+        if not callable(record_tick):
+            raise TypeError("replay recorder hook requires a recorder with callable record_tick(inputs)")
+        tick_index = cast("Callable[[list[PlayerInput]], int]", record_tick)(inputs)
         self.recorded_tick_by_runner_tick[int(ctx.tick_index)] = int(tick_index)
 
 
