@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, Protocol, cast, runtime_checkable
+from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -30,6 +30,7 @@ from ..net.rollback_resync_v5 import (
     decode_mode_snapshot,
     encode_mode_snapshot,
 )
+from ..net.rollback_runtime import RollbackRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
@@ -44,9 +45,11 @@ from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_asset
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
+    from ..game.types import GameState
     from ..gameplay import GameplayState
     from ..net.lockstep_protocol import StatusSnapshot
     from ..persistence.save_status import GameStatus
+    from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
 
 @runtime_checkable
@@ -171,10 +174,10 @@ class BaseGameplayMode:
         self._ui_mouse = Vec2()
         self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
-        self._screen_fade: Any | None = None
+        self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
-        self._replay_recorder: Any | None = None
+        self._replay_recorder: ReplayRecorder | None = None
         self._lan_runtime: LanRuntimeLike | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
@@ -323,7 +326,7 @@ class BaseGameplayMode:
         self._status_base = status
         self._refresh_effective_status(reset_lan_status=False)
 
-    def bind_screen_fade(self, fade: Any | None) -> None:
+    def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
 
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
@@ -636,35 +639,19 @@ class BaseGameplayMode:
         snapshot: ModeStateSnapshotV2,
     ) -> None:
         runtime = self._lan_runtime
-        if runtime is None or not all(
-            hasattr(runtime, method)
-            for method in (
-                "store_local_snapshot",
-                "pop_rollback_from",
-                "pop_resync_snapshot",
-                "mark_resync_applied",
-            )
-        ):
+        if runtime is None or not isinstance(runtime, RollbackRuntime):
             return
         tick = max(0, int(snapshot.tick_index))
         if (tick % 4) != 0:
             return
         payload = encode_mode_snapshot(snapshot=snapshot)
-        cast(Any, runtime).store_local_snapshot(int(tick), payload)
+        runtime.store_local_snapshot(int(tick), payload)
 
     def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
         runtime = self._lan_runtime
-        if runtime is None or not all(
-            hasattr(runtime, method)
-            for method in (
-                "store_local_snapshot",
-                "pop_rollback_from",
-                "pop_resync_snapshot",
-                "mark_resync_applied",
-            )
-        ):
+        if runtime is None or not isinstance(runtime, RollbackRuntime):
             return
-        rollback_from = cast(Any, runtime).pop_rollback_from()
+        rollback_from = runtime.pop_rollback_from()
         if rollback_from is not None:
             lan_debug_log(
                 "rollback_requested",
@@ -673,7 +660,7 @@ class BaseGameplayMode:
                 from_tick=int(rollback_from),
             )
 
-        pending = cast(Any, runtime).pop_resync_snapshot()
+        pending = runtime.pop_resync_snapshot()
         if pending is None:
             return
         tick_index, payload = pending
@@ -688,7 +675,7 @@ class BaseGameplayMode:
         if int(snapshot.tick_index) != int(tick_index):
             runtime.error = "resync_tick_mismatch"
             return
-        cast(Any, runtime).mark_resync_applied(int(tick_index))
+        runtime.mark_resync_applied(int(tick_index))
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
@@ -892,7 +879,7 @@ class BaseGameplayMode:
         dt_tick: float,
         input_frame: list[PlayerInput],
         session: DeterministicSessionLike,
-        recorder: Any | None,
+        recorder: ReplayRecorder | None,
         on_tick: Callable[[DeterministicSessionTick, int | None], bool],
     ) -> None:
         if self.world.audio_router is not None:
