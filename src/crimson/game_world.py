@@ -174,7 +174,7 @@ class GameWorld(msgspec.Struct):
         for idx in range(count):
             pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
             player = PlayerState(index=idx, pos=pos)
-            weapon_assign_player(player, WeaponId.PISTOL)
+            weapon_assign_player(player, WeaponId.PISTOL, state=self.state)
             init_default_alt_weapon(player)
             self.players.append(player)
         self.camera = Vec2(-1.0, -1.0)

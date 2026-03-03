@@ -17,8 +17,7 @@ def apply_reflex_boost(ctx: BonusApplyCtx) -> None:
         f32(float(old) + float(ctx.amount) * float(ctx.economist_multiplier)),
     )
 
-    targets = ctx.players if ctx.players is not None else [ctx.player]
-    for target in targets:
+    for target in ctx.players:
         target.weapon.ammo = float(target.weapon.clip_size)
         target.weapon.reload_active = False
         target.weapon.reload_timer = 0.0

@@ -19,7 +19,7 @@ def _build_world(*, game_mode: GameMode = GameMode.SURVIVAL) -> WorldState:
         difficulty_level=0,
         preserve_bugs=False,
     )
-    reset_players(world.players, world_size=1024.0, player_count=1)
+    reset_players(world.players, state=world.state, world_size=1024.0, player_count=1)
     state = world.state
     state.game_mode = int(game_mode)
     state.rng.srand(0x1234)

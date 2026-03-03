@@ -390,7 +390,7 @@ class BonusPool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        creatures: Sequence[CreatureState] | None = None,
+        creatures: Sequence[CreatureState],
         detail_preset: int = 5,
         defer_freeze_corpse_fx: bool = False,
         freeze_corpse_indices: set[int] | None = None,

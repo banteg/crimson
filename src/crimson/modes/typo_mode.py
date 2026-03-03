@@ -98,7 +98,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         self._aim_target = self.player.pos.offset(dx=128.0)
 
-        enforce_typo_player_frame(self.player)
+        enforce_typo_player_frame(self.player, state=self.state)
 
     def close(self) -> None:
         if self._ui_assets is not None:
@@ -256,7 +256,7 @@ class TypoShooterMode(BaseGameplayMode):
         if dt_world <= 0.0:
             return
 
-        enforce_typo_player_frame(self.player)
+        enforce_typo_player_frame(self.player, state=self.state)
         input_state = build_typo_player_input(
             aim=self._aim_target,
             fire_requested=bool(fire_pressed),
@@ -269,7 +269,7 @@ class TypoShooterMode(BaseGameplayMode):
             game_mode=int(GameMode.TYPO),
             perk_progression_enabled=False,
         )
-        enforce_typo_player_frame(self.player)
+        enforce_typo_player_frame(self.player, state=self.state)
 
         self.state.bonuses.weapon_power_up = 0.0
         self.state.bonuses.reflex_boost = 0.0

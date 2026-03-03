@@ -71,7 +71,7 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
 def _enforce_rush_loadout(world: GameWorld) -> None:
     for player in world.players:
         if player.weapon.weapon_id != WeaponId.ASSAULT_RIFLE:
-            weapon_assign_player(player, WeaponId.ASSAULT_RIFLE)
+            weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=world.state)
         player.weapon.ammo = 30.0
 
 

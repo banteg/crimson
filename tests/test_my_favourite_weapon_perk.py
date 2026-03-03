@@ -13,7 +13,7 @@ from tests.helpers import assert_float_close
 def test_my_favourite_weapon_increases_clip_size() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    weapon_assign_player(player, player.weapon.weapon_id)
+    weapon_assign_player(player, player.weapon.weapon_id, state=state)
 
     base_clip = int(player.weapon.clip_size)
     player.weapon.ammo = 5
@@ -23,7 +23,7 @@ def test_my_favourite_weapon_increases_clip_size() -> None:
     assert player.weapon.clip_size == base_clip + 2
     assert player.weapon.ammo == 5
 
-    weapon_assign_player(player, player.weapon.weapon_id)
+    weapon_assign_player(player, player.weapon.weapon_id, state=state)
     assert player.weapon.clip_size == base_clip + 2
     assert player.weapon.ammo == player.weapon.clip_size
     assert_float_close(player.weapon.reload_timer, 0.0)

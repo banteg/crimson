@@ -459,7 +459,7 @@ class DemoView:
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim = pos
-            weapon_assign_player(player, WeaponId(weapon_id))
+            weapon_assign_player(player, WeaponId(weapon_id), state=self._world.state)
         self._demo_targets = [None] * len(self._world.players)
 
     def _apply_variant_ground(self, index: int) -> None:

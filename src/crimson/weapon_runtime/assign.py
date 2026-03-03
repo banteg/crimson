@@ -53,11 +53,11 @@ def init_default_alt_weapon(player: PlayerState) -> None:
     )
 
 
-def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: GameplayState | None = None) -> None:
+def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: GameplayState) -> None:
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
     weapon_id = WeaponId(weapon_id)
-    if state is not None and state.status is not None and not state.demo_mode_active:
+    if state.status is not None and not state.demo_mode_active:
         usage_slot = weapon_usage_slot_for_weapon_id(int(weapon_id))
         if usage_slot is not None:
             state.status.increment_weapon_usage_slot(usage_slot)
@@ -78,7 +78,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     player.weapon.shot_cooldown = 0.0
     player.aux_timer = 2.0
 
-    if state is not None and weapon is not None:
+    if weapon is not None:
         from ..weapon_sfx import resolve_weapon_sfx_ref
 
         key = resolve_weapon_sfx_ref(weapon.reload_sound)

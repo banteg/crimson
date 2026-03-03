@@ -102,7 +102,7 @@ def resolve_replay_quest_setup(
 def enforce_rush_loadout(world: WorldState) -> None:
     for player in world.players:
         if player.weapon.weapon_id != RUSH_WEAPON_ID:
-            weapon_assign_player(player, RUSH_WEAPON_ID)
+            weapon_assign_player(player, RUSH_WEAPON_ID, state=world.state)
         # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
         player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
@@ -417,6 +417,7 @@ class PlaybackDriver:
         )
         reset_players(
             world.players,
+            state=world.state,
             world_size=float(self.world_size),
             player_count=int(self.session_settings.player_count),
         )

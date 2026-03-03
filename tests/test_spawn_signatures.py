@@ -26,14 +26,14 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
 
     # Fireblast.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    bonus_apply(state, player, BonusId.FIREBLAST, origin=player)
+    bonus_apply(state, player, BonusId.FIREBLAST, origin=player, creatures=[], players=[player])
     assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_RIFLE): 16})
 
     pool.reset()
 
     # Fireblast should NOT convert to Fire Bullets because it sets bonus_spawn_guard.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
-    bonus_apply(state, player, BonusId.FIREBLAST, origin=player, players=[player])
+    bonus_apply(state, player, BonusId.FIREBLAST, origin=player, creatures=[], players=[player])
     assert _signature(pool) == Counter({int(ProjectileTypeId.PLASMA_RIFLE): 16})
 
     pool.reset()

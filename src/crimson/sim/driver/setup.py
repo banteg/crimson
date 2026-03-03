@@ -68,6 +68,7 @@ def status_from_snapshot(
 def reset_players(
     players: list[PlayerState],
     *,
+    state: GameplayState,
     world_size: float,
     player_count: int,
     spawn_pos: Vec2 | None = None,
@@ -88,7 +89,7 @@ def reset_players(
     for idx in range(count):
         pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
         player = PlayerState(index=idx, pos=pos)
-        weapon_assign_player(player, WeaponId.PISTOL)
+        weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
         players.append(player)
 

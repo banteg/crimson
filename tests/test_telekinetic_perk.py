@@ -18,12 +18,12 @@ def test_telekinetic_picks_up_bonus_after_hover_time() -> None:
     assert entry is not None
 
     base_player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
-    assert bonus_telekinetic_update(state, [base_player], dt=0.7) == []
+    assert bonus_telekinetic_update(state, [base_player], dt=0.7, creatures=[]) == []
     assert entry.picked is False
 
     perk_player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     perk_player.perk_counts[int(PerkId.TELEKINETIC)] = 1
-    pickups = bonus_telekinetic_update(state, [perk_player], dt=0.7)
+    pickups = bonus_telekinetic_update(state, [perk_player], dt=0.7, creatures=[])
 
     assert len(pickups) == 1
     assert entry.picked is True
@@ -39,7 +39,7 @@ def test_telekinetic_nuke_origin_is_bonus_position() -> None:
     player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.TELEKINETIC)] = 1
 
-    bonus_telekinetic_update(state, [player], dt=0.7, detail_preset=5)
+    bonus_telekinetic_update(state, [player], dt=0.7, creatures=[], detail_preset=5)
 
     active = [proj for proj in state.projectiles.entries if proj.active]
     assert active
@@ -86,7 +86,7 @@ def test_telekinetic_picks_only_one_bonus_per_frame_across_players() -> None:
     player0.perk_counts[int(PerkId.TELEKINETIC)] = 1
     player1.perk_counts[int(PerkId.TELEKINETIC)] = 1
 
-    pickups = bonus_telekinetic_update(state, [player0, player1], dt=0.7)
+    pickups = bonus_telekinetic_update(state, [player0, player1], dt=0.7, creatures=[])
 
     assert len(pickups) == 1
     assert pickups[0].player_index == 0
@@ -105,12 +105,12 @@ def test_telekinetic_hover_timer_carries_across_bonus_switch() -> None:
     player = PlayerState(index=0, pos=Vec2(), aim=Vec2(100.0, 100.0))
     player.perk_counts[int(PerkId.TELEKINETIC)] = 1
 
-    assert bonus_telekinetic_update(state, [player], dt=0.4) == []
+    assert bonus_telekinetic_update(state, [player], dt=0.4, creatures=[]) == []
     assert first.picked is False
     assert second.picked is False
 
     player.aim = Vec2(130.0, 100.0)
-    pickups = bonus_telekinetic_update(state, [player], dt=0.3)
+    pickups = bonus_telekinetic_update(state, [player], dt=0.3, creatures=[])
 
     assert len(pickups) == 1
     assert pickups[0].bonus_id == BonusId.POINTS

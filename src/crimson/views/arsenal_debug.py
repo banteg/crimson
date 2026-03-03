@@ -138,7 +138,7 @@ class ArsenalDebugView:
     def _apply_weapon(self) -> None:
         if self._player is None:
             return
-        weapon_assign_player(self._player, self._selected_weapon_id())
+        weapon_assign_player(self._player, self._selected_weapon_id(), state=self._world.state)
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))

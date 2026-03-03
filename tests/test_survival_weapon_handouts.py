@@ -127,8 +127,8 @@ def test_survival_weapon_guard_reverts_mismatched_temporary_weapons() -> None:
     state = GameplayState()
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())
-    weapon_assign_player(player0, WeaponId.SHRINKIFIER_5K)
-    weapon_assign_player(player1, WeaponId.BLADE_GUN)
+    weapon_assign_player(player0, WeaponId.SHRINKIFIER_5K, state=state)
+    weapon_assign_player(player1, WeaponId.BLADE_GUN, state=state)
     state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
 
     survival_enforce_reward_weapon_guard(state, [player0, player1])

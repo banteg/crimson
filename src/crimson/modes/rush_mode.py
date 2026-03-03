@@ -134,7 +134,7 @@ class RushMode(BaseGameplayMode):
     def _enforce_rush_loadout(self) -> None:
         for player in self.world.players:
             if player.weapon.weapon_id != RUSH_WEAPON_ID:
-                weapon_assign_player(player, RUSH_WEAPON_ID)
+                weapon_assign_player(player, RUSH_WEAPON_ID, state=self.state)
             # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
             player.weapon.ammo = float(RUSH_FORCED_AMMO)
 

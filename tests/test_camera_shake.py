@@ -87,7 +87,7 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     creatures = [_creature(pos=Vec2(100.0, 100.0), hp=100.0), _creature(pos=Vec2(500.0, 500.0), hp=100.0)]
 
-    bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures)
+    bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=creatures, players=[player])
 
     assert state.camera_shake_pulses == 0x14
     assert_float_close(state.camera_shake_timer, 0.2)
@@ -128,7 +128,7 @@ def _build_session_world(*, seed: int = 0x1234, world_size: float = 1024.0) -> W
         hardcore=False,
         difficulty_level=0,
     )
-    reset_players(world.players, world_size=float(world_size), player_count=1)
+    reset_players(world.players, state=world.state, world_size=float(world_size), player_count=1)
     world.state.rng.srand(int(seed))
     return world
 

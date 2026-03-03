@@ -14,6 +14,6 @@ def apply_points(ctx: BonusApplyCtx) -> None:
     if amount <= 0:
         return
     target = ctx.player
-    if ctx.players is not None and len(ctx.players) > 0:
+    if len(ctx.players) > 0:
         target = ctx.players[0]
     target.experience += int(amount)

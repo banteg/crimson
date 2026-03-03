@@ -21,7 +21,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS)
+    weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS, state=state)
     assert player.weapon.ammo == player.weapon.clip_size
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)

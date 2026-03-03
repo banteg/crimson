@@ -18,11 +18,11 @@ def test_weapon_usage_tracks_most_used_weapon() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId.PISTOL)
+    weapon_assign_player(player, WeaponId.PISTOL, state=state)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
     assert state.weapon_shots_fired[0][1] == 1
 
-    weapon_assign_player(player, WeaponId.ASSAULT_RIFLE)
+    weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=state)
     for _ in range(3):
         player.weapon.shot_cooldown = 0.0
         player.spread_heat = 0.0
