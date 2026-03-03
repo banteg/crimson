@@ -240,7 +240,7 @@ def run_replay_render_video(
                 overwrite=True if bool(capture_audio) else bool(overwrite),
             )
             render_pipeline = RenderPipeline(
-                backend=RaylibBackend(),
+                backend=RaylibBackend(begin_end_drawing=True),
                 sink=VideoSink(
                     output_path=video_out_path,
                     open_transport=video_transport.open,
@@ -254,15 +254,11 @@ def run_replay_render_video(
             frame_dt = 1.0 / float(fps)
             while not bool(mode.finished):
                 mode.update(float(frame_dt))
-                rl.begin_drawing()
-                try:
-                    render_pipeline.draw(
-                        draw_frame=mode.draw,
-                        width=int(capture_width),
-                        height=int(capture_height),
-                    )
-                finally:
-                    rl.end_drawing()
+                render_pipeline.draw(
+                    draw_frame=mode.draw,
+                    width=int(capture_width),
+                    height=int(capture_height),
+                )
                 if bool(mode.close_requested):
                     raise ReplayRenderError("replay render aborted: replay playback requested close")
                 render_pipeline.present()

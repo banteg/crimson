@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Protocol
 
+from grim.raylib_api import rl
+
 RenderDraw = Callable[[], None]
 
 
@@ -17,10 +19,10 @@ class RenderBackend(Protocol):
 
 
 class RaylibBackend:
-    """Thin adapter seam over the current raylib-backed draw path."""
+    """Raylib draw adapter with optional begin/end-drawing ownership."""
 
-    def __init__(self, *, draw_frame: RenderDraw | None = None) -> None:
-        self._draw_frame = draw_frame
+    def __init__(self, *, begin_end_drawing: bool = False) -> None:
+        self._begin_end_drawing = bool(begin_end_drawing)
         self._opened = False
         self._width = 0
         self._height = 0
@@ -40,11 +42,15 @@ class RaylibBackend:
         self._width = max(0, int(width))
         self._height = max(0, int(height))
 
-    def draw_frame(self, draw_frame: RenderDraw | None = None) -> None:
-        callback = self._draw_frame if draw_frame is None else draw_frame
-        if callback is None:
+    def draw_frame(self, draw_frame: RenderDraw) -> None:
+        if not bool(self._begin_end_drawing):
+            draw_frame()
             return
-        callback()
+        rl.begin_drawing()
+        try:
+            draw_frame()
+        finally:
+            rl.end_drawing()
 
     def close(self) -> None:
         self._opened = False
