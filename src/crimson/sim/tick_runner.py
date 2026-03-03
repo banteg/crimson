@@ -15,6 +15,7 @@ class TickStepPayload(Protocol):
     command_hash: str
     dt_sim: float
     presentation: object
+    presentation_plan_ms: float
 
 
 class TickPayload(Protocol):
@@ -130,6 +131,7 @@ class TickRunner(Generic[TimingT, TickT]):
                 tick_index=tick_index,
                 command_hash=command_hash,
                 dt_sim=dt_sim,
+                presentation_plan_ms=step.presentation_plan_ms,
                 payload=tick,
             )
             self._hook_bus.on_world_step_done(tick_ctx, result)

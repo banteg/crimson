@@ -13,6 +13,7 @@ class _FakeStep(msgspec.Struct):
     command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
     presentation: object = "presentation-plan"
+    presentation_plan_ms: float = 0.0
 
 
 class _FakeTick(msgspec.Struct):

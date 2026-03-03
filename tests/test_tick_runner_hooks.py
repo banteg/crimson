@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import msgspec
+import pytest
 
 from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ProfilerHook, ReplayRecorderHook, TickHookBus
 from crimson.sim.input import PlayerInput
@@ -12,6 +13,7 @@ class _FakeStep(msgspec.Struct):
     command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
     presentation: object = "plan"
+    presentation_plan_ms: float = 0.0
 
 
 class _FakeTick(msgspec.Struct):
@@ -109,3 +111,25 @@ def test_checkpoint_hook_fires_after_tick_complete_callback() -> None:
 
     assert result.ticks_completed == 1
     assert checkpoint_seen_applied == [True]
+
+
+def test_profiler_hook_uses_step_reported_presentation_plan_time() -> None:
+    class _MeasuredSession:
+        def timing_for_dt(self, dt: float) -> float:
+            return float(dt)
+
+        def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _FakeTick:
+            _ = timing, inputs
+            return _FakeTick(step=_FakeStep(presentation_plan_ms=2.75))
+
+    profiler = ProfilerHook()
+    runner = TickRunner(
+        session=_MeasuredSession(),
+        input_provider=_FixedInputProvider(),
+        hook_bus=TickHookBus([profiler]),
+    )
+
+    result = runner.advance_frame(1.0 / 60.0)
+
+    assert result.ticks_completed == 1
+    assert profiler.presentation_plan_ms == pytest.approx(2.75)

@@ -11,6 +11,7 @@ class _FakeStep(msgspec.Struct):
     command_hash: str
     dt_sim: float
     presentation: object
+    presentation_plan_ms: float
 
 
 class _FakeTick(msgspec.Struct):
@@ -33,6 +34,7 @@ class _SequencedSession:
                 command_hash=f"h{tick_index}",
                 dt_sim=1.0 / 60.0,
                 presentation=f"plan-{tick_index}",
+                presentation_plan_ms=0.0,
             ),
         )
 

@@ -28,6 +28,7 @@ class TickResult(msgspec.Struct, frozen=True):
     tick_index: int
     command_hash: str
     dt_sim: float
+    presentation_plan_ms: float = 0.0
     payload: object | None = None
 
 
@@ -208,7 +209,6 @@ class ProfilerHook:
         self.presentation_plan_ms = 0.0
         self.presentation_apply_ms = 0.0
         self._sim_ns_start = 0
-        self._plan_ns_start = 0
         self._apply_ns_start = 0
 
     @staticmethod
@@ -220,17 +220,14 @@ class ProfilerHook:
         self._sim_ns_start = self._now_ns()
 
     def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
-        _ = ctx, result
+        _ = ctx
         if self._sim_ns_start > 0:
             self.sim_ms += (self._now_ns() - self._sim_ns_start) / 1_000_000.0
             self._sim_ns_start = 0
-        self._plan_ns_start = self._now_ns()
+        self.presentation_plan_ms += max(0.0, float(result.presentation_plan_ms))
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
         _ = ctx, hashes
-        if self._plan_ns_start > 0:
-            self.presentation_plan_ms += (self._now_ns() - self._plan_ns_start) / 1_000_000.0
-            self._plan_ns_start = 0
         self._apply_ns_start = self._now_ns()
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:

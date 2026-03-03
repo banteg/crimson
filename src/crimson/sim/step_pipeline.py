@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from collections.abc import Callable
 
 import msgspec
@@ -28,6 +29,7 @@ class DeterministicStepResult(msgspec.Struct):
     timing: FrameTiming
     events: WorldEvents
     presentation: PresentationStepCommands
+    presentation_plan_ms: float
     command_hash: str
     presentation_rng_trace: PresentationRngTrace
 
@@ -165,6 +167,7 @@ def run_deterministic_step(
 
         return _draw
 
+    plan_ns_start = time.perf_counter_ns()
     presentation = plan_world_presentation_step(
         state=state,
         players=world.players,
@@ -187,6 +190,7 @@ def run_deterministic_step(
         hit_sfx=events.hit_sfx,
         death_sfx_preplanned=events.death_sfx_preplanned,
     )
+    presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
 
     command_hash = presentation_commands_hash(presentation)
 
@@ -200,6 +204,7 @@ def run_deterministic_step(
         timing=timing,
         events=events,
         presentation=presentation,
+        presentation_plan_ms=float(presentation_plan_ms),
         command_hash=str(command_hash),
         presentation_rng_trace=trace,
     )
