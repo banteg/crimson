@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import random
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import msgspec
 
@@ -58,6 +58,8 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
+RushSessionFactory = Callable[..., RushDeterministicSession]
+
 
 class _RushState(msgspec.Struct):
     elapsed_ms: float = 0.0
@@ -74,6 +76,7 @@ class RushMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: RushSessionFactory = RushDeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -97,7 +100,8 @@ class RushMode(BaseGameplayMode):
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
         self._replay_checkpoints_last_tick: int | None = None
-        self._sim_session: RushDeterministicSession | None = None
+        self._session_factory = session_factory
+        self._sim_session: RushDeterministicSession | None = self._new_sim_session()
 
     def _record_replay_checkpoint(
         self,
@@ -137,6 +141,20 @@ class RushMode(BaseGameplayMode):
                 weapon_assign_player(player, RUSH_WEAPON_ID)
             # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
             player.weapon.ammo = float(RUSH_FORCED_AMMO)
+
+    def _new_sim_session(self) -> RushDeterministicSession:
+        return self._session_factory(
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
+            detail_preset=5,
+            fx_toggle=0,
+            game_tune_started=bool(self.world._game_tune_started),
+            clear_fx_queues_each_tick=False,
+            enforce_loadout=self._enforce_rush_loadout,
+        )
 
     def open(self) -> None:
         super().open()
@@ -187,18 +205,7 @@ class RushMode(BaseGameplayMode):
             seed=bootstrap.terrain_seed,
             layers=3,
         )
-        self._sim_session = RushDeterministicSession(
-            world=self.world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
-            detail_preset=5,
-            fx_toggle=0,
-            game_tune_started=bool(self.world._game_tune_started),
-            clear_fx_queues_each_tick=False,
-            enforce_loadout=self._enforce_rush_loadout,
-        )
+        self._sim_session = self._new_sim_session()
         self._enforce_rush_loadout()
         weapon_usage_counts = normalize_weapon_usage_counts(
             status.data.get("weapon_usage_counts") if status is not None else None,

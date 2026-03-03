@@ -3,8 +3,8 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import random
-from collections.abc import Sequence
-from typing import Protocol, cast
+from collections.abc import Callable, Sequence
+from typing import cast
 
 import msgspec
 
@@ -54,8 +54,7 @@ from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
-from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
-from ..sim.timing import FrameTiming
+from ..sim.sessions import QuestDeterministicSession
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -63,7 +62,6 @@ from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..views.quest_run_overlay import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
-    quest_complete_banner_alpha,
     quest_level_label,
 )
 from ..weapon_runtime import (
@@ -85,29 +83,7 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
-# Compatibility aliases used by existing monkeypatch-based tests.
-_quest_complete_banner_alpha = quest_complete_banner_alpha
-_quest_level_label = quest_level_label
-
-
-class QuestSessionLike(Protocol):
-    detail_preset: int
-    fx_toggle: int
-    spawn_entries: tuple[SpawnEntry, ...]
-    spawn_timeline_ms: float
-    no_creatures_timer_ms: float
-    completion_transition_ms: float
-    game_tune_started: bool
-
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-    ) -> QuestDeterministicSessionTick: ...
+QuestSessionFactory = Callable[..., QuestDeterministicSession]
 
 
 class _QuestRunState(msgspec.Struct):
@@ -158,6 +134,7 @@ class QuestMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: QuestSessionFactory = QuestDeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -185,7 +162,8 @@ class QuestMode(BaseGameplayMode):
         self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt, on_pick=self._record_perk_pick)
         self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
-        self._sim_session: QuestSessionLike | None = None
+        self._session_factory = session_factory
+        self._sim_session: QuestDeterministicSession | None = self._new_sim_session(spawn_entries=())
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate: int = 60
@@ -208,17 +186,7 @@ class QuestMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
-        self._sim_session = QuestDeterministicSession(
-            world=self.world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
-            spawn_entries=(),
-            detail_preset=5,
-            fx_toggle=0,
-            clear_fx_queues_each_tick=False,
-        )
+        self._sim_session = self._new_sim_session(spawn_entries=())
 
     def close(self) -> None:
         if self._grim_mono is not None:
@@ -242,6 +210,19 @@ class QuestMode(BaseGameplayMode):
             paq_rel="ui/ui_textLevComp.jaz",
         )
         return texture
+
+    def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> QuestDeterministicSession:
+        return self._session_factory(
+            world=self.world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world._damage_scale_by_type,
+            fx_queue=self.world.fx_queue,
+            fx_queue_rotated=self.world.fx_queue_rotated,
+            spawn_entries=spawn_entries,
+            detail_preset=5,
+            fx_toggle=0,
+            clear_fx_queues_each_tick=False,
+        )
 
     def _reset_perk_prompt(self) -> None:
         if int(self.state.perk_selection.pending_count) > 0:
@@ -473,17 +454,7 @@ class QuestMode(BaseGameplayMode):
             completion_transition_ms=-1.0,
         )
         self._sim_clock.reset()
-        self._sim_session = QuestDeterministicSession(
-            world=self.world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world._damage_scale_by_type,
-            fx_queue=self.world.fx_queue,
-            fx_queue_rotated=self.world.fx_queue_rotated,
-            spawn_entries=tuple(entries),
-            detail_preset=5,
-            fx_toggle=0,
-            clear_fx_queues_each_tick=False,
-        )
+        self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
 
         weapon_usage_counts = normalize_weapon_usage_counts(
             status.data.get("weapon_usage_counts") if status is not None else None,
@@ -1143,7 +1114,7 @@ class QuestMode(BaseGameplayMode):
         draw_quest_title_timer_overlay(
             font,
             quest.title,
-            _quest_level_label(quest.major, quest.minor),
+            quest_level_label(quest.major, quest.minor),
             timer_ms=float(self._quest.quest_name_timer_ms),
         )
 

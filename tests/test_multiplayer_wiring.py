@@ -62,19 +62,17 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.data["player_count"] = 3
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = QuestMode(ctx, config=cfg)
-
-    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
-    step_result = SimpleNamespace(
-        step=SimpleNamespace(),
-        spawn_timeline_ms=0.0,
-        no_creatures_timer_ms=0.0,
-        completion_transition_ms=-1.0,
-        play_hit_sfx=False,
-        play_completion_music=False,
-        completed=False,
+    step_tick = mocker.Mock(
+        return_value=SimpleNamespace(
+            step=SimpleNamespace(),
+            spawn_timeline_ms=0.0,
+            no_creatures_timer_ms=0.0,
+            completion_transition_ms=-1.0,
+            play_hit_sfx=False,
+            play_completion_music=False,
+            completed=False,
+        ),
     )
-    step_tick = mocker.Mock(return_value=step_result)
 
     class _FakeSession:
         def __init__(self) -> None:
@@ -97,7 +95,13 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
         def step_tick(self, *, timing, inputs, trace_rng=False):
             return step_tick(timing=timing, inputs=inputs, trace_rng=trace_rng)
 
-    mode._sim_session = cast(QuestDeterministicSession, _FakeSession())
+    fake_session = _FakeSession()
+    mode = QuestMode(
+        ctx,
+        config=cfg,
+        session_factory=lambda **_kwargs: cast(QuestDeterministicSession, fake_session),
+    )
+    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
