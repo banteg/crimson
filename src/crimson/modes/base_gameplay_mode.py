@@ -182,6 +182,12 @@ class BaseGameplayMode:
         slot_index = 0 if runtime is None else int(runtime.local_slot_index)
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
+    def _lockstep_runtime(self) -> LockstepRuntime | None:
+        runtime = self._lan_runtime
+        if isinstance(runtime, LockstepRuntime):
+            return runtime
+        return None
+
     def set_lan_match_start(
         self,
         *,
