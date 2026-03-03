@@ -524,8 +524,6 @@ class ReplayPlaybackMode:
             input_provider=self._replay_input_provider,
             config=TickRunnerConfig(
                 tick_rate=int(self._tick_rate),
-                session_kind="replay",
-                mode_id=str(self.__class__.__name__),
                 is_networked=False,
                 is_replay=True,
             ),

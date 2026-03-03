@@ -33,8 +33,6 @@ class TickSession(Protocol[TimingT, TickT]):
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
     tick_rate: int = 60
-    session_kind: str = ""
-    mode_id: str = ""
     is_networked: bool = False
     is_replay: bool = False
 
@@ -107,8 +105,6 @@ class TickRunner(Generic[TimingT, TickT]):
                 tick_index=tick_index,
                 dt_seconds=self._clock.dt_tick,
                 inputs_present=tick_inputs is not None,
-                session_kind=self._config.session_kind,
-                mode_id=self._config.mode_id,
                 is_networked=self._config.is_networked,
                 is_replay=self._config.is_replay,
                 inputs=tick_inputs,

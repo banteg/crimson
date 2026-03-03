@@ -804,8 +804,6 @@ class PlaybackDriver:
             input_provider=replay_input_provider,
             config=TickRunnerConfig(
                 tick_rate=int(self.tick_rate),
-                session_kind="replay_driver",
-                mode_id=str(self.mode_id),
                 is_networked=False,
                 is_replay=True,
             ),

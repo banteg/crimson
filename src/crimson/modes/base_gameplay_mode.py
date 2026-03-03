@@ -1354,7 +1354,6 @@ class BaseGameplayMode:
         input_provider: object,
         hooks: list[object],
         tick_rate: int,
-        session_kind: str,
         is_networked: bool,
     ) -> TickRunner:
         return TickRunner(
@@ -1363,8 +1362,6 @@ class BaseGameplayMode:
             hook_bus=TickHookBus(hooks),
             config=TickRunnerConfig(
                 tick_rate=int(tick_rate),
-                session_kind=str(session_kind),
-                mode_id=str(self.__class__.__name__),
                 is_networked=bool(is_networked),
                 is_replay=False,
             ),
@@ -1481,7 +1478,6 @@ class BaseGameplayMode:
                 profiler_hook,
             ],
             tick_rate=int(self._deterministic_tick_rate()),
-            session_kind="gameplay",
             is_networked=bool(self._lan_enabled),
         )
         self._gameplay_tick_runner = runner
@@ -1668,7 +1664,6 @@ class BaseGameplayMode:
             input_provider=provider,
             hooks=[pre_sim_hook, profiler, finalize_hook],
             tick_rate=int(tick_rate),
-            session_kind="lan",
             is_networked=True,
         )
         self._lan_tick_runner = runner
