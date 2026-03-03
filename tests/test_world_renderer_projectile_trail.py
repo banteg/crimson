@@ -12,9 +12,14 @@ class _TextureStub:
     id = 1
 
 
-class _WorldStub:
+class _RenderResourcesStub:
     def __init__(self) -> None:
         self.bullet_trail_texture = _TextureStub()
+
+
+class _WorldStub:
+    def __init__(self) -> None:
+        self.render_resources = _RenderResourcesStub()
 
 
 def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:

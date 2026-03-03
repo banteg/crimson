@@ -751,7 +751,7 @@ class ReplayPlaybackMode:
                     # Gameplay drains decal queues during render (`draw()` -> `_bake_fx_queues`).
                     # Fast-seek runs many ticks without drawing, so mirror that behavior per tick:
                     # bake when render targets are ready, otherwise clear to avoid queue saturation.
-                    if world.ground is not None and world.fx_textures is not None:
+                    if world.ground is not None and world.render_resources.fx_textures is not None:
                         world._bake_fx_queues()
                     else:
                         world.fx_queue.clear()

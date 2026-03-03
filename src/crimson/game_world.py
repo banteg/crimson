@@ -23,7 +23,6 @@ from .game_modes import GameMode
 from .gameplay import GameplayState
 from .render.frame import RenderFrame
 from .render.rtx.mode import RtxRenderMode
-from .render.terrain_fx import FxQueueTextures
 from .render.world import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.presentation_step import (
@@ -117,60 +116,8 @@ class GameWorld(msgspec.Struct):
         return self.render_resources.fx_queue_rotated
 
     @property
-    def fx_textures(self) -> FxQueueTextures | None:
-        return self.render_resources.fx_textures
-
-    @property
-    def creature_textures(self) -> dict[str, rl.Texture]:
-        return self.render_resources.creature_textures
-
-    @property
-    def projs_texture(self) -> rl.Texture | None:
-        return self.render_resources.projs_texture
-
-    @property
     def particles_texture(self) -> rl.Texture | None:
         return self.render_resources.particles_texture
-
-    @property
-    def bullet_texture(self) -> rl.Texture | None:
-        return self.render_resources.bullet_texture
-
-    @property
-    def bullet_trail_texture(self) -> rl.Texture | None:
-        return self.render_resources.bullet_trail_texture
-
-    @property
-    def arrow_texture(self) -> rl.Texture | None:
-        return self.render_resources.arrow_texture
-
-    @property
-    def bonuses_texture(self) -> rl.Texture | None:
-        return self.render_resources.bonuses_texture
-
-    @property
-    def bodyset_texture(self) -> rl.Texture | None:
-        return self.render_resources.bodyset_texture
-
-    @property
-    def clock_table_texture(self) -> rl.Texture | None:
-        return self.render_resources.clock_table_texture
-
-    @property
-    def clock_pointer_texture(self) -> rl.Texture | None:
-        return self.render_resources.clock_pointer_texture
-
-    @property
-    def aim_texture(self) -> rl.Texture | None:
-        return self.render_resources.aim_texture
-
-    @property
-    def muzzle_flash_texture(self) -> rl.Texture | None:
-        return self.render_resources.muzzle_flash_texture
-
-    @property
-    def wicons_texture(self) -> rl.Texture | None:
-        return self.render_resources.wicons_texture
 
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
