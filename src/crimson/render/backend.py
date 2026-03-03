@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from grim.raylib_api import rl
 
-RenderDraw = Callable[[], None]
+from .types import RenderDraw
 
 
 class RaylibBackend:

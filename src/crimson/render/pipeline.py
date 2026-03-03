@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Any
 
 from .sink import RenderSink
-
-RenderDraw = Callable[[], None]
+from .types import RenderDraw
 
 
 class RenderPipeline:

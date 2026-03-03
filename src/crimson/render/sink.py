@@ -9,8 +9,6 @@ RenderErrorLogger = Callable[[str], None]
 
 
 class RenderSink(Protocol):
-    fail_fast: bool
-
     def open(self) -> None: ...
 
     def present(self) -> None: ...
@@ -22,8 +20,6 @@ class RenderSink(Protocol):
 
 class WindowSink:
     """Default interactive sink; present/flush delegate to the frame loop."""
-
-    fail_fast = False
 
     def __init__(
         self,
@@ -48,7 +44,7 @@ class WindowSink:
                 self._log_error(f"window sink present failed: {exc}")
 
     def flush(self) -> None:
-        return
+        pass
 
     def close(self) -> None:
         self._opened = False
@@ -57,25 +53,21 @@ class WindowSink:
 class NullSink:
     """Headless sink used for determinism-only verification paths."""
 
-    fail_fast = False
-
     def open(self) -> None:
-        return
+        pass
 
     def present(self) -> None:
-        return
+        pass
 
     def flush(self) -> None:
-        return
+        pass
 
     def close(self) -> None:
-        return
+        pass
 
 
 class VideoSink:
     """Video-export sink. Fail-fast by policy: presentation errors abort rendering."""
-
-    fail_fast = True
 
     def __init__(
         self,
