@@ -65,7 +65,7 @@ pub const CrimsonCfg = struct {
     unknown_460: u32,
     sfx_volume: f32,
     music_volume: f32,
-    fx_toggle: u8,
+    gore_disabled: u8,
     score_load_gate: u8,
     unknown_46e: u8,
     unknown_46f: u8,
@@ -138,7 +138,7 @@ pub fn decode(bytes: []const u8) CrimsonCfgError!CrimsonCfg {
         .unknown_460 = try reader.readU32Le(),
         .sfx_volume = try reader.readF32Le(),
         .music_volume = try reader.readF32Le(),
-        .fx_toggle = try reader.readU8(),
+        .gore_disabled = try reader.readU8(),
         .score_load_gate = try reader.readU8(),
         .unknown_46e = try reader.readU8(),
         .unknown_46f = try reader.readU8(),
@@ -210,7 +210,7 @@ pub fn encode(cfg: CrimsonCfg) [file_size]u8 {
     writer.writeU32Le(cfg.unknown_460) catch unreachable;
     writer.writeF32Le(cfg.sfx_volume) catch unreachable;
     writer.writeF32Le(cfg.music_volume) catch unreachable;
-    writer.writeU8(cfg.fx_toggle) catch unreachable;
+    writer.writeU8(cfg.gore_disabled) catch unreachable;
     writer.writeU8(cfg.score_load_gate) catch unreachable;
     writer.writeU8(cfg.unknown_46e) catch unreachable;
     writer.writeU8(cfg.unknown_46f) catch unreachable;

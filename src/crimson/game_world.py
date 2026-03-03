@@ -484,10 +484,10 @@ class GameWorld(msgspec.Struct):
             self.audio_router.demo_mode_active = self.demo_mode_active
 
         detail_preset = 5
-        fx_toggle = 0
+        gore_disabled = 0
         if self.config is not None:
             detail_preset = self.config.detail_preset
-            fx_toggle = self.config.fx_toggle
+            gore_disabled = self.config.gore_disabled
 
         if self.ground is not None:
             self._sync_ground_settings()
@@ -512,7 +512,7 @@ class GameWorld(msgspec.Struct):
                 world_size=float(self.world_size),
                 damage_scale_by_type=self._damage_scale_by_type,
                 detail_preset=int(detail_preset),
-                fx_toggle=int(fx_toggle),
+                gore_disabled=int(gore_disabled),
                 auto_pick_perks=bool(auto_pick_perks),
                 game_mode=int(game_mode),
                 demo_mode_active=bool(self.demo_mode_active),
@@ -561,10 +561,10 @@ class GameWorld(msgspec.Struct):
             self.update_camera(step.dt_sim)
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit], *, rand: Callable[[], int]) -> None:
-        fx_toggle = 0
+        gore_disabled = 0
         detail_preset = 5
         if self.config is not None:
-            fx_toggle = self.config.fx_toggle
+            gore_disabled = self.config.gore_disabled
             detail_preset = self.config.detail_preset
         queue_projectile_decals(
             state=self.state,
@@ -573,7 +573,7 @@ class GameWorld(msgspec.Struct):
             hits=hits,
             rand=rand,
             detail_preset=detail_preset,
-            fx_toggle=fx_toggle,
+            gore_disabled=gore_disabled,
         )
 
     def _bake_fx_queues(self) -> None:

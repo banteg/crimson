@@ -265,7 +265,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     hardcore: bool = False
     preserve_bugs: bool = False
     detail_preset: int = 5
-    fx_toggle: int = 0
+    gore_disabled: int = 0
     world_size: float = 1024.0
     player_count: int = 1
     status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)

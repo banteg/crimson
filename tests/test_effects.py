@@ -237,7 +237,7 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
         age=0.0,
         rand=lambda: 0,
         detail_preset=5,
-        fx_toggle=0,
+        gore_disabled=0,
     )
 
     assert len(pool.iter_active()) == 2

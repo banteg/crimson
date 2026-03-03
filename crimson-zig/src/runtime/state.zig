@@ -157,7 +157,7 @@ pub const PendingCreatureProjectile = struct {
 
 pub const GameplayState = struct {
     rng: spawn_mod.Crand,
-    fx_toggle: i32 = 0,
+    gore_disabled: i32 = 0,
     bonuses: BonusTimers = .{},
     plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,

@@ -3549,7 +3549,7 @@ fn tickDead(
         return;
     }
     kill_count.* += 1;
-    if (state.fx_toggle == 0 and
+    if (state.gore_disabled == 0 and
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) != 0)
     {
         const burst_counts = [_]usize{ 8, 6, 5 };

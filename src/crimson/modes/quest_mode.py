@@ -220,7 +220,7 @@ class QuestMode(BaseGameplayMode):
             fx_queue_rotated=self.world.fx_queue_rotated,
             spawn_entries=spawn_entries,
             detail_preset=5,
-            fx_toggle=0,
+            gore_disabled=0,
             clear_fx_queues_each_tick=False,
         )
 
@@ -341,7 +341,7 @@ class QuestMode(BaseGameplayMode):
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = self.config.fx_toggle
+        gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
         players = self.world.players
         return PerkMenuContext(
@@ -352,7 +352,7 @@ class QuestMode(BaseGameplayMode):
             player=self.player,
             game_mode=int(GameMode.QUESTS),
             player_count=len(players),
-            fx_toggle=fx_toggle,
+            gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
             assets=self._perk_menu_assets,
@@ -478,7 +478,7 @@ class QuestMode(BaseGameplayMode):
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=self.config.detail_preset,
-                    fx_toggle=self.config.fx_toggle,
+                    gore_disabled=self.config.gore_disabled,
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,
@@ -714,7 +714,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.fx_toggle = int(self._deterministic_fx_toggle())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
         session.spawn_entries = tuple(self._quest.spawn_entries)
         session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
         session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
@@ -864,7 +864,7 @@ class QuestMode(BaseGameplayMode):
                     tick_index = None
 
                 session.detail_preset = int(self._deterministic_detail_preset())
-                session.fx_toggle = int(self._deterministic_fx_toggle())
+                session.gore_disabled = int(self._deterministic_gore_disabled())
                 session.spawn_entries = tuple(self._quest.spawn_entries)
                 session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
                 session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)

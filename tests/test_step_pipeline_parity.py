@@ -173,7 +173,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         fx_queue=world.fx_queue,
         fx_queue_rotated=world.fx_queue_rotated,
         detail_preset=5,
-        fx_toggle=0,
+        gore_disabled=0,
         clear_fx_queues_each_tick=True,
         enforce_loadout=lambda: _enforce_rush_loadout(world),
     )
@@ -252,7 +252,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         fx_queue_rotated=world.fx_queue_rotated,
         spawn_entries=tuple(spawn_entries),
         detail_preset=5,
-        fx_toggle=0,
+        gore_disabled=0,
         clear_fx_queues_each_tick=True,
     )
 

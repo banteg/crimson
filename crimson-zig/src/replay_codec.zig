@@ -77,7 +77,7 @@ pub const ReplayHeader = struct {
     hardcore: bool,
     preserve_bugs: bool,
     detail_preset: i32,
-    fx_toggle: i32,
+    gore_disabled: i32,
     world_size: f32,
     player_count: i32,
     status: ReplayStatus,
@@ -417,7 +417,7 @@ const ReplayHeaderWire = struct {
     hardcore: bool = false,
     preserve_bugs: bool = false,
     detail_preset: i32 = 5,
-    fx_toggle: i32 = 0,
+    gore_disabled: i32 = 0,
     world_size: f32 = 1024.0,
     player_count: i32 = 1,
     status: ReplayStatusWire = .{},
@@ -1147,7 +1147,7 @@ fn buildHeader(
     const tick_rate = try parseI32(wire.tick_rate);
     const difficulty_level = try parseI32(wire.difficulty_level);
     const detail_preset = try parseI32(wire.detail_preset);
-    const fx_toggle = try parseI32(wire.fx_toggle);
+    const gore_disabled = try parseI32(wire.gore_disabled);
     const player_count = try parseI32(wire.player_count);
     const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
     const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
@@ -1201,7 +1201,7 @@ fn buildHeader(
         .hardcore = wire.hardcore,
         .preserve_bugs = wire.preserve_bugs,
         .detail_preset = detail_preset,
-        .fx_toggle = fx_toggle,
+        .gore_disabled = gore_disabled,
         .world_size = wire.world_size,
         .player_count = player_count,
         .status = .{
@@ -1310,7 +1310,7 @@ test "validate terrain bootstrap matches known latest survival header" {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{
@@ -1340,7 +1340,7 @@ test "bootstrap mismatch is rejected" {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{
@@ -1491,7 +1491,7 @@ test "build header rejects world_size above i32 range" {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = too_large_world_size,
         .player_count = 1,
         .status = .{
@@ -1520,7 +1520,7 @@ test "build header parses claimed stats snapshot" {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{
@@ -1569,7 +1569,7 @@ test "build header rejects invalid claimed stats snapshot" {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{

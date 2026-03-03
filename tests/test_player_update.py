@@ -90,7 +90,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
         assert call.kwargs["angle"] == expected_angle
         assert call.kwargs["age"] == 0.0
         assert call.kwargs["detail_preset"] == 5
-        assert call.kwargs["fx_toggle"] == 0
+        assert call.kwargs["gore_disabled"] == 0
 
     assert player.low_health_timer == 1.0
     assert len(state.sfx_queue) == 1

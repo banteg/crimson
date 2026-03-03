@@ -2513,7 +2513,7 @@ fn buildTestReplay(
             .hardcore = false,
             .preserve_bugs = false,
             .detail_preset = 5,
-            .fx_toggle = 0,
+            .gore_disabled = 0,
             .world_size = 1024.0,
             .player_count = 1,
             .status = .{
@@ -2580,7 +2580,7 @@ fn buildTestReplayMulti(
             .hardcore = false,
             .preserve_bugs = false,
             .detail_preset = 5,
-            .fx_toggle = 0,
+            .gore_disabled = 0,
             .world_size = 1024.0,
             .player_count = cfg.player_count,
             .status = .{

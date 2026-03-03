@@ -37,8 +37,8 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
     assert player.experience == 116
 
 
-def test_bloody_mess_quick_learner_name_depends_on_fx_toggle() -> None:
+def test_bloody_mess_quick_learner_name_depends_on_gore_disabled() -> None:
     perk_id = int(PerkId.BLOODY_MESS_QUICK_LEARNER)
-    assert perk_display_name(perk_id, fx_toggle=0) == "Bloody Mess"
-    assert perk_display_name(perk_id, fx_toggle=1) == "Quick Learner"
-    assert perk_display_description(perk_id, fx_toggle=1).startswith("You learn things faster")
+    assert perk_display_name(perk_id, gore_disabled=0) == "Bloody Mess"
+    assert perk_display_name(perk_id, gore_disabled=1) == "Quick Learner"
+    assert perk_display_description(perk_id, gore_disabled=1).startswith("You learn things faster")

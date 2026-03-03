@@ -353,7 +353,7 @@ pub fn applyCaptureStateReset(
     bonuses: *bonus_runtime.BonusPool,
     world_size: f32,
     quest_start_weapon_id: i32,
-    fx_toggle: i32,
+    gore_disabled: i32,
     capture_spawn_events_authoritative: bool,
     quest_spawn_entries_storage: []spawn_mod.QuestSpawnEntry,
     reset_quest_spawn_entries_len: usize,
@@ -382,7 +382,7 @@ pub fn applyCaptureStateReset(
     state.status_quest_unlock_index = status_quest_unlock_index;
     state.status_quest_unlock_index_full = status_quest_unlock_index_full;
     state.status_weapon_usage_counts = status_weapon_usage_counts;
-    state.fx_toggle = fx_toggle;
+    state.gore_disabled = gore_disabled;
     state.game_mode = game_mode;
     state.hardcore = hardcore;
     state.quest_stage_major = quest_stage_major;
@@ -433,7 +433,7 @@ fn makeTestHeader(quest_level: []const u8, seed: u32) replay_codec.ReplayHeader 
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 0,
+        .gore_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{},
@@ -445,7 +445,7 @@ fn makeTestHeader(quest_level: []const u8, seed: u32) replay_codec.ReplayHeader 
 test "capture state reset clears transient pools and restores header fx toggle" {
     var state = state_mod.GameplayState.init(0x1234);
     state.game_mode = .quests;
-    state.fx_toggle = 1;
+    state.gore_disabled = 1;
     state.hardcore = true;
     state.perk_selection.pending_count = 2;
 
@@ -496,7 +496,7 @@ test "capture state reset clears transient pools and restores header fx toggle" 
         &quest_completion_transition_ms,
     );
 
-    try std.testing.expectEqual(@as(i32, 0), state.fx_toggle);
+    try std.testing.expectEqual(@as(i32, 0), state.gore_disabled);
     try std.testing.expectEqual(@as(i32, 2), state.perk_selection.pending_count);
     try std.testing.expect(!creatures.entries[0].active);
     try std.testing.expect(!particles.entries[0].active);

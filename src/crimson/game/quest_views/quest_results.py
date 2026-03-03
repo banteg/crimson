@@ -70,10 +70,10 @@ class QuestResultsView:
             if perk_id != int(PerkId.ANTIPERK):
                 perk_entry = PERK_BY_ID.get(perk_id)
                 if perk_entry is not None and perk_entry.name:
-                    fx_toggle = self.state.config.fx_toggle
+                    gore_disabled = self.state.config.gore_disabled
                     self._unlock_perk_name = perk_display_name(
                         perk_id,
-                        fx_toggle=fx_toggle,
+                        gore_disabled=gore_disabled,
                         preserve_bugs=bool(self.state.preserve_bugs),
                     )
                 else:

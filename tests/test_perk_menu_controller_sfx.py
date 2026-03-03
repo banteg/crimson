@@ -66,7 +66,7 @@ def test_open_perk_menu_plays_panel_click(mocker) -> None:
         player=_dummy_player(),
         game_mode=1,
         player_count=1,
-        fx_toggle=0,
+        gore_disabled=0,
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
@@ -101,7 +101,7 @@ def test_perk_menu_pick_plays_button_click(mocker) -> None:
         player=_dummy_player(),
         game_mode=1,
         player_count=1,
-        fx_toggle=0,
+        gore_disabled=0,
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
@@ -136,7 +136,7 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
         player=_dummy_player(),
         game_mode=1,
         player_count=1,
-        fx_toggle=0,
+        gore_disabled=0,
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
@@ -166,7 +166,7 @@ def test_perk_menu_cancel_plays_button_click(mocker) -> None:
         player=_dummy_player(),
         game_mode=1,
         player_count=1,
-        fx_toggle=0,
+        gore_disabled=0,
         font=None,
         assets=_dummy_assets(),
         mouse=rl.Vector2(0.0, 0.0),
@@ -200,12 +200,12 @@ def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     mocker.patch.object(
         perk_menu_controller_module,
         "perk_display_description",
-        side_effect=lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma",
+        side_effect=lambda _perk_id, *, gore_disabled=0, preserve_bugs=False: "alpha beta gamma",
     )
 
-    first = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
+    first = menu._prewrapped_perk_desc(5, object(), gore_disabled=0, preserve_bugs=False)  # type: ignore[arg-type]
     count_after_first = measure_small_text_width.call_count
-    second = menu._prewrapped_perk_desc(5, object(), fx_toggle=0, preserve_bugs=False)  # type: ignore[arg-type]
+    second = menu._prewrapped_perk_desc(5, object(), gore_disabled=0, preserve_bugs=False)  # type: ignore[arg-type]
 
     assert first == second
     assert measure_small_text_width.call_count == count_after_first

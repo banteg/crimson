@@ -46,7 +46,7 @@ class PerkMenuContext(msgspec.Struct, frozen=True):
     player: PlayerState
     game_mode: int
     player_count: int
-    fx_toggle: int
+    gore_disabled: int
 
     font: SmallFontData | None
     assets: PerkMenuAssets | None
@@ -114,16 +114,16 @@ class PerkMenuController:
         perk_id: int,
         font: SmallFontData,
         *,
-        fx_toggle: int,
+        gore_disabled: int,
         preserve_bugs: bool,
     ) -> str:
-        key = (int(perk_id), int(fx_toggle), int(bool(preserve_bugs)))
+        key = (int(perk_id), int(gore_disabled), int(bool(preserve_bugs)))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
         desc = perk_display_description(
             int(perk_id),
-            fx_toggle=int(fx_toggle),
+            gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
         wrapped = self._wrap_small_text_native(
@@ -250,7 +250,7 @@ class PerkMenuController:
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 int(perk_id),
-                fx_toggle=int(ctx.fx_toggle),
+                gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
@@ -380,7 +380,7 @@ class PerkMenuController:
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
                 int(perk_id),
-                fx_toggle=int(ctx.fx_toggle),
+                gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
@@ -391,14 +391,14 @@ class PerkMenuController:
         selected = choices[self._selected_index]
         desc = perk_display_description(
             int(selected),
-            fx_toggle=int(ctx.fx_toggle),
+            gore_disabled=int(ctx.gore_disabled),
             preserve_bugs=preserve_bugs,
         )
         if ctx.font is not None:
             desc = self._prewrapped_perk_desc(
                 int(selected),
                 ctx.font,
-                fx_toggle=int(ctx.fx_toggle),
+                gore_disabled=int(ctx.gore_disabled),
                 preserve_bugs=preserve_bugs,
             )
         draw_ui_text(

@@ -200,7 +200,7 @@ def _append_snapshot_diff_events(
     after: list[_PlayerSnapshot],
     timeline: list[ReplayInfoTimelineEvent],
     preserve_bugs: bool,
-    fx_toggle: int,
+    gore_disabled: int,
     player_filter: int | None,
     include_extra_events: bool,
 ) -> None:
@@ -255,7 +255,7 @@ def _append_snapshot_diff_events(
                 continue
             perk_name = perk_display_name(
                 int(perk_id),
-                fx_toggle=int(fx_toggle),
+                gore_disabled=int(gore_disabled),
                 preserve_bugs=bool(preserve_bugs),
             )
             _append_event(
@@ -465,7 +465,7 @@ def _run_replay_info(
             after=after,
             timeline=timeline,
             preserve_bugs=bool(replay.header.preserve_bugs),
-            fx_toggle=int(replay.header.fx_toggle),
+            gore_disabled=int(replay.header.gore_disabled),
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )

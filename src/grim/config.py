@@ -95,7 +95,7 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_460" / Int32ul,
     "sfx_volume" / Float32l,
     "music_volume" / Float32l,
-    "fx_toggle" / Byte,
+    "gore_disabled" / Byte,
     "score_load_gate" / Byte,
     "unknown_46e" / Byte,
     "unknown_46f" / Byte,
@@ -295,8 +295,8 @@ def config_detail_preset(config: CrimsonConfig | None, default: int = 5) -> int:
     return config_int(config, "detail_preset", default)
 
 
-def config_fx_toggle(config: CrimsonConfig | None, default: int = 0) -> int:
-    return config_int(config, "fx_toggle", default)
+def config_gore_disabled(config: CrimsonConfig | None, default: int = 0) -> int:
+    return config_int(config, "gore_disabled", default)
 
 
 def config_ui_info_texts(config: CrimsonConfig | None, *, default: bool = True) -> bool:
@@ -593,12 +593,12 @@ class CrimsonConfig(msgspec.Struct):
         self.set_int_value("detail_preset", value)
 
     @property
-    def fx_toggle(self) -> int:
-        return self.int_value("fx_toggle", 0)
+    def gore_disabled(self) -> int:
+        return self.int_value("gore_disabled", 0)
 
-    @fx_toggle.setter
-    def fx_toggle(self, value: int) -> None:
-        self.set_int_value("fx_toggle", value)
+    @gore_disabled.setter
+    def gore_disabled(self, value: int) -> None:
+        self.set_int_value("gore_disabled", value)
 
     @property
     def score_load_gate(self) -> bool:
@@ -849,7 +849,7 @@ def default_crimson_cfg_data() -> dict:
     config.game_mode = 1
     config.ui_info_texts = True
     # `config_init_defaults` (0x004028f0): defaults to 0 (enables blood splatter and "Bloody Mess" perk naming).
-    config.fx_toggle = 0
+    config.gore_disabled = 0
     config.sfx_volume = 1.0
     config.music_volume = 1.0
     config.detail_preset = 5

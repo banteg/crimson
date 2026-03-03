@@ -37,7 +37,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
     detail_preset: int = 5
-    fx_toggle: int = 0
+    gore_disabled: int = 0
     game_tune_started: bool = False
     auto_pick_perks: bool = False
     demo_mode_active: bool = False
@@ -121,7 +121,7 @@ class SurvivalDeterministicSession(msgspec.Struct):
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
                 detail_preset=int(self.detail_preset),
-                fx_toggle=int(self.fx_toggle),
+                gore_disabled=int(self.gore_disabled),
                 auto_pick_perks=bool(self.auto_pick_perks),
                 game_mode=int(GameMode.SURVIVAL),
                 demo_mode_active=bool(self.demo_mode_active),
@@ -167,7 +167,7 @@ class RushDeterministicSession(msgspec.Struct):
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
     detail_preset: int = 5
-    fx_toggle: int = 0
+    gore_disabled: int = 0
     game_tune_started: bool = False
     clear_fx_queues_each_tick: bool = False
     enforce_loadout: Callable[[], None] | None = None
@@ -235,7 +235,7 @@ class RushDeterministicSession(msgspec.Struct):
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
                 detail_preset=int(self.detail_preset),
-                fx_toggle=int(self.fx_toggle),
+                gore_disabled=int(self.gore_disabled),
                 auto_pick_perks=False,
                 game_mode=int(GameMode.RUSH),
                 demo_mode_active=False,
@@ -294,7 +294,7 @@ class QuestDeterministicSession(msgspec.Struct):
     fx_queue_rotated: FxQueueRotated
     spawn_entries: tuple[SpawnEntry, ...] = ()
     detail_preset: int = 5
-    fx_toggle: int = 0
+    gore_disabled: int = 0
     game_tune_started: bool = False
     apply_world_dt_steps: bool = True
     clear_fx_queues_each_tick: bool = False
@@ -338,7 +338,7 @@ class QuestDeterministicSession(msgspec.Struct):
                 world_size=float(self.world_size),
                 damage_scale_by_type=self.damage_scale_by_type,
                 detail_preset=int(self.detail_preset),
-                fx_toggle=int(self.fx_toggle),
+                gore_disabled=int(self.gore_disabled),
                 auto_pick_perks=False,
                 game_mode=int(GameMode.QUESTS),
                 demo_mode_active=bool(state.demo_mode_active),

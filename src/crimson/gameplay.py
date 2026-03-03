@@ -594,7 +594,7 @@ def player_update(
                     age=0.0,
                     rand=rand,
                     detail_preset=int(detail_preset),
-                    fx_toggle=0,
+                    gore_disabled=0,
                 )
             state.sfx_queue.append(_LOW_HEALTH_BLOODSPILL_SFX[int(rand()) & 1])
             player.low_health_timer = 1.0

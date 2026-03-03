@@ -110,7 +110,7 @@ class TutorialMode(BaseGameplayMode):
         super().close()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = self.config.fx_toggle
+        gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
         return PerkMenuContext(
             state=self.state,
@@ -120,7 +120,7 @@ class TutorialMode(BaseGameplayMode):
             player=self.player,
             game_mode=int(GameMode.TUTORIAL),
             player_count=1,
-            fx_toggle=fx_toggle,
+            gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
             assets=self._ui_assets,

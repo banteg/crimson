@@ -3,7 +3,7 @@ valid:
   - |
     preserve = self.state.preserve_bugs
   - |
-    fx_toggle = self.state.config.fx_toggle
+    gore_disabled = self.state.config.gore_disabled
   - |
     prereq = meta.prereq
 invalid:

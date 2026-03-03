@@ -62,7 +62,7 @@ typedef struct crimson_cfg_t {
     unsigned char reserved6[0x14];
     float sfx_volume;
     float music_volume;
-    unsigned char fx_toggle;
+    unsigned char gore_disabled;
     unsigned char score_load_gate;
     unsigned char reserved7[2];
     int detail_preset;
@@ -141,7 +141,7 @@ the blob start.
 | `0x450` | 28 | - | Unused? | Gap. |
 | `0x464` | 4 | `1.0` | `config_sfx_volume` | SFX Volume (float). |
 | `0x468` | 4 | `1.0` | `config_music_volume` | Music Volume (float). |
-| `0x46C` | 1 | `0` | `config_fx_toggle` | FX toggle (gore/particle/effects paths). Separate from the `config_fx_detail_flag*` trio. |
+| `0x46C` | 1 | `0` | `config_gore_disabled` | FX toggle (gore/particle/effects paths). Separate from the `config_fx_detail_flag*` trio. |
 | `0x46D` | 1 | `0` | `config_score_load_gate` | Score loading flag. |
 | `0x46E` | 2 | - | Unused? | Alignment. |
 | `0x470` | 4 | `5` | `config_detail_preset` | Graphics detail preset (1..5). Drives `config_fx_detail_flag*` via `config_apply_detail_preset` (`0x00447580`). |
