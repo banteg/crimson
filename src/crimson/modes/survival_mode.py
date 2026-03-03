@@ -498,6 +498,7 @@ class SurvivalMode(BaseGameplayMode):
         self._update_audio(dt)
 
         dt, dt_ui_ms = self._tick_frame(dt)
+        self._reset_frame_telemetry()
         self._cursor_time += dt
         self._handle_input()
         if self._action == "open_pause_menu":
@@ -594,6 +595,7 @@ class SurvivalMode(BaseGameplayMode):
         ticks_to_run = self._sim_clock.advance(dt)
         if ticks_to_run <= 0:
             return
+        self._ticks_advanced_per_frame = int(ticks_to_run)
 
         dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt=dt)
@@ -837,6 +839,7 @@ class SurvivalMode(BaseGameplayMode):
                     return False
                 frame = runtime.pop_tick_frame()
                 if frame is None:
+                    self._input_stall_count += 1
                     return False
 
                 packed_inputs = list(frame.frame_inputs)
@@ -910,6 +913,7 @@ class SurvivalMode(BaseGameplayMode):
                 world_events = tick.step.events
 
                 self._lan_last_tick_index = int(frame.tick_index)
+                self._ticks_advanced_per_frame += 1
                 self._store_net_runtime_snapshot(
                     snapshot=SurvivalStateSnapshotV2(
                         tick_index=int(frame.tick_index),

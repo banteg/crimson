@@ -347,6 +347,7 @@ class RushMode(BaseGameplayMode):
         self._update_audio(dt)
 
         dt = self._tick_frame(dt)[0]
+        self._reset_frame_telemetry()
         self._handle_input()
         if self._action == "open_pause_menu":
             return
@@ -376,6 +377,7 @@ class RushMode(BaseGameplayMode):
         ticks_to_run = self._sim_clock.advance(dt)
         if ticks_to_run <= 0:
             return
+        self._ticks_advanced_per_frame = int(ticks_to_run)
 
         dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt=dt)
@@ -452,6 +454,7 @@ class RushMode(BaseGameplayMode):
             while True:
                 frame = runtime.pop_tick_frame()
                 if frame is None:
+                    self._input_stall_count += 1
                     return False
 
                 packed_inputs = list(frame.frame_inputs)
@@ -528,6 +531,7 @@ class RushMode(BaseGameplayMode):
                     ),
                 )
                 world_events = tick.step.events
+                self._ticks_advanced_per_frame += 1
 
                 if tick_index is not None:
                     self._record_replay_checkpoint(

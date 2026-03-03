@@ -161,6 +161,12 @@ class BaseGameplayMode:
         self._lan_terrain_pending_last = False
         self._lan_terrain_pending_since_ms = 0
         self._lan_initial_terrain_ready = False
+        self._runtime_updates_per_frame = 0
+        self._input_stall_count = 0
+        self._ticks_advanced_per_frame = 0
+        self._sim_ms = 0.0
+        self._presentation_plan_ms = 0.0
+        self._presentation_apply_ms = 0.0
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -360,6 +366,17 @@ class BaseGameplayMode:
 
         return dt, dt_ui_ms
 
+    def set_runtime_updates_per_frame(self, value: int) -> None:
+        self._runtime_updates_per_frame = max(0, int(value))
+
+    def _reset_frame_telemetry(self) -> None:
+        self._input_stall_count = 0
+        self._ticks_advanced_per_frame = 0
+        # Placeholder stage timers before profiler hooks land in later slices.
+        self._sim_ms = 0.0
+        self._presentation_plan_ms = 0.0
+        self._presentation_apply_ms = 0.0
+
     def set_lan_runtime(
         self,
         *,
@@ -518,6 +535,27 @@ class BaseGameplayMode:
                     scale=0.85,
                 )
                 y += float(line_h)
+
+        self._draw_ui_text(
+            "telemetry:"
+            f" runtime_updates={int(self._runtime_updates_per_frame)}"
+            f" ticks={int(self._ticks_advanced_per_frame)}"
+            f" stalls={int(self._input_stall_count)}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.8,
+        )
+        y += float(line_h)
+        self._draw_ui_text(
+            "timers(ms):"
+            f" sim={float(self._sim_ms):.3f}"
+            f" plan={float(self._presentation_plan_ms):.3f}"
+            f" apply={float(self._presentation_apply_ms):.3f}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.8,
+        )
+        y += float(line_h)
 
         if self._lan_wait_gate_active():
             self._draw_ui_text(

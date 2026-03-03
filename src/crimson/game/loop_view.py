@@ -181,6 +181,7 @@ class GameLoopView:
                 self._front_views["start_quest"],
             },
         )
+        self._runtime_updates_per_frame = 0
 
     def _pending_session(self):
         return self.state.pending_network_session
@@ -435,6 +436,8 @@ class GameLoopView:
         return forward_action
 
     def _tick_network_runtime(self) -> None:
+        self._runtime_updates_per_frame = 0
+        self.state.runtime_updates_per_frame = 0
         pending = self._pending_session()
         runtime = self.state.network_runtime
         if pending is None or runtime is None:
@@ -449,6 +452,8 @@ class GameLoopView:
             lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
             return
         runtime.update()
+        self._runtime_updates_per_frame += 1
+        self.state.runtime_updates_per_frame = int(self._runtime_updates_per_frame)
         self.state.network_desync_count = int(runtime.desync_count)
         lobby_state = runtime.lobby_state()
         if lobby_state is not None:
@@ -460,6 +465,13 @@ class GameLoopView:
         error = str(runtime.error)
         if error and not self.state.network_last_error:
             self.state.network_last_error = error
+        if bool(self.state.network_in_lobby) and int(self._runtime_updates_per_frame) != 1:
+            lan_debug_log(
+                "runtime_pump_violation",
+                context="interactive_gameplay",
+                expected=1,
+                actual=int(self._runtime_updates_per_frame),
+            )
 
     def update(self, dt: float) -> None:
         input_begin_frame()
@@ -471,6 +483,11 @@ class GameLoopView:
         self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
         self._tick_network_runtime()
+        front_active = self._front_active
+        if front_active is not None:
+            setter = getattr(front_active, "set_runtime_updates_per_frame", None)
+            if callable(setter):
+                setter(int(self._runtime_updates_per_frame))
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):

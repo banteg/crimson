@@ -153,6 +153,9 @@ class _BaseModeGameView:
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
         self._mode.set_rtx_mode(mode)
 
+    def set_runtime_updates_per_frame(self, value: int) -> None:
+        self._mode.set_runtime_updates_per_frame(int(value))
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None

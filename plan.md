@@ -586,12 +586,12 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-0 Checklist: Safety Nets and Instrumentation
 
-- [ ] Add `runtime_updates_per_frame` counter at each context `FrameDriver` owner and reset/report each frame/tick.
-- [ ] Add assertion/log when runtime pump count is not exactly 1 per frame in LAN mode.
-- [ ] Add `input_stall_count` and `ticks_advanced_per_frame` counters to runtime telemetry/debug output.
-- [ ] Add stage timer scaffolding fields (`sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`) with placeholder values.
-- [ ] Add `tests/test_runtime_pump_ownership.py` covering interactive/replay/headless contexts.
-- [ ] Run `uv run pytest --no-cov` with the full test gate suite.
+- [x] Add `runtime_updates_per_frame` counter at each context `FrameDriver` owner and reset/report each frame/tick.
+- [x] Add assertion/log when runtime pump count is not exactly 1 per frame in LAN mode.
+- [x] Add `input_stall_count` and `ticks_advanced_per_frame` counters to runtime telemetry/debug output.
+- [x] Add stage timer scaffolding fields (`sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`) with placeholder values.
+- [x] Add `tests/test_runtime_pump_ownership.py` covering interactive/replay/headless contexts.
+- [x] Run `uv run pytest --no-cov` with the full test gate suite.
 
 ### PR-1 Checklist: Interfaces and Adapters (No Behavior Change)
 
