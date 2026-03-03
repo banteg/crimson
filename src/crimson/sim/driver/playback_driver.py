@@ -19,6 +19,7 @@ from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
+from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..sessions import (
@@ -53,7 +54,10 @@ TickRngTraceObserver: TypeAlias = Callable[[int, list[RngTraceDraw]], None]
 TickObserver: TypeAlias = Callable[[int, WorldState], None]
 TickTraceObserver: TypeAlias = Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
-TickBeginObserver: TypeAlias = Callable[[int, WorldState, float, list[object], list[object], list[object]], None]
+TickBeginObserver: TypeAlias = Callable[
+    [int, WorldState, float, list[ReplayEvent], list[ReplayEvent], list[ReplayEvent]],
+    None,
+]
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
@@ -204,9 +208,9 @@ class PlaybackTickOutcome:
     tick_index: int
     dt_tick: float
     dt_tick_ms_i32: int | None
-    tick_events: list[object]
-    pre_step_events: list[object]
-    post_step_events: list[object]
+    tick_events: list[ReplayEvent]
+    pre_step_events: list[ReplayEvent]
+    post_step_events: list[ReplayEvent]
     world: WorldState
     step: DeterministicStepResult
     step_events: WorldEvents
@@ -230,7 +234,7 @@ class PlaybackTickOutcome:
 class PlaybackTerminalOutcome:
     tick_index: int
     dt_tick: float
-    terminal_events: list[object]
+    terminal_events: list[ReplayEvent]
     world: WorldState
     rng_before_events: int
     rng_after_events: int
@@ -243,10 +247,10 @@ class SurvivalPlaybackRuntime:
 
     def partition_tick_events(
         self,
-        tick_events: list[object],
+        tick_events: list[ReplayEvent],
         *,
         defer_menu_open: bool,
-    ) -> tuple[list[object], list[object]]:
+    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
         if not bool(self.partition_events):
             return list(tick_events), []
         return partition_tick_events(tick_events, defer_menu_open=bool(defer_menu_open))
@@ -274,10 +278,10 @@ class RushPlaybackRuntime:
 
     def partition_tick_events(
         self,
-        tick_events: list[object],
+        tick_events: list[ReplayEvent],
         *,
         defer_menu_open: bool,
-    ) -> tuple[list[object], list[object]]:
+    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
         _ = defer_menu_open
         return list(tick_events), []
 
@@ -308,10 +312,10 @@ class QuestPlaybackRuntime:
 
     def partition_tick_events(
         self,
-        tick_events: list[object],
+        tick_events: list[ReplayEvent],
         *,
         defer_menu_open: bool,
-    ) -> tuple[list[object], list[object]]:
+    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
         if not bool(self.partition_events):
             return list(tick_events), []
         return partition_tick_events(tick_events, defer_menu_open=bool(defer_menu_open))
@@ -438,8 +442,8 @@ class PlaybackDriver:
 
         return world
 
-    def _build_events_by_tick(self) -> dict[int, list[object]]:
-        events_by_tick: dict[int, list[object]] = {}
+    def _build_events_by_tick(self) -> dict[int, list[ReplayEvent]]:
+        events_by_tick: dict[int, list[ReplayEvent]] = {}
         for event in self.replay.events:
             events_by_tick.setdefault(int(event.tick_index), []).append(event)
         return events_by_tick

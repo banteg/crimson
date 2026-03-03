@@ -5,13 +5,13 @@ from typing import cast
 from ...game_modes import GameMode
 from ...perks.selection import perk_selection_current_choices, perk_selection_pick
 from ...perks.state import CreatureForPerks
-from ...replay import PerkMenuOpenEvent, PerkPickEvent
+from ...replay import PerkMenuOpenEvent, PerkPickEvent, ReplayEvent
 from ..world_state import WorldState
 from .setup import ReplayRunnerError
 
 
 def apply_replay_tick_events(
-    events: list[object],
+    events: list[ReplayEvent],
     *,
     tick_index: int,
     dt: float,
@@ -78,15 +78,15 @@ def apply_replay_tick_events(
 
 
 def partition_tick_events(
-    events: list[object],
+    events: list[ReplayEvent],
     *,
     defer_menu_open: bool,
-) -> tuple[list[object], list[object]]:
+) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
     if not defer_menu_open:
         return list(events), []
 
-    pre_step: list[object] = []
-    post_menu_open: list[object] = []
+    pre_step: list[ReplayEvent] = []
+    post_menu_open: list[ReplayEvent] = []
     for event in events:
         if isinstance(event, PerkMenuOpenEvent):
             post_menu_open.append(event)
