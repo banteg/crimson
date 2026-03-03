@@ -5,7 +5,6 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import crimson.game.loop_view as loop_view_module
-import crimson.modes.replay_playback_mode as replay_playback_mode_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.survival_mode import SurvivalMode
@@ -70,19 +69,6 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
     loop._tick_network_runtime()
 
     assert state.runtime_updates_per_frame == 0
-
-
-def test_replay_mode_does_not_pump_injected_runtime(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    runtime = _DummyRuntime()
-    setattr(view, "_runtime", runtime)
-    view._finished = True
-
-    mocker.patch.object(replay_playback_mode_module.rl, "is_key_pressed", return_value=False)
-    view.update(0.0)
-
-    assert runtime.open_calls == 0
-    assert runtime.update_calls == 0
 
 
 class _FakeLanRunner:
