@@ -237,10 +237,8 @@ class WorldState(msgspec.Struct):
                 detail_preset=int(detail_preset),
                 fx_toggle=int(fx_toggle),
             )
-        def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
+        def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: ProjectileDecalPostCtx) -> None:
             nonlocal trigger_game_tune, hit_audio_game_tune_started
-            if not isinstance(post_ctx, ProjectileDecalPostCtx):
-                return
             self._finalize_projectile_hit_presentation(
                 post_ctx=post_ctx,
                 fx_queue=fx_queue,
@@ -268,7 +266,7 @@ class WorldState(msgspec.Struct):
                 runtime_state=self.state, players=self.players,
                 apply_player_damage=_apply_projectile_damage_to_player,
                 on_hit=_on_projectile_hit_pre,
-                on_hit_post=_on_projectile_hit_post,
+                on_hit_post=cast("Callable[[ProjectileHit, object], None]", _on_projectile_hit_post),
             ),
         )
         _mark("ws_after_projectiles")
