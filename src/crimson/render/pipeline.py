@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
-from .backend import RenderBackend
 from .sink import RenderSink
 
 RenderDraw = Callable[[], None]
@@ -11,7 +11,7 @@ RenderDraw = Callable[[], None]
 class RenderPipeline:
     """Shared draw/present orchestration for live and replay contexts."""
 
-    def __init__(self, *, backend: RenderBackend, sink: RenderSink) -> None:
+    def __init__(self, *, backend: Any, sink: RenderSink) -> None:
         self._backend = backend
         self._sink = sink
         self._opened = False

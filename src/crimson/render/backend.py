@@ -1,21 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Protocol
 
 from grim.raylib_api import rl
 
 RenderDraw = Callable[[], None]
-
-
-class RenderBackend(Protocol):
-    def open(self) -> None: ...
-
-    def resize(self, *, width: int, height: int) -> None: ...
-
-    def draw_frame(self, draw_frame: RenderDraw) -> None: ...
-
-    def close(self) -> None: ...
 
 
 class RaylibBackend:
