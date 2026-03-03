@@ -5,7 +5,7 @@ import socket
 import time
 from collections import deque
 from pathlib import Path
-from typing import cast
+from typing import Literal, TypeAlias, cast
 
 import msgspec
 
@@ -90,8 +90,7 @@ MAX_RECV_PACKETS_PER_UPDATE = 512
 IDLE_HEARTBEAT_MS = 250
 
 
-class LockstepRuntimeConfig(msgspec.Struct):
-    role: str
+class _LockstepRuntimeConfigBase(msgspec.Struct):
     mode_id: int
     player_count: int
     bind_host: str
@@ -102,6 +101,17 @@ class LockstepRuntimeConfig(msgspec.Struct):
     tick_rate: int = TICK_RATE
     input_delay_ticks: int = INPUT_DELAY_TICKS
     sim_status_snapshot: StatusSnapshot | None = None
+
+
+class HostLockstepRuntimeConfig(_LockstepRuntimeConfigBase):
+    role: Literal["host"] = "host"
+
+
+class JoinLockstepRuntimeConfig(_LockstepRuntimeConfigBase):
+    role: Literal["join"] = "join"
+
+
+LockstepRuntimeConfig: TypeAlias = HostLockstepRuntimeConfig | JoinLockstepRuntimeConfig
 
 
 class _HostPeerLink(msgspec.Struct):
@@ -1623,4 +1633,9 @@ class LockstepRuntime(msgspec.Struct):
         self._client_seen_tick_frame = False
 
 
-__all__ = ["LockstepRuntime", "LockstepRuntimeConfig"]
+__all__ = [
+    "HostLockstepRuntimeConfig",
+    "JoinLockstepRuntimeConfig",
+    "LockstepRuntime",
+    "LockstepRuntimeConfig",
+]

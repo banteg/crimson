@@ -22,7 +22,11 @@ from crimson.net.rollback_resync_v5 import (
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
-from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
+from crimson.net.rollback_runtime import (
+    HostRollbackRuntimeConfig,
+    JoinRollbackRuntimeConfig,
+    RollbackRuntime,
+)
 
 
 def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
@@ -31,8 +35,7 @@ def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
 
 def _start_runtime(mocker, *, rollback_max_ticks: int = 8) -> tuple[RollbackRuntime, MagicMock]:
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role="host",
+        HostRollbackRuntimeConfig(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",
@@ -169,8 +172,7 @@ def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> N
 
 def test_runtime_prints_host_invite_code_once(mocker) -> None:
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role="host",
+        HostRollbackRuntimeConfig(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",
@@ -194,8 +196,7 @@ def test_runtime_prints_host_invite_code_once(mocker) -> None:
 
 def test_client_sends_ready_only_after_room_state(mocker) -> None:
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role="join",
+        JoinRollbackRuntimeConfig(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",
@@ -223,8 +224,7 @@ def test_client_sends_ready_only_after_room_state(mocker) -> None:
 
 def test_host_keeps_lobby_heartbeat_alive(mocker) -> None:
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role="host",
+        HostRollbackRuntimeConfig(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",

@@ -17,7 +17,11 @@ from crimson.net.rollback_resync_v5 import (
     SurvivalStateSnapshotV2,
     encode_mode_snapshot,
 )
-from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
+from crimson.net.rollback_runtime import (
+    HostRollbackRuntimeConfig,
+    JoinRollbackRuntimeConfig,
+    RollbackRuntime,
+)
 
 
 def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
@@ -25,9 +29,9 @@ def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
 
 
 def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[RollbackRuntime, MagicMock]:
+    cfg_type = HostRollbackRuntimeConfig if role == "host" else JoinRollbackRuntimeConfig
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role=role,
+        cfg_type(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",

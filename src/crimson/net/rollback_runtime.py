@@ -4,7 +4,7 @@ import socket
 import time
 import uuid
 from collections import OrderedDict, deque
-from typing import Literal, cast
+from typing import Literal, TypeAlias, cast
 
 import msgspec
 
@@ -57,8 +57,7 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
-class RollbackRuntimeConfig(msgspec.Struct):
-    role: str
+class _RollbackRuntimeConfigBase(msgspec.Struct):
     mode_id: int
     player_count: int
     relay_host: str
@@ -72,6 +71,17 @@ class RollbackRuntimeConfig(msgspec.Struct):
     rollback_max_ticks: int = ROLLBACK_MAX_TICKS
     reconnect_timeout_ms: int = RECONNECT_TIMEOUT_MS
     sim_status_snapshot: StatusSnapshot | None = None
+
+
+class HostRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
+    role: Literal["host"] = "host"
+
+
+class JoinRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
+    role: Literal["join"] = "join"
+
+
+RollbackRuntimeConfig: TypeAlias = HostRollbackRuntimeConfig | JoinRollbackRuntimeConfig
 
 
 ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
@@ -827,4 +837,9 @@ class RollbackRuntime(msgspec.Struct):
         print(f"[crimson] Invite code: {code}", flush=True)
 
 
-__all__ = ["RollbackRuntime", "RollbackRuntimeConfig"]
+__all__ = [
+    "HostRollbackRuntimeConfig",
+    "JoinRollbackRuntimeConfig",
+    "RollbackRuntime",
+    "RollbackRuntimeConfig",
+]
