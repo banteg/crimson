@@ -108,7 +108,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
         ],
         rand=rng,
         detail_preset=5,
-        fx_toggle=0,
+        gore_disabled=0,
     )
 
     assert_rng_progression(

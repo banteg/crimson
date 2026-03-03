@@ -60,7 +60,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         text_scale = 1.0 * scale
         text_color = rl.WHITE
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
-        fx_toggle = self._fx_toggle()
+        gore_disabled = self._gore_disabled()
         detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.screen_width))
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
@@ -133,7 +133,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.7
             draw_small_text(
                 font,
-                self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs),
+                self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs),
                 list_top_left.offset(dy=float(row) * row_step),
                 text_scale,
                 rl.Color(255, 255, 255, int(255 * row_alpha)),
@@ -173,7 +173,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         if hovered_perk_id is None:
             return
         perk_id = int(hovered_perk_id)
-        perk_name = self._perk_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
+        perk_name = self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno" if preserve_bugs else "perk"
         draw_small_text(
@@ -198,7 +198,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
-        prereq_name = self._perk_prereq_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
+        prereq_name = self._perk_prereq_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
         if prereq_name:
             draw_small_text(
                 font,
@@ -209,7 +209,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             )
             desc_pos = desc_pos.offset(dy=18.0 * scale)
 
-        wrapped_desc = self._prewrapped_perk_desc(perk_id, font, fx_toggle=fx_toggle)
+        wrapped_desc = self._prewrapped_perk_desc(perk_id, font, gore_disabled=gore_disabled)
         if wrapped_desc:
             draw_small_text(font, wrapped_desc, desc_pos, text_scale, dim_color)
 
@@ -363,27 +363,27 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return perk_ids
 
     @staticmethod
-    def _perk_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_name
 
         return perk_display_name(
             int(perk_id),
-            fx_toggle=int(fx_toggle),
+            gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_desc(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
+    def _perk_desc(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
         from ...perks import perk_display_description
 
         return perk_display_description(
             int(perk_id),
-            fx_toggle=int(fx_toggle),
+            gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
 
     @staticmethod
-    def _perk_prereq_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str | None:
+    def _perk_prereq_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 
         meta = PERK_BY_ID.get(int(perk_id))
@@ -394,22 +394,22 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             return None
         return perk_display_name(
             int(prereq[0]),
-            fx_toggle=int(fx_toggle),
+            gore_disabled=int(gore_disabled),
             preserve_bugs=bool(preserve_bugs),
         )
 
     def _preserve_bugs(self) -> bool:
         return self.state.preserve_bugs
 
-    def _fx_toggle(self) -> int:
-        return self.state.config.fx_toggle
+    def _gore_disabled(self) -> int:
+        return self.state.config.gore_disabled
 
-    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, fx_toggle: int) -> str:
-        key = (int(perk_id), int(fx_toggle), int(bool(self._preserve_bugs())))
+    def _prewrapped_perk_desc(self, perk_id: int, font: SmallFontData, *, gore_disabled: int) -> str:
+        key = (int(perk_id), int(gore_disabled), int(bool(self._preserve_bugs())))
         cached = self._wrapped_desc_cache.get(key)
         if cached is not None:
             return cached
-        desc = self._perk_desc(perk_id, fx_toggle=fx_toggle, preserve_bugs=self._preserve_bugs())
+        desc = self._perk_desc(perk_id, gore_disabled=gore_disabled, preserve_bugs=self._preserve_bugs())
         wrapped = self._wrap_small_text_native(
             font,
             desc,

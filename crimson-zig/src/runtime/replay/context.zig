@@ -67,7 +67,7 @@ pub const SimulationContext = struct {
     quest_unlock_index: i32,
     world_size: f32,
     detail_preset: i32,
-    fx_toggle: i32,
+    gore_disabled: i32,
     terrain_size: i32,
     dt_nominal: f32,
 
@@ -137,7 +137,7 @@ pub const SimulationContext = struct {
             .quest_unlock_index = header.status.quest_unlock_index,
             .world_size = header.world_size,
             .detail_preset = header.detail_preset,
-            .fx_toggle = header.fx_toggle,
+            .gore_disabled = header.gore_disabled,
             .terrain_size = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor))),
             .dt_nominal = 1.0 / @as(f32, @floatFromInt(header.tick_rate)),
             .strict_events = options.strict_events,
@@ -151,7 +151,7 @@ pub const SimulationContext = struct {
 
         context.quest_spawn_entries = context.quest_spawn_entries_storage[0..0];
 
-        context.state.fx_toggle = header.fx_toggle;
+        context.state.gore_disabled = header.gore_disabled;
         context.state.game_mode = game_mode;
         context.state.hardcore = header.hardcore;
         context.state.preserve_bugs = header.preserve_bugs;
@@ -258,7 +258,7 @@ fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .fx_toggle = 1,
+        .gore_disabled = 1,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{},

@@ -297,7 +297,7 @@ class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
     detail_preset: int = 5
-    fx_toggle: int = 0
+    gore_disabled: int = 0
 
 
 class _CreatureInteractionCtx(msgspec.Struct):
@@ -310,7 +310,7 @@ class _CreatureInteractionCtx(msgspec.Struct):
     dt: float
     rand: Callable[[], int]
     detail_preset: int
-    fx_toggle: int
+    gore_disabled: int
     world_width: float
     world_height: float
     fx_queue: FxQueue | None
@@ -436,7 +436,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                     fx_queue_rotated=ctx.fx_queue_rotated,
                     rand=ctx.rand,
                     detail_preset=int(ctx.detail_preset),
-                    fx_toggle=int(ctx.fx_toggle),
+                    gore_disabled=int(ctx.gore_disabled),
                 )
 
         mr_melee_killed = creature_apply_damage_with_lethal_followup(
@@ -839,7 +839,7 @@ class CreaturePool:
         players = options.players
         rand = options.rand
         detail_preset = int(options.detail_preset)
-        fx_toggle = int(options.fx_toggle)
+        gore_disabled = int(options.gore_disabled)
         env = options.env
         world_width = float(options.world_width)
         world_height = float(options.world_height)
@@ -961,7 +961,7 @@ class CreaturePool:
                         fx_queue_rotated=fx_queue_rotated,
                         rand=rand,
                         detail_preset=int(detail_preset),
-                        fx_toggle=int(fx_toggle),
+                        gore_disabled=int(gore_disabled),
                     )
                 continue
 
@@ -982,7 +982,7 @@ class CreaturePool:
                         fx_queue_rotated=fx_queue_rotated,
                         rand=rand,
                         detail_preset=int(detail_preset),
-                        fx_toggle=int(fx_toggle),
+                        gore_disabled=int(gore_disabled),
                     )
                 continue
 
@@ -1078,7 +1078,7 @@ class CreaturePool:
                             fx_queue_rotated=fx_queue_rotated,
                             rand=rand,
                             detail_preset=int(detail_preset),
-                            fx_toggle=int(fx_toggle),
+                            gore_disabled=int(gore_disabled),
                         )
                     continue
 
@@ -1207,7 +1207,7 @@ class CreaturePool:
                 dt=dt,
                 rand=rand,
                 detail_preset=int(detail_preset),
-                fx_toggle=int(fx_toggle),
+                gore_disabled=int(gore_disabled),
                 world_width=float(world_width),
                 world_height=float(world_height),
                 fx_queue=fx_queue,
@@ -1418,7 +1418,7 @@ class CreaturePool:
         fx_queue_rotated: FxQueueRotated | None,
         rand: Callable[[], int] | None = None,
         detail_preset: int = 5,
-        fx_toggle: int = 0,
+        gore_disabled: int = 0,
     ) -> None:
         """Advance the post-death lifecycle_stage ramp and queue corpse decals.
 
@@ -1461,7 +1461,7 @@ class CreaturePool:
             return
 
         # lifecycle_stage just crossed <= 0: bake a persistent corpse decal into the ground.
-        if fx_queue_rotated is not None:
+        if int(gore_disabled) == 0 and fx_queue_rotated is not None:
             corpse_size = max(1.0, float(creature.size))
             # Native uses a special fallback corpse id for ping-pong strip creatures.
             corpse_type_id = int(creature.type_id) if long_strip else 7
@@ -1481,7 +1481,7 @@ class CreaturePool:
         # Native `creature_update_all` emits a 19-splatter blood burst when a
         # ping-pong corpse first reaches this staged kill point.
         if (
-            int(fx_toggle) == 0
+            int(gore_disabled) == 0
             and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
             and rand is not None
             and self.effects is not None
@@ -1495,7 +1495,7 @@ class CreaturePool:
                         age=float(age),
                         rand=rand,
                         detail_preset=int(detail_preset),
-                        fx_toggle=int(fx_toggle),
+                        gore_disabled=int(gore_disabled),
                     )
 
     def finalize_post_render_lifecycle(self) -> None:

@@ -105,7 +105,7 @@ class WorldState(msgspec.Struct):
         world_size: float,
         damage_scale_by_type: dict[int, float],
         detail_preset: int,
-        fx_toggle: int = 0,
+        gore_disabled: int = 0,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         auto_pick_perks: bool,
@@ -119,6 +119,7 @@ class WorldState(msgspec.Struct):
                 return
             rng_marks[str(name)] = int(self.state.rng.state)
         dt = float(dt)
+        fx_queue.gore_disabled = int(gore_disabled)
         self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
             for step in _WORLD_DT_STEPS:
@@ -156,7 +157,7 @@ class WorldState(msgspec.Struct):
                 fx_queue=fx_queue,
                 fx_queue_rotated=fx_queue_rotated,
                 detail_preset=int(detail_preset),
-                fx_toggle=int(fx_toggle),
+                gore_disabled=int(gore_disabled),
             ),
         )
         _mark("ws_after_creatures")
@@ -235,7 +236,7 @@ class WorldState(msgspec.Struct):
                 hit=hit,
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
-                fx_toggle=int(fx_toggle),
+                gore_disabled=int(gore_disabled),
             )
         def _on_projectile_hit_post(_hit: ProjectileHit, post_ctx: object | None) -> None:
             nonlocal trigger_game_tune, hit_audio_game_tune_started
@@ -547,7 +548,7 @@ class WorldState(msgspec.Struct):
         *,
         fx_queue: FxQueue,
         detail_preset: int,
-        fx_toggle: int,
+        gore_disabled: int,
     ) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
             state=self.state,
@@ -556,7 +557,7 @@ class WorldState(msgspec.Struct):
             hit=hit,
             rand=self.state.rng.rand,
             detail_preset=int(detail_preset),
-            fx_toggle=int(fx_toggle),
+            gore_disabled=int(gore_disabled),
         )
 
     def _finalize_projectile_hit_presentation(

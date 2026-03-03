@@ -35,7 +35,7 @@ class StepPipelineOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float]
     detail_preset: int
-    fx_toggle: int
+    gore_disabled: int
     auto_pick_perks: bool
     game_mode: int
     demo_mode_active: bool
@@ -140,7 +140,7 @@ def run_deterministic_step(
         world_size=float(options.world_size),
         damage_scale_by_type=options.damage_scale_by_type,
         detail_preset=int(options.detail_preset),
-        fx_toggle=int(options.fx_toggle),
+        gore_disabled=int(options.gore_disabled),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         auto_pick_perks=bool(options.auto_pick_perks),
@@ -180,7 +180,7 @@ def run_deterministic_step(
         rand=rand,
         rand_for=_rand_for if trace_presentation_rng else None,
         detail_preset=int(options.detail_preset),
-        fx_toggle=int(options.fx_toggle),
+        gore_disabled=int(options.gore_disabled),
         game_tune_started=bool(options.game_tune_started),
         trigger_game_tune=events.trigger_game_tune,
         hit_sfx=events.hit_sfx,

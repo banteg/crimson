@@ -55,7 +55,7 @@ LanRuntime = LockstepRuntime | RollbackRuntime
 
 class DeterministicSessionLike(Protocol):
     detail_preset: int
-    fx_toggle: int
+    gore_disabled: int
     game_tune_started: bool
 
     def timing_for_dt(self, dt: float) -> FrameTiming: ...
@@ -656,10 +656,10 @@ class BaseGameplayMode:
             return int(LAN_SIM_DETAIL_PRESET)
         return self.config.detail_preset
 
-    def _deterministic_fx_toggle(self) -> int:
+    def _deterministic_gore_disabled(self) -> int:
         if self._lan_enabled:
             return int(LAN_SIM_FX_TOGGLE)
-        return self.config.fx_toggle
+        return self.config.gore_disabled
 
     def update(self, dt: float) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
@@ -725,9 +725,9 @@ class BaseGameplayMode:
             if self._status_sim is not None
             else 0,
             detail_preset=self.config.detail_preset,
-            fx_toggle=self.config.fx_toggle,
+            gore_disabled=self.config.gore_disabled,
             sim_detail_preset=int(self._deterministic_detail_preset()),
-            sim_fx_toggle=int(self._deterministic_fx_toggle()),
+            sim_gore_disabled=int(self._deterministic_gore_disabled()),
             screen_w=int(rl.get_screen_width()),
             screen_h=int(rl.get_screen_height()),
             render_w=int(rl.get_render_width()),
@@ -867,7 +867,7 @@ class BaseGameplayMode:
             self.world._sync_ground_settings()
             self.world.ground.process_pending()
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.fx_toggle = int(self._deterministic_fx_toggle())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
 
         for tick_offset in range(int(ticks_to_run)):
             inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)

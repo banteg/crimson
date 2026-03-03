@@ -38,7 +38,7 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
             self.stage = 0
             self.spawn_cooldown_ms = 0.0
             self.detail_preset = 5
-            self.fx_toggle = 0
+            self.gore_disabled = 0
 
         def timing_for_dt(self, dt: float) -> FrameTiming:
             return FrameTiming.compute(

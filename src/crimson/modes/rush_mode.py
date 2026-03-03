@@ -150,7 +150,7 @@ class RushMode(BaseGameplayMode):
             fx_queue=self.world.fx_queue,
             fx_queue_rotated=self.world.fx_queue_rotated,
             detail_preset=5,
-            fx_toggle=0,
+            gore_disabled=0,
             game_tune_started=bool(self.world._game_tune_started),
             clear_fx_queues_each_tick=False,
             enforce_loadout=self._enforce_rush_loadout,
@@ -230,7 +230,7 @@ class RushMode(BaseGameplayMode):
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
-                    fx_toggle=int(self._deterministic_fx_toggle()),
+                    gore_disabled=int(self._deterministic_gore_disabled()),
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,
@@ -444,7 +444,7 @@ class RushMode(BaseGameplayMode):
             self._sim_clock.reset()
             return
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.fx_toggle = int(self._deterministic_fx_toggle())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
         def _consume_lan_frames() -> bool:

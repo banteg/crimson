@@ -77,7 +77,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     class _FakeSession:
         def __init__(self) -> None:
             self.detail_preset = 5
-            self.fx_toggle = 0
+            self.gore_disabled = 0
             self.spawn_entries = ()
             self.spawn_timeline_ms = 0.0
             self.no_creatures_timer_ms = 0.0

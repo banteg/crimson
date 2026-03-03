@@ -520,8 +520,8 @@ _PERK_FIXED_DESCRIPTIONS = {
 }
 
 
-def perk_display_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
-    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
+def perk_display_name(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(gore_disabled) != 0:
         return QUICK_LEARNER_NAME
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
@@ -533,8 +533,8 @@ def perk_display_name(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool =
     return entry.name
 
 
-def perk_display_description(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
-    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(fx_toggle) != 0:
+def perk_display_description(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    if int(perk_id) == int(PerkId.BLOODY_MESS_QUICK_LEARNER) and int(gore_disabled) != 0:
         return QUICK_LEARNER_DESCRIPTION
     entry = PERK_BY_ID.get(int(perk_id))
     if entry is None:
@@ -546,5 +546,5 @@ def perk_display_description(perk_id: int, *, fx_toggle: int = 0, preserve_bugs:
     return entry.description
 
 
-def perk_label(perk_id: int, *, fx_toggle: int = 0, preserve_bugs: bool = False) -> str:
-    return perk_display_name(perk_id, fx_toggle=fx_toggle, preserve_bugs=preserve_bugs)
+def perk_label(perk_id: int, *, gore_disabled: int = 0, preserve_bugs: bool = False) -> str:
+    return perk_display_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)

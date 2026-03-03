@@ -44,7 +44,7 @@ tags:
 - Creature/runtime parity:
   - owner spawn-slot tick moved into creature loop tail with random heading sentinel for child spawn plan parity,
   - added native-like ping-pong corpse blood burst RNG budget path,
-  - threaded `fx_toggle` through creature update/decal spawn paths.
+  - threaded `gore_disabled` through creature update/decal spawn paths.
 - Perk selection parity:
   - quest `1-7` Monster Vision forced insert now respects capture certainty of player perk counts.
 
@@ -136,7 +136,7 @@ tags:
 
 - `fix(tooling): align quest diagnostics with dt and lifecycle timing` (`01fce35e`)
   - threaded quest `dt_frame_ms_i32` overrides through replay runner and focus runtimes,
-  - aligned no-cache/cached focus runtimes with replay header `detail_preset`/`fx_toggle`,
+  - aligned no-cache/cached focus runtimes with replay header `detail_preset`/`gore_disabled`,
   - unified inter-tick RNG draw overrides via capture helper,
   - deferred quest creature `finalize_post_render_lifecycle` to runner/focus post-event phase for parity.
 - `fix(replay): carry quest added_head lifecycle overrides` (`22113f6e`)

@@ -94,7 +94,7 @@ def make_creature_update_options(
     players: list[PlayerState],
     rand: Callable[[], int] | None = None,
     detail_preset: int = 5,
-    fx_toggle: int = 0,
+    gore_disabled: int = 0,
     env: SpawnEnv | None = None,
     world_width: float = 1024.0,
     world_height: float = 1024.0,
@@ -121,7 +121,7 @@ def make_creature_update_options(
         fx_queue=cast(FxQueue, _NoopFxQueue()) if fx_queue is None else fx_queue,
         fx_queue_rotated=cast(FxQueueRotated, _NoopFxQueueRotated()) if fx_queue_rotated is None else fx_queue_rotated,
         detail_preset=int(detail_preset),
-        fx_toggle=int(fx_toggle),
+        gore_disabled=int(gore_disabled),
     )
 
 

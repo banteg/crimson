@@ -137,7 +137,7 @@ class SurvivalMode(BaseGameplayMode):
             fx_queue=self.world.fx_queue,
             fx_queue_rotated=self.world.fx_queue_rotated,
             detail_preset=5,
-            fx_toggle=0,
+            gore_disabled=0,
             game_tune_started=bool(self.world._game_tune_started),
             clear_fx_queues_each_tick=False,
         )
@@ -268,7 +268,7 @@ class SurvivalMode(BaseGameplayMode):
             self._console.log.flush()
 
     def _perk_menu_context(self) -> PerkMenuContext:
-        fx_toggle = self.config.fx_toggle
+        gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
         players = self.world.players
         return PerkMenuContext(
@@ -279,7 +279,7 @@ class SurvivalMode(BaseGameplayMode):
             player=self.player,
             game_mode=int(GameMode.SURVIVAL),
             player_count=len(players),
-            fx_toggle=fx_toggle,
+            gore_disabled=gore_disabled,
             fx_detail=fx_detail,
             font=self._small,
             assets=self._perk_menu_assets,
@@ -394,7 +394,7 @@ class SurvivalMode(BaseGameplayMode):
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
-                    fx_toggle=int(self._deterministic_fx_toggle()),
+                    gore_disabled=int(self._deterministic_gore_disabled()),
                     world_size=float(self.world.world_size),
                     player_count=len(self.world.players),
                     status=status_snapshot,
@@ -667,7 +667,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         session.detail_preset = int(self._deterministic_detail_preset())
-        session.fx_toggle = int(self._deterministic_fx_toggle())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
 

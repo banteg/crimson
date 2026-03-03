@@ -30,7 +30,7 @@ def replay_header_from_session_settings(
     difficulty_level: int = 0,
     hardcore: bool = False,
     detail_preset: int = 5,
-    fx_toggle: int = 0,
+    gore_disabled: int = 0,
     world_size: float = 1024.0,
     status: ReplayStatusSnapshot | None = None,
 ) -> ReplayHeader:
@@ -51,7 +51,7 @@ def replay_header_from_session_settings(
         hardcore=bool(hardcore),
         preserve_bugs=bool(settings.preserve_bugs),
         detail_preset=int(detail_preset),
-        fx_toggle=int(fx_toggle),
+        gore_disabled=int(gore_disabled),
         world_size=float(world_size),
         player_count=int(settings.player_count),
         status=ReplayStatusSnapshot() if status is None else status,

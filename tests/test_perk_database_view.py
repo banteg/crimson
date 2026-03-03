@@ -8,28 +8,28 @@ from grim.fonts.small import SmallFontData
 
 
 def test_selected_perk_id_uses_selected_row_index(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     view._perk_ids = [1, 2, 4, 6]
     view._selected_row_index = 2
     assert view._selected_perk_id() == 4
 
 
 def test_selected_perk_id_returns_none_for_out_of_range_row(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     view._perk_ids = [1, 2, 4, 6]
     view._selected_row_index = 9
     assert view._selected_perk_id() is None
 
 
 def test_hovered_perk_id_uses_hovered_row_index(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     view._perk_ids = [1, 2, 4, 6]
     view._hovered_row_index = 3
     assert view._hovered_perk_id() == 6
 
 
 def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     view._perk_ids = [1, 2, 4, 6]
     view._hovered_row_index = -1
     assert view._hovered_perk_id() is None
@@ -51,14 +51,14 @@ def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
     mocker.patch.object(
         UnlockedPerksDatabaseView,
         "_perk_desc",
-        staticmethod(lambda _perk_id, *, fx_toggle=0, preserve_bugs=False: "alpha beta gamma"),
+        staticmethod(lambda _perk_id, *, gore_disabled=0, preserve_bugs=False: "alpha beta gamma"),
     )
 
-    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"fx_toggle": 0}))
+    view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     fake_font = cast(SmallFontData, object())
-    first = view._prewrapped_perk_desc(5, fake_font, fx_toggle=0)
+    first = view._prewrapped_perk_desc(5, fake_font, gore_disabled=0)
     count_after_first = measure_mock.call_count
-    second = view._prewrapped_perk_desc(5, fake_font, fx_toggle=0)
+    second = view._prewrapped_perk_desc(5, fake_font, gore_disabled=0)
 
     assert first == second
     assert measure_mock.call_count == count_after_first
