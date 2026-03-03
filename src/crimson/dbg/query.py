@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
-from typing import cast
+from typing import Literal, TypeAlias, cast
 
 import msgspec
 
@@ -21,9 +21,22 @@ _QUERY_RE = re.compile(r"^\s*(ticks|entities)\s+where\s+(.+?)\s*$")
 _COND_RE = re.compile(r"^\s*(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+?)\s*$")
 
 
-class _Operand(msgspec.Struct, frozen=True):
-    kind: str
+class _LiteralOperand(msgspec.Struct, frozen=True):
     value: object
+    kind: Literal["literal"] = "literal"
+
+
+class _FieldOperand(msgspec.Struct, frozen=True):
+    path: str
+    kind: Literal["field"] = "field"
+
+
+class _PrevFieldOperand(msgspec.Struct, frozen=True):
+    path: str
+    kind: Literal["prev_field"] = "prev_field"
+
+
+_Operand: TypeAlias = _LiteralOperand | _FieldOperand | _PrevFieldOperand
 
 
 class _Predicate(msgspec.Struct, frozen=True):
@@ -53,11 +66,11 @@ def _parse_operand(token: str) -> _Operand:
         path = raw[5:-1].strip()
         if not path:
             raise ValueError("empty prev(...) field path")
-        return _Operand(kind="prev_field", value=path)
+        return _PrevFieldOperand(path=path)
     parsed = _parse_literal(raw)
     if parsed != raw:
-        return _Operand(kind="literal", value=parsed)
-    return _Operand(kind="field", value=raw)
+        return _LiteralOperand(value=parsed)
+    return _FieldOperand(path=raw)
 
 
 def _parse_expression(expression: str) -> tuple[str, _Predicate]:
@@ -109,15 +122,15 @@ def _eval_operand(
     current: dict[str, object],
     previous: dict[str, object] | None,
 ) -> object:
-    if operand.kind == "literal":
+    if isinstance(operand, _LiteralOperand):
         return operand.value
-    if operand.kind == "field":
-        return _resolve_path(current, str(operand.value))
-    if operand.kind == "prev_field":
+    if isinstance(operand, _FieldOperand):
+        return _resolve_path(current, operand.path)
+    if isinstance(operand, _PrevFieldOperand):
         if previous is None:
             return None
-        return _resolve_path(previous, str(operand.value))
-    raise ValueError(f"unsupported operand kind: {operand.kind}")
+        return _resolve_path(previous, operand.path)
+    raise ValueError("unsupported operand variant")
 
 
 def _compare_values(left: object, op: str, right: object) -> bool:
