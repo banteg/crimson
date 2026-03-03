@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import datetime as dt
-import hashlib
 import random
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from typing import cast
 
 import msgspec
@@ -37,18 +35,8 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
-from ..replay.checkpoints import (
-    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
-)
-from ..replay.checkpoints import (
-    ReplayCheckpoint,
-    ReplayCheckpoints,
-    build_checkpoint,
-    default_checkpoints_path,
-    dump_checkpoints_file,
-    resolve_checkpoint_sample_rate,
-)
+from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
+from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import InputCommand
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
@@ -61,10 +49,7 @@ from ..views.quest_run_overlay import (
     draw_quest_title_timer_overlay,
     quest_level_label,
 )
-from ..weapon_runtime import (
-    most_used_weapon_id_for_player,
-    weapon_assign_player,
-)
+from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import BaseGameplayMode, LanStepAction, LanTickStep
 from .components.highscore_record_builder import shots_from_state
@@ -164,9 +149,6 @@ class QuestMode(BaseGameplayMode):
         self._session_factory = session_factory
         self._sim_session: QuestDeterministicSession | None = self._new_sim_session(spawn_entries=())
         self._replay_recorder: ReplayRecorder | None = None
-        self._replay_checkpoints: list[ReplayCheckpoint] = []
-        self._replay_checkpoints_sample_rate: int = 60
-        self._replay_checkpoints_last_tick: int | None = None
 
     def open(self) -> None:
         super().open()
@@ -194,9 +176,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_complete_texture = None
         self._perk_menu_assets = None
         self._sim_session = None
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
         super().close()
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
@@ -242,108 +221,28 @@ class QuestMode(BaseGameplayMode):
             perk_context=self._perk_menu_context(),
         )
 
-    def _record_replay_checkpoint(
-        self,
-        tick_index: int,
-        *,
-        force: bool = False,
-        rng_marks: dict[str, int] | None = None,
-        deaths: Sequence[object] | None = None,
-        events: object | None = None,
-        command_hash: str | None = None,
-    ) -> None:
-        recorder = self._replay_recorder
-        if recorder is None:
-            return
-        if tick_index < 0:
-            return
-        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
-            return
-        if self._replay_checkpoints_last_tick == int(tick_index):
-            return
-        self._replay_checkpoints.append(
-            build_checkpoint(
-                tick_index=int(tick_index),
-                world=self.world.world_state,
-                elapsed_ms=float(self._quest.spawn_timeline_ms),
-                rng_marks=rng_marks,
-                deaths=deaths,
-                events=events,
-                command_hash=command_hash,
-            ),
-        )
-        self._replay_checkpoints_last_tick = int(tick_index)
+    def _replay_checkpoint_elapsed_ms(self) -> float:
+        return float(self._quest.spawn_timeline_ms)
 
-    def _save_replay(self) -> None:
-        recorder = self._replay_recorder
-        if recorder is None:
-            return
-        if int(recorder.tick_index) <= 0:
-            # Avoid emitting empty replays/checkpoint sidecars (usually indicates a
-            # test harness calling failure/complete helpers without ticking).
-            self._replay_recorder = None
-            self._replay_checkpoints.clear()
-            self._replay_checkpoints_last_tick = None
-            return
-        replay = recorder.finish()
-        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
-        most_used_weapon_id = most_used_weapon_id_for_player(
-            self.state,
-            player_index=int(self.player.index),
-            fallback_weapon_id=self.player.weapon.weapon_id,
-        )
-        replay = msgspec.structs.replace(
-            replay,
-            header=msgspec.structs.replace(
-                replay.header,
-                claimed_stats=ReplayClaimedStatsSnapshot(
-                    complete=bool(self._outcome is not None),
-                    ticks=int(recorder.tick_index),
-                    elapsed_ms=int(self._quest.spawn_timeline_ms),
-                    score_xp=int(self.player.experience),
-                    kills=int(self.creatures.kill_count),
-                    most_used_weapon_id=most_used_weapon_id,
-                    shots_fired=int(shots_fired),
-                    shots_hit=int(shots_hit),
-                ),
-            ),
-        )
-        self._record_replay_checkpoint(max(0, recorder.tick_index - 1), force=True)
-        terminal_tick = int(recorder.tick_index)
-        if any(int(event.tick_index) == terminal_tick for event in replay.events):
-            self._record_replay_checkpoint(terminal_tick, force=True)
-        data = dump_replay(replay)
-        digest = hashlib.sha256(data).hexdigest()
-        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-        replay_dir = self._base_dir / "replays"
-        replay_dir.mkdir(parents=True, exist_ok=True)
+    def _replay_claimed_stats_complete(self) -> bool:
+        return bool(self._outcome is not None)
+
+    def _replay_claimed_stats_elapsed_ms(self) -> int:
+        return int(self._quest.spawn_timeline_ms)
+
+    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         level = str(self._quest.level) if self._quest.level else str(replay.header.quest_level or "quest")
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest.spawn_timeline_ms)
-        base_name = f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
-        path = replay_dir / f"{base_name}.crd"
-        counter = 1
-        while path.exists():
-            path = replay_dir / f"{base_name}_{counter}.crd"
-            counter += 1
-        path.write_bytes(data)
-        checkpoints_path = default_checkpoints_path(path)
-        dump_checkpoints_file(
-            checkpoints_path,
-            ReplayCheckpoints(
-                version=CHECKPOINTS_FORMAT_VERSION,
-                replay_sha256=digest,
-                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
-                checkpoints=list(self._replay_checkpoints),
-            ),
-        )
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
-        if self._console is not None:
-            self._console.log.log(f"replay: saved {path}")
-            self._console.log.log(f"replay: saved {checkpoints_path}")
-            self._console.log.flush()
+        return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
+
+    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
+        return any(int(event.tick_index) == int(terminal_tick) for event in replay.events)
+
+    def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
+        # Avoid emitting empty replays/checkpoint sidecars (usually indicates a
+        # test harness calling failure/complete helpers without ticking).
+        return int(recorder.tick_index) <= 0
 
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled

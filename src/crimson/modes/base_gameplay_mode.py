@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import datetime as dt
+import hashlib
 import random
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Protocol, cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -39,7 +43,17 @@ from ..perks.runtime.effects_context import creature_find_in_radius
 from ..perks.selection import perk_selection_pick
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..replay.checkpoints import build_checkpoint
+from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
+from ..replay.checkpoints import (
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.checkpoints import (
+    ReplayCheckpoint,
+    ReplayCheckpoints,
+    build_checkpoint,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+)
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import PackedPlayerInput
 from ..sim.clock import FixedStepClock
@@ -60,6 +74,8 @@ from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
+from ..weapon_runtime import most_used_weapon_id_for_player
+from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
@@ -328,6 +344,9 @@ class BaseGameplayMode:
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
+        self._replay_checkpoints: list[ReplayCheckpoint] = []
+        self._replay_checkpoints_sample_rate = 60
+        self._replay_checkpoints_last_tick: int | None = None
         self._lan_runtime: LanRuntime | None = None
         self._rollback_runtime: RollbackRuntime | None = None
         self._lan_local_slot_index = 0
@@ -621,6 +640,132 @@ class BaseGameplayMode:
     def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
         for command in self._take_pending_input_commands():
             self._apply_input_command(command, dt_tick=float(dt_tick))
+
+    def _replay_checkpoint_elapsed_ms(self) -> float:
+        return float(self.world.sim_world.elapsed_ms)
+
+    def _replay_claimed_stats_complete(self) -> bool:
+        return False
+
+    def _replay_claimed_stats_elapsed_ms(self) -> int:
+        return int(self._replay_checkpoint_elapsed_ms())
+
+    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
+        _ = replay
+        mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
+        return f"{mode_name}_{stamp}"
+
+    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
+        _ = replay, terminal_tick
+        return False
+
+    def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
+        _ = recorder
+        return False
+
+    def _record_replay_checkpoint(
+        self,
+        tick_index: int,
+        *,
+        force: bool = False,
+        rng_marks: dict[str, int] | None = None,
+        deaths: list[object] | tuple[object, ...] | None = None,
+        events: object | None = None,
+        command_hash: str | None = None,
+    ) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if tick_index < 0:
+            return
+        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
+            return
+        if self._replay_checkpoints_last_tick == int(tick_index):
+            return
+        self._replay_checkpoints.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self.world.world_state,
+                elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
+                rng_marks=rng_marks,
+                deaths=deaths,
+                events=events,
+                command_hash=command_hash,
+            ),
+        )
+        self._replay_checkpoints_last_tick = int(tick_index)
+
+    def _save_replay(self) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if self._replay_skip_save_when_empty(recorder=recorder):
+            self._replay_recorder = None
+            self._replay_checkpoints.clear()
+            self._replay_checkpoints_last_tick = None
+            return
+
+        self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
+        replay = recorder.finish()
+
+        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        most_used_weapon_id = most_used_weapon_id_for_player(
+            self.state,
+            player_index=int(self.player.index),
+            fallback_weapon_id=self.player.weapon.weapon_id,
+        )
+        claimed_stats = ReplayClaimedStatsSnapshot(
+            complete=bool(self._replay_claimed_stats_complete()),
+            ticks=int(recorder.tick_index),
+            elapsed_ms=int(self._replay_claimed_stats_elapsed_ms()),
+            score_xp=int(self.player.experience),
+            kills=int(self.creatures.kill_count),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+        replay = msgspec.structs.replace(
+            replay,
+            header=msgspec.structs.replace(
+                replay.header,
+                claimed_stats=claimed_stats,
+            ),
+        )
+
+        terminal_tick = int(recorder.tick_index)
+        if self._replay_emit_terminal_event_checkpoint(replay, terminal_tick=terminal_tick):
+            self._record_replay_checkpoint(terminal_tick, force=True)
+
+        data = dump_replay(replay)
+        digest = hashlib.sha256(data).hexdigest()
+        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        base_name = self._replay_output_basename(stamp=stamp, replay=replay)
+        path = replay_dir / f"{base_name}.crd"
+        counter = 1
+        while path.exists():
+            path = replay_dir / f"{base_name}_{counter}.crd"
+            counter += 1
+        path.write_bytes(data)
+
+        checkpoints_path = default_checkpoints_path(path)
+        dump_checkpoints_file(
+            checkpoints_path,
+            ReplayCheckpoints(
+                version=CHECKPOINTS_FORMAT_VERSION,
+                replay_sha256=digest,
+                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
+                checkpoints=list(self._replay_checkpoints),
+            ),
+        )
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+        if self._console is not None:
+            self._console.log.log(f"replay: saved {path}")
+            self._console.log.log(f"replay: saved {checkpoints_path}")
+            self._console.log.flush()
 
     def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
         return (
@@ -1059,6 +1204,8 @@ class BaseGameplayMode:
         self._lan_tick_runner_session = None
         self._lan_profiler_hook = None
         self._pending_input_commands.clear()
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -1083,6 +1230,9 @@ class BaseGameplayMode:
         self._lan_tick_runner_session = None
         self._lan_profiler_hook = None
         self._pending_input_commands.clear()
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
         self.world.close()
 
     def take_action(self) -> str | None:
@@ -1305,11 +1455,8 @@ class BaseGameplayMode:
     ) -> None:
         if tick_index is None:
             return
-        record_checkpoint = cast(Callable[..., None] | None, getattr(self, "_record_replay_checkpoint", None))
-        if record_checkpoint is None:
-            return
         world_events = tick.step.events
-        record_checkpoint(
+        self._record_replay_checkpoint(
             int(tick_index),
             rng_marks=tick.rng_marks,
             deaths=world_events.deaths,
