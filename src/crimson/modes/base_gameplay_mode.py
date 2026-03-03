@@ -68,7 +68,7 @@ from ..sim.hooks import (
     TickResult,
 )
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
+from ..sim.input_providers import FrameContext, InputCommand, NetworkInputProvider
 from ..sim.sessions import DeterministicSessionStepTick
 from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..sim.timing import FrameTiming
@@ -376,10 +376,6 @@ class BaseGameplayMode:
         self._sim_ms = 0.0
         self._presentation_plan_ms = 0.0
         self._presentation_apply_ms = 0.0
-        self._local_input_provider = LocalInputProvider(
-            player_count=max(0, len(self.world.players)),
-            build_inputs=lambda: self._build_local_inputs(dt=0.0),
-        )
         self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
         self._lan_capture_clock = FixedStepClock(tick_rate=int(self._deterministic_tick_rate()))
         self._gameplay_input_provider: _GameplayFrameInputProvider | None = None
@@ -1196,10 +1192,6 @@ class BaseGameplayMode:
             terrain_texture_scale=float(ground.texture_scale) if ground is not None else 0.0,
         )
         self._local_input.reset(players=self.world.players)
-        self._local_input_provider = LocalInputProvider(
-            player_count=max(0, len(self.world.players)),
-            build_inputs=lambda: self._build_local_inputs(dt=0.0),
-        )
         self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
         self._reset_lan_capture_clock()
         self._gameplay_input_provider = None
