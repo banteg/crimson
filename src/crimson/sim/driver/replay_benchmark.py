@@ -8,7 +8,7 @@ import statistics
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Literal, Protocol, cast
 
 import msgspec
 from tqdm import tqdm
@@ -27,6 +27,18 @@ from .setup import RunResult, player0_most_used_weapon_id, player0_shots
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
+
+
+class _ProgressBarLike(Protocol):
+    def update(self, value: int) -> None: ...
+
+    def set_postfix_str(self, s: str, refresh: bool = True) -> None: ...
+
+    def close(self) -> None: ...
+
+
+class _ProfileStatsLike(Protocol):
+    stats: dict[tuple[str, int, str], tuple[int, int, float, float, object]]
 
 
 class ReplayBenchmarkError(ValueError):
@@ -198,15 +210,18 @@ def run_replay_render_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress: Any | None = None
+    progress: _ProgressBarLike | None = None
     try:
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
         if bool(show_progress) and planned_steps > 0:
-            progress = tqdm(
-                total=planned_steps,
-                unit="run",
-                desc="render benchmark",
-                leave=False,
+            progress = cast(
+                _ProgressBarLike,
+                tqdm(
+                    total=planned_steps,
+                    unit="run",
+                    desc="render benchmark",
+                    leave=False,
+                ),
             )
 
         def _run_once_with_tick_progress(
@@ -215,24 +230,28 @@ def run_replay_render_benchmark(
             rtx: bool,
             telemetry_session: RenderTelemetrySession | None = None,
         ) -> _RenderOnceResult:
-            tick_progress: Any | None = None
+            tick_progress: _ProgressBarLike | None = None
             completed_ticks = 0
             tick_callback: Callable[[int], None] | None = None
             completed_run = False
             if bool(show_progress) and tick_total > 0:
-                tick_progress = tqdm(
-                    total=tick_total,
-                    unit="tick",
-                    desc=str(tick_desc),
-                    leave=False,
+                tick_progress_bar = cast(
+                    _ProgressBarLike,
+                    tqdm(
+                        total=tick_total,
+                        unit="tick",
+                        desc=str(tick_desc),
+                        leave=False,
+                    ),
                 )
+                tick_progress = tick_progress_bar
 
                 def _on_tick(tick_index: int) -> None:
                     nonlocal completed_ticks
                     target_tick = max(0, min(tick_total, int(tick_index)))
                     if target_tick <= completed_ticks:
                         return
-                    tick_progress.update(target_tick - completed_ticks)
+                    tick_progress_bar.update(target_tick - completed_ticks)
                     completed_ticks = target_tick
 
                 tick_callback = _on_tick
@@ -424,36 +443,43 @@ def run_replay_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress: Any | None = None
+    progress: _ProgressBarLike | None = None
     try:
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
         if bool(show_progress) and planned_steps > 0:
-            progress = tqdm(
-                total=planned_steps,
-                unit="run",
-                desc="headless benchmark",
-                leave=False,
+            progress = cast(
+                _ProgressBarLike,
+                tqdm(
+                    total=planned_steps,
+                    unit="run",
+                    desc="headless benchmark",
+                    leave=False,
+                ),
             )
 
         def _run_once_with_tick_progress(*, tick_desc: str) -> RunResult:
-            tick_progress: Any | None = None
+            tick_progress: _ProgressBarLike | None = None
             completed_ticks = 0
             tick_callback: Callable[[int], None] | None = None
             completed_run = False
             if bool(show_progress) and tick_total > 0:
-                tick_progress = tqdm(
-                    total=tick_total,
-                    unit="tick",
-                    desc=str(tick_desc),
-                    leave=False,
+                tick_progress_bar = cast(
+                    _ProgressBarLike,
+                    tqdm(
+                        total=tick_total,
+                        unit="tick",
+                        desc=str(tick_desc),
+                        leave=False,
+                    ),
                 )
+                tick_progress = tick_progress_bar
 
                 def _on_tick(tick_index: int) -> None:
                     nonlocal completed_ticks
                     target_tick = max(0, min(tick_total, int(tick_index)))
                     if target_tick <= completed_ticks:
                         return
-                    tick_progress.update(target_tick - completed_ticks)
+                    tick_progress_bar.update(target_tick - completed_ticks)
                     completed_ticks = target_tick
 
                 tick_callback = _on_tick
@@ -733,9 +759,9 @@ def _extract_hotspots(
     sort_key: ProfileSortKey,
     top: int,
 ) -> tuple[HotspotSource, list[ReplayProfileHotspot]]:
-    stats = cast(Any, pstats.Stats(profile))
+    stats = cast(_ProfileStatsLike, pstats.Stats(profile))
     rows: list[ReplayProfileHotspot] = []
-    for key, values in cast(dict[tuple[str, int, str], tuple[int, int, float, float, object]], stats.stats).items():
+    for key, values in stats.stats.items():
         file_name, line_number, function_name = key
         primitive_calls, total_calls, tottime, cumtime, _callers = values
         rows.append(
@@ -792,7 +818,7 @@ def _top_ticks(
     *,
     frames: tuple[ReplayRenderTelemetryFrame, ...],
     top_n: int,
-    key_fn: Any,
+    key_fn: Callable[[ReplayRenderTelemetryFrame], float],
 ) -> tuple[ReplayRenderTelemetryTopTick, ...]:
     ordered = sorted(frames, key=key_fn, reverse=True)
     selected = ordered[: max(0, int(top_n))]
