@@ -39,7 +39,13 @@ class RenderPipeline:
                 self._on_resize(normalized_w, normalized_h)
             self._sink.open()
         except Exception:
+            try:
+                self._sink.close()
+            except Exception:
+                pass
             self._opened = False
+            self._width = -1
+            self._height = -1
             raise
         self._opened = True
         self._width = normalized_w

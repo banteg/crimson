@@ -60,6 +60,30 @@ def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
     ]
 
 
+def test_render_pipeline_closes_sink_when_open_fails() -> None:
+    events: list[str] = []
+
+    class _FailingSink:
+        def open(self) -> None:
+            events.append("sink.open")
+            raise RuntimeError("open failed")
+
+        def present(self) -> None:
+            events.append("sink.present")
+
+        def flush(self) -> None:
+            events.append("sink.flush")
+
+        def close(self) -> None:
+            events.append("sink.close")
+
+    pipeline = RenderPipeline(sink=_FailingSink())
+    with pytest.raises(RuntimeError, match="open failed"):
+        pipeline.render(draw_frame=lambda: None, width=640, height=480)
+
+    assert events == ["sink.open", "sink.close"]
+
+
 def test_window_sink_raises_on_present_error() -> None:
     def _raise_present() -> None:
         raise RuntimeError("boom")
