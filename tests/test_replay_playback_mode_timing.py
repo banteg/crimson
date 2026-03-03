@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 from crimson.game_modes import GameMode
@@ -56,16 +57,24 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
         view,
         "_world",
         SimpleNamespace(
-        update_camera=lambda _dt: None,
-        players=[SimpleNamespace(health=0.0)],
+            players=[SimpleNamespace(health=0.0)],
         ),
     )
-    _set_private(view, "_survival", object())
-    view._rush = None
-    view._quest = None
+    view._max_ticks = None
     view._tick_index = 0
     view._finished = False
-    _set_private(view, "_tick_survival", lambda **_kwargs: 1.0 / 60.0)
+    _set_private(view, "_on_runner_tick_complete", lambda _tick_index, _tick: False)
+
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+
+        def advance_frame(self, *_args, on_tick_complete, **_kwargs) -> object:
+            on_tick_complete(int(self.next_tick_index), object())
+            self.next_tick_index += 1
+            return object()
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._tick_one()
 

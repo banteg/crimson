@@ -638,12 +638,12 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-5 Checklist: Replay Path Unification
 
-- [ ] Implement `ReplayInputProvider` against replay playback driver input stream.
-- [ ] Make `ReplayPlaybackMode` use `TickRunner` for deterministic stepping.
-- [ ] Remove bespoke replay stepping/orchestration loop from `ReplayPlaybackMode`.
-- [ ] Keep replay controls (pause/step/speed) mapped through provider/runner boundaries.
-- [ ] Add `tests/test_replay_pause_step_clock_semantics.py` for pause/step/speed debt and EOS semantics.
-- [ ] Run replay-specific tests plus full test gate suite.
+- [x] Implement `ReplayInputProvider` against replay playback driver input stream.
+- [x] Make `ReplayPlaybackMode` use `TickRunner` for deterministic stepping.
+- [x] Remove bespoke replay stepping/orchestration loop from `ReplayPlaybackMode`.
+- [x] Keep replay controls (pause/step/speed) mapped through provider/runner boundaries.
+- [x] Add `tests/test_replay_pause_step_clock_semantics.py` for pause/step/speed debt and EOS semantics.
+- [x] Run replay-specific tests plus full test gate suite.
 
 ### PR-6 Checklist: Presentation Plan/Apply Split
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
+from typing import cast
 
 from grim import music as grim_music
 from grim.assets import TextureLoader
@@ -42,7 +43,8 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.input_providers import ReplayInputProvider
+from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
+from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -91,6 +93,21 @@ def _world_reset_seed_for_replay(header: ReplayHeader) -> int:
             return int(header.seed)
 
 
+class _ReplayDriverSession:
+    def __init__(self, mode: "ReplayPlaybackMode") -> None:
+        self._mode = mode
+        self._next_tick_index = 0
+
+    def timing_for_dt(self, dt: float) -> float:
+        return float(dt)
+
+    def step_tick(self, *, timing: float, inputs) -> PlaybackTickOutcome:
+        _ = timing, inputs
+        tick = self._mode._run_driver_tick(int(self._next_tick_index))
+        self._next_tick_index += 1
+        return tick
+
+
 class ReplayPlaybackMode:
     def __init__(
         self,
@@ -135,9 +152,12 @@ class ReplayPlaybackMode:
         self._finished = False
         self._terminal_events_applied = False
         self._paused = False
+        self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._driver: PlaybackDriver | None = None
+        self._driver_session: _ReplayDriverSession | None = None
+        self._tick_runner: TickRunner | None = None
         self._survival = None
         self._rush = None
         self._quest = None
@@ -332,9 +352,12 @@ class ReplayPlaybackMode:
         self._finished = False
         self._terminal_events_applied = False
         self._paused = False
+        self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._defer_menu_open = False
         self._driver = None
+        self._driver_session = None
+        self._tick_runner = None
 
         world_size = float(replay.header.world_size)
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
@@ -492,6 +515,18 @@ class ReplayPlaybackMode:
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
         self._quest = self._driver.quest_session
+        self._driver_session = _ReplayDriverSession(self)
+        self._tick_runner = TickRunner(
+            session=self._driver_session,
+            input_provider=self._replay_input_provider,
+            config=TickRunnerConfig(
+                tick_rate=int(self._tick_rate),
+                session_kind="replay",
+                mode_id=str(self.__class__.__name__),
+                is_networked=False,
+                is_replay=True,
+            ),
+        )
 
     def close(self) -> None:
         if self._small is not None:
@@ -503,6 +538,8 @@ class ReplayPlaybackMode:
         self._quest_complete_texture = None
         self._hud_assets = None
         self._driver = None
+        self._driver_session = None
+        self._tick_runner = None
         self._survival = None
         self._rush = None
         self._quest = None
@@ -578,82 +615,83 @@ class ReplayPlaybackMode:
 
         return float(outcome.dt_sim)
 
-    def _tick_survival(self, *, tick_index: int, dt: float) -> float:
+    def _tick_limit(self) -> int:
         replay = self._replay
-        world = self._world
-        driver = self._driver
-        session = self._survival
-        if replay is None or world is None or driver is None or session is None:
-            return 0.0
-        outcome = driver.run_tick(int(tick_index), defer_menu_open=bool(self._defer_menu_open))
-        return self._apply_tick_outcome(
-            outcome=outcome,
-            game_tune_started=bool(session.game_tune_started),
-            dt=float(dt),
-        )
+        if replay is None:
+            return 0
+        total_ticks = len(replay.inputs)
+        if self._max_ticks is None:
+            return int(total_ticks)
+        return min(int(total_ticks), max(0, int(self._max_ticks)))
 
-    def _tick_rush(self, *, tick_index: int, dt: float) -> float:
-        replay = self._replay
-        world = self._world
-        driver = self._driver
-        session = self._rush
-        if replay is None or world is None or driver is None or session is None:
-            return 0.0
-        outcome = driver.run_tick(int(tick_index), defer_menu_open=False)
-        return self._apply_tick_outcome(
-            outcome=outcome,
-            game_tune_started=bool(session.game_tune_started),
-            dt=float(dt),
-        )
+    def _session_game_tune_started(self) -> bool:
+        if self._survival is not None:
+            return bool(self._survival.game_tune_started)
+        if self._quest is not None:
+            return bool(self._quest.game_tune_started)
+        if self._rush is not None:
+            return bool(self._rush.game_tune_started)
+        return False
 
-    def _tick_quest(self, *, tick_index: int, dt: float) -> float:
-        replay = self._replay
-        world = self._world
+    def _run_driver_tick(self, tick_index: int) -> PlaybackTickOutcome:
         driver = self._driver
-        session = self._quest
-        if replay is None or world is None or driver is None or session is None:
-            return 0.0
-        outcome = driver.run_tick(int(tick_index), defer_menu_open=False)
-        return self._apply_tick_outcome(
+        if driver is None:
+            raise ReplayEndOfStream("replay driver unavailable")
+        defer_menu_open = bool(self._defer_menu_open) if self._survival is not None else False
+        return driver.run_tick(int(tick_index), defer_menu_open=bool(defer_menu_open))
+
+    def _on_runner_tick_complete(self, _tick_index: int, tick: object) -> bool:
+        outcome = cast(PlaybackTickOutcome, tick)
+        dt_sim = self._apply_tick_outcome(
             outcome=outcome,
-            game_tune_started=bool(session.game_tune_started),
-            dt=float(dt),
+            game_tune_started=self._session_game_tune_started(),
+            dt=float(self._dt),
         )
+        world = self._world
+        if world is not None:
+            world.update_camera(float(dt_sim))
+        return False
+
+    def _mark_finished_if_complete(self) -> None:
+        tick_limit = int(self._tick_limit())
+        if int(self._tick_index) < int(tick_limit):
+            return
+        replay = self._replay
+        driver = self._driver
+        if (
+            replay is not None
+            and driver is not None
+            and (not self._terminal_events_applied)
+            and int(self._tick_index) == len(replay.inputs)
+        ):
+            self._terminal_events_applied = True
+            driver.apply_terminal_events(int(self._tick_index))
+        self._finished = True
 
     def _tick_one(self) -> None:
         replay = self._replay
         world = self._world
-        driver = self._driver
-        if replay is None or world is None:
+        runner = self._tick_runner
+        if replay is None or world is None or runner is None:
             self._finished = True
             return
 
-        tick_index = int(self._tick_index)
-        if tick_index >= len(replay.inputs):
-            if (not self._terminal_events_applied) and tick_index == len(replay.inputs):
-                self._terminal_events_applied = True
-                if driver is not None:
-                    driver.apply_terminal_events(int(tick_index))
-            self._finished = True
-            return
-        if self._max_ticks is not None and tick_index >= int(self._max_ticks):
-            self._finished = True
+        if int(self._tick_index) >= int(self._tick_limit()):
+            self._mark_finished_if_complete()
             return
 
-        dt = float(self._dt)
-        if self._survival is not None:
-            dt_sim = self._tick_survival(tick_index=tick_index, dt=dt)
-        elif self._quest is not None:
-            dt_sim = self._tick_quest(tick_index=tick_index, dt=dt)
-        elif self._rush is not None:
-            dt_sim = self._tick_rush(tick_index=tick_index, dt=dt)
-        else:  # pragma: no cover
-            self._finished = True
+        try:
+            runner.advance_frame(
+                float(self._dt),
+                max_ticks=1,
+                on_tick_complete=self._on_runner_tick_complete,
+            )
+        except ReplayEndOfStream:
+            self._tick_index = int(runner.next_tick_index)
+            self._mark_finished_if_complete()
             return
-
-        world.update_camera(float(dt_sim))
-
-        self._tick_index += 1
+        self._tick_index = int(runner.next_tick_index)
+        self._mark_finished_if_complete()
 
     def _tick_network_runtime(self) -> None:
         self._runtime_updates_per_frame = 0
@@ -679,7 +717,7 @@ class ReplayPlaybackMode:
         ticks = int(round(float(seconds) * float(self._tick_rate)))
         if ticks <= 0:
             return
-        target = min(len(replay.inputs), int(self._tick_index) + int(ticks))
+        target = min(int(self._tick_limit()), int(self._tick_index) + int(ticks))
         world = self._world
         prev_sfx_enabled: bool | None = None
         if world is not None and world.audio_router is not None:
@@ -710,6 +748,8 @@ class ReplayPlaybackMode:
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             self._paused = not bool(self._paused)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD) and bool(self._paused):
+            self._step_once_pending = True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
             self._change_speed(-1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
@@ -720,6 +760,16 @@ class ReplayPlaybackMode:
             self._skip_forward_seconds(_SKIP_SHORT_SECONDS)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
             self._skip_forward_seconds(_SKIP_LONG_SECONDS)
+
+        if not self._finished and bool(self._paused) and bool(self._step_once_pending):
+            runner = self._tick_runner
+            if runner is not None:
+                runner.reset_clock()
+            self._tick_one()
+            if runner is not None:
+                runner.reset_clock()
+            self._step_once_pending = False
+            self._dt_accum = 0.0
 
         if not self._finished and (not self._paused):
             dt = float(dt)
