@@ -92,6 +92,9 @@ def reset_players(
         weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
         players.append(player)
+    # Player bootstrap mirrors GameWorld.reset: start with a clean runtime SFX
+    # queue so replay/session tick 0 does not include setup reload sounds.
+    state.sfx_queue.clear()
 
 
 def player0_shots(state: GameplayState) -> tuple[int, int]:
