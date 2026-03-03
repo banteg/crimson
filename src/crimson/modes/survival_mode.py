@@ -172,15 +172,7 @@ class SurvivalMode(BaseGameplayMode):
                     choice_index=int(choice_index),
                 )
 
-        recorder = self._replay_recorder
-        if recorder is not None:
-            recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
-        self._enqueue_input_command(
-            InputCommand(
-                name="perk_pick",
-                payload={"choice_index": int(choice_index)},
-            ),
-        )
+        self._record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:

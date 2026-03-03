@@ -447,6 +447,17 @@ class BaseGameplayMode:
     def _enqueue_input_command(self, command: InputCommand) -> None:
         self._pending_input_commands.append(command)
 
+    def _record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
+        recorder = self._replay_recorder
+        if recorder is not None:
+            recorder.record_perk_pick(player_index=int(player_index), choice_index=int(choice_index))
+        self._enqueue_input_command(
+            InputCommand(
+                name="perk_pick",
+                payload={"choice_index": int(choice_index)},
+            ),
+        )
+
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
         _ = command, dt_tick
 
