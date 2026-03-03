@@ -164,7 +164,7 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
         SimpleNamespace(
             audio_router=SimpleNamespace(sfx_enabled=True),
             ground=object(),
-            fx_textures=object(),
+            render_resources=SimpleNamespace(fx_textures=object()),
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             _bake_fx_queues=_bake_fx_queues,
@@ -206,7 +206,7 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
         SimpleNamespace(
             audio_router=SimpleNamespace(sfx_enabled=True),
             ground=None,
-            fx_textures=None,
+            render_resources=SimpleNamespace(fx_textures=None),
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
         ),

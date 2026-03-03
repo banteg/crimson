@@ -14,18 +14,27 @@ if TYPE_CHECKING:
     from crimson.game_world import GameWorld
 
 
+class _AimRenderResourcesLike(Protocol):
+    aim_texture: object
+
+
 class _AimWorldLike(Protocol):
     players: list[PlayerState]
-    aim_texture: object
+    render_resources: _AimRenderResourcesLike
     lan_player_rings_enabled: bool
     lan_local_aim_indicators_only: bool
     lan_local_player_slot_index: int
 
 
 @dataclass(slots=True)
+class _AimRenderResourcesStub(_AimRenderResourcesLike):
+    aim_texture: object = field(default_factory=object)
+
+
+@dataclass(slots=True)
 class _AimWorldStub(_AimWorldLike):
     players: list[PlayerState]
-    aim_texture: object = field(default_factory=object)
+    render_resources: _AimRenderResourcesLike = field(default_factory=_AimRenderResourcesStub)
     lan_player_rings_enabled: bool = False
     lan_local_aim_indicators_only: bool = False
     lan_local_player_slot_index: int = 0
