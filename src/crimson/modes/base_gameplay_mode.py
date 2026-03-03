@@ -241,6 +241,7 @@ class BaseGameplayMode:
         self._lan_tick_runner: TickRunner | None = None
         self._lan_tick_runner_session: DeterministicSessionLike | None = None
         self._lan_profiler_hook: ProfilerHook | None = None
+        self._pending_input_commands: list[InputCommand] = []
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -442,6 +443,18 @@ class BaseGameplayMode:
 
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._runtime_updates_per_frame = max(0, int(value))
+
+    def _enqueue_input_command(self, command: InputCommand) -> None:
+        self._pending_input_commands.append(command)
+
+    def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
+        _ = command, dt_tick
+
+    def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
+        pending = list(self._pending_input_commands)
+        self._pending_input_commands.clear()
+        for command in pending:
+            self._apply_input_command(command, dt_tick=float(dt_tick))
 
     def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
         return (
@@ -871,6 +884,7 @@ class BaseGameplayMode:
         self._lan_tick_runner = None
         self._lan_tick_runner_session = None
         self._lan_profiler_hook = None
+        self._pending_input_commands.clear()
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -1225,6 +1239,7 @@ class BaseGameplayMode:
         while runtime.has_tick_frame():
             if before_pop is not None and (not bool(before_pop())):
                 return False
+            self._consume_pending_input_commands(dt_tick=float(dt_tick))
             if before_step is not None:
                 before_step()
             runner.advance_frame(
@@ -1266,16 +1281,31 @@ class BaseGameplayMode:
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
         first_inputs = input_frame
+        frame_commands = list(self._pending_input_commands)
+        self._pending_input_commands.clear()
 
         class _ModeInputProvider:
-            def __init__(self, base_inputs: list[PlayerInput], clear_edges: Callable[[list[PlayerInput]], list[PlayerInput]]):
+            def __init__(
+                self,
+                base_inputs: list[PlayerInput],
+                clear_edges: Callable[[list[PlayerInput]], list[PlayerInput]],
+                *,
+                commands: list[InputCommand],
+                command_consumer: Callable[[InputCommand], None],
+            ):
                 self._base_inputs = base_inputs
                 self._clear_edges = clear_edges
+                self._commands = list(commands)
+                self._command_consumer = command_consumer
 
             def begin_frame(self, frame_ctx: FrameContext) -> None:
                 _ = frame_ctx
 
             def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+                if int(tick_index) == 0 and self._commands:
+                    for command in self._commands:
+                        self._command_consumer(command)
+                    self._commands.clear()
                 if int(tick_index) == 0:
                     return self._base_inputs
                 return self._clear_edges(self._base_inputs)
@@ -1300,6 +1330,8 @@ class BaseGameplayMode:
             input_provider=_ModeInputProvider(
                 base_inputs=first_inputs,
                 clear_edges=self._clear_local_input_edges,
+                commands=frame_commands,
+                command_consumer=lambda command: self._apply_input_command(command, dt_tick=float(dt_tick)),
             ),
             hook_bus=TickHookBus(
                 [

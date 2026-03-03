@@ -32,6 +32,7 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
+from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -51,6 +52,7 @@ from ..replay.checkpoints import (
 )
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.clock import FixedStepClock
+from ..sim.input_providers import InputCommand
 from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
@@ -156,7 +158,11 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
-        self._perk_menu = PerkMenuController(on_close=self._reset_perk_prompt, on_pick=self._record_perk_pick)
+        self._perk_menu = PerkMenuController(
+            on_close=self._reset_perk_prompt,
+            on_pick=self._record_perk_pick,
+            defer_pick_apply=True,
+        )
         self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._session_factory = session_factory
@@ -228,11 +234,37 @@ class QuestMode(BaseGameplayMode):
             self._perk_prompt_hover = False
             self._perk_prompt_pulse = 0.0
 
-    def _record_perk_pick(self, choice_index: int) -> None:
+    def _record_perk_pick(self, choice_index: int) -> bool:
         recorder = self._replay_recorder
-        if recorder is None:
+        if recorder is not None:
+            recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
+        self._enqueue_input_command(
+            InputCommand(
+                name="perk_pick",
+                payload={"choice_index": int(choice_index)},
+            ),
+        )
+        return True
+
+    def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
+        if str(command.name) != "perk_pick":
             return
-        recorder.record_perk_pick(player_index=0, choice_index=int(choice_index))
+        raw_choice_index = command.payload.get("choice_index")
+        if not isinstance(raw_choice_index, int):
+            raise TypeError("perk_pick command requires integer payload['choice_index']")
+        perk_ctx = self._perk_menu_context()
+        picked = perk_selection_pick(
+            perk_ctx.state,
+            perk_ctx.players,
+            perk_ctx.perk_state,
+            int(raw_choice_index),
+            game_mode=GameMode.QUESTS,
+            player_count=int(perk_ctx.player_count),
+            dt=float(dt_tick),
+            creatures=perk_ctx.creatures,
+        )
+        if picked is not None and self.world.audio_router is not None:
+            self.world.audio_router.play_sfx("sfx_ui_bonus")
 
     def _record_replay_checkpoint(
         self,

@@ -33,7 +33,7 @@ from ...ui.perk_menu import (
 
 PlaySfxFn = Callable[[str], None]
 OnCloseFn = Callable[[], None]
-OnPickFn = Callable[[int], None]
+OnPickFn = Callable[[int], bool | None]
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -65,10 +65,12 @@ class PerkMenuController:
         cancel_label: str = "Cancel",
         on_close: OnCloseFn | None = None,
         on_pick: OnPickFn | None = None,
+        defer_pick_apply: bool = False,
     ) -> None:
         self._cancel_label = cancel_label
         self._on_close = on_close
         self._on_pick = on_pick
+        self._defer_pick_apply = bool(defer_pick_apply)
         self.reset()
 
     @property
@@ -221,6 +223,30 @@ class PerkMenuController:
         if self._selected_index >= len(choices):
             self._selected_index = 0
 
+        def _submit_pick(choice_index: int) -> bool:
+            if bool(self._defer_pick_apply):
+                callback = self._on_pick
+                if callback is None:
+                    return False
+                accepted = callback(int(choice_index))
+                if accepted is None:
+                    return True
+                return bool(accepted)
+
+            picked = perk_selection_pick(
+                ctx.state,
+                ctx.players,
+                ctx.perk_state,
+                int(choice_index),
+                game_mode=ctx.game_mode,
+                player_count=int(ctx.player_count),
+                dt=float(dt),
+                creatures=ctx.creatures,
+            )
+            if picked is not None and self._on_pick is not None:
+                self._on_pick(int(choice_index))
+            return picked is not None
+
         if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
             self._selected_index = (self._selected_index + 1) % len(choices)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
@@ -261,20 +287,8 @@ class PerkMenuController:
                 if click:
                     if ctx.play_sfx is not None:
                         ctx.play_sfx("sfx_ui_buttonclick")
-                    picked = perk_selection_pick(
-                        ctx.state,
-                        ctx.players,
-                        ctx.perk_state,
-                        idx,
-                        game_mode=ctx.game_mode,
-                        player_count=int(ctx.player_count),
-                        dt=float(dt),
-                        creatures=ctx.creatures,
-                    )
-                    if picked is not None and ctx.play_sfx is not None:
+                    if _submit_pick(int(idx)) and ctx.play_sfx is not None:
                         ctx.play_sfx("sfx_ui_bonus")
-                    if picked is not None and self._on_pick is not None:
-                        self._on_pick(int(idx))
                     self.close()
                     return
                 break
@@ -301,20 +315,8 @@ class PerkMenuController:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             if ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_buttonclick")
-            picked = perk_selection_pick(
-                ctx.state,
-                ctx.players,
-                ctx.perk_state,
-                self._selected_index,
-                game_mode=ctx.game_mode,
-                player_count=int(ctx.player_count),
-                dt=float(dt),
-                creatures=ctx.creatures,
-            )
-            if picked is not None and ctx.play_sfx is not None:
+            if _submit_pick(int(self._selected_index)) and ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_bonus")
-            if picked is not None and self._on_pick is not None:
-                self._on_pick(int(self._selected_index))
             self.close()
 
     def draw(self, ctx: PerkMenuContext) -> None:
