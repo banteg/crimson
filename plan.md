@@ -658,14 +658,14 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-7 Checklist: Render Backend and Sink Migration
 
-- [ ] Implement `RaylibBackend` adapter wrapping current raylib draw operations.
-- [ ] Implement `VideoSink` and migrate replay render output path to it.
-- [ ] Route live and replay rendering through shared backend + sink entrypoint.
-- [ ] Keep `WindowSink` as default interactive target.
-- [ ] Keep `NullSink` for headless verify.
-- [ ] Add `tests/test_render_backend_sink_contract.py` for lifecycle/resize/error-policy behavior.
-- [ ] Run replay render smoke checks.
-- [ ] Run full test gate suite.
+- [x] Implement `RaylibBackend` adapter wrapping current raylib draw operations.
+- [x] Implement `VideoSink` and migrate replay render output path to it.
+- [x] Route live and replay rendering through shared backend + sink entrypoint.
+- [x] Keep `WindowSink` as default interactive target.
+- [x] Keep `NullSink` for headless verify.
+- [x] Add `tests/test_render_backend_sink_contract.py` for lifecycle/resize/error-policy behavior.
+- [x] Run replay render smoke checks.
+- [x] Run full test gate suite.
 
 ### PR-8 Checklist: `GameWorld` Split and Final Cleanup
 

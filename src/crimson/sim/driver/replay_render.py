@@ -11,6 +11,9 @@ from typing import Literal
 
 import msgspec
 
+from ...render.backend import RaylibBackend
+from ...render.pipeline import RenderPipeline
+from ...render.sink import VideoSink
 from ...replay import Replay
 from .replay_runner import run_replay
 from .setup import RunResult
@@ -48,6 +51,77 @@ class ReplayRenderResult(msgspec.Struct, frozen=True):
     width: int
     height: int
     run_result: RunResult
+
+
+class _FfmpegVideoTransport:
+    def __init__(
+        self,
+        *,
+        rl,
+        ffmpeg_path: Path,
+        output_path: Path,
+        width: int,
+        height: int,
+        fps: int,
+        crf: int,
+        preset: str,
+        pixel_format: str,
+        overwrite: bool,
+    ) -> None:
+        self._rl = rl
+        self._ffmpeg_path = Path(ffmpeg_path)
+        self._output_path = Path(output_path)
+        self._width = max(0, int(width))
+        self._height = max(0, int(height))
+        self._fps = max(1, int(fps))
+        self._crf = int(crf)
+        self._preset = str(preset)
+        self._pixel_format = str(pixel_format)
+        self._overwrite = bool(overwrite)
+        self._proc: subprocess.Popen[bytes] | None = None
+        self._frame_bytes = int(self._width) * int(self._height) * 4
+        self._flushed = False
+
+    def open(self) -> None:
+        self._proc = _spawn_ffmpeg_raw_video_process(
+            ffmpeg_path=self._ffmpeg_path,
+            output_path=self._output_path,
+            width=int(self._width),
+            height=int(self._height),
+            fps=int(self._fps),
+            crf=int(self._crf),
+            preset=str(self._preset),
+            pixel_format=str(self._pixel_format),
+            overwrite=bool(self._overwrite),
+        )
+        self._flushed = False
+
+    def present_frame(self) -> None:
+        proc = self._proc
+        if proc is None:
+            raise ReplayRenderError("ffmpeg process was not initialized")
+        image = self._rl.load_image_from_screen()
+        try:
+            colors = self._rl.load_image_colors(image)
+            try:
+                if proc.stdin is None:
+                    raise ReplayRenderError("ffmpeg stdin pipe was not available")
+                proc.stdin.write(self._rl.ffi.buffer(colors, int(self._frame_bytes)))
+            finally:
+                self._rl.unload_image_colors(colors)
+        finally:
+            self._rl.unload_image(image)
+
+    def flush(self) -> None:
+        if self._flushed:
+            return
+        _finalize_ffmpeg_process(self._proc)
+        self._proc = None
+        self._flushed = True
+
+    def close(self) -> None:
+        _abort_ffmpeg_process(self._proc)
+        self._proc = None
 
 
 def run_replay_render_video(
@@ -115,10 +189,9 @@ def run_replay_render_video(
     frame_count = 0
     mode: ReplayPlaybackMode | None = None
     window_open = False
-    ffmpeg_proc: subprocess.Popen[bytes] | None = None
+    render_pipeline: RenderPipeline | None = None
     capture_width = 0
     capture_height = 0
-    frame_bytes = 0
     total_ticks = int(len(replay.inputs))
     if max_ticks is not None:
         total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
@@ -143,7 +216,6 @@ def run_replay_render_video(
                 raise ReplayRenderError(
                     f"invalid framebuffer size from raylib: {capture_width}x{capture_height}; expected > 0",
                 )
-            frame_bytes = int(capture_width) * int(capture_height) * 4
 
             mode = ReplayPlaybackMode(
                 ctx,
@@ -155,8 +227,8 @@ def run_replay_render_video(
                 show_replay_widget=False,
             )
             mode.open()
-
-            ffmpeg_proc = _spawn_ffmpeg_raw_video_process(
+            video_transport = _FfmpegVideoTransport(
+                rl=rl,
                 ffmpeg_path=ffmpeg_path,
                 output_path=video_out_path,
                 width=int(capture_width),
@@ -167,25 +239,33 @@ def run_replay_render_video(
                 pixel_format=str(pixel_format),
                 overwrite=True if bool(capture_audio) else bool(overwrite),
             )
+            render_pipeline = RenderPipeline(
+                backend=RaylibBackend(),
+                sink=VideoSink(
+                    output_path=video_out_path,
+                    open_transport=video_transport.open,
+                    present_frame=video_transport.present_frame,
+                    flush_transport=video_transport.flush,
+                    close_transport=video_transport.close,
+                ),
+            )
+            render_pipeline.open(width=int(capture_width), height=int(capture_height))
+            assert render_pipeline is not None
             frame_dt = 1.0 / float(fps)
             while not bool(mode.finished):
                 mode.update(float(frame_dt))
                 rl.begin_drawing()
-                mode.draw()
-                rl.end_drawing()
+                try:
+                    render_pipeline.draw(
+                        draw_frame=mode.draw,
+                        width=int(capture_width),
+                        height=int(capture_height),
+                    )
+                finally:
+                    rl.end_drawing()
                 if bool(mode.close_requested):
                     raise ReplayRenderError("replay render aborted: replay playback requested close")
-                image = rl.load_image_from_screen()
-                try:
-                    colors = rl.load_image_colors(image)
-                    try:
-                        if ffmpeg_proc.stdin is None:
-                            raise ReplayRenderError("ffmpeg stdin pipe was not available")
-                        ffmpeg_proc.stdin.write(rl.ffi.buffer(colors, int(frame_bytes)))
-                    finally:
-                        rl.unload_image_colors(colors)
-                finally:
-                    rl.unload_image(image)
+                render_pipeline.present()
                 frame_count += 1
                 if progress is not None:
                     progress("video", int(frame_count), int(mode.tick_index), int(total_ticks))
@@ -195,8 +275,9 @@ def run_replay_render_video(
 
             if progress is not None:
                 progress("video", int(frame_count), int(total_ticks), int(total_ticks))
-            _finalize_ffmpeg_process(ffmpeg_proc)
-            ffmpeg_proc = None
+            render_pipeline.flush()
+            render_pipeline.close()
+            render_pipeline = None
             if mode is not None:
                 mode.close()
                 mode = None
@@ -238,17 +319,25 @@ def run_replay_render_video(
                 if progress is not None:
                     progress("audio", int(frame_count), int(total_ticks), int(total_ticks))
         except ReplayRenderError:
-            _abort_ffmpeg_process(ffmpeg_proc)
+            if render_pipeline is not None:
+                render_pipeline.close()
+                render_pipeline = None
             raise
         except BrokenPipeError as exc:
-            _abort_ffmpeg_process(ffmpeg_proc)
+            if render_pipeline is not None:
+                render_pipeline.close()
+                render_pipeline = None
             raise ReplayRenderError(f"ffmpeg stdin closed early: {exc}") from exc
         except OSError as exc:
-            _abort_ffmpeg_process(ffmpeg_proc)
+            if render_pipeline is not None:
+                render_pipeline.close()
+                render_pipeline = None
             raise ReplayRenderError(f"ffmpeg streaming failed: {exc}") from exc
         finally:
             if mode is not None:
                 mode.close()
+            if render_pipeline is not None:
+                render_pipeline.close()
             if bool(window_open):
                 rl.close_window()
 
