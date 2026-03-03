@@ -5,6 +5,7 @@ import inspect
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -95,6 +96,12 @@ def test_gameplay_mode_lan_update_paths_do_not_pump_runtime_directly() -> None:
     for method in lan_methods:
         source = inspect.getsource(method)
         assert "runtime.update(" not in source
+
+
+def test_lan_tick_consumption_uses_tick_runner_instead_of_direct_step_call() -> None:
+    source = inspect.getsource(BaseGameplayMode._consume_lan_tick_frames)
+    assert "advance_frame(" in source
+    assert "session.step_tick(" not in source
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:

@@ -75,6 +75,50 @@ class LanTickStep:
     replay_tick_index: int | None
 
 
+@dataclass(frozen=True, slots=True)
+class _LanFrameSample:
+    frame_tick_index: int
+    frame_inputs: tuple[PackedPlayerInput, ...]
+    remote_command_hash: str
+    remote_state_hash: str
+
+
+class _LanRuntimeInputProvider(NetworkInputProvider):
+    def __init__(self, *, player_count: int) -> None:
+        self._runtime: LanRuntime | None = None
+        self._samples_by_runner_tick: dict[int, _LanFrameSample] = {}
+        super().__init__(player_count=player_count, resolve_tick_input=self._resolve_tick_input)
+
+    def bind_runtime(self, runtime: LanRuntime | None) -> None:
+        self._runtime = runtime
+        self._samples_by_runner_tick.clear()
+
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        super().begin_frame(frame_ctx)
+        self._samples_by_runner_tick.clear()
+
+    def take_frame_sample(self, runner_tick_index: int) -> _LanFrameSample | None:
+        return self._samples_by_runner_tick.pop(int(runner_tick_index), None)
+
+    def _resolve_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+        runtime = self._runtime
+        if runtime is None:
+            return None
+        frame = runtime.pop_tick_frame()
+        if frame is None:
+            return None
+        frame_tick_index = int(frame.tick_index)
+        frame_inputs = tuple(list(packed) for packed in frame.frame_inputs)
+        player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
+        self._samples_by_runner_tick[int(tick_index)] = _LanFrameSample(
+            frame_tick_index=int(frame_tick_index),
+            frame_inputs=tuple(frame_inputs),
+            remote_command_hash=str(frame.command_hash or ""),
+            remote_state_hash=str(frame.state_hash or ""),
+        )
+        return player_inputs
+
+
 class DeterministicSessionLike(Protocol):
     detail_preset: int
     gore_disabled: int
@@ -193,7 +237,10 @@ class BaseGameplayMode:
             player_count=max(0, len(self.world.players)),
             build_inputs=lambda: self._build_local_inputs(dt=0.0),
         )
-        self._network_input_provider = NetworkInputProvider(player_count=max(0, len(self.world.players)))
+        self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
+        self._lan_tick_runner: TickRunner | None = None
+        self._lan_tick_runner_session: DeterministicSessionLike | None = None
+        self._lan_profiler_hook: ProfilerHook | None = None
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -820,7 +867,10 @@ class BaseGameplayMode:
             player_count=max(0, len(self.world.players)),
             build_inputs=lambda: self._build_local_inputs(dt=0.0),
         )
-        self._network_input_provider = NetworkInputProvider(player_count=max(0, len(self.world.players)))
+        self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
+        self._lan_tick_runner = None
+        self._lan_tick_runner_session = None
+        self._lan_profiler_hook = None
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -992,6 +1042,41 @@ class BaseGameplayMode:
     def _lan_should_emit_state_hash(*, tick_index: int) -> bool:
         return int(tick_index) < 5 or (int(tick_index) % int(STATE_HASH_PERIOD_TICKS)) == 0
 
+    def _ensure_lan_tick_runner(
+        self,
+        *,
+        session: DeterministicSessionLike,
+        dt_tick: float,
+    ) -> tuple[TickRunner, _LanRuntimeInputProvider, ProfilerHook]:
+        runner = self._lan_tick_runner
+        provider = self._network_input_provider
+        profiler = self._lan_profiler_hook
+        if (
+            runner is not None
+            and self._lan_tick_runner_session is session
+            and profiler is not None
+        ):
+            return runner, provider, profiler
+
+        tick_rate = max(1, int(round(1.0 / max(1e-9, float(dt_tick)))))
+        profiler = ProfilerHook()
+        runner = TickRunner(
+            session=session,
+            input_provider=provider,
+            hook_bus=TickHookBus([profiler]),
+            config=TickRunnerConfig(
+                tick_rate=int(tick_rate),
+                session_kind="lan",
+                mode_id=str(self.__class__.__name__),
+                is_networked=True,
+                is_replay=False,
+            ),
+        )
+        self._lan_tick_runner = runner
+        self._lan_tick_runner_session = session
+        self._lan_profiler_hook = profiler
+        return runner, provider, profiler
+
     def _queue_lan_local_inputs(
         self,
         *,
@@ -1025,33 +1110,38 @@ class BaseGameplayMode:
         before_step: Callable[[], None] | None = None,
         on_tick_applied: Callable[[LanTickStep], LanStepAction] | None = None,
     ) -> bool:
-        while True:
-            if before_pop is not None and (not bool(before_pop())):
-                return False
+        runner, provider, profiler = self._ensure_lan_tick_runner(
+            session=session,
+            dt_tick=float(dt_tick),
+        )
+        provider.bind_runtime(runtime)
+        profiler.sim_ms = 0.0
+        profiler.presentation_plan_ms = 0.0
+        profiler.presentation_apply_ms = 0.0
 
-            frame = runtime.pop_tick_frame()
-            if frame is None:
-                self._input_stall_count += 1
-                return False
+        stop_requested = False
+        stop_after_finalize = False
+        ticks_applied = 0
 
-            frame_tick_index = int(frame.tick_index)
-            frame_inputs = [list(packed) for packed in frame.frame_inputs]
+        def _on_tick_complete(runner_tick_index: int, tick_payload: object) -> bool:
+            nonlocal stop_requested
+            nonlocal stop_after_finalize
+            nonlocal ticks_applied
+
+            tick = cast(DeterministicSessionStepTick, tick_payload)
+            sample = provider.take_frame_sample(int(runner_tick_index))
+            if sample is None:
+                raise RuntimeError("lan tick runner completed without runtime frame metadata")
+
+            frame_tick_index = int(sample.frame_tick_index)
+            frame_inputs = [list(packed) for packed in sample.frame_inputs]
             player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
             recorder = self._replay_recorder
             replay_tick_index = recorder.record_tick(player_inputs) if recorder is not None else None
 
-            if before_step is not None:
-                before_step()
-
-            timing = session.timing_for_dt(float(dt_tick))
-            tick = session.step_tick(
-                timing=timing,
-                inputs=player_inputs,
-            )
-
             local_command_hash = str(tick.step.command_hash)
-            remote_command_hash = str(frame.command_hash or "")
-            remote_state_hash = str(frame.state_hash or "")
+            remote_command_hash = str(sample.remote_command_hash)
+            remote_state_hash = str(sample.remote_state_hash)
             elapsed_ms = float(tick.elapsed_ms)
             creature_count_world_step = int(tick.creature_count_world_step)
 
@@ -1092,6 +1182,7 @@ class BaseGameplayMode:
                 update_camera=True,
             )
             self._ticks_advanced_per_frame += 1
+            ticks_applied += 1
 
             step = LanTickStep(
                 frame_tick_index=int(frame_tick_index),
@@ -1106,7 +1197,8 @@ class BaseGameplayMode:
                 action = on_tick_applied(step)
 
             if action == "stop_before_finalize":
-                return False
+                stop_requested = True
+                return True
 
             if replay_tick_index is not None:
                 self._record_replay_checkpoint_from_tick(
@@ -1125,7 +1217,30 @@ class BaseGameplayMode:
                 )
 
             if action == "stop_after_finalize":
+                stop_requested = True
+                stop_after_finalize = True
                 return True
+            return False
+
+        while runtime.has_tick_frame():
+            if before_pop is not None and (not bool(before_pop())):
+                return False
+            if before_step is not None:
+                before_step()
+            runner.advance_frame(
+                float(dt_tick),
+                max_ticks=1,
+                on_tick_complete=_on_tick_complete,
+            )
+            if stop_requested:
+                break
+
+        self._sim_ms += float(profiler.sim_ms)
+        self._presentation_plan_ms += float(profiler.presentation_plan_ms)
+        self._presentation_apply_ms += float(profiler.presentation_apply_ms)
+        if int(ticks_applied) <= 0:
+            self._input_stall_count += 1
+        return bool(stop_after_finalize)
 
     def _run_deterministic_session_ticks(
         self,
