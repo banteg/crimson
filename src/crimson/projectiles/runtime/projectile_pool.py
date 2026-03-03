@@ -258,7 +258,7 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
-            behavior = projectile_behavior_for_type_id(proj.type_id)
+            behavior = projectile_behavior_for_type_id(ProjectileTemplateId(int(proj.type_id)))
 
             if proj.life_timer <= 0.0:
                 proj.active = False

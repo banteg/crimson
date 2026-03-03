@@ -342,5 +342,5 @@ PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
 }
 
 
-def projectile_behavior_for_type_id(type_id: ProjectileTemplateId | int) -> ProjectileBehavior:
+def projectile_behavior_for_type_id(type_id: ProjectileTemplateId) -> ProjectileBehavior:
     return PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(type_id), _DEFAULT_PROJECTILE_BEHAVIOR)
