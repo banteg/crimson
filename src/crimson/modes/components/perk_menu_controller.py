@@ -67,6 +67,8 @@ class PerkMenuController:
         on_pick: OnPickFn | None = None,
         defer_pick_apply: bool = False,
     ) -> None:
+        if bool(defer_pick_apply) and on_pick is None:
+            raise ValueError("on_pick is required when defer_pick_apply=True")
         self._cancel_label = cancel_label
         self._on_close = on_close
         self._on_pick = on_pick
@@ -227,7 +229,7 @@ class PerkMenuController:
             if bool(self._defer_pick_apply):
                 callback = self._on_pick
                 if callback is None:
-                    return False
+                    raise RuntimeError("deferred perk pick callback missing")
                 accepted = callback(int(choice_index))
                 if accepted is None:
                     return True
@@ -287,10 +289,12 @@ class PerkMenuController:
                 if click:
                     if ctx.play_sfx is not None:
                         ctx.play_sfx("sfx_ui_buttonclick")
-                    if _submit_pick(int(idx)) and ctx.play_sfx is not None:
-                        ctx.play_sfx("sfx_ui_bonus")
-                    self.close()
-                    return
+                    picked = _submit_pick(int(idx))
+                    if picked:
+                        if (not bool(self._defer_pick_apply)) and ctx.play_sfx is not None:
+                            ctx.play_sfx("sfx_ui_bonus")
+                        self.close()
+                        return
                 break
 
         cancel_w = button_width(
@@ -315,9 +319,11 @@ class PerkMenuController:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
             if ctx.play_sfx is not None:
                 ctx.play_sfx("sfx_ui_buttonclick")
-            if _submit_pick(int(self._selected_index)) and ctx.play_sfx is not None:
-                ctx.play_sfx("sfx_ui_bonus")
-            self.close()
+            picked = _submit_pick(int(self._selected_index))
+            if picked:
+                if (not bool(self._defer_pick_apply)) and ctx.play_sfx is not None:
+                    ctx.play_sfx("sfx_ui_bonus")
+                self.close()
 
     def draw(self, ctx: PerkMenuContext) -> None:
         menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
