@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.weapons import (
+    WEAPON_PROJECTILE_TYPE_IDS,
     WeaponId,
-    projectile_type_id_from_weapon_id,
-    projectile_type_ids_from_weapon_id,
+    projectile_type_id_for_weapon_id,
 )
 
 
@@ -37,14 +40,17 @@ def test_weapon_projectile_type_mapping() -> None:
         45: 0x2D,  # Fire Bullets
     }
     for weapon_id, type_id in cases.items():
-        assert projectile_type_id_from_weapon_id(WeaponId(weapon_id)) == type_id
+        assert projectile_type_id_for_weapon_id(WeaponId(weapon_id)) == ProjectileTypeId(type_id)
 
-    assert projectile_type_ids_from_weapon_id(WeaponId.MULTI_PLASMA) == (0x09, 0x0B)
+    assert WEAPON_PROJECTILE_TYPE_IDS[WeaponId.MULTI_PLASMA] == (
+        ProjectileTypeId.PLASMA_RIFLE,
+        ProjectileTypeId.PLASMA_MINIGUN,
+    )
 
 
-def test_non_projectile_weapons_return_none() -> None:
+def test_non_projectile_weapons_raise() -> None:
     # Non-projectile paths: particles or secondary projectile pool.
     for weapon_id in (8, 12, 13, 15, 16, 17, 18, 42):
         weapon = WeaponId(weapon_id)
-        assert projectile_type_id_from_weapon_id(weapon) is None
-        assert projectile_type_ids_from_weapon_id(weapon) == ()
+        with pytest.raises(ValueError, match="weapon has no primary projectile type"):
+            projectile_type_id_for_weapon_id(weapon)

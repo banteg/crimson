@@ -22,7 +22,7 @@ from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
     WeaponId,
-    projectile_type_id_from_weapon_id,
+    projectile_type_id_for_weapon_id,
 )
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
@@ -265,10 +265,11 @@ class ArsenalDebugView:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
         if special is not None:
             return special
-        type_id = projectile_type_id_from_weapon_id(weapon_id)
-        if type_id is None:
+        try:
+            type_id = projectile_type_id_for_weapon_id(weapon_id)
+        except ValueError:
             return "particle/secondary"
-        return _projectile_type_label(type_id)
+        return _projectile_type_label(int(type_id))
 
     def _weapon_debug_lines(self) -> list[str]:
         player = self._player

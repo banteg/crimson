@@ -9,9 +9,8 @@ overlaps numerically with `WeaponId` but is not 1:1: multiple weapons can
 share a projectile template and some weapons use particle/secondary pools
 instead of the main projectile pool.
 
-Use `projectile_type_id_from_weapon_id` for the primary projectile `type_id`
-(or `None` for non-projectile weapons), and `projectile_type_ids_from_weapon_id`
-when you need the full set.
+Use `projectile_type_id_for_weapon_id` for the primary projectile `type_id`.
+Weapons that use particle or secondary projectile pools raise `ValueError`.
 
 Reference material:
 - `docs/re/static/reference/weapon-table.md`
@@ -863,42 +862,15 @@ WEAPON_BY_PROJECTILE_TYPE_ID: dict[ProjectileTypeId, Weapon] = {
 }
 
 
-def projectile_type_id_from_weapon_id(weapon_id: WeaponId) -> int | None:
-    """Return the primary projectile `type_id` used by `weapon_id`.
-
-    Returns `None` for weapons that don't use the main projectile pool.
-    """
-
-    type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
-    if type_ids is not None:
-        return int(type_ids[0]) if type_ids else None
-
-    # Default native behavior for projectile weapons is `type_id == weapon_id`.
-    if weapon_id in WEAPON_BY_ID:
-        return int(weapon_id)
-    return None
-
-
 def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTypeId:
     """Return the primary projectile type for a weapon that uses the main pool."""
 
-    type_id = projectile_type_id_from_weapon_id(weapon_id)
-    if type_id is None:
-        raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
-    return ProjectileTypeId(int(type_id))
-
-
-def projectile_type_ids_from_weapon_id(weapon_id: WeaponId) -> tuple[int, ...]:
-    """Return all projectile `type_id` values produced by `weapon_id`."""
-
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return tuple(int(type_id) for type_id in type_ids)
-    if weapon_id in WEAPON_BY_ID:
-        return (int(weapon_id),)
-    return ()
-
-
-WEAPON_BY_NAME = {
-    entry.name: entry for entry in WEAPON_TABLE
-}
+        if not type_ids:
+            raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
+        return type_ids[0]
+    try:
+        return ProjectileTypeId(int(weapon_id))
+    except ValueError as exc:
+        raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}") from exc
