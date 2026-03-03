@@ -117,6 +117,15 @@ class _LanTickFinalizeOutcome:
     tick_applied: bool
 
 
+@dataclass(frozen=True, slots=True)
+class LanMatchCallbacks:
+    dt_tick: float
+    before_pop: Callable[[], bool] | None = None
+    before_step: Callable[[], None] | None = None
+    on_tick_applied: Callable[[LanTickStep], LanStepAction] | None = None
+    after_join_consume: Callable[[], bool] | None = None
+
+
 class _LanRuntimeInputProvider(NetworkInputProvider):
     def __init__(self, *, player_count: int) -> None:
         self._runtime: LanRuntime | None = None
@@ -1462,6 +1471,91 @@ class BaseGameplayMode:
             deaths=world_events.deaths,
             events=world_events,
             command_hash=str(tick.step.command_hash),
+        )
+
+    def _lan_mode_name(self) -> Literal["survival", "rush", "quests"]:
+        raise NotImplementedError
+
+    def _lan_match_session(self) -> DeterministicSessionLike | None:
+        raise NotImplementedError
+
+    def _on_lan_paused(self, *, dt: float) -> None:
+        _ = dt
+
+    def _build_lan_match_callbacks(
+        self,
+        *,
+        role: str,
+        dt: float,
+        dt_ui_ms: float,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+    ) -> LanMatchCallbacks | None:
+        _ = role, dt, dt_ui_ms, lockstep_runtime, session
+        raise NotImplementedError
+
+    def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        session = self._lan_match_session()
+        if session is None:
+            return
+        lockstep_runtime = self._lockstep_runtime()
+        role = self._prepare_lan_match_runtime(mode_name=self._lan_mode_name())
+        if role is None:
+            return
+        self._trace_lan_terrain_generation()
+        if bool(self._lan_terrain_generation_pending()):
+            self._reset_lan_capture_clock()
+            return
+
+        if bool(self._paused):
+            self._reset_gameplay_tick_runner_clock()
+            self._on_lan_paused(dt=float(dt))
+            return
+
+        callbacks = self._build_lan_match_callbacks(
+            role=str(role),
+            dt=float(dt),
+            dt_ui_ms=float(dt_ui_ms),
+            lockstep_runtime=lockstep_runtime,
+            session=session,
+        )
+        if callbacks is None:
+            return
+
+        dt_tick = float(callbacks.dt_tick)
+        if role == "join":
+            if self._consume_lan_tick_frames(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                role=role,
+                dt_tick=float(dt_tick),
+                before_pop=callbacks.before_pop,
+                before_step=callbacks.before_step,
+                on_tick_applied=callbacks.on_tick_applied,
+            ):
+                return
+            if callbacks.after_join_consume is not None and callbacks.after_join_consume():
+                return
+
+        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
+        self._queue_lan_local_inputs(
+            runtime=runtime,
+            ticks_to_capture=int(ticks_to_capture),
+            dt=float(dt),
+        )
+        self._consume_lan_tick_frames(
+            runtime=runtime,
+            lockstep_runtime=lockstep_runtime,
+            session=session,
+            role=role,
+            dt_tick=float(dt_tick),
+            before_pop=callbacks.before_pop,
+            before_step=callbacks.before_step,
+            on_tick_applied=callbacks.on_tick_applied,
         )
 
     def _prepare_lan_match_runtime(self, *, mode_name: Literal["survival", "rush", "quests"]) -> str | None:

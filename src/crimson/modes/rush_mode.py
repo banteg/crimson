@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
+from typing import Literal, cast
 
 import msgspec
 
@@ -16,6 +17,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
+from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
@@ -30,7 +32,13 @@ from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
-from .base_gameplay_mode import BaseGameplayMode, LanStepAction, LanTickStep
+from .base_gameplay_mode import (
+    BaseGameplayMode,
+    DeterministicSessionLike,
+    LanMatchCallbacks,
+    LanStepAction,
+    LanTickStep,
+)
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 WORLD_SIZE = 1024.0
@@ -242,6 +250,52 @@ class RushMode(BaseGameplayMode):
         kills = int(self.creatures.kill_count)
         return f"rush_{stamp}_kills{kills}"
 
+    def _lan_mode_name(self) -> Literal["rush"]:
+        return "rush"
+
+    def _lan_match_session(self) -> RushDeterministicSession | None:
+        return self._sim_session
+
+    def _build_lan_match_callbacks(
+        self,
+        *,
+        role: str,
+        dt: float,
+        dt_ui_ms: float,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+    ) -> LanMatchCallbacks | None:
+        _ = dt, dt_ui_ms
+        rush_session = cast(RushDeterministicSession, session)
+        rush_session.detail_preset = int(self._deterministic_detail_preset())
+        rush_session.gore_disabled = int(self._deterministic_gore_disabled())
+        dt_tick = float(self._lan_capture_tick_dt())
+
+        def _on_tick_applied(step: LanTickStep) -> LanStepAction:
+            self._rush.elapsed_ms = float(step.tick.elapsed_ms)
+            self._rush.spawn_cooldown_ms = float(rush_session.spawn_cooldown_ms)
+            self._store_net_runtime_snapshot(
+                snapshot=RushStateSnapshotV2(
+                    tick_index=int(step.frame_tick_index),
+                    replay_state=self._net_replay_snapshot_state(),
+                    runtime_state=RushRuntimeSnapshotV2(
+                        elapsed_ms=float(step.tick.elapsed_ms),
+                        spawn_cooldown_ms=float(rush_session.spawn_cooldown_ms),
+                        kill_count=int(self.creatures.kill_count),
+                    ),
+                ),
+            )
+            if not any(player.health > 0.0 for player in self.world.players):
+                self._enter_game_over()
+                return "stop_after_finalize"
+            return "continue"
+
+        _ = role, lockstep_runtime
+        return LanMatchCallbacks(
+            dt_tick=float(dt_tick),
+            on_tick_applied=_on_tick_applied,
+        )
+
     def update(self, dt: float) -> None:
         self._update_audio(dt)
 
@@ -256,7 +310,7 @@ class RushMode(BaseGameplayMode):
             return
 
         if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=dt)
+            self._update_lan_match(dt=dt, dt_ui_ms=0.0)
             return
 
         any_alive = any(player.health > 0.0 for player in self.world.players)
@@ -301,76 +355,6 @@ class RushMode(BaseGameplayMode):
             recorder=self._replay_recorder,
             on_tick=_on_tick,
             on_checkpoint=_on_checkpoint,
-        )
-
-    def _update_lan_match(self, *, dt: float) -> None:
-        runtime = self._lan_runtime
-        if runtime is None:
-            return
-        lockstep_runtime = self._lockstep_runtime()
-        session = self._sim_session
-        if session is None:
-            return
-
-        role = self._prepare_lan_match_runtime(mode_name="rush")
-        if role is None:
-            return
-        self._trace_lan_terrain_generation()
-        if bool(self._lan_terrain_generation_pending()):
-            self._reset_lan_capture_clock()
-            return
-
-        if bool(self._paused):
-            self._reset_gameplay_tick_runner_clock()
-            return
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
-
-        dt_tick = float(self._lan_capture_tick_dt())
-
-        def _on_tick_applied(step: LanTickStep) -> LanStepAction:
-            self._rush.elapsed_ms = float(step.tick.elapsed_ms)
-            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-            self._store_net_runtime_snapshot(
-                snapshot=RushStateSnapshotV2(
-                    tick_index=int(step.frame_tick_index),
-                    replay_state=self._net_replay_snapshot_state(),
-                    runtime_state=RushRuntimeSnapshotV2(
-                        elapsed_ms=float(step.tick.elapsed_ms),
-                        spawn_cooldown_ms=float(session.spawn_cooldown_ms),
-                        kill_count=int(self.creatures.kill_count),
-                    ),
-                ),
-            )
-            if not any(player.health > 0.0 for player in self.world.players):
-                self._enter_game_over()
-                return "stop_after_finalize"
-            return "continue"
-
-        if role == "join":
-            if self._consume_lan_tick_frames(
-                runtime=runtime,
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                role=role,
-                dt_tick=float(dt_tick),
-                on_tick_applied=_on_tick_applied,
-            ):
-                return
-
-        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
-        self._queue_lan_local_inputs(
-            runtime=runtime,
-            ticks_to_capture=int(ticks_to_capture),
-            dt=float(dt),
-        )
-        self._consume_lan_tick_frames(
-            runtime=runtime,
-            lockstep_runtime=lockstep_runtime,
-            session=session,
-            role=role,
-            dt_tick=float(dt_tick),
-            on_tick_applied=_on_tick_applied,
         )
 
     def _draw_game_cursor(self) -> None:
