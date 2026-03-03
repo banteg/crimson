@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import math
 
-from crimson.creatures.runtime import CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectileTypeId, ProjectileUpdateOptions
+from crimson.projectiles import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.factories import make_creature_update_options, make_projectile_update_options
 from tests.helpers import assert_float_close
 
 
@@ -30,7 +31,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature.ai_mode = 2
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=CreatureUpdateOptions(state=state, players=[player]))
+    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player]))
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -58,7 +59,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.move_speed = 0.0
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=CreatureUpdateOptions(state=state, players=[player]))
+    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player]))
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert not spawned
@@ -81,7 +82,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -127,7 +128,7 @@ def test_ranged_projectile_can_damage_player() -> None:
     state.projectiles.update(
         0.001,
         [],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             rng=state.rng.rand,
             runtime_state=state,
@@ -174,7 +175,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     state.projectiles.update(
         0.1,
         pool.entries[:2],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             rng=state.rng.rand,
             runtime_state=state,

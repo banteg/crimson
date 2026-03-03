@@ -6,7 +6,7 @@ from typing import cast
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -28,6 +28,7 @@ from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.factories import make_creature_update_options
 from tests.helpers import MockCrand, assert_float_close, assert_rng_progression
 
 
@@ -177,7 +178,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
     spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
 
     build_spawn_plan.assert_called_once()
     child_template_id = int(build_spawn_plan.call_args.args[0])
@@ -223,7 +224,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
         ),
     )
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
 
     assert pool.spawn_slots[0].count == 0
     assert_float_close(pool.spawn_slots[0].timer, 0.0)
@@ -264,7 +265,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
         ),
     )
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
 
     child_indices = [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active]
     assert child_indices
@@ -289,7 +290,7 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.size = 45.0
     creature.pos = Vec2(-64.0, 1088.0)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player]))
 
     assert_float_close(creature.pos.x, -64.0)
     assert_float_close(creature.pos.y, 1088.0)
@@ -314,7 +315,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.pos = start_pos
         creature.contact_damage = 0.0
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     base = pool.entries[0]
     variant = pool.entries[1]
@@ -373,7 +374,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     near_start = near.pos
     far_start = far.pos
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     near_step = (near.pos - near_start).length()
     far_step = (far.pos - far_start).length()
@@ -404,7 +405,7 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature.target_player = 0
     creature.pos = Vec2(110.0, 100.0)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player0, player1], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player0, player1], rand=lambda: 0))
 
     assert creature.target_player == 1
     assert_float_close(player0.health, 0.0)
@@ -430,7 +431,7 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature.pos = Vec2(500.0, 500.0)
 
     start_pos = creature.pos
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[dead_player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[dead_player], rand=lambda: 0))
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
@@ -456,7 +457,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.target_player = 0
     creature.pos = Vec2(400.0, 400.0)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[dead_player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[dead_player], rand=lambda: 0))
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
@@ -483,7 +484,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature.target_player = 0
     creature.pos = Vec2(104.0, 100.0)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player0, player1], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player0, player1], rand=lambda: 0))
 
     assert creature.target_player == 1
     assert_float_close(player0.health, 100.0)
@@ -519,7 +520,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near.target_player = 0
     near.pos = Vec2(120.0, 100.0)
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     assert player.auto_target == 1
 
@@ -554,7 +555,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target.pos = Vec2(120.0, 100.0)
 
     player.auto_target = 0
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     assert player.auto_target == 1
 
@@ -591,11 +592,11 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     player.auto_target = 0
     pool._update_tick = creature_runtime._TARGET_REEVAL_PERIOD - 1
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
     assert pool._update_tick == creature_runtime._TARGET_REEVAL_PERIOD
     assert player.auto_target == 0
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
     assert player.auto_target == 1
 
 
@@ -618,7 +619,7 @@ def test_small_creature_dies_on_contact() -> None:
     creature.pos = Vec2(120.0, 100.0)  # dist=20
 
     dt = 1.0 / 60.0
-    pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     assert_float_close(player.health, 90.0)
     assert_float_close(creature.hp, 0.0)
@@ -1185,7 +1186,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     # 38 ms frame from gameplay_diff_capture tick 3636.
-    pool.update(0.03800000250339508, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(0.03800000250339508, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
@@ -1257,7 +1258,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     # 0.0329999998s is captured as frame_dt_ms_i32=33 in native traces.
     dt = 0.032999999821186066
     stub_rand = _StubRand([0x11])
-    pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player], rand=stub_rand.rand))
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player], rand=stub_rand.rand))
 
     assert creature.ai_mode == 7
     assert creature.link_index == 517
@@ -1286,7 +1287,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature.size = 45.0
 
     stub_rand = _StubRand([0x2A])
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=stub_rand.rand))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=stub_rand.rand))
 
     # Native ticks AI7 link timers before Evil Eyes movement freeze.
     assert creature.link_index == -742
@@ -1310,7 +1311,7 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     creature.move_speed = 0.0
     creature.size = 45.0
 
-    pool.update(0.01, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(0.01, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     # Native runs AI7 timer update before live-branch kill handling.
     assert creature.link_index == 500
@@ -1335,7 +1336,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature.move_speed = 4.2
     creature.size = 45.0
 
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0))
 
     # Native `creature_update_all` skips movement work for AI7 here without
     # writing vel=0 for non-spawner creatures.
@@ -1365,7 +1366,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature.size = 45.0
 
     stub_rand = _StubRand([0x2A])
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player], rand=stub_rand.rand))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rand=stub_rand.rand))
 
     # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
     assert_float_close(creature.attack_cooldown, 1.0)
@@ -1418,7 +1419,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1.size = 45.0
 
     stub_rand = _StubRand([0x2A, 0x2B])
-    pool.update(1.0 / 60.0, options=CreatureUpdateOptions(state=state, players=[player0, player1], rand=stub_rand.rand))
+    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player0, player1], rand=stub_rand.rand))
 
     assert_float_close(creature0.attack_cooldown, 1.0)
     assert_float_close(creature1.attack_cooldown, 1.0)

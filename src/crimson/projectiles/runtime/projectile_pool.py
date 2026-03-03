@@ -23,7 +23,6 @@ from ..types import (
     ProjectileHit,
     ProjectileRuntimeState,
     ProjectileTypeId,
-    _rng_zero,
 )
 from .behaviors import (
     _DEFAULT_BEHAVIOR,
@@ -43,13 +42,13 @@ if TYPE_CHECKING:
 
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
-    damage_scale_by_type: dict[int, float] | None = None
+    damage_scale_by_type: dict[int, float]
+    rng: Callable[[], int]
+    runtime_state: ProjectileRuntimeState
+    players: Sequence[PlayerState]
+    apply_player_damage: Callable[[int, float], None]
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
-    rng: Callable[[], int] | None = None
-    runtime_state: ProjectileRuntimeState | None = None
-    players: Sequence[PlayerState] | None = None
-    apply_player_damage: Callable[[int, float], None] | None = None
     on_hit: Callable[[ProjectileHit], object | None] | None = None
     on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None
 
@@ -179,42 +178,30 @@ class ProjectilePool:
         ion_gun_master_active = False
         ion_scale = float(ion_aoe_scale)
         poison_idx = int(PerkId.POISON_BULLETS)
-        if players is not None:
-            barrel_idx = int(PerkId.BARREL_GREASER)
-            ion_idx = int(PerkId.ION_GUN_MASTER)
-            for player in players:
-                perk_counts = player.perk_counts
+        barrel_idx = int(PerkId.BARREL_GREASER)
+        ion_idx = int(PerkId.ION_GUN_MASTER)
+        for player in players:
+            perk_counts = player.perk_counts
 
-                if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:
-                    barrel_greaser_active = True
-                if 0 <= ion_idx < len(perk_counts) and int(perk_counts[ion_idx]) > 0:
-                    ion_gun_master_active = True
-                if barrel_greaser_active and ion_gun_master_active:
-                    break
+            if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:
+                barrel_greaser_active = True
+            if 0 <= ion_idx < len(perk_counts) and int(perk_counts[ion_idx]) > 0:
+                ion_gun_master_active = True
+            if barrel_greaser_active and ion_gun_master_active:
+                break
 
         if ion_scale == 1.0 and ion_gun_master_active:
             ion_scale = 1.2
 
         def _owner_perk_active(owner: OwnerRef, perk_idx: int) -> bool:
-            if players is None:
-                return False
             player_index = owner.player_index_in_bounds(len(players))
             if player_index is None:
                 return False
             perk_counts = players[player_index].perk_counts
             return 0 <= perk_idx < len(perk_counts) and int(perk_counts[perk_idx]) > 0
 
-        if damage_scale_by_type is None:
-            damage_scale_by_type = {}
-
-        if rng is None:
-            rng = _rng_zero
-
-        effects: EffectPool | None = None
-        sfx_queue: MutableSequence[str] | None = None
-        if runtime_state is not None:
-            effects = runtime_state.effects
-            sfx_queue = runtime_state.sfx_queue
+        effects: EffectPool | None = runtime_state.effects
+        sfx_queue: MutableSequence[str] | None = runtime_state.sfx_queue
 
         hits: list[ProjectileHit] = []
         margin = 64.0
@@ -265,8 +252,6 @@ class ProjectilePool:
         )
 
         def _reset_shock_chain_if_owner(index: int) -> None:
-            if runtime_state is None:
-                return
             if runtime_state.shock_chain_projectile_id != index:
                 return
             runtime_state.shock_chain_projectile_id = -1
@@ -367,7 +352,7 @@ class ProjectilePool:
 
                     if hit_idx is None:
                         can_hit_players = True
-                        if runtime_state is not None and int(proj_index) == int(
+                        if int(proj_index) == int(
                             runtime_state.shock_chain_projectile_id,
                         ):
                             # Native skips `player_find_in_radius` for the currently tracked
@@ -376,34 +361,27 @@ class ProjectilePool:
 
                         if proj.hits_players and can_hit_players:
                             hit_player_idx = None
-                            if players is not None:
-                                owner_player_index = proj.owner.player_index_in_bounds(len(players))
-                                for idx, player in enumerate(players):
-                                    if owner_player_index is not None and idx == owner_player_index:
-                                        continue
-                                    if float(player.health) <= 0.0:
-                                        continue
-                                    if _within_native_find_radius(
-                                        origin=proj.pos,
-                                        target=player.pos,
-                                        radius=float(proj.hit_radius),
-                                        target_size=float(player.size),
-                                    ):
-                                        hit_player_idx = idx
-                                        break
+                            owner_player_index = proj.owner.player_index_in_bounds(len(players))
+                            for idx, player in enumerate(players):
+                                if owner_player_index is not None and idx == owner_player_index:
+                                    continue
+                                if float(player.health) <= 0.0:
+                                    continue
+                                if _within_native_find_radius(
+                                    origin=proj.pos,
+                                    target=player.pos,
+                                    radius=float(proj.hit_radius),
+                                    target_size=float(player.size),
+                                ):
+                                    hit_player_idx = idx
+                                    break
 
                             if hit_player_idx is None:
                                 step += 3
                                 continue
 
-                            assert players is not None
-                            player = players[int(hit_player_idx)]
                             proj.life_timer = 0.25
-                            if apply_player_damage is not None:
-                                apply_player_damage(int(hit_player_idx), 10.0)
-                            else:
-                                if float(player.shield_timer) <= 0.0:
-                                    player.health -= 10.0
+                            apply_player_damage(int(hit_player_idx), 10.0)
 
                             step += 3
                             continue
@@ -427,11 +405,10 @@ class ProjectilePool:
                     if behavior.pre_hit_creature is not None:
                         behavior.pre_hit_creature(ctx, proj, int(hit_idx))
 
-                    if runtime_state is not None:
-                        owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                        if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
-                            shots_hit = runtime_state.shots_hit
-                            shots_hit[owner_player_index] += 1
+                    owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
+                    if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
+                        shots_hit = runtime_state.shots_hit
+                        shots_hit[owner_player_index] += 1
 
                     target = creature.pos
                     hit = ProjectileHit(
@@ -515,8 +492,7 @@ class ProjectilePool:
                     # here; Gauss/Fire-Bullets emits shards inside the six-iteration
                     # large-streak loop (presentation hook parity).
                     if (
-                        runtime_state is not None
-                        and float(runtime_state.bonuses.freeze) > 0.0
+                        float(runtime_state.bonuses.freeze) > 0.0
                         and effects is not None
                         and type_id not in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS)
                     ):

@@ -3,9 +3,10 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
+from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.factories import make_projectile_update_options
 from tests.helpers import assert_float_close
 
 
@@ -25,7 +26,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     pool.update(
         0.016,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=4096.0,
             detail_preset=5,
             rng=lambda: 0,
@@ -60,7 +61,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     pool.update(
         0.016,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=4096.0,
             detail_preset=5,
             rng=lambda: 0,
@@ -97,7 +98,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
     pool.update(
         0.016,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=4096.0,
             detail_preset=5,
             rng=lambda: 0,
@@ -124,7 +125,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     pool.update(
         0.016,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=4096.0,
             detail_preset=5,
             rng=lambda: 0,
@@ -169,7 +170,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
     pool.update(
         0.016,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=4096.0,
             detail_preset=5,
             rng=lambda: 0,

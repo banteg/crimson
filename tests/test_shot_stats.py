@@ -4,7 +4,7 @@ from functools import partial
 
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles import ProjectileTypeId, ProjectileUpdateOptions, SecondaryProjectileTypeId
+from crimson.projectiles import ProjectileTypeId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -14,7 +14,7 @@ from crimson.weapon_runtime import (
 from crimson.weapon_runtime.spawn import projectile_spawn
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.factories import make_creature_state
+from tests.factories import make_creature_state, make_projectile_update_options
 
 _creature = partial(make_creature_state, size=200.0)
 
@@ -40,7 +40,7 @@ def test_shots_fired_and_hit_increment() -> None:
     hits = state.projectiles.update(
         0.1,
         [creature],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             damage_scale_by_type={},
             rng=state.rng.rand,
@@ -69,7 +69,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
     hits = state.projectiles.update(
         0.1,
         [corpse],
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             damage_scale_by_type={},
             rng=state.rng.rand,

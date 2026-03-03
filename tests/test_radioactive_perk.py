@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
@@ -8,6 +8,7 @@ from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.factories import make_creature_update_options
 from tests.helpers import assert_float_close
 
 
@@ -29,7 +30,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
 
     fx_queue = FxQueue(capacity=8, max_count=8)
 
-    pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
 
     # Radioactive pulse evaluates after movement/clamp in the live-creature body.
     dist_after_move = (creature.pos - player.pos).length()
@@ -59,7 +60,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
-    result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
+    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
 
     assert player.experience == 112
     assert not result.deaths
@@ -87,7 +88,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature.collision_timer = 0.1
 
     fx_queue = FxQueue(capacity=8, max_count=8)
-    result = pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
+    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player], rand=lambda: 0, fx_queue=fx_queue))
 
     assert player.experience == 100
     assert not result.deaths

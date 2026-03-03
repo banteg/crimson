@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.factories import make_creature_update_options
 from tests.helpers import assert_float_close
 
 
@@ -25,7 +26,7 @@ def test_toxic_avenger_sets_strong_self_damage_flags_on_contact_hit() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
 
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG
@@ -44,7 +45,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
     creature.hp = 100.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    pool.update(dt, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
 
     assert_float_close(creature.hp, 100.0 - float(f32(float(dt))) * 180.0)
 
@@ -64,6 +65,6 @@ def test_toxic_avenger_skips_when_player_shielded() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
 
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG)

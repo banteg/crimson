@@ -18,7 +18,7 @@ from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
-from crimson.projectiles import ProjectilePool, ProjectileTypeId, ProjectileUpdateOptions
+from crimson.projectiles import ProjectilePool, ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
@@ -29,6 +29,7 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.factories import make_creature_state as _creature
+from tests.factories import make_projectile_update_options
 from tests.helpers import assert_float_close
 
 
@@ -949,7 +950,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     pool.update(
         0.1,
         creatures,
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             rng=lambda: 0,
             runtime_state=state,
@@ -963,7 +964,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     pool.update(
         0.1,
         creatures,
-        options=ProjectileUpdateOptions(
+        options=make_projectile_update_options(
             world_size=1024.0,
             rng=lambda: 0,
             runtime_state=state,
