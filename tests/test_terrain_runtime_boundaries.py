@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.game_world import GameWorld
 from crimson.terrain_assets import TerrainTextureId
+from crimson.world.terrain_runtime import DEFAULT_TERRAIN_IDS, normalize_terrain_ids
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
@@ -86,3 +87,9 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
     assert world.ground is not None
     assert bool(world.ground.generation_pending())
     assert int(world.ground._pending_generate_seed or -1) == 4242
+
+
+def test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows() -> None:
+    assert normalize_terrain_ids(None) == DEFAULT_TERRAIN_IDS
+    assert normalize_terrain_ids((9999, 1, 2)) == DEFAULT_TERRAIN_IDS
+    assert normalize_terrain_ids((int(TerrainTextureId.Q1_BASE),)) == DEFAULT_TERRAIN_IDS  # type: ignore[arg-type]

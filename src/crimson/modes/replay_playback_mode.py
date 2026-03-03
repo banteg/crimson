@@ -46,7 +46,7 @@ from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..sim.input import PlayerInput
 from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
 from ..sim.tick_runner import TickRunner, TickRunnerConfig
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
+from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -65,6 +65,7 @@ from ..views.quest_run_overlay import (
 )
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
+from ..world.terrain_runtime import normalize_terrain_ids
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
@@ -434,17 +435,7 @@ class ReplayPlaybackMode:
                 world.state.quest_stage_major = int(quest_stage_major)
                 world.state.quest_stage_minor = int(quest_stage_minor)
 
-                default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
-                terrain_ids = quest.terrain_ids
-                if terrain_ids is None:
-                    base_id, overlay_id, detail_id = default_terrain
-                else:
-                    try:
-                        base_id = TerrainTextureId(int(terrain_ids[0]))
-                        overlay_id = TerrainTextureId(int(terrain_ids[1]))
-                        detail_id = TerrainTextureId(int(terrain_ids[2]))
-                    except ValueError:
-                        base_id, overlay_id, detail_id = default_terrain
+                base_id, overlay_id, detail_id = normalize_terrain_ids(quest.terrain_ids)
                 base = terrain_texture_by_id(base_id)
                 overlay = terrain_texture_by_id(overlay_id)
                 detail = terrain_texture_by_id(detail_id)
