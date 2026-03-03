@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.typo.player import TYPO_WEAPON_ID, build_typo_player_input, enforce_typo_player_frame
 from crimson.weapon_runtime import weapon_assign_player
@@ -8,8 +9,9 @@ from grim.geom import Vec2
 
 
 def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
+    state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, WeaponId.PISTOL)
+    weapon_assign_player(player, WeaponId.PISTOL, state=state)
     player.weapon.shot_cooldown = 0.5
     player.spread_heat = 0.25
     player.weapon.ammo = 0
@@ -17,7 +19,7 @@ def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
     player.weapon.reload_timer = 1.25
     player.weapon.reload_timer_max = 1.25
 
-    enforce_typo_player_frame(player)
+    enforce_typo_player_frame(player, state=state)
 
     assert player.weapon.weapon_id == TYPO_WEAPON_ID
     assert player.weapon.shot_cooldown == 0.0

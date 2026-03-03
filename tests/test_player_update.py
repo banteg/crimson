@@ -458,7 +458,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
         player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
-        weapon_assign_player(player, weapon_id)
+        weapon_assign_player(player, weapon_id, state=state)
 
         player.fire_bullets_timer = 1.0
 
@@ -918,7 +918,7 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
 
-    bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3)
+    bonus_apply(state, player, BonusId.WEAPON_POWER_UP, amount=3, creatures=[], players=[player])
     for _ in range(40):
         bonus_hud_update(state, [player], dt=1.0 / 60.0)
 
@@ -941,7 +941,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
         _creature(pos=Vec2(100.0, far_y), hp=100.0),
     ]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures)
+    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures, players=[player])
     assert state.shock_chain_links_left == 0x20
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0

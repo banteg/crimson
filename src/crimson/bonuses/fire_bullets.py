@@ -14,7 +14,7 @@ from .apply_context import BonusApplyCtx, bonus_apply_seconds
 
 def apply_fire_bullets(ctx: BonusApplyCtx) -> None:
     should_register = float(ctx.player.fire_bullets_timer) <= 0.0
-    if ctx.players is not None and len(ctx.players) > 1:
+    if len(ctx.players) > 1:
         should_register = (
             float(ctx.players[0].fire_bullets_timer) <= 0.0 and float(ctx.players[1].fire_bullets_timer) <= 0.0
         )

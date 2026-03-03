@@ -26,8 +26,8 @@ class BonusApplyCtx(msgspec.Struct):
     bonus_id: BonusId
     amount: int
     origin: HasPos | None
-    creatures: Sequence[CreatureState] | None
-    players: list[PlayerState] | None
+    creatures: Sequence[CreatureState]
+    players: list[PlayerState]
     detail_preset: int
     economist_multiplier: float
     label: str
@@ -44,7 +44,7 @@ class BonusApplyCtx(msgspec.Struct):
         )
 
     def register_player(self, timer_key: str) -> None:
-        if self.players is not None and len(self.players) > 1:
+        if len(self.players) > 1:
             self.state.bonus_hud.register(
                 self.bonus_id,
                 label=self.label,

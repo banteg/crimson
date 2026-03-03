@@ -28,7 +28,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId.MULTI_PLASMA)
+    weapon_assign_player(player, WeaponId.MULTI_PLASMA, state=state)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
@@ -58,7 +58,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN)
+    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)
@@ -80,7 +80,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN)
+    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
     start_ammo = float(player.weapon.ammo)
 
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
@@ -108,7 +108,7 @@ def test_shotgun_family_fires_expected_pellets(
     player.aim_dir = Vec2(1.0, 0.0)
     player.spread_heat = 0.0
 
-    weapon_assign_player(player, WeaponId(weapon_id))
+    weapon_assign_player(player, WeaponId(weapon_id), state=state)
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
 
     spawned = _active_projectiles(state)

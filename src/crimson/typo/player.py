@@ -3,14 +3,14 @@ from __future__ import annotations
 from grim.geom import Vec2
 
 from ..sim.input import PlayerInput
-from ..sim.state_types import PlayerState
+from ..sim.state_types import GameplayState, PlayerState
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
 TYPO_WEAPON_ID = WeaponId.SAWED_OFF_SHOTGUN
 
 
-def enforce_typo_player_frame(player: PlayerState) -> None:
+def enforce_typo_player_frame(player: PlayerState, *, state: GameplayState) -> None:
     """Match Typ-o Shooter's bespoke player loop (`player_fire_weapon @ 0x00444980`).
 
     Typ-o resets timers and tops up ammo each frame, so typing speed (not weapon
@@ -18,7 +18,7 @@ def enforce_typo_player_frame(player: PlayerState) -> None:
     """
 
     if player.weapon.weapon_id != TYPO_WEAPON_ID:
-        weapon_assign_player(player, TYPO_WEAPON_ID)
+        weapon_assign_player(player, TYPO_WEAPON_ID, state=state)
 
     player.weapon.shot_cooldown = 0.0
     player.spread_heat = 0.0

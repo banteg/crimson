@@ -350,9 +350,9 @@ def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence
     for player in players:
         weapon_id = player.weapon.weapon_id
         if weapon_id == WeaponId.BLADE_GUN and guard_id != WeaponId.BLADE_GUN:
-            _weapon_assign_player(player, WeaponId.PISTOL)
+            _weapon_assign_player(player, WeaponId.PISTOL, state=state)
         if weapon_id == WeaponId.SHRINKIFIER_5K and guard_id != WeaponId.SHRINKIFIER_5K:
-            _weapon_assign_player(player, WeaponId.PISTOL)
+            _weapon_assign_player(player, WeaponId.PISTOL, state=state)
 
 
 def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:

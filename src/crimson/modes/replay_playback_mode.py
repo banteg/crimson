@@ -426,7 +426,7 @@ class ReplayPlaybackMode:
                 if start_weapon_id <= WeaponId.NONE:
                     start_weapon_id = WeaponId.PISTOL
                 for player in world.players:
-                    weapon_assign_player(player, start_weapon_id)
+                    weapon_assign_player(player, start_weapon_id, state=world.state)
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
                 self._quest_spawn_timeline_ms = 0.0
             case _:

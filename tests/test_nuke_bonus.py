@@ -45,7 +45,7 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
     state = GameplayState(rng=MockCrand(0))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
-    bonus_apply(state, player, BonusId.NUKE, origin=player, detail_preset=5)
+    bonus_apply(state, player, BonusId.NUKE, origin=player, creatures=[], players=[player], detail_preset=5)
 
     active = [entry for entry in state.projectiles.entries if entry.active]
 

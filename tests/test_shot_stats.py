@@ -22,7 +22,7 @@ _creature = partial(make_creature_state, size=200.0)
 def test_shots_fired_and_hit_increment() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, WeaponId.PISTOL)
+    weapon_assign_player(player, WeaponId.PISTOL, state=state)
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
@@ -54,7 +54,7 @@ def test_shots_fired_and_hit_increment() -> None:
 def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, WeaponId.PISTOL)
+    weapon_assign_player(player, WeaponId.PISTOL, state=state)
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
