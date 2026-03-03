@@ -428,105 +428,112 @@ class RollbackRuntime(msgspec.Struct):
             kind=type(message).__name__,
             room_code=str(self.cfg.room_code or ""),
         )
-
-        if isinstance(message, Pong):
-            return
-
-        if isinstance(message, ClientWelcome):
-            if not bool(message.accepted):
-                self.error = str(message.reason or "rejected")
+        match message:
+            case Pong():
                 return
-            self._accepted = True
-            self._peer_id = str(message.peer_id or "")
-            if str(self._reconnect_state) == "self_reconnecting":
-                self._sent_join_request = False
-            return
 
-        if isinstance(message, RelayError):
-            self.error = str(message.reason or "relay_error")
-            return
-
-        if isinstance(message, RoomState):
-            self.lobby_state_latest = message
-            self._joined_room = True
-            if self._is_reconnect_in_progress() and self._room_state_has_local_slot(message):
-                self._finish_reconnect(now_ms=int(now_ms))
-            if str(self.cfg.role) == "host":
-                self.cfg.room_code = str(message.room_code or "")
-                self._announce_room_code(self.cfg.room_code)
-            elif str(self.cfg.room_code or "") != str(message.room_code or ""):
-                self.cfg.room_code = str(message.room_code or "")
-            return
-
-        if isinstance(message, RoomStart):
-            first_start = not bool(self.started)
-            self.match_start_event = message
-            self.started = True
-            self._reconnect_deadline_ms = 0
-            self._reconnect_token = str(message.reconnect_token or "")
-            self._paused_for_reconnect = False
-            self._reconnect_state = "idle"
-            if first_start:
-                self._init_rollback(message)
-            self._sent_ready = True
-            if str(self.cfg.room_code or "") != str(message.room_code or ""):
-                self.cfg.room_code = str(message.room_code or "")
-            if str(self.cfg.role) == "host":
-                self._announce_room_code(self.cfg.room_code)
-            return
-
-        if isinstance(message, PeerDisconnect):
-            if not bool(self.started):
-                self.error = str(message.reason or "peer_disconnect")
+            case ClientWelcome():
+                if not bool(message.accepted):
+                    self.error = str(message.reason or "rejected")
+                    return
+                self._accepted = True
+                self._peer_id = str(message.peer_id or "")
+                if str(self._reconnect_state) == "self_reconnecting":
+                    self._sent_join_request = False
                 return
-            if self._reconnect_deadline_ms <= 0:
-                self.reconnect_count = int(self.reconnect_count) + 1
-            self._reconnect_deadline_ms = int(now_ms) + int(self.cfg.reconnect_timeout_ms)
-            self._paused_for_reconnect = True
-            self._reconnect_state = "waiting_for_peer_reconnect"
-            lan_debug_log(
-                "reconnect_start",
-                role=str(self.cfg.role),
-                room_code=str(self.cfg.room_code or ""),
-                state=str(self._reconnect_state),
-                reason=str(message.reason or "peer_disconnect"),
-            )
-            return
 
-        if isinstance(message, RbInputBatch):
-            controller = self._rollback
-            if controller is None:
+            case RelayError():
+                self.error = str(message.reason or "relay_error")
                 return
-            slot = int(message.slot_index)
-            if int(slot) != int(controller.local_slot_index):
-                self._remote_seen_slots.add(int(slot))
-            controller.ingest_remote_samples(slot_index=int(slot), samples=list(message.samples))
-            self._sync_rollback_metrics(controller)
 
-            rollback_from = controller.drain_rollback_from()
-            if rollback_from is not None:
-                self._apply_rollback_from(controller=controller, from_tick=int(rollback_from), now_ms=int(now_ms))
+            case RoomState():
+                self.lobby_state_latest = message
+                self._joined_room = True
+                if self._is_reconnect_in_progress() and self._room_state_has_local_slot(message):
+                    self._finish_reconnect(now_ms=int(now_ms))
+                if str(self.cfg.role) == "host":
+                    self.cfg.room_code = str(message.room_code or "")
+                    self._announce_room_code(self.cfg.room_code)
+                elif str(self.cfg.room_code or "") != str(message.room_code or ""):
+                    self.cfg.room_code = str(message.room_code or "")
+                return
 
-            resync_from = controller.drain_resync_from()
-            if resync_from is not None:
-                self._send_resync_request(from_tick=int(resync_from), reason="rollback_window_overflow", now_ms=int(now_ms))
-            return
+            case RoomStart():
+                first_start = not bool(self.started)
+                self.match_start_event = message
+                self.started = True
+                self._reconnect_deadline_ms = 0
+                self._reconnect_token = str(message.reconnect_token or "")
+                self._paused_for_reconnect = False
+                self._reconnect_state = "idle"
+                if first_start:
+                    self._init_rollback(message)
+                self._sent_ready = True
+                if str(self.cfg.room_code or "") != str(message.room_code or ""):
+                    self.cfg.room_code = str(message.room_code or "")
+                if str(self.cfg.role) == "host":
+                    self._announce_room_code(self.cfg.room_code)
+                return
 
-        if isinstance(message, RbResyncRequest):
-            self._handle_resync_request(message=message, now_ms=int(now_ms))
-            return
+            case PeerDisconnect():
+                if not bool(self.started):
+                    self.error = str(message.reason or "peer_disconnect")
+                    return
+                if self._reconnect_deadline_ms <= 0:
+                    self.reconnect_count = int(self.reconnect_count) + 1
+                self._reconnect_deadline_ms = int(now_ms) + int(self.cfg.reconnect_timeout_ms)
+                self._paused_for_reconnect = True
+                self._reconnect_state = "waiting_for_peer_reconnect"
+                lan_debug_log(
+                    "reconnect_start",
+                    role=str(self.cfg.role),
+                    room_code=str(self.cfg.room_code or ""),
+                    state=str(self._reconnect_state),
+                    reason=str(message.reason or "peer_disconnect"),
+                )
+                return
 
-        if isinstance(message, RbResyncBegin):
-            self._handle_resync_begin(message=message)
-            return
+            case RbInputBatch():
+                controller = self._rollback
+                if controller is None:
+                    return
+                slot = int(message.slot_index)
+                if int(slot) != int(controller.local_slot_index):
+                    self._remote_seen_slots.add(int(slot))
+                controller.ingest_remote_samples(slot_index=int(slot), samples=list(message.samples))
+                self._sync_rollback_metrics(controller)
 
-        if isinstance(message, RbResyncChunk):
-            self._handle_resync_chunk(message=message)
-            return
+                rollback_from = controller.drain_rollback_from()
+                if rollback_from is not None:
+                    self._apply_rollback_from(controller=controller, from_tick=int(rollback_from), now_ms=int(now_ms))
 
-        if isinstance(message, RbResyncCommit):
-            self._handle_resync_commit(message=message, now_ms=int(now_ms))
-            return
+                resync_from = controller.drain_resync_from()
+                if resync_from is not None:
+                    self._send_resync_request(
+                        from_tick=int(resync_from),
+                        reason="rollback_window_overflow",
+                        now_ms=int(now_ms),
+                    )
+                return
+
+            case RbResyncRequest():
+                self._handle_resync_request(message=message, now_ms=int(now_ms))
+                return
+
+            case RbResyncBegin():
+                self._handle_resync_begin(message=message)
+                return
+
+            case RbResyncChunk():
+                self._handle_resync_chunk(message=message)
+                return
+
+            case RbResyncCommit():
+                self._handle_resync_commit(message=message, now_ms=int(now_ms))
+                return
+
+            case _:
+                return
 
     def _init_rollback(self, event: RoomStart) -> None:
         self._frame_queue.clear()

@@ -686,11 +686,13 @@ class SurvivalMode(BaseGameplayMode):
 
         def _perk_event_sort_key(ev: PerkMenuOpen | PerkMenuClose | PerkPick) -> tuple[int, int]:
             tick_index = int(ev.tick_index)
-            order = 2
-            if isinstance(ev, PerkMenuOpen):
-                order = 0
-            elif isinstance(ev, PerkMenuClose):
-                order = 1
+            match ev:
+                case PerkMenuOpen():
+                    order = 0
+                case PerkMenuClose():
+                    order = 1
+                case _:
+                    order = 2
             return (tick_index, order)
 
         def _apply_due_perk_events() -> None:
@@ -710,44 +712,45 @@ class SurvivalMode(BaseGameplayMode):
                 player_index = int(event.player_index)
                 if int(player_index) != 0:
                     continue
-                if isinstance(event, PerkMenuOpen):
-                    opened = self._perk_menu.open_if_available(perk_ctx)
-                    if not opened:
-                        lan_debug_log(
-                            "lan_sanity_mismatch",
-                            role="join",
-                            kind="perk_menu_open",
-                            tick_index=int(event_tick),
-                            pending_count=int(self.state.perk_selection.pending_count),
+                match event:
+                    case PerkMenuOpen():
+                        opened = self._perk_menu.open_if_available(perk_ctx)
+                        if not opened:
+                            lan_debug_log(
+                                "lan_sanity_mismatch",
+                                role="join",
+                                kind="perk_menu_open",
+                                tick_index=int(event_tick),
+                                pending_count=int(self.state.perk_selection.pending_count),
+                            )
+                    case PerkMenuClose():
+                        self._perk_menu.close()
+                    case PerkPick():
+                        choice_index = int(event.choice_index)
+                        picked = perk_selection_pick(
+                            perk_ctx.state,
+                            perk_ctx.players,
+                            perk_ctx.perk_state,
+                            int(choice_index),
+                            game_mode=GameMode.SURVIVAL,
+                            player_count=int(perk_ctx.player_count),
+                            dt=float(dt_tick),
+                            creatures=perk_ctx.creatures,
                         )
-                    continue
-                if isinstance(event, PerkMenuClose):
-                    self._perk_menu.close()
-                    continue
-                if isinstance(event, PerkPick):
-                    choice_index = int(event.choice_index)
-                    picked = perk_selection_pick(
-                        perk_ctx.state,
-                        perk_ctx.players,
-                        perk_ctx.perk_state,
-                        int(choice_index),
-                        game_mode=GameMode.SURVIVAL,
-                        player_count=int(perk_ctx.player_count),
-                        dt=float(dt_tick),
-                        creatures=perk_ctx.creatures,
-                    )
-                    if picked is None:
-                        lan_debug_log(
-                            "lan_sanity_mismatch",
-                            role="join",
-                            kind="perk_pick",
-                            tick_index=int(event_tick),
-                            pending_count=int(self.state.perk_selection.pending_count),
-                            choice_index=int(choice_index),
-                        )
-                    elif self.world.audio_router is not None:
-                        self.world.audio_router.play_sfx("sfx_ui_bonus")
-                    self._perk_menu.close()
+                        if picked is None:
+                            lan_debug_log(
+                                "lan_sanity_mismatch",
+                                role="join",
+                                kind="perk_pick",
+                                tick_index=int(event_tick),
+                                pending_count=int(self.state.perk_selection.pending_count),
+                                choice_index=int(choice_index),
+                            )
+                        elif self.world.audio_router is not None:
+                            self.world.audio_router.play_sfx("sfx_ui_bonus")
+                        self._perk_menu.close()
+                    case _:
+                        continue
             self._lan_perk_events = remaining
 
         _apply_due_perk_events()
