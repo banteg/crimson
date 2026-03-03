@@ -129,11 +129,14 @@ def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, m
     loop._gameplay_views = frozenset({view})
 
     mocker.patch.object(loop_view_module, "input_begin_frame", side_effect=lambda: None)
+    mocker.patch.object(type(state.console), "handle_hotkey", return_value=None)
+    mocker.patch.object(type(state.console), "update", return_value=None)
     mocker.patch.object(loop, "_sync_console_elapsed_ms", side_effect=lambda: None)
     mocker.patch.object(loop, "_handle_console_requests", side_effect=lambda: None)
     mocker.patch.object(loop, "_sync_rtx_mode", side_effect=lambda: None)
     mocker.patch.object(loop, "_tick_statistics_playtime", side_effect=lambda _dt: None)
     mocker.patch.object(loop_view_module, "debug_enabled", return_value=False)
+    mocker.patch.object(loop_view_module, "_update_screen_fade", side_effect=lambda _state, _dt: None)
 
     loop.update(1.0 / 60.0)
 
