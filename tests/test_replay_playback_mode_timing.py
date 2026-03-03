@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
 from types import SimpleNamespace
 
@@ -126,3 +127,9 @@ def test_replay_driver_tick_fails_fast_when_provider_inputs_missing(replay_playb
 
     with pytest.raises(RuntimeError, match="provided no inputs"):
         view._run_driver_tick(0, inputs=None)
+
+
+def test_replay_open_uses_lazy_replay_input_provider_wiring() -> None:
+    source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
+    assert "resolve_tick_input=" in source
+    assert "tick_inputs=[unpack_tick_inputs(" not in source

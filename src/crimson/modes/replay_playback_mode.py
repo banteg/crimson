@@ -347,7 +347,8 @@ class ReplayPlaybackMode:
         self._replay = replay
         self._replay_input_provider = ReplayInputProvider(
             player_count=max(0, int(replay.header.player_count)),
-            tick_inputs=[unpack_tick_inputs(row) for row in replay.inputs],
+            resolve_tick_input=lambda tick_index: unpack_tick_inputs(replay.inputs[int(tick_index)]),
+            tick_count=len(replay.inputs),
         )
         warn_on_game_version_mismatch(replay, action="playback")
 

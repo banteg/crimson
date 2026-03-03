@@ -53,6 +53,34 @@ def test_replay_provider_uses_eos_exception_not_stall_none() -> None:
         provider.pull_tick_input(1)
 
 
+def test_replay_provider_resolves_inputs_lazily_per_tick() -> None:
+    resolved_ticks: list[int] = []
+
+    def _resolve_tick_input(tick_index: int) -> list[PlayerInput] | None:
+        resolved_ticks.append(int(tick_index))
+        if int(tick_index) > 1:
+            return None
+        return [PlayerInput()]
+
+    provider = ReplayInputProvider(
+        player_count=1,
+        resolve_tick_input=_resolve_tick_input,
+        tick_count=2,
+    )
+    provider.begin_frame(FrameContext(player_count=1, is_replay=True))
+    assert resolved_ticks == []
+
+    tick0 = provider.pull_tick_input(0)
+    tick1 = provider.pull_tick_input(1)
+    assert tick0 is not None
+    assert tick1 is not None
+    assert resolved_ticks == [0, 1]
+
+    with pytest.raises(ReplayEndOfStream):
+        provider.pull_tick_input(2)
+    assert resolved_ticks == [0, 1]
+
+
 def test_network_provider_allows_stall_none_and_rejects_empty_nonzero() -> None:
     rows: dict[int, list[PlayerInput] | None] = {
         0: None,
