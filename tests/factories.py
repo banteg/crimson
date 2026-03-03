@@ -7,7 +7,8 @@ from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import GameplayState
-from crimson.projectiles import ProjectileHit, ProjectileUpdateOptions
+from crimson.projectiles.runtime import ProjectileUpdateOptions
+from crimson.projectiles.types import ProjectileHit
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
