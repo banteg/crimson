@@ -25,12 +25,11 @@ from ..types import (
     ProjectileTemplateId,
 )
 from .behaviors import (
-    _DEFAULT_BEHAVIOR,
     _PROJECTILE_HIT_PERK_HOOKS,
-    PROJECTILE_BEHAVIOR_BY_TYPE_ID,
     _ProjectileHitInfo,
     _ProjectileHitPerkCtx,
     _ProjectileUpdateCtx,
+    projectile_behavior_for_type_id,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
 from .spatial_hash import CreatureSpatialHash
@@ -259,7 +258,7 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
-            behavior = PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(proj.type_id), _DEFAULT_BEHAVIOR)
+            behavior = projectile_behavior_for_type_id(proj.type_id)
 
             if proj.life_timer <= 0.0:
                 proj.active = False

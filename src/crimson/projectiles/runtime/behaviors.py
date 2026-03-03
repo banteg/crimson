@@ -314,17 +314,11 @@ def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo
     creature.plague_infected = True
 
 
-_DEFAULT_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
+_DEFAULT_PROJECTILE_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
 
-# Public: used by tests to ensure handler coverage.
+# Public: non-default behavior overrides keyed by projectile template id.
 PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
-    ProjectileTemplateId.PISTOL: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.ASSAULT_RIFLE: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.SHOTGUN: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.SUBMACHINE_GUN: _DEFAULT_BEHAVIOR,
     ProjectileTemplateId.GAUSS_GUN: ProjectileBehavior(linger=_linger_gauss_gun),
-    ProjectileTemplateId.PLASMA_RIFLE: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.PLASMA_MINIGUN: _DEFAULT_BEHAVIOR,
     ProjectileTemplateId.PULSE_GUN: ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
     ProjectileTemplateId.ION_RIFLE: ProjectileBehavior(
         linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle,
@@ -338,8 +332,6 @@ PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
     ProjectileTemplateId.SHRINKIFIER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_shrinkifier,
     ),
-    ProjectileTemplateId.BLADE_GUN: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.SPIDER_PLASMA: _DEFAULT_BEHAVIOR,
     ProjectileTemplateId.PLASMA_CANNON: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon,
     ),
@@ -347,6 +339,8 @@ PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
     ProjectileTemplateId.PLAGUE_SPREADER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plague_spreader,
     ),
-    ProjectileTemplateId.RAINBOW_GUN: _DEFAULT_BEHAVIOR,
-    ProjectileTemplateId.FIRE_BULLETS: _DEFAULT_BEHAVIOR,
 }
+
+
+def projectile_behavior_for_type_id(type_id: ProjectileTemplateId | int) -> ProjectileBehavior:
+    return PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(type_id), _DEFAULT_PROJECTILE_BEHAVIOR)
