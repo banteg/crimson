@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Protocol
 
 import msgspec
 
@@ -59,6 +59,12 @@ class _PerPlayerInputState(msgspec.Struct):
     aim_heading: float = 0.0
     move_target: Vec2 = Vec2(-1.0, -1.0)
     computer_target_creature_index: int = -1
+
+
+class _ComputerAimCreature(Protocol):
+    active: bool
+    hp: float
+    pos: Vec2
 
 
 def _is_finite(v: float) -> bool:
@@ -203,7 +209,7 @@ class LocalInputInterpreter:
                 self._states[slot].aim_heading = float(candidate)
 
     @staticmethod
-    def _nearest_living_creature_index(pos: Vec2, creatures: Sequence[Any]) -> int | None:
+    def _nearest_living_creature_index(pos: Vec2, creatures: Sequence[_ComputerAimCreature]) -> int | None:
         best_idx: int | None = None
         best_dist_sq = 0.0
         for idx, creature in enumerate(creatures):
@@ -222,7 +228,7 @@ class LocalInputInterpreter:
         *,
         player_index: int,
         player: PlayerState,
-        creatures: Sequence[Any],
+        creatures: Sequence[_ComputerAimCreature],
     ) -> int | None:
         slot = self._state_slot_for_player(player_index=int(player_index), player=player)
         state = self._states[slot]
@@ -284,7 +290,7 @@ class LocalInputInterpreter:
         mouse_world: Vec2,
         screen_center: Vec2,
         dt: float,
-        creatures: Sequence[Any] | None = None,
+        creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
@@ -530,7 +536,7 @@ class LocalInputInterpreter:
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
         dt: float,
-        creatures: Sequence[Any] | None = None,
+        creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
         screen_center = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)

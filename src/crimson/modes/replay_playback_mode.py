@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
-from crimson.quest_level import QuestLevel
 from grim import music as grim_music
 from grim.assets import TextureLoader
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
@@ -392,7 +391,8 @@ class ReplayPlaybackMode:
                 self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
                 self._quest_complete_texture = self._load_quest_complete_texture(world)
                 quest_stage_major, quest_stage_minor = quest.level_key
-                world.state.quest_level = QuestLevel.from_parts(quest_stage_major, quest_stage_minor)
+                world.state.quest_stage_major = int(quest_stage_major)
+                world.state.quest_stage_minor = int(quest_stage_minor)
 
                 default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
                 terrain_ids = quest.terrain_ids
@@ -773,7 +773,11 @@ class ReplayPlaybackMode:
                     assets=self._hud_assets,
                     state=self._hud_state,
                     font=self._small,
-                    flags=hud_flags,
+                    show_health=bool(hud_flags.show_health),
+                    show_weapon=bool(hud_flags.show_weapon),
+                    show_xp=bool(hud_flags.show_xp),
+                    show_time=bool(hud_flags.show_time),
+                    show_quest_hud=bool(hud_flags.show_quest_hud),
                     small_indicators=False,
                 ),
                 player=world.players[0],

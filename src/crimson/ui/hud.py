@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Any
+from typing import Protocol
 
 import msgspec
 
@@ -63,6 +63,11 @@ HUD_XP_BAR_RGBA = RGBA(0.1, 0.3, 0.6, 1.0)
 HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 
+class SmallFontLike(Protocol):
+    @property
+    def cell_size(self) -> int: ...
+
+
 class HudAssets(msgspec.Struct):
     game_top: rl.Texture | None
     life_heart: rl.Texture | None
@@ -86,21 +91,16 @@ class HudRenderFlags(msgspec.Struct, frozen=True):
     show_quest_hud: bool
 
 
-DEFAULT_HUD_RENDER_FLAGS = HudRenderFlags(
-    show_health=True,
-    show_weapon=True,
-    show_xp=True,
-    show_time=False,
-    show_quest_hud=False,
-)
-
-
 class HudRenderContext(msgspec.Struct, frozen=True):
     assets: HudAssets
     state: HudState
     font: SmallFontData | None = None
     alpha: float = 1.0
-    flags: HudRenderFlags = DEFAULT_HUD_RENDER_FLAGS
+    show_health: bool = True
+    show_weapon: bool = True
+    show_xp: bool = True
+    show_time: bool = False
+    show_quest_hud: bool = False
     small_indicators: bool = False
 
 
@@ -198,7 +198,7 @@ def hud_ui_scale(screen_w: float, screen_h: float) -> float:
     return float(scale)
 
 
-def hud_layout(screen_w: float, screen_h: float, *, font: Any | None, show_quest_hud: bool) -> HudLayout:
+def hud_layout(screen_w: float, screen_h: float, *, font: SmallFontLike | None, show_quest_hud: bool) -> HudLayout:
     scale = hud_ui_scale(float(screen_w), float(screen_h))
     text_scale = 1.0 * scale
     line_h = float(font.cell_size) * text_scale if font is not None else 18.0 * text_scale
@@ -343,12 +343,11 @@ def draw_hud_overlay(
     state = context.state
     font = context.font
     alpha = float(context.alpha)
-    flags = context.flags
-    show_health = bool(flags.show_health)
-    show_weapon = bool(flags.show_weapon)
-    show_xp = bool(flags.show_xp)
-    show_time = bool(flags.show_time)
-    show_quest_hud = bool(flags.show_quest_hud)
+    show_health = bool(context.show_health)
+    show_weapon = bool(context.show_weapon)
+    show_xp = bool(context.show_xp)
+    show_time = bool(context.show_time)
+    show_quest_hud = bool(context.show_quest_hud)
     small_indicators = bool(context.small_indicators)
 
     if frame_dt_ms is None:
