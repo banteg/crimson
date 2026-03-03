@@ -84,7 +84,6 @@ def _normalize_secondary_pool(
             "active": bool(entry.active),
             "type_id": int(entry.type_id),
             "target_id": int(entry.target_id),
-            "target_hint_active": bool(entry.target_hint_active),
             "pos": _normalize_vec2(entry.pos),
             "vel": _normalize_vec2(entry.vel),
             "angle": round(float(entry.angle), 6),
@@ -296,11 +295,11 @@ def test_primary_spawn_persists_velocity_vector() -> None:
 def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None:
     # Type 2: targeting pass
     pool = SecondaryProjectilePool(size=1)
-    idx = pool.spawn(pos=Vec2(), angle=0.0, type_id=2, target_hint=Vec2(1000.0, 0.0))
     creatures: list[CreatureState] = [
         _creature(pos=Vec2(100.0, 0.0), hp=100.0),
         _creature(pos=Vec2(1000.0, 0.0), hp=100.0),
     ]
+    idx = pool.spawn(pos=Vec2(), angle=0.0, type_id=2, target_hint=Vec2(1000.0, 0.0), creatures=creatures)
     pool.update_pulse_gun(0.01, creatures)
     snapshot(name="seek_target").assert_match(_normalize_secondary_pool(pool, idx, creatures))
 
