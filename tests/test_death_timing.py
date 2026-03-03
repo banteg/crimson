@@ -12,7 +12,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import ProjectileUpdateOptions
+from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -123,12 +123,14 @@ def test_detonation_followup_does_not_double_plan_death_sfx(mocker) -> None:
     creature.reward_value = 0.0
     creature.lifecycle_stage = 16.0
 
-    world.state.secondary_projectiles.spawn(
-        pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
-        angle=0.0,
-        type_id=SecondaryProjectileTypeId.DETONATION,
-        time_to_live=1.0,
-        owner=OwnerRef.from_player(0),
+    world.state.secondary_projectiles.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=1.0,
+            owner=OwnerRef.from_player(0),
+        ),
     )
 
     def _fake_plan(
@@ -195,8 +197,9 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
 
     plan_death_sfx = mocker.patch.object(world_state_mod, "plan_death_sfx_keys", side_effect=_fake_plan)
 
-    def _fake_projectile_update(*_args: object, options: ProjectileUpdateOptions, **_kwargs: object) -> list[ProjectileHit]:
-        _ = options
+    def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
+        ctx = cast("PrimaryStepCtx", _args[0])
+        _ = ctx.options
         apply_creature_damage = world.state.projectiles.creature_damage_applier
         assert apply_creature_damage is not None
         apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
@@ -205,7 +208,7 @@ def test_projectile_lethal_hit_plans_death_sfx_before_particles_update(mocker) -
     def _fake_particles_update(*_args: object, **_kwargs: object) -> None:
         assert death_planned["value"] is True
 
-    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
     mocker.patch.object(world.state.particles, "update", side_effect=_fake_particles_update)
     events = world.step(
         0.1,
@@ -313,16 +316,16 @@ def test_ranged_shock_lethal_skips_world_death_sfx_planning(mocker) -> None:
         wraps=world_state_mod.plan_death_sfx_keys,
     )
 
-    def _fake_projectile_update(*args: object, **kwargs: object) -> list[ProjectileHit]:
-        _ = args
-        options = cast("ProjectileUpdateOptions", kwargs.get("options"))
-        _ = options
+    def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
+        _ = kwargs
+        ctx = cast("PrimaryStepCtx", args[0])
+        _ = ctx.options
         apply_creature_damage = world.state.projectiles.creature_damage_applier
         if apply_creature_damage is not None:
             apply_creature_damage(0, 1000.0, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
         return []
 
-    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
     rng = MockCrand(0, fallback="repeat_last")
     world.state.rng = rng
     before_calls = rng.calls
@@ -426,13 +429,10 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         wraps=world_state_mod.plan_hit_sfx_keys,
     )
 
-    def _fake_projectile_update(
-        *_args: object,
-        options: ProjectileUpdateOptions,
-        **_kwargs: object,
-    ) -> list[ProjectileHit]:
-        on_hit = options.on_hit
-        on_hit_post = options.on_hit_post
+    def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:
+        ctx = cast("PrimaryStepCtx", args[0])
+        on_hit = ctx.options.on_hit
+        on_hit_post = ctx.options.on_hit_post
         if on_hit is None or on_hit_post is None:
             return []
         hit = ProjectileHit(
@@ -445,7 +445,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         on_hit_post(hit, post_ctx)
         return [hit]
 
-    mocker.patch.object(world.state.projectiles, "update", side_effect=_fake_projectile_update)
+    mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
     rng = MockCrand(0, fallback="repeat_last")
     world.state.rng = rng
     before_calls = rng.calls

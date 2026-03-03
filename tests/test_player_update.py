@@ -18,12 +18,13 @@ from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
-from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
-    player_fire_weapon,
+    WeaponFireCtx,
+    fire_weapon,
     weapon_assign_player,
 )
 from crimson.weapons import WeaponId
@@ -437,7 +438,7 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -464,7 +465,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
         player.fire_bullets_timer = 1.0
 
-        player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state)
+        fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), dt=0.016, state=state))
 
         weapon = WEAPON_BY_ID[weapon_id]
 
@@ -482,7 +483,7 @@ def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     assert_float_close(player.weapon.ammo, 10.0)
 
@@ -495,7 +496,7 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -511,7 +512,7 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
     pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.ION_CANNON, clip_size=6, ammo=-1.0, reload_active=False, reload_timer=0.0),)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), dt=0.016, state=state))
 
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTemplateId.ION_CANNON)]
@@ -535,7 +536,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     assert_float_close(player.spread_heat, expected)
 
@@ -556,7 +557,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     assert_float_close(player.spread_heat, expected)
 
@@ -571,7 +572,7 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     )
     player.aim_dir = Vec2(1.0, 0.0)
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), dt=0.0, state=state))
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -848,7 +849,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     shot_dy = float(f32(float(jitter_y) - float(player.pos.y)))
     expected_angle = float(heading_from_delta_f32(dx=float(shot_dx), dy=float(shot_dy)))
 
-    player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.0, state)
+    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), dt=0.0, state=state))
 
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
@@ -942,13 +943,15 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
 
-    pool.update(
-        0.1,
-        creatures,
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            rng=lambda: 0,
-            runtime_state=state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.1,
+            creatures=creatures,
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                rng=lambda: 0,
+                runtime_state=state,
+            ),
         ),
     )
 
@@ -956,13 +959,15 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
-    pool.update(
-        0.1,
-        creatures,
-        options=make_projectile_update_options(
-            world_size=1024.0,
-            rng=lambda: 0,
-            runtime_state=state,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.1,
+            creatures=creatures,
+            options=make_projectile_update_options(
+                world_size=1024.0,
+                rng=lambda: 0,
+                runtime_state=state,
+            ),
         ),
     )
 

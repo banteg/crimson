@@ -19,6 +19,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..owner_ref import OwnerRef
+from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
@@ -2088,12 +2089,14 @@ class LightingDebugView:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
                 16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
             )
-            self._world.state.secondary_projectiles.spawn(
-                pos=impact,
-                angle=float(heading),
-                type_id=SecondaryProjectileTypeId.DETONATION,
-                owner=OwnerRef.from_local_player(0),
-                time_to_live=float(profile.secondary_ttl),
+            self._world.state.secondary_projectiles.spawn_from_spec(
+                SecondarySpawnSpec(
+                    pos=impact,
+                    angle=float(heading),
+                    type_id=SecondaryProjectileTypeId.DETONATION,
+                    owner=OwnerRef.from_local_player(0),
+                    time_to_live=float(profile.secondary_ttl),
+                ),
             )
             self._push_transient_light(
                 impact,
@@ -2120,14 +2123,16 @@ class LightingDebugView:
                     owner=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
-                self._world.state.secondary_projectiles.spawn(
-                    pos=muzzle_pos,
-                    angle=angle,
-                    type_id=profile.secondary_type_id,
-                    owner=OwnerRef.from_local_player(0),
-                    time_to_live=float(profile.secondary_ttl),
-                    creatures=self._world.creatures.entries,
-                    target_hint=player.aim,
+                self._world.state.secondary_projectiles.spawn_from_spec(
+                    SecondarySpawnSpec(
+                        pos=muzzle_pos,
+                        angle=angle,
+                        type_id=profile.secondary_type_id,
+                        owner=OwnerRef.from_local_player(0),
+                        time_to_live=float(profile.secondary_ttl),
+                        creatures=self._world.creatures.entries,
+                        target_hint=player.aim,
+                    ),
                 )
 
         self._push_transient_light(

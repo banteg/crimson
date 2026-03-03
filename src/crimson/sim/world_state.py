@@ -28,7 +28,7 @@ from ..perks.runtime.effects import perks_update_effects
 from ..perks.runtime.manifest import PLAYER_DEATH_HOOKS, WORLD_DT_STEPS
 from ..perks.state import CreatureForPerks
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.runtime import ProjectileUpdateOptions
+from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
@@ -257,29 +257,34 @@ class WorldState(msgspec.Struct):
                 hit_audio_game_tune_started = True
             if keys:
                 hit_sfx.extend(keys)
-        hits = self.state.projectiles.update(
-            dt,
-            self.creatures.entries,
-            options=ProjectileUpdateOptions(
-                world_size=float(world_size),
-                damage_scale_by_type=damage_scale_by_type,
-                detail_preset=int(detail_preset),
-                rng=self.state.rng.rand,
-                runtime_state=self.state, players=self.players,
-                apply_player_damage=_apply_projectile_damage_to_player,
-                on_hit=_on_projectile_hit_pre,
-                on_hit_post=cast("Callable[[ProjectileHit, object], None]", _on_projectile_hit_post),
+        hits = self.state.projectiles.step(
+            PrimaryStepCtx(
+                dt=float(dt),
+                creatures=self.creatures.entries,
+                options=ProjectileUpdateOptions(
+                    world_size=float(world_size),
+                    damage_scale_by_type=damage_scale_by_type,
+                    detail_preset=int(detail_preset),
+                    rng=self.state.rng.rand,
+                    runtime_state=self.state,
+                    players=self.players,
+                    apply_player_damage=_apply_projectile_damage_to_player,
+                    on_hit=_on_projectile_hit_pre,
+                    on_hit_post=cast("Callable[[ProjectileHit, object], None]", _on_projectile_hit_post),
+                ),
             ),
         )
         _mark("ws_after_projectiles")
         _mark("ws_after_hit_sfx")
-        self.state.secondary_projectiles.update_pulse_gun(
-            dt,
-            self.creatures.entries,
-            runtime_state=self.state,
-            fx_queue=fx_queue,
-            detail_preset=int(detail_preset),
-            on_detonation_kill=_on_secondary_detonation_kill,
+        self.state.secondary_projectiles.step(
+            SecondaryStepCtx(
+                dt=float(dt),
+                creatures=self.creatures.entries,
+                runtime_state=self.state,
+                fx_queue=fx_queue,
+                detail_preset=int(detail_preset),
+                on_detonation_kill=_on_secondary_detonation_kill,
+            ),
         )
         _mark("ws_after_secondary_projectiles")
         self._run_post_damage_player_death_hooks(

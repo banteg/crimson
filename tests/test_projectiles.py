@@ -12,8 +12,11 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import (
+    PrimaryStepCtx,
     ProjectilePool,
     SecondaryProjectilePool,
+    SecondarySpawnSpec,
+    SecondaryStepCtx,
     projectile_collision_profile,
 )
 from crimson.projectiles.runtime.collision import _within_native_find_radius
@@ -230,23 +233,27 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         )
         creatures = case["creatures"]
         damage_scale_by_type = case.get("damage_scale_by_type") or {int(case["type_id"]): 1.0}
-        hits = pool.update(
-            0.1,
-            creatures,
-            options=make_projectile_update_options(
-                world_size=1024.0,
-                damage_scale_by_type=damage_scale_by_type,
-                rng=case.get("rng"),
-            ),
-        )
-        if case.get("double_update", False):
-            more_hits = pool.update(
-                0.1,
-                creatures,
+        hits = pool.step(
+            PrimaryStepCtx(
+                dt=0.1,
+                creatures=creatures,
                 options=make_projectile_update_options(
                     world_size=1024.0,
                     damage_scale_by_type=damage_scale_by_type,
                     rng=case.get("rng"),
+                ),
+            ),
+        )
+        if case.get("double_update", False):
+            more_hits = pool.step(
+                PrimaryStepCtx(
+                    dt=0.1,
+                    creatures=creatures,
+                    options=make_projectile_update_options(
+                        world_size=1024.0,
+                        damage_scale_by_type=damage_scale_by_type,
+                        rng=case.get("rng"),
+                    ),
                 ),
             )
             hits = [*hits, *more_hits]
@@ -302,33 +309,39 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
         _creature(pos=Vec2(100.0, 0.0), hp=100.0),
         _creature(pos=Vec2(1000.0, 0.0), hp=100.0),
     ]
-    idx = pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-        target_hint=Vec2(1000.0, 0.0),
-        creatures=creatures,
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+            target_hint=Vec2(1000.0, 0.0),
+            creatures=creatures,
+        ),
     )
-    pool.update_pulse_gun(0.01, creatures)
+    pool.step(SecondaryStepCtx(dt=0.01, creatures=creatures))
     snapshot(name="seek_target").assert_match(_normalize_secondary_pool(pool, idx, creatures))
 
     # Type 3: detonation pass + runtime side effects
     runtime_state = GameplayState()
     fx_queue = FxQueue()
     detonation_pool = SecondaryProjectilePool(size=1)
-    detonation_idx = detonation_pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=SecondaryProjectileTypeId.DETONATION,
-        time_to_live=1.0,
+    detonation_idx = detonation_pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=1.0,
+        ),
     )
     detonation_creatures: list[CreatureState] = [_creature(pos=Vec2(3.0, 4.0), hp=1000.0)]
-    detonation_pool.update_pulse_gun(
-        0.1,
-        detonation_creatures,
-        runtime_state=runtime_state,
-        fx_queue=fx_queue,
-        detail_preset=5,
+    detonation_pool.step(
+        SecondaryStepCtx(
+            dt=0.1,
+            creatures=detonation_creatures,
+            runtime_state=runtime_state,
+            fx_queue=fx_queue,
+            detail_preset=5,
+        ),
     )
     snapshot(name="detonation").assert_match(
         _normalize_secondary_pool(
@@ -343,12 +356,14 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
 
 def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion, mocker) -> None:
     pool = SecondaryProjectilePool(size=1)
-    pool.spawn(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0),
+    )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     apply_damage = mocker.Mock()
     pool.creature_damage_applier = apply_damage
-    pool.update_pulse_gun(0.1, creatures)
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures))
 
     snapshot.assert_match(
         [
@@ -366,7 +381,9 @@ def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAsser
 
 def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion, mocker) -> None:
     pool = SecondaryProjectilePool(size=1)
-    pool.spawn(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.DETONATION, time_to_live=1.0)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.DETONATION, time_to_live=1.0),
+    )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, 0.0), hp=20.0)]
     fx_queue = FxQueue()
 
@@ -376,11 +393,13 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
 
     on_kill = mocker.Mock()
     pool.creature_damage_applier = _apply
-    pool.update_pulse_gun(
-        0.1,
-        creatures,
-        fx_queue=fx_queue,
-        on_detonation_kill=on_kill,
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.1,
+            creatures=creatures,
+            fx_queue=fx_queue,
+            on_detonation_kill=on_kill,
+        ),
     )
 
     snapshot.assert_match(

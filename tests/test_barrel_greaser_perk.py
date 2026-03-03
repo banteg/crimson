@@ -6,7 +6,7 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import weapon_entry_for_projectile_type_id
@@ -50,13 +50,15 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     if barrel_greaser_active:
         players[0].perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
-    pool.update(
-        0.016,
-        [],
-        options=make_projectile_update_options(
-            world_size=10000.0,
-            rng=lambda: 0,
-            players=players,
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=[],
+            options=make_projectile_update_options(
+                world_size=10000.0,
+                rng=lambda: 0,
+                players=players,
+            ),
         ),
     )
 

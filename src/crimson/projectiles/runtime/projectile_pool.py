@@ -29,9 +29,9 @@ from .behaviors import (
     _ProjectileHitInfo,
     _ProjectileHitPerkCtx,
     _ProjectileUpdateCtx,
-    projectile_behavior_for_type_id,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for, _within_native_find_radius
+from .primary_rules import apply_linger, apply_post_hit, apply_pre_hit, primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -50,6 +50,12 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     detail_preset: int = 5
     on_hit: Callable[[ProjectileHit], object] | None = None
     on_hit_post: Callable[[ProjectileHit, object], None] | None = None
+
+
+class PrimaryStepCtx(msgspec.Struct, frozen=True):
+    dt: float
+    creatures: Sequence[CreatureState]
+    options: ProjectileUpdateOptions
 
 
 _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
@@ -145,18 +151,14 @@ class ProjectilePool:
     def iter_active(self) -> list[Projectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def update(
-        self,
-        dt: float,
-        creatures: Sequence[CreatureState],
-        *,
-        options: ProjectileUpdateOptions,
-    ) -> list[ProjectileHit]:
+    def step(self, ctx: PrimaryStepCtx) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        dt = float(f32(float(dt)))
+        dt = float(f32(float(ctx.dt)))
+        creatures = ctx.creatures
+        options = ctx.options
         world_size = float(f32(float(options.world_size)))
         damage_scale_by_type = options.damage_scale_by_type
         ion_aoe_scale = float(options.ion_aoe_scale)
@@ -237,7 +239,7 @@ class ProjectilePool:
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)
 
-        ctx = _ProjectileUpdateCtx(
+        update_ctx = _ProjectileUpdateCtx(
             pool=self,
             creatures=creatures,
             dt=float(dt),
@@ -258,7 +260,7 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
-            behavior = projectile_behavior_for_type_id(ProjectileTemplateId(proj.type_id))
+            rule = primary_rule_for_type_id(ProjectileTemplateId(proj.type_id))
 
             if proj.life_timer <= 0.0:
                 proj.active = False
@@ -267,9 +269,9 @@ class ProjectilePool:
                 # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
-                if proj.type_id in (ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_MINIGUN):
+                if rule.reset_shock_chain_on_linger:
                     _reset_shock_chain_if_owner(proj_index)
-                behavior.linger(ctx, proj)
+                apply_linger(rule.linger, update_ctx, proj)
                 continue
 
             if (
@@ -400,8 +402,7 @@ class ProjectilePool:
                     for hook in _PROJECTILE_HIT_PERK_HOOKS:
                         hook(perk_ctx)
 
-                    if behavior.pre_hit_creature is not None:
-                        behavior.pre_hit_creature(ctx, proj, int(hit_idx))
+                    apply_pre_hit(rule.pre_hit, update_ctx, proj, int(hit_idx))
 
                     owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
                     if owner_player_index is not None and creature_lifecycle_is_alive(creature.lifecycle_stage):
@@ -418,11 +419,7 @@ class ProjectilePool:
                     hits.append(hit)
                     hit_ctx = on_hit(hit) if on_hit is not None else None
 
-                    if proj.life_timer != 0.25 and type_id not in (
-                        ProjectileTemplateId.FIRE_BULLETS,
-                        ProjectileTemplateId.GAUSS_GUN,
-                        ProjectileTemplateId.BLADE_GUN,
-                    ):
+                    if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng() & 3
                         jitter_dx = float(f32(float(dir_x) * float(jitter)))
@@ -434,17 +431,17 @@ class ProjectilePool:
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)
 
-                    if behavior.post_hit_creature is not None:
-                        behavior.post_hit_creature(
-                            ctx,
-                            _ProjectileHitInfo(
-                                proj_index=int(proj_index),
-                                proj=proj,
-                                hit_idx=int(hit_idx),
-                                move=move,
-                                target=target,
-                            ),
-                        )
+                    apply_post_hit(
+                        rule.post_hit,
+                        update_ctx,
+                        _ProjectileHitInfo(
+                            proj_index=int(proj_index),
+                            proj=proj,
+                            hit_idx=int(hit_idx),
+                            move=move,
+                            target=target,
+                        ),
+                    )
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = _projectile_damage_amount_f32(dist, damage_scale)
@@ -490,7 +487,7 @@ class ProjectilePool:
                     if (
                         float(runtime_state.bonuses.freeze) > 0.0
                         and effects is not None
-                        and type_id not in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS)
+                        and rule.emit_freeze_shard
                     ):
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
                         shard_angle += float(int(rng()) % 0x264) * 0.01
@@ -509,11 +506,7 @@ class ProjectilePool:
                         if life_before != 0.25:
                             proj.life_timer = 0.25
 
-                    if proj.life_timer == 0.25 and type_id not in (
-                        ProjectileTemplateId.FIRE_BULLETS,
-                        ProjectileTemplateId.GAUSS_GUN,
-                        ProjectileTemplateId.BLADE_GUN,
-                    ):
+                    if proj.life_timer == 0.25 and rule.stop_on_hit:
                         if on_hit_post is not None and hit_ctx is not None:
                             on_hit_post(hit, hit_ctx)
                         break
