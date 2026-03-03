@@ -176,7 +176,11 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
-        self._replay_input_provider = ReplayInputProvider(player_count=0, tick_inputs=[])
+        self._replay_input_provider = ReplayInputProvider(
+            player_count=0,
+            resolve_tick_input=lambda _tick_index: None,
+            tick_count=0,
+        )
 
     @property
     def tick_index(self) -> int:

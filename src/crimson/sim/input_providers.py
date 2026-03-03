@@ -72,20 +72,12 @@ class ReplayInputProvider:
         self,
         *,
         player_count: int,
-        tick_inputs: Sequence[Sequence[PlayerInput]] | None = None,
-        resolve_tick_input: ReplayTickInputResolver | None = None,
+        resolve_tick_input: ReplayTickInputResolver,
         tick_count: int | None = None,
     ) -> None:
         self._player_count = max(0, int(player_count))
-        self._tick_inputs: list[list[PlayerInput]] | None = (
-            [list(row) for row in tick_inputs]
-            if tick_inputs is not None
-            else None
-        )
         self._resolve_tick_input = resolve_tick_input
-        if self._tick_inputs is not None:
-            self._tick_count: int | None = int(len(self._tick_inputs))
-        elif tick_count is not None:
+        if tick_count is not None:
             self._tick_count = max(0, int(tick_count))
         else:
             self._tick_count = None
@@ -100,15 +92,10 @@ class ReplayInputProvider:
         tick_count = self._tick_count
         if tick_count is not None and idx >= int(tick_count):
             raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
-        if self._tick_inputs is not None:
-            row = self._tick_inputs[idx]
-        elif self._resolve_tick_input is not None:
-            resolved = self._resolve_tick_input(int(idx))
-            if resolved is None:
-                raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
-            row = list(resolved)
-        else:
+        resolved = self._resolve_tick_input(int(idx))
+        if resolved is None:
             raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
+        row = list(resolved)
         return normalize_provider_tick_inputs(inputs=row, player_count=self._player_count)
 
 

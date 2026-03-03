@@ -42,7 +42,11 @@ def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
 
 
 def test_replay_provider_uses_eos_exception_not_stall_none() -> None:
-    provider = ReplayInputProvider(player_count=1, tick_inputs=[[PlayerInput()]])
+    provider = ReplayInputProvider(
+        player_count=1,
+        resolve_tick_input=lambda tick_index: [PlayerInput()] if int(tick_index) == 0 else None,
+        tick_count=1,
+    )
     provider.begin_frame()
 
     tick0 = provider.pull_tick_input(0)

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import inspect
+from collections.abc import Callable
 from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
@@ -129,7 +130,32 @@ def test_replay_driver_tick_fails_fast_when_provider_inputs_missing(replay_playb
         view._run_driver_tick(0, inputs=None)
 
 
-def test_replay_open_uses_lazy_replay_input_provider_wiring() -> None:
-    source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
-    assert "resolve_tick_input=" in source
-    assert "tick_inputs=[unpack_tick_inputs(" not in source
+def test_replay_open_wires_lazy_input_provider_resolver(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    replay = _replay_with_ticks(3)
+    captured: dict[str, object] = {}
+
+    class _StopOpen(Exception):
+        pass
+
+    def _capture_provider(*, player_count: int, resolve_tick_input, tick_count: int) -> object:
+        captured["player_count"] = int(player_count)
+        captured["resolve_tick_input"] = resolve_tick_input
+        captured["tick_count"] = int(tick_count)
+        raise _StopOpen()
+
+    mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
+    mocker.patch.object(replay_playback_mode, "load_hud_assets", return_value=None)
+    mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
+    mocker.patch.object(replay_playback_mode, "ReplayInputProvider", side_effect=_capture_provider)
+
+    with pytest.raises(_StopOpen):
+        view.open()
+
+    resolve_tick_input = cast(Callable[[int], list[PlayerInput] | None], captured["resolve_tick_input"])
+    assert captured["player_count"] == int(replay.header.player_count)
+    assert captured["tick_count"] == len(replay.inputs)
+    assert callable(resolve_tick_input)
+    row = resolve_tick_input(0)
+    assert row is not None
+    assert len(row) == 1
