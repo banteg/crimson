@@ -690,6 +690,12 @@ class BaseGameplayMode:
             return int(LAN_SIM_FX_TOGGLE)
         return self.config.fx_toggle
 
+    def update(self, dt: float) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
+
+    def draw(self) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}.draw() must be implemented by gameplay mode")
+
     def open(self) -> None:
         self.close_requested = False
         self._action = None

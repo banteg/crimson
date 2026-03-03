@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import webbrowser
-from typing import Any
 
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import update_audio
@@ -14,6 +13,7 @@ from grim.rand import Crand
 from grim.raylib_api import rd, rl
 
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
+from .game.types import GameState
 from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
@@ -68,7 +68,7 @@ class DemoView:
       - demo_mode_start       @ 0x00403390
     """
 
-    def __init__(self, state: Any) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
         self._world = GameWorld(
             assets_dir=state.assets_dir,

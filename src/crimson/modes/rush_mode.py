@@ -23,8 +23,7 @@ from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
 )
-from ..net.session_settings import session_settings_for_lockstep
-from ..replay import ReplayClaimedStatsSnapshot, ReplayRecorder, dump_replay
+from ..replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -36,13 +35,12 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
-from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
-from ..status_snapshot import progress_status_from_game_status, replay_status_from_progress
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
@@ -202,28 +200,32 @@ class RushMode(BaseGameplayMode):
             enforce_loadout=self._enforce_rush_loadout,
         )
         self._enforce_rush_loadout()
-        status_snapshot = replay_status_from_progress(progress_status_from_game_status(status))
+        weapon_usage_counts = normalize_weapon_usage_counts(
+            status.data.get("weapon_usage_counts") if status is not None else None,
+        )
+        status_snapshot = ReplayStatusSnapshot(
+            quest_unlock_index=int(status.quest_unlock_index) if status is not None else 0,
+            quest_unlock_index_full=int(status.quest_unlock_index_full)
+            if status is not None
+            else 0,
+            weapon_usage_counts=weapon_usage_counts,
+        )
         record_replay = (not bool(self._lan_enabled)) or str(self._lan_role) == "host"
         if record_replay:
-            settings = session_settings_for_lockstep(
-                mode_id=int(GameMode.RUSH),
-                player_count=len(self.world.players),
-                quest_level="",
-                preserve_bugs=bool(self.state.preserve_bugs),
-                tick_rate=int(self._sim_clock.tick_rate),
-                input_delay_ticks=0,
-            )
             self._replay_recorder = ReplayRecorder(
-                replay_header_from_session_settings(
-                    settings,
+                ReplayHeader(
+                    game_mode_id=GameMode.RUSH,
                     seed=int(self.state.rng.state),
                     bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
+                    tick_rate=int(self._sim_clock.tick_rate),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
+                    preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
                     fx_toggle=int(self._deterministic_fx_toggle()),
                     world_size=float(self.world.world_size),
+                    player_count=len(self.world.players),
                     status=status_snapshot,
                 ),
             )
@@ -591,7 +593,11 @@ class RushMode(BaseGameplayMode):
                     assets=self._hud_assets,
                     state=self._hud_state,
                     font=self._small,
-                    flags=hud_flags,
+                    show_health=hud_flags.show_health,
+                    show_weapon=hud_flags.show_weapon,
+                    show_xp=hud_flags.show_xp,
+                    show_time=hud_flags.show_time,
+                    show_quest_hud=hud_flags.show_quest_hud,
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,

@@ -7,6 +7,7 @@ from grim.audio import stop_music
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..render.rtx.mode import RtxRenderMode
 from .types import GameState, HighScoresRequest
 
@@ -14,7 +15,6 @@ if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
 
-    from ..modes.base_gameplay_mode import BaseGameplayMode
     from ..modes.quest_mode import QuestMode
 
 
