@@ -6,7 +6,7 @@ from crimson.gameplay import (
 )
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import ProjectilePool
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import player_fire_weapon
@@ -26,7 +26,7 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     player_update(player, PlayerInput(aim=Vec2(200.0, 100.0)), 0.1, state)
     assert_float_close(player.spread_heat, 0.02)
 
-    weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.ASSAULT_RIFLE)
+    weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.ASSAULT_RIFLE)
     base_cooldown = float(weapon.shot_cooldown)
     expected_cooldown = base_cooldown * 1.05
 

@@ -10,7 +10,7 @@ from grim.audio import AudioState, play_sfx, trigger_game_tune
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
-from .projectiles.types import ProjectileHit, ProjectileTypeId
+from .projectiles.types import ProjectileHit, ProjectileTemplateId
 from .weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 
 if TYPE_CHECKING:
@@ -160,7 +160,7 @@ class AudioRouter(msgspec.Struct):
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        ammo_class = weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).ammo_class
+        ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(int(type_id))).ammo_class
         if ammo_class == 4:
             return "sfx_shock_hit_01"
         return self._rand_choice(rand, _BULLET_HIT_SFX)

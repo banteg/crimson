@@ -28,7 +28,7 @@ from .projectiles.runtime import (
     ProjectilePool,
     SecondaryProjectilePool,
 )
-from .projectiles.types import ProjectileTypeId
+from .projectiles.types import ProjectileTemplateId
 from .sim.state_types import PERK_COUNT_SIZE
 from .sim.timing import ftol_ms_i32
 from .weapon_runtime import (
@@ -915,7 +915,7 @@ def player_update(
                     player.pos,
                     count=count,
                     angle_offset=0.1,
-                    type_id=ProjectileTypeId.PLASMA_MINIGUN,
+                    type_id=ProjectileTemplateId.PLASMA_MINIGUN,
                     owner=_owner_ref_for_player_projectiles(state, player.index),
                     owner_player_index=player.index,
                     players=players,

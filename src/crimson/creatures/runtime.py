@@ -40,7 +40,7 @@ from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import player_take_damage
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import GameplayState, PlayerState
 from ..sim.timing import ftol_ms_i32
 from ..weapons import weapon_entry_for_projectile_type_id
@@ -213,7 +213,7 @@ def _owner_to_player_index(owner: OwnerRef) -> int | None:
     return owner.player_index()
 
 
-def _travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
+def _travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
     return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
@@ -1170,7 +1170,7 @@ class CreaturePool:
                 # around the 0x004276xx ranged-fire branch).
                 if target_dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                        type_id = ProjectileTypeId.PLASMA_RIFLE
+                        type_id = ProjectileTemplateId.PLASMA_RIFLE
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),
@@ -1183,7 +1183,7 @@ class CreaturePool:
                         creature.attack_cooldown += 1.0
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
-                        projectile_type = ProjectileTypeId(int(creature.orbit_radius))
+                        projectile_type = ProjectileTemplateId(int(creature.orbit_radius))
                         state.projectiles.spawn(
                             pos=creature.pos,
                             angle=float(creature.heading),

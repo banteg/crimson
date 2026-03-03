@@ -5,7 +5,7 @@ import math
 from grim.geom import Vec2
 
 from ..owner_ref import OwnerRef
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import weapon_entry_for_projectile_type_id
 
@@ -20,7 +20,7 @@ def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) ->
     return owner_ref_for_player(player_index)
 
 
-def travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
+def travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
     return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
@@ -99,7 +99,7 @@ def projectile_spawn(
     players: list[PlayerState] | None,
     pos: Vec2,
     angle: float,
-    type_id: ProjectileTypeId,
+    type_id: ProjectileTemplateId,
     owner: OwnerRef,
     owner_player_index: int | None = None,
     hits_players: bool = False,
@@ -116,7 +116,7 @@ def projectile_spawn(
             state.shots_fired_total += 1
             if player_index is not None:
                 state.shots_fired[player_index] += 1
-            if type_id == ProjectileTypeId.FIRE_BULLETS:
+            if type_id == ProjectileTemplateId.FIRE_BULLETS:
                 break
             if not _fire_bullets_active(
                 players,
@@ -125,7 +125,7 @@ def projectile_spawn(
                 owner_player_index=owner_player_index,
             ):
                 break
-            type_id = ProjectileTypeId.FIRE_BULLETS
+            type_id = ProjectileTemplateId.FIRE_BULLETS
 
     meta = travel_budget_for_type_id(type_id)
     return state.projectiles.spawn(
@@ -144,7 +144,7 @@ def spawn_projectile_ring(
     *,
     count: int,
     angle_offset: float,
-    type_id: ProjectileTypeId,
+    type_id: ProjectileTemplateId,
     owner: OwnerRef,
     owner_player_index: int | None = None,
     players: list[PlayerState] | None = None,

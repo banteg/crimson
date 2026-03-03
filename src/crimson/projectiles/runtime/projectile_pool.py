@@ -22,7 +22,7 @@ from ..types import (
     ProjectileCollisionProfile,
     ProjectileHit,
     ProjectileRuntimeState,
-    ProjectileTypeId,
+    ProjectileTemplateId,
 )
 from .behaviors import (
     _DEFAULT_BEHAVIOR,
@@ -58,18 +58,18 @@ _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
     initial_damage_pool=1.0,
 )
 
-_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTypeId, ProjectileCollisionProfile] = {
-    ProjectileTypeId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
-    ProjectileTypeId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
-    ProjectileTypeId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    ProjectileTypeId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    ProjectileTypeId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
-    ProjectileTypeId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
-    ProjectileTypeId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
+_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTemplateId, ProjectileCollisionProfile] = {
+    ProjectileTemplateId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
+    ProjectileTemplateId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
+    ProjectileTemplateId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    ProjectileTemplateId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+    ProjectileTemplateId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
+    ProjectileTemplateId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
+    ProjectileTemplateId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
 }
 
 
-def projectile_collision_profile(type_id: ProjectileTypeId) -> ProjectileCollisionProfile:
+def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCollisionProfile:
     return _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID.get(
         type_id,
         _DEFAULT_PROJECTILE_COLLISION_PROFILE,
@@ -102,7 +102,7 @@ class ProjectilePool:
         *,
         pos: Vec2,
         angle: float,
-        type_id: ProjectileTypeId,
+        type_id: ProjectileTemplateId,
         owner: OwnerRef,
         travel_budget: float = 0.0,
         hits_players: bool = False,
@@ -218,7 +218,7 @@ class ProjectilePool:
             value = damage_scale_by_type.get(type_id)
             if value is not None:
                 return float(value)
-            return float(weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).damage_scale)
+            return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(int(type_id))).damage_scale)
 
         def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:
             dx = float(f32(float(origin.x) - float(pos.x)))
@@ -268,7 +268,7 @@ class ProjectilePool:
                 # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
-                if proj.type_id in (ProjectileTypeId.ION_RIFLE, ProjectileTypeId.ION_MINIGUN):
+                if proj.type_id in (ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_MINIGUN):
                     _reset_shock_chain_if_owner(proj_index)
                 behavior.linger(ctx, proj)
                 continue
@@ -422,9 +422,9 @@ class ProjectilePool:
                         hit_ctx = on_hit(hit)
 
                     if proj.life_timer != 0.25 and type_id not in (
-                        ProjectileTypeId.FIRE_BULLETS,
-                        ProjectileTypeId.GAUSS_GUN,
-                        ProjectileTypeId.BLADE_GUN,
+                        ProjectileTemplateId.FIRE_BULLETS,
+                        ProjectileTemplateId.GAUSS_GUN,
+                        ProjectileTemplateId.BLADE_GUN,
                     ):
                         proj.life_timer = 0.25
                         jitter = rng() & 3
@@ -493,7 +493,7 @@ class ProjectilePool:
                     if (
                         float(runtime_state.bonuses.freeze) > 0.0
                         and effects is not None
-                        and type_id not in (ProjectileTypeId.GAUSS_GUN, ProjectileTypeId.FIRE_BULLETS)
+                        and type_id not in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS)
                     ):
                         shard_angle = float(float(proj.angle) - NATIVE_HALF_PI)
                         shard_angle += float(int(rng()) % 0x264) * 0.01
@@ -513,9 +513,9 @@ class ProjectilePool:
                             proj.life_timer = 0.25
 
                     if proj.life_timer == 0.25 and type_id not in (
-                        ProjectileTypeId.FIRE_BULLETS,
-                        ProjectileTypeId.GAUSS_GUN,
-                        ProjectileTypeId.BLADE_GUN,
+                        ProjectileTemplateId.FIRE_BULLETS,
+                        ProjectileTemplateId.GAUSS_GUN,
+                        ProjectileTemplateId.BLADE_GUN,
                     ):
                         if on_hit_post is not None:
                             on_hit_post(hit, hit_ctx)
@@ -559,7 +559,7 @@ class ProjectilePool:
                 continue
 
             if proj.life_timer < 0.4:
-                if proj.type_id == ProjectileTypeId.ION_RIFLE:
+                if proj.type_id == ProjectileTemplateId.ION_RIFLE:
                     damage = dt * 100.0
                     radius = 88.0
                     for creature in creatures:
@@ -569,7 +569,7 @@ class ProjectilePool:
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
                             creature.hp -= damage
-                elif proj.type_id == ProjectileTypeId.ION_MINIGUN:
+                elif proj.type_id == ProjectileTemplateId.ION_MINIGUN:
                     damage = dt * 40.0
                     radius = 60.0
                     for creature in creatures:

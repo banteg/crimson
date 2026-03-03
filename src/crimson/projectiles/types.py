@@ -66,7 +66,7 @@ MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
 
-class ProjectileTypeId(IntEnum):
+class ProjectileTemplateId(IntEnum):
     # Values are projectile type ids (not weapon ids). Based on the decompile
     # for `player_fire_weapon` and `projectile_update`.
     PISTOL = 0x01
@@ -160,7 +160,7 @@ __all__ = [
     "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectileRuntimeState",
-    "ProjectileTypeId",
+    "ProjectileTemplateId",
     "OwnerRef",
     "SecondaryDetonationKillHandler",
     "SECONDARY_PROJECTILE_POOL_SIZE",

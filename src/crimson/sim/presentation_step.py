@@ -15,7 +15,7 @@ from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hoo
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles.types import ProjectileHit, ProjectileTypeId
+from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import BEAM_TYPES
@@ -120,7 +120,7 @@ def _hit_sfx_for_type(
     rand: Callable[[], int],
 ) -> str | None:
     _ = beam_types
-    ammo_class = weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).ammo_class
+    ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(int(type_id))).ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
     return _rand_choice(rand, _BULLET_HIT_SFX)
@@ -241,7 +241,7 @@ def queue_projectile_decals_pre_hit(
 
     base_angle = (hit.hit - hit.origin).to_angle()
 
-    if type_id == int(ProjectileTypeId.BLADE_GUN):
+    if type_id == int(ProjectileTemplateId.BLADE_GUN):
         for _ in range(8):
             state.effects.spawn_blood_splatter(
                 pos=hit.hit,

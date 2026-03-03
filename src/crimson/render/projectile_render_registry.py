@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 
 
 class PlasmaProjectileRenderConfig(msgspec.Struct, frozen=True):
@@ -31,7 +31,7 @@ _DEFAULT_PLASMA_RENDER_CONFIG = PlasmaProjectileRenderConfig(
 
 
 PLASMA_PROJECTILE_RENDER_CONFIG_BY_TYPE_ID: dict[int, PlasmaProjectileRenderConfig] = {
-    ProjectileTypeId.PLASMA_RIFLE: PlasmaProjectileRenderConfig(
+    ProjectileTemplateId.PLASMA_RIFLE: PlasmaProjectileRenderConfig(
         rgb=(1.0, 1.0, 1.0),
         spacing=2.5,
         seg_limit=8,
@@ -42,8 +42,8 @@ PLASMA_PROJECTILE_RENDER_CONFIG_BY_TYPE_ID: dict[int, PlasmaProjectileRenderConf
         aura_size=256.0,
         aura_alpha_mul=0.3,
     ),
-    ProjectileTypeId.PLASMA_MINIGUN: _DEFAULT_PLASMA_RENDER_CONFIG,
-    ProjectileTypeId.PLASMA_CANNON: PlasmaProjectileRenderConfig(
+    ProjectileTemplateId.PLASMA_MINIGUN: _DEFAULT_PLASMA_RENDER_CONFIG,
+    ProjectileTemplateId.PLASMA_CANNON: PlasmaProjectileRenderConfig(
         rgb=(1.0, 1.0, 1.0),
         spacing=2.6,
         seg_limit=18,
@@ -54,7 +54,7 @@ PLASMA_PROJECTILE_RENDER_CONFIG_BY_TYPE_ID: dict[int, PlasmaProjectileRenderConf
         aura_size=256.0,
         aura_alpha_mul=0.4,
     ),
-    ProjectileTypeId.SPIDER_PLASMA: PlasmaProjectileRenderConfig(
+    ProjectileTemplateId.SPIDER_PLASMA: PlasmaProjectileRenderConfig(
         rgb=(0.3, 1.0, 0.3),
         spacing=_DEFAULT_PLASMA_RENDER_CONFIG.spacing,
         seg_limit=_DEFAULT_PLASMA_RENDER_CONFIG.seg_limit,
@@ -65,7 +65,7 @@ PLASMA_PROJECTILE_RENDER_CONFIG_BY_TYPE_ID: dict[int, PlasmaProjectileRenderConf
         aura_size=_DEFAULT_PLASMA_RENDER_CONFIG.aura_size,
         aura_alpha_mul=_DEFAULT_PLASMA_RENDER_CONFIG.aura_alpha_mul,
     ),
-    ProjectileTypeId.SHRINKIFIER: PlasmaProjectileRenderConfig(
+    ProjectileTemplateId.SHRINKIFIER: PlasmaProjectileRenderConfig(
         rgb=(0.3, 0.3, 1.0),
         spacing=_DEFAULT_PLASMA_RENDER_CONFIG.spacing,
         seg_limit=_DEFAULT_PLASMA_RENDER_CONFIG.seg_limit,
@@ -84,9 +84,9 @@ def plasma_projectile_render_config(type_id: int) -> PlasmaProjectileRenderConfi
 
 
 BEAM_EFFECT_SCALE_BY_TYPE_ID: dict[int, float] = {
-    ProjectileTypeId.ION_MINIGUN: 1.05,
-    ProjectileTypeId.ION_RIFLE: 2.2,
-    ProjectileTypeId.ION_CANNON: 3.5,
+    ProjectileTemplateId.ION_MINIGUN: 1.05,
+    ProjectileTemplateId.ION_RIFLE: 2.2,
+    ProjectileTemplateId.ION_CANNON: 3.5,
 }
 
 
@@ -95,12 +95,12 @@ def beam_effect_scale(type_id: int) -> float:
 
 
 KNOWN_PROJ_RGB_BY_TYPE_ID: dict[int, tuple[int, int, int]] = {
-    ProjectileTypeId.ION_RIFLE: (120, 200, 255),
-    ProjectileTypeId.ION_MINIGUN: (120, 200, 255),
-    ProjectileTypeId.ION_CANNON: (120, 200, 255),
-    ProjectileTypeId.FIRE_BULLETS: (255, 170, 90),
-    ProjectileTypeId.SHRINKIFIER: (160, 255, 170),
-    ProjectileTypeId.BLADE_GUN: (240, 120, 255),
+    ProjectileTemplateId.ION_RIFLE: (120, 200, 255),
+    ProjectileTemplateId.ION_MINIGUN: (120, 200, 255),
+    ProjectileTemplateId.ION_CANNON: (120, 200, 255),
+    ProjectileTemplateId.FIRE_BULLETS: (255, 170, 90),
+    ProjectileTemplateId.SHRINKIFIER: (160, 255, 170),
+    ProjectileTemplateId.BLADE_GUN: (240, 120, 255),
 }
 
 

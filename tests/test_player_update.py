@@ -19,7 +19,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles.runtime import ProjectilePool
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
@@ -350,7 +350,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
-    assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 15
+    assert type_ids.count(int(ProjectileTemplateId.PLASMA_MINIGUN)) == 15
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
@@ -367,8 +367,8 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
-    assert type_ids.count(int(ProjectileTypeId.ION_RIFLE)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
@@ -381,8 +381,8 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(int(ProjectileTypeId.ION_MINIGUN)) == 4
-    assert type_ids.count(int(ProjectileTypeId.ION_RIFLE)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.ION_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.ION_RIFLE)) == 4
     assert player.man_bomb_timer == 0.0
 
 
@@ -397,7 +397,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
-    assert type_ids == [int(ProjectileTypeId.FIRE_BULLETS)]
+    assert type_ids == [int(ProjectileTemplateId.FIRE_BULLETS)]
 
 
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
@@ -422,7 +422,7 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
 
     assert float(player.pos.x) > float(before_pos.x)
     entry = next(e for e in pool.entries if e.active)
-    assert int(entry.type_id) == int(ProjectileTypeId.FIRE_BULLETS)
+    assert int(entry.type_id) == int(ProjectileTemplateId.FIRE_BULLETS)
 
     expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
     assert_float_close(float(entry.pos.x), float(f32(float(expected.x))))
@@ -441,7 +441,7 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
+    assert set(type_ids) == {int(ProjectileTemplateId.FIRE_BULLETS)}
 
 
 def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
@@ -470,7 +470,7 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
         type_ids = _active_type_ids(pool)
         assert len(type_ids) == int(weapon.pellet_count)
-        assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
+        assert set(type_ids) == {int(ProjectileTemplateId.FIRE_BULLETS)}
         assert not any(entry.active for entry in state.secondary_projectiles.entries)
 
 
@@ -499,7 +499,7 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
+    assert set(type_ids) == {int(ProjectileTemplateId.FIRE_BULLETS)}
     assert player.weapon.reload_active
     assert player.weapon.reload_timer > 0.0
 
@@ -514,7 +514,7 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
     player_fire_weapon(player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016, state)
 
     type_ids = _active_type_ids(pool)
-    assert type_ids == [int(ProjectileTypeId.ION_CANNON)]
+    assert type_ids == [int(ProjectileTemplateId.ION_CANNON)]
     assert_float_close(player.weapon.ammo, -2.0)
     assert player.weapon.reload_active
     assert_float_close(player.weapon.reload_timer, 3.0)
@@ -530,7 +530,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
@@ -541,7 +541,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_single_pellet_weapons() -> None:
-    from crimson.projectiles.types import ProjectileTypeId
+    from crimson.projectiles.types import ProjectileTemplateId
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
     pool = ProjectilePool(size=64)
@@ -551,7 +551,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
@@ -575,7 +575,7 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
-    assert set(type_ids) == {int(ProjectileTypeId.SHOTGUN)}
+    assert set(type_ids) == {int(ProjectileTemplateId.SHOTGUN)}
 
 
 def test_player_update_tracks_aim_point() -> None:
@@ -867,8 +867,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(int(ProjectileTypeId.PLASMA_MINIGUN)) == 4
-    assert type_ids.count(int(ProjectileTypeId.PLASMA_RIFLE)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.PLASMA_MINIGUN)) == 4
+    assert type_ids.count(int(ProjectileTemplateId.PLASMA_RIFLE)) == 4
 
 
 def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
@@ -907,7 +907,7 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
     assert owners == {OwnerRef.from_local_player(0)}
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert set(type_ids) == {int(ProjectileTypeId.FIRE_BULLETS)}
+    assert set(type_ids) == {int(ProjectileTemplateId.FIRE_BULLETS)}
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:

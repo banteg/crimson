@@ -4,7 +4,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectilePool
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.factories import make_projectile_update_options
@@ -19,7 +19,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     pool.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PLASMA_CANNON,
+        type_id=ProjectileTemplateId.PLASMA_CANNON,
         owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
@@ -42,7 +42,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     for actual, expected in zip(sorted(float(entry.scale_step) for entry in rings), (45.0, 67.5)):
         assert_float_close(actual, expected)
 
-    spawned = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTypeId.PLASMA_RIFLE)]
+    spawned = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTemplateId.PLASMA_RIFLE)]
     assert len(spawned) == 12
 
 
@@ -54,7 +54,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     pool.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.SPLITTER_GUN,
+        type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
@@ -77,7 +77,7 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
     split = [
         p
         for p in pool.entries
-        if p.active and int(p.type_id) == int(ProjectileTypeId.SPLITTER_GUN) and p.owner == OwnerRef.from_creature(0)
+        if p.active and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN) and p.owner == OwnerRef.from_creature(0)
     ]
     assert len(split) == 2
     assert all(bool(p.hits_players) for p in split)
@@ -91,7 +91,7 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
     pool.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.SPLITTER_GUN,
+        type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_local_player(0),
         travel_budget=30.0,
     )
@@ -118,7 +118,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     pool.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.SHRINKIFIER,
+        type_id=ProjectileTemplateId.SHRINKIFIER,
         owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )
@@ -163,7 +163,7 @@ def test_non_gauss_freeze_hit_spawns_single_freeze_shard(mocker) -> None:
     pool.spawn(
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
         travel_budget=10.0,
     )

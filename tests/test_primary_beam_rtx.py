@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 import pytest
 
 import crimson.render.projectile_draw.primary_beam as primary_beam
-from crimson.projectiles.types import Projectile, ProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
 from crimson.render.rtx.mode import RtxRenderMode
 from grim.geom import Vec2
@@ -63,7 +63,7 @@ def _as_texture(texture: _TextureStub) -> rl.Texture:
 def _beam_ctx(renderer: _RendererStub, *, life: float = 1.0) -> ProjectileDrawCtx:
     pos = Vec2(32.0, 0.0)
     proj = Projectile(
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=pos,
         origin=Vec2(0.0, 0.0),
         life_timer=float(life),
@@ -74,7 +74,7 @@ def _beam_ctx(renderer: _RendererStub, *, life: float = 1.0) -> ProjectileDrawCt
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=pos,
         screen_pos=pos,
         life=float(life),
@@ -176,7 +176,7 @@ def test_classic_ion_chain_strip_width_scales_with_effect_scale(mocker) -> None:
     )
     pos = Vec2(0.0, 0.0)
     proj = Projectile(
-        type_id=int(ProjectileTypeId.ION_RIFLE),
+        type_id=int(ProjectileTemplateId.ION_RIFLE),
         pos=pos,
         origin=Vec2(64.0, 0.0),
         life_timer=0.2,
@@ -187,7 +187,7 @@ def test_classic_ion_chain_strip_width_scales_with_effect_scale(mocker) -> None:
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.ION_RIFLE),
+        type_id=int(ProjectileTemplateId.ION_RIFLE),
         pos=pos,
         screen_pos=pos,
         life=0.2,

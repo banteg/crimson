@@ -24,7 +24,7 @@ from ..effects import (
 from ..types import (
     Projectile,
     ProjectileRuntimeState,
-    ProjectileTypeId,
+    ProjectileTemplateId,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for
 
@@ -168,7 +168,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle - 1.0471976,
-        type_id=ProjectileTypeId.SPLITTER_GUN,
+        type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
@@ -176,7 +176,7 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     ctx.pool.spawn(
         pos=proj.pos,
         angle=proj.angle + 1.0471976,
-        type_id=ProjectileTypeId.SPLITTER_GUN,
+        type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner=OwnerRef.from_creature(int(hit_idx)),
         travel_budget=proj.travel_budget,
         hits_players=split_hits_players,
@@ -187,7 +187,7 @@ def _post_hit_ion_common(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> 
     _spawn_ion_hit_effects(
         ctx.effects,
         ctx.sfx_queue,
-        type_id=ProjectileTypeId(hit.proj.type_id),
+        type_id=ProjectileTemplateId(hit.proj.type_id),
         pos=hit.proj.pos,
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
@@ -234,7 +234,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                 proj_id = ctx.pool.spawn(
                     pos=origin_pos,
                     angle=angle,
-                    type_id=ProjectileTypeId(hit.proj.type_id),
+                    type_id=ProjectileTemplateId(hit.proj.type_id),
                     owner=OwnerRef.from_creature(hit_creature),
                     travel_budget=hit.proj.travel_budget,
                 )
@@ -249,7 +249,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     size = float(creature.size)
     ring_radius = size * 0.5 + 1.0
 
-    plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTypeId.PLASMA_RIFLE)
+    plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTemplateId.PLASMA_RIFLE)
     plasma_meta = float(plasma_entry.travel_budget)
 
     runtime_state = ctx.runtime_state
@@ -264,7 +264,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
             ctx.pool.spawn(
                 pos=hit.proj.pos + ring_offset,
                 angle=ring_angle,
-                type_id=ProjectileTypeId.PLASMA_RIFLE,
+                type_id=ProjectileTemplateId.PLASMA_RIFLE,
                 owner=OwnerRef.from_local_player(0),
                 travel_budget=plasma_meta,
             )
@@ -318,35 +318,35 @@ _DEFAULT_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
 
 # Public: used by tests to ensure handler coverage.
 PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
-    ProjectileTypeId.PISTOL: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.ASSAULT_RIFLE: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.SHOTGUN: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.SUBMACHINE_GUN: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.GAUSS_GUN: ProjectileBehavior(linger=_linger_gauss_gun),
-    ProjectileTypeId.PLASMA_RIFLE: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.PLASMA_MINIGUN: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.PULSE_GUN: ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
-    ProjectileTypeId.ION_RIFLE: ProjectileBehavior(
+    ProjectileTemplateId.PISTOL: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.ASSAULT_RIFLE: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.SHOTGUN: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.SUBMACHINE_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.GAUSS_GUN: ProjectileBehavior(linger=_linger_gauss_gun),
+    ProjectileTemplateId.PLASMA_RIFLE: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.PLASMA_MINIGUN: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.PULSE_GUN: ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
+    ProjectileTemplateId.ION_RIFLE: ProjectileBehavior(
         linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle,
     ),
-    ProjectileTypeId.ION_MINIGUN: ProjectileBehavior(
+    ProjectileTemplateId.ION_MINIGUN: ProjectileBehavior(
         linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common,
     ),
-    ProjectileTypeId.ION_CANNON: ProjectileBehavior(
+    ProjectileTemplateId.ION_CANNON: ProjectileBehavior(
         linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common,
     ),
-    ProjectileTypeId.SHRINKIFIER: ProjectileBehavior(
+    ProjectileTemplateId.SHRINKIFIER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_shrinkifier,
     ),
-    ProjectileTypeId.BLADE_GUN: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.SPIDER_PLASMA: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.PLASMA_CANNON: ProjectileBehavior(
+    ProjectileTemplateId.BLADE_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.SPIDER_PLASMA: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.PLASMA_CANNON: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon,
     ),
-    ProjectileTypeId.SPLITTER_GUN: ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
-    ProjectileTypeId.PLAGUE_SPREADER: ProjectileBehavior(
+    ProjectileTemplateId.SPLITTER_GUN: ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
+    ProjectileTemplateId.PLAGUE_SPREADER: ProjectileBehavior(
         linger=_linger_default, post_hit_creature=_post_hit_plague_spreader,
     ),
-    ProjectileTypeId.RAINBOW_GUN: _DEFAULT_BEHAVIOR,
-    ProjectileTypeId.FIRE_BULLETS: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.RAINBOW_GUN: _DEFAULT_BEHAVIOR,
+    ProjectileTemplateId.FIRE_BULLETS: _DEFAULT_BEHAVIOR,
 }

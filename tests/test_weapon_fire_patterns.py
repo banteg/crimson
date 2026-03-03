@@ -6,7 +6,7 @@ import pytest
 
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -39,11 +39,11 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     spread_small = math.pi / 10.0
     spread_large = math.pi / 6.0
     expected = (
-        (shot_angle - spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
-        (shot_angle - spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
-        (shot_angle, int(ProjectileTypeId.PLASMA_RIFLE)),
-        (shot_angle + spread_large, int(ProjectileTypeId.PLASMA_MINIGUN)),
-        (shot_angle + spread_small, int(ProjectileTypeId.PLASMA_RIFLE)),
+        (shot_angle - spread_small, int(ProjectileTemplateId.PLASMA_RIFLE)),
+        (shot_angle - spread_large, int(ProjectileTemplateId.PLASMA_MINIGUN)),
+        (shot_angle, int(ProjectileTemplateId.PLASMA_RIFLE)),
+        (shot_angle + spread_large, int(ProjectileTemplateId.PLASMA_MINIGUN)),
+        (shot_angle + spread_small, int(ProjectileTemplateId.PLASMA_RIFLE)),
     )
     for proj, (angle, type_id) in zip(spawned, expected, strict=True):
         assert int(getattr(proj, "type_id", -1)) == type_id
@@ -69,7 +69,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     expected_angle = float(f32(float(shot_angle) + (127.0 * 0.002)))
     expected_speed_scale = 1.0 + 55.0 * 0.01
     for proj in spawned:
-        assert int(getattr(proj, "type_id", -1)) == int(ProjectileTypeId.PLASMA_MINIGUN)
+        assert int(getattr(proj, "type_id", -1)) == int(ProjectileTemplateId.PLASMA_MINIGUN)
         assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
         assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed_scale)
 
@@ -90,15 +90,15 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
 @pytest.mark.parametrize(
     ("weapon_id", "projectile_type_id", "expected_count", "jitter_scale", "expected_speed_scale"),
     [
-        (WeaponId.JACKHAMMER, ProjectileTypeId.SHOTGUN, 4, 0.0013, 1.0),
-        (WeaponId.GAUSS_SHOTGUN, ProjectileTypeId.GAUSS_GUN, 6, 0.002, 1.4),
-        (WeaponId.ION_SHOTGUN, ProjectileTypeId.ION_MINIGUN, 8, 0.0026, 1.4),
+        (WeaponId.JACKHAMMER, ProjectileTemplateId.SHOTGUN, 4, 0.0013, 1.0),
+        (WeaponId.GAUSS_SHOTGUN, ProjectileTemplateId.GAUSS_GUN, 6, 0.002, 1.4),
+        (WeaponId.ION_SHOTGUN, ProjectileTemplateId.ION_MINIGUN, 8, 0.0026, 1.4),
     ],
     ids=["jackhammer", "gauss-shotgun", "ion-shotgun"],
 )
 def test_shotgun_family_fires_expected_pellets(
     weapon_id: WeaponId,
-    projectile_type_id: ProjectileTypeId,
+    projectile_type_id: ProjectileTemplateId,
     expected_count: int,
     jitter_scale: float,
     expected_speed_scale: float,

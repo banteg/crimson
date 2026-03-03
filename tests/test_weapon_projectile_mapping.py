@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.weapons import (
-    WEAPON_PROJECTILE_TYPE_IDS,
+    PROJECTILE_TEMPLATE_OVERRIDES,
     WeaponId,
     projectile_type_id_for_weapon_id,
 )
@@ -40,11 +40,11 @@ def test_weapon_projectile_type_mapping() -> None:
         45: 0x2D,  # Fire Bullets
     }
     for weapon_id, type_id in cases.items():
-        assert projectile_type_id_for_weapon_id(WeaponId(weapon_id)) == ProjectileTypeId(type_id)
+        assert projectile_type_id_for_weapon_id(WeaponId(weapon_id)) == ProjectileTemplateId(type_id)
 
-    assert WEAPON_PROJECTILE_TYPE_IDS[WeaponId.MULTI_PLASMA] == (
-        ProjectileTypeId.PLASMA_RIFLE,
-        ProjectileTypeId.PLASMA_MINIGUN,
+    assert PROJECTILE_TEMPLATE_OVERRIDES[WeaponId.MULTI_PLASMA] == (
+        ProjectileTemplateId.PLASMA_RIFLE,
+        ProjectileTemplateId.PLASMA_MINIGUN,
     )
 
 

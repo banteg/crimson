@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, cast
 
-from crimson.projectiles.types import Projectile, ProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
 from grim.geom import Vec2
@@ -78,7 +78,7 @@ class _RendererStub:
 
     @staticmethod
     def _is_bullet_trail_type(type_id: int) -> bool:
-        return 0 <= int(type_id) < 8 or int(type_id) == int(ProjectileTypeId.SPLITTER_GUN)
+        return 0 <= int(type_id) < 8 or int(type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
 
 
 @dataclass(slots=True)
@@ -130,13 +130,13 @@ def test_draw_registry_returns_false_for_bullet_when_nothing_drawn() -> None:
 
 def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> None:
     renderer = _RendererStub()
-    proj = _projectile(type_id=int(ProjectileTypeId.PLASMA_RIFLE))
+    proj = _projectile(type_id=int(ProjectileTemplateId.PLASMA_RIFLE))
     ctx = ProjectileDrawCtx(
         renderer=_as_renderer(renderer),
         proj=proj,
         proj_index=0,
         texture=None,
-        type_id=int(ProjectileTypeId.PLASMA_RIFLE),
+        type_id=int(ProjectileTemplateId.PLASMA_RIFLE),
         pos=Vec2(),
         screen_pos=Vec2(),
         life=1.0,
@@ -150,7 +150,7 @@ def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> N
 def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> None:
     renderer = _RendererStub()
     proj = _projectile(
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
         origin=Vec2(10.0, 20.0),
         life_timer=1.0,
@@ -161,7 +161,7 @@ def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> N
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
         life=1.0,
@@ -175,7 +175,7 @@ def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> N
 def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
     renderer = _RendererStub()
     proj = _projectile(
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
         origin=Vec2(10.0, 20.0),
         life_timer=1.0,
@@ -186,7 +186,7 @@ def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
         proj=proj,
         proj_index=0,
         texture=None,
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
         life=1.0,
@@ -200,7 +200,7 @@ def test_draw_registry_returns_false_for_beam_types_without_texture() -> None:
 def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
     renderer = _RendererStub()
     proj = _projectile(
-        type_id=int(ProjectileTypeId.PULSE_GUN),
+        type_id=int(ProjectileTemplateId.PULSE_GUN),
         pos=Vec2(10.0, 20.0),
         origin=Vec2(10.0, 20.0),
         life_timer=1.0,
@@ -211,7 +211,7 @@ def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.PULSE_GUN),
+        type_id=int(ProjectileTemplateId.PULSE_GUN),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
         life=1.0,
@@ -225,7 +225,7 @@ def test_draw_registry_returns_true_for_pulse_gun_branch() -> None:
 def test_draw_registry_returns_true_for_plague_spreader_branch() -> None:
     renderer = _RendererStub()
     proj = _projectile(
-        type_id=int(ProjectileTypeId.PLAGUE_SPREADER),
+        type_id=int(ProjectileTemplateId.PLAGUE_SPREADER),
         pos=Vec2(10.0, 20.0),
         life_timer=0.0,
         angle=0.0,
@@ -235,7 +235,7 @@ def test_draw_registry_returns_true_for_plague_spreader_branch() -> None:
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.PLAGUE_SPREADER),
+        type_id=int(ProjectileTemplateId.PLAGUE_SPREADER),
         pos=Vec2(10.0, 20.0),
         screen_pos=Vec2(10.0, 20.0),
         life=0.0,
@@ -255,7 +255,7 @@ def test_draw_registry_fire_bullets_streak_unrotated_head_rotated(mocker) -> Non
     renderer = _BeamRendererStub()
     angle = 0.8
     proj = _projectile(
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=Vec2(300.0, 140.0),
         origin=Vec2(0.0, 140.0),
         life_timer=1.0,
@@ -266,7 +266,7 @@ def test_draw_registry_fire_bullets_streak_unrotated_head_rotated(mocker) -> Non
         proj=proj,
         proj_index=0,
         texture=_as_texture(_TextureStub()),
-        type_id=int(ProjectileTypeId.FIRE_BULLETS),
+        type_id=int(ProjectileTemplateId.FIRE_BULLETS),
         pos=proj.pos,
         screen_pos=proj.pos,
         life=1.0,

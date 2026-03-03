@@ -11,7 +11,7 @@ from ..effects import ParticleStyleId
 from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_for_weapon_id, weapon_entry_for_projectile_type_id
@@ -153,7 +153,7 @@ def player_fire_weapon(
             return
 
     pellet_count = int(weapon.pellet_count)
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     shot_cooldown = float(f32(float(weapon.shot_cooldown)))
     weapon_spread_heat = float(weapon.spread_heat_inc)
@@ -227,13 +227,13 @@ def player_fire_weapon(
     if is_fire_bullets:
         pellets = max(0, int(pellet_count))
         shot_count = pellets
-        meta = travel_budget_for_type_id(ProjectileTypeId.FIRE_BULLETS)
+        meta = travel_budget_for_type_id(ProjectileTemplateId.FIRE_BULLETS)
         for _ in range(pellets):
             angle = shot_angle + float(int(state.rng.rand()) % 200 - 100) * 0.0015
             state.projectiles.spawn(
                 pos=muzzle,
                 angle=angle,
-                type_id=ProjectileTypeId.FIRE_BULLETS,
+                type_id=ProjectileTemplateId.FIRE_BULLETS,
                 owner=projectile_owner,
                 travel_budget=meta,
             )
@@ -317,12 +317,12 @@ def player_fire_weapon(
         # Native literals: 0.31415927 (~ pi/10), 0.5235988 (~ pi/6).
         spread_small = math.pi / 10
         spread_large = math.pi / 6
-        patterns: tuple[tuple[float, ProjectileTypeId], ...] = (
-            (-spread_small, ProjectileTypeId.PLASMA_RIFLE),
-            (-spread_large, ProjectileTypeId.PLASMA_MINIGUN),
-            (0.0, ProjectileTypeId.PLASMA_RIFLE),
-            (spread_large, ProjectileTypeId.PLASMA_MINIGUN),
-            (spread_small, ProjectileTypeId.PLASMA_RIFLE),
+        patterns: tuple[tuple[float, ProjectileTemplateId], ...] = (
+            (-spread_small, ProjectileTemplateId.PLASMA_RIFLE),
+            (-spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
+            (0.0, ProjectileTemplateId.PLASMA_RIFLE),
+            (spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
+            (spread_small, ProjectileTemplateId.PLASMA_RIFLE),
         )
         for angle_offset, type_id in patterns:
             state.projectiles.spawn(
@@ -336,13 +336,13 @@ def player_fire_weapon(
         # Plasma Shotgun: 14 plasma-minigun pellets with wide jitter and random speed_scale.
         # (`player_update` weapon_id==0x0e in crimsonland.exe)
         shot_count = 14
-        meta = travel_budget_for_type_id(ProjectileTypeId.PLASMA_MINIGUN)
+        meta = travel_budget_for_type_id(ProjectileTemplateId.PLASMA_MINIGUN)
         for _ in range(14):
             jitter = float((int(state.rng.rand()) & 0xFF) - 0x80) * 0.002
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
-                type_id=ProjectileTypeId.PLASMA_MINIGUN,
+                type_id=ProjectileTemplateId.PLASMA_MINIGUN,
                 owner=projectile_owner,
                 travel_budget=meta,
             )
@@ -351,13 +351,13 @@ def player_fire_weapon(
         # Gauss Shotgun: 6 gauss pellets, jitter 0.002 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1e in crimsonland.exe)
         shot_count = 6
-        meta = travel_budget_for_type_id(ProjectileTypeId.GAUSS_GUN)
+        meta = travel_budget_for_type_id(ProjectileTemplateId.GAUSS_GUN)
         for _ in range(6):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.002
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
-                type_id=ProjectileTypeId.GAUSS_GUN,
+                type_id=ProjectileTemplateId.GAUSS_GUN,
                 owner=projectile_owner,
                 travel_budget=meta,
             )
@@ -366,13 +366,13 @@ def player_fire_weapon(
         # Ion Shotgun: 8 ion-minigun pellets, jitter 0.0026 and speed_scale 1.4..(1.4 + 0.79).
         # (`player_update` weapon_id==0x1f in crimsonland.exe)
         shot_count = 8
-        meta = travel_budget_for_type_id(ProjectileTypeId.ION_MINIGUN)
+        meta = travel_budget_for_type_id(ProjectileTemplateId.ION_MINIGUN)
         for _ in range(8):
             jitter = float(int(state.rng.rand()) % 200 - 100) * 0.0026
             proj_id = state.projectiles.spawn(
                 pos=muzzle,
                 angle=shot_angle + jitter,
-                type_id=ProjectileTypeId.ION_MINIGUN,
+                type_id=ProjectileTemplateId.ION_MINIGUN,
                 owner=projectile_owner,
                 travel_budget=meta,
             )

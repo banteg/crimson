@@ -10,7 +10,7 @@ from grim.raylib_api import rd, rl
 
 from ...perks import PerkId
 from ...perks.helpers import perk_active
-from ...projectiles.types import ProjectileTypeId
+from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from ..projectile_draw import (
     ProjectileDrawCtx,
@@ -189,14 +189,14 @@ def draw_projectile(
 
 
 def is_bullet_trail_type(type_id: int) -> bool:
-    return 0 <= type_id < 8 or type_id == int(ProjectileTypeId.SPLITTER_GUN)
+    return 0 <= type_id < 8 or type_id == int(ProjectileTemplateId.SPLITTER_GUN)
 
 
 def bullet_sprite_size(type_id: int, *, scale: float) -> float:
     base = 4.0
-    if type_id == int(ProjectileTypeId.ASSAULT_RIFLE):
+    if type_id == int(ProjectileTemplateId.ASSAULT_RIFLE):
         base = 6.0
-    elif type_id == int(ProjectileTypeId.SUBMACHINE_GUN):
+    elif type_id == int(ProjectileTemplateId.SUBMACHINE_GUN):
         base = 8.0
     return max(2.0, base * scale)
 
@@ -221,9 +221,9 @@ def draw_bullet_trail(
 
     # Native uses projectile travel direction as the side-offset basis and still emits the
     # trail quad even when origin=head (degenerate impact frames).
-    if type_id in (int(ProjectileTypeId.PISTOL), int(ProjectileTypeId.ASSAULT_RIFLE)):
+    if type_id in (int(ProjectileTemplateId.PISTOL), int(ProjectileTemplateId.ASSAULT_RIFLE)):
         side_mul = 1.2
-    elif type_id == int(ProjectileTypeId.GAUSS_GUN):
+    elif type_id == int(ProjectileTemplateId.GAUSS_GUN):
         side_mul = 1.1
     else:
         side_mul = 0.7
@@ -242,7 +242,7 @@ def draw_bullet_trail(
 
     # Native uses additive blending for bullet trails and sets color slots per projectile type.
     # Gauss has a distinct blue tint; most other bullet trails are neutral gray.
-    if type_id == int(ProjectileTypeId.GAUSS_GUN):
+    if type_id == int(ProjectileTemplateId.GAUSS_GUN):
         head_rgb = (51, 128, 255)  # (0.2, 0.5, 1.0)
     else:
         head_rgb = (128, 128, 128)  # (0.5, 0.5, 0.5)

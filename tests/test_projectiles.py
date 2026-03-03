@@ -17,7 +17,7 @@ from crimson.projectiles.runtime import (
     projectile_collision_profile,
 )
 from crimson.projectiles.runtime.collision import _within_native_find_radius
-from crimson.projectiles.types import ProjectileCollisionProfile, ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileCollisionProfile, ProjectileHit, ProjectileTemplateId
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 from tests.factories import make_projectile_update_options
@@ -126,20 +126,20 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
 
 
 def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
-    expected: dict[ProjectileTypeId, ProjectileCollisionProfile] = {
-        ProjectileTypeId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
-        ProjectileTypeId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
-        ProjectileTypeId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-        ProjectileTypeId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-        ProjectileTypeId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
-        ProjectileTypeId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
-        ProjectileTypeId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
+    expected: dict[ProjectileTemplateId, ProjectileCollisionProfile] = {
+        ProjectileTemplateId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
+        ProjectileTemplateId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
+        ProjectileTemplateId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+        ProjectileTemplateId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
+        ProjectileTemplateId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
+        ProjectileTemplateId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
+        ProjectileTemplateId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
     }
 
     for type_id, profile in expected.items():
         assert projectile_collision_profile(type_id) == profile
 
-    assert projectile_collision_profile(ProjectileTypeId.PISTOL) == ProjectileCollisionProfile(
+    assert projectile_collision_profile(ProjectileTemplateId.PISTOL) == ProjectileCollisionProfile(
         hit_radius=1.0,
         initial_damage_pool=1.0,
     )
@@ -148,14 +148,14 @@ def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
 def test_primary_spawn_uses_collision_profile_defaults() -> None:
     pool = ProjectilePool(size=1)
     for type_id in (
-        ProjectileTypeId.PISTOL,
-        ProjectileTypeId.ION_MINIGUN,
-        ProjectileTypeId.ION_RIFLE,
-        ProjectileTypeId.ION_CANNON,
-        ProjectileTypeId.PLASMA_CANNON,
-        ProjectileTypeId.GAUSS_GUN,
-        ProjectileTypeId.FIRE_BULLETS,
-        ProjectileTypeId.BLADE_GUN,
+        ProjectileTemplateId.PISTOL,
+        ProjectileTemplateId.ION_MINIGUN,
+        ProjectileTemplateId.ION_RIFLE,
+        ProjectileTemplateId.ION_CANNON,
+        ProjectileTemplateId.PLASMA_CANNON,
+        ProjectileTemplateId.GAUSS_GUN,
+        ProjectileTemplateId.FIRE_BULLETS,
+        ProjectileTemplateId.BLADE_GUN,
     ):
         idx = pool.spawn(
             pos=Vec2(),
@@ -174,7 +174,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
     cases: list[dict[str, Any]] = [
         {
             "name": "pistol_near_hit",
-            "type_id": ProjectileTypeId.PISTOL,
+            "type_id": ProjectileTemplateId.PISTOL,
             "travel_budget": 15.0,
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
@@ -183,7 +183,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "pistol_rng_jitter",
-            "type_id": ProjectileTypeId.PISTOL,
+            "type_id": ProjectileTemplateId.PISTOL,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -192,7 +192,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "rocket_no_splash_type_0x0b",
-            "type_id": ProjectileTypeId.PLASMA_MINIGUN,
+            "type_id": ProjectileTemplateId.PLASMA_MINIGUN,
             "travel_budget": 30.0,
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
@@ -203,7 +203,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         },
         {
             "name": "ion_minigun_linger",
-            "type_id": ProjectileTypeId.ION_MINIGUN,
+            "type_id": ProjectileTemplateId.ION_MINIGUN,
             "travel_budget": 20.0,
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
@@ -219,7 +219,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         idx = pool.spawn(
             pos=Vec2(),
             angle=math.pi / 2.0,
-            type_id=ProjectileTypeId(int(case["type_id"])),
+            type_id=ProjectileTemplateId(int(case["type_id"])),
             owner=OwnerRef.from_local_player(0),
             travel_budget=float(case["travel_budget"]),
         )
@@ -254,14 +254,14 @@ def test_projectile_pool_demo_update_snapshot(snapshot: SnapshotAssertion) -> No
     idx = pool.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
-        type_id=ProjectileTypeId.ASSAULT_RIFLE,
+        type_id=ProjectileTemplateId.ASSAULT_RIFLE,
         owner=OwnerRef.from_local_player(0),
     )
     pool.update_demo(
         0.1,
         [],
         world_size=1024.0,
-        speed_by_type={int(ProjectileTypeId.ASSAULT_RIFLE): 100.0},
+        speed_by_type={int(ProjectileTemplateId.ASSAULT_RIFLE): 100.0},
         damage_by_type={},
     )
 
@@ -280,7 +280,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
     idx = pool.spawn(
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
     )
 

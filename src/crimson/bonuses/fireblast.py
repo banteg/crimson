@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..owner_ref import OwnerRef
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 from ..weapon_runtime.spawn import owner_ref_for_player, spawn_projectile_ring
 from .apply_context import BonusApplyCtx
 
@@ -17,7 +17,7 @@ def apply_fireblast(ctx: BonusApplyCtx) -> None:
         origin.pos,
         count=16,
         angle_offset=0.0,
-        type_id=ProjectileTypeId.PLASMA_RIFLE,
+        type_id=ProjectileTemplateId.PLASMA_RIFLE,
         owner=owner,
         owner_player_index=ctx.player.index,
         players=ctx.players,

@@ -9,7 +9,7 @@ from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import (
     apply_world_presentation_step,
     plan_death_sfx_keys,
@@ -38,7 +38,7 @@ def _death(
     )
 
 
-def _hits(count: int, *, type_id: int = int(ProjectileTypeId.PISTOL)) -> list[ProjectileHit]:
+def _hits(count: int, *, type_id: int = int(ProjectileTemplateId.PISTOL)) -> list[ProjectileHit]:
     hits: list[ProjectileHit] = []
     for _ in range(int(count)):
         hits.append(
@@ -270,7 +270,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTypeId.BLADE_GUN)),
+        hits=_hits(1, type_id=int(ProjectileTemplateId.BLADE_GUN)),
         rand=lambda: int(next(rng_values)),
         detail_preset=5,
         fx_toggle=0,
@@ -299,7 +299,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_six_shard_iterations(m
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTypeId.FIRE_BULLETS)),
+        hits=_hits(1, type_id=int(ProjectileTemplateId.FIRE_BULLETS)),
         rand=rng,
         detail_preset=5,
         fx_toggle=0,
@@ -335,7 +335,7 @@ def test_queue_projectile_decals_fire_bullets_freeze_runs_hooks_with_fx_toggle_s
         state=state,
         players=[player],
         fx_queue=fx_queue,
-        hits=_hits(1, type_id=int(ProjectileTypeId.FIRE_BULLETS)),
+        hits=_hits(1, type_id=int(ProjectileTemplateId.FIRE_BULLETS)),
         rand=rng,
         detail_preset=5,
         fx_toggle=1,
