@@ -58,9 +58,10 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
                     player.death_timer -= float(dt) * 20.0
             step = SimpleNamespace(
                 events=SimpleNamespace(deaths=()),
-                command_hash=0,
+                command_hash="0",
                 dt_sim=float(dt),
                 presentation=None,
+                presentation_plan_ms=0.0,
             )
             return SimpleNamespace(step=step, rng_marks={})
 

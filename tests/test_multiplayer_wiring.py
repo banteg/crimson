@@ -65,9 +65,10 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     step_tick = mocker.Mock(
         return_value=SimpleNamespace(
             step=SimpleNamespace(
-                command_hash=0,
+                command_hash="0",
                 dt_sim=1.0 / 60.0,
                 presentation=None,
+                presentation_plan_ms=0.0,
             ),
             spawn_timeline_ms=0.0,
             no_creatures_timer_ms=0.0,
