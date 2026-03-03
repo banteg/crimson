@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import random
 from collections.abc import Callable
 from pathlib import Path
@@ -8,7 +7,7 @@ from typing import cast
 
 import msgspec
 
-from grim.assets import PaqTextureCache, TextureLoader
+from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -24,12 +23,11 @@ from .game_modes import GameMode
 from .gameplay import GameplayState
 from .render.frame import RenderFrame
 from .render.rtx.mode import RtxRenderMode
-from .render.terrain_fx import FxQueueTextures, bake_fx_queues
+from .render.terrain_fx import FxQueueTextures
 from .render.world import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.presentation_step import (
     PresentationStepCommands,
-    apply_presentation_plan,
     queue_projectile_decals,
 )
 from .sim.state_types import PlayerState
@@ -40,11 +38,8 @@ from .sim.step_pipeline import (
     time_scale_reflex_boost_factor,
 )
 from .sim.timing import FrameTiming, zero_gate_active_from_state
-from .sim.world_defs import CREATURE_ASSET
 from .sim.world_state import ProjectileHit, WorldEvents, WorldState
-from .terrain_assets import TerrainTextureId, terrain_texture_by_id
-from .weapon_runtime import init_default_alt_weapon, weapon_assign_player
-from .weapons import WEAPON_TABLE, WeaponId
+from .world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 
 
 class GameWorld(msgspec.Struct):
@@ -59,6 +54,10 @@ class GameWorld(msgspec.Struct):
     audio: AudioState | None = None
     audio_rng: random.Random | None = None
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
+    sim_world: SimWorldState = cast(SimWorldState, None)
+    render_resources: RenderResources = cast(RenderResources, None)
+    audio_bridge: AudioBridge = cast(AudioBridge, None)
+    terrain_runtime: TerrainRuntime = cast(TerrainRuntime, None)
     audio_router: AudioRouter = cast(AudioRouter, None)
     renderer: WorldRenderer = cast(WorldRenderer, None)
     world_state: WorldState = cast(WorldState, None)
@@ -89,7 +88,6 @@ class GameWorld(msgspec.Struct):
     _elapsed_ms: float = 0.0
     _bonus_anim_phase: float = 0.0
     _game_tune_started: bool = False
-    _texture_loader: TextureLoader | None = None
     last_events: WorldEvents = msgspec.field(
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
@@ -99,38 +97,76 @@ class GameWorld(msgspec.Struct):
     lan_local_aim_indicators_only: bool = False
     lan_local_player_slot_index: int = 0
 
-    def __post_init__(self) -> None:
-        self.world_state = WorldState.build(
-            world_size=float(self.world_size),
-            demo_mode_active=self.demo_mode_active,
-            hardcore=self.hardcore,
-            difficulty_level=int(self.difficulty_level),
-            preserve_bugs=self.preserve_bugs,
-        )
-        self.spawn_env = self.world_state.spawn_env
-        self.state = self.world_state.state
-        self.players = self.world_state.players
-        self.creatures = self.world_state.creatures
-        self.fx_queue = FxQueue()
-        self.fx_queue_rotated = FxQueueRotated()
-        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
-        self.camera = Vec2(-1.0, -1.0)
-        self.audio_router = AudioRouter(
+    def _sync_sim_refs(self) -> None:
+        self.world_state = self.sim_world.world_state
+        self.spawn_env = self.sim_world.spawn_env
+        self.state = self.sim_world.state
+        self.players = self.sim_world.players
+        self.creatures = self.sim_world.creatures
+        self._damage_scale_by_type = self.sim_world.damage_scale_by_type
+        self._elapsed_ms = float(self.sim_world.elapsed_ms)
+        self._bonus_anim_phase = float(self.sim_world.bonus_anim_phase)
+        self._game_tune_started = bool(self.sim_world.game_tune_started)
+        self.last_events = self.sim_world.last_events
+        self.last_presentation = self.sim_world.last_presentation
+        self.last_command_hash = self.sim_world.last_command_hash
+
+    def _sync_render_refs(self) -> None:
+        self.ground = self.render_resources.ground
+        self.fx_queue = self.render_resources.fx_queue
+        self.fx_queue_rotated = self.render_resources.fx_queue_rotated
+        self.fx_textures = self.render_resources.fx_textures
+        self.creature_textures = self.render_resources.creature_textures
+        self.projs_texture = self.render_resources.projs_texture
+        self.particles_texture = self.render_resources.particles_texture
+        self.bullet_texture = self.render_resources.bullet_texture
+        self.bullet_trail_texture = self.render_resources.bullet_trail_texture
+        self.arrow_texture = self.render_resources.arrow_texture
+        self.bonuses_texture = self.render_resources.bonuses_texture
+        self.bodyset_texture = self.render_resources.bodyset_texture
+        self.clock_table_texture = self.render_resources.clock_table_texture
+        self.clock_pointer_texture = self.render_resources.clock_pointer_texture
+        self.aim_texture = self.render_resources.aim_texture
+        self.muzzle_flash_texture = self.render_resources.muzzle_flash_texture
+        self.wicons_texture = self.render_resources.wicons_texture
+
+    def _sync_audio_bridge(self) -> None:
+        self.audio_bridge.sync(
             audio=self.audio,
             audio_rng=self.audio_rng,
-            demo_mode_active=self.demo_mode_active,
-            reflex_boost_timer_source=lambda: float(self.state.bonuses.reflex_boost),
+            demo_mode_active=bool(self.demo_mode_active),
         )
+        self.audio_router = self.audio_bridge.router
+
+    def __post_init__(self) -> None:
+        self.sim_world = SimWorldState(
+            world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            hardcore=bool(self.hardcore),
+            difficulty_level=int(self.difficulty_level),
+            preserve_bugs=bool(self.preserve_bugs),
+        )
+        self.render_resources = RenderResources(
+            assets_dir=self.assets_dir,
+            world_size=float(self.world_size),
+            texture_cache=self.texture_cache,
+            config=self.config,
+        )
+        self.audio_bridge = AudioBridge(
+            demo_mode_active=bool(self.demo_mode_active),
+            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+        )
+        self.terrain_runtime = TerrainRuntime(
+            world_size=float(self.world_size),
+            render_resources=self.render_resources,
+        )
+        self._sync_audio_bridge()
+        self._sync_sim_refs()
+        self._sync_render_refs()
+        self.camera = Vec2(-1.0, -1.0)
         self.renderer = WorldRenderer(self)
-        self._damage_scale_by_type = {}
-        # Native `projectile_spawn` indexes the weapon table by `type_id`, so
-        # `damage_scale_by_type` is just `weapon_table[type_id].damage_scale`.
-        for entry in WEAPON_TABLE:
-            if entry.weapon_id <= 0:
-                continue
-            self._damage_scale_by_type[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
         player_count = 1
         if self.config is not None:
             player_count = self.config.player_count
@@ -143,93 +179,38 @@ class GameWorld(msgspec.Struct):
         player_count: int = 1,
         spawn_pos: Vec2 | None = None,
     ) -> None:
-        self.world_state = WorldState.build(
-            world_size=float(self.world_size),
-            demo_mode_active=self.demo_mode_active,
-            hardcore=self.hardcore,
-            difficulty_level=int(self.difficulty_level),
-            preserve_bugs=self.preserve_bugs,
+        self.sim_world.world_size = float(self.world_size)
+        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
+        self.sim_world.hardcore = bool(self.hardcore)
+        self.sim_world.difficulty_level = int(self.difficulty_level)
+        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
+        self.sim_world.reset(
+            seed=int(seed),
+            player_count=int(player_count),
+            spawn_pos=spawn_pos,
         )
-        self.spawn_env = self.world_state.spawn_env
-        self.state = self.world_state.state
-        self.players = self.world_state.players
-        self.creatures = self.world_state.creatures
-        self.state.rng.srand(int(seed))
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
-        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
-        self._elapsed_ms = 0.0
-        self._bonus_anim_phase = 0.0
-        self._game_tune_started = False
-        base = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5) if spawn_pos is None else spawn_pos
-        count = max(1, int(player_count))
-        if count <= 1:
-            offsets = [Vec2()]
-        else:
-            radius = 32.0
-            step = math.tau / float(count)
-            offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
-
-        for idx in range(count):
-            pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(self.world_size), float(self.world_size))
-            player = PlayerState(index=idx, pos=pos)
-            weapon_assign_player(player, WeaponId.PISTOL, state=self.state)
-            init_default_alt_weapon(player)
-            self.players.append(player)
-        # Reset-time loadout bootstrap should not leak queued reload SFX into
-        # the first simulation tick.
-        self.state.sfx_queue.clear()
+        self._sync_sim_refs()
         self.camera = Vec2(-1.0, -1.0)
-        if self.ground is not None:
+        if self.render_resources.ground is not None:
             # Terrain generation seed should be stable across headless/interactive and must not
             # advance the authoritative gameplay RNG stream.
             terrain_seed = int(self.state.rng.state)
-            self.ground.schedule_generate(seed=terrain_seed, layers=3)
+            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def load_world_state(self, world_state: WorldState) -> None:
         """Atomically swap the authoritative world-state backing references."""
-
-        self.world_state = world_state
-        self.spawn_env = self.world_state.spawn_env
-        self.state = self.world_state.state
-        self.players = self.world_state.players
-        self.creatures = self.world_state.creatures
-        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
-
-    def _ensure_texture_loader(self) -> TextureLoader:
-        if self._texture_loader is not None:
-            return self._texture_loader
-        if self.texture_cache is not None:
-            loader = TextureLoader(
-                assets_root=self.assets_dir,
-                cache=self.texture_cache,
-            )
-        else:
-            loader = TextureLoader.from_assets_root(self.assets_dir)
-            if loader.cache is not None:
-                self.texture_cache = loader.cache
-        self._texture_loader = loader
-        return loader
+        self.sim_world.load_world_state(world_state)
+        self._sync_sim_refs()
 
     def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        loader = self._ensure_texture_loader()
-        return loader.get(name=name, paq_rel=cache_path)
+        return self.render_resources.load_texture(name, cache_path=cache_path)
 
     def _sync_ground_settings(self) -> None:
-        if self.ground is None:
-            return
-        if self.config is None:
-            self.ground.texture_scale = 1.0
-            self.ground.screen_width = None
-            self.ground.screen_height = None
-            return
-        self.ground.texture_scale = self.config.texture_scale
-        self.ground.screen_width = float(self.config.screen_width)
-        self.ground.screen_height = float(self.config.screen_height)
+        self.render_resources.config = self.config
+        self.render_resources.sync_ground_settings()
+        self._sync_render_refs()
 
     def apply_bootstrap_terrain(
         self,
@@ -239,60 +220,12 @@ class GameWorld(msgspec.Struct):
         layers: int = 3,
     ) -> None:
         """Apply a deterministic terrain selection/seed without consuming gameplay RNG."""
-
-        default_terrain = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
-        try:
-            base_id = TerrainTextureId(int(terrain_ids[0]))
-            overlay_id = TerrainTextureId(int(terrain_ids[1]))
-            detail_id = TerrainTextureId(int(terrain_ids[2]))
-        except ValueError:
-            base_id, overlay_id, detail_id = default_terrain
-
-        base_spec = terrain_texture_by_id(base_id)
-        overlay_spec = terrain_texture_by_id(overlay_id)
-        detail_spec = terrain_texture_by_id(detail_id)
-
-        def _load(spec: tuple[str, str] | None) -> rl.Texture | None:
-            if spec is None:
-                return None
-            key, rel_path = spec
-            return self._load_texture(
-                str(key),
-                cache_path=str(rel_path),
-            )
-
-        base = _load(base_spec)
-        overlay = _load(overlay_spec)
-        detail = _load(detail_spec) or overlay or base
-
-        if base is None and (base_id, overlay_id, detail_id) != default_terrain:
-            # Fall back to default terrain if the chosen one is unavailable.
-            base = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE))
-            overlay = _load(terrain_texture_by_id(TerrainTextureId.Q1_OVERLAY))
-            detail = _load(terrain_texture_by_id(TerrainTextureId.Q1_BASE)) or overlay or base
-            base_id, overlay_id, detail_id = default_terrain
-
-        if base is None:
-            return
-
-        if self.ground is None:
-            self.ground = GroundRenderer(
-                texture=base,
-                overlay=overlay,
-                overlay_detail=detail,
-                width=int(self.world_size),
-                height=int(self.world_size),
-                texture_scale=1.0,
-                screen_width=None,
-                screen_height=None,
-            )
-        else:
-            self.ground.texture = base
-            self.ground.overlay = overlay
-            self.ground.overlay_detail = detail
-
-        self._sync_ground_settings()
-        self.ground.schedule_generate(seed=int(seed), layers=int(layers))
+        self.terrain_runtime.apply_bootstrap_terrain(
+            terrain_ids=terrain_ids,
+            seed=int(seed),
+            layers=int(layers),
+        )
+        self._sync_render_refs()
 
     def set_terrain(
         self,
@@ -304,169 +237,33 @@ class GameWorld(msgspec.Struct):
         detail_key: str | None = None,
         detail_path: str | None = None,
     ) -> None:
-        base = self._load_texture(
-            base_key,
-            cache_path=base_path,
+        self.terrain_runtime.set_terrain(
+            base_key=base_key,
+            overlay_key=overlay_key,
+            base_path=base_path,
+            overlay_path=overlay_path,
+            detail_key=detail_key,
+            detail_path=detail_path,
         )
-        overlay = self._load_texture(
-            overlay_key,
-            cache_path=overlay_path,
-        )
-        detail = None
-        if detail_key is not None and detail_path is not None:
-            detail = self._load_texture(
-                detail_key,
-                cache_path=detail_path,
-            )
-        if detail is None:
-            detail = overlay or base
-        if base is None:
-            return
-        if self.ground is None:
-            self.ground = GroundRenderer(
-                texture=base,
-                overlay=overlay,
-                overlay_detail=detail,
-                width=int(self.world_size),
-                height=int(self.world_size),
-                texture_scale=1.0,
-                screen_width=None,
-                screen_height=None,
-            )
-        else:
-            self.ground.texture = base
-            self.ground.overlay = overlay
-            self.ground.overlay_detail = detail
-        self._sync_ground_settings()
         terrain_seed = int(self.state.rng.state)
-        self.ground.schedule_generate(seed=terrain_seed, layers=3)
+        self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+        self._sync_render_refs()
 
     def open(self) -> None:
-        self.close()
-        self.creature_textures.clear()
-
-        base = self._load_texture(
-            "ter_q1_base",
-            cache_path="ter/ter_q1_base.jaz",
-        )
-        overlay = self._load_texture(
-            "ter_q1_tex1",
-            cache_path="ter/ter_q1_tex1.jaz",
-        )
-        detail = overlay or base
-        if base is not None:
-            if self.ground is None:
-                self.ground = GroundRenderer(
-                    texture=base,
-                    overlay=overlay,
-                    overlay_detail=detail,
-                    width=int(self.world_size),
-                    height=int(self.world_size),
-                    texture_scale=1.0,
-                    screen_width=None,
-                    screen_height=None,
-                )
-            else:
-                self.ground.texture = base
-                self.ground.overlay = overlay
-                self.ground.overlay_detail = detail
-            self._sync_ground_settings()
-            terrain_seed = int(self.state.rng.state)
-            self.ground.schedule_generate(seed=terrain_seed, layers=3)
-
-        for asset in sorted(set(CREATURE_ASSET.values())):
-            texture = self._load_texture(
-                asset,
-                cache_path=f"game/{asset}.jaz",
-            )
-            if texture is not None:
-                self.creature_textures[asset] = texture
-
-        self.projs_texture = self._load_texture(
-            "projs",
-            cache_path="game/projs.jaz",
-        )
-        self.particles_texture = self._load_texture(
-            "particles",
-            cache_path="game/particles.jaz",
-        )
-        self.bullet_texture = self._load_texture(
-            "bullet_i",
-            cache_path="load/bullet16.tga",
-        )
-        self.bullet_trail_texture = self._load_texture(
-            "bulletTrail",
-            cache_path="load/bulletTrail.tga",
-        )
-        self.arrow_texture = self._load_texture(
-            "arrow",
-            cache_path="load/arrow.tga",
-        )
-        self.bonuses_texture = self._load_texture(
-            "bonuses",
-            cache_path="game/bonuses.jaz",
-        )
-        self.wicons_texture = self._load_texture(
-            "ui_wicons",
-            cache_path="ui/ui_wicons.jaz",
-        )
-        self.bodyset_texture = self._load_texture(
-            "bodyset",
-            cache_path="game/bodyset.jaz",
-        )
-        self.clock_table_texture = self._load_texture(
-            "ui_clockTable",
-            cache_path="ui/ui_clockTable.jaz",
-        )
-        self.clock_pointer_texture = self._load_texture(
-            "ui_clockPointer",
-            cache_path="ui/ui_clockPointer.jaz",
-        )
-        self.aim_texture = self._load_texture(
-            "ui_aim",
-            cache_path="ui/ui_aim.jaz",
-        )
-        self.muzzle_flash_texture = self._load_texture(
-            "muzzleFlash",
-            cache_path="game/muzzleFlash.jaz",
-        )
-
-        if self.particles_texture is not None and self.bodyset_texture is not None:
-            self.fx_textures = FxQueueTextures(
-                particles=self.particles_texture,
-                bodyset=self.bodyset_texture,
-            )
-        else:
-            self.fx_textures = None
+        self.render_resources.texture_cache = self.texture_cache
+        self.render_resources.config = self.config
+        self.render_resources.open(terrain_seed=int(self.state.rng.state))
+        self.texture_cache = self.render_resources.texture_cache
+        self._sync_render_refs()
 
     def close(self) -> None:
-        if self.ground is not None and self.ground.render_target is not None:
-            rl.unload_render_texture(self.ground.render_target)
-            self.ground.render_target = None
-        self.ground = None
-
-        self._texture_loader = None
-
-        self.creature_textures.clear()
-        self.projs_texture = None
-        self.particles_texture = None
-        self.bullet_texture = None
-        self.bullet_trail_texture = None
-        self.arrow_texture = None
-        self.bonuses_texture = None
-        self.wicons_texture = None
-        self.bodyset_texture = None
-        self.clock_table_texture = None
-        self.clock_pointer_texture = None
-        self.aim_texture = None
-        self.muzzle_flash_texture = None
-        self.fx_textures = None
-        self.fx_queue.clear()
-        self.fx_queue_rotated.clear()
-        self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
-        self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
-        self._game_tune_started = False
+        self.render_resources.close()
+        self._sync_render_refs()
+        self.sim_world.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
+        self.sim_world.last_presentation = PresentationStepCommands()
+        self.sim_world.last_command_hash = ""
+        self.sim_world.game_tune_started = False
+        self._sync_sim_refs()
 
     def update(
         self,
@@ -479,10 +276,7 @@ class GameWorld(msgspec.Struct):
         defer_camera_shake_update: bool = False,
         rng_marks_out: dict[str, int] | None = None,
     ) -> list[ProjectileHit]:
-        if self.audio_router is not None:
-            self.audio_router.audio = self.audio
-            self.audio_router.audio_rng = self.audio_rng
-            self.audio_router.demo_mode_active = self.demo_mode_active
+        self._sync_audio_bridge()
 
         detail_preset = 5
         gore_disabled = 0
@@ -490,9 +284,8 @@ class GameWorld(msgspec.Struct):
             detail_preset = self.config.detail_preset
             gore_disabled = self.config.gore_disabled
 
-        if self.ground is not None:
-            self._sync_ground_settings()
-            self.ground.process_pending()
+        self.terrain_runtime.process_pending()
+        self._sync_render_refs()
 
         timing = FrameTiming.compute(
             float(dt),
@@ -511,14 +304,14 @@ class GameWorld(msgspec.Struct):
             timing=timing,
             options=StepPipelineOptions(
                 world_size=float(self.world_size),
-                damage_scale_by_type=self._damage_scale_by_type,
+                damage_scale_by_type=self.sim_world.damage_scale_by_type,
                 detail_preset=int(detail_preset),
                 gore_disabled=int(gore_disabled),
                 auto_pick_perks=bool(auto_pick_perks),
                 game_mode=game_mode,
                 demo_mode_active=bool(self.demo_mode_active),
                 perk_progression_enabled=bool(perk_progression_enabled),
-                game_tune_started=bool(self._game_tune_started),
+                game_tune_started=bool(self.sim_world.game_tune_started),
             ),
             inputs=inputs,
             fx_queue=self.fx_queue,
@@ -528,7 +321,7 @@ class GameWorld(msgspec.Struct):
         )
         self.apply_step_result(
             step,
-            game_tune_started=self._game_tune_started or step.presentation.trigger_game_tune,
+            game_tune_started=bool(self.sim_world.game_tune_started) or step.presentation.trigger_game_tune,
             apply_audio=True,
             update_camera=True,
         )
@@ -542,21 +335,21 @@ class GameWorld(msgspec.Struct):
         apply_audio: bool = True,
         update_camera: bool = True,
     ) -> None:
-        self.last_events = step.events
-        self.last_presentation = step.presentation
-        self.last_command_hash = step.command_hash
+        self.sim_world.apply_step_metadata(
+            events=step.events,
+            presentation=step.presentation,
+            command_hash=str(step.command_hash),
+            dt_sim=float(step.dt_sim),
+            game_tune_started=bool(game_tune_started),
+        )
+        self._sync_sim_refs()
 
-        if float(step.dt_sim) > 0.0:
-            self._elapsed_ms += float(step.dt_sim) * 1000.0
-            self._bonus_anim_phase += float(step.dt_sim) * 1.3
-
-        self._game_tune_started = game_tune_started
-
-        apply_presentation_plan(
+        self._sync_audio_bridge()
+        self.audio_bridge.apply_plan(
             plan=step.presentation,
-            audio_sink=self.audio_router,
             apply_audio=bool(apply_audio),
         )
+        self.audio_router = self.audio_bridge.router
 
         if update_camera:
             self.update_camera(step.dt_sim)
@@ -578,17 +371,8 @@ class GameWorld(msgspec.Struct):
         )
 
     def _bake_fx_queues(self) -> None:
-        if self.ground is None or self.fx_textures is None:
-            return
-        if not (self.fx_queue.count or self.fx_queue_rotated.count):
-            return
-        bake_fx_queues(
-            self.ground,
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
-            textures=self.fx_textures,
-            corpse_frame_for_type=self._corpse_frame_for_type,
-        )
+        self.render_resources.bake_fx_queues(corpse_frame_for_type=self._corpse_frame_for_type)
+        self._sync_render_refs()
 
     @staticmethod
     def _corpse_frame_for_type(type_id: int) -> int:
@@ -605,33 +389,16 @@ class GameWorld(msgspec.Struct):
         )
 
     def build_render_frame(self) -> RenderFrame:
-        return RenderFrame(
-            assets_dir=self.assets_dir,
-            world_size=float(self.world_size),
-            demo_mode_active=self.demo_mode_active,
-            config=self.config,
-            camera=self.camera,
-            ground=self.ground,
+        return self.render_resources.build_render_frame(
             state=self.state,
             players=self.players,
             creatures=self.creatures,
-            creature_textures=self.creature_textures,
-            projs_texture=self.projs_texture,
-            particles_texture=self.particles_texture,
-            bullet_texture=self.bullet_texture,
-            bullet_trail_texture=self.bullet_trail_texture,
-            arrow_texture=self.arrow_texture,
-            bonuses_texture=self.bonuses_texture,
-            bodyset_texture=self.bodyset_texture,
-            clock_table_texture=self.clock_table_texture,
-            clock_pointer_texture=self.clock_pointer_texture,
-            aim_texture=self.aim_texture,
-            muzzle_flash_texture=self.muzzle_flash_texture,
-            wicons_texture=self.wicons_texture,
+            camera=self.camera,
+            demo_mode_active=bool(self.demo_mode_active),
             elapsed_ms=float(self._elapsed_ms),
             bonus_anim_phase=float(self._bonus_anim_phase),
-            lan_player_rings_enabled=self.lan_player_rings_enabled,
-            lan_local_aim_indicators_only=self.lan_local_aim_indicators_only,
+            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
+            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
             rtx_mode=self.rtx_mode,
         )

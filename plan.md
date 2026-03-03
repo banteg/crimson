@@ -669,18 +669,18 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-8 Checklist: `GameWorld` Split and Final Cleanup
 
-- [ ] Introduce `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime` modules.
-- [ ] Move GPU lifecycle and render resources out of `GameWorld`.
-- [ ] Move audio routing/state out of `GameWorld`.
-- [ ] Add `tests/test_terrain_runtime_boundaries.py` for deterministic terrain vs render cache ownership contracts.
-- [ ] Keep temporary compatibility facade only if needed for transitional call-sites.
+- [x] Introduce `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime` modules.
+- [x] Move GPU lifecycle and render resources out of `GameWorld`.
+- [x] Move audio routing/state out of `GameWorld`.
+- [x] Add `tests/test_terrain_runtime_boundaries.py` for deterministic terrain vs render cache ownership contracts.
+- [x] Keep temporary compatibility facade only if needed for transitional call-sites.
 - [ ] Remove compatibility shims once all call-sites migrated.
 - [ ] Remove collapsed legacy paths:
 - [ ] per-mode LAN orchestration duplication (`_update_lan_match` variants)
-- [ ] mode-local runtime pumping
-- [ ] replay bespoke stepping loop
+- [x] mode-local runtime pumping
+- [x] replay bespoke stepping loop
 - [ ] duplicated checkpoint/record code in mode update methods
-- [ ] Run full test gate suite.
+- [x] Run full test gate suite.
 
 ### Final Merge Checklist
 
