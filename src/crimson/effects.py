@@ -200,6 +200,7 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
+        damage_applier = apply_creature_damage or self._creature_damage_applier
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
             if creatures is None:
@@ -340,8 +341,8 @@ class ParticlePool:
 
                         damage = max(0.0, float(entry.intensity) * 10.0)
                         if damage > 0.0:
-                            if self._creature_damage_applier is not None:
-                                self._creature_damage_applier(
+                            if damage_applier is not None:
+                                damage_applier(
                                     int(hit_idx),
                                     float(damage),
                                     4,
