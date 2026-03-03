@@ -276,8 +276,11 @@ class RelayServer:
 
     def _handle_message(self, *, peer: _Peer, message: NetMessage, now_ms: int) -> None:
         request_id = ""
-        if isinstance(message, (RbResyncRequest, RbResyncBegin, RbResyncChunk, RbResyncCommit)):
-            request_id = str(message.request_id)
+        match message:
+            case RbResyncRequest() | RbResyncBegin() | RbResyncChunk() | RbResyncCommit():
+                request_id = str(message.request_id)
+            case _:
+                request_id = ""
         self.log.debug(
             "relay_message_received",
             peer_id=str(peer.peer_id),
@@ -287,36 +290,38 @@ class RelayServer:
             request_id=request_id,
             now_ms=int(now_ms),
         )
-        if isinstance(message, Ping):
-            self._send_peer(peer, Pong(stamp_ms=int(message.stamp_ms)), reliable=False, now_ms=int(now_ms))
-            return
+        match message:
+            case Ping():
+                self._send_peer(peer, Pong(stamp_ms=int(message.stamp_ms)), reliable=False, now_ms=int(now_ms))
+                return
 
-        if isinstance(message, RoomCreate):
-            self._handle_room_create(peer=peer, message=message, now_ms=int(now_ms))
-            return
+            case RoomCreate():
+                self._handle_room_create(peer=peer, message=message, now_ms=int(now_ms))
+                return
 
-        if isinstance(message, RoomJoin):
-            self._handle_room_join(peer=peer, message=message, now_ms=int(now_ms))
-            return
+            case RoomJoin():
+                self._handle_room_join(peer=peer, message=message, now_ms=int(now_ms))
+                return
 
-        if isinstance(message, RoomReady):
-            self._handle_room_ready(peer=peer, message=message, now_ms=int(now_ms))
-            return
+            case RoomReady():
+                self._handle_room_ready(peer=peer, message=message, now_ms=int(now_ms))
+                return
 
-        if isinstance(message, (RbInputBatch, RbResyncRequest, RbResyncBegin, RbResyncChunk, RbResyncCommit)):
-            self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
-            return
+            case RbInputBatch() | RbResyncRequest() | RbResyncBegin() | RbResyncChunk() | RbResyncCommit():
+                self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
+                return
 
-        if isinstance(message, (LockstepInputBatch, LockstepTickFrame, LockstepControl)):
-            self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
-            return
+            case LockstepInputBatch() | LockstepTickFrame() | LockstepControl():
+                self._forward_room_message(peer=peer, message=message, now_ms=int(now_ms))
+                return
 
-        self.log.warning(
-            "relay_message_unhandled",
-            peer_id=str(peer.peer_id),
-            kind=type(message).__name__,
-            room_code=str(peer.room_code or ""),
-        )
+            case _:
+                self.log.warning(
+                    "relay_message_unhandled",
+                    peer_id=str(peer.peer_id),
+                    kind=type(message).__name__,
+                    room_code=str(peer.room_code or ""),
+                )
 
     def _handle_room_create(self, *, peer: _Peer, message: RoomCreate, now_ms: int) -> None:
         if peer.room_code:
