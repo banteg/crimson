@@ -4,7 +4,7 @@ import math
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import TypeAlias
+from typing import TypeAlias, cast
 
 import msgspec
 
@@ -23,6 +23,7 @@ from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..input import PlayerInput
+from ..input_providers import ReplayInputProvider
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
@@ -32,6 +33,7 @@ from ..sessions import (
     SurvivalDeterministicSession,
 )
 from ..step_pipeline import DeterministicStepResult
+from ..tick_runner import TickRunner, TickRunnerConfig
 from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_events import apply_replay_tick_events, partition_tick_events
@@ -59,6 +61,33 @@ TickBeginObserver: TypeAlias = Callable[
     [int, WorldState, float, list[ReplayEvent], list[ReplayEvent], list[ReplayEvent]],
     None,
 ]
+
+
+class _PlaybackRunnerSession:
+    def __init__(self, driver: "PlaybackDriver", *, defer_menu_open: bool | None = None) -> None:
+        self._driver = driver
+        self._defer_menu_open = defer_menu_open
+        self._next_tick_index = 0
+
+    def timing_for_dt(self, dt: float) -> float:
+        return float(dt)
+
+    def step_tick(
+        self,
+        *,
+        timing: float,
+        inputs: list[PlayerInput] | None,
+    ) -> PlaybackTickOutcome:
+        _ = timing
+        if inputs is None:
+            raise RuntimeError("replay tick runner provided no inputs for playback tick")
+        tick = self._driver.run_tick(
+            int(self._next_tick_index),
+            defer_menu_open=self._defer_menu_open,
+            player_inputs=list(inputs),
+        )
+        self._next_tick_index += 1
+        return tick
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
@@ -762,12 +791,31 @@ class PlaybackDriver:
         terminal_observer: Callable[[PlaybackTerminalOutcome], None] | None = None,
         defer_menu_open: bool | None = None,
     ) -> RunResult:
-        for tick_index in range(int(self.tick_limit)):
-            outcome = self.run_tick(
-                int(tick_index),
+        replay_input_provider = ReplayInputProvider(
+            player_count=max(0, int(self.replay.header.player_count)),
+            resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
+            tick_count=int(self.tick_limit),
+        )
+        tick_runner = TickRunner(
+            session=_PlaybackRunnerSession(
+                self,
                 defer_menu_open=defer_menu_open,
-                player_inputs=unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
-            )
+            ),
+            input_provider=replay_input_provider,
+            config=TickRunnerConfig(
+                tick_rate=int(self.tick_rate),
+                session_kind="replay_driver",
+                mode_id=str(self.mode_id),
+                is_networked=False,
+                is_replay=True,
+            ),
+        )
+        completed_ticks = 0
+
+        def _on_tick_complete(_tick_index: int, tick: object) -> bool:
+            nonlocal completed_ticks
+            outcome = cast(PlaybackTickOutcome, tick)
+            completed_ticks += 1
 
             if tick_begin_observer is not None:
                 tick_begin_observer(
@@ -806,8 +854,21 @@ class PlaybackDriver:
 
             if tick_progress_callback is not None:
                 tick_progress_callback(int(outcome.tick_index) + 1)
+            return False
 
-        terminal = self.apply_terminal_events(int(self.tick_limit))
+        tick_limit = int(self.tick_limit)
+        while int(completed_ticks) < int(tick_limit):
+            batch = tick_runner.advance_frame(
+                float(tick_runner.clock.dt_tick),
+                max_ticks=1,
+                on_tick_complete=_on_tick_complete,
+            )
+            if int(batch.ticks_completed) <= 0:
+                raise ReplayRunnerError(
+                    f"playback tick runner stalled before completion at tick {int(completed_ticks)}",
+                )
+
+        terminal = self.apply_terminal_events(int(tick_limit))
         if terminal is not None:
             if checkpoints_out is not None and checkpoint_ticks is not None and int(terminal.tick_index) in checkpoint_ticks:
                 self._append_terminal_checkpoint(
@@ -817,7 +878,7 @@ class PlaybackDriver:
             if terminal_observer is not None:
                 terminal_observer(terminal)
 
-        return self.build_run_result(ticks=int(self.tick_limit))
+        return self.build_run_result(ticks=int(tick_limit))
 
     def build_run_result(self, *, ticks: int) -> RunResult:
         shots_fired, shots_hit = player0_shots(self.world.state)

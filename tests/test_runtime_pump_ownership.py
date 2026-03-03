@@ -104,9 +104,10 @@ def test_lan_tick_consumption_uses_tick_runner_instead_of_direct_step_call() -> 
     assert "session.step_tick(" not in source
 
 
-def test_lan_tick_consumption_delegates_finalize_side_effects_to_helper() -> None:
+def test_lan_tick_consumption_delegates_finalize_side_effects_to_hook() -> None:
     source = inspect.getsource(BaseGameplayMode._consume_lan_tick_frames)
-    assert "_finalize_lan_tick(" in source
+    assert "finalize_hook.bind(" in source
+    assert "_finalize_lan_tick(" not in source
     assert "runtime.note_desync(" not in source
     assert "broadcast_tick_frame(" not in source
 

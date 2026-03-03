@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from typing import Any, cast
 
 import pytest
@@ -227,3 +228,10 @@ def test_playback_driver_run_tick_requires_player_inputs() -> None:
     run_tick = cast(Any, driver.run_tick)
     with pytest.raises(TypeError):
         run_tick(0)
+
+
+def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> None:
+    source = inspect.getsource(PlaybackDriver.run_to_completion)
+    assert "TickRunner(" in source
+    assert "ReplayInputProvider(" in source
+    assert "for tick_index in range(" not in source
