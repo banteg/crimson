@@ -64,6 +64,7 @@ from ..sim.hooks import (
     ReplayRecorderHook,
     TickContext,
     TickHashes,
+    TickHook,
     TickHookBus,
     TickResult,
 )
@@ -1477,7 +1478,7 @@ class BaseGameplayMode:
         *,
         session: DeterministicSessionLike,
         input_provider: object,
-        hooks: list[object],
+        hooks: list[TickHook],
         tick_rate: int,
         is_networked: bool,
     ) -> TickRunner:

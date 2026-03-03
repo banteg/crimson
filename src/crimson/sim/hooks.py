@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Protocol, TypeAlias, runtime_checkable
 
 import msgspec
 
@@ -31,62 +31,121 @@ class TickResult(msgspec.Struct, frozen=True):
     payload: object | None = None
 
 
+@runtime_checkable
+class SupportsTickBegin(Protocol):
+    def on_tick_begin(self, ctx: TickContext) -> None: ...
+
+
+@runtime_checkable
+class SupportsTickStall(Protocol):
+    def on_tick_stall(self, ctx: TickContext) -> None: ...
+
+
+@runtime_checkable
+class SupportsPreSim(Protocol):
+    def on_pre_sim(self, ctx: TickContext) -> None: ...
+
+
+@runtime_checkable
+class SupportsWorldStepDone(Protocol):
+    def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None: ...
+
+
+@runtime_checkable
+class SupportsPreHash(Protocol):
+    def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None: ...
+
+
+@runtime_checkable
+class SupportsPostHash(Protocol):
+    def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None: ...
+
+
+@runtime_checkable
+class SupportsPostPresentation(Protocol):
+    def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None: ...
+
+
+@runtime_checkable
+class SupportsTickEnd(Protocol):
+    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None: ...
+
+
+TickHook: TypeAlias = (
+    SupportsTickBegin
+    | SupportsTickStall
+    | SupportsPreSim
+    | SupportsWorldStepDone
+    | SupportsPreHash
+    | SupportsPostHash
+    | SupportsPostPresentation
+    | SupportsTickEnd
+)
+
+
 class TickHookBus:
-    def __init__(self, hooks: Iterable[object] | None = None) -> None:
-        self._hooks: list[object] = list(hooks or [])
+    def __init__(self, hooks: Iterable[TickHook] | None = None) -> None:
+        self._hooks: list[TickHook] = list(hooks or [])
 
     @property
-    def hooks(self) -> tuple[object, ...]:
+    def hooks(self) -> tuple[TickHook, ...]:
         return tuple(self._hooks)
 
-    def add_hook(self, hook: object) -> None:
+    def add_hook(self, hook: TickHook) -> None:
         self._hooks.append(hook)
-
-    @staticmethod
-    def _invoke(hook: object, method_name: str, *args: object) -> None:
-        method = getattr(hook, method_name, None)
-        if callable(method):
-            method(*args)
 
     def on_tick_begin(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_tick_begin", ctx)
+            if isinstance(hook, SupportsTickBegin):
+                hook.on_tick_begin(ctx)
 
     def on_tick_stall(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_tick_stall", ctx)
+            if isinstance(hook, SupportsTickStall):
+                hook.on_tick_stall(ctx)
 
     def on_pre_sim(self, ctx: TickContext) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_pre_sim", ctx)
+            if isinstance(hook, SupportsPreSim):
+                hook.on_pre_sim(ctx)
 
     def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_world_step_done", ctx, result)
+            if isinstance(hook, SupportsWorldStepDone):
+                hook.on_world_step_done(ctx, result)
 
     def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_pre_hash", ctx, result)
+            if isinstance(hook, SupportsPreHash):
+                hook.on_pre_hash(ctx, result)
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_post_hash", ctx, hashes)
+            if isinstance(hook, SupportsPostHash):
+                hook.on_post_hash(ctx, hashes)
 
     def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_post_presentation", ctx, result)
+            if isinstance(hook, SupportsPostPresentation):
+                hook.on_post_presentation(ctx, result)
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
         for hook in self._hooks:
-            self._invoke(hook, "on_tick_end", ctx, result)
+            if isinstance(hook, SupportsTickEnd):
+                hook.on_tick_end(ctx, result)
+
+
+@runtime_checkable
+class ReplayRecorder(Protocol):
+    def record_tick(self, inputs: list[PlayerInput]) -> int: ...
 
 
 class ReplayRecorderHook:
-    def __init__(self, recorder: object | None) -> None:
+    def __init__(self, recorder: ReplayRecorder | None) -> None:
         self._recorder = recorder
         self.recorded_tick_by_runner_tick: dict[int, int] = {}
 
-    def set_recorder(self, recorder: object | None) -> None:
+    def set_recorder(self, recorder: ReplayRecorder | None) -> None:
         self._recorder = recorder
 
     def clear_recorded_ticks(self) -> None:
@@ -99,10 +158,7 @@ class ReplayRecorderHook:
         if not ctx.inputs_present or ctx.inputs is None:
             return
         inputs = ctx.inputs
-        record_tick = getattr(recorder, "record_tick", None)
-        if not callable(record_tick):
-            raise TypeError("replay recorder hook requires a recorder with callable record_tick(inputs)")
-        tick_index = cast("Callable[[list[PlayerInput]], int]", record_tick)(inputs)
+        tick_index = recorder.record_tick(inputs)
         self.recorded_tick_by_runner_tick[ctx.tick_index] = tick_index
 
 
