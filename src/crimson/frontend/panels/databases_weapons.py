@@ -143,36 +143,35 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         if icon_index is not None:
             self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0 * scale, 82.0 * scale), scale=scale)
 
-        if weapon is not None:
-            reload_time = weapon.reload_time
-            clip_size = weapon.clip_size
-            ammo_class = int(weapon.ammo_class or 0)
-            firerate_label = "Firerate" if preserve_bugs else "Fire rate"
-            if ammo_class == 1:
-                firerate_text = f"{firerate_label}: n/a"
-            else:
-                firerate_text = f"{firerate_label}: {self._weapon_rpm(weapon)} rpm"
-            draw_small_text(
-                font,
-                firerate_text,
-                detail_top_left + Vec2(66.0 * scale, 128.0 * scale),
-                text_scale,
-                text_color,
-            )
-            draw_small_text(
-                font,
-                f"Reload time: {reload_time:.1f} secs",
-                detail_top_left + Vec2(66.0 * scale, 146.0 * scale),
-                text_scale,
-                text_color,
-            )
-            draw_small_text(
-                font,
-                f"Clip size: {clip_size}",
-                detail_top_left + Vec2(66.0 * scale, 164.0 * scale),
-                text_scale,
-                text_color,
-            )
+        reload_time = weapon.reload_time
+        clip_size = weapon.clip_size
+        ammo_class = int(weapon.ammo_class or 0)
+        firerate_label = "Firerate" if preserve_bugs else "Fire rate"
+        if ammo_class == 1:
+            firerate_text = f"{firerate_label}: n/a"
+        else:
+            firerate_text = f"{firerate_label}: {self._weapon_rpm(weapon)} rpm"
+        draw_small_text(
+            font,
+            firerate_text,
+            detail_top_left + Vec2(66.0 * scale, 128.0 * scale),
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            f"Reload time: {reload_time:.1f} secs",
+            detail_top_left + Vec2(66.0 * scale, 146.0 * scale),
+            text_scale,
+            text_color,
+        )
+        draw_small_text(
+            font,
+            f"Clip size: {clip_size}",
+            detail_top_left + Vec2(66.0 * scale, 164.0 * scale),
+            text_scale,
+            text_color,
+        )
 
     def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
         weapon_ids = self._weapon_ids
@@ -268,10 +267,10 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         used.sort()
         return used
 
-    def _weapon_entry(self, weapon_id: int) -> Weapon | None:
+    def _weapon_entry(self, weapon_id: int) -> Weapon:
         from ...weapons import WEAPON_BY_ID
 
-        return WEAPON_BY_ID.get(weapon_id)
+        return WEAPON_BY_ID[weapon_id]
 
     def _weapon_rpm(self, weapon: Weapon) -> int:
         return int(60.0 / float(weapon.shot_cooldown))
@@ -303,8 +302,6 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
         from ...weapons import WEAPON_BY_ID, weapon_display_name
 
-        weapon = WEAPON_BY_ID.get(weapon_id)
-        if weapon is None:
-            return f"Weapon {int(weapon_id)}", None
+        weapon = WEAPON_BY_ID[weapon_id]
         name = weapon_display_name(weapon.weapon_id, preserve_bugs=self.state.preserve_bugs)
         return name, weapon.icon_index

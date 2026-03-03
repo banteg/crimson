@@ -296,16 +296,14 @@ def draw_target_health_bar(*, pos: Vec2, width: float, ratio: float, alpha: floa
 
 
 def _weapon_icon_index(weapon_id: int) -> int | None:
-    entry = WEAPON_BY_ID.get(weapon_id)
-    icon_index = entry.icon_index if entry is not None else None
-    if icon_index is None or icon_index < 0 or icon_index > 31:
+    icon_index = int(WEAPON_BY_ID[weapon_id].icon_index)
+    if icon_index < 0 or icon_index > 31:
         return None
-    return int(icon_index)
+    return icon_index
 
 
 def _weapon_ammo_class(weapon_id: int) -> int:
-    entry = WEAPON_BY_ID.get(weapon_id)
-    value = entry.ammo_class if entry is not None else None
+    value = WEAPON_BY_ID[weapon_id].ammo_class
     return int(value) if value is not None else 0
 
 

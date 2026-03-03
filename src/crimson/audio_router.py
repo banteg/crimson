@@ -135,20 +135,16 @@ class AudioRouter(msgspec.Struct):
     ) -> None:
         if self.audio is None:
             return
-        weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
-        if weapon is None:
-            return
+        weapon = WEAPON_BY_ID[player.weapon.weapon_id]
 
         if int(player.shot_seq) > int(prev_shot_seq):
             if float(player.fire_bullets_timer) > 0.0:
                 # player_update (crimsonland.exe): when Fire Bullets is active, the regular per-weapon
                 # shot sfx is suppressed and replaced by Fire Bullets + Plasma Minigun fire sfx.
-                fire_bullets = WEAPON_BY_ID.get(WeaponId.FIRE_BULLETS)
-                plasma_minigun = WEAPON_BY_ID.get(WeaponId.PLASMA_MINIGUN)
-                if fire_bullets is not None:
-                    self.play_sfx(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
-                if plasma_minigun is not None:
-                    self.play_sfx(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
+                fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
+                plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
+                self.play_sfx(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
+                self.play_sfx(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
             else:
                 self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
 

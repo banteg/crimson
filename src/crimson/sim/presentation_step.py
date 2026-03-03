@@ -87,22 +87,18 @@ def plan_player_audio_sfx(
 ) -> list[str]:
     keys: list[str] = []
 
-    weapon = WEAPON_BY_ID.get(player.weapon.weapon_id)
-    if weapon is None:
-        return keys
+    weapon = WEAPON_BY_ID[player.weapon.weapon_id]
 
     if int(player.shot_seq) > int(prev_shot_seq):
         if float(player.fire_bullets_timer) > 0.0:
-            fire_bullets = WEAPON_BY_ID.get(WeaponId.FIRE_BULLETS)
-            plasma_minigun = WEAPON_BY_ID.get(WeaponId.PLASMA_MINIGUN)
-            if fire_bullets is not None:
-                key = resolve_weapon_sfx_ref(fire_bullets.fire_sound)
-                if key is not None:
-                    keys.append(key)
-            if plasma_minigun is not None:
-                key = resolve_weapon_sfx_ref(plasma_minigun.fire_sound)
-                if key is not None:
-                    keys.append(key)
+            fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
+            plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
+            key = resolve_weapon_sfx_ref(fire_bullets.fire_sound)
+            if key is not None:
+                keys.append(key)
+            key = resolve_weapon_sfx_ref(plasma_minigun.fire_sound)
+            if key is not None:
+                keys.append(key)
         else:
             key = resolve_weapon_sfx_ref(weapon.fire_sound)
             if key is not None:
