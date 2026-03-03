@@ -64,7 +64,11 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     ctx = ViewContext(assets_dir=assets_dir)
     step_tick = mocker.Mock(
         return_value=SimpleNamespace(
-            step=SimpleNamespace(),
+            step=SimpleNamespace(
+                command_hash=0,
+                dt_sim=1.0 / 60.0,
+                presentation=None,
+            ),
             spawn_timeline_ms=0.0,
             no_creatures_timer_ms=0.0,
             completion_transition_ms=-1.0,

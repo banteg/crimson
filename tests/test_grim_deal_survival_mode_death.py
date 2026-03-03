@@ -56,7 +56,12 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
             for player in self._world.players:
                 if float(player.health) <= 0.0:
                     player.death_timer -= float(dt) * 20.0
-            step = SimpleNamespace(events=SimpleNamespace(deaths=()), command_hash=0)
+            step = SimpleNamespace(
+                events=SimpleNamespace(deaths=()),
+                command_hash=0,
+                dt_sim=float(dt),
+                presentation=None,
+            )
             return SimpleNamespace(step=step, rng_marks={})
 
     mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
