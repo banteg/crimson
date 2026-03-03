@@ -25,31 +25,6 @@ TimingT = TypeVar("TimingT")
 TickT = TypeVar("TickT", bound=TickPayload)
 
 
-def _extract_tick_payload(*, tick_index: int, tick: TickPayload) -> tuple[TickStepPayload, str, float, object]:
-    try:
-        step = tick.step
-    except AttributeError as exc:
-        raise TypeError(f"tick payload missing required field 'step' at tick {tick_index}") from exc
-    try:
-        command_hash_raw = step.command_hash
-    except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'command_hash' at tick {tick_index}") from exc
-    try:
-        dt_sim_raw = step.dt_sim
-    except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'dt_sim' at tick {tick_index}") from exc
-    try:
-        presentation = step.presentation
-    except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'presentation' at tick {tick_index}") from exc
-    return (
-        step,
-        command_hash_raw,
-        dt_sim_raw,
-        presentation,
-    )
-
-
 class TickSession(Protocol[TimingT, TickT]):
     def timing_for_dt(self, dt: float) -> TimingT: ...
 
@@ -151,10 +126,10 @@ class TickRunner(Generic[TimingT, TickT]):
                 timing=timing,
                 inputs=tick_inputs,
             )
-            step, command_hash, dt_sim, presentation = _extract_tick_payload(
-                tick_index=tick_index,
-                tick=tick,
-            )
+            step = tick.step
+            command_hash = step.command_hash
+            dt_sim = step.dt_sim
+            presentation = step.presentation
             result = TickResult(
                 tick_index=tick_index,
                 command_hash=command_hash,

@@ -147,7 +147,7 @@ def test_tick_runner_fails_fast_when_step_payload_missing() -> None:
         input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
     )
 
-    with pytest.raises(TypeError, match="missing required field 'step'"):
+    with pytest.raises(AttributeError, match="step"):
         runner.advance_frame(1.0 / 60.0)
 
 
@@ -165,5 +165,5 @@ def test_tick_runner_fails_fast_when_step_presentation_missing() -> None:
         input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
     )
 
-    with pytest.raises(TypeError, match="missing required field 'presentation'"):
+    with pytest.raises(AttributeError, match="presentation"):
         runner.advance_frame(1.0 / 60.0)
