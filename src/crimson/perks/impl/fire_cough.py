@@ -5,7 +5,7 @@ import math
 from grim.color import RGBA
 from grim.geom import Vec2
 
-from ...projectiles.types import ProjectileTypeId
+from ...projectiles.types import ProjectileTemplateId
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
@@ -42,7 +42,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         players=[ctx.player],
         pos=muzzle,
         angle=angle,
-        type_id=ProjectileTypeId.FIRE_BULLETS,
+        type_id=ProjectileTemplateId.FIRE_BULLETS,
         owner=owner,
         owner_player_index=ctx.player.index,
     )

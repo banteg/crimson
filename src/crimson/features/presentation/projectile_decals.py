@@ -10,7 +10,7 @@ from grim.geom import Vec2
 
 from ...bonuses.fire_bullets import queue_large_hit_decal_streak
 from ...effects import FxQueue
-from ...projectiles.types import ProjectileHit, ProjectileTypeId
+from ...projectiles.types import ProjectileHit, ProjectileTemplateId
 
 
 class ProjectileDecalCtx(msgspec.Struct):
@@ -24,7 +24,7 @@ class ProjectileDecalCtx(msgspec.Struct):
 
 def _hook_large_streak_projectiles(ctx: ProjectileDecalCtx) -> bool:
     type_id = int(ctx.hit.type_id)
-    if type_id not in (int(ProjectileTypeId.GAUSS_GUN), int(ProjectileTypeId.FIRE_BULLETS)):
+    if type_id not in (ProjectileTemplateId.GAUSS_GUN.value, ProjectileTemplateId.FIRE_BULLETS.value):
         return False
     queue_large_hit_decal_streak(
         hit=ctx.hit,

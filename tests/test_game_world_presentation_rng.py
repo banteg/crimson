@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.game_world import GameWorld
-from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from grim.geom import Vec2
 
 
@@ -16,7 +16,7 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
 
     player = world.players[0]
     hit = ProjectileHit(
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=int(ProjectileTemplateId.PISTOL),
         origin=Vec2(float(player.pos.x - 10.0), float(player.pos.y - 10.0)),
         hit=player.pos,
         target=player.pos,

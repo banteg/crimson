@@ -19,7 +19,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..owner_ref import OwnerRef
-from ..projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -143,7 +143,7 @@ class EmissiveProfile(msgspec.Struct, frozen=True):
     name: str
     auto_interval: float
     rate_weapon_id: int | None = None
-    primary_type_id: ProjectileTypeId | None = None
+    primary_type_id: ProjectileTemplateId | None = None
     secondary_type_id: SecondaryProjectileTypeId | None = None
     burst_count: int = 1
     spread_rad: float = 0.0
@@ -277,7 +277,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Muzzle",
         auto_interval=0.11,
         rate_weapon_id=WeaponId.PISTOL,
-        primary_type_id=ProjectileTypeId.PISTOL,
+        primary_type_id=ProjectileTemplateId.PISTOL,
         flash_radius=95.0,
         flash_ttl=0.11,
         flash_strength=1.0,
@@ -286,7 +286,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Ion Rifle",
         auto_interval=0.16,
         rate_weapon_id=WeaponId.ION_RIFLE,
-        primary_type_id=ProjectileTypeId.ION_RIFLE,
+        primary_type_id=ProjectileTemplateId.ION_RIFLE,
         flash_radius=140.0,
         flash_ttl=0.17,
         flash_strength=1.0,
@@ -295,7 +295,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Ion Minigun",
         auto_interval=0.06,
         rate_weapon_id=WeaponId.ION_MINIGUN,
-        primary_type_id=ProjectileTypeId.ION_MINIGUN,
+        primary_type_id=ProjectileTemplateId.ION_MINIGUN,
         burst_count=2,
         spread_rad=0.03,
         flash_radius=135.0,
@@ -306,7 +306,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Plasma Rifle",
         auto_interval=0.13,
         rate_weapon_id=WeaponId.PLASMA_RIFLE,
-        primary_type_id=ProjectileTypeId.PLASMA_RIFLE,
+        primary_type_id=ProjectileTemplateId.PLASMA_RIFLE,
         flash_radius=150.0,
         flash_ttl=0.19,
         flash_strength=1.0,
@@ -315,7 +315,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Plasma Cannon",
         auto_interval=0.27,
         rate_weapon_id=WeaponId.PLASMA_CANNON,
-        primary_type_id=ProjectileTypeId.PLASMA_CANNON,
+        primary_type_id=ProjectileTemplateId.PLASMA_CANNON,
         flash_radius=210.0,
         flash_ttl=0.24,
         flash_strength=1.0,
@@ -324,7 +324,7 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         name="Fire/Flame",
         auto_interval=0.08,
         rate_weapon_id=WeaponId.HR_FLAMER,
-        primary_type_id=ProjectileTypeId.FIRE_BULLETS,
+        primary_type_id=ProjectileTemplateId.FIRE_BULLETS,
         burst_count=4,
         spread_rad=0.16,
         flash_radius=125.0,
@@ -371,12 +371,12 @@ STATIC_OCCLUDER_LAYOUT: tuple[tuple[float, float, float], ...] = (
 
 
 _PRIMARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
-    ProjectileTypeId.PISTOL: (105.0, 0.75),
-    ProjectileTypeId.ION_RIFLE: (235.0, 1.0),
-    ProjectileTypeId.ION_MINIGUN: (190.0, 0.95),
-    ProjectileTypeId.PLASMA_RIFLE: (220.0, 1.0),
-    ProjectileTypeId.PLASMA_CANNON: (275.0, 1.0),
-    ProjectileTypeId.FIRE_BULLETS: (170.0, 0.9),
+    ProjectileTemplateId.PISTOL: (105.0, 0.75),
+    ProjectileTemplateId.ION_RIFLE: (235.0, 1.0),
+    ProjectileTemplateId.ION_MINIGUN: (190.0, 0.95),
+    ProjectileTemplateId.PLASMA_RIFLE: (220.0, 1.0),
+    ProjectileTemplateId.PLASMA_CANNON: (275.0, 1.0),
+    ProjectileTemplateId.FIRE_BULLETS: (170.0, 0.9),
 }
 
 _SECONDARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
@@ -387,14 +387,14 @@ _SECONDARY_PROJECTILE_LIGHTS: dict[int, tuple[float, float]] = {
 }
 
 _PRIMARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
-    ProjectileTypeId.PISTOL: (0.20, 1.15),
+    ProjectileTemplateId.PISTOL: (0.20, 1.15),
     # Ion streak emissive is rendered head->tail and is not forward-cone biased.
-    ProjectileTypeId.ION_RIFLE: (0.0, 1.0),
-    ProjectileTypeId.ION_MINIGUN: (0.0, 1.0),
+    ProjectileTemplateId.ION_RIFLE: (0.0, 1.0),
+    ProjectileTemplateId.ION_MINIGUN: (0.0, 1.0),
     # Plasma glow is omni in the native render path (head + aura/tail sprites).
-    ProjectileTypeId.PLASMA_RIFLE: (0.0, 1.0),
-    ProjectileTypeId.PLASMA_CANNON: (0.0, 1.0),
-    ProjectileTypeId.FIRE_BULLETS: (0.55, 1.45),
+    ProjectileTemplateId.PLASMA_RIFLE: (0.0, 1.0),
+    ProjectileTemplateId.PLASMA_CANNON: (0.0, 1.0),
+    ProjectileTemplateId.FIRE_BULLETS: (0.55, 1.45),
 }
 
 _SECONDARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
@@ -406,17 +406,17 @@ _SECONDARY_PROJECTILE_DIRECTIONAL: dict[int, tuple[float, float]] = {
 
 _ION_PROJECTILE_TYPES: frozenset[int] = frozenset(
     {
-        int(ProjectileTypeId.ION_RIFLE),
-        int(ProjectileTypeId.ION_MINIGUN),
+        ProjectileTemplateId.ION_RIFLE.value,
+        ProjectileTemplateId.ION_MINIGUN.value,
     },
 )
 
 _OMNI_PROJECTILE_TYPES: frozenset[int] = frozenset(
     {
-        int(ProjectileTypeId.ION_RIFLE),
-        int(ProjectileTypeId.ION_MINIGUN),
-        int(ProjectileTypeId.PLASMA_RIFLE),
-        int(ProjectileTypeId.PLASMA_CANNON),
+        ProjectileTemplateId.ION_RIFLE.value,
+        ProjectileTemplateId.ION_MINIGUN.value,
+        ProjectileTemplateId.PLASMA_RIFLE.value,
+        ProjectileTemplateId.PLASMA_CANNON.value,
     },
 )
 

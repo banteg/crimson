@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from ..creatures.spawn import CreatureTypeId
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 
 
 class CreatureAnimInfo(msgspec.Struct, frozen=True):
@@ -32,35 +32,35 @@ CREATURE_ASSET: dict[CreatureTypeId, str] = {
 
 KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
     # Based on docs/atlas.md (projectile `type_id` values index the weapon table).
-    ProjectileTypeId.PULSE_GUN: (2, 0),
-    ProjectileTypeId.SPLITTER_GUN: (4, 3),
-    ProjectileTypeId.BLADE_GUN: (4, 6),
-    ProjectileTypeId.ION_MINIGUN: (4, 2),
-    ProjectileTypeId.ION_CANNON: (4, 2),
-    ProjectileTypeId.SHRINKIFIER: (4, 2),
-    ProjectileTypeId.FIRE_BULLETS: (4, 2),
-    ProjectileTypeId.ION_RIFLE: (4, 2),
+    ProjectileTemplateId.PULSE_GUN: (2, 0),
+    ProjectileTemplateId.SPLITTER_GUN: (4, 3),
+    ProjectileTemplateId.BLADE_GUN: (4, 6),
+    ProjectileTemplateId.ION_MINIGUN: (4, 2),
+    ProjectileTemplateId.ION_CANNON: (4, 2),
+    ProjectileTemplateId.SHRINKIFIER: (4, 2),
+    ProjectileTemplateId.FIRE_BULLETS: (4, 2),
+    ProjectileTemplateId.ION_RIFLE: (4, 2),
 }
 
 PLASMA_PARTICLE_TYPES = frozenset(
     {
-        ProjectileTypeId.PLASMA_RIFLE,
-        ProjectileTypeId.PLASMA_MINIGUN,
-        ProjectileTypeId.PLASMA_CANNON,
-        ProjectileTypeId.SPIDER_PLASMA,
-        ProjectileTypeId.SHRINKIFIER,
+        ProjectileTemplateId.PLASMA_RIFLE,
+        ProjectileTemplateId.PLASMA_MINIGUN,
+        ProjectileTemplateId.PLASMA_CANNON,
+        ProjectileTemplateId.SPIDER_PLASMA,
+        ProjectileTemplateId.SHRINKIFIER,
     },
 )
 
 ION_TYPES = frozenset(
     {
-        ProjectileTypeId.ION_RIFLE,
-        ProjectileTypeId.ION_MINIGUN,
-        ProjectileTypeId.ION_CANNON,
+        ProjectileTemplateId.ION_RIFLE,
+        ProjectileTemplateId.ION_MINIGUN,
+        ProjectileTemplateId.ION_CANNON,
     },
 )
 
-FIRE_BULLETS_TYPES = frozenset({ProjectileTypeId.FIRE_BULLETS})
+FIRE_BULLETS_TYPES = frozenset({ProjectileTemplateId.FIRE_BULLETS})
 
 # "Beam" in the original renderer is really the Ion/Fire streak + chain UV family.
 BEAM_TYPES = ION_TYPES | FIRE_BULLETS_TYPES

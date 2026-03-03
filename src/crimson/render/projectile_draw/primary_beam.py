@@ -9,7 +9,7 @@ from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
 from ...perks.helpers import perk_active
-from ...projectiles.types import ProjectileTypeId
+from ...projectiles.types import ProjectileTemplateId
 from ...render.rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ...render.rtx.mode import RtxRenderMode
 from ...sim.world_defs import BEAM_TYPES, ION_TYPES
@@ -68,7 +68,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     grid = 4
     frame = 2
 
-    is_fire_bullets = type_id == int(ProjectileTypeId.FIRE_BULLETS)
+    is_fire_bullets = type_id == ProjectileTemplateId.FIRE_BULLETS.value
     is_ion = type_id in ION_TYPES
 
     origin = proj_origin(ctx.proj, ctx.pos)

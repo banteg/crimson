@@ -5,7 +5,7 @@ from unittest.mock import call
 import crimson.audio_router as audio_router
 from crimson.audio_router import AudioRouter
 from crimson.game_modes import GameMode
-from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -22,7 +22,7 @@ def _audio_state_stub() -> AudioState:
 
 def _hits(count: int) -> list[ProjectileHit]:
     return [
-        ProjectileHit(type_id=int(ProjectileTypeId.PISTOL), origin=Vec2(), hit=Vec2(), target=Vec2())
+        ProjectileHit(type_id=int(ProjectileTemplateId.PISTOL), origin=Vec2(), hit=Vec2(), target=Vec2())
         for _ in range(int(count))
     ]
 

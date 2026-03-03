@@ -4,10 +4,10 @@ from __future__ import annotations
 Weapon definitions for the rewrite runtime.
 
 Weapon ids use native 1-based values (e.g. `weapon_id=1` for Pistol).
-Projectile `type_id` values are a separate domain (`ProjectileTypeId`) that
-overlaps numerically with `WeaponId` but is not 1:1: multiple weapons can
-share a projectile template and some weapons use particle/secondary pools
-instead of the main projectile pool.
+Projectile `type_id` values route projectile behavior and template lookups.
+By native design they reuse the same numeric ids as `WeaponId` for default
+cases, with explicit overrides for remapped templates and non-primary paths
+(particle/secondary pools).
 
 Use `projectile_type_id_for_weapon_id` for the primary projectile `type_id`.
 Weapons that use particle or secondary projectile pools raise `ValueError`.
@@ -21,7 +21,7 @@ from enum import IntEnum
 
 import msgspec
 
-from .projectiles.types import ProjectileTypeId
+from .projectiles.types import ProjectileTemplateId
 
 
 class WeaponId(IntEnum):
@@ -795,82 +795,44 @@ def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> 
     return str(name)
 
 
-WEAPON_PROJECTILE_TYPE_IDS: dict[WeaponId, tuple[ProjectileTypeId, ...]] = {
+PROJECTILE_TEMPLATE_OVERRIDES: dict[WeaponId, tuple[ProjectileTemplateId, ...]] = {
     # Derived from native `player_fire_weapon` behavior.
-    # Weapon ids not listed here use `type_id == weapon_id` in the native
-    # `projectile_spawn` path.
-    WeaponId.PISTOL: (ProjectileTypeId.PISTOL,),
-    WeaponId.ASSAULT_RIFLE: (ProjectileTypeId.ASSAULT_RIFLE,),
-    WeaponId.SHOTGUN: (ProjectileTypeId.SHOTGUN,),
-    WeaponId.SAWED_OFF_SHOTGUN: (ProjectileTypeId.SHOTGUN,),
-    WeaponId.SUBMACHINE_GUN: (ProjectileTypeId.SUBMACHINE_GUN,),
-    WeaponId.GAUSS_GUN: (ProjectileTypeId.GAUSS_GUN,),
-    WeaponId.MEAN_MINIGUN: (ProjectileTypeId.PISTOL,),
+    # Omitted keys use the native default `type_id == weapon_id`.
+    # Empty tuples are explicit non-primary projectile paths.
+    WeaponId.SAWED_OFF_SHOTGUN: (ProjectileTemplateId.SHOTGUN,),
+    WeaponId.MEAN_MINIGUN: (ProjectileTemplateId.PISTOL,),
     WeaponId.FLAMETHROWER: (),
-    WeaponId.PLASMA_RIFLE: (ProjectileTypeId.PLASMA_RIFLE,),
-    WeaponId.MULTI_PLASMA: (ProjectileTypeId.PLASMA_RIFLE, ProjectileTypeId.PLASMA_MINIGUN),
-    WeaponId.PLASMA_MINIGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.MULTI_PLASMA: (ProjectileTemplateId.PLASMA_RIFLE, ProjectileTemplateId.PLASMA_MINIGUN),
     WeaponId.ROCKET_LAUNCHER: (),
     WeaponId.SEEKER_ROCKETS: (),
-    WeaponId.PLASMA_SHOTGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.PLASMA_SHOTGUN: (ProjectileTemplateId.PLASMA_MINIGUN,),
     WeaponId.BLOW_TORCH: (),
     WeaponId.HR_FLAMER: (),
     WeaponId.MINI_ROCKET_SWARMERS: (),
     WeaponId.ROCKET_MINIGUN: (),
-    WeaponId.PULSE_GUN: (ProjectileTypeId.PULSE_GUN,),
-    WeaponId.JACKHAMMER: (ProjectileTypeId.SHOTGUN,),
-    WeaponId.ION_RIFLE: (ProjectileTypeId.ION_RIFLE,),
-    WeaponId.ION_MINIGUN: (ProjectileTypeId.ION_MINIGUN,),
-    WeaponId.ION_CANNON: (ProjectileTypeId.ION_CANNON,),
-    WeaponId.SHRINKIFIER_5K: (ProjectileTypeId.SHRINKIFIER,),
-    WeaponId.BLADE_GUN: (ProjectileTypeId.BLADE_GUN,),
-    WeaponId.PLASMA_CANNON: (ProjectileTypeId.PLASMA_CANNON,),
-    WeaponId.SPLITTER_GUN: (ProjectileTypeId.SPLITTER_GUN,),
-    WeaponId.GAUSS_SHOTGUN: (ProjectileTypeId.GAUSS_GUN,),
-    WeaponId.ION_SHOTGUN: (ProjectileTypeId.ION_MINIGUN,),
-    WeaponId.PLAGUE_SPREADER_GUN: (ProjectileTypeId.PLAGUE_SPREADER,),
+    WeaponId.JACKHAMMER: (ProjectileTemplateId.SHOTGUN,),
+    WeaponId.GAUSS_SHOTGUN: (ProjectileTemplateId.GAUSS_GUN,),
+    WeaponId.ION_SHOTGUN: (ProjectileTemplateId.ION_MINIGUN,),
     WeaponId.BUBBLEGUN: (),
-    WeaponId.RAINBOW_GUN: (ProjectileTypeId.RAINBOW_GUN,),
-    WeaponId.FIRE_BULLETS: (ProjectileTypeId.FIRE_BULLETS,),
 }
 
-def weapon_entry_for_projectile_type_id(type_id: ProjectileTypeId) -> Weapon:
-    # Native `projectile_spawn` indexes weapon metadata by projectile type id.
-    return WEAPON_BY_PROJECTILE_TYPE_ID[type_id]
+def weapon_entry_for_projectile_type_id(type_id: ProjectileTemplateId) -> Weapon:
+    """
+    Native `projectile_spawn` indexes weapon metadata by projectile type id.
+    The type id is the weapon id used as the projectile stats template.
+    """
+    return WEAPON_BY_ID[WeaponId(type_id.value)]
 
 
-WEAPON_BY_PROJECTILE_TYPE_ID: dict[ProjectileTypeId, Weapon] = {
-    ProjectileTypeId.PISTOL: WEAPON_BY_ID[WeaponId.PISTOL],
-    ProjectileTypeId.ASSAULT_RIFLE: WEAPON_BY_ID[WeaponId.ASSAULT_RIFLE],
-    ProjectileTypeId.SHOTGUN: WEAPON_BY_ID[WeaponId.SHOTGUN],
-    ProjectileTypeId.SUBMACHINE_GUN: WEAPON_BY_ID[WeaponId.SUBMACHINE_GUN],
-    ProjectileTypeId.GAUSS_GUN: WEAPON_BY_ID[WeaponId.GAUSS_GUN],
-    ProjectileTypeId.PLASMA_RIFLE: WEAPON_BY_ID[WeaponId.PLASMA_RIFLE],
-    ProjectileTypeId.PLASMA_MINIGUN: WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN],
-    ProjectileTypeId.PULSE_GUN: WEAPON_BY_ID[WeaponId.PULSE_GUN],
-    ProjectileTypeId.ION_RIFLE: WEAPON_BY_ID[WeaponId.ION_RIFLE],
-    ProjectileTypeId.ION_MINIGUN: WEAPON_BY_ID[WeaponId.ION_MINIGUN],
-    ProjectileTypeId.ION_CANNON: WEAPON_BY_ID[WeaponId.ION_CANNON],
-    ProjectileTypeId.SHRINKIFIER: WEAPON_BY_ID[WeaponId.SHRINKIFIER_5K],
-    ProjectileTypeId.BLADE_GUN: WEAPON_BY_ID[WeaponId.BLADE_GUN],
-    ProjectileTypeId.SPIDER_PLASMA: WEAPON_BY_ID[WeaponId.SPIDER_PLASMA],
-    ProjectileTypeId.PLASMA_CANNON: WEAPON_BY_ID[WeaponId.PLASMA_CANNON],
-    ProjectileTypeId.SPLITTER_GUN: WEAPON_BY_ID[WeaponId.SPLITTER_GUN],
-    ProjectileTypeId.PLAGUE_SPREADER: WEAPON_BY_ID[WeaponId.PLAGUE_SPREADER_GUN],
-    ProjectileTypeId.RAINBOW_GUN: WEAPON_BY_ID[WeaponId.RAINBOW_GUN],
-    ProjectileTypeId.FIRE_BULLETS: WEAPON_BY_ID[WeaponId.FIRE_BULLETS],
-}
-
-
-def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTypeId:
+def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTemplateId:
     """Return the primary projectile type for a weapon that uses the main pool."""
 
-    type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
+    type_ids = PROJECTILE_TEMPLATE_OVERRIDES.get(weapon_id)
     if type_ids is not None:
         if not type_ids:
             raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
         return type_ids[0]
     try:
-        return ProjectileTypeId(int(weapon_id))
+        return ProjectileTemplateId(weapon_id)
     except ValueError as exc:
         raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}") from exc

@@ -14,7 +14,7 @@ from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..game_world import GameWorld
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
@@ -86,7 +86,7 @@ def _fmt_hex(value: int | None) -> str:
 
 def _projectile_type_label(type_id: int) -> str:
     try:
-        name = ProjectileTypeId(int(type_id)).name.lower().replace("_", " ")
+        name = ProjectileTemplateId(type_id).name.lower().replace("_", " ")
     except ValueError:
         name = "unknown"
     return f"{name} (id {type_id})"

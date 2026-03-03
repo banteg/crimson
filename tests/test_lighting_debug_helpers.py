@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
-from crimson.projectiles.types import Projectile, ProjectileTypeId, SecondaryProjectile, SecondaryProjectileTypeId
+from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.views.lighting_debug import (
     EMISSIVE_PROFILES,
@@ -94,8 +94,8 @@ def test_collect_shadow_lights_clamps_count_and_is_deterministic() -> None:
         TransientLight(pos=Vec2(110.0, 100.0), radius=40.0, strength=0.8, ttl=0.4, age=0.0),
     ]
     projectiles = [
-        _projectile(active=True, pos=Vec2(200.0, 100.0), angle=0.0, type_id=int(ProjectileTypeId.PISTOL)),
-        _projectile(active=True, pos=Vec2(210.0, 100.0), type_id=int(ProjectileTypeId.PLASMA_RIFLE)),
+        _projectile(active=True, pos=Vec2(200.0, 100.0), angle=0.0, type_id=int(ProjectileTemplateId.PISTOL)),
+        _projectile(active=True, pos=Vec2(210.0, 100.0), type_id=int(ProjectileTemplateId.PLASMA_RIFLE)),
         _projectile(active=True, pos=Vec2(220.0, 100.0), type_id=0xDEAD),  # ignored, not emissive
     ]
     secondary = [
@@ -120,7 +120,7 @@ def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
             pos=Vec2(300.0, 100.0),
             origin=Vec2(80.0, 100.0),
             angle=0.0,
-            type_id=int(ProjectileTypeId.ION_RIFLE),
+            type_id=int(ProjectileTemplateId.ION_RIFLE),
         ),
     ]
 
@@ -145,7 +145,7 @@ def test_plasma_light_is_omnidirectional() -> None:
             pos=Vec2(220.0, 100.0),
             origin=Vec2(180.0, 100.0),
             angle=1.2,
-            type_id=int(ProjectileTypeId.PLASMA_RIFLE),
+            type_id=int(ProjectileTemplateId.PLASMA_RIFLE),
         ),
     ]
 

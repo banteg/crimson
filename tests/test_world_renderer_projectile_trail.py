@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import crimson.render.world.projectiles as world_projectiles
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.projectiles import draw_bullet_trail
@@ -34,7 +34,7 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
         render_ctx,
         Vec2(120.0, 90.0),
         Vec2(120.0, 90.0),
-        type_id=int(ProjectileTypeId.PISTOL),
+        type_id=int(ProjectileTemplateId.PISTOL),
         alpha=128,
         scale=1.0,
         angle=0.0,

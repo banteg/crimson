@@ -4,7 +4,7 @@ from grim.geom import Vec2
 
 from ..creatures.lifecycle import creature_lifecycle_is_alive
 from ..owner_ref import OwnerRef
-from ..projectiles.types import ProjectileTypeId
+from ..projectiles.types import ProjectileTemplateId
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
 
@@ -46,7 +46,7 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         players=ctx.players,
         pos=origin,
         angle=angle,
-        type_id=ProjectileTypeId.ION_RIFLE,
+        type_id=ProjectileTemplateId.ION_RIFLE,
         owner=owner,
         owner_player_index=ctx.player.index,
     )

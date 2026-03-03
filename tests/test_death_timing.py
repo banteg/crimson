@@ -13,7 +13,7 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectileUpdateOptions
-from crimson.projectiles.types import ProjectileHit, ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -43,7 +43,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     world.state.projectiles.spawn(
         pos=Vec2(float(creature.pos.x), float(creature.pos.y)),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_player(0),
     )
 
@@ -436,7 +436,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         if on_hit is None or on_hit_post is None:
             return []
         hit = ProjectileHit(
-            type_id=ProjectileTypeId.PISTOL,
+            type_id=ProjectileTemplateId.PISTOL,
             origin=Vec2(0.0, 0.0),
             hit=Vec2(1.0, 1.0),
             target=Vec2(1.0, 1.0),

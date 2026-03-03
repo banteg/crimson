@@ -4,7 +4,7 @@ from functools import partial
 
 from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -121,7 +121,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
         owner_player_index=1,
     )
@@ -141,7 +141,7 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
         players=[player0, player1],
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_player(1),
     )
 
@@ -159,7 +159,7 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
         owner_player_index=0,
     )
@@ -167,7 +167,7 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
     assert proj_id >= 0
     assert state.shots_fired[0] == 2
     assert state.shots_fired_total == 2
-    assert int(state.projectiles.entries[proj_id].type_id) == int(ProjectileTypeId.FIRE_BULLETS)
+    assert int(state.projectiles.entries[proj_id].type_id) == int(ProjectileTemplateId.FIRE_BULLETS)
 
 
 def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on() -> None:
@@ -180,7 +180,7 @@ def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on(
         players=[player],
         pos=Vec2(),
         angle=0.0,
-        type_id=ProjectileTypeId.PISTOL,
+        type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
         owner_player_index=0,
     )

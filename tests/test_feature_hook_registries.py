@@ -18,7 +18,7 @@ from crimson.perks.runtime.manifest import (
     WORLD_DT_STEPS,
 )
 from crimson.perks.runtime.player_bonus_timers import update_player_bonus_timers
-from crimson.projectiles.types import ProjectileHit, ProjectileTypeId
+from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import apply_world_presentation_step, queue_projectile_decals
 from crimson.sim.state_types import BonusPickupEvent
 from crimson.sim.world_state import WorldState
@@ -100,7 +100,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
         fx_queue=fx_queue,
         hits=[
             ProjectileHit(
-                type_id=int(ProjectileTypeId.FIRE_BULLETS),
+                type_id=int(ProjectileTemplateId.FIRE_BULLETS),
                 origin=Vec2(0.0, 0.0),
                 hit=Vec2(1.0, 1.0),
                 target=Vec2(1.0, 1.0),

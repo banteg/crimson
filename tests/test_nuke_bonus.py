@@ -4,7 +4,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import GameplayState
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.helpers import MockCrand, assert_float_close
@@ -49,13 +49,13 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
 
     active = [entry for entry in state.projectiles.entries if entry.active]
 
-    pistol = [entry for entry in active if entry.type_id == int(ProjectileTypeId.PISTOL)]
+    pistol = [entry for entry in active if entry.type_id == int(ProjectileTemplateId.PISTOL)]
     assert len(pistol) == 4
     for entry in pistol:
         assert_float_close(entry.travel_budget, 55.0)
         assert_float_close(entry.speed_scale, 0.5)
 
-    gauss = [entry for entry in active if entry.type_id == int(ProjectileTypeId.GAUSS_GUN)]
+    gauss = [entry for entry in active if entry.type_id == int(ProjectileTemplateId.GAUSS_GUN)]
     assert len(gauss) == 2
     for entry in gauss:
         assert_float_close(entry.travel_budget, 215.0)

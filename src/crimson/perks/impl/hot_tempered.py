@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from ...owner_ref import OwnerRef
-from ...projectiles.types import ProjectileTypeId
+from ...projectiles.types import ProjectileTemplateId
 from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.hook_types import PerkHooks
@@ -25,7 +25,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
         else OwnerRef.from_local_player(0)
     )
     for idx in range(8):
-        type_id = ProjectileTypeId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTypeId.PLASMA_RIFLE
+        type_id = ProjectileTemplateId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTemplateId.PLASMA_RIFLE
         angle = float(idx) * (math.pi / 4.0)
         ctx.projectile_spawn(
             ctx.state,

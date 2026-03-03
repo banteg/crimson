@@ -5,7 +5,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import ProjectilePool
-from crimson.projectiles.types import ProjectileTypeId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.factories import make_projectile_update_options
@@ -38,7 +38,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         proj_idx = pool.spawn(
             pos=Vec2(),
             angle=0.0,
-            type_id=ProjectileTypeId.ION_RIFLE,
+            type_id=ProjectileTemplateId.ION_RIFLE,
             owner=OwnerRef.from_local_player(0),
             travel_budget=45.0,
         )
