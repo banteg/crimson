@@ -105,6 +105,7 @@ class TickRunner:
                 mode_id=str(self._config.mode_id),
                 is_networked=bool(self._config.is_networked),
                 is_replay=bool(self._config.is_replay),
+                inputs=None,
             )
             self._hook_bus.on_tick_begin(tick_ctx)
             inputs = self._input_provider.pull_tick_input(int(tick_index))
@@ -121,6 +122,7 @@ class TickRunner:
                 mode_id=str(self._config.mode_id),
                 is_networked=bool(self._config.is_networked),
                 is_replay=bool(self._config.is_replay),
+                inputs=list(inputs),
             )
             self._hook_bus.on_pre_sim(ready_ctx)
 
@@ -136,6 +138,7 @@ class TickRunner:
                 tick_index=int(tick_index),
                 command_hash=str(command_hash),
                 dt_sim=float(dt_sim),
+                payload=tick,
             )
             self._hook_bus.on_world_step_done(ready_ctx, result)
             self._hook_bus.on_pre_hash(ready_ctx, result)

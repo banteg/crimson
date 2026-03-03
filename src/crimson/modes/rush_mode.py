@@ -388,21 +388,22 @@ class RushMode(BaseGameplayMode):
         def _on_tick(tick, tick_index: int | None) -> bool:
             self._rush.elapsed_ms = float(tick.elapsed_ms)
             self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-            world_events = tick.step.events
-
-            if tick_index is not None:
-                self._record_replay_checkpoint(
-                    int(tick_index),
-                    rng_marks=tick.rng_marks,
-                    deaths=world_events.deaths,
-                    events=world_events,
-                    command_hash=str(tick.step.command_hash),
-                )
+            _ = tick_index
 
             if not any(player.health > 0.0 for player in self.world.players):
                 self._enter_game_over()
                 return True
             return False
+
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            world_events = tick.step.events
+            self._record_replay_checkpoint(
+                int(tick_index),
+                rng_marks=tick.rng_marks,
+                deaths=world_events.deaths,
+                events=world_events,
+                command_hash=str(tick.step.command_hash),
+            )
 
         self._run_deterministic_session_ticks(
             ticks_to_run=int(ticks_to_run),
@@ -411,6 +412,7 @@ class RushMode(BaseGameplayMode):
             session=session,
             recorder=self._replay_recorder,
             on_tick=_on_tick,
+            on_checkpoint=_on_checkpoint,
         )
 
     def _update_lan_match(self, *, dt: float) -> None:

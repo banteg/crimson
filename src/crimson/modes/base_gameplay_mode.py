@@ -36,6 +36,7 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
+from ..sim.hooks import CheckpointHook, NetworkSyncHook, ProfilerHook, ReplayRecorderHook, TickHashes, TickHookBus
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
 from ..sim.sessions import DeterministicSessionStepTick
@@ -914,6 +915,8 @@ class BaseGameplayMode:
         session: DeterministicSessionLike,
         recorder: ReplayRecorder | None,
         on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
+        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
+        on_hash: Callable[[int, TickHashes], None] | None = None,
     ) -> None:
         if int(ticks_to_run) <= 0:
             return
@@ -945,11 +948,30 @@ class BaseGameplayMode:
                 _ = command
 
         tick_rate = max(1, int(round(1.0 / max(1e-9, float(dt_tick)))))
+        replay_hook = ReplayRecorderHook(recorder)
+        checkpoint_hook = CheckpointHook(
+            replay_recorder_hook=replay_hook,
+            on_checkpoint=(
+                (lambda tick_index, tick: on_checkpoint(int(tick_index), cast(DeterministicSessionStepTick, tick)))
+                if on_checkpoint is not None
+                else None
+            ),
+        )
+        net_sync_hook = NetworkSyncHook(on_hash=on_hash)
+        profiler_hook = ProfilerHook()
         runner = TickRunner(
             session=session,
             input_provider=_ModeInputProvider(
                 base_inputs=first_inputs,
                 clear_edges=self._clear_local_input_edges,
+            ),
+            hook_bus=TickHookBus(
+                [
+                    replay_hook,
+                    checkpoint_hook,
+                    net_sync_hook,
+                    profiler_hook,
+                ],
             ),
             config=TickRunnerConfig(
                 tick_rate=int(tick_rate),
@@ -962,14 +984,7 @@ class BaseGameplayMode:
 
         def _on_tick_complete(tick_offset: int, tick: object) -> bool:
             tick_row = cast(DeterministicSessionStepTick, tick)
-            if int(tick_offset) == 0:
-                inputs_row = first_inputs
-            else:
-                inputs_row = self._clear_local_input_edges(first_inputs)
-            if recorder is not None:
-                tick_index: int | None = recorder.record_tick(inputs_row)
-            else:
-                tick_index = None
+            tick_index = replay_hook.recorded_tick_by_runner_tick.get(int(tick_offset))
             self.world.apply_step_result(
                 tick_row.step,
                 game_tune_started=session.game_tune_started,
@@ -983,3 +998,6 @@ class BaseGameplayMode:
             max_ticks=max(0, int(ticks_to_run)),
             on_tick_complete=_on_tick_complete,
         )
+        self._sim_ms = float(profiler_hook.sim_ms)
+        self._presentation_plan_ms = float(profiler_hook.presentation_plan_ms)
+        self._presentation_apply_ms = float(profiler_hook.presentation_apply_ms)

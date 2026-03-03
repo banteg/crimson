@@ -630,11 +630,11 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-4 Checklist: Hook Bus Migration
 
-- [ ] Implement concrete hooks: replay recording, checkpoint capture, profiling timing, net hash sync.
-- [ ] Move inline replay/checkpoint wiring out of mode update paths into hooks.
-- [ ] Ensure hook order matches required stage boundaries (pre-sim, post-sim, post-presentation, end).
-- [ ] Emit hook timing metrics in telemetry output.
-- [ ] Run full test gate suite.
+- [x] Implement concrete hooks: replay recording, checkpoint capture, profiling timing, net hash sync.
+- [x] Move inline replay/checkpoint wiring out of mode update paths into hooks.
+- [x] Ensure hook order matches required stage boundaries (pre-sim, post-sim, post-presentation, end).
+- [x] Emit hook timing metrics in telemetry output.
+- [x] Run full test gate suite.
 
 ### PR-5 Checklist: Replay Path Unification
 

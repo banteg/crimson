@@ -607,21 +607,22 @@ class SurvivalMode(BaseGameplayMode):
             self._survival.elapsed_ms = float(session.elapsed_ms)
             self._survival.stage = int(session.stage)
             self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
-            world_events = tick.step.events
-
-            if tick_index is not None:
-                self._record_replay_checkpoint(
-                    int(tick_index),
-                    rng_marks=tick.rng_marks,
-                    deaths=world_events.deaths,
-                    events=world_events,
-                    command_hash=str(tick.step.command_hash),
-                )
+            _ = tick_index
 
             if self._death_transition_ready():
                 self._enter_game_over()
                 return True
             return False
+
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            world_events = tick.step.events
+            self._record_replay_checkpoint(
+                int(tick_index),
+                rng_marks=tick.rng_marks,
+                deaths=world_events.deaths,
+                events=world_events,
+                command_hash=str(tick.step.command_hash),
+            )
 
         self._run_deterministic_session_ticks(
             ticks_to_run=int(ticks_to_run),
@@ -630,6 +631,7 @@ class SurvivalMode(BaseGameplayMode):
             session=session,
             recorder=self._replay_recorder,
             on_tick=_on_tick,
+            on_checkpoint=_on_checkpoint,
         )
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float) -> None:

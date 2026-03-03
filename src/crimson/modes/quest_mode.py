@@ -736,16 +736,7 @@ class QuestMode(BaseGameplayMode):
             self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
             self._quest.completion_transition_ms = float(tick.completion_transition_ms)
             self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
-
-            if tick_index is not None:
-                world_events = tick.step.events
-                self._record_replay_checkpoint(
-                    int(tick_index),
-                    rng_marks=tick.rng_marks,
-                    deaths=world_events.deaths,
-                    events=world_events,
-                    command_hash=str(tick.step.command_hash),
-                )
+            _ = tick_index
 
             if tick.play_hit_sfx:
                 self.world.audio_router.play_sfx("sfx_questhit")
@@ -795,6 +786,16 @@ class QuestMode(BaseGameplayMode):
                 return True
             return False
 
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            world_events = tick.step.events
+            self._record_replay_checkpoint(
+                int(tick_index),
+                rng_marks=tick.rng_marks,
+                deaths=world_events.deaths,
+                events=world_events,
+                command_hash=str(tick.step.command_hash),
+            )
+
         self._run_deterministic_session_ticks(
             ticks_to_run=int(ticks_to_run),
             dt_tick=dt_tick,
@@ -802,6 +803,7 @@ class QuestMode(BaseGameplayMode):
             session=session,
             recorder=self._replay_recorder,
             on_tick=_on_tick,
+            on_checkpoint=_on_checkpoint,
         )
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float) -> None:
