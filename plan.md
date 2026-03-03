@@ -679,7 +679,7 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 - [ ] per-mode LAN orchestration duplication (`_update_lan_match` variants)
 - [x] mode-local runtime pumping
 - [x] replay bespoke stepping loop
-- [ ] duplicated checkpoint/record code in mode update methods
+- [x] duplicated checkpoint/record code in mode update methods
 - [x] Run full test gate suite.
 
 ### Final Merge Checklist

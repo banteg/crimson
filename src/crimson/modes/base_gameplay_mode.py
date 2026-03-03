@@ -906,6 +906,43 @@ class BaseGameplayMode:
     def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
         return clear_input_edges(inputs)
 
+    def _record_replay_checkpoint_from_tick(
+        self,
+        *,
+        tick_index: int | None,
+        tick: DeterministicSessionStepTick,
+    ) -> None:
+        if tick_index is None:
+            return
+        record_checkpoint = cast(Callable[..., None] | None, getattr(self, "_record_replay_checkpoint", None))
+        if record_checkpoint is None:
+            return
+        world_events = tick.step.events
+        record_checkpoint(
+            int(tick_index),
+            rng_marks=tick.rng_marks,
+            deaths=world_events.deaths,
+            events=world_events,
+            command_hash=str(tick.step.command_hash),
+        )
+
+    def _prepare_lan_match_runtime(self, *, mode_name: Literal["survival", "rush", "quests"]) -> str | None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return None
+        role = str(self._lan_role)
+        self._consume_net_runtime_recovery(mode_name=mode_name)
+        if str(runtime.error or ""):
+            self.close_requested = True
+            return None
+        self.world._sync_audio_bridge()
+        if self.world.ground is not None:
+            self.world._sync_ground_settings()
+            self.world.ground.process_pending()
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
+            return None
+        return role
+
     def _run_deterministic_session_ticks(
         self,
         *,

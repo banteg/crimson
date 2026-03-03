@@ -615,13 +615,9 @@ class SurvivalMode(BaseGameplayMode):
             return False
 
         def _on_checkpoint(tick_index: int, tick) -> None:
-            world_events = tick.step.events
-            self._record_replay_checkpoint(
-                int(tick_index),
-                rng_marks=tick.rng_marks,
-                deaths=world_events.deaths,
-                events=world_events,
-                command_hash=str(tick.step.command_hash),
+            self._record_replay_checkpoint_from_tick(
+                tick_index=int(tick_index),
+                tick=tick,
             )
 
         self._run_deterministic_session_ticks(
@@ -643,25 +639,12 @@ class SurvivalMode(BaseGameplayMode):
         if session is None:
             return
 
-        role = str(self._lan_role)
-        self._consume_net_runtime_recovery(mode_name="survival")
-        if str(runtime.error or ""):
-            self.close_requested = True
+        role = self._prepare_lan_match_runtime(mode_name="survival")
+        if role is None:
             return
-
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
-            self.world._sync_ground_settings()
-            self.world.ground.process_pending()
         self._trace_lan_terrain_generation()
         if bool(self._lan_terrain_generation_pending()):
             self._lan_capture_clock.reset()
-            return
-
-        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return
 
         if bool(self._paused):
@@ -911,7 +894,6 @@ class SurvivalMode(BaseGameplayMode):
                 self._survival.elapsed_ms = session_elapsed_ms
                 self._survival.stage = session_stage
                 self._survival.spawn_cooldown = session_spawn_cooldown_ms
-                world_events = tick.step.events
 
                 self._lan_last_tick_index = int(frame.tick_index)
                 self._ticks_advanced_per_frame += 1
@@ -932,12 +914,9 @@ class SurvivalMode(BaseGameplayMode):
                     return False
 
                 if tick_index is not None:
-                    self._record_replay_checkpoint(
-                        int(tick_index),
-                        rng_marks=tick.rng_marks,
-                        deaths=world_events.deaths,
-                        events=world_events,
-                        command_hash=str(tick.step.command_hash),
+                    self._record_replay_checkpoint_from_tick(
+                        tick_index=int(tick_index),
+                        tick=tick,
                     )
 
                 if role == "host" and lockstep_runtime is not None:
