@@ -1225,20 +1225,8 @@ class BaseGameplayMode:
         self._local_input.reset(players=self.world.players)
         self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
         self._reset_lan_capture_clock()
-        self._gameplay_input_provider = None
-        self._gameplay_tick_runner = None
-        self._gameplay_tick_runner_session = None
-        self._gameplay_replay_hook = None
-        self._gameplay_checkpoint_hook = None
-        self._gameplay_network_sync_hook = None
-        self._gameplay_profiler_hook = None
-        self._lan_tick_runner = None
-        self._lan_tick_runner_session = None
-        self._lan_pre_sim_hook = None
-        self._lan_profiler_hook = None
-        self._pending_input_commands.clear()
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        self._reset_tick_runner_state()
+        self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -1252,21 +1240,8 @@ class BaseGameplayMode:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
-        self._gameplay_input_provider = None
-        self._gameplay_tick_runner = None
-        self._gameplay_tick_runner_session = None
-        self._gameplay_replay_hook = None
-        self._gameplay_checkpoint_hook = None
-        self._gameplay_network_sync_hook = None
-        self._gameplay_profiler_hook = None
-        self._lan_tick_runner = None
-        self._lan_tick_runner_session = None
-        self._lan_pre_sim_hook = None
-        self._lan_profiler_hook = None
-        self._pending_input_commands.clear()
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        self._reset_tick_runner_state()
+        self._reset_replay_capture_state(clear_recorder=True)
         self.world.close()
 
     def take_action(self) -> str | None:
@@ -1420,6 +1395,27 @@ class BaseGameplayMode:
         runner = self._gameplay_tick_runner
         if runner is not None:
             runner.reset_clock()
+
+    def _reset_tick_runner_state(self) -> None:
+        self._gameplay_input_provider = None
+        self._gameplay_tick_runner = None
+        self._gameplay_tick_runner_session = None
+        self._gameplay_replay_hook = None
+        self._gameplay_checkpoint_hook = None
+        self._gameplay_network_sync_hook = None
+        self._gameplay_profiler_hook = None
+        self._lan_tick_runner = None
+        self._lan_tick_runner_session = None
+        self._lan_pre_sim_hook = None
+        self._lan_profiler_hook = None
+        self._lan_finalize_hook = None
+
+    def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
+        self._pending_input_commands.clear()
+        if clear_recorder:
+            self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
 
     def _lan_capture_tick_dt(self) -> float:
         return float(self._lan_capture_clock.dt_tick)
