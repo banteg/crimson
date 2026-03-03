@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import math
-from typing import cast
 
 from grim.geom import Vec2
 
 from ..owner_ref import OwnerRef
-from ..projectiles import ProjectileTypeId
+from ..projectiles.types import ProjectileTypeId
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import WEAPON_BY_ID
+from ..weapons import weapon_entry_for_projectile_type_id
 
 
 def owner_ref_for_player(player_index: int) -> OwnerRef:
@@ -22,7 +21,7 @@ def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) ->
 
 
 def travel_budget_for_type_id(type_id: ProjectileTypeId) -> float:
-    return float(cast(int, WEAPON_BY_ID[type_id].travel_budget))
+    return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:

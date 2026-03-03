@@ -18,7 +18,8 @@ from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import (
@@ -529,7 +530,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
@@ -540,7 +541,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_single_pellet_weapons() -> None:
-    from crimson.projectiles import ProjectileTypeId
+    from crimson.projectiles.types import ProjectileTypeId
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
     pool = ProjectilePool(size=64)
@@ -550,7 +551,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     fire_bullets_timer=1.0,)
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_bullets_weapon = weapon_entry_for_projectile_type_id(int(ProjectileTypeId.FIRE_BULLETS))
+    fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
     expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3

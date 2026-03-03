@@ -15,9 +15,8 @@ from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hoo
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles import ProjectileHit, ProjectileTypeId
-from ..weapon_sfx import resolve_weapon_sfx_ref
-from ..weapons import WEAPON_BY_ID, WeaponId
+from ..projectiles.types import ProjectileHit, ProjectileTypeId
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
 from .world_defs import BEAM_TYPES
 
@@ -93,16 +92,16 @@ def plan_player_audio_sfx(
         if float(player.fire_bullets_timer) > 0.0:
             fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
             plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-            keys.append(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
-            keys.append(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
+            keys.append(fire_bullets.fire_sound)
+            keys.append(plasma_minigun.fire_sound)
         else:
-            keys.append(resolve_weapon_sfx_ref(weapon.fire_sound))
+            keys.append(weapon.fire_sound)
 
     reload_active = player.weapon.reload_active
     reload_timer = float(player.weapon.reload_timer)
     reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
     if reload_started:
-        keys.append(resolve_weapon_sfx_ref(weapon.reload_sound))
+        keys.append(weapon.reload_sound)
 
     return keys
 
@@ -121,7 +120,7 @@ def _hit_sfx_for_type(
     rand: Callable[[], int],
 ) -> str | None:
     _ = beam_types
-    ammo_class = WEAPON_BY_ID[type_id].ammo_class
+    ammo_class = weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).ammo_class
     if ammo_class == 4:
         return "sfx_shock_hit_01"
     return _rand_choice(rand, _BULLET_HIT_SFX)

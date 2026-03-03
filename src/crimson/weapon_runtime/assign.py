@@ -78,10 +78,8 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     player.weapon.shot_cooldown = 0.0
     player.aux_timer = 2.0
 
-    if weapon is not None:
-        from ..weapon_sfx import resolve_weapon_sfx_ref
-
-        state.sfx_queue.append(resolve_weapon_sfx_ref(weapon.reload_sound))
+    if state is not None:
+        state.sfx_queue.append(weapon.reload_sound)
 
 
 def most_used_weapon_id_for_player(

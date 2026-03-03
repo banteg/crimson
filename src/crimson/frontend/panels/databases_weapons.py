@@ -268,9 +268,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         return used
 
     def _weapon_entry(self, weapon_id: int) -> Weapon:
-        from ...weapons import WEAPON_BY_ID
+        from ...weapons import WEAPON_BY_ID, WeaponId
 
-        return WEAPON_BY_ID[weapon_id]
+        return WEAPON_BY_ID[WeaponId(weapon_id)]
 
     def _weapon_rpm(self, weapon: Weapon) -> int:
         return int(60.0 / float(weapon.shot_cooldown))
@@ -300,8 +300,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         )
 
     def _weapon_label_and_icon(self, weapon_id: int) -> tuple[str, int | None]:
-        from ...weapons import WEAPON_BY_ID, weapon_display_name
+        from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
-        weapon = WEAPON_BY_ID[weapon_id]
+        weapon = WEAPON_BY_ID[WeaponId(weapon_id)]
         name = weapon_display_name(weapon.weapon_id, preserve_bugs=self.state.preserve_bugs)
         return name, weapon.icon_index

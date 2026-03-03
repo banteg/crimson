@@ -11,10 +11,10 @@ from ..effects import ParticleStyleId
 from ..math_parity import NATIVE_TAU, f32, heading_from_delta_f32
 from ..perks import PerkId
 from ..perks.helpers import perk_active
-from ..projectiles import ProjectileTypeId, SecondaryProjectileTypeId
+from ..projectiles.types import ProjectileTypeId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import GameplayState, PlayerState
-from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_from_weapon_id, weapon_entry_for_projectile_type_id
+from ..weapons import WEAPON_TABLE, WeaponId, projectile_type_id_for_weapon_id, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, travel_budget_for_type_id
 
@@ -380,10 +380,7 @@ def player_fire_weapon(
     else:
         pellets = max(1, int(pellet_count))
         shot_count = pellets
-        type_id_raw = projectile_type_id_from_weapon_id(weapon_id)
-        if type_id_raw is None:
-            return
-        type_id = ProjectileTypeId(type_id_raw)
+        type_id = projectile_type_id_for_weapon_id(weapon_id)
         meta = travel_budget_for_type_id(type_id)
         jitter_step = _pellet_jitter_step(weapon_id)
         for _ in range(pellets):

@@ -10,9 +10,8 @@ from grim.audio import AudioState, play_sfx, trigger_game_tune
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
-from .projectiles import ProjectileHit
-from .weapon_sfx import resolve_weapon_sfx_ref
-from .weapons import WEAPON_BY_ID, WeaponId
+from .projectiles.types import ProjectileHit, ProjectileTypeId
+from .weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureDeath
@@ -143,16 +142,16 @@ class AudioRouter(msgspec.Struct):
                 # shot sfx is suppressed and replaced by Fire Bullets + Plasma Minigun fire sfx.
                 fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
                 plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-                self.play_sfx(resolve_weapon_sfx_ref(fire_bullets.fire_sound))
-                self.play_sfx(resolve_weapon_sfx_ref(plasma_minigun.fire_sound))
+                self.play_sfx(fire_bullets.fire_sound)
+                self.play_sfx(plasma_minigun.fire_sound)
             else:
-                self.play_sfx(resolve_weapon_sfx_ref(weapon.fire_sound))
+                self.play_sfx(weapon.fire_sound)
 
         reload_active = player.weapon.reload_active
         reload_timer = float(player.weapon.reload_timer)
         reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
         if reload_started:
-            self.play_sfx(resolve_weapon_sfx_ref(weapon.reload_sound))
+            self.play_sfx(weapon.reload_sound)
 
     def _hit_sfx_for_type(
         self,
@@ -161,7 +160,7 @@ class AudioRouter(msgspec.Struct):
         beam_types: frozenset[int],
         rand: Callable[[], int],
     ) -> str | None:
-        ammo_class = WEAPON_BY_ID[type_id].ammo_class
+        ammo_class = weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).ammo_class
         if ammo_class == 4:
             return "sfx_shock_hit_01"
         return self._rand_choice(rand, _BULLET_HIT_SFX)

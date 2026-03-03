@@ -16,7 +16,7 @@ from ..bonuses.hud import BonusHudState
 from ..game_modes import GameMode
 from ..gameplay import survival_level_threshold
 from ..sim.state_types import PlayerState
-from ..weapons import WEAPON_BY_ID, weapon_display_name
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 HUD_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 HUD_HINT_COLOR = rl.Color(170, 170, 180, 255)
@@ -296,14 +296,14 @@ def draw_target_health_bar(*, pos: Vec2, width: float, ratio: float, alpha: floa
 
 
 def _weapon_icon_index(weapon_id: int) -> int | None:
-    icon_index = int(WEAPON_BY_ID[weapon_id].icon_index)
+    icon_index = int(WEAPON_BY_ID[WeaponId(weapon_id)].icon_index)
     if icon_index < 0 or icon_index > 31:
         return None
     return icon_index
 
 
 def _weapon_ammo_class(weapon_id: int) -> int:
-    value = WEAPON_BY_ID[weapon_id].ammo_class
+    value = WEAPON_BY_ID[WeaponId(weapon_id)].ammo_class
     return int(value) if value is not None else 0
 
 

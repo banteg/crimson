@@ -11,7 +11,7 @@ from tests.helpers import assert_float_close
 
 def test_fastloader_scales_reload_timer() -> None:
     weapon_id = WeaponId.ASSAULT_RIFLE
-    reload_time = float(WEAPON_BY_ID[int(weapon_id)].reload_time)
+    reload_time = float(WEAPON_BY_ID[weapon_id].reload_time)
     assert reload_time > 0.0
 
     base = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))

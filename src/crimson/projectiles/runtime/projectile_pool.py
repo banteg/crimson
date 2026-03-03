@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, MutableSequence, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -14,7 +14,7 @@ from ...effects import EffectPool
 from ...math_parity import NATIVE_HALF_PI, f32
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
-from ...weapons import WEAPON_BY_ID, weapon_entry_for_projectile_type_id
+from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
@@ -218,7 +218,7 @@ class ProjectilePool:
             value = damage_scale_by_type.get(type_id)
             if value is not None:
                 return float(value)
-            return float(cast(float, WEAPON_BY_ID[type_id].damage_scale))
+            return float(weapon_entry_for_projectile_type_id(ProjectileTypeId(int(type_id))).damage_scale)
 
         def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:
             dx = float(f32(float(origin.x) - float(pos.x)))

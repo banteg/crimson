@@ -4,9 +4,10 @@ from __future__ import annotations
 Weapon definitions for the rewrite runtime.
 
 Weapon ids use native 1-based values (e.g. `weapon_id=1` for Pistol).
-Projectile `type_id` values share the same numeric domain, but the mapping is
-not 1:1: multiple weapons can share a projectile template and some weapons use
-particle/secondary pools instead of the main projectile pool.
+Projectile `type_id` values are a separate domain (`ProjectileTypeId`) that
+overlaps numerically with `WeaponId` but is not 1:1: multiple weapons can
+share a projectile template and some weapons use particle/secondary pools
+instead of the main projectile pool.
 
 Use `projectile_type_id_from_weapon_id` for the primary projectile `type_id`
 (or `None` for non-projectile weapons), and `projectile_type_ids_from_weapon_id`
@@ -20,6 +21,8 @@ Reference material:
 from enum import IntEnum
 
 import msgspec
+
+from .projectiles.types import ProjectileTypeId
 
 
 class WeaponId(IntEnum):
@@ -770,9 +773,9 @@ WEAPON_TABLE = [
     ),
 ]
 
-WEAPON_BY_ID: dict[int, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
+WEAPON_BY_ID: dict[WeaponId, Weapon] = {entry.weapon_id: entry for entry in WEAPON_TABLE}
 
-_WEAPON_FIXED_NAMES: dict[int, str] = {
+_WEAPON_FIXED_NAMES: dict[WeaponId, str] = {
     WeaponId.PLAGUE_SPREADER_GUN: "Plague Spreader Gun",
     WeaponId.LIGHTNING_RIFLE: "Lightning Rifle",
     WeaponId.FIRE_BULLETS: "Fire Bullets",
@@ -793,48 +796,71 @@ def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> 
     return str(name)
 
 
-WEAPON_PROJECTILE_TYPE_IDS: dict[int, tuple[int, ...]] = {
+WEAPON_PROJECTILE_TYPE_IDS: dict[WeaponId, tuple[ProjectileTypeId, ...]] = {
     # Derived from native `player_fire_weapon` behavior.
     # Weapon ids not listed here use `type_id == weapon_id` in the native
     # `projectile_spawn` path.
-    1: (0x01,),  # Pistol
-    2: (0x02,),  # Assault Rifle
-    3: (0x03,),  # Shotgun
-    4: (0x03,),  # Sawed-off Shotgun
-    5: (0x05,),  # Submachine Gun
-    6: (0x06,),  # Gauss Gun
-    7: (0x01,),  # Mean Minigun
-    8: (),  # Flamethrower (particle path)
-    9: (0x09,),  # Plasma Rifle
-    10: (0x09, 0x0B),  # Multi-Plasma (spread includes 0x0B)
-    11: (0x0B,),  # Plasma Minigun
-    12: (),  # Rocket Launcher (secondary projectile pool)
-    13: (),  # Seeker Rockets (secondary projectile pool)
-    14: (0x0B,),  # Plasma Shotgun
-    15: (),  # Blow Torch (particle path)
-    16: (),  # HR Flamer (particle path)
-    17: (),  # Mini-Rocket Swarmers (secondary projectile pool)
-    18: (),  # Rocket Minigun (secondary projectile pool)
-    19: (0x13,),  # Pulse Gun
-    20: (0x03,),  # Jackhammer
-    21: (0x15,),  # Ion Rifle
-    22: (0x16,),  # Ion Minigun
-    23: (0x17,),  # Ion Cannon
-    24: (0x18,),  # Shrinkifier 5k
-    25: (0x19,),  # Blade Gun
-    28: (0x1C,),  # Plasma Cannon
-    29: (0x1D,),  # Splitter Gun
-    30: (0x06,),  # Gauss Shotgun
-    31: (0x16,),  # Ion Shotgun
-    41: (0x29,),  # Plague Spreader Gun
-    42: (),  # Bubblegun (particle slow)
-    43: (0x2B,),  # Rainbow Gun
-    45: (0x2D,),  # Fire Bullets
+    WeaponId.PISTOL: (ProjectileTypeId.PISTOL,),
+    WeaponId.ASSAULT_RIFLE: (ProjectileTypeId.ASSAULT_RIFLE,),
+    WeaponId.SHOTGUN: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.SAWED_OFF_SHOTGUN: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.SUBMACHINE_GUN: (ProjectileTypeId.SUBMACHINE_GUN,),
+    WeaponId.GAUSS_GUN: (ProjectileTypeId.GAUSS_GUN,),
+    WeaponId.MEAN_MINIGUN: (ProjectileTypeId.PISTOL,),
+    WeaponId.FLAMETHROWER: (),
+    WeaponId.PLASMA_RIFLE: (ProjectileTypeId.PLASMA_RIFLE,),
+    WeaponId.MULTI_PLASMA: (ProjectileTypeId.PLASMA_RIFLE, ProjectileTypeId.PLASMA_MINIGUN),
+    WeaponId.PLASMA_MINIGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.ROCKET_LAUNCHER: (),
+    WeaponId.SEEKER_ROCKETS: (),
+    WeaponId.PLASMA_SHOTGUN: (ProjectileTypeId.PLASMA_MINIGUN,),
+    WeaponId.BLOW_TORCH: (),
+    WeaponId.HR_FLAMER: (),
+    WeaponId.MINI_ROCKET_SWARMERS: (),
+    WeaponId.ROCKET_MINIGUN: (),
+    WeaponId.PULSE_GUN: (ProjectileTypeId.PULSE_GUN,),
+    WeaponId.JACKHAMMER: (ProjectileTypeId.SHOTGUN,),
+    WeaponId.ION_RIFLE: (ProjectileTypeId.ION_RIFLE,),
+    WeaponId.ION_MINIGUN: (ProjectileTypeId.ION_MINIGUN,),
+    WeaponId.ION_CANNON: (ProjectileTypeId.ION_CANNON,),
+    WeaponId.SHRINKIFIER_5K: (ProjectileTypeId.SHRINKIFIER,),
+    WeaponId.BLADE_GUN: (ProjectileTypeId.BLADE_GUN,),
+    WeaponId.PLASMA_CANNON: (ProjectileTypeId.PLASMA_CANNON,),
+    WeaponId.SPLITTER_GUN: (ProjectileTypeId.SPLITTER_GUN,),
+    WeaponId.GAUSS_SHOTGUN: (ProjectileTypeId.GAUSS_GUN,),
+    WeaponId.ION_SHOTGUN: (ProjectileTypeId.ION_MINIGUN,),
+    WeaponId.PLAGUE_SPREADER_GUN: (ProjectileTypeId.PLAGUE_SPREADER,),
+    WeaponId.BUBBLEGUN: (),
+    WeaponId.RAINBOW_GUN: (ProjectileTypeId.RAINBOW_GUN,),
+    WeaponId.FIRE_BULLETS: (ProjectileTypeId.FIRE_BULLETS,),
 }
 
-def weapon_entry_for_projectile_type_id(type_id: int) -> Weapon:
-    # Native `projectile_spawn` indexes the weapon table by `type_id`.
-    return WEAPON_BY_ID[type_id]
+def weapon_entry_for_projectile_type_id(type_id: ProjectileTypeId) -> Weapon:
+    # Native `projectile_spawn` indexes weapon metadata by projectile type id.
+    return WEAPON_BY_PROJECTILE_TYPE_ID[type_id]
+
+
+WEAPON_BY_PROJECTILE_TYPE_ID: dict[ProjectileTypeId, Weapon] = {
+    ProjectileTypeId.PISTOL: WEAPON_BY_ID[WeaponId.PISTOL],
+    ProjectileTypeId.ASSAULT_RIFLE: WEAPON_BY_ID[WeaponId.ASSAULT_RIFLE],
+    ProjectileTypeId.SHOTGUN: WEAPON_BY_ID[WeaponId.SHOTGUN],
+    ProjectileTypeId.SUBMACHINE_GUN: WEAPON_BY_ID[WeaponId.SUBMACHINE_GUN],
+    ProjectileTypeId.GAUSS_GUN: WEAPON_BY_ID[WeaponId.GAUSS_GUN],
+    ProjectileTypeId.PLASMA_RIFLE: WEAPON_BY_ID[WeaponId.PLASMA_RIFLE],
+    ProjectileTypeId.PLASMA_MINIGUN: WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN],
+    ProjectileTypeId.PULSE_GUN: WEAPON_BY_ID[WeaponId.PULSE_GUN],
+    ProjectileTypeId.ION_RIFLE: WEAPON_BY_ID[WeaponId.ION_RIFLE],
+    ProjectileTypeId.ION_MINIGUN: WEAPON_BY_ID[WeaponId.ION_MINIGUN],
+    ProjectileTypeId.ION_CANNON: WEAPON_BY_ID[WeaponId.ION_CANNON],
+    ProjectileTypeId.SHRINKIFIER: WEAPON_BY_ID[WeaponId.SHRINKIFIER_5K],
+    ProjectileTypeId.BLADE_GUN: WEAPON_BY_ID[WeaponId.BLADE_GUN],
+    ProjectileTypeId.SPIDER_PLASMA: WEAPON_BY_ID[WeaponId.SPIDER_PLASMA],
+    ProjectileTypeId.PLASMA_CANNON: WEAPON_BY_ID[WeaponId.PLASMA_CANNON],
+    ProjectileTypeId.SPLITTER_GUN: WEAPON_BY_ID[WeaponId.SPLITTER_GUN],
+    ProjectileTypeId.PLAGUE_SPREADER: WEAPON_BY_ID[WeaponId.PLAGUE_SPREADER_GUN],
+    ProjectileTypeId.RAINBOW_GUN: WEAPON_BY_ID[WeaponId.RAINBOW_GUN],
+    ProjectileTypeId.FIRE_BULLETS: WEAPON_BY_ID[WeaponId.FIRE_BULLETS],
+}
 
 
 def projectile_type_id_from_weapon_id(weapon_id: WeaponId) -> int | None:
@@ -845,12 +871,21 @@ def projectile_type_id_from_weapon_id(weapon_id: WeaponId) -> int | None:
 
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return type_ids[0] if type_ids else None
+        return int(type_ids[0]) if type_ids else None
 
     # Default native behavior for projectile weapons is `type_id == weapon_id`.
     if weapon_id in WEAPON_BY_ID:
-        return weapon_id
+        return int(weapon_id)
     return None
+
+
+def projectile_type_id_for_weapon_id(weapon_id: WeaponId) -> ProjectileTypeId:
+    """Return the primary projectile type for a weapon that uses the main pool."""
+
+    type_id = projectile_type_id_from_weapon_id(weapon_id)
+    if type_id is None:
+        raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
+    return ProjectileTypeId(int(type_id))
 
 
 def projectile_type_ids_from_weapon_id(weapon_id: WeaponId) -> tuple[int, ...]:
@@ -858,9 +893,9 @@ def projectile_type_ids_from_weapon_id(weapon_id: WeaponId) -> tuple[int, ...]:
 
     type_ids = WEAPON_PROJECTILE_TYPE_IDS.get(weapon_id)
     if type_ids is not None:
-        return type_ids
+        return tuple(int(type_id) for type_id in type_ids)
     if weapon_id in WEAPON_BY_ID:
-        return (weapon_id,)
+        return (int(weapon_id),)
     return ()
 
 

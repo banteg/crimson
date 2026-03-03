@@ -6,9 +6,10 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles import ProjectilePool, ProjectileTypeId
+from crimson.projectiles.runtime import ProjectilePool
+from crimson.projectiles.types import ProjectileTypeId
 from crimson.sim.state_types import PlayerState
-from crimson.weapons import WEAPON_BY_ID
+from crimson.weapons import weapon_entry_for_projectile_type_id
 from grim.geom import Vec2
 from tests.factories import make_projectile_update_options
 from tests.helpers import assert_float_close
@@ -36,8 +37,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
 
 def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
     pool = ProjectilePool(size=1)
-    meta = WEAPON_BY_ID[int(ProjectileTypeId.PISTOL)].travel_budget
-    travel_budget = float(meta if meta is not None else 45.0)
+    travel_budget = float(weapon_entry_for_projectile_type_id(ProjectileTypeId.PISTOL).travel_budget)
     pool.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
