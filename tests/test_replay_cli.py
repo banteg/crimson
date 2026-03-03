@@ -148,6 +148,7 @@ def test_replay_list_shows_replays_under_base_dir(tmp_path: Path) -> None:
     assert "survival" in result.output
     assert replay.header.game_version in result.output
     assert "count=3 parsed=3 errors=0" in result.output
+    assert f"replays_dir={tmp_path / 'replays'}" in result.output
 
 
 def test_replay_list_keeps_listing_when_replay_is_invalid(tmp_path: Path) -> None:
@@ -169,6 +170,7 @@ def test_replay_list_keeps_listing_when_replay_is_invalid(tmp_path: Path) -> Non
     assert "invalid" in result.output
     assert "warning: broken.crd:" in result.output
     assert "count=2 parsed=1 errors=1" in result.output
+    assert f"replays_dir={tmp_path / 'replays'}" in result.output
 
 
 def test_replay_list_sorts_in_reverse_chronological_order(tmp_path: Path) -> None:

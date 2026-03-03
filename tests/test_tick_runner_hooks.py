@@ -80,3 +80,35 @@ def test_tick_runner_concrete_hooks_record_and_emit() -> None:
     assert profiler.sim_ms >= 0.0
     assert profiler.presentation_plan_ms >= 0.0
     assert profiler.presentation_apply_ms >= 0.0
+
+
+def test_checkpoint_hook_fires_after_tick_complete_callback() -> None:
+    recorder = _Recorder()
+    replay_hook = ReplayRecorderHook(recorder)
+    applied_flag = {"applied": False}
+    checkpoint_seen_applied: list[bool] = []
+    hook_bus = TickHookBus(
+        [
+            replay_hook,
+            CheckpointHook(
+                replay_recorder_hook=replay_hook,
+                on_checkpoint=lambda _tick_index, _payload: checkpoint_seen_applied.append(bool(applied_flag["applied"])),
+            ),
+            NetworkSyncHook(),
+            ProfilerHook(),
+        ],
+    )
+    runner = TickRunner(
+        session=_FakeSession(),
+        input_provider=_FixedInputProvider(),
+        hook_bus=hook_bus,
+    )
+
+    def _on_tick_complete(_tick_index: int, _tick: object) -> bool:
+        applied_flag["applied"] = True
+        return False
+
+    result = runner.advance_frame(1.0 / 60.0, on_tick_complete=_on_tick_complete)
+
+    assert result.ticks_completed == 1
+    assert checkpoint_seen_applied == [True]

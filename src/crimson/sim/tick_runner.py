@@ -150,12 +150,14 @@ class TickRunner:
                 ),
             )
             self._hook_bus.on_post_presentation(ready_ctx, result)
+            should_stop = False
+            if on_tick_complete is not None and bool(on_tick_complete(int(tick_index), tick)):
+                should_stop = True
             self._hook_bus.on_tick_end(ready_ctx, result)
-
             plans.append(getattr(step, "presentation", None))
             ticks_completed += 1
             self._next_tick_index += 1
-            if on_tick_complete is not None and bool(on_tick_complete(int(tick_index), tick)):
+            if should_stop:
                 break
 
         unconsumed_ticks = int(candidate_ticks) - int(ticks_completed)
