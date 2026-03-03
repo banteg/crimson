@@ -3,11 +3,12 @@ from __future__ import annotations
 import math
 
 from crimson.bonuses import BonusId
-from crimson.creatures.runtime import CreaturePool, CreatureUpdateOptions
+from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.factories import make_creature_update_options
 
 
 def _wrap_angle(angle: float) -> float:
@@ -32,7 +33,7 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
     creature.hp = 10.0
     creature.max_hp = 400.0
 
-    pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
+    pool.update(0.016, options=make_creature_update_options(state=state, players=[player]))
 
     base_heading = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     expected = _wrap_angle(base_heading + math.pi)
@@ -55,7 +56,7 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     creature.reward_value = 10.0
     creature.contact_damage = 999.0
 
-    result = pool.update(0.016, options=CreatureUpdateOptions(state=state, players=[player]))
+    result = pool.update(0.016, options=make_creature_update_options(state=state, players=[player]))
 
     assert len(result.deaths) == 1
     assert not creature.active

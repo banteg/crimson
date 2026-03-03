@@ -148,10 +148,14 @@ class WorldState(msgspec.Struct):
             options=CreatureUpdateOptions(
                 state=self.state,
                 players=self.players,
+                rand=self.state.rng.rand,
+                env=self.spawn_env,
+                world_width=float(world_size),
+                world_height=float(world_size),
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
                 detail_preset=int(detail_preset),
                 fx_toggle=int(fx_toggle),
-                world_width=float(world_size), world_height=float(world_size),
-                fx_queue=fx_queue, fx_queue_rotated=fx_queue_rotated,
             ),
         )
         _mark("ws_after_creatures")

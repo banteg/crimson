@@ -291,14 +291,14 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
-    rand: Callable[[], int] | None = None
+    rand: Callable[[], int]
+    env: SpawnEnv
+    world_width: float
+    world_height: float
+    fx_queue: FxQueue
+    fx_queue_rotated: FxQueueRotated
     detail_preset: int = 5
     fx_toggle: int = 0
-    env: SpawnEnv | None = None
-    world_width: float = 1024.0
-    world_height: float = 1024.0
-    fx_queue: FxQueue | None = None
-    fx_queue_rotated: FxQueueRotated | None = None
 
 
 class _CreatureInteractionCtx(msgspec.Struct):
@@ -847,9 +847,7 @@ class CreaturePool:
         fx_queue = options.fx_queue
         fx_queue_rotated = options.fx_queue_rotated
 
-        if rand is None:
-            rand = state.rng.rand
-        spawn_env = env or self.env
+        spawn_env = env
 
         deaths: list[CreatureDeath] = []
         spawned: list[int] = []
@@ -1231,7 +1229,6 @@ class CreaturePool:
             if (
                 dt > 0.0
                 and float(state.bonuses.freeze) <= 0.0
-                and spawn_env is not None
                 and not bool(self.capture_spawn_events_authoritative)
                 and (creature.flags & HAS_SPAWN_SLOT_FLAG) != 0
             ):

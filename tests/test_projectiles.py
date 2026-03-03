@@ -16,13 +16,13 @@ from crimson.projectiles import (
     ProjectileHit,
     ProjectilePool,
     ProjectileTypeId,
-    ProjectileUpdateOptions,
     SecondaryProjectilePool,
     projectile_collision_profile,
 )
 from crimson.projectiles.runtime.collision import _within_native_find_radius
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
+from tests.factories import make_projectile_update_options
 from tests.helpers import assert_float_close
 
 
@@ -230,7 +230,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
         hits = pool.update(
             0.1,
             creatures,
-            options=ProjectileUpdateOptions(
+            options=make_projectile_update_options(
                 world_size=1024.0,
                 damage_scale_by_type=damage_scale_by_type,
                 rng=case.get("rng"),
@@ -240,7 +240,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             more_hits = pool.update(
                 0.1,
                 creatures,
-                options=ProjectileUpdateOptions(
+                options=make_projectile_update_options(
                     world_size=1024.0,
                     damage_scale_by_type=damage_scale_by_type,
                     rng=case.get("rng"),
