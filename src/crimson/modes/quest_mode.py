@@ -28,7 +28,6 @@ from ..input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
-from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
@@ -50,11 +49,9 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
-from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.clock import FixedStepClock
-from ..sim.input import PlayerInput
-from ..sim.sessions import QuestDeterministicSession
+from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -69,7 +66,7 @@ from ..weapon_runtime import (
     weapon_assign_player,
 )
 from ..weapons import WEAPON_BY_ID, WeaponId
-from .base_gameplay_mode import BaseGameplayMode
+from .base_gameplay_mode import BaseGameplayMode, LanStepAction, LanTickStep
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -829,185 +826,113 @@ class QuestMode(BaseGameplayMode):
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
 
-        def _consume_lan_frames() -> bool:
-            while True:
-                frame = runtime.pop_tick_frame()
-                if frame is None:
-                    self._input_stall_count += 1
-                    return False
+        def _before_step() -> None:
+            session.detail_preset = int(self._deterministic_detail_preset())
+            session.gore_disabled = int(self._deterministic_gore_disabled())
+            session.spawn_entries = tuple(self._quest.spawn_entries)
+            session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+            session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+            session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-                packed_inputs = list(frame.frame_inputs)
-                player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
-                recorder = self._replay_recorder
-                if recorder is not None:
-                    tick_index = recorder.record_tick(player_inputs)
-                else:
-                    tick_index = None
-
-                session.detail_preset = int(self._deterministic_detail_preset())
-                session.gore_disabled = int(self._deterministic_gore_disabled())
-                session.spawn_entries = tuple(self._quest.spawn_entries)
-                session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-                session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-                session.completion_transition_ms = float(self._quest.completion_transition_ms)
-
-                timing = session.timing_for_dt(float(dt_tick))
-                tick = session.step_tick(
-                    timing=timing,
-                    inputs=player_inputs,
-                )
-
-                remote_command_hash = str(frame.command_hash or "")
-                remote_state_hash = str(frame.state_hash or "")
-                local_command_hash = str(tick.step.command_hash)
-                local_state_hash = ""
-                if role == "join":
-                    if remote_command_hash and remote_command_hash != local_command_hash:
-                        runtime.note_desync(
-                            kind="command_hash",
-                            tick_index=int(frame.tick_index),
-                            expected=str(remote_command_hash),
-                            actual=str(local_command_hash),
-                        )
-                    if remote_state_hash:
-                        local_state_hash = str(
-                            build_checkpoint(
-                                tick_index=int(frame.tick_index),
-                                world=self.world.world_state,
-                                elapsed_ms=float(tick.elapsed_ms),
-                                creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash,
-                        )
-                        if local_state_hash != remote_state_hash:
-                            runtime.note_desync(
-                                kind="state_hash",
-                                tick_index=int(frame.tick_index),
-                                expected=str(remote_state_hash),
-                                actual=str(local_state_hash),
-                            )
-
-                state_hash = ""
-                if role == "host":
-                    tick_i = int(frame.tick_index)
-                    if int(tick_i) < 5 or (int(tick_i) % int(STATE_HASH_PERIOD_TICKS)) == 0:
-                        state_hash = str(
-                            build_checkpoint(
-                                tick_index=int(frame.tick_index),
-                                world=self.world.world_state,
-                                elapsed_ms=float(tick.elapsed_ms),
-                                creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash,
-                        )
-                self.world.apply_step_result(
-                    tick.step,
-                    game_tune_started=bool(session.game_tune_started),
-                    apply_audio=True,
-                    update_camera=True,
-                )
-                self._quest.spawn_entries = tuple(session.spawn_entries)
-                self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-                self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
-                self._quest.completion_transition_ms = float(tick.completion_transition_ms)
-                self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
-                self._store_net_runtime_snapshot(
-                    snapshot=QuestsStateSnapshotV2(
-                        tick_index=int(frame.tick_index),
-                        replay_state=self._net_replay_snapshot_state(),
-                        runtime_state=QuestsRuntimeSnapshotV2(
-                            elapsed_ms=float(tick.elapsed_ms),
-                            spawn_timeline_ms=float(tick.spawn_timeline_ms),
-                            no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
-                            completion_transition_ms=float(tick.completion_transition_ms),
-                            quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
-                            perk_pending_count=int(self.state.perk_selection.pending_count),
-                        ),
+        def _on_tick_applied(step: LanTickStep) -> LanStepAction:
+            tick = cast(QuestDeterministicSessionTick, step.tick)
+            self._quest.spawn_entries = tuple(session.spawn_entries)
+            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+            self._store_net_runtime_snapshot(
+                snapshot=QuestsStateSnapshotV2(
+                    tick_index=int(step.frame_tick_index),
+                    replay_state=self._net_replay_snapshot_state(),
+                    runtime_state=QuestsRuntimeSnapshotV2(
+                        elapsed_ms=float(tick.elapsed_ms),
+                        spawn_timeline_ms=float(tick.spawn_timeline_ms),
+                        no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
+                        completion_transition_ms=float(tick.completion_transition_ms),
+                        quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
+                        perk_pending_count=int(self.state.perk_selection.pending_count),
                     ),
-                )
-                self._ticks_advanced_per_frame += 1
+                ),
+            )
 
-                if tick_index is not None:
-                    self._record_replay_checkpoint_from_tick(
-                        tick_index=int(tick_index),
-                        tick=tick,
-                    )
-
-                if tick.play_hit_sfx:
-                    self.world.audio_router.play_sfx("sfx_questhit")
-                if tick.play_completion_music and self.world.audio is not None:
-                    play_music(self.world.audio, "crimsonquest")
-                    playback = self.world.audio.music.playbacks.get("crimsonquest")
-                    if playback is not None:
+            if tick.play_hit_sfx:
+                self.world.audio_router.play_sfx("sfx_questhit")
+            if tick.play_completion_music and self.world.audio is not None:
+                play_music(self.world.audio, "crimsonquest")
+                playback = self.world.audio.music.playbacks.get("crimsonquest")
+                if playback is not None:
+                    playback.volume = 0.0
+                    try:
+                        rl.set_music_volume(playback.music, 0.0)
+                    except RuntimeError:
                         playback.volume = 0.0
-                        try:
-                            rl.set_music_volume(playback.music, 0.0)
-                        except RuntimeError:
-                            playback.volume = 0.0
 
-                if role == "host" and lockstep_runtime is not None:
-                    lockstep_runtime.broadcast_tick_frame(
-                        TickFrame(
-                            tick_index=int(frame.tick_index),
-                            frame_inputs=list(frame.frame_inputs),
-                            command_hash=str(local_command_hash),
-                            state_hash=str(state_hash),
-                        ),
+            if tick.completed:
+                if self._outcome is None:
+                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+                    most_used_weapon_id = most_used_weapon_id_for_player(
+                        self.state,
+                        player_index=int(self.player.index),
+                        fallback_weapon_id=self.player.weapon.weapon_id,
                     )
+                    player_health_values = tuple(float(player.health) for player in self.world.players)
+                    player2_health = None
+                    if len(player_health_values) >= 2:
+                        player2_health = float(player_health_values[1])
+                    self._outcome = QuestRunOutcome(
+                        kind="completed",
+                        level=str(self._quest.level),
+                        base_time_ms=int(self._quest.spawn_timeline_ms),
+                        player_health=float(
+                            player_health_values[0] if player_health_values else self.player.health,
+                        ),
+                        player2_health=player2_health,
+                        player_health_values=player_health_values,
+                        pending_perk_count=int(self.state.perk_selection.pending_count),
+                        experience=int(self.player.experience),
+                        kill_count=int(self.creatures.kill_count),
+                        weapon_id=self.player.weapon.weapon_id,
+                        shots_fired=fired,
+                        shots_hit=hit,
+                        most_used_weapon_id=most_used_weapon_id,
+                    )
+                self._save_replay()
+                self.close_requested = True
+                return "stop_after_finalize"
 
-                if tick.completed:
-                    if self._outcome is None:
-                        fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
-                        most_used_weapon_id = most_used_weapon_id_for_player(
-                            self.state,
-                            player_index=int(self.player.index),
-                            fallback_weapon_id=self.player.weapon.weapon_id,
-                        )
-                        player_health_values = tuple(float(player.health) for player in self.world.players)
-                        player2_health = None
-                        if len(player_health_values) >= 2:
-                            player2_health = float(player_health_values[1])
-                        self._outcome = QuestRunOutcome(
-                            kind="completed",
-                            level=str(self._quest.level),
-                            base_time_ms=int(self._quest.spawn_timeline_ms),
-                            player_health=float(
-                                player_health_values[0] if player_health_values else self.player.health,
-                            ),
-                            player2_health=player2_health,
-                            player_health_values=player_health_values,
-                            pending_perk_count=int(self.state.perk_selection.pending_count),
-                            experience=int(self.player.experience),
-                            kill_count=int(self.creatures.kill_count),
-                            weapon_id=self.player.weapon.weapon_id,
-                            shots_fired=fired,
-                            shots_hit=hit,
-                            most_used_weapon_id=most_used_weapon_id,
-                        )
-                    self._save_replay()
-                    self.close_requested = True
-                    return True
-
-                if self._death_transition_ready():
-                    self._close_failed_run()
-                    return True
+            if self._death_transition_ready():
+                self._close_failed_run()
+                return "stop_after_finalize"
+            return "continue"
 
         if role == "join":
-            if _consume_lan_frames():
+            if self._consume_lan_tick_frames(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                role=role,
+                dt_tick=float(dt_tick),
+                before_step=_before_step,
+                on_tick_applied=_on_tick_applied,
+            ):
                 return
 
         ticks_to_capture = self._lan_capture_clock.advance(dt)
-        if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt=dt)
-            # In LAN sessions each peer is a single local player, so always sample
-            # inputs using the configured Player 1 bindings (index 0). The network
-            # slot mapping is handled by the lockstep runtime.
-            local_input_index = 0
-            for tick_offset in range(int(ticks_to_capture)):
-                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-                local_input = PlayerInput()
-                if 0 <= local_input_index < len(inputs):
-                    local_input = inputs[local_input_index]
-                runtime.queue_local_input(pack_player_input(local_input))
-        _consume_lan_frames()
+        self._queue_lan_local_inputs(
+            runtime=runtime,
+            ticks_to_capture=int(ticks_to_capture),
+            dt=float(dt),
+        )
+        self._consume_lan_tick_frames(
+            runtime=runtime,
+            lockstep_runtime=lockstep_runtime,
+            session=session,
+            role=role,
+            dt_tick=float(dt_tick),
+            before_step=_before_step,
+            on_tick_applied=_on_tick_applied,
+        )
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active

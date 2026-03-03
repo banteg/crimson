@@ -29,7 +29,7 @@ from ..input_codes import (
     input_primary_just_pressed,
 )
 from ..net.debug_log import lan_debug_log
-from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from ..net.lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick
 from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
@@ -48,18 +48,16 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
     resolve_checkpoint_sample_rate,
 )
-from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
-from ..sim.input import PlayerInput
 from ..sim.sessions import SurvivalDeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
-from .base_gameplay_mode import BaseGameplayMode
+from .base_gameplay_mode import BaseGameplayMode, LanStepAction, LanTickStep
 from .components.highscore_record_builder import build_highscore_record_for_game_over, shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
@@ -658,8 +656,9 @@ class SurvivalMode(BaseGameplayMode):
 
         dt_tick = float(self._lan_capture_clock.dt_tick)
 
-        # Drain and apply host-authored perk events (clients only).
-        if role == "join":
+        def _drain_join_perk_events() -> None:
+            if role != "join":
+                return
             while True:
                 if lockstep_runtime is None:
                     break
@@ -667,6 +666,9 @@ class SurvivalMode(BaseGameplayMode):
                 if perk_event is None:
                     break
                 self._lan_perk_events.append(perk_event)
+
+        # Drain and apply host-authored perk events (clients only).
+        _drain_join_perk_events()
 
         perk_ctx = self._perk_menu_context()
 
@@ -817,156 +819,75 @@ class SurvivalMode(BaseGameplayMode):
                 self._enter_game_over()
             return
 
-        def _consume_lan_frames() -> bool:
-            while True:
-                if self._perk_menu.active:
-                    return False
-                frame = runtime.pop_tick_frame()
-                if frame is None:
-                    self._input_stall_count += 1
-                    return False
+        def _allow_lan_frame_pop() -> bool:
+            return not self._perk_menu.active
 
-                packed_inputs = list(frame.frame_inputs)
-                player_inputs = [unpack_player_input(packed) for packed in packed_inputs]
-                recorder = self._replay_recorder
-                if recorder is not None:
-                    tick_index = recorder.record_tick(player_inputs)
-                else:
-                    tick_index = None
+        def _on_tick_applied(step: LanTickStep) -> LanStepAction:
+            session_elapsed_ms = float(session.elapsed_ms)
+            session_stage = int(session.stage)
+            session_spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+            self._survival.elapsed_ms = session_elapsed_ms
+            self._survival.stage = session_stage
+            self._survival.spawn_cooldown = session_spawn_cooldown_ms
 
-                timing = session.timing_for_dt(float(dt_tick))
-                tick = session.step_tick(
-                    timing=timing,
-                    inputs=player_inputs,
-                )
-
-                remote_command_hash = str(frame.command_hash or "")
-                remote_state_hash = str(frame.state_hash or "")
-                local_command_hash = str(tick.step.command_hash)
-                tick_elapsed_ms = float(session.elapsed_ms)
-                local_state_hash = ""
-                if role == "join":
-                    if remote_command_hash and remote_command_hash != local_command_hash:
-                        runtime.note_desync(
-                            kind="command_hash",
-                            tick_index=int(frame.tick_index),
-                            expected=str(remote_command_hash),
-                            actual=str(local_command_hash),
-                        )
-                    if remote_state_hash:
-                        local_state_hash = str(
-                            build_checkpoint(
-                                tick_index=int(frame.tick_index),
-                                world=self.world.world_state,
-                                elapsed_ms=float(tick_elapsed_ms),
-                                creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash,
-                        )
-                        if local_state_hash != remote_state_hash:
-                            runtime.note_desync(
-                                kind="state_hash",
-                                tick_index=int(frame.tick_index),
-                                expected=str(remote_state_hash),
-                                actual=str(local_state_hash),
-                            )
-
-                state_hash = ""
-                if role == "host":
-                    tick_i = int(frame.tick_index)
-                    if int(tick_i) < 5 or (int(tick_i) % int(STATE_HASH_PERIOD_TICKS)) == 0:
-                        state_hash = str(
-                            build_checkpoint(
-                                tick_index=int(frame.tick_index),
-                                world=self.world.world_state,
-                                elapsed_ms=float(tick_elapsed_ms),
-                                creature_count_override=int(tick.creature_count_world_step),
-                            ).state_hash,
-                        )
-                self.world.apply_step_result(
-                    tick.step,
-                    game_tune_started=bool(session.game_tune_started),
-                    apply_audio=True,
-                    update_camera=True,
-                )
-                session_elapsed_ms = float(session.elapsed_ms)
-                session_stage = int(session.stage)
-                session_spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-                self._survival.elapsed_ms = session_elapsed_ms
-                self._survival.stage = session_stage
-                self._survival.spawn_cooldown = session_spawn_cooldown_ms
-
-                self._lan_last_tick_index = int(frame.tick_index)
-                self._ticks_advanced_per_frame += 1
-                self._store_net_runtime_snapshot(
-                    snapshot=SurvivalStateSnapshotV2(
-                        tick_index=int(frame.tick_index),
-                        replay_state=self._net_replay_snapshot_state(),
-                        runtime_state=SurvivalRuntimeSnapshotV2(
-                            elapsed_ms=float(session_elapsed_ms),
-                            stage=int(session_stage),
-                            spawn_cooldown_ms=float(session_spawn_cooldown_ms),
-                            perk_pending_count=int(self.state.perk_selection.pending_count),
-                        ),
+            self._lan_last_tick_index = int(step.frame_tick_index)
+            self._store_net_runtime_snapshot(
+                snapshot=SurvivalStateSnapshotV2(
+                    tick_index=int(step.frame_tick_index),
+                    replay_state=self._net_replay_snapshot_state(),
+                    runtime_state=SurvivalRuntimeSnapshotV2(
+                        elapsed_ms=float(session_elapsed_ms),
+                        stage=int(session_stage),
+                        spawn_cooldown_ms=float(session_spawn_cooldown_ms),
+                        perk_pending_count=int(self.state.perk_selection.pending_count),
                     ),
-                )
-                _apply_due_perk_events()
-                if self._perk_menu.active:
-                    return False
+                ),
+            )
+            _apply_due_perk_events()
+            if self._perk_menu.active:
+                return "stop_before_finalize"
 
-                if tick_index is not None:
-                    self._record_replay_checkpoint_from_tick(
-                        tick_index=int(tick_index),
-                        tick=tick,
-                    )
-
-                if role == "host" and lockstep_runtime is not None:
-                    lockstep_runtime.broadcast_tick_frame(
-                        TickFrame(
-                            tick_index=int(frame.tick_index),
-                            frame_inputs=list(frame.frame_inputs),
-                            command_hash=str(local_command_hash),
-                            state_hash=str(state_hash),
-                        ),
-                    )
-
-                if self._death_transition_ready():
-                    self._enter_game_over()
-                    return True
+            if self._death_transition_ready():
+                self._enter_game_over()
+                return "stop_after_finalize"
+            return "continue"
 
         if role == "join":
-            if _consume_lan_frames():
+            if self._consume_lan_tick_frames(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                role=role,
+                dt_tick=float(dt_tick),
+                before_pop=_allow_lan_frame_pop,
+                on_tick_applied=_on_tick_applied,
+            ):
                 return
             if self._perk_menu.active:
                 self._lan_capture_clock.reset()
                 return
 
         ticks_to_capture = self._lan_capture_clock.advance(dt)
-        if ticks_to_capture > 0:
-            input_frame = self._build_local_inputs(dt=dt)
-            # In LAN sessions each peer is a single local player, so always sample
-            # inputs using the configured Player 1 bindings (index 0). The network
-            # slot mapping is handled by the lockstep runtime.
-            local_input_index = 0
-            for tick_offset in range(int(ticks_to_capture)):
-                inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-                local_input = PlayerInput()
-                if 0 <= local_input_index < len(inputs):
-                    local_input = inputs[local_input_index]
-                runtime.queue_local_input(pack_player_input(local_input))
-        if role == "join":
-            while True:
-                if lockstep_runtime is None:
-                    break
-                perk_event = lockstep_runtime.pop_perk_event()
-                if perk_event is None:
-                    break
-                self._lan_perk_events.append(perk_event)
+        self._queue_lan_local_inputs(
+            runtime=runtime,
+            ticks_to_capture=int(ticks_to_capture),
+            dt=float(dt),
+        )
+        _drain_join_perk_events()
         _apply_due_perk_events()
         if self._perk_menu.active:
             self._lan_capture_clock.reset()
             return
 
-        _consume_lan_frames()
+        self._consume_lan_tick_frames(
+            runtime=runtime,
+            lockstep_runtime=lockstep_runtime,
+            session=session,
+            role=role,
+            dt_tick=float(dt_tick),
+            before_pop=_allow_lan_frame_pop,
+            on_tick_applied=_on_tick_applied,
+        )
 
     def _draw_perk_prompt(self) -> None:
         if self._game_over_active:

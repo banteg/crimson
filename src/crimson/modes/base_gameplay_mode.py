@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, cast
 
@@ -22,6 +23,7 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
+from ..net.lockstep_protocol import STATE_HASH_PERIOD_TICKS, TickFrame
 from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
@@ -36,6 +38,9 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
+from ..replay.checkpoints import build_checkpoint
+from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import PackedPlayerInput
 from ..sim.hooks import CheckpointHook, NetworkSyncHook, ProfilerHook, ReplayRecorderHook, TickHashes, TickHookBus
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
@@ -55,6 +60,20 @@ if TYPE_CHECKING:
     from ..sim.state_types import PlayerState
 
 LanRuntime = LockstepRuntime | RollbackRuntime
+
+
+LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
+
+
+@dataclass(frozen=True, slots=True)
+class LanTickStep:
+    frame_tick_index: int
+    frame_inputs: tuple[PackedPlayerInput, ...]
+    tick: DeterministicSessionStepTick
+    local_command_hash: str
+    host_state_hash: str
+    replay_tick_index: int | None
+
 
 class DeterministicSessionLike(Protocol):
     detail_preset: int
@@ -942,6 +961,161 @@ class BaseGameplayMode:
         if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return None
         return role
+
+    def _lan_state_hash_for_tick(
+        self,
+        *,
+        tick_index: int,
+        elapsed_ms: float,
+        creature_count_world_step: int,
+    ) -> str:
+        return str(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self.world.world_state,
+                elapsed_ms=float(elapsed_ms),
+                creature_count_override=int(creature_count_world_step),
+            ).state_hash,
+        )
+
+    @staticmethod
+    def _lan_should_emit_state_hash(*, tick_index: int) -> bool:
+        return int(tick_index) < 5 or (int(tick_index) % int(STATE_HASH_PERIOD_TICKS)) == 0
+
+    def _queue_lan_local_inputs(
+        self,
+        *,
+        runtime: LanRuntime,
+        ticks_to_capture: int,
+        dt: float,
+    ) -> None:
+        if int(ticks_to_capture) <= 0:
+            return
+        input_frame = self._build_local_inputs(dt=dt)
+        # In LAN sessions each peer is a single local player, so always sample
+        # inputs using the configured Player 1 bindings (index 0). The network
+        # slot mapping is handled by the lockstep runtime.
+        local_input_index = 0
+        for tick_offset in range(int(ticks_to_capture)):
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+            local_input = PlayerInput()
+            if 0 <= local_input_index < len(inputs):
+                local_input = inputs[local_input_index]
+            runtime.queue_local_input(pack_player_input(local_input))
+
+    def _consume_lan_tick_frames(
+        self,
+        *,
+        runtime: LanRuntime,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+        role: str,
+        dt_tick: float,
+        before_pop: Callable[[], bool] | None = None,
+        before_step: Callable[[], None] | None = None,
+        on_tick_applied: Callable[[LanTickStep], LanStepAction] | None = None,
+    ) -> bool:
+        while True:
+            if before_pop is not None and (not bool(before_pop())):
+                return False
+
+            frame = runtime.pop_tick_frame()
+            if frame is None:
+                self._input_stall_count += 1
+                return False
+
+            frame_tick_index = int(frame.tick_index)
+            frame_inputs = [list(packed) for packed in frame.frame_inputs]
+            player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
+            recorder = self._replay_recorder
+            replay_tick_index = recorder.record_tick(player_inputs) if recorder is not None else None
+
+            if before_step is not None:
+                before_step()
+
+            timing = session.timing_for_dt(float(dt_tick))
+            tick = session.step_tick(
+                timing=timing,
+                inputs=player_inputs,
+            )
+
+            local_command_hash = str(tick.step.command_hash)
+            remote_command_hash = str(frame.command_hash or "")
+            remote_state_hash = str(frame.state_hash or "")
+            elapsed_ms = float(tick.elapsed_ms)
+            creature_count_world_step = int(tick.creature_count_world_step)
+
+            if role == "join":
+                if remote_command_hash and remote_command_hash != local_command_hash:
+                    runtime.note_desync(
+                        kind="command_hash",
+                        tick_index=int(frame_tick_index),
+                        expected=str(remote_command_hash),
+                        actual=str(local_command_hash),
+                    )
+                if remote_state_hash:
+                    local_state_hash = self._lan_state_hash_for_tick(
+                        tick_index=int(frame_tick_index),
+                        elapsed_ms=float(elapsed_ms),
+                        creature_count_world_step=int(creature_count_world_step),
+                    )
+                    if local_state_hash != remote_state_hash:
+                        runtime.note_desync(
+                            kind="state_hash",
+                            tick_index=int(frame_tick_index),
+                            expected=str(remote_state_hash),
+                            actual=str(local_state_hash),
+                        )
+
+            host_state_hash = ""
+            if role == "host" and self._lan_should_emit_state_hash(tick_index=int(frame_tick_index)):
+                host_state_hash = self._lan_state_hash_for_tick(
+                    tick_index=int(frame_tick_index),
+                    elapsed_ms=float(elapsed_ms),
+                    creature_count_world_step=int(creature_count_world_step),
+                )
+
+            self.world.apply_step_result(
+                tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=True,
+                update_camera=True,
+            )
+            self._ticks_advanced_per_frame += 1
+
+            step = LanTickStep(
+                frame_tick_index=int(frame_tick_index),
+                frame_inputs=tuple(frame_inputs),
+                tick=tick,
+                local_command_hash=str(local_command_hash),
+                host_state_hash=str(host_state_hash),
+                replay_tick_index=replay_tick_index,
+            )
+            action: LanStepAction = "continue"
+            if on_tick_applied is not None:
+                action = on_tick_applied(step)
+
+            if action == "stop_before_finalize":
+                return False
+
+            if replay_tick_index is not None:
+                self._record_replay_checkpoint_from_tick(
+                    tick_index=int(replay_tick_index),
+                    tick=tick,
+                )
+
+            if role == "host" and lockstep_runtime is not None:
+                lockstep_runtime.broadcast_tick_frame(
+                    TickFrame(
+                        tick_index=int(frame_tick_index),
+                        frame_inputs=list(frame_inputs),
+                        command_hash=str(local_command_hash),
+                        state_hash=str(host_state_hash),
+                    ),
+                )
+
+            if action == "stop_after_finalize":
+                return True
 
     def _run_deterministic_session_ticks(
         self,
