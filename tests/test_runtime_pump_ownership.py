@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import inspect
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, cast
 
 import crimson.game.loop_view as loop_view_module
+import crimson.modes.replay_playback_mode as replay_playback_mode_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
-from crimson.modes.base_gameplay_mode import BaseGameplayMode
-from crimson.modes.quest_mode import QuestMode
-from crimson.modes.replay_playback_mode import ReplayPlaybackMode
-from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.sim.tick_runner import TickBatchResult
+from grim.view import ViewContext
 
 
 class _DummyRuntime:
@@ -40,6 +41,10 @@ def _pending_session() -> PendingNetworkSession:
     )
 
 
+def _assets_dir() -> Path:
+    return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
 def test_interactive_frame_driver_pumps_runtime_once(make_game_state) -> None:
     state = make_game_state()
     state.pending_network_session = _pending_session()
@@ -67,52 +72,126 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
     assert state.runtime_updates_per_frame == 0
 
 
-def test_replay_mode_no_longer_pumps_network_runtime() -> None:
-    source = inspect.getsource(ReplayPlaybackMode.update)
-    assert "_tick_network_runtime(" not in source
-    assert "_runtime_updates_per_frame" not in source
+def test_replay_mode_does_not_pump_injected_runtime(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    runtime = _DummyRuntime()
+    setattr(view, "_runtime", runtime)
+    view._finished = True
+
+    mocker.patch.object(replay_playback_mode_module.rl, "is_key_pressed", return_value=False)
+    view.update(0.0)
+
+    assert runtime.open_calls == 0
+    assert runtime.update_calls == 0
 
 
-def test_gameplay_mode_lan_update_paths_do_not_pump_runtime_directly() -> None:
-    lan_methods = (
-        SurvivalMode._update_lan_match,
-        RushMode._update_lan_match,
-        QuestMode._update_lan_match,
+class _FakeLanRunner:
+    def __init__(self, results: list[TickBatchResult], *, on_advance=None) -> None:
+        self._results = list(results)
+        self._on_advance = on_advance
+        self.calls = 0
+
+    def advance_frame(self, *_args, **_kwargs) -> TickBatchResult:
+        self.calls += 1
+        if callable(self._on_advance):
+            self._on_advance()
+        if self._results:
+            return self._results.pop(0)
+        return TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[])
+
+
+class _FakeLanProvider:
+    def __init__(self) -> None:
+        self.runtime = None
+        self.before_pop = None
+        self.pop_blocked = False
+
+    def bind_runtime(self, runtime) -> None:
+        self.runtime = runtime
+
+    def set_before_pop(self, callback) -> None:
+        self.before_pop = callback
+
+
+class _FakePreSimHook:
+    def __init__(self) -> None:
+        self.dt_tick = 0.0
+        self.before_step = None
+
+    def bind(self, *, dt_tick: float, before_step) -> None:
+        self.dt_tick = float(dt_tick)
+        self.before_step = before_step
+
+
+class _FakeFinalizeHook:
+    def __init__(self, *, ticks_applied: int = 0, stop_requested: bool = False, stop_after_finalize: bool = False) -> None:
+        self.ticks_applied = int(ticks_applied)
+        self.stop_requested = bool(stop_requested)
+        self.stop_after_finalize = bool(stop_after_finalize)
+
+    def bind(self, **_kwargs) -> None:
+        return
+
+
+def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    runner = _FakeLanRunner(
+        [
+            TickBatchResult(ticks_completed=1, stalled=False, remaining_debt_ticks=0, presentation_plans=[]),
+            TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[]),
+        ],
     )
-    for method in lan_methods:
-        source = inspect.getsource(method)
-        assert "runtime.update(" not in source
-
-
-def test_lan_tick_consumption_uses_tick_runner_instead_of_direct_step_call() -> None:
-    source = inspect.getsource(BaseGameplayMode._consume_lan_tick_frames)
-    assert "advance_frame(" in source
-    assert "session.step_tick(" not in source
-
-
-def test_lan_tick_consumption_delegates_finalize_side_effects_to_hook() -> None:
-    source = inspect.getsource(BaseGameplayMode._consume_lan_tick_frames)
-    assert "finalize_hook.bind(" in source
-    assert "_finalize_lan_tick(" not in source
-    assert "runtime.note_desync(" not in source
-    assert "broadcast_tick_frame(" not in source
-
-
-def test_gameplay_modes_no_longer_use_mode_local_sim_clock() -> None:
-    lan_methods = (
-        SurvivalMode.update,
-        RushMode.update,
-        QuestMode.update,
+    provider = _FakeLanProvider()
+    pre_sim_hook = _FakePreSimHook()
+    profiler = SimpleNamespace(sim_ms=1.5, presentation_plan_ms=0.75, presentation_apply_ms=0.25)
+    finalize_hook = _FakeFinalizeHook(ticks_applied=1)
+    mocker.patch.object(
+        mode,
+        "_ensure_lan_tick_runner",
+        return_value=(runner, provider, pre_sim_hook, profiler, finalize_hook),
     )
-    for method in lan_methods:
-        source = inspect.getsource(method)
-        assert "_sim_clock" not in source
+
+    stop = mode._consume_lan_tick_frames(
+        runtime=cast(Any, SimpleNamespace()),
+        lockstep_runtime=None,
+        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        role="host",
+        dt_tick=1.0 / 60.0,
+    )
+
+    assert stop is False
+    assert runner.calls == 2
+    assert mode._input_stall_count == 0
 
 
-def test_gameplay_modes_no_longer_define_mode_local_lan_capture_clock() -> None:
-    for mode_type in (SurvivalMode, RushMode, QuestMode):
-        source = inspect.getsource(mode_type.__init__)
-        assert "_lan_capture_clock" not in source
+def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> None:
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    provider = _FakeLanProvider()
+    runner = _FakeLanRunner(
+        [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[])],
+        on_advance=lambda: setattr(provider, "pop_blocked", True),
+    )
+    pre_sim_hook = _FakePreSimHook()
+    profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
+    finalize_hook = _FakeFinalizeHook(ticks_applied=0)
+    mocker.patch.object(
+        mode,
+        "_ensure_lan_tick_runner",
+        return_value=(runner, provider, pre_sim_hook, profiler, finalize_hook),
+    )
+
+    before_stall_count = int(mode._input_stall_count)
+    stop = mode._consume_lan_tick_frames(
+        runtime=cast(Any, SimpleNamespace()),
+        lockstep_runtime=None,
+        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        role="host",
+        dt_tick=1.0 / 60.0,
+    )
+
+    assert stop is False
+    assert runner.calls == 1
+    assert int(mode._input_stall_count) == before_stall_count
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:

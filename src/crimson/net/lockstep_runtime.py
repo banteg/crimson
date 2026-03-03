@@ -682,14 +682,6 @@ class LockstepRuntime(msgspec.Struct):
             return None
         return self._client_perk_events.popleft()
 
-    def has_tick_frame(self) -> bool:
-        if str(self.cfg.role) == "host":
-            return bool(self.host_ready_frames)
-        lockstep = self.client_lockstep
-        if lockstep is None:
-            return False
-        return bool(lockstep.has_canonical_frame())
-
     def pop_tick_frame(self) -> TickFrame | None:
         if str(self.cfg.role) == "host":
             if not self.host_ready_frames:

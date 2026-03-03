@@ -289,11 +289,6 @@ class RollbackRuntime(msgspec.Struct):
         self._send(batch, reliable=False, now_ms=(_now_ms() if now_ms is None else int(now_ms)))
         self._drain_frames()
 
-    def has_tick_frame(self) -> bool:
-        if bool(self._paused_for_reconnect):
-            return False
-        return bool(self._frame_queue)
-
     def pop_tick_frame(self) -> TickFrame | None:
         if bool(self._paused_for_reconnect):
             return None
