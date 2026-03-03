@@ -127,7 +127,7 @@ class TickRunner(Generic[TimingT, TickT]):
         for _ in range(candidate_ticks):
             tick_index = self._next_tick_index
             inputs = self._input_provider.pull_tick_input(tick_index)
-            tick_inputs = list(inputs) if inputs is not None else None
+            tick_inputs: list[PlayerInput] | None = inputs
             tick_ctx = TickContext(
                 tick_index=tick_index,
                 dt_seconds=self._clock.dt_tick,

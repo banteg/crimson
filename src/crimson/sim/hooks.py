@@ -18,7 +18,7 @@ class TickContext(msgspec.Struct, frozen=True):
     mode_id: str
     is_networked: bool
     is_replay: bool
-    inputs: list[object] | None = None
+    inputs: list[PlayerInput] | None = None
 
 
 class TickHashes(msgspec.Struct, frozen=True):
@@ -100,7 +100,7 @@ class ReplayRecorderHook:
             return
         if not ctx.inputs_present or ctx.inputs is None:
             return
-        inputs = cast("list[PlayerInput]", ctx.inputs)
+        inputs = ctx.inputs
         record_tick = getattr(recorder, "record_tick", None)
         if not callable(record_tick):
             raise TypeError("replay recorder hook requires a recorder with callable record_tick(inputs)")
