@@ -126,39 +126,30 @@ class TickRunner(Generic[TimingT, TickT]):
 
         for _ in range(candidate_ticks):
             tick_index = self._next_tick_index
+            inputs = self._input_provider.pull_tick_input(tick_index)
+            tick_inputs = list(inputs) if inputs is not None else None
             tick_ctx = TickContext(
                 tick_index=tick_index,
                 dt_seconds=self._clock.dt_tick,
-                inputs_present=False,
+                inputs_present=tick_inputs is not None,
                 session_kind=self._config.session_kind,
                 mode_id=self._config.mode_id,
                 is_networked=self._config.is_networked,
                 is_replay=self._config.is_replay,
-                inputs=None,
+                inputs=tick_inputs,
             )
             self._hook_bus.on_tick_begin(tick_ctx)
-            inputs = self._input_provider.pull_tick_input(tick_index)
-            if inputs is None:
+            if tick_inputs is None:
                 stalled = True
                 self._hook_bus.on_tick_stall(tick_ctx)
                 break
 
-            ready_ctx = TickContext(
-                tick_index=tick_index,
-                dt_seconds=self._clock.dt_tick,
-                inputs_present=True,
-                session_kind=self._config.session_kind,
-                mode_id=self._config.mode_id,
-                is_networked=self._config.is_networked,
-                is_replay=self._config.is_replay,
-                inputs=list(inputs),
-            )
-            self._hook_bus.on_pre_sim(ready_ctx)
+            self._hook_bus.on_pre_sim(tick_ctx)
 
             timing = self._session.timing_for_dt(self._clock.dt_tick)
             tick = self._session.step_tick(
                 timing=timing,
-                inputs=inputs,
+                inputs=tick_inputs,
             )
             step, command_hash, dt_sim, presentation = _extract_tick_payload(
                 tick_index=tick_index,
@@ -170,20 +161,20 @@ class TickRunner(Generic[TimingT, TickT]):
                 dt_sim=dt_sim,
                 payload=tick,
             )
-            self._hook_bus.on_world_step_done(ready_ctx, result)
-            self._hook_bus.on_pre_hash(ready_ctx, result)
+            self._hook_bus.on_world_step_done(tick_ctx, result)
+            self._hook_bus.on_pre_hash(tick_ctx, result)
             self._hook_bus.on_post_hash(
-                ready_ctx,
+                tick_ctx,
                 TickHashes(
                     command_hash=command_hash,
                     state_hash=None,
                 ),
             )
-            self._hook_bus.on_post_presentation(ready_ctx, result)
+            self._hook_bus.on_post_presentation(tick_ctx, result)
             should_stop = False
             if on_tick_complete is not None and on_tick_complete(tick_index, tick):
                 should_stop = True
-            self._hook_bus.on_tick_end(ready_ctx, result)
+            self._hook_bus.on_tick_end(tick_ctx, result)
             plans.append(presentation)
             ticks_completed += 1
             self._next_tick_index += 1
