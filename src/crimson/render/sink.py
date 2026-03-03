@@ -2,45 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
 
-RenderPresent = Callable[[], None]
+from grim.render_pipeline import RenderPresent, RenderSink, WindowSink
 
-
-class RenderSink(Protocol):
-    def open(self) -> None: ...
-
-    def present(self) -> None: ...
-
-    def flush(self) -> None: ...
-
-    def close(self) -> None: ...
-
-
-class WindowSink:
-    """Default interactive sink; present/flush delegate to the frame loop."""
-
-    def __init__(
-        self,
-        *,
-        present_frame: RenderPresent | None = None,
-    ) -> None:
-        self._present_frame = present_frame
-        self._opened = False
-
-    def open(self) -> None:
-        self._opened = True
-
-    def present(self) -> None:
-        if self._present_frame is None:
-            return
-        self._present_frame()
-
-    def flush(self) -> None:
-        pass
-
-    def close(self) -> None:
-        self._opened = False
+__all__ = ["RenderPresent", "RenderSink", "WindowSink", "NullSink", "VideoSink"]
 
 
 class NullSink:
