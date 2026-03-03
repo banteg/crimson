@@ -10,10 +10,17 @@ from typing import Any, Protocol, cast
 
 import msgspec
 
-from .render_telemetry import RenderTelemetryFrameSnapshot
-
 
 class _TelemetryFrameLike(Protocol):
+    tick_index_after_update: int
+    frame_ms: float
+    update_ms: float
+    draw_ms: float
+    draw_calls_total: int
+    pass_ms: dict[str, float]
+
+
+class _TelemetryFrame(msgspec.Struct, frozen=True):
     tick_index_after_update: int
     frame_ms: float
     update_ms: float
@@ -105,22 +112,16 @@ def write_render_telemetry_charts_from_json(
     frames_payload = payload.get("frames")
     if not isinstance(frames_payload, list):
         raise TypeError("telemetry json is missing a frames list")
-    frames: list[RenderTelemetryFrameSnapshot] = []
+    frames: list[_TelemetryFrame] = []
     for entry in frames_payload:
         if not isinstance(entry, dict):
             continue
-        frame = RenderTelemetryFrameSnapshot(
-            frame_index=int(entry.get("frame_index", 0)),
-            tick_index_before_update=int(entry.get("tick_index_before_update", 0)),
+        frame = _TelemetryFrame(
             tick_index_after_update=int(entry.get("tick_index_after_update", 0)),
             frame_ms=float(entry.get("frame_ms", 0.0)),
             update_ms=float(entry.get("update_ms", 0.0)),
             draw_ms=float(entry.get("draw_ms", 0.0)),
             draw_calls_total=int(entry.get("draw_calls_total", 0)),
-            draw_calls_by_api={str(k): int(v) for k, v in cast(dict[str, Any], entry.get("draw_calls_by_api", {})).items()},
-            draw_calls_by_pass={
-                str(k): int(v) for k, v in cast(dict[str, Any], entry.get("draw_calls_by_pass", {})).items()
-            },
             pass_ms={str(k): float(v) for k, v in cast(dict[str, Any], entry.get("pass_ms", {})).items()},
         )
         frames.append(frame)
