@@ -144,25 +144,21 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0 * scale, 82.0 * scale), scale=scale)
 
         if weapon is not None:
-            rpm = self._weapon_rpm(weapon)
             reload_time = weapon.reload_time
             clip_size = weapon.clip_size
             ammo_class = int(weapon.ammo_class or 0)
             firerate_label = "Firerate" if preserve_bugs else "Fire rate"
             if ammo_class == 1:
                 firerate_text = f"{firerate_label}: n/a"
-            elif rpm is not None:
-                firerate_text = f"{firerate_label}: {rpm} rpm"
             else:
-                firerate_text = None
-            if firerate_text is not None:
-                draw_small_text(
-                    font,
-                    firerate_text,
-                    detail_top_left + Vec2(66.0 * scale, 128.0 * scale),
-                    text_scale,
-                    text_color,
-                )
+                firerate_text = f"{firerate_label}: {self._weapon_rpm(weapon)} rpm"
+            draw_small_text(
+                font,
+                firerate_text,
+                detail_top_left + Vec2(66.0 * scale, 128.0 * scale),
+                text_scale,
+                text_color,
+            )
             draw_small_text(
                 font,
                 f"Reload time: {reload_time:.1f} secs",
@@ -277,11 +273,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
         return WEAPON_BY_ID.get(weapon_id)
 
-    def _weapon_rpm(self, weapon: Weapon) -> int | None:
-        cooldown = weapon.shot_cooldown
-        if cooldown <= 0.0:
-            return None
-        return int(60.0 / float(cooldown))
+    def _weapon_rpm(self, weapon: Weapon) -> int:
+        return int(60.0 / float(weapon.shot_cooldown))
 
     def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
         tex = self._wicons_tex
