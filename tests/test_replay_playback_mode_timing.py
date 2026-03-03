@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 from types import SimpleNamespace
-from typing import cast
 
 import pytest
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
-from crimson.sim.input import PlayerInput
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -131,9 +128,8 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
         def open(self) -> None:
             return
 
-        def build_tick_runner(self, *, defer_menu_open: bool | None = None, input_provider: object | None = None) -> object:
+        def build_tick_runner(self, *, defer_menu_open: bool | None = None) -> object:
             captured["defer_menu_open"] = defer_menu_open
-            captured["input_provider"] = input_provider
             raise _StopOpen()
 
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
@@ -148,35 +144,3 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
         view.open()
 
     assert captured["defer_menu_open"] is False
-    assert captured["input_provider"] is view._replay_input_provider
-
-
-def test_replay_open_wires_lazy_input_provider_resolver(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    replay = _replay_with_ticks(3)
-    captured: dict[str, object] = {}
-
-    class _StopOpen(Exception):
-        pass
-
-    def _capture_provider(*, player_count: int, resolve_tick_input, tick_count: int) -> object:
-        captured["player_count"] = int(player_count)
-        captured["resolve_tick_input"] = resolve_tick_input
-        captured["tick_count"] = int(tick_count)
-        raise _StopOpen()
-
-    mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
-    mocker.patch.object(replay_playback_mode, "load_hud_assets", return_value=None)
-    mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
-    mocker.patch.object(replay_playback_mode, "ReplayInputProvider", side_effect=_capture_provider)
-
-    with pytest.raises(_StopOpen):
-        view.open()
-
-    resolve_tick_input = cast(Callable[[int], list[PlayerInput] | None], captured["resolve_tick_input"])
-    assert captured["player_count"] == int(replay.header.player_count)
-    assert captured["tick_count"] == len(replay.inputs)
-    assert callable(resolve_tick_input)
-    row = resolve_tick_input(0)
-    assert row is not None
-    assert len(row) == 1

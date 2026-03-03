@@ -780,15 +780,12 @@ class PlaybackDriver:
         self,
         *,
         defer_menu_open: bool | None = None,
-        input_provider: ReplayInputProvider | None = None,
     ) -> TickRunner:
-        provider = input_provider
-        if provider is None:
-            provider = ReplayInputProvider(
-                player_count=max(0, int(self.replay.header.player_count)),
-                resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
-                tick_count=int(self.tick_limit),
-            )
+        provider = ReplayInputProvider(
+            player_count=max(0, int(self.replay.header.player_count)),
+            resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
+            tick_count=int(self.tick_limit),
+        )
         return TickRunner(
             session=_PlaybackRunnerSession(
                 self,

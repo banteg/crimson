@@ -22,7 +22,6 @@ from ..replay import (
     Replay,
     apply_replay_bootstrap,
     load_replay_file,
-    unpack_tick_inputs,
     warn_on_game_version_mismatch,
 )
 from ..replay.types import ReplayHeader
@@ -43,7 +42,7 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
+from ..sim.input_providers import ReplayEndOfStream
 from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
@@ -151,11 +150,6 @@ class ReplayPlaybackMode:
 
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
-        self._replay_input_provider = ReplayInputProvider(
-            player_count=0,
-            resolve_tick_input=lambda _tick_index: None,
-            tick_count=0,
-        )
 
     @property
     def tick_index(self) -> int:
@@ -323,11 +317,6 @@ class ReplayPlaybackMode:
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay
-        self._replay_input_provider = ReplayInputProvider(
-            player_count=max(0, int(replay.header.player_count)),
-            resolve_tick_input=lambda tick_index: unpack_tick_inputs(replay.inputs[int(tick_index)]),
-            tick_count=len(replay.inputs),
-        )
         warn_on_game_version_mismatch(replay, action="playback")
 
         tick_rate = int(replay.header.tick_rate)
@@ -494,7 +483,6 @@ class ReplayPlaybackMode:
         self._quest = self._driver.quest_session
         self._tick_runner = self._driver.build_tick_runner(
             defer_menu_open=(bool(self._defer_menu_open) if self._survival is not None else False),
-            input_provider=self._replay_input_provider,
         )
 
     def close(self) -> None:
