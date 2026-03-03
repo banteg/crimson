@@ -105,7 +105,7 @@ class ReplayRecorderHook:
         if not callable(record_tick):
             raise TypeError("replay recorder hook requires a recorder with callable record_tick(inputs)")
         tick_index = cast("Callable[[list[PlayerInput]], int]", record_tick)(inputs)
-        self.recorded_tick_by_runner_tick[int(ctx.tick_index)] = int(tick_index)
+        self.recorded_tick_by_runner_tick[ctx.tick_index] = tick_index
 
 
 class CheckpointHook:
@@ -125,13 +125,13 @@ class CheckpointHook:
         callback = self._on_checkpoint
         if callback is None:
             return
-        replay_tick = self._replay_recorder_hook.recorded_tick_by_runner_tick.pop(int(ctx.tick_index), None)
+        replay_tick = self._replay_recorder_hook.recorded_tick_by_runner_tick.pop(ctx.tick_index, None)
         if replay_tick is None:
             return
         payload = result.payload
         if payload is None:
             return
-        callback(int(replay_tick), payload)
+        callback(replay_tick, payload)
 
 
 class NetworkSyncHook:
@@ -145,7 +145,7 @@ class NetworkSyncHook:
         callback = self._on_hash
         if callback is None:
             return
-        callback(int(ctx.tick_index), hashes)
+        callback(ctx.tick_index, hashes)
 
 
 class ProfilerHook:
@@ -159,7 +159,7 @@ class ProfilerHook:
 
     @staticmethod
     def _now_ns() -> int:
-        return int(time.perf_counter_ns())
+        return time.perf_counter_ns()
 
     def on_pre_sim(self, ctx: TickContext) -> None:
         _ = ctx
@@ -168,19 +168,19 @@ class ProfilerHook:
     def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
         _ = ctx, result
         if self._sim_ns_start > 0:
-            self.sim_ms += (self._now_ns() - int(self._sim_ns_start)) / 1_000_000.0
+            self.sim_ms += (self._now_ns() - self._sim_ns_start) / 1_000_000.0
             self._sim_ns_start = 0
         self._plan_ns_start = self._now_ns()
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
         _ = ctx, hashes
         if self._plan_ns_start > 0:
-            self.presentation_plan_ms += (self._now_ns() - int(self._plan_ns_start)) / 1_000_000.0
+            self.presentation_plan_ms += (self._now_ns() - self._plan_ns_start) / 1_000_000.0
             self._plan_ns_start = 0
         self._apply_ns_start = self._now_ns()
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
         _ = ctx, result
         if self._apply_ns_start > 0:
-            self.presentation_apply_ms += (self._now_ns() - int(self._apply_ns_start)) / 1_000_000.0
+            self.presentation_apply_ms += (self._now_ns() - self._apply_ns_start) / 1_000_000.0
             self._apply_ns_start = 0

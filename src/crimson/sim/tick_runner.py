@@ -192,7 +192,7 @@ class TickRunner(Generic[TimingT, TickT]):
 
         unconsumed_ticks = candidate_ticks - ticks_completed
         if stalled and unconsumed_ticks > 0:
-            self._clock.accum += float(unconsumed_ticks) * self._clock.dt_tick
+            self._clock.accum += unconsumed_ticks * self._clock.dt_tick
 
         remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
         return TickBatchResult(

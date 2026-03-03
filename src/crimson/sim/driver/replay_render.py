@@ -71,28 +71,28 @@ class _FfmpegVideoTransport:
         self._rl = rl
         self._ffmpeg_path = Path(ffmpeg_path)
         self._output_path = Path(output_path)
-        self._width = max(0, int(width))
-        self._height = max(0, int(height))
-        self._fps = max(1, int(fps))
-        self._crf = int(crf)
-        self._preset = str(preset)
-        self._pixel_format = str(pixel_format)
-        self._overwrite = bool(overwrite)
+        self._width = max(0, width)
+        self._height = max(0, height)
+        self._fps = max(1, fps)
+        self._crf = crf
+        self._preset = preset
+        self._pixel_format = pixel_format
+        self._overwrite = overwrite
         self._proc: subprocess.Popen[bytes] | None = None
-        self._frame_bytes = int(self._width) * int(self._height) * 4
+        self._frame_bytes = self._width * self._height * 4
         self._flushed = False
 
     def open(self) -> None:
         self._proc = _spawn_ffmpeg_raw_video_process(
             ffmpeg_path=self._ffmpeg_path,
             output_path=self._output_path,
-            width=int(self._width),
-            height=int(self._height),
-            fps=int(self._fps),
-            crf=int(self._crf),
-            preset=str(self._preset),
-            pixel_format=str(self._pixel_format),
-            overwrite=bool(self._overwrite),
+            width=self._width,
+            height=self._height,
+            fps=self._fps,
+            crf=self._crf,
+            preset=self._preset,
+            pixel_format=self._pixel_format,
+            overwrite=self._overwrite,
         )
         self._flushed = False
 
@@ -106,7 +106,7 @@ class _FfmpegVideoTransport:
             try:
                 if proc.stdin is None:
                     raise ReplayRenderError("ffmpeg stdin pipe was not available")
-                proc.stdin.write(self._rl.ffi.buffer(colors, int(self._frame_bytes)))
+                proc.stdin.write(self._rl.ffi.buffer(colors, self._frame_bytes))
             finally:
                 self._rl.unload_image_colors(colors)
         finally:
@@ -152,32 +152,32 @@ def run_replay_render_video(
     from ...assets_fetch import download_missing_paqs
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 
-    _validate_args(fps=int(fps), crf=int(crf))
+    _validate_args(fps=fps, crf=crf)
 
     ffmpeg_path = _resolve_ffmpeg_binary(ffmpeg_bin=ffmpeg_bin)
     out_path = Path(output_path)
-    if out_path.exists() and not bool(overwrite):
+    if out_path.exists() and not overwrite:
         raise ReplayRenderError(f"output exists: {out_path} (pass --overwrite to replace)")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     baseline_result = run_replay(
         replay,
         max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
+        trace_rng=trace_rng,
     )
 
     runtime_base_dir = Path(base_dir)
     runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
     runtime_base_dir.mkdir(parents=True, exist_ok=True)
     cfg = ensure_crimson_cfg(runtime_base_dir)
-    capture_audio = not bool(mute_audio)
+    capture_audio = not mute_audio
     # Always mute during the video pass: it is faster and prevents local playback.
     cfg.set_bool_value("sound_disable", True)
     cfg.set_bool_value("music_disable", True)
 
-    render_width = int(width) if width is not None else cfg.screen_width
-    render_height = int(height) if height is not None else cfg.screen_height
-    if int(render_width) <= 0 or int(render_height) <= 0:
+    render_width = width if width is not None else cfg.screen_width
+    render_height = height if height is not None else cfg.screen_height
+    if render_width <= 0 or render_height <= 0:
         raise ReplayRenderError(
             f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
         )
@@ -192,27 +192,27 @@ def run_replay_render_video(
     render_pipeline: RenderPipeline | None = None
     capture_width = 0
     capture_height = 0
-    total_ticks = int(len(replay.inputs))
+    total_ticks = len(replay.inputs)
     if max_ticks is not None:
-        total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
+        total_ticks = min(total_ticks, max(0, max_ticks))
     config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
-    if int(config_flags) != 0:
-        rl.set_config_flags(int(config_flags))
+    if config_flags != 0:
+        rl.set_config_flags(config_flags)
 
     with tempfile.TemporaryDirectory(prefix="crimson-replay-render-") as temp_dir_str:
         temp_dir = Path(temp_dir_str)
-        video_out_path = out_path if not bool(capture_audio) else temp_dir / "video_only.mp4"
+        video_out_path = out_path if not capture_audio else temp_dir / "video_only.mp4"
         audio_raw_path = temp_dir / "audio_mix.f32le"
         try:
             try:
-                rl.init_window(int(render_width), int(render_height), f"Replay Render - {Path(replay_path).name}")
+                rl.init_window(render_width, render_height, f"Replay Render - {Path(replay_path).name}")
                 window_open = True
             except RuntimeError as exc:
                 raise ReplayRenderError(f"replay render could not initialize window: {exc}") from exc
 
-            capture_width = int(rl.get_render_width())
-            capture_height = int(rl.get_render_height())
-            if int(capture_width) <= 0 or int(capture_height) <= 0:
+            capture_width = rl.get_render_width()
+            capture_height = rl.get_render_height()
+            if capture_width <= 0 or capture_height <= 0:
                 raise ReplayRenderError(
                     f"invalid framebuffer size from raylib: {capture_width}x{capture_height}; expected > 0",
                 )
@@ -223,7 +223,7 @@ def run_replay_render_video(
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
-                trace_rng=bool(trace_rng),
+                trace_rng=trace_rng,
                 show_replay_widget=False,
             )
             mode.open()
@@ -231,13 +231,13 @@ def run_replay_render_video(
                 rl=rl,
                 ffmpeg_path=ffmpeg_path,
                 output_path=video_out_path,
-                width=int(capture_width),
-                height=int(capture_height),
-                fps=int(fps),
-                crf=int(crf),
-                preset=str(preset),
-                pixel_format=str(pixel_format),
-                overwrite=True if bool(capture_audio) else bool(overwrite),
+                width=capture_width,
+                height=capture_height,
+                fps=fps,
+                crf=crf,
+                preset=preset,
+                pixel_format=pixel_format,
+                overwrite=True if capture_audio else overwrite,
             )
             render_pipeline = RenderPipeline(
                 backend=RaylibBackend(begin_end_drawing=True),
@@ -249,28 +249,28 @@ def run_replay_render_video(
                     close_transport=video_transport.close,
                 ),
             )
-            render_pipeline.open(width=int(capture_width), height=int(capture_height))
+            render_pipeline.open(width=capture_width, height=capture_height)
             assert render_pipeline is not None
-            frame_dt = 1.0 / float(fps)
-            while not bool(mode.finished):
-                mode.update(float(frame_dt))
+            frame_dt = 1.0 / fps
+            while not mode.finished:
+                mode.update(frame_dt)
                 render_pipeline.draw(
                     draw_frame=mode.draw,
-                    width=int(capture_width),
-                    height=int(capture_height),
+                    width=capture_width,
+                    height=capture_height,
                 )
-                if bool(mode.close_requested):
+                if mode.close_requested:
                     raise ReplayRenderError("replay render aborted: replay playback requested close")
                 render_pipeline.present()
                 frame_count += 1
                 if progress is not None:
-                    progress("video", int(frame_count), int(mode.tick_index), int(total_ticks))
+                    progress("video", frame_count, mode.tick_index, total_ticks)
 
-            if int(frame_count) <= 0:
+            if frame_count <= 0:
                 raise ReplayRenderError("replay render produced no frames")
 
             if progress is not None:
-                progress("video", int(frame_count), int(total_ticks), int(total_ticks))
+                progress("video", frame_count, total_ticks, total_ticks)
             render_pipeline.flush()
             render_pipeline.close()
             render_pipeline = None
@@ -278,9 +278,9 @@ def run_replay_render_video(
                 mode.close()
                 mode = None
 
-            if bool(capture_audio):
-                replay_tick_rate = int(replay.header.tick_rate)
-                if int(replay_tick_rate) <= 0:
+            if capture_audio:
+                replay_tick_rate = replay.header.tick_rate
+                if replay_tick_rate <= 0:
                     raise ReplayRenderError(f"invalid replay tick_rate for audio pass: {replay_tick_rate}")
                 captured_audio = _capture_replay_audio_track(
                     rl=rl,
@@ -289,31 +289,25 @@ def run_replay_render_video(
                     config=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    trace_rng=bool(trace_rng),
+                    trace_rng=trace_rng,
                     output_path=audio_raw_path,
-                    replay_tick_rate=int(replay_tick_rate),
+                    replay_tick_rate=replay_tick_rate,
                     progress=progress,
-                    total_ticks=int(total_ticks),
+                    total_ticks=total_ticks,
                 )
                 _mux_raw_audio_with_video(
                     ffmpeg_path=ffmpeg_path,
                     video_path=video_out_path,
                     audio_path=audio_raw_path,
                     output_path=out_path,
-                    overwrite=bool(overwrite),
-                    audio_sample_rate=int(captured_audio.effective_sample_rate),
-                    audio_channels=int(captured_audio.channels),
-                    captured_audio_frames=int(captured_audio.captured_frames),
-                    target_audio_frames=int(
-                        round(
-                            float(frame_count)
-                            * float(captured_audio.effective_sample_rate)
-                            / float(fps),
-                        ),
-                    ),
+                    overwrite=overwrite,
+                    audio_sample_rate=captured_audio.effective_sample_rate,
+                    audio_channels=captured_audio.channels,
+                    captured_audio_frames=captured_audio.captured_frames,
+                    target_audio_frames=round(frame_count * captured_audio.effective_sample_rate / fps),
                 )
                 if progress is not None:
-                    progress("audio", int(frame_count), int(total_ticks), int(total_ticks))
+                    progress("audio", frame_count, total_ticks, total_ticks)
         except ReplayRenderError:
             if render_pipeline is not None:
                 render_pipeline.close()
@@ -334,30 +328,30 @@ def run_replay_render_video(
                 mode.close()
             if render_pipeline is not None:
                 render_pipeline.close()
-            if bool(window_open):
+            if window_open:
                 rl.close_window()
 
     return ReplayRenderResult(
-        output_path=Path(out_path),
-        frame_count=int(frame_count),
-        fps=int(fps),
-        width=int(capture_width),
-        height=int(capture_height),
+        output_path=out_path,
+        frame_count=frame_count,
+        fps=fps,
+        width=capture_width,
+        height=capture_height,
         run_result=baseline_result,
     )
 
 
 class _MixedAudioCapture:
     def __init__(self, *, rl, output_path: Path, sample_rate: int, channels: int) -> None:
-        if int(sample_rate) <= 0:
+        if sample_rate <= 0:
             raise ReplayRenderError(f"audio sample_rate must be > 0 (got {sample_rate})")
-        if int(channels) <= 0:
+        if channels <= 0:
             raise ReplayRenderError(f"audio channels must be > 0 (got {channels})")
         self._rl = rl
         self.output_path = Path(output_path)
-        self.sample_rate = int(sample_rate)
-        self.channels = int(channels)
-        self._bytes_per_frame = int(self.channels) * 4
+        self.sample_rate = sample_rate
+        self.channels = channels
+        self._bytes_per_frame = self.channels * 4
         self._queue: queue.SimpleQueue[bytes] = queue.SimpleQueue()
         self._captured_frames = 0
         self._callback_error: Exception | None = None
@@ -367,25 +361,25 @@ class _MixedAudioCapture:
 
         @self._rl.ffi.callback("void(void *, unsigned int)")
         def _callback(buffer_data, frames: int) -> None:
-            self._on_mixed_audio(buffer_data=buffer_data, frames=int(frames))
+            self._on_mixed_audio(buffer_data=buffer_data, frames=frames)
 
         self._callback = _callback
 
     @property
     def captured_frames(self) -> int:
-        return int(self._captured_frames)
+        return self._captured_frames
 
     def _on_mixed_audio(self, *, buffer_data, frames: int) -> None:
         if self._closed or self._callback_error is not None:
             return
-        frame_count = int(frames)
+        frame_count = frames
         if frame_count <= 0:
             return
         try:
-            byte_count = int(frame_count) * int(self._bytes_per_frame)
-            chunk = bytes(self._rl.ffi.buffer(buffer_data, int(byte_count)))
+            byte_count = frame_count * self._bytes_per_frame
+            chunk = bytes(self._rl.ffi.buffer(buffer_data, byte_count))
             self._queue.put(chunk)
-            self._captured_frames += int(frame_count)
+            self._captured_frames += frame_count
         except (BufferError, RuntimeError, TypeError, ValueError) as exc:  # pragma: no cover
             self._callback_error = exc
 
@@ -462,8 +456,8 @@ def _capture_replay_audio_track(
     capture = _MixedAudioCapture(
         rl=rl,
         output_path=Path(output_path),
-        sample_rate=int(_AUDIO_CAPTURE_SAMPLE_RATE),
-        channels=int(_AUDIO_CAPTURE_CHANNELS),
+        sample_rate=_AUDIO_CAPTURE_SAMPLE_RATE,
+        channels=_AUDIO_CAPTURE_CHANNELS,
     )
     prior_master_volume = 1.0
     try:
@@ -473,22 +467,22 @@ def _capture_replay_audio_track(
             config=cfg,
             console=console,
             max_ticks=max_ticks,
-            trace_rng=bool(trace_rng),
+            trace_rng=trace_rng,
             show_replay_widget=False,
         )
         mode.open()
         try:
-            prior_master_volume = float(rl.get_master_volume())
+            prior_master_volume = rl.get_master_volume()
         except RuntimeError:
             prior_master_volume = 1.0
         rl.set_master_volume(0.0)
         capture.start()
 
-        tick_dt = 1.0 / float(replay_tick_rate)
+        tick_dt = 1.0 / replay_tick_rate
         next_tick_deadline = time.perf_counter()
-        while not bool(mode.finished):
-            mode.update(float(tick_dt))
-            if bool(mode.close_requested):
+        while not mode.finished:
+            mode.update(tick_dt)
+            if mode.close_requested:
                 raise ReplayRenderError("audio capture aborted: replay playback requested close")
             # Gameplay clears decal queues during draw(); audio-only rendering has no draw pass,
             # so clear here to avoid queue saturation changing deterministic outcomes.
@@ -497,29 +491,29 @@ def _capture_replay_audio_track(
                 world.fx_queue.clear()
                 world.fx_queue_rotated.clear()
             capture.flush_pending()
-            if progress is not None and int(total_ticks) > 0:
-                progress("audio", 0, int(mode.tick_index), int(total_ticks))
+            if progress is not None and total_ticks > 0:
+                progress("audio", 0, mode.tick_index, total_ticks)
             next_tick_deadline += tick_dt
-            sleep_s = float(next_tick_deadline) - float(time.perf_counter())
-            if float(sleep_s) > 0.0:
-                time.sleep(float(sleep_s))
+            sleep_s = next_tick_deadline - time.perf_counter()
+            if sleep_s > 0.0:
+                time.sleep(sleep_s)
         capture.stop()
-        captured_ticks = int(mode.tick_index)
+        captured_ticks = mode.tick_index
         effective_sample_rate = _infer_effective_capture_sample_rate(
-            captured_frames=int(capture.captured_frames),
-            captured_ticks=int(captured_ticks),
-            replay_tick_rate=int(replay_tick_rate),
+            captured_frames=capture.captured_frames,
+            captured_ticks=captured_ticks,
+            replay_tick_rate=replay_tick_rate,
         )
         return _CapturedAudioTrack(
-            sample_rate=int(capture.sample_rate),
-            channels=int(capture.channels),
-            captured_frames=int(capture.captured_frames),
-            captured_ticks=int(captured_ticks),
-            effective_sample_rate=int(effective_sample_rate),
+            sample_rate=capture.sample_rate,
+            channels=capture.channels,
+            captured_frames=capture.captured_frames,
+            captured_ticks=captured_ticks,
+            effective_sample_rate=effective_sample_rate,
         )
     finally:
         try:
-            rl.set_master_volume(float(prior_master_volume))
+            rl.set_master_volume(prior_master_volume)
         except RuntimeError:
             pass
         try:
@@ -542,23 +536,23 @@ def _mux_raw_audio_with_video(
     captured_audio_frames: int,
     target_audio_frames: int,
 ) -> None:
-    if int(audio_sample_rate) <= 0:
+    if audio_sample_rate <= 0:
         raise ReplayRenderError(f"invalid audio sample rate: {audio_sample_rate}")
-    if int(audio_channels) <= 0:
+    if audio_channels <= 0:
         raise ReplayRenderError(f"invalid audio channel count: {audio_channels}")
-    if int(captured_audio_frames) <= 0:
+    if captured_audio_frames <= 0:
         raise ReplayRenderError(
             "audio capture produced no frames; if your system has no audio device, pass --mute-audio",
         )
-    if int(target_audio_frames) <= 0:
+    if target_audio_frames <= 0:
         raise ReplayRenderError(
             "invalid target audio frame count for mux: "
-            f"captured_frames={int(captured_audio_frames)} target_audio_frames={int(target_audio_frames)} "
-            f"audio_sample_rate={int(audio_sample_rate)}",
+            f"captured_frames={captured_audio_frames} target_audio_frames={target_audio_frames} "
+            f"audio_sample_rate={audio_sample_rate}",
         )
     audio_sync_filter = _build_audio_sync_filter(
-        captured_frames=int(captured_audio_frames),
-        target_frames=int(target_audio_frames),
+        captured_frames=captured_audio_frames,
+        target_frames=target_audio_frames,
     )
     # Mixed bus output can exceed full scale during dense overlaps; apply a
     # gentle soft clip with small headroom before AAC encode.
@@ -569,15 +563,15 @@ def _mux_raw_audio_with_video(
         "-hide_banner",
         "-loglevel",
         "error",
-        "-y" if bool(overwrite) else "-n",
+        "-y" if overwrite else "-n",
         "-i",
         str(video_path),
         "-f",
         str(_AUDIO_CAPTURE_SAMPLE_FORMAT),
         "-ar",
-        str(int(audio_sample_rate)),
+        str(audio_sample_rate),
         "-ac",
-        str(int(audio_channels)),
+        str(audio_channels),
         "-i",
         str(audio_path),
         "-map",
@@ -603,67 +597,67 @@ def _mux_raw_audio_with_video(
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
     )
-    if int(proc.returncode) == 0:
+    if proc.returncode == 0:
         return
     stderr = proc.stderr.decode("utf-8", errors="replace").strip() if proc.stderr is not None else ""
     detail = stderr or "unknown ffmpeg error"
     raise ReplayRenderError(
         "ffmpeg audio mux failed "
-        f"(exit {proc.returncode}): captured_frames={int(captured_audio_frames)} "
-        f"target_audio_frames={int(target_audio_frames)} audio_sample_rate={int(audio_sample_rate)} "
-        f"audio_channels={int(audio_channels)} output_safety_filter={_AUDIO_OUTPUT_SAFETY_FILTER!r} "
+        f"(exit {proc.returncode}): captured_frames={captured_audio_frames} "
+        f"target_audio_frames={target_audio_frames} audio_sample_rate={audio_sample_rate} "
+        f"audio_channels={audio_channels} output_safety_filter={_AUDIO_OUTPUT_SAFETY_FILTER!r} "
         f"sync_filter={audio_sync_filter!r} detail={detail}",
     )
 
 
 def _build_audio_sync_filter(*, captured_frames: int, target_frames: int) -> str:
-    captured = int(captured_frames)
-    target = int(target_frames)
-    if int(captured) <= 0:
+    captured = captured_frames
+    target = target_frames
+    if captured <= 0:
         raise ReplayRenderError(f"audio sync filter requires captured_frames > 0 (got {captured})")
-    if int(target) <= 0:
+    if target <= 0:
         raise ReplayRenderError(f"audio sync filter requires target_frames > 0 (got {target})")
-    if int(captured) == int(target):
+    if captured == target:
         return "asetpts=N/SR/TB"
-    if int(captured) > int(target):
-        return f"atrim=end_sample={int(target)},asetpts=N/SR/TB"
-    pad = int(target) - int(captured)
-    return f"apad=pad_len={int(pad)},atrim=end_sample={int(target)},asetpts=N/SR/TB"
+    if captured > target:
+        return f"atrim=end_sample={target},asetpts=N/SR/TB"
+    pad = target - captured
+    return f"apad=pad_len={pad},atrim=end_sample={target},asetpts=N/SR/TB"
 
 
 def _infer_effective_capture_sample_rate(*, captured_frames: int, captured_ticks: int, replay_tick_rate: int) -> int:
-    frames = int(captured_frames)
-    ticks = int(captured_ticks)
-    tick_rate = int(replay_tick_rate)
-    fallback_rate = int(_AUDIO_CAPTURE_SAMPLE_RATE)
-    if int(frames) <= 0:
+    frames = captured_frames
+    ticks = captured_ticks
+    tick_rate = replay_tick_rate
+    fallback_rate = _AUDIO_CAPTURE_SAMPLE_RATE
+    if frames <= 0:
         raise ReplayRenderError(
             "invalid audio capture for sample-rate inference: "
-            f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
-            f"fallback_sample_rate={int(fallback_rate)}",
+            f"captured_frames={frames} captured_ticks={ticks} replay_tick_rate={tick_rate} "
+            f"fallback_sample_rate={fallback_rate}",
         )
-    if int(ticks) <= 0 or int(tick_rate) <= 0:
+    if ticks <= 0 or tick_rate <= 0:
         raise ReplayRenderError(
             "invalid replay timing for audio sample-rate inference: "
-            f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
-            f"fallback_sample_rate={int(fallback_rate)}",
+            f"captured_frames={frames} captured_ticks={ticks} replay_tick_rate={tick_rate} "
+            f"fallback_sample_rate={fallback_rate}",
         )
-    inferred = int(round(float(frames) * float(tick_rate) / float(ticks)))
-    if _AUDIO_INFERRED_SAMPLE_RATE_MIN <= int(inferred) <= _AUDIO_INFERRED_SAMPLE_RATE_MAX:
-        return int(inferred)
+    inferred = round(frames * tick_rate / ticks)
+    if _AUDIO_INFERRED_SAMPLE_RATE_MIN <= inferred <= _AUDIO_INFERRED_SAMPLE_RATE_MAX:
+        return inferred
     raise ReplayRenderError(
         "inferred effective audio sample rate out of range: "
-        f"captured_frames={int(frames)} captured_ticks={int(ticks)} replay_tick_rate={int(tick_rate)} "
-        f"inferred_sample_rate={int(inferred)} allowed_range="
+        f"captured_frames={frames} captured_ticks={ticks} replay_tick_rate={tick_rate} "
+        f"inferred_sample_rate={inferred} allowed_range="
         f"{_AUDIO_INFERRED_SAMPLE_RATE_MIN}-{_AUDIO_INFERRED_SAMPLE_RATE_MAX} "
-        f"fallback_sample_rate={int(fallback_rate)}",
+        f"fallback_sample_rate={fallback_rate}",
     )
 
 
 def _validate_args(*, fps: int, crf: int) -> None:
-    if int(fps) <= 0:
+    if fps <= 0:
         raise ReplayRenderError("fps must be > 0")
-    if int(crf) < 0 or int(crf) > 51:
+    if crf < 0 or crf > 51:
         raise ReplayRenderError("crf must be between 0 and 51")
 
 
@@ -697,15 +691,15 @@ def _spawn_ffmpeg_raw_video_process(
         "-hide_banner",
         "-loglevel",
         "error",
-        "-y" if bool(overwrite) else "-n",
+        "-y" if overwrite else "-n",
         "-f",
         "rawvideo",
         "-pixel_format",
         "rgba",
         "-video_size",
-        f"{int(width)}x{int(height)}",
+        f"{width}x{height}",
         "-framerate",
-        str(int(fps)),
+        str(fps),
         "-i",
         "-",
     ]
@@ -716,7 +710,7 @@ def _spawn_ffmpeg_raw_video_process(
             "-preset",
             str(preset),
             "-crf",
-            str(int(crf)),
+            str(crf),
             "-pix_fmt",
             str(pixel_format),
             "-movflags",
@@ -738,7 +732,7 @@ def _finalize_ffmpeg_process(proc: subprocess.Popen[bytes] | None) -> None:
     if proc.stdin is not None and not proc.stdin.closed:
         proc.stdin.close()
     return_code = proc.wait()
-    if int(return_code) == 0:
+    if return_code == 0:
         return
     stderr = (proc.stderr.read().decode("utf-8", errors="replace") if proc.stderr is not None else "").strip()
     detail = stderr or "unknown ffmpeg error"
