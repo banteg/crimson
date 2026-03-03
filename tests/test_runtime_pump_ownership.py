@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 
+import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.quest_mode import QuestMode
@@ -94,3 +95,51 @@ def test_gameplay_mode_lan_update_paths_do_not_pump_runtime_directly() -> None:
     for method in lan_methods:
         source = inspect.getsource(method)
         assert "runtime.update(" not in source
+
+
+def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:
+    state = make_game_state()
+    loop = GameLoopView(state)
+
+    class _FakeGameplayView:
+        def open(self) -> None:
+            return
+
+        def close(self) -> None:
+            return
+
+        def update(self, dt: float) -> None:
+            _ = dt
+
+        def draw(self) -> None:
+            return
+
+        def take_action(self) -> str | None:
+            return None
+
+        def set_runtime_updates_per_frame(self, value: int) -> None:
+            _ = value
+
+        def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+            return (3, 2, 5, 1.25, 0.75, 0.5)
+
+    view = _FakeGameplayView()
+    loop._front_active = view
+    loop._active = view
+    loop._gameplay_views = frozenset({view})
+
+    mocker.patch.object(loop_view_module, "input_begin_frame", side_effect=lambda: None)
+    mocker.patch.object(loop, "_sync_console_elapsed_ms", side_effect=lambda: None)
+    mocker.patch.object(loop, "_handle_console_requests", side_effect=lambda: None)
+    mocker.patch.object(loop, "_sync_rtx_mode", side_effect=lambda: None)
+    mocker.patch.object(loop, "_tick_statistics_playtime", side_effect=lambda _dt: None)
+    mocker.patch.object(loop_view_module, "debug_enabled", return_value=False)
+
+    loop.update(1.0 / 60.0)
+
+    assert state.runtime_updates_per_frame == 3
+    assert state.input_stall_count == 2
+    assert state.ticks_advanced_per_frame == 5
+    assert state.sim_ms == 1.25
+    assert state.presentation_plan_ms == 0.75
+    assert state.presentation_apply_ms == 0.5
