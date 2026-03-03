@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import msgspec
 
@@ -9,6 +9,31 @@ from .clock import FixedStepClock
 from .hooks import TickContext, TickHashes, TickHookBus, TickResult
 from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider
+
+
+def _extract_tick_payload(*, tick_index: int, tick: object) -> tuple[object, str, float, object]:
+    try:
+        step = cast(Any, tick).step
+    except AttributeError as exc:
+        raise TypeError(f"tick payload missing required field 'step' at tick {int(tick_index)}") from exc
+    try:
+        command_hash_raw = cast(Any, step).command_hash
+    except AttributeError as exc:
+        raise TypeError(f"tick step missing required field 'command_hash' at tick {int(tick_index)}") from exc
+    try:
+        dt_sim_raw = cast(Any, step).dt_sim
+    except AttributeError as exc:
+        raise TypeError(f"tick step missing required field 'dt_sim' at tick {int(tick_index)}") from exc
+    try:
+        presentation = cast(Any, step).presentation
+    except AttributeError as exc:
+        raise TypeError(f"tick step missing required field 'presentation' at tick {int(tick_index)}") from exc
+    return (
+        step,
+        str(command_hash_raw),
+        float(dt_sim_raw),
+        presentation,
+    )
 
 
 class TickSession(Protocol):
@@ -131,9 +156,10 @@ class TickRunner:
                 timing=timing,
                 inputs=inputs,
             )
-            step = getattr(tick, "step", tick)
-            command_hash = str(getattr(step, "command_hash", ""))
-            dt_sim = float(getattr(step, "dt_sim", 0.0))
+            step, command_hash, dt_sim, presentation = _extract_tick_payload(
+                tick_index=int(tick_index),
+                tick=tick,
+            )
             result = TickResult(
                 tick_index=int(tick_index),
                 command_hash=str(command_hash),
@@ -154,7 +180,7 @@ class TickRunner:
             if on_tick_complete is not None and bool(on_tick_complete(int(tick_index), tick)):
                 should_stop = True
             self._hook_bus.on_tick_end(ready_ctx, result)
-            plans.append(getattr(step, "presentation", None))
+            plans.append(presentation)
             ticks_completed += 1
             self._next_tick_index += 1
             if should_stop:

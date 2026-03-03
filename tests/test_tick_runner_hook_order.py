@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import msgspec
+import pytest
 
 from crimson.sim.hooks import TickHashes, TickHookBus, TickResult
 from crimson.sim.input import PlayerInput
@@ -25,6 +26,21 @@ class _FakeSession:
     def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _FakeTick:
         _ = timing, inputs
         return _FakeTick()
+
+
+class _MissingStepTick(msgspec.Struct):
+    command_hash: str = "abc123"
+    dt_sim: float = 1.0 / 60.0
+    presentation: object = "presentation-plan"
+
+
+class _MissingPresentationStep(msgspec.Struct):
+    command_hash: str = "abc123"
+    dt_sim: float = 1.0 / 60.0
+
+
+class _TickWithMissingPresentationStep(msgspec.Struct):
+    step: _MissingPresentationStep = msgspec.field(default_factory=_MissingPresentationStep)
 
 
 class _FixedInputProvider(InputProvider):
@@ -118,3 +134,39 @@ def test_tick_runner_stall_invokes_stall_hook_only() -> None:
         "on_tick_begin",
         "on_tick_stall",
     ]
+
+
+def test_tick_runner_fails_fast_when_step_payload_missing() -> None:
+    class _SessionMissingStep:
+        def timing_for_dt(self, dt: float) -> float:
+            return float(dt)
+
+        def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _MissingStepTick:
+            _ = timing, inputs
+            return _MissingStepTick()
+
+    runner = TickRunner(
+        session=_SessionMissingStep(),
+        input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
+    )
+
+    with pytest.raises(TypeError, match="missing required field 'step'"):
+        runner.advance_frame(1.0 / 60.0)
+
+
+def test_tick_runner_fails_fast_when_step_presentation_missing() -> None:
+    class _SessionMissingPresentation:
+        def timing_for_dt(self, dt: float) -> float:
+            return float(dt)
+
+        def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _TickWithMissingPresentationStep:
+            _ = timing, inputs
+            return _TickWithMissingPresentationStep()
+
+    runner = TickRunner(
+        session=_SessionMissingPresentation(),
+        input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
+    )
+
+    with pytest.raises(TypeError, match="missing required field 'presentation'"):
+        runner.advance_frame(1.0 / 60.0)
