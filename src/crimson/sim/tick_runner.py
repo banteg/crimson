@@ -11,27 +11,37 @@ from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider
 
 
-def _extract_tick_payload(*, tick_index: int, tick: object) -> tuple[object, str, float, object]:
+class TickStepPayload(Protocol):
+    command_hash: str
+    dt_sim: float
+    presentation: object
+
+
+class TickPayload(Protocol):
+    step: TickStepPayload
+
+
+def _extract_tick_payload(*, tick_index: int, tick: TickPayload) -> tuple[TickStepPayload, str, float, object]:
     try:
-        step = cast(Any, tick).step
+        step = tick.step
     except AttributeError as exc:
-        raise TypeError(f"tick payload missing required field 'step' at tick {int(tick_index)}") from exc
+        raise TypeError(f"tick payload missing required field 'step' at tick {tick_index}") from exc
     try:
-        command_hash_raw = cast(Any, step).command_hash
+        command_hash_raw = step.command_hash
     except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'command_hash' at tick {int(tick_index)}") from exc
+        raise TypeError(f"tick step missing required field 'command_hash' at tick {tick_index}") from exc
     try:
-        dt_sim_raw = cast(Any, step).dt_sim
+        dt_sim_raw = step.dt_sim
     except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'dt_sim' at tick {int(tick_index)}") from exc
+        raise TypeError(f"tick step missing required field 'dt_sim' at tick {tick_index}") from exc
     try:
-        presentation = cast(Any, step).presentation
+        presentation = step.presentation
     except AttributeError as exc:
-        raise TypeError(f"tick step missing required field 'presentation' at tick {int(tick_index)}") from exc
+        raise TypeError(f"tick step missing required field 'presentation' at tick {tick_index}") from exc
     return (
         step,
-        str(command_hash_raw),
-        float(dt_sim_raw),
+        command_hash_raw,
+        dt_sim_raw,
         presentation,
     )
 
@@ -39,7 +49,7 @@ def _extract_tick_payload(*, tick_index: int, tick: object) -> tuple[object, str
 class TickSession(Protocol):
     def timing_for_dt(self, dt: float) -> Any: ...
 
-    def step_tick(self, *, timing: Any, inputs: list[PlayerInput] | None) -> Any: ...
+    def step_tick(self, *, timing: Any, inputs: list[PlayerInput] | None) -> TickPayload: ...
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
@@ -61,16 +71,16 @@ class TickRunner:
     def __init__(
         self,
         *,
-        session: TickSession,
+        session: object,
         input_provider: InputProvider,
         hook_bus: TickHookBus | None = None,
         config: TickRunnerConfig | None = None,
     ) -> None:
-        self._session = session
+        self._session = cast(TickSession, session)
         self._input_provider = input_provider
         self._hook_bus = hook_bus if hook_bus is not None else TickHookBus()
         self._config = config if config is not None else TickRunnerConfig()
-        self._clock = FixedStepClock(tick_rate=int(self._config.tick_rate))
+        self._clock = FixedStepClock(tick_rate=self._config.tick_rate)
         self._next_tick_index = 0
         self._frame_index = 0
 
@@ -80,7 +90,7 @@ class TickRunner:
 
     @property
     def next_tick_index(self) -> int:
-        return int(self._next_tick_index)
+        return self._next_tick_index
 
     def reset_clock(self) -> None:
         self._clock.reset()
@@ -94,25 +104,25 @@ class TickRunner:
     ) -> TickBatchResult:
         self._input_provider.begin_frame(
             FrameContext(
-                frame_index=int(self._frame_index),
-                dt_seconds=float(dt_seconds),
+                frame_index=self._frame_index,
+                dt_seconds=dt_seconds,
                 player_count=0,
-                session_kind=str(self._config.session_kind),
-                mode_id=str(self._config.mode_id),
-                is_networked=bool(self._config.is_networked),
-                is_replay=bool(self._config.is_replay),
+                session_kind=self._config.session_kind,
+                mode_id=self._config.mode_id,
+                is_networked=self._config.is_networked,
+                is_replay=self._config.is_replay,
             ),
         )
         self._frame_index += 1
 
-        candidate_ticks = int(self._clock.advance(float(dt_seconds)))
+        candidate_ticks = self._clock.advance(dt_seconds)
         if max_ticks is not None:
-            candidate_ticks = min(int(candidate_ticks), max(0, int(max_ticks)))
+            candidate_ticks = min(candidate_ticks, max(0, max_ticks))
         if candidate_ticks <= 0:
             return TickBatchResult(
                 ticks_completed=0,
                 stalled=False,
-                remaining_debt_ticks=int((self._clock.accum + 1e-9) / float(self._clock.dt_tick)),
+                remaining_debt_ticks=int((self._clock.accum + 1e-9) / self._clock.dt_tick),
                 presentation_plans=[],
             )
 
@@ -120,50 +130,50 @@ class TickRunner:
         stalled = False
         plans: list[object] = []
 
-        for _ in range(int(candidate_ticks)):
-            tick_index = int(self._next_tick_index)
+        for _ in range(candidate_ticks):
+            tick_index = self._next_tick_index
             tick_ctx = TickContext(
-                tick_index=int(tick_index),
-                dt_seconds=float(self._clock.dt_tick),
+                tick_index=tick_index,
+                dt_seconds=self._clock.dt_tick,
                 inputs_present=False,
-                session_kind=str(self._config.session_kind),
-                mode_id=str(self._config.mode_id),
-                is_networked=bool(self._config.is_networked),
-                is_replay=bool(self._config.is_replay),
+                session_kind=self._config.session_kind,
+                mode_id=self._config.mode_id,
+                is_networked=self._config.is_networked,
+                is_replay=self._config.is_replay,
                 inputs=None,
             )
             self._hook_bus.on_tick_begin(tick_ctx)
-            inputs = self._input_provider.pull_tick_input(int(tick_index))
+            inputs = self._input_provider.pull_tick_input(tick_index)
             if inputs is None:
                 stalled = True
                 self._hook_bus.on_tick_stall(tick_ctx)
                 break
 
             ready_ctx = TickContext(
-                tick_index=int(tick_index),
-                dt_seconds=float(self._clock.dt_tick),
+                tick_index=tick_index,
+                dt_seconds=self._clock.dt_tick,
                 inputs_present=True,
-                session_kind=str(self._config.session_kind),
-                mode_id=str(self._config.mode_id),
-                is_networked=bool(self._config.is_networked),
-                is_replay=bool(self._config.is_replay),
+                session_kind=self._config.session_kind,
+                mode_id=self._config.mode_id,
+                is_networked=self._config.is_networked,
+                is_replay=self._config.is_replay,
                 inputs=list(inputs),
             )
             self._hook_bus.on_pre_sim(ready_ctx)
 
-            timing = self._session.timing_for_dt(float(self._clock.dt_tick))
+            timing = self._session.timing_for_dt(self._clock.dt_tick)
             tick = self._session.step_tick(
                 timing=timing,
                 inputs=inputs,
             )
             step, command_hash, dt_sim, presentation = _extract_tick_payload(
-                tick_index=int(tick_index),
+                tick_index=tick_index,
                 tick=tick,
             )
             result = TickResult(
-                tick_index=int(tick_index),
-                command_hash=str(command_hash),
-                dt_sim=float(dt_sim),
+                tick_index=tick_index,
+                command_hash=command_hash,
+                dt_sim=dt_sim,
                 payload=tick,
             )
             self._hook_bus.on_world_step_done(ready_ctx, result)
@@ -171,13 +181,13 @@ class TickRunner:
             self._hook_bus.on_post_hash(
                 ready_ctx,
                 TickHashes(
-                    command_hash=str(command_hash),
+                    command_hash=command_hash,
                     state_hash=None,
                 ),
             )
             self._hook_bus.on_post_presentation(ready_ctx, result)
             should_stop = False
-            if on_tick_complete is not None and bool(on_tick_complete(int(tick_index), tick)):
+            if on_tick_complete is not None and on_tick_complete(tick_index, tick):
                 should_stop = True
             self._hook_bus.on_tick_end(ready_ctx, result)
             plans.append(presentation)
@@ -186,14 +196,14 @@ class TickRunner:
             if should_stop:
                 break
 
-        unconsumed_ticks = int(candidate_ticks) - int(ticks_completed)
+        unconsumed_ticks = candidate_ticks - ticks_completed
         if stalled and unconsumed_ticks > 0:
-            self._clock.accum += float(unconsumed_ticks) * float(self._clock.dt_tick)
+            self._clock.accum += float(unconsumed_ticks) * self._clock.dt_tick
 
-        remaining_debt_ticks = int((self._clock.accum + 1e-9) / float(self._clock.dt_tick))
+        remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
         return TickBatchResult(
-            ticks_completed=int(ticks_completed),
-            stalled=bool(stalled),
-            remaining_debt_ticks=int(remaining_debt_ticks),
+            ticks_completed=ticks_completed,
+            stalled=stalled,
+            remaining_debt_ticks=remaining_debt_ticks,
             presentation_plans=list(plans),
         )
