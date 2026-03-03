@@ -712,3 +712,12 @@ Treat these as stable unless failing tests demand change:
 - session `step_tick` contracts
 - `FixedStepClock` semantics
 - `PlayerInput` / `InputFrame` contracts
+
+## Post-Review Remediation Checklist (2026-03-03)
+
+- [x] Replay playback tick path consumes `ReplayInputProvider` inputs instead of unpacking replay rows directly inside the driver loop.
+- [x] `TickRunner` enforces fail-fast required payload fields (`step`, `command_hash`, `dt_sim`, `presentation`) with explicit errors.
+- [x] LAN tick frame consumption delegates deterministic stepping to a shared `TickRunner` path (no direct LAN `session.step_tick(...)` callsite in mode orchestration).
+- [x] Gameplay telemetry counters/timers are propagated into `GameState` each frame (not only mode-local overlay).
+- [x] Input commands are consumed in deterministic tick execution; perk picks are queued as `InputCommand` and applied on tick consumption.
+- [ ] Move all non-LAN fixed-step clock ownership from mode-local clocks into persistent `TickRunner` instances.
