@@ -40,7 +40,7 @@ from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSessionTick, RushDeterministicSession
+from ..sim.sessions import RushDeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
@@ -385,7 +385,7 @@ class RushMode(BaseGameplayMode):
         if session is None:
             return
 
-        def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
+        def _on_tick(tick, tick_index: int | None) -> bool:
             self._rush.elapsed_ms = float(tick.elapsed_ms)
             self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
             world_events = tick.step.events

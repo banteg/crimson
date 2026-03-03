@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol, cast
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -37,8 +37,9 @@ from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..sim.input import PlayerInput
-from ..sim.input_providers import LocalInputProvider, NetworkInputProvider
-from ..sim.sessions import DeterministicSessionTick
+from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
+from ..sim.sessions import DeterministicSessionStepTick
+from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
@@ -66,7 +67,7 @@ class DeterministicSessionLike(Protocol):
         *,
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
-    ) -> DeterministicSessionTick: ...
+    ) -> DeterministicSessionStepTick: ...
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
@@ -912,8 +913,10 @@ class BaseGameplayMode:
         input_frame: list[PlayerInput],
         session: DeterministicSessionLike,
         recorder: ReplayRecorder | None,
-        on_tick: Callable[[DeterministicSessionTick, int | None], bool],
+        on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
     ) -> None:
+        if int(ticks_to_run) <= 0:
+            return
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng
@@ -923,23 +926,60 @@ class BaseGameplayMode:
             self.world.ground.process_pending()
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
+        first_inputs = input_frame
 
-        for tick_offset in range(int(ticks_to_run)):
-            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+        class _ModeInputProvider:
+            def __init__(self, base_inputs: list[PlayerInput], clear_edges: Callable[[list[PlayerInput]], list[PlayerInput]]):
+                self._base_inputs = base_inputs
+                self._clear_edges = clear_edges
+
+            def begin_frame(self, frame_ctx: FrameContext) -> None:
+                _ = frame_ctx
+
+            def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+                if int(tick_index) == 0:
+                    return self._base_inputs
+                return self._clear_edges(self._base_inputs)
+
+            def push_command(self, command: InputCommand) -> None:
+                _ = command
+
+        tick_rate = max(1, int(round(1.0 / max(1e-9, float(dt_tick)))))
+        runner = TickRunner(
+            session=session,
+            input_provider=_ModeInputProvider(
+                base_inputs=first_inputs,
+                clear_edges=self._clear_local_input_edges,
+            ),
+            config=TickRunnerConfig(
+                tick_rate=int(tick_rate),
+                session_kind="gameplay",
+                mode_id=str(self.__class__.__name__),
+                is_networked=bool(self._lan_enabled),
+                is_replay=False,
+            ),
+        )
+
+        def _on_tick_complete(tick_offset: int, tick: object) -> bool:
+            tick_row = cast(DeterministicSessionStepTick, tick)
+            if int(tick_offset) == 0:
+                inputs_row = first_inputs
+            else:
+                inputs_row = self._clear_local_input_edges(first_inputs)
             if recorder is not None:
-                tick_index: int | None = recorder.record_tick(inputs)
+                tick_index: int | None = recorder.record_tick(inputs_row)
             else:
                 tick_index = None
-            timing = session.timing_for_dt(float(dt_tick))
-            tick = session.step_tick(
-                timing=timing,
-                inputs=inputs,
-            )
             self.world.apply_step_result(
-                tick.step,
+                tick_row.step,
                 game_tune_started=session.game_tune_started,
                 apply_audio=True,
                 update_camera=True,
             )
-            if on_tick(tick, tick_index):
-                break
+            return on_tick(tick_row, tick_index)
+
+        runner.advance_frame(
+            float(dt_tick) * float(max(0, int(ticks_to_run))),
+            max_ticks=max(0, int(ticks_to_run)),
+            on_tick_complete=_on_tick_complete,
+        )

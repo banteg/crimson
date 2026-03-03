@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, Protocol
 
 import msgspec
@@ -59,7 +60,13 @@ class TickRunner:
     def reset_clock(self) -> None:
         self._clock.reset()
 
-    def advance_frame(self, dt_seconds: float, *, max_ticks: int | None = None) -> TickBatchResult:
+    def advance_frame(
+        self,
+        dt_seconds: float,
+        *,
+        max_ticks: int | None = None,
+        on_tick_complete: Callable[[int, object], bool] | None = None,
+    ) -> TickBatchResult:
         self._input_provider.begin_frame(
             FrameContext(
                 frame_index=int(self._frame_index),
@@ -120,7 +127,7 @@ class TickRunner:
             timing = self._session.timing_for_dt(float(self._clock.dt_tick))
             tick = self._session.step_tick(
                 timing=timing,
-                inputs=list(inputs),
+                inputs=inputs,
             )
             step = getattr(tick, "step", tick)
             command_hash = str(getattr(step, "command_hash", ""))
@@ -145,6 +152,8 @@ class TickRunner:
             plans.append(getattr(step, "presentation", None))
             ticks_completed += 1
             self._next_tick_index += 1
+            if on_tick_complete is not None and bool(on_tick_complete(int(tick_index), tick)):
+                break
 
         unconsumed_ticks = int(candidate_ticks) - int(ticks_completed)
         if stalled and unconsumed_ticks > 0:

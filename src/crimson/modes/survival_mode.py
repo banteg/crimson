@@ -53,7 +53,7 @@ from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSessionTick, SurvivalDeterministicSession
+from ..sim.sessions import SurvivalDeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -603,7 +603,7 @@ class SurvivalMode(BaseGameplayMode):
         if session is None:
             return
 
-        def _on_tick(tick: DeterministicSessionTick, tick_index: int | None) -> bool:
+        def _on_tick(tick, tick_index: int | None) -> bool:
             self._survival.elapsed_ms = float(session.elapsed_ms)
             self._survival.stage = int(session.stage)
             self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)

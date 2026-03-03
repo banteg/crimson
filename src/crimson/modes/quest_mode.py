@@ -730,24 +730,7 @@ class QuestMode(BaseGameplayMode):
             self.world._sync_ground_settings()
             self.world.ground.process_pending()
 
-        for tick_offset in range(int(ticks_to_run)):
-            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-            recorder = self._replay_recorder
-            if recorder is not None:
-                tick_index = recorder.record_tick(inputs)
-            else:
-                tick_index = None
-            timing = session.timing_for_dt(float(dt_tick))
-            tick = session.step_tick(
-                timing=timing,
-                inputs=inputs,
-            )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=bool(session.game_tune_started),
-                apply_audio=True,
-                update_camera=True,
-            )
+        def _on_tick(tick, tick_index: int | None) -> bool:
             self._quest.spawn_entries = tuple(session.spawn_entries)
             self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
             self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
@@ -805,11 +788,21 @@ class QuestMode(BaseGameplayMode):
                     )
                 self._save_replay()
                 self.close_requested = True
-                break
+                return True
 
             if self._death_transition_ready():
                 self._close_failed_run()
-                break
+                return True
+            return False
+
+        self._run_deterministic_session_ticks(
+            ticks_to_run=int(ticks_to_run),
+            dt_tick=dt_tick,
+            input_frame=input_frame,
+            session=session,
+            recorder=self._replay_recorder,
+            on_tick=_on_tick,
+        )
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float) -> None:
         runtime = self._lan_runtime

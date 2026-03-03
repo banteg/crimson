@@ -621,12 +621,12 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-3 Checklist: TickRunner Extraction
 
-- [ ] Implement `TickRunner` in `src/crimson/sim/tick_runner.py` using `FixedStepClock`.
-- [ ] Move shared logic from `BaseGameplayMode._run_deterministic_session_ticks` into `TickRunner`.
-- [ ] Delegate Survival/Rush/Quest mode tick advancement to `TickRunner`.
-- [ ] Keep output behavior identical (same tick counts and apply ordering).
-- [ ] Delete or reduce `_run_deterministic_session_ticks` to thin wrapper/shim.
-- [ ] Run full test gate suite.
+- [x] Implement `TickRunner` in `src/crimson/sim/tick_runner.py` using `FixedStepClock`.
+- [x] Move shared logic from `BaseGameplayMode._run_deterministic_session_ticks` into `TickRunner`.
+- [x] Delegate Survival/Rush/Quest mode tick advancement to `TickRunner`.
+- [x] Keep output behavior identical (same tick counts and apply ordering).
+- [x] Delete or reduce `_run_deterministic_session_ticks` to thin wrapper/shim.
+- [x] Run full test gate suite.
 
 ### PR-4 Checklist: Hook Bus Migration
 
