@@ -85,7 +85,7 @@ Authoritative ownership by execution context:
 
 2. Input pull semantics:
 - `None` means stall-only and is valid only for network provider.
-- Replay EOS is explicit EOS signaling (exception or explicit result type), never `None`.
+- Replay EOS is `ReplayEndOfStream` exception signaling, never `None`.
 - `[]` is invalid unless `player_count == 0`.
 
 3. Determinism artifacts:
@@ -123,7 +123,7 @@ Provider semantic matrix:
 | Provider | `None` allowed | End-of-stream behavior | Empty input list `[]` |
 |---|---|---|---|
 | `LocalInputProvider` | No | Not applicable | Invalid unless `player_count == 0` |
-| `ReplayInputProvider` | No | Raise `ReplayEndOfStream` (or return explicit EOS result type) | Invalid unless replay explicitly encodes zero players |
+| `ReplayInputProvider` | No | Raise `ReplayEndOfStream` | Invalid unless replay explicitly encodes zero players |
 | `NetworkInputProvider` | Yes | Not applicable | Invalid unless `player_count == 0` |
 
 `TickRunner` must treat `None` as stall-only, never as EOS.
