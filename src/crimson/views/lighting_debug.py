@@ -4,7 +4,7 @@ import math
 import os
 import random
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
@@ -171,12 +171,15 @@ class StaticEmitter(msgspec.Struct):
 
 
 class _StaticDragState(msgspec.Struct):
-    kind: str
+    kind: "_StaticDragKind"
     emitter_index: int
     mouse_start_world: Vec2
     mouse_start_screen: Vec2
     pos_offset: Vec2
     value_start: float
+
+
+_StaticDragKind: TypeAlias = Literal["move", "radius", "direction", "strength", "stretch"]
 
 
 class _ShadowUniforms(msgspec.Struct, frozen=True):
@@ -1905,7 +1908,7 @@ class LightingDebugView:
             self._static_selected_emitter = max(0, min(self._static_selected_emitter, len(self._static_emitters) - 1))
         self._invalidate_shadow_history()
 
-    def _begin_static_drag(self, *, kind: str, index: int) -> None:
+    def _begin_static_drag(self, *, kind: _StaticDragKind, index: int) -> None:
         if not (0 <= index < len(self._static_emitters)):
             self._static_drag = None
             return
@@ -1918,7 +1921,7 @@ class LightingDebugView:
         elif kind == "stretch":
             value_start = float(emitter.stretch)
         self._static_drag = _StaticDragState(
-            kind=str(kind),
+            kind=kind,
             emitter_index=int(index),
             mouse_start_world=mouse_world,
             mouse_start_screen=mouse_screen,
