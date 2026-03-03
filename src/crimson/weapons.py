@@ -88,19 +88,19 @@ class WeaponId(IntEnum):
 
 class Weapon(msgspec.Struct, frozen=True):
     weapon_id: WeaponId
-    name: str | None
+    name: str
     ammo_class: int | None
-    clip_size: int | None
-    shot_cooldown: float | None
-    reload_time: float | None
-    spread_heat_inc: float | None
-    fire_sound: str | None
-    reload_sound: str | None
-    icon_index: int | None
+    clip_size: int
+    shot_cooldown: float
+    reload_time: float
+    spread_heat_inc: float
+    fire_sound: str
+    reload_sound: str
+    icon_index: int
     flags: int | None
-    travel_budget: int | None
-    damage_scale: float | None
-    pellet_count: int | None
+    travel_budget: int
+    damage_scale: float
+    pellet_count: int
 
 WEAPON_TABLE = [
     Weapon(
@@ -790,7 +790,7 @@ def weapon_display_name(weapon_id: WeaponId, *, preserve_bugs: bool = False) -> 
     entry = WEAPON_BY_ID.get(weapon_id)
     if entry is None:
         return f"weapon_{weapon_id}"
-    name = entry.name or f"weapon_{entry.weapon_id}"
+    name = entry.name
     if bool(preserve_bugs):
         return str(name)
     fixed = _WEAPON_FIXED_NAMES.get(weapon_id)
@@ -871,5 +871,5 @@ def projectile_type_ids_from_weapon_id(weapon_id: WeaponId) -> tuple[int, ...]:
 
 
 WEAPON_BY_NAME = {
-    entry.name: entry for entry in WEAPON_TABLE if entry.name is not None
+    entry.name: entry for entry in WEAPON_TABLE
 }

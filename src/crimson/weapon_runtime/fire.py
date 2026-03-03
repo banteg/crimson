@@ -131,7 +131,7 @@ def player_fire_weapon(
         if perk_active(player, PerkId.REGRESSION_BULLETS):
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
-            reload_time = float(weapon.reload_time) if weapon.reload_time is not None else 0.0
+            reload_time = float(weapon.reload_time)
             factor = 4.0 if ammo_class == 1 else 200.0
             player.experience = int(float(player.experience) - reload_time * factor)
             if player.experience < 0:
@@ -154,21 +154,17 @@ def player_fire_weapon(
         else:
             return
 
-    pellet_count = int(weapon.pellet_count) if weapon.pellet_count is not None else 0
+    pellet_count = int(weapon.pellet_count)
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTypeId.FIRE_BULLETS)
 
-    shot_cooldown = float(f32(float(weapon.shot_cooldown))) if weapon.shot_cooldown is not None else 0.0
-    weapon_spread_heat = float(weapon.spread_heat_inc) if weapon.spread_heat_inc is not None else 0.0
+    shot_cooldown = float(f32(float(weapon.shot_cooldown)))
+    weapon_spread_heat = float(weapon.spread_heat_inc)
     fire_bullets_spread_heat = weapon_spread_heat
-    if fire_bullets_weapon is not None and fire_bullets_weapon.spread_heat_inc is not None:
+    if fire_bullets_weapon is not None:
         fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
 
     if is_fire_bullets and pellet_count == 1 and fire_bullets_weapon is not None:
-        shot_cooldown = (
-            float(f32(float(fire_bullets_weapon.shot_cooldown)))
-            if fire_bullets_weapon.shot_cooldown is not None
-            else 0.0
-        )
+        shot_cooldown = float(f32(float(fire_bullets_weapon.shot_cooldown)))
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = spread_heat_base * 1.3

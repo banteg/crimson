@@ -252,7 +252,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     plasma_entry = weapon_entry_for_projectile_type_id(ProjectileTypeId.PLASMA_RIFLE)
     plasma_meta = (
         float(plasma_entry.travel_budget)
-        if plasma_entry and plasma_entry.travel_budget is not None
+        if plasma_entry
         else hit.proj.travel_budget
     )
 

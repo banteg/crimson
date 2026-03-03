@@ -65,7 +65,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
 
-    clip_size = int(weapon.clip_size) if weapon is not None and weapon.clip_size is not None else 0
+    clip_size = int(weapon.clip_size) if weapon is not None else 0
     clip_ctx = _WeaponAssignCtx(player=player, clip_size=max(0, clip_size))
     for modifier in _WEAPON_ASSIGN_CLIP_MODIFIERS:
         modifier(clip_ctx)
@@ -123,7 +123,7 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         return
 
     weapon = weapon_entry(player.weapon.weapon_id)
-    reload_time = float(weapon.reload_time) if weapon is not None and weapon.reload_time is not None else 0.0
+    reload_time = float(weapon.reload_time) if weapon is not None else 0.0
 
     if not player.weapon.reload_active:
         player.weapon.reload_active = True

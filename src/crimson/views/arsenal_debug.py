@@ -278,7 +278,7 @@ class ArsenalDebugView:
             return ["Arsenal debug: missing player"]
 
         weapon_id = player.weapon.weapon_id
-        name = weapon.name if weapon is not None and weapon.name else f"weapon_{weapon_id}"
+        name = weapon.name if weapon is not None else f"weapon_{weapon_id}"
         index_label = f"{self._weapon_index + 1}/{max(1, len(self._weapon_ids))}"
 
         lines = [

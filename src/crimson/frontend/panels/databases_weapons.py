@@ -163,22 +163,20 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                     text_scale,
                     text_color,
                 )
-            if reload_time is not None:
-                draw_small_text(
-                    font,
-                    f"Reload time: {reload_time:.1f} secs",
-                    detail_top_left + Vec2(66.0 * scale, 146.0 * scale),
-                    text_scale,
-                    text_color,
-                )
-            if clip_size is not None:
-                draw_small_text(
-                    font,
-                    f"Clip size: {clip_size}",
-                    detail_top_left + Vec2(66.0 * scale, 164.0 * scale),
-                    text_scale,
-                    text_color,
-                )
+            draw_small_text(
+                font,
+                f"Reload time: {reload_time:.1f} secs",
+                detail_top_left + Vec2(66.0 * scale, 146.0 * scale),
+                text_scale,
+                text_color,
+            )
+            draw_small_text(
+                font,
+                f"Clip size: {clip_size}",
+                detail_top_left + Vec2(66.0 * scale, 164.0 * scale),
+                text_scale,
+                text_color,
+            )
 
     def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
         weapon_ids = self._weapon_ids
@@ -254,8 +252,6 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         status = self.state.status
         used: list[int] = []
         for weapon in WEAPON_TABLE:
-            if weapon.name is None:
-                continue
             weapon_id = int(weapon.weapon_id)
             include = False
             if available is not None:
@@ -283,7 +279,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
     def _weapon_rpm(self, weapon: Weapon) -> int | None:
         cooldown = weapon.shot_cooldown
-        if cooldown is None or cooldown <= 0.0:
+        if cooldown <= 0.0:
             return None
         return int(60.0 / float(cooldown))
 

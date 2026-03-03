@@ -89,7 +89,7 @@ def draw_bonus_pickups(
             if not isinstance(payload, BonusWeaponPayload):
                 continue
             weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
-            icon_index = int(weapon.icon_index) if weapon is not None and weapon.icon_index is not None else None
+            icon_index = int(weapon.icon_index) if weapon is not None else None
             if icon_index is None or not (0 <= icon_index <= 31) or render_ctx.wicons_texture is None:
                 continue
 

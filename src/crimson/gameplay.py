@@ -980,7 +980,7 @@ def player_update(
             if _player_swap_alt_weapon(player):
                 swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
-                if weapon is not None and weapon.reload_sound is not None:
+                if weapon is not None:
                     from .weapon_sfx import resolve_weapon_sfx_ref
 
                     key = resolve_weapon_sfx_ref(weapon.reload_sound)

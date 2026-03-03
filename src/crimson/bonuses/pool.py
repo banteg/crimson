@@ -476,7 +476,7 @@ def bonus_label_for_entry(entry: BonusEntry, *, preserve_bugs: bool = False) -> 
         if not isinstance(payload, BonusWeaponPayload):
             return "Weapon"
         weapon = WEAPON_BY_ID.get(int(payload.weapon_id))
-        if weapon is not None and weapon.name:
+        if weapon is not None:
             return weapon_display_name(WeaponId(int(payload.weapon_id)), preserve_bugs=bool(preserve_bugs))
         return "Weapon"
     if bonus_id == BonusId.POINTS:

@@ -62,7 +62,7 @@ class QuestResultsView:
                 weapon_entry = WEAPON_BY_ID.get(weapon_id_native)
                 self._unlock_weapon_name = (
                     weapon_display_name(WeaponId(weapon_id_native), preserve_bugs=bool(self.state.preserve_bugs))
-                    if weapon_entry is not None and weapon_entry.name
+                    if weapon_entry is not None
                     else f"weapon_{weapon_id_native}"
                 )
 

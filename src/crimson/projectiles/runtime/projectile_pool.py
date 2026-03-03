@@ -134,7 +134,7 @@ class ProjectilePool:
         entry.speed_scale = 1.0
         entry.travel_budget = float(travel_budget)
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
-        if weapon_entry is not None and weapon_entry.travel_budget is not None:
+        if weapon_entry is not None:
             entry.travel_budget = float(weapon_entry.travel_budget)
         entry.owner = owner
         entry.hits_players = bool(hits_players)
