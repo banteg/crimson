@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal, TypeAlias
 
 import msgspec
 
@@ -25,25 +26,47 @@ from .trace import TraceError, TraceReader, write_trace
 
 
 class TraceMismatch(msgspec.Struct, frozen=True):
-    kind: str
+    kind: Literal["missing_tick", "tick_mismatch", "missing_channel"]
     tick_index: int
     detail: dict[str, object] | None = None
 
 
-class TraceDiffReport(msgspec.Struct, frozen=True):
-    ok: bool
+class _TraceDiffOk(msgspec.Struct, frozen=True):
     checked_count: int
     tick_start: int | None
     tick_end: int | None
-    mismatch: TraceMismatch | None = None
+    ok: Literal[True] = True
+    mismatch: None = None
 
 
-class TraceBisectReport(msgspec.Struct, frozen=True):
-    ok: bool
-    first_bad_tick: int | None
+class _TraceDiffDiverged(msgspec.Struct, frozen=True):
     checked_count: int
-    mismatch: TraceMismatch | None
+    tick_start: int | None
+    tick_end: int | None
+    mismatch: TraceMismatch
+    ok: Literal[False] = False
+
+
+TraceDiffReport: TypeAlias = _TraceDiffOk | _TraceDiffDiverged
+
+
+class _TraceBisectOk(msgspec.Struct, frozen=True):
+    checked_count: int
+    ok: Literal[True] = True
+    first_bad_tick: None = None
+    mismatch: None = None
     repro_trace_path: Path | None = None
+
+
+class _TraceBisectDiverged(msgspec.Struct, frozen=True):
+    first_bad_tick: int
+    checked_count: int
+    mismatch: TraceMismatch
+    ok: Literal[False] = False
+    repro_trace_path: Path | None = None
+
+
+TraceBisectReport: TypeAlias = _TraceBisectOk | _TraceBisectDiverged
 
 
 class _TickPair(msgspec.Struct, frozen=True):
@@ -208,8 +231,7 @@ def diff_traces(
         for required_channel in TRACE_REQUIRED_CHANNELS:
             channel_name = str(required_channel)
             if channel_name not in expected_channels or channel_name not in actual_channels:
-                return TraceDiffReport(
-                    ok=False,
+                return _TraceDiffDiverged(
                     checked_count=0,
                     tick_start=tick_start,
                     tick_end=tick_end,
@@ -236,8 +258,13 @@ def diff_traces(
             )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
-        return TraceDiffReport(
-            ok=(mismatch is None),
+        if mismatch is None:
+            return _TraceDiffOk(
+                checked_count=checked_count,
+                tick_start=tick_start,
+                tick_end=tick_end,
+            )
+        return _TraceDiffDiverged(
             checked_count=checked_count,
             tick_start=tick_start,
             tick_end=tick_end,
@@ -263,11 +290,8 @@ def bisect_traces(
             tick_end=tick_end,
         )
         if not pairs:
-            return TraceBisectReport(
-                ok=True,
-                first_bad_tick=None,
+            return _TraceBisectOk(
                 checked_count=0,
-                mismatch=None,
                 repro_trace_path=None,
             )
 
@@ -280,11 +304,8 @@ def bisect_traces(
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
         if mismatch is None:
-            return TraceBisectReport(
-                ok=True,
-                first_bad_tick=None,
+            return _TraceBisectOk(
                 checked_count=checked_count,
-                mismatch=None,
                 repro_trace_path=None,
             )
 
@@ -349,8 +370,7 @@ def bisect_traces(
             write_trace(Path(repro_out), meta=meta, ticks=repro_rows, chunk_ticks=128)
             repro_path = Path(repro_out)
 
-        return TraceBisectReport(
-            ok=False,
+        return _TraceBisectDiverged(
             first_bad_tick=first_bad,
             checked_count=checked_count,
             mismatch=final_mismatch,
