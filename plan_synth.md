@@ -501,39 +501,42 @@ Pass criteria:
 
 ## Test Gates
 
-Run at minimum after each PR phase:
+### Gate Definitions
+
+`G0` (commit gate, always):
 
 ```bash
-uv run pytest \
-  tests/test_step_pipeline_parity.py \
-  tests/test_presentation_step.py \
-  tests/test_local_input.py \
-  tests/test_quest_deterministic_session.py \
-  tests/test_replay_runners_survival.py \
-  tests/test_replay_runners_rush.py \
-  tests/test_replay_runners_quest.py \
-  tests/test_replay_playback_mode_audio.py \
-  tests/test_replay_playback_mode_timing.py \
-  tests/test_lan_lockstep_host.py \
-  tests/test_lan_lockstep_client.py \
-  tests/test_net_runtime_rollback.py \
-  tests/test_rollback_core.py \
-  tests/test_rollback_resync_v5.py
+uv run pytest --no-cov
 ```
 
-Performance gate commands (same machine baseline comparison):
+`G2` (determinism artifact gate):
+
+```bash
+uv run crimson replay verify-checkpoints <replay.crd>
+uv run crimson replay diff-checkpoints <expected> <actual>
+```
+
+`G3` (performance gate, same machine baseline comparison):
 
 ```bash
 uv run crimson replay benchmark <replay.crd> --mode headless
 uv run crimson replay benchmark <replay.crd> --mode render
 ```
 
-Determinism gate commands (artifact parity checks):
+### When to run each gate
 
-```bash
-uv run crimson replay verify-checkpoints <replay.crd>
-uv run crimson replay diff-checkpoints <expected> <actual>
-```
+1. After every commit: run `G0`.
+2. At the end of every PR phase: latest commit in that phase must already have a green `G0`.
+3. At PRs touching determinism/presentation/replay hashing (`PR-4`, `PR-5`, `PR-6`): run `G2`.
+4. At PRs touching render/sink/perf-sensitive orchestration (`PR-7`, `PR-8`): run `G3`.
+
+## Commit Quality Gate
+
+For this refactor track, after **every commit** (not only at PR boundaries), run `G0`.
+
+Rule:
+- Do not continue stacking new implementation commits on failing tests.
+- Fix forward immediately in the next commit until the suite is green again.
 
 Required new invariant-focused tests (add during refactor):
 
@@ -559,7 +562,7 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 - [ ] Add `input_stall_count` and `ticks_advanced_per_frame` counters to runtime telemetry/debug output.
 - [ ] Add stage timer scaffolding fields (`sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`) with placeholder values.
 - [ ] Add `tests/test_runtime_pump_ownership.py` covering interactive/replay/headless contexts.
-- [ ] Run `uv run pytest` with the full test gate suite.
+- [ ] Run `uv run pytest --no-cov` with the full test gate suite.
 
 ### PR-1 Checklist: Interfaces and Adapters (No Behavior Change)
 
