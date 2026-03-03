@@ -674,7 +674,7 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 - [x] Move audio routing/state out of `GameWorld`.
 - [x] Add `tests/test_terrain_runtime_boundaries.py` for deterministic terrain vs render cache ownership contracts.
 - [x] Keep temporary compatibility facade only if needed for transitional call-sites.
-- [x] Remove compatibility shims once all call-sites migrated.
+- [ ] Remove compatibility shims once all call-sites migrated.
 - [x] Remove collapsed legacy paths:
 - [x] per-mode LAN orchestration duplication (`_update_lan_match` variants)
 - [x] mode-local runtime pumping
@@ -684,9 +684,9 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### Final Merge Checklist
 
-- [x] Architecture matches \"Concrete End Shape\" exactly.
-- [x] No duplicate orchestration paths remain.
-- [x] All acceptance criteria in this PRD are met.
+- [ ] Architecture matches \"Concrete End Shape\" exactly.
+- [ ] No duplicate orchestration paths remain.
+- [ ] All acceptance criteria in this PRD are met.
 - [x] `plan_synth.md` remains the single source of truth for loop architecture refactor.
 
 ## Risks and Mitigations
