@@ -144,12 +144,12 @@ class SurvivalMode(BaseGameplayMode):
 
     def _reset_perk_prompt(self) -> None:
         if bool(self._lan_enabled) and str(self._lan_role) == "host":
-            runtime = self._lan_runtime
+            lockstep_runtime = self._lockstep_runtime()
             tick_index = max(0, int(self._lan_last_tick_index))
             if bool(self._lan_perk_close_suppress):
                 self._lan_perk_close_suppress = False
-            elif runtime is not None:
-                runtime.broadcast_perk_menu_close(tick_index=int(tick_index), player_index=0)
+            elif lockstep_runtime is not None:
+                lockstep_runtime.broadcast_perk_menu_close(tick_index=int(tick_index), player_index=0)
 
         if int(self.state.perk_selection.pending_count) > 0:
             # Reset the prompt swing so each pending perk replays the intro.
@@ -159,11 +159,11 @@ class SurvivalMode(BaseGameplayMode):
 
     def _record_perk_pick(self, choice_index: int) -> None:
         if bool(self._lan_enabled) and str(self._lan_role) == "host":
-            runtime = self._lan_runtime
-            if runtime is not None:
+            lockstep_runtime = self._lockstep_runtime()
+            if lockstep_runtime is not None:
                 tick_index = max(0, int(self._lan_last_tick_index))
                 self._lan_perk_close_suppress = True
-                runtime.broadcast_perk_pick(
+                lockstep_runtime.broadcast_perk_pick(
                     tick_index=int(tick_index),
                     player_index=0,
                     choice_index=int(choice_index),
@@ -634,6 +634,7 @@ class SurvivalMode(BaseGameplayMode):
         runtime = self._lan_runtime
         if runtime is None:
             return
+        lockstep_runtime = self._lockstep_runtime()
         session = self._sim_session
         if session is None:
             return
@@ -674,7 +675,9 @@ class SurvivalMode(BaseGameplayMode):
         # Drain and apply host-authored perk events (clients only).
         if role == "join":
             while True:
-                perk_event = runtime.pop_perk_event()
+                if lockstep_runtime is None:
+                    break
+                perk_event = lockstep_runtime.pop_perk_event()
                 if perk_event is None:
                     break
                 self._lan_perk_events.append(perk_event)
@@ -787,7 +790,8 @@ class SurvivalMode(BaseGameplayMode):
                 if not opened:
                     return
                 tick_index = max(0, int(self._lan_last_tick_index))
-                runtime.broadcast_perk_menu_open(tick_index=int(tick_index), player_index=0)
+                if lockstep_runtime is not None:
+                    lockstep_runtime.broadcast_perk_menu_open(tick_index=int(tick_index), player_index=0)
                 if recorder is not None:
                     recorder.record_perk_menu_open(player_index=0)
 
@@ -928,8 +932,8 @@ class SurvivalMode(BaseGameplayMode):
                         command_hash=str(tick.step.command_hash),
                     )
 
-                if role == "host":
-                    runtime.broadcast_tick_frame(
+                if role == "host" and lockstep_runtime is not None:
+                    lockstep_runtime.broadcast_tick_frame(
                         TickFrame(
                             tick_index=int(frame.tick_index),
                             frame_inputs=list(frame.frame_inputs),
@@ -968,7 +972,9 @@ class SurvivalMode(BaseGameplayMode):
 
         if role == "join":
             while True:
-                perk_event = runtime.pop_perk_event()
+                if lockstep_runtime is None:
+                    break
+                perk_event = lockstep_runtime.pop_perk_event()
                 if perk_event is None:
                     break
                 self._lan_perk_events.append(perk_event)

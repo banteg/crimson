@@ -415,6 +415,7 @@ class RushMode(BaseGameplayMode):
         runtime = self._lan_runtime
         if runtime is None:
             return
+        lockstep_runtime = self._lockstep_runtime()
         session = self._sim_session
         if session is None:
             return
@@ -537,8 +538,8 @@ class RushMode(BaseGameplayMode):
                         command_hash=str(tick.step.command_hash),
                     )
 
-                if role == "host":
-                    runtime.broadcast_tick_frame(
+                if role == "host" and lockstep_runtime is not None:
+                    lockstep_runtime.broadcast_tick_frame(
                         TickFrame(
                             tick_index=int(frame.tick_index),
                             frame_inputs=list(frame.frame_inputs),

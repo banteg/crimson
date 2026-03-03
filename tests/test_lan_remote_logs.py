@@ -5,7 +5,7 @@ from pathlib import Path
 from crimson.net.debug_log import close_lan_debug_log, init_lan_debug_log
 from crimson.net.lockstep_lobby import HostLobby
 from crimson.net.lockstep_protocol import INPUT_DELAY_TICKS, PROTOCOL_VERSION, TICK_RATE, DebugLogBatch, Hello
-from crimson.net.lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
+from crimson.net.lockstep_runtime import HostLockstepRuntimeConfig, LockstepRuntime
 
 
 def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
@@ -23,8 +23,7 @@ def test_host_writes_remote_client_log_batches(tmp_path: Path) -> None:
     )
 
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="host",
+        HostLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="127.0.0.1",

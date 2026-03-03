@@ -4,7 +4,7 @@ import socket
 import time
 import uuid
 from collections import OrderedDict, deque
-from typing import Literal, cast
+from typing import Literal, TypeAlias, cast
 
 import msgspec
 
@@ -12,7 +12,7 @@ from crimson.quest_level import normalize_quest_level_text
 
 from ..replay.types import PackedPlayerInput
 from .debug_log import lan_debug_log
-from .lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from .lockstep_protocol import TickFrame
 from .relay_protocol import (
     DEFAULT_PORT,
     INPUT_DELAY_TICKS,
@@ -57,8 +57,7 @@ def _now_ms() -> int:
     return int(time.monotonic() * 1000.0)
 
 
-class RollbackRuntimeConfig(msgspec.Struct):
-    role: str
+class _RollbackRuntimeConfigBase(msgspec.Struct):
     mode_id: int
     player_count: int
     relay_host: str
@@ -72,6 +71,17 @@ class RollbackRuntimeConfig(msgspec.Struct):
     rollback_max_ticks: int = ROLLBACK_MAX_TICKS
     reconnect_timeout_ms: int = RECONNECT_TIMEOUT_MS
     sim_status_snapshot: StatusSnapshot | None = None
+
+
+class HostRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
+    role: Literal["host"] = "host"
+
+
+class JoinRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
+    role: Literal["join"] = "join"
+
+
+RollbackRuntimeConfig: TypeAlias = HostRollbackRuntimeConfig | JoinRollbackRuntimeConfig
 
 
 ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
@@ -108,8 +118,6 @@ class RollbackRuntime(msgspec.Struct):
     _frame_queue: deque[TickFrame] = msgspec.field(default_factory=deque)
     _remote_seen_slots: set[int] = msgspec.field(default_factory=set)
     _pending_rollback_from: int | None = None
-
-    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = msgspec.field(default_factory=deque)
 
     _local_snapshot_blobs: OrderedDict[int, bytes] = msgspec.field(default_factory=OrderedDict)
     _pending_resync_snapshot: tuple[int, bytes] | None = None
@@ -179,7 +187,6 @@ class RollbackRuntime(msgspec.Struct):
         self._frame_queue.clear()
         self._remote_seen_slots.clear()
         self._pending_rollback_from = None
-        self._client_perk_events.clear()
         self._local_snapshot_blobs.clear()
         self._pending_resync_snapshot = None
         self._pending_resync_snapshot_delivered = False
@@ -225,11 +232,6 @@ class RollbackRuntime(msgspec.Struct):
             if int(slot) not in self._remote_seen_slots:
                 return False
         return True
-
-    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None:
-        if not self._client_perk_events:
-            return None
-        return self._client_perk_events.popleft()
 
     def store_local_snapshot(self, tick_index: int, snapshot_blob: bytes) -> None:
         tick = max(0, int(tick_index))
@@ -293,35 +295,6 @@ class RollbackRuntime(msgspec.Struct):
         if not self._frame_queue:
             return None
         return self._frame_queue.popleft()
-
-    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None:
-        # Rollback strategy uses input relay, not host-authored canonical tick frames.
-        # Keep this method for compatibility with existing mode call-sites.
-        _ = frame
-        _ = now_ms
-
-    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
-        _ = tick_index
-        _ = player_index
-        _ = now_ms
-
-    def broadcast_perk_menu_close(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
-        _ = tick_index
-        _ = player_index
-        _ = now_ms
-
-    def broadcast_perk_pick(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        choice_index: int,
-        now_ms: int | None = None,
-    ) -> None:
-        _ = tick_index
-        _ = player_index
-        _ = choice_index
-        _ = now_ms
 
     def note_desync(self, *, kind: str, tick_index: int, expected: str, actual: str) -> None:
         self.desync_count = int(self.desync_count) + 1
@@ -864,4 +837,9 @@ class RollbackRuntime(msgspec.Struct):
         print(f"[crimson] Invite code: {code}", flush=True)
 
 
-__all__ = ["RollbackRuntime", "RollbackRuntimeConfig"]
+__all__ = [
+    "HostRollbackRuntimeConfig",
+    "JoinRollbackRuntimeConfig",
+    "RollbackRuntime",
+    "RollbackRuntimeConfig",
+]

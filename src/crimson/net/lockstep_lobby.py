@@ -16,7 +16,7 @@ from .lockstep_protocol import (
     builds_compatible,
 )
 from .session_settings import (
-    SessionSettings,
+    LockstepSessionSettings,
     match_start_from_session_settings,
     session_settings_for_lockstep,
     welcome_from_session_settings,
@@ -44,7 +44,7 @@ class HostLobby(msgspec.Struct):
     host_ready: bool = True
     peers_by_addr: dict[PeerAddr, HostPeer] = msgspec.field(default_factory=dict)
 
-    def session_settings(self) -> SessionSettings:
+    def session_settings(self) -> LockstepSessionSettings:
         return session_settings_for_lockstep(
             mode_id=int(self.mode_id),
             player_count=int(self.player_count),

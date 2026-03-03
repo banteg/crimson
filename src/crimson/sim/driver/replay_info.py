@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from typing import Literal, TypeAlias
 
 import msgspec
 
@@ -27,7 +28,22 @@ from .playback_driver import (
 from .setup import ReplayRunnerError
 
 _EPSILON = 1e-6
-_CORE_EVENT_KINDS = frozenset(
+ReplayInfoCoreEventKind = Literal[
+    "bonus_pickup",
+    "weapon_change",
+    "perk_pick",
+    "level_up",
+    "health_damage",
+    "health_heal",
+    "player_death",
+]
+ReplayInfoExtraEventKind = Literal[
+    "creature_deaths",
+    "perk_menu_open",
+]
+ReplayInfoEventKind: TypeAlias = ReplayInfoCoreEventKind | ReplayInfoExtraEventKind
+
+_CORE_EVENT_KINDS: frozenset[ReplayInfoCoreEventKind] = frozenset(
     (
         "bonus_pickup",
         "weapon_change",
@@ -43,7 +59,7 @@ _CORE_EVENT_KINDS = frozenset(
 class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
     tick_index: int
     elapsed_ms: int
-    kind: str
+    kind: ReplayInfoEventKind
     player_index: int | None
     detail: str
     data: dict[str, object]
@@ -86,14 +102,14 @@ def _append_event(
     *,
     tick_index: int,
     elapsed_ms: int,
-    kind: str,
+    kind: ReplayInfoEventKind,
     player_index: int | None,
     detail: str,
     data: dict[str, object],
     player_filter: int | None,
     include_extra_events: bool,
 ) -> None:
-    if str(kind) not in _CORE_EVENT_KINDS and not bool(include_extra_events):
+    if kind not in _CORE_EVENT_KINDS and not bool(include_extra_events):
         return
     if player_filter is not None and player_index is not None and int(player_index) != int(player_filter):
         return
@@ -101,7 +117,7 @@ def _append_event(
         ReplayInfoTimelineEvent(
             tick_index=int(tick_index),
             elapsed_ms=int(elapsed_ms),
-            kind=str(kind),
+            kind=kind,
             player_index=(None if player_index is None else int(player_index)),
             detail=str(detail),
             data=dict(data),
@@ -500,7 +516,7 @@ def run_replay_info(
 
 
 def event_counts_by_kind(timeline: list[ReplayInfoTimelineEvent]) -> dict[str, int]:
-    counts: Counter[str] = Counter()
+    counts: Counter[ReplayInfoEventKind] = Counter()
     for event in timeline:
-        counts[str(event.kind)] += 1
-    return dict(sorted(counts.items()))
+        counts[event.kind] += 1
+    return {str(kind): int(count) for kind, count in sorted(counts.items())}

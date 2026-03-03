@@ -12,7 +12,7 @@ from crimson.net.relay_protocol import (
     RoomStart,
     RoomState,
 )
-from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
+from crimson.net.rollback_runtime import HostRollbackRuntimeConfig, RollbackRuntime
 
 
 def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
@@ -21,8 +21,7 @@ def _sent_messages(send_packet: MagicMock) -> list[NetMessage]:
 
 def _started_runtime(mocker) -> tuple[RollbackRuntime, MagicMock]:
     runtime = RollbackRuntime(
-        RollbackRuntimeConfig(
-            role="host",
+        HostRollbackRuntimeConfig(
             mode_id=1,
             player_count=2,
             relay_host="127.0.0.1",

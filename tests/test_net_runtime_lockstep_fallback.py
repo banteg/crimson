@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
+from crimson.game.types import (
+    LockstepEndpoint,
+    LockstepSessionConfig,
+    PendingNetworkSession,
+    RollbackEndpoint,
+    RollbackSessionConfig,
+)
 from crimson.net.lockstep_runtime import LockstepRuntime
 
 
@@ -9,9 +15,8 @@ def test_manual_lockstep_fallback_selects_lockstep_runtime(make_game_state) -> N
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=LockstepSessionConfig(
             mode="survival",
-            netcode_mode="lockstep",
             endpoint=LockstepEndpoint(
                 bind_host="0.0.0.0",
                 host="127.0.0.1",
@@ -40,9 +45,8 @@ def test_fallback_netcode_mode_is_not_switched_mid_match(make_game_state) -> Non
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=LockstepSessionConfig(
             mode="survival",
-            netcode_mode="lockstep",
             endpoint=LockstepEndpoint(
                 bind_host="0.0.0.0",
                 host="127.0.0.1",
@@ -65,9 +69,8 @@ def test_fallback_netcode_mode_is_not_switched_mid_match(make_game_state) -> Non
     assert isinstance(runtime, LockstepRuntime)
 
     # Gameplay transition from lobby keeps the existing runtime instance.
-    pending.config = NetworkSessionConfig(
+    pending.config = RollbackSessionConfig(
         mode="survival",
-        netcode_mode="rollback",
         endpoint=RollbackEndpoint(
             relay_host="127.0.0.1",
             relay_port=31993,

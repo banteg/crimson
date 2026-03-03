@@ -18,8 +18,9 @@ from crimson.net.lockstep_protocol import (
 from crimson.net.lockstep_runtime import (
     IDLE_HEARTBEAT_MS,
     PAUSED_LINK_TIMEOUT_MS,
+    HostLockstepRuntimeConfig,
+    JoinLockstepRuntimeConfig,
     LockstepRuntime,
-    LockstepRuntimeConfig,
 )
 from crimson.net.reliable import ReliableLink
 from crimson.net.transport import UdpTransport
@@ -28,8 +29,7 @@ from crimson.net.transport import UdpTransport
 def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
     start = int(time.monotonic() * 1000.0)
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="join",
+        JoinLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="0.0.0.0",
@@ -53,8 +53,7 @@ def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
 
 def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="host",
+        HostLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="127.0.0.1",
@@ -81,8 +80,7 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
 
 def test_host_timeout_aborts_started_match() -> None:
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="host",
+        HostLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="127.0.0.1",
@@ -126,8 +124,7 @@ def test_host_timeout_aborts_started_match() -> None:
 
 def test_host_waiting_input_pause_uses_extended_timeout() -> None:
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="host",
+        HostLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="127.0.0.1",
@@ -183,8 +180,7 @@ def test_host_waiting_input_pause_uses_extended_timeout() -> None:
 
 def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
     runtime = LockstepRuntime(
-        LockstepRuntimeConfig(
-            role="join",
+        JoinLockstepRuntimeConfig(
             mode_id=1,
             player_count=2,
             bind_host="127.0.0.1",

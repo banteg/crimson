@@ -5,6 +5,8 @@ from crimson.net.lockstep_protocol import StatusSnapshot as LockstepStatusSnapsh
 from crimson.net.relay_protocol import RelaySlot
 from crimson.net.relay_protocol import StatusSnapshot as RelayStatusSnapshot
 from crimson.net.session_settings import (
+    LockstepSessionSettings,
+    RelaySessionSettings,
     hello_from_session_settings,
     match_start_from_session_settings,
     room_create_from_session_settings,
@@ -32,8 +34,8 @@ def test_lockstep_session_settings_build_hello() -> None:
     assert settings.player_count == 4
     assert settings.tick_rate == 1
     assert settings.input_delay_ticks == 0
+    assert isinstance(settings, LockstepSessionSettings)
     assert settings.netcode_mode == "lockstep"
-    assert settings.rollback_max_ticks == 0
 
     hello = hello_from_session_settings(settings, protocol_version=7, build_id="dev+g1234", host=False)
     assert hello.protocol_version == 7
@@ -107,6 +109,7 @@ def test_relay_session_settings_roundtrip_from_room_create() -> None:
     assert settings.tick_rate == 1
     assert settings.input_delay_ticks == 0
     assert settings.rollback_max_ticks == 1
+    assert isinstance(settings, RelaySessionSettings)
 
     snapshot = RelayStatusSnapshot(quest_unlock_index=11, quest_unlock_index_full=22)
     create = room_create_from_session_settings(settings, status_snapshot=snapshot)

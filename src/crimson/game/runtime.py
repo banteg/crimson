@@ -353,12 +353,12 @@ def run_game(config: GameConfig) -> None:
         if pending is not None:
             from ..net.lockstep_protocol import current_build_id
 
-            if str(pending.config.netcode_mode) == "lockstep":
-                endpoint = pending.config.lockstep_endpoint()
+            if pending.config.netcode_mode == "lockstep":
+                endpoint = pending.config.endpoint
                 host = str(endpoint.host)
                 port = int(endpoint.port)
             else:
-                endpoint = pending.config.rollback_endpoint()
+                endpoint = pending.config.endpoint
                 host = str(endpoint.relay_host)
                 port = int(endpoint.relay_port)
             log_path = init_lan_debug_log(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import NetworkSessionConfig, NetworkSessionMode, PendingNetworkSession, RollbackEndpoint
+from crimson.game.types import NetworkSessionMode, PendingNetworkSession, RollbackEndpoint, RollbackSessionConfig
 from crimson.game_modes import GameMode
 from crimson.net.rollback_runtime import RollbackRuntime
 
@@ -26,9 +26,8 @@ def test_rollback_runtime_is_selected_for_all_network_modes(
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=NetworkSessionConfig(
+        config=RollbackSessionConfig(
             mode=mode,
-            netcode_mode="rollback",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,

@@ -65,10 +65,10 @@ class RollbackEndpoint(msgspec.Struct, frozen=True):
 NetworkEndpoint: TypeAlias = LockstepEndpoint | RollbackEndpoint
 
 
-class NetworkSessionConfig(msgspec.Struct, frozen=True):
+class LockstepSessionConfig(msgspec.Struct, frozen=True):
     mode: NetworkSessionMode
-    netcode_mode: NetcodeMode
-    endpoint: NetworkEndpoint
+    endpoint: LockstepEndpoint
+    netcode_mode: Literal["lockstep"] = "lockstep"
     player_count: int = 1
     quest_level: str = ""
     rollback_max_ticks: int = 8
@@ -80,17 +80,24 @@ class NetworkSessionConfig(msgspec.Struct, frozen=True):
     def quest_level_value(self) -> QuestLevel | None:
         return QuestLevel.try_parse(self.quest_level)
 
-    def lockstep_endpoint(self) -> LockstepEndpoint:
-        endpoint = self.endpoint
-        if isinstance(endpoint, LockstepEndpoint):
-            return endpoint
-        raise TypeError("network session requires lockstep endpoint")
 
-    def rollback_endpoint(self) -> RollbackEndpoint:
-        endpoint = self.endpoint
-        if isinstance(endpoint, RollbackEndpoint):
-            return endpoint
-        raise TypeError("network session requires rollback endpoint")
+class RollbackSessionConfig(msgspec.Struct, frozen=True):
+    mode: NetworkSessionMode
+    endpoint: RollbackEndpoint
+    netcode_mode: Literal["rollback"] = "rollback"
+    player_count: int = 1
+    quest_level: str = ""
+    rollback_max_ticks: int = 8
+    reconnect_timeout_ms: int = 15_000
+    input_delay_ticks: int = 1
+    preserve_bugs: bool = False
+
+    @property
+    def quest_level_value(self) -> QuestLevel | None:
+        return QuestLevel.try_parse(self.quest_level)
+
+
+NetworkSessionConfig: TypeAlias = LockstepSessionConfig | RollbackSessionConfig
 
 
 class PendingNetworkSession(msgspec.Struct):
@@ -178,6 +185,7 @@ __all__ = [
     "GameState",
     "HighScoresRequest",
     "LockstepEndpoint",
+    "LockstepSessionConfig",
     "NetcodeMode",
     "NetworkEndpoint",
     "NetworkSessionConfig",
@@ -185,4 +193,5 @@ __all__ = [
     "PendingNetworkSession",
     "PauseBackground",
     "RollbackEndpoint",
+    "RollbackSessionConfig",
 ]

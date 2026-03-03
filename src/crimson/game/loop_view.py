@@ -192,12 +192,12 @@ class GameLoopView:
         if pending is None:
             return
         cfg = pending.config
-        if str(cfg.netcode_mode) == "lockstep":
-            endpoint = cfg.lockstep_endpoint()
+        if cfg.netcode_mode == "lockstep":
+            endpoint = cfg.endpoint
             host = str(endpoint.host)
             port = int(endpoint.port)
         else:
-            endpoint = cfg.rollback_endpoint()
+            endpoint = cfg.endpoint
             host = str(endpoint.relay_host)
             port = int(endpoint.relay_port)
         from ..net.lockstep_protocol import current_build_id
@@ -319,11 +319,19 @@ class GameLoopView:
         if runtime is not None:
             runtime.close()
 
-        netcode_mode = str(cfg.netcode_mode).strip().lower()
+        netcode_mode = cfg.netcode_mode
         if netcode_mode == "lockstep":
-            from ..net.lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
+            from ..net.lockstep_runtime import (
+                HostLockstepRuntimeConfig,
+                JoinLockstepRuntimeConfig,
+                LockstepRuntime,
+            )
         else:
-            from ..net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
+            from ..net.rollback_runtime import (
+                HostRollbackRuntimeConfig,
+                JoinRollbackRuntimeConfig,
+                RollbackRuntime,
+            )
 
         sim_status_snapshot = None
         if str(pending.role) == "host":
@@ -332,10 +340,9 @@ class GameLoopView:
             sim_status_snapshot = status_snapshot_from_status(self.state.status)
 
         if netcode_mode == "lockstep":
-            endpoint = cfg.lockstep_endpoint()
-            runtime = LockstepRuntime(
-                LockstepRuntimeConfig(
-                    role=str(pending.role),
+            endpoint = cfg.endpoint
+            if pending.role == "host":
+                runtime_cfg = HostLockstepRuntimeConfig(
                     mode_id=int(mode_id),
                     player_count=int(player_count),
                     bind_host=str(endpoint.bind_host),
@@ -345,13 +352,26 @@ class GameLoopView:
                     preserve_bugs=False,
                     input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
                     sim_status_snapshot=sim_status_snapshot,
-                ),
+                )
+            else:
+                runtime_cfg = JoinLockstepRuntimeConfig(
+                    mode_id=int(mode_id),
+                    player_count=int(player_count),
+                    bind_host=str(endpoint.bind_host),
+                    host_ip=str(endpoint.host),
+                    port=int(endpoint.port),
+                    quest_level=str(cfg.quest_level or ""),
+                    preserve_bugs=False,
+                    input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
+                    sim_status_snapshot=sim_status_snapshot,
+                )
+            runtime = LockstepRuntime(
+                runtime_cfg,
             )
         else:
-            endpoint = cfg.rollback_endpoint()
-            runtime = RollbackRuntime(
-                RollbackRuntimeConfig(
-                    role=str(pending.role),
+            endpoint = cfg.endpoint
+            if pending.role == "host":
+                runtime_cfg = HostRollbackRuntimeConfig(
                     mode_id=int(mode_id),
                     player_count=int(player_count),
                     relay_host=str(endpoint.relay_host),
@@ -364,7 +384,24 @@ class GameLoopView:
                     rollback_max_ticks=max(1, int(cfg.rollback_max_ticks)),
                     reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
                     sim_status_snapshot=sim_status_snapshot,
-                ),
+                )
+            else:
+                runtime_cfg = JoinRollbackRuntimeConfig(
+                    mode_id=int(mode_id),
+                    player_count=int(player_count),
+                    relay_host=str(endpoint.relay_host),
+                    relay_port=int(endpoint.relay_port),
+                    room_code=str(endpoint.room_code).strip().upper(),
+                    quest_level=str(cfg.quest_level or ""),
+                    preserve_bugs=False,
+                    netcode_mode="rollback",
+                    input_delay_ticks=max(0, int(cfg.input_delay_ticks)),
+                    rollback_max_ticks=max(1, int(cfg.rollback_max_ticks)),
+                    reconnect_timeout_ms=max(1000, int(cfg.reconnect_timeout_ms)),
+                    sim_status_snapshot=sim_status_snapshot,
+                )
+            runtime = RollbackRuntime(
+                runtime_cfg,
             )
         self.state.network_runtime = runtime
         lan_debug_log(
@@ -373,7 +410,7 @@ class GameLoopView:
             forward_action=forward_action,
             role=str(pending.role),
             mode=str(expected_mode),
-            netcode_mode=str(netcode_mode),
+            netcode_mode=netcode_mode,
             auto_start=bool(pending.auto_start),
             player_count=int(player_count),
             connected_players=int(self.state.network_connected_players),
