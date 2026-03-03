@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider
+from crimson.sim.input_providers import InputProvider
 from crimson.sim.tick_runner import TickRunner
 
 
@@ -38,15 +38,12 @@ class _SequencedSession:
 
 
 class _ReadyInputProvider(InputProvider):
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
+        return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         _ = tick_index
         return [PlayerInput()]
-
-    def push_command(self, command) -> None:
-        _ = command
 
 
 def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:

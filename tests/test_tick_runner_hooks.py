@@ -4,7 +4,7 @@ import msgspec
 
 from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ProfilerHook, ReplayRecorderHook, TickHookBus
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider
+from crimson.sim.input_providers import InputProvider
 from crimson.sim.tick_runner import TickRunner
 
 
@@ -28,15 +28,12 @@ class _FakeSession:
 
 
 class _FixedInputProvider(InputProvider):
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
+        return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         _ = tick_index
         return [PlayerInput()]
-
-    def push_command(self, command) -> None:
-        _ = command
 
 
 class _Recorder:

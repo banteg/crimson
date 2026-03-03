@@ -68,7 +68,7 @@ from ..sim.hooks import (
     TickResult,
 )
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputCommand, NetworkInputProvider
+from ..sim.input_providers import InputCommand, NetworkInputProvider
 from ..sim.sessions import DeterministicSessionStepTick
 from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from ..sim.timing import FrameTiming
@@ -136,8 +136,8 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._runtime = runtime
         self._samples_by_runner_tick.clear()
 
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        super().begin_frame(frame_ctx)
+    def begin_frame(self) -> None:
+        super().begin_frame()
         self._samples_by_runner_tick.clear()
 
     def take_frame_sample(self, runner_tick_index: int) -> _LanFrameSample | None:
@@ -241,8 +241,7 @@ class _GameplayFrameInputProvider:
         self._base_inputs = base_inputs
         self._dt_tick = float(dt_tick)
 
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
         self._frame_first_tick_pending = True
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
@@ -253,10 +252,6 @@ class _GameplayFrameInputProvider:
                 self._command_consumer(command, float(self._dt_tick))
             return self._base_inputs
         return self._clear_edges(self._base_inputs)
-
-    def push_command(self, command: InputCommand) -> None:
-        _ = command
-
 
 class DeterministicSessionLike(Protocol):
     detail_preset: int

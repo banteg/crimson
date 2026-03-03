@@ -8,7 +8,7 @@ import msgspec
 from .clock import FixedStepClock
 from .hooks import TickContext, TickHashes, TickHookBus, TickResult
 from .input import PlayerInput
-from .input_providers import FrameContext, InputProvider
+from .input_providers import InputProvider
 
 
 class TickStepPayload(Protocol):
@@ -106,17 +106,7 @@ class TickRunner(Generic[TimingT, TickT]):
         max_ticks: int | None = None,
         on_tick_complete: Callable[[int, TickT], bool] | None = None,
     ) -> TickBatchResult:
-        self._input_provider.begin_frame(
-            FrameContext(
-                frame_index=self._frame_index,
-                dt_seconds=dt_seconds,
-                player_count=0,
-                session_kind=self._config.session_kind,
-                mode_id=self._config.mode_id,
-                is_networked=self._config.is_networked,
-                is_replay=self._config.is_replay,
-            ),
-        )
+        self._input_provider.begin_frame()
         self._frame_index += 1
 
         candidate_ticks = self._clock.advance(dt_seconds)

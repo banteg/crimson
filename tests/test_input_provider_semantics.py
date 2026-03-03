@@ -4,7 +4,6 @@ import pytest
 
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
-    FrameContext,
     LocalInputProvider,
     NetworkInputProvider,
     ReplayEndOfStream,
@@ -17,7 +16,7 @@ def test_local_provider_never_stalls_and_clears_edges() -> None:
         player_count=1,
         build_inputs=lambda: [PlayerInput(fire_down=True, fire_pressed=True)],
     )
-    provider.begin_frame(FrameContext(player_count=1))
+    provider.begin_frame()
 
     first = provider.pull_tick_input(0)
     second = provider.pull_tick_input(1)
@@ -32,19 +31,19 @@ def test_local_provider_rejects_empty_inputs_when_players_exist() -> None:
     provider = LocalInputProvider(player_count=1, build_inputs=lambda: [])
 
     with pytest.raises(ValueError, match="empty input list"):
-        provider.begin_frame(FrameContext(player_count=1))
+        provider.begin_frame()
 
 
 def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
     provider = LocalInputProvider(player_count=0, build_inputs=lambda: [])
-    provider.begin_frame(FrameContext(player_count=0))
+    provider.begin_frame()
 
     assert provider.pull_tick_input(0) == []
 
 
 def test_replay_provider_uses_eos_exception_not_stall_none() -> None:
     provider = ReplayInputProvider(player_count=1, tick_inputs=[[PlayerInput()]])
-    provider.begin_frame(FrameContext(player_count=1, is_replay=True))
+    provider.begin_frame()
 
     tick0 = provider.pull_tick_input(0)
     assert tick0 is not None
@@ -67,7 +66,7 @@ def test_replay_provider_resolves_inputs_lazily_per_tick() -> None:
         resolve_tick_input=_resolve_tick_input,
         tick_count=2,
     )
-    provider.begin_frame(FrameContext(player_count=1, is_replay=True))
+    provider.begin_frame()
     assert resolved_ticks == []
 
     tick0 = provider.pull_tick_input(0)
@@ -87,7 +86,7 @@ def test_network_provider_allows_stall_none_and_rejects_empty_nonzero() -> None:
         1: [],
     }
     provider = NetworkInputProvider(player_count=1, resolve_tick_input=lambda tick: rows.get(tick))
-    provider.begin_frame(FrameContext(player_count=1, is_networked=True))
+    provider.begin_frame()
 
     assert provider.pull_tick_input(0) is None
     with pytest.raises(ValueError, match="empty input list"):

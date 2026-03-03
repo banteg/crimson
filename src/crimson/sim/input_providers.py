@@ -14,27 +14,15 @@ class ReplayEndOfStream(RuntimeError):
     """Raised when replay input requests pass the last recorded tick."""
 
 
-class FrameContext(msgspec.Struct, frozen=True):
-    frame_index: int = 0
-    dt_seconds: float = 0.0
-    player_count: int = 1
-    session_kind: str = ""
-    mode_id: str = ""
-    is_networked: bool = False
-    is_replay: bool = False
-
-
 class InputCommand(msgspec.Struct, frozen=True):
     name: str
     payload: dict[str, object] = msgspec.field(default_factory=dict)
 
 
 class InputProvider(Protocol):
-    def begin_frame(self, frame_ctx: FrameContext) -> None: ...
+    def begin_frame(self) -> None: ...
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None: ...
-
-    def push_command(self, command: InputCommand) -> None: ...
 
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
@@ -60,14 +48,8 @@ class LocalInputProvider:
         self._frame_inputs: list[PlayerInput] = []
         self._edge_inputs: list[PlayerInput] = []
         self._first_tick_pending = False
-        self._queued_commands: list[InputCommand] = []
 
-    @property
-    def queued_commands(self) -> tuple[InputCommand, ...]:
-        return tuple(self._queued_commands)
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
         frame_inputs = list(self._build_inputs())
         self._frame_inputs = normalize_provider_tick_inputs(inputs=frame_inputs, player_count=self._player_count)
         self._edge_inputs = clear_input_edges(self._frame_inputs)
@@ -81,9 +63,6 @@ class LocalInputProvider:
             self._first_tick_pending = False
             return list(self._frame_inputs)
         return list(self._edge_inputs)
-
-    def push_command(self, command: InputCommand) -> None:
-        self._queued_commands.append(command)
 
 
 class ReplayInputProvider:
@@ -110,14 +89,9 @@ class ReplayInputProvider:
             self._tick_count = max(0, int(tick_count))
         else:
             self._tick_count = None
-        self._queued_commands: list[InputCommand] = []
 
-    @property
-    def queued_commands(self) -> tuple[InputCommand, ...]:
-        return tuple(self._queued_commands)
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
+        return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         idx = int(tick_index)
@@ -137,9 +111,6 @@ class ReplayInputProvider:
             raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
         return normalize_provider_tick_inputs(inputs=row, player_count=self._player_count)
 
-    def push_command(self, command: InputCommand) -> None:
-        self._queued_commands.append(command)
-
 
 class NetworkInputProvider:
     """Runtime-backed input source; may stall when a tick is not ready yet."""
@@ -147,14 +118,9 @@ class NetworkInputProvider:
     def __init__(self, *, player_count: int, resolve_tick_input: TickInputResolver | None = None) -> None:
         self._player_count = max(0, int(player_count))
         self._resolve_tick_input = resolve_tick_input
-        self._queued_commands: list[InputCommand] = []
 
-    @property
-    def queued_commands(self) -> tuple[InputCommand, ...]:
-        return tuple(self._queued_commands)
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
+    def begin_frame(self) -> None:
+        return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         resolver = self._resolve_tick_input
@@ -164,6 +130,3 @@ class NetworkInputProvider:
         if inputs is None:
             return None
         return normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count)
-
-    def push_command(self, command: InputCommand) -> None:
-        self._queued_commands.append(command)
