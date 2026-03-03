@@ -1,15 +1,25 @@
 from __future__ import annotations
 
+from typing import Literal, TypeAlias
+
 import msgspec
 
 from ..sim.state_types import GameplayState, PlayerState
 from .ids import BonusId
 
 
-class _TimerRef(msgspec.Struct, frozen=True):
-    kind: str  # "global" or "player"
+class _GlobalTimerRef(msgspec.Struct, frozen=True):
     key: str
-    player_index: int | None = None
+    kind: Literal["global"] = "global"
+
+
+class _PlayerTimerRef(msgspec.Struct, frozen=True):
+    key: str
+    player_index: int
+    kind: Literal["player"] = "player"
+
+
+_TimerRef: TypeAlias = _GlobalTimerRef | _PlayerTimerRef
 
 
 class BonusHudSlot(msgspec.Struct):
@@ -92,11 +102,11 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
     def _timer_value(ref: _TimerRef | None) -> float:
         if ref is None:
             return 0.0
-        if ref.kind == "global":
+        if isinstance(ref, _GlobalTimerRef):
             return max(0.0, _global_timer_value(ref.key))
-        if ref.kind == "player":
-            idx = ref.player_index
-            if idx is None or not (0 <= idx < len(players)):
+        if isinstance(ref, _PlayerTimerRef):
+            idx = int(ref.player_index)
+            if not (0 <= idx < len(players)):
                 return 0.0
             return max(0.0, _player_timer_value(players[idx], ref.key))
         return 0.0

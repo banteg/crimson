@@ -8,7 +8,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..sim.state_types import GameplayState, PlayerState
-from .hud import _TimerRef
+from .hud import _GlobalTimerRef, _PlayerTimerRef
 from .ids import BONUS_BY_ID, BonusId
 from .payload import BonusDurationPayload, bonus_payload_from_bonus
 
@@ -40,7 +40,7 @@ class BonusApplyCtx(msgspec.Struct):
             self.bonus_id,
             label=self.label,
             icon_id=self.icon_id,
-            timer_ref=_TimerRef("global", str(timer_key)),
+            timer_ref=_GlobalTimerRef(str(timer_key)),
         )
 
     def register_player(self, timer_key: str) -> None:
@@ -49,15 +49,15 @@ class BonusApplyCtx(msgspec.Struct):
                 self.bonus_id,
                 label=self.label,
                 icon_id=self.icon_id,
-                timer_ref=_TimerRef("player", str(timer_key), player_index=0),
-                timer_ref_alt=_TimerRef("player", str(timer_key), player_index=1),
+                timer_ref=_PlayerTimerRef(str(timer_key), player_index=0),
+                timer_ref_alt=_PlayerTimerRef(str(timer_key), player_index=1),
             )
         else:
             self.state.bonus_hud.register(
                 self.bonus_id,
                 label=self.label,
                 icon_id=self.icon_id,
-                timer_ref=_TimerRef("player", str(timer_key), player_index=int(self.player.index)),
+                timer_ref=_PlayerTimerRef(str(timer_key), player_index=int(self.player.index)),
             )
 
     def origin_pos(self) -> HasPos:
