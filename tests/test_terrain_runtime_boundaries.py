@@ -89,6 +89,21 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
     assert int(world.render_resources.ground._pending_generate_seed or -1) == 4242
 
 
+def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path) -> None:
+    world = _build_world(assets_dir)
+    world.render_resources.ground = GroundRenderer(texture=rl.Texture(), width=1024, height=1024)
+    world.world_size = 2048.0
+
+    world.reset(seed=4242, player_count=1)
+
+    assert float(world.sim_world.world_size) == 2048.0
+    assert float(world.render_resources.world_size) == 2048.0
+    assert float(world.terrain_runtime.world_size) == 2048.0
+    assert world.render_resources.ground is not None
+    assert int(world.render_resources.ground.width) == 2048
+    assert int(world.render_resources.ground.height) == 2048
+
+
 def test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows() -> None:
     assert normalize_terrain_ids(None) == DEFAULT_TERRAIN_IDS
     assert normalize_terrain_ids((9999, 1, 2)) == DEFAULT_TERRAIN_IDS

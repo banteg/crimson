@@ -75,6 +75,17 @@ class GameWorld(msgspec.Struct):
             demo_mode_active=bool(self.demo_mode_active),
         )
 
+    def _sync_world_size_ownership(self) -> None:
+        world_size = float(self.world_size)
+        self.sim_world.world_size = world_size
+        self.render_resources.world_size = world_size
+        self.terrain_runtime.world_size = world_size
+        ground = self.render_resources.ground
+        if ground is not None:
+            side = max(0, int(world_size))
+            ground.width = side
+            ground.height = side
+
     def __post_init__(self) -> None:
         self.sim_world = SimWorldState(
             world_size=float(self.world_size),
@@ -99,6 +110,7 @@ class GameWorld(msgspec.Struct):
             world_size=float(self.world_size),
             render_resources=self.render_resources,
         )
+        self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
         self.camera = Vec2(-1.0, -1.0)
         self.renderer = WorldRenderer(self)
@@ -114,7 +126,7 @@ class GameWorld(msgspec.Struct):
         player_count: int = 1,
         spawn_pos: Vec2 | None = None,
     ) -> None:
-        self.sim_world.world_size = float(self.world_size)
+        self._sync_world_size_ownership()
         self.sim_world.demo_mode_active = bool(self.demo_mode_active)
         self.sim_world.hardcore = bool(self.hardcore)
         self.sim_world.difficulty_level = int(self.difficulty_level)
