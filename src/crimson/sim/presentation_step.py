@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
+from typing import Protocol
 
 import msgspec
 
@@ -75,6 +76,12 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 class PresentationStepCommands(msgspec.Struct):
     trigger_game_tune: bool = False
     sfx_keys: list[str] = msgspec.field(default_factory=list)
+
+
+class PresentationAudioSink(Protocol):
+    def trigger_game_tune(self) -> str | None: ...
+
+    def play_sfx_resolved(self, key: str | None) -> None: ...
 
 
 def plan_player_audio_sfx(
@@ -361,7 +368,7 @@ def queue_projectile_decals_post_hit(
         )
 
 
-def apply_world_presentation_step(
+def plan_world_presentation_step(
     *,
     state: GameplayState,
     players: Sequence[PlayerState],
@@ -436,3 +443,65 @@ def apply_world_presentation_step(
         commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])
     return commands
+
+
+def apply_presentation_plan(
+    *,
+    plan: PresentationStepCommands,
+    audio_sink: PresentationAudioSink | None,
+    apply_audio: bool = True,
+) -> None:
+    if not bool(apply_audio) or audio_sink is None:
+        return
+    if bool(plan.trigger_game_tune):
+        audio_sink.trigger_game_tune()
+    for key in plan.sfx_keys:
+        audio_sink.play_sfx_resolved(str(key))
+
+
+def apply_world_presentation_step(
+    *,
+    state: GameplayState,
+    players: Sequence[PlayerState],
+    fx_queue: FxQueue,
+    hits: list[ProjectileHit],
+    deaths: tuple[CreatureDeath, ...],
+    pickups: list[BonusPickupEvent],
+    event_sfx: list[str],
+    prev_audio: Sequence[tuple[int, bool, float]],
+    prev_perk_pending: int,
+    game_mode: GameMode,
+    demo_mode_active: bool,
+    perk_progression_enabled: bool,
+    rand: Callable[[], int],
+    rand_for: Callable[[str], Callable[[], int]] | None = None,
+    detail_preset: int,
+    gore_disabled: int,
+    game_tune_started: bool,
+    trigger_game_tune: bool | None = None,
+    hit_sfx: Sequence[str] | None = None,
+    death_sfx_preplanned: bool = False,
+) -> PresentationStepCommands:
+    # Backward-compatible alias: planning remains deterministic; application happens separately.
+    return plan_world_presentation_step(
+        state=state,
+        players=players,
+        fx_queue=fx_queue,
+        hits=hits,
+        deaths=deaths,
+        pickups=pickups,
+        event_sfx=event_sfx,
+        prev_audio=prev_audio,
+        prev_perk_pending=prev_perk_pending,
+        game_mode=game_mode,
+        demo_mode_active=demo_mode_active,
+        perk_progression_enabled=perk_progression_enabled,
+        rand=rand,
+        rand_for=rand_for,
+        detail_preset=detail_preset,
+        gore_disabled=gore_disabled,
+        game_tune_started=game_tune_started,
+        trigger_game_tune=trigger_game_tune,
+        hit_sfx=hit_sfx,
+        death_sfx_preplanned=death_sfx_preplanned,
+    )

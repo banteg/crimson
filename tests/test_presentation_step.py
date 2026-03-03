@@ -11,6 +11,8 @@ from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import (
+    PresentationStepCommands,
+    apply_presentation_plan,
     apply_world_presentation_step,
     plan_death_sfx_keys,
     plan_hit_sfx_keys,
@@ -420,3 +422,48 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     )
     assert commands.trigger_game_tune is True
     assert commands.sfx_keys == ["sfx_bullet_hit_01"]
+
+
+def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
+    class _Sink:
+        def __init__(self) -> None:
+            self.events: list[str] = []
+
+        def trigger_game_tune(self) -> str | None:
+            self.events.append("tune")
+            return None
+
+        def play_sfx_resolved(self, key: str | None) -> None:
+            self.events.append(str(key))
+
+    sink = _Sink()
+    apply_presentation_plan(
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["a", "b"]),
+        audio_sink=sink,
+        apply_audio=True,
+    )
+
+    assert sink.events == ["tune", "a", "b"]
+
+
+def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
+    class _Sink:
+        def __init__(self) -> None:
+            self.called = False
+
+        def trigger_game_tune(self) -> str | None:
+            self.called = True
+            return None
+
+        def play_sfx_resolved(self, key: str | None) -> None:
+            _ = key
+            self.called = True
+
+    sink = _Sink()
+    apply_presentation_plan(
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["x"]),
+        audio_sink=sink,
+        apply_audio=False,
+    )
+
+    assert sink.called is False

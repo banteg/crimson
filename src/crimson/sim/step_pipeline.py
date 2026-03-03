@@ -13,7 +13,7 @@ from ..perks.availability import perks_rebuild_available
 from ..weapon_runtime import weapon_refresh_available
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
-from .presentation_step import PresentationStepCommands, apply_world_presentation_step
+from .presentation_step import PresentationStepCommands, plan_world_presentation_step
 from .timing import FrameTiming
 from .world_state import WorldEvents, WorldState
 
@@ -165,7 +165,7 @@ def run_deterministic_step(
 
         return _draw
 
-    presentation = apply_world_presentation_step(
+    presentation = plan_world_presentation_step(
         state=state,
         players=world.players,
         fx_queue=fx_queue,

@@ -647,14 +647,14 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-6 Checklist: Presentation Plan/Apply Split
 
-- [ ] Extract deterministic `plan_world_presentation_step(...)` from current presentation path.
-- [ ] Extract side-effectful `apply_presentation_plan(...)` for audio/visual/output application.
-- [ ] Ensure planning runs inside tick flow in live, replay, and headless verify modes.
-- [ ] Ensure apply runs only in output/render phase and can be skipped in headless.
-- [ ] Add `tests/test_presentation_plan_granularity.py` for per-tick plan and in-frame ordering behavior.
-- [ ] Add/enable `tests/test_tick_runner_stall_debt.py` and determinism artifact assertions around hash/checkpoint parity.
-- [ ] Keep command hash/checkpoint parity with baseline golden replays.
-- [ ] Run full test gate suite.
+- [x] Extract deterministic `plan_world_presentation_step(...)` from current presentation path.
+- [x] Extract side-effectful `apply_presentation_plan(...)` for audio/visual/output application.
+- [x] Ensure planning runs inside tick flow in live, replay, and headless verify modes.
+- [x] Ensure apply runs only in output/render phase and can be skipped in headless.
+- [x] Add `tests/test_presentation_plan_granularity.py` for per-tick plan and in-frame ordering behavior.
+- [x] Add/enable `tests/test_tick_runner_stall_debt.py` and determinism artifact assertions around hash/checkpoint parity.
+- [x] Keep command hash/checkpoint parity with baseline golden replays.
+- [x] Run full test gate suite.
 
 ### PR-7 Checklist: Render Backend and Sink Migration
 

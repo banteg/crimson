@@ -29,6 +29,7 @@ from .render.world import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.presentation_step import (
     PresentationStepCommands,
+    apply_presentation_plan,
     queue_projectile_decals,
 )
 from .sim.state_types import PlayerState
@@ -551,11 +552,11 @@ class GameWorld(msgspec.Struct):
 
         self._game_tune_started = game_tune_started
 
-        if apply_audio and step.presentation.trigger_game_tune:
-            self.audio_router.trigger_game_tune()
-        if apply_audio:
-            for key in step.presentation.sfx_keys:
-                self.audio_router.play_sfx_resolved(key)
+        apply_presentation_plan(
+            plan=step.presentation,
+            audio_sink=self.audio_router,
+            apply_audio=bool(apply_audio),
+        )
 
         if update_camera:
             self.update_camera(step.dt_sim)
