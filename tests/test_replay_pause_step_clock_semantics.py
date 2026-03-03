@@ -19,10 +19,16 @@ def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value
     setattr(view, name, value)
 
 
+def _stub_world() -> SimpleNamespace:
+    return SimpleNamespace(
+        render_resources=SimpleNamespace(ground=None),
+    )
+
+
 def test_replay_paused_update_does_not_accumulate_clock_debt(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(8))
-    _set_private(view, "_world", SimpleNamespace(ground=None))
+    _set_private(view, "_world", _stub_world())
     view._finished = False
     view._paused = True
     view._dt_accum = 0.375
@@ -45,7 +51,7 @@ def test_replay_paused_update_does_not_accumulate_clock_debt(mocker, replay_play
 def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(8))
-    _set_private(view, "_world", SimpleNamespace(ground=None))
+    _set_private(view, "_world", _stub_world())
     view._finished = False
     view._paused = True
     view._step_once_pending = True
@@ -80,7 +86,7 @@ def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt
 def test_replay_speed_multiplier_scales_dt_only_while_unpaused(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(64))
-    _set_private(view, "_world", SimpleNamespace(ground=None))
+    _set_private(view, "_world", _stub_world())
     view._finished = False
     view._paused = False
     view._speed_index = 3  # 2.0x
@@ -108,7 +114,7 @@ def test_replay_speed_multiplier_scales_dt_only_while_unpaused(mocker, replay_pl
 def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(2))
-    _set_private(view, "_world", SimpleNamespace(ground=None))
+    _set_private(view, "_world", _stub_world())
     view._finished = False
     view._paused = True
     view._step_once_pending = True

@@ -45,7 +45,7 @@ from ..sim.driver.playback_driver import (
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..sim.input import PlayerInput
 from ..sim.input_providers import ReplayEndOfStream, ReplayInputProvider
-from ..sim.tick_runner import TickRunner, TickRunnerConfig
+from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -518,15 +518,10 @@ class ReplayPlaybackMode:
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
         self._quest = self._driver.quest_session
-        self._driver_session = _ReplayDriverSession(self)
-        self._tick_runner = TickRunner(
-            session=self._driver_session,
+        self._driver_session = None
+        self._tick_runner = self._driver.build_tick_runner(
+            defer_menu_open=(bool(self._defer_menu_open) if self._survival is not None else False),
             input_provider=self._replay_input_provider,
-            config=TickRunnerConfig(
-                tick_rate=int(self._tick_rate),
-                is_networked=False,
-                is_replay=True,
-            ),
         )
 
     def close(self) -> None:

@@ -776,6 +776,32 @@ class PlaybackDriver:
             ),
         )
 
+    def build_tick_runner(
+        self,
+        *,
+        defer_menu_open: bool | None = None,
+        input_provider: ReplayInputProvider | None = None,
+    ) -> TickRunner:
+        provider = input_provider
+        if provider is None:
+            provider = ReplayInputProvider(
+                player_count=max(0, int(self.replay.header.player_count)),
+                resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
+                tick_count=int(self.tick_limit),
+            )
+        return TickRunner(
+            session=_PlaybackRunnerSession(
+                self,
+                defer_menu_open=defer_menu_open,
+            ),
+            input_provider=provider,
+            config=TickRunnerConfig(
+                tick_rate=int(self.tick_rate),
+                is_networked=False,
+                is_replay=True,
+            ),
+        )
+
     def run_to_completion(
         self,
         *,
@@ -791,23 +817,7 @@ class PlaybackDriver:
         terminal_observer: Callable[[PlaybackTerminalOutcome], None] | None = None,
         defer_menu_open: bool | None = None,
     ) -> RunResult:
-        replay_input_provider = ReplayInputProvider(
-            player_count=max(0, int(self.replay.header.player_count)),
-            resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
-            tick_count=int(self.tick_limit),
-        )
-        tick_runner = TickRunner(
-            session=_PlaybackRunnerSession(
-                self,
-                defer_menu_open=defer_menu_open,
-            ),
-            input_provider=replay_input_provider,
-            config=TickRunnerConfig(
-                tick_rate=int(self.tick_rate),
-                is_networked=False,
-                is_replay=True,
-            ),
-        )
+        tick_runner = self.build_tick_runner(defer_menu_open=defer_menu_open)
         completed_ticks = 0
 
         def _on_tick_complete(_tick_index: int, tick: object) -> bool:
