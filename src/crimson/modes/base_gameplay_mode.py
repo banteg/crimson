@@ -1872,9 +1872,9 @@ class BaseGameplayMode:
         on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
         on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
         on_hash: Callable[[int, TickHashes], None] | None = None,
-    ) -> int:
+    ) -> None:
         if float(dt_frame) <= 0.0:
-            return 0
+            return
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng
@@ -1914,11 +1914,10 @@ class BaseGameplayMode:
             self._ticks_advanced_per_frame += 1
             return on_tick(tick_row, tick_index)
 
-        result = runner.advance_frame(
+        runner.advance_frame(
             float(dt_frame),
             on_tick_complete=_on_tick_complete,
         )
         self._sim_ms = float(profiler_hook.sim_ms)
         self._presentation_plan_ms = float(profiler_hook.presentation_plan_ms)
         self._presentation_apply_ms = float(profiler_hook.presentation_apply_ms)
-        return int(result.ticks_completed)
