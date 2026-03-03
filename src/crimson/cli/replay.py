@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Protocol, cast
+from typing import TYPE_CHECKING, Literal, Protocol
 
 import msgspec
 import typer
@@ -13,6 +13,17 @@ from tqdm import tqdm
 
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
+
+if TYPE_CHECKING:
+    from ..dbg.checkpoint_diff import ReplayDiffResult
+    from ..replay import Replay
+    from ..sim.driver.replay_benchmark import (
+        BenchmarkAggregate,
+        ReplayRenderTelemetryFrame,
+        ReplayRenderTelemetryTopTick,
+    )
+    from ..sim.driver.replay_render import ReplayRenderPhase
+    from ..sim.driver.setup import RunResult
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 1
 _REPLAY_INFO_SCHEMA_VERSION = 1
@@ -25,9 +36,13 @@ class _ProgressBarLike(Protocol):
 
     def update(self, value: int) -> None: ...
 
-    def set_postfix(self, *, refresh: bool = True, **kwargs: Any) -> None: ...
+    def set_postfix(self, *, refresh: bool = True, **kwargs: object) -> None: ...
 
     def close(self) -> None: ...
+
+
+ReplayRenderProgressCallback = Callable[["ReplayRenderPhase", int, int, int], None]
+ReplayRenderProgressClose = Callable[[], None]
 
 
 def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tuple[Path, ...]]:
@@ -60,19 +75,16 @@ def _replay_render_progress_callback(
     *,
     total_ticks: int,
     render_audio: bool,
-    tqdm_factory: Callable[..., object] = tqdm,
-) -> tuple[object | None, object | None]:
+    tqdm_factory: Callable[..., _ProgressBarLike] = tqdm,
+) -> tuple[ReplayRenderProgressCallback | None, ReplayRenderProgressClose | None]:
     if int(total_ticks) <= 0:
         return None, None
 
-    video_bar = cast(
-        _ProgressBarLike,
-        tqdm_factory(
-            total=int(total_ticks),
-            unit="tick",
-            desc="replay video",
-            leave=True,
-        ),
+    video_bar = tqdm_factory(
+        total=int(total_ticks),
+        unit="tick",
+        desc="replay video",
+        leave=True,
     )
     audio_bar: _ProgressBarLike | None = None
     video_last_tick = 0
@@ -82,14 +94,11 @@ def _replay_render_progress_callback(
         nonlocal audio_bar
         if audio_bar is not None:
             return audio_bar
-        audio_bar = cast(
-            _ProgressBarLike,
-            tqdm_factory(
-                total=int(total),
-                unit="tick",
-                desc="replay audio",
-                leave=True,
-            ),
+        audio_bar = tqdm_factory(
+            total=int(total),
+            unit="tick",
+            desc="replay audio",
+            leave=True,
         )
         return audio_bar
 
@@ -131,9 +140,8 @@ def _replay_render_progress_callback(
     return callback, close
 
 
-def _render_checkpoint_diff_failure(diff: object) -> None:
-    diff_obj = cast("Any", diff)
-    failure = diff_obj.failure
+def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
+    failure = diff.failure
     assert failure is not None
     exp = failure.expected
     act = failure.actual
@@ -390,8 +398,8 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     render_telemetry: _ReplayRenderTelemetryPayload | None
 
 
-def _run_result_payload(run_result: object) -> _RunResultPayload:
-    result = cast("Any", run_result)
+def _run_result_payload(run_result: RunResult) -> _RunResultPayload:
+    result = run_result
     return _RunResultPayload(
         game_mode_id=GameMode(int(result.game_mode_id)),
         tick_rate=int(result.tick_rate),
@@ -406,8 +414,8 @@ def _run_result_payload(run_result: object) -> _RunResultPayload:
     )
 
 
-def _benchmark_aggregate_payload(aggregate: object) -> _BenchmarkAggregatePayload:
-    entry = cast("Any", aggregate)
+def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> _BenchmarkAggregatePayload:
+    entry = aggregate
     return _BenchmarkAggregatePayload(
         min=float(entry.min),
         p50=float(entry.p50),
@@ -418,8 +426,8 @@ def _benchmark_aggregate_payload(aggregate: object) -> _BenchmarkAggregatePayloa
     )
 
 
-def _render_telemetry_top_tick_payload(entry: object) -> _ReplayRenderTelemetryTopTickPayload:
-    item = cast("Any", entry)
+def _render_telemetry_top_tick_payload(entry: ReplayRenderTelemetryTopTick) -> _ReplayRenderTelemetryTopTickPayload:
+    item = entry
     return _ReplayRenderTelemetryTopTickPayload(
         tick_index=int(item.tick_index),
         frame_index=int(item.frame_index),
@@ -427,8 +435,8 @@ def _render_telemetry_top_tick_payload(entry: object) -> _ReplayRenderTelemetryT
     )
 
 
-def _render_telemetry_frame_payload(entry: object) -> _ReplayRenderTelemetryFramePayload:
-    item = cast("Any", entry)
+def _render_telemetry_frame_payload(entry: ReplayRenderTelemetryFrame) -> _ReplayRenderTelemetryFramePayload:
+    item = entry
     return _ReplayRenderTelemetryFramePayload(
         frame_index=int(item.frame_index),
         tick_index_before_update=int(item.tick_index_before_update),
@@ -443,8 +451,8 @@ def _render_telemetry_frame_payload(entry: object) -> _ReplayRenderTelemetryFram
     )
 
 
-def _fmt_metric_agg(name: str, aggregate: object, *, digits: int) -> str:
-    entry = cast("Any", aggregate)
+def _fmt_metric_agg(name: str, aggregate: BenchmarkAggregate, *, digits: int) -> str:
+    entry = aggregate
     return (
         f"{name} "
         f"min={float(entry.min):.{digits}f} "
@@ -538,10 +546,9 @@ def _replay_list_mode_style(game_mode_id: GameMode | None) -> str:
 
 def _replay_list_score_kills(
     *,
-    replay: object,
+    replay: Replay,
 ) -> tuple[str, str]:
-    replay_obj = cast("Any", replay)
-    claimed_stats = replay_obj.header.claimed_stats
+    claimed_stats = replay.header.claimed_stats
     return str(int(claimed_stats.score_xp)), str(int(claimed_stats.kills))
 
 
@@ -549,7 +556,7 @@ def _build_replay_list_row(
     replay_path: Path,
     *,
     replays_dir: Path,
-    load_replay_fn: Callable[[bytes], object],
+    load_replay_fn: Callable[[bytes], Replay],
     current_version: str,
 ) -> tuple[_ReplayListRow, str | None]:
     rel = str(replay_path.relative_to(replays_dir))
@@ -578,7 +585,7 @@ def _build_replay_list_row(
         )
 
     try:
-        replay = cast("Any", load_replay_fn(replay_path.read_bytes()))
+        replay = load_replay_fn(replay_path.read_bytes())
     except (OSError, ValueError) as exc:
         return (
             _ReplayListRow(
@@ -1464,7 +1471,7 @@ def cmd_replay_render(
     output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
 
     replay_bytes = Path(replay_path).read_bytes()
-    progress_close: object | None = None
+    progress_close: ReplayRenderProgressClose | None = None
     try:
         replay = load_replay(replay_bytes)
         total_ticks = int(len(replay.inputs))
@@ -1491,14 +1498,14 @@ def cmd_replay_render(
             pixel_format=str(pixel_format),
             overwrite=bool(overwrite),
             mute_audio=not bool(audio),
-            progress=cast("Any", progress_callback),
+            progress=progress_callback,
         )
     except (ReplayCodecError, ReplayGameVersionError, ReplayRenderError, ReplayRunnerError) as exc:
         typer.echo(f"replay render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     finally:
         if progress_close is not None:
-            cast("Any", progress_close)()
+            progress_close()
 
     message = (
         f"ok: output={render.output_path} "

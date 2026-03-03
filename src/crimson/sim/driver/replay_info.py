@@ -7,7 +7,7 @@ import msgspec
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import perk_display_name
-from ...replay import PerkMenuOpenEvent, Replay
+from ...replay import PerkMenuOpenEvent, Replay, ReplayEvent
 from ...weapons import WeaponId, weapon_display_name
 from ..state_types import BonusPickupEvent, PlayerState
 from .playback_driver import (
@@ -111,7 +111,7 @@ def _append_event(
 
 def _append_extra_replay_events(
     *,
-    tick_events: list[object],
+    tick_events: list[ReplayEvent],
     tick_index: int,
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],
@@ -384,9 +384,9 @@ def _run_replay_info(
         tick_index: int,
         world,
         dt_tick: float,
-        tick_events: list[object],
-        pre_step_events: list[object],
-        post_step_events: list[object],
+        tick_events: list[ReplayEvent],
+        pre_step_events: list[ReplayEvent],
+        post_step_events: list[ReplayEvent],
     ) -> None:
         _ = tick_index, dt_tick, tick_events, pre_step_events, post_step_events
         nonlocal before_snapshots

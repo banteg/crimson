@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from crimson.game_modes import GameMode
 from crimson.perks.availability import perks_rebuild_available
-from crimson.replay import PerkMenuOpenEvent, PerkPickEvent
+from crimson.replay import PerkMenuOpenEvent, PerkPickEvent, ReplayEvent
 from crimson.sim.driver.replay_events import apply_replay_tick_events, partition_tick_events
 from crimson.sim.driver.setup import ReplayRunnerError, reset_players
 from crimson.sim.world_state import WorldState
@@ -130,7 +132,7 @@ def test_apply_replay_tick_events_rejects_unknown_event_type_in_strict_mode() ->
     world = _build_world()
     with pytest.raises(ReplayRunnerError, match="unsupported replay event type"):
         apply_replay_tick_events(
-            [object()],
+            [cast("ReplayEvent", object())],
             tick_index=0,
             dt=1.0 / 60.0,
             world=world,

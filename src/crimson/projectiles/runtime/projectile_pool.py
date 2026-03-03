@@ -48,8 +48,8 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     apply_player_damage: Callable[[int, float], None]
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
-    on_hit: Callable[[ProjectileHit], object | None] | None = None
-    on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None
+    on_hit: Callable[[ProjectileHit], object] | None = None
+    on_hit_post: Callable[[ProjectileHit, object], None] | None = None
 
 
 _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
@@ -416,9 +416,7 @@ class ProjectilePool:
                         target=target,
                     )
                     hits.append(hit)
-                    hit_ctx: object | None = None
-                    if on_hit is not None:
-                        hit_ctx = on_hit(hit)
+                    hit_ctx = on_hit(hit) if on_hit is not None else None
 
                     if proj.life_timer != 0.25 and type_id not in (
                         ProjectileTemplateId.FIRE_BULLETS,
@@ -516,16 +514,16 @@ class ProjectilePool:
                         ProjectileTemplateId.GAUSS_GUN,
                         ProjectileTemplateId.BLADE_GUN,
                     ):
-                        if on_hit_post is not None:
+                        if on_hit_post is not None and hit_ctx is not None:
                             on_hit_post(hit, hit_ctx)
                         break
 
                     if proj.damage_pool <= 0.0:
-                        if on_hit_post is not None:
+                        if on_hit_post is not None and hit_ctx is not None:
                             on_hit_post(hit, hit_ctx)
                         break
 
-                    if on_hit_post is not None:
+                    if on_hit_post is not None and hit_ctx is not None:
                         on_hit_post(hit, hit_ctx)
 
                 step += 3

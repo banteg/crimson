@@ -147,8 +147,8 @@ def make_projectile_update_options(
     runtime_state: GameplayState | None = None,
     players: Sequence[PlayerState] | None = None,
     apply_player_damage: Callable[[int, float], None] | None = None,
-    on_hit: Callable[[ProjectileHit], object | None] | None = None,
-    on_hit_post: Callable[[ProjectileHit, object | None], None] | None = None,
+    on_hit: Callable[[ProjectileHit], object] | None = None,
+    on_hit_post: Callable[[ProjectileHit, object], None] | None = None,
 ) -> ProjectileUpdateOptions:
     state = GameplayState() if runtime_state is None else runtime_state
     player_seq: Sequence[PlayerState] = () if players is None else players
