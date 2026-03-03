@@ -127,11 +127,12 @@ class LanMatchCallbacks:
 
 
 class _LanRuntimeInputProvider(NetworkInputProvider):
-    def __init__(self, *, player_count: int) -> None:
+    def __init__(self, *, player_count: int, tick_rate: int) -> None:
         self._runtime: LanRuntime | None = None
         self._samples_by_runner_tick: dict[int, _LanFrameSample] = {}
         self._before_pop: Callable[[], bool] | None = None
         self._pop_blocked = False
+        self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
         super().__init__(player_count=player_count, resolve_tick_input=self._resolve_tick_input)
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
@@ -146,6 +147,16 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
     @property
     def pop_blocked(self) -> bool:
         return bool(self._pop_blocked)
+
+    @property
+    def capture_tick_dt(self) -> float:
+        return self._capture_clock.dt_tick
+
+    def advance_capture_ticks(self, dt: float) -> int:
+        return self._capture_clock.advance(dt)
+
+    def reset_capture_clock(self) -> None:
+        self._capture_clock.reset()
 
     def begin_frame(self) -> None:
         super().begin_frame()
@@ -406,8 +417,10 @@ class BaseGameplayMode:
         self._sim_ms = 0.0
         self._presentation_plan_ms = 0.0
         self._presentation_apply_ms = 0.0
-        self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
-        self._lan_capture_clock = FixedStepClock(tick_rate=int(self._deterministic_tick_rate()))
+        self._network_input_provider = _LanRuntimeInputProvider(
+            player_count=max(0, len(self.world.players)),
+            tick_rate=int(self._deterministic_tick_rate()),
+        )
         self._gameplay_input_provider: _GameplayFrameInputProvider | None = None
         self._gameplay_tick_runner: TickRunner | None = None
         self._gameplay_tick_runner_session: DeterministicSessionLike | None = None
@@ -1223,7 +1236,10 @@ class BaseGameplayMode:
             terrain_texture_scale=float(ground.texture_scale) if ground is not None else 0.0,
         )
         self._local_input.reset(players=self.world.players)
-        self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
+        self._network_input_provider = _LanRuntimeInputProvider(
+            player_count=max(0, len(self.world.players)),
+            tick_rate=int(self._deterministic_tick_rate()),
+        )
         self._reset_lan_capture_clock()
         self._reset_tick_runner_state()
         self._reset_replay_capture_state(clear_recorder=False)
@@ -1415,13 +1431,13 @@ class BaseGameplayMode:
         self._replay_checkpoints_last_tick = None
 
     def _lan_capture_tick_dt(self) -> float:
-        return float(self._lan_capture_clock.dt_tick)
+        return float(self._network_input_provider.capture_tick_dt)
 
     def _advance_lan_capture_ticks(self, dt: float) -> int:
-        return int(self._lan_capture_clock.advance(float(dt)))
+        return int(self._network_input_provider.advance_capture_ticks(float(dt)))
 
     def _reset_lan_capture_clock(self) -> None:
-        self._lan_capture_clock.reset()
+        self._network_input_provider.reset_capture_clock()
 
     def _ensure_gameplay_tick_runner(
         self,
