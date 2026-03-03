@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import inspect
+
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.modes.quest_mode import QuestMode
+from crimson.modes.rush_mode import RushMode
+from crimson.modes.survival_mode import SurvivalMode
 
 
 class _DummyRuntime:
@@ -78,3 +83,14 @@ def test_replay_headless_context_without_runtime_pumps_zero(replay_playback_view
     view._tick_network_runtime()
 
     assert getattr(view, "_runtime_updates_per_frame") == 0
+
+
+def test_gameplay_mode_lan_update_paths_do_not_pump_runtime_directly() -> None:
+    lan_methods = (
+        SurvivalMode._update_lan_match,
+        RushMode._update_lan_match,
+        QuestMode._update_lan_match,
+    )
+    for method in lan_methods:
+        source = inspect.getsource(method)
+        assert "runtime.update(" not in source

@@ -609,15 +609,15 @@ Use this as the implementation punch-list. Do not start the next PR until all it
 
 ### PR-2 Checklist: Single Network Owner
 
-- [ ] Keep `runtime.update()` in `GameLoopView._tick_network_runtime()` as the only authoritative pump for interactive gameplay contexts.
-- [ ] Enforce replay/headless pump rule: replay frame driver pumps once per frame when runtime exists, otherwise zero pumps.
-- [ ] Remove direct `runtime.update()` calls from:
-- [ ] `src/crimson/modes/survival_mode.py`
-- [ ] `src/crimson/modes/rush_mode.py`
-- [ ] `src/crimson/modes/quest_mode.py`
-- [ ] Add regression assertion that mode update paths do not pump runtime.
-- [ ] Validate lockstep and rollback host/client flows with tests.
-- [ ] Run full test gate suite.
+- [x] Keep `runtime.update()` in `GameLoopView._tick_network_runtime()` as the only authoritative pump for interactive gameplay contexts.
+- [x] Enforce replay/headless pump rule: replay frame driver pumps once per frame when runtime exists, otherwise zero pumps.
+- [x] Remove direct `runtime.update()` calls from:
+- [x] `src/crimson/modes/survival_mode.py`
+- [x] `src/crimson/modes/rush_mode.py`
+- [x] `src/crimson/modes/quest_mode.py`
+- [x] Add regression assertion that mode update paths do not pump runtime.
+- [x] Validate lockstep and rollback host/client flows with tests.
+- [x] Run full test gate suite.
 
 ### PR-3 Checklist: TickRunner Extraction
 

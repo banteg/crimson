@@ -820,7 +820,6 @@ class QuestMode(BaseGameplayMode):
         if session is None:
             return
 
-        runtime.update()
         role = str(self._lan_role)
         self._consume_net_runtime_recovery(mode_name="quests")
         if str(runtime.error or ""):
@@ -1033,10 +1032,6 @@ class QuestMode(BaseGameplayMode):
                 if 0 <= local_input_index < len(inputs):
                     local_input = inputs[local_input_index]
                 runtime.queue_local_input(pack_player_input(local_input))
-        # Pump networking again after queuing local inputs so the host can emit frames
-        # in the same render frame (reduces perceived host-side input latency).
-        runtime.update()
-
         _consume_lan_frames()
 
     def draw(self) -> None:
