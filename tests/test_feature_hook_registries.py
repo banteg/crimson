@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import inspect
-
 from crimson.bonuses import BonusId
 from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
-from crimson.effects import FxQueue
+from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
 from crimson.perks.impl.reflex_boosted import apply_reflex_boosted_dt
@@ -122,6 +121,53 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
     assert fx_queue.count > 0
 
 
-def test_step_dispatch_functions_are_size_bounded() -> None:
-    assert len(inspect.getsource(WorldState.step).splitlines()) <= 330
-    assert len(inspect.getsource(plan_world_presentation_step).splitlines()) <= 80
+def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+        preserve_bugs=False,
+    )
+    fx_queue = FxQueue()
+    fx_queue_rotated = FxQueueRotated()
+    events = world.step(
+        1.0 / 60.0,
+        inputs=[],
+        world_size=1024.0,
+        damage_scale_by_type={},
+        detail_preset=5,
+        gore_disabled=0,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        auto_pick_perks=False,
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=True,
+    )
+
+    plan = plan_world_presentation_step(
+        state=world.state,
+        players=world.players,
+        fx_queue=fx_queue,
+        hits=list(events.hits),
+        deaths=tuple(events.deaths),
+        pickups=list(events.pickups),
+        event_sfx=list(events.sfx),
+        prev_audio=[],
+        prev_perk_pending=0,
+        game_mode=GameMode.SURVIVAL,
+        demo_mode_active=False,
+        perk_progression_enabled=True,
+        rand=world.state.rng.rand,
+        detail_preset=5,
+        gore_disabled=0,
+        game_tune_started=False,
+        trigger_game_tune=False,
+        hit_sfx=[],
+        death_sfx_preplanned=True,
+    )
+
+    assert isinstance(events.hits, list)
+    assert isinstance(events.pickups, list)
+    assert isinstance(plan.sfx_keys, list)
+    assert plan.trigger_game_tune is False

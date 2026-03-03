@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from typing import Any, cast
 
 import pytest
@@ -231,7 +230,39 @@ def test_playback_driver_run_tick_requires_player_inputs() -> None:
 
 
 def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> None:
-    source = inspect.getsource(PlaybackDriver.run_to_completion)
-    assert "TickRunner(" in source
-    assert "ReplayInputProvider(" in source
-    assert "for tick_index in range(" not in source
+    import crimson.sim.driver.playback_driver as playback_driver_module
+
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    captured: dict[str, object] = {}
+
+    class _StopRun(RuntimeError):
+        pass
+
+    def _capture_provider(*, player_count: int, resolve_tick_input, tick_count: int):
+        captured["provider_player_count"] = int(player_count)
+        captured["provider_tick_count"] = int(tick_count)
+        captured["provider_resolver"] = resolve_tick_input
+        return object()
+
+    def _capture_runner(*args, **kwargs):
+        _ = args
+        captured["runner_input_provider"] = kwargs.get("input_provider")
+        captured["runner_config"] = kwargs.get("config")
+        raise _StopRun("stop after runner construction")
+
+    from unittest.mock import patch
+
+    with (
+        patch.object(playback_driver_module, "ReplayInputProvider", side_effect=_capture_provider),
+        patch.object(playback_driver_module, "TickRunner", side_effect=_capture_runner),
+        pytest.raises(_StopRun, match="runner construction"),
+    ):
+        driver.run_to_completion()
+
+    assert captured["provider_player_count"] == int(replay.header.player_count)
+    assert captured["provider_tick_count"] == int(driver.tick_limit)
+    assert callable(cast(Any, captured["provider_resolver"]))
+    assert captured["runner_input_provider"] is not None
+    assert captured["runner_config"] is not None

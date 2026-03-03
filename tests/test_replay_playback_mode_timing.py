@@ -20,10 +20,6 @@ def _replay_with_ticks(tick_count: int) -> Replay:
     )
 
 
-def _set_private(view, name: str, value: object) -> None:
-    setattr(view, name, value)
-
-
 def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
     # Regression test: a missing `dt_accum -= dt` inside the playback loop
     # can cause the entire replay to run in a single frame (or an infinite loop).
@@ -42,7 +38,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
         if calls > 64:
             raise RuntimeError("playback tick loop did not consume accumulated dt")
 
-    _set_private(view, "_tick_one", fake_tick_one)
+    view._tick_one = fake_tick_one
     view._finished = False
     view._paused = False
     view._tick_rate = 60
@@ -58,18 +54,14 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
 def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> None:
     view, _console = replay_playback_view
 
-    _set_private(view, "_replay", _replay_with_ticks(2))
-    _set_private(
-        view,
-        "_world",
-        SimpleNamespace(
-            players=[SimpleNamespace(health=0.0)],
-        ),
+    view._replay = _replay_with_ticks(2)
+    view._world = SimpleNamespace(
+        players=[SimpleNamespace(health=0.0)],
     )
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
-    _set_private(view, "_on_runner_tick_complete", lambda _tick_index, _tick: False)
+    view._on_runner_tick_complete = lambda _tick_index, _tick: False
 
     @dataclass
     class _FakeRunner:
@@ -80,7 +72,7 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
             self.next_tick_index += 1
             return object()
 
-    _set_private(view, "_tick_runner", _FakeRunner())
+    view._tick_runner = _FakeRunner()
 
     view._tick_one()
 
@@ -105,9 +97,9 @@ def test_replay_driver_session_forwards_provider_inputs_to_playback_driver(repla
             captured["player_inputs"] = list(player_inputs or [])
             return object()
 
-    _set_private(view, "_driver", _FakeDriver())
-    _set_private(view, "_survival", object())
-    _set_private(view, "_defer_menu_open", True)
+    view._driver = _FakeDriver()
+    view._survival = object()
+    view._defer_menu_open = True
     session = replay_playback_mode._ReplayDriverSession(view)
     inputs = [PlayerInput(fire_down=True)]
 
@@ -120,11 +112,7 @@ def test_replay_driver_session_forwards_provider_inputs_to_playback_driver(repla
 
 def test_replay_driver_tick_fails_fast_when_provider_inputs_missing(replay_playback_view) -> None:
     view, _console = replay_playback_view
-    _set_private(
-        view,
-        "_driver",
-        SimpleNamespace(run_tick=lambda *_args, **_kwargs: object()),
-    )
+    view._driver = SimpleNamespace(run_tick=lambda *_args, **_kwargs: object())
 
     with pytest.raises(RuntimeError, match="provided no inputs"):
         view._run_driver_tick(0, inputs=None)
