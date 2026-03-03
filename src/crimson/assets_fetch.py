@@ -6,6 +6,7 @@ import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Literal, TypeAlias
 
 import msgspec
 
@@ -15,10 +16,18 @@ ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93"
 DEFAULT_PAQ_FILES = ("crimson.paq", "music.paq", "sfx.paq")
 
 
-class DownloadResult(msgspec.Struct, frozen=True):
+class _DownloadOk(msgspec.Struct, frozen=True):
     name: str
-    ok: bool
-    error: str | None = None
+    ok: Literal[True] = True
+
+
+class _DownloadFailed(msgspec.Struct, frozen=True):
+    name: str
+    error: str
+    ok: Literal[False] = False
+
+
+DownloadResult: TypeAlias = _DownloadOk | _DownloadFailed
 
 
 def _download_file(url: str, dest: Path) -> None:
@@ -64,10 +73,10 @@ def download_missing_paqs(
         try:
             _download_file(url, dest)
         except (OSError, RuntimeError, urllib.error.URLError) as exc:
-            results.append(DownloadResult(name=name, ok=False, error=str(exc)))
+            results.append(_DownloadFailed(name=name, error=str(exc)))
             console.log.log(f"assets: failed to download {name}: {exc}")
             continue
-        results.append(DownloadResult(name=name, ok=True))
+        results.append(_DownloadOk(name=name))
         console.log.log(f"assets: downloaded {name}")
     console.log.flush()
     return tuple(results)
