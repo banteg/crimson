@@ -176,24 +176,12 @@ class SurvivalMode(BaseGameplayMode):
         return True
 
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
-        if str(command.name) != "perk_pick":
-            return
-        raw_choice_index = command.payload.get("choice_index")
-        if not isinstance(raw_choice_index, int):
-            raise TypeError("perk_pick command requires integer payload['choice_index']")
-        perk_ctx = self._perk_menu_context()
-        picked = perk_selection_pick(
-            perk_ctx.state,
-            perk_ctx.players,
-            perk_ctx.perk_state,
-            int(raw_choice_index),
+        self._apply_perk_pick_input_command(
+            command,
+            dt_tick=float(dt_tick),
             game_mode=GameMode.SURVIVAL,
-            player_count=int(perk_ctx.player_count),
-            dt=float(dt_tick),
-            creatures=perk_ctx.creatures,
+            perk_context=self._perk_menu_context(),
         )
-        if picked is not None and self.world.audio_router is not None:
-            self.world.audio_router.play_sfx("sfx_ui_bonus")
 
     def _record_replay_checkpoint(
         self,

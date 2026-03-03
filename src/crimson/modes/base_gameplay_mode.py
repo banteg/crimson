@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, cast
+from typing import TYPE_CHECKING, Any, Literal, Protocol, cast
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -36,6 +36,7 @@ from ..net.rollback_runtime import RollbackRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
+from ..perks.selection import perk_selection_pick
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..replay.checkpoints import build_checkpoint
@@ -132,6 +133,7 @@ class DeterministicSessionLike(Protocol):
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
     ) -> DeterministicSessionStepTick: ...
+
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
@@ -460,6 +462,34 @@ class BaseGameplayMode:
 
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
         _ = command, dt_tick
+
+    def _apply_perk_pick_input_command(
+        self,
+        command: InputCommand,
+        *,
+        dt_tick: float,
+        game_mode: GameMode,
+        perk_context: object,
+    ) -> bool:
+        if str(command.name) != "perk_pick":
+            return False
+        raw_choice_index = command.payload.get("choice_index")
+        if not isinstance(raw_choice_index, int):
+            raise TypeError("perk_pick command requires integer payload['choice_index']")
+        ctx = cast(Any, perk_context)
+        picked = perk_selection_pick(
+            ctx.state,
+            ctx.players,
+            ctx.perk_state,
+            int(raw_choice_index),
+            game_mode=game_mode,
+            player_count=int(ctx.player_count),
+            dt=float(dt_tick),
+            creatures=ctx.creatures,
+        )
+        if picked is not None and self.world.audio_router is not None:
+            self.world.audio_router.play_sfx("sfx_ui_bonus")
+        return True
 
     def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
         pending = list(self._pending_input_commands)
