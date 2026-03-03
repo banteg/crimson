@@ -156,6 +156,9 @@ class _BaseModeGameView:
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._mode.set_runtime_updates_per_frame(int(value))
 
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+        return self._mode.frame_telemetry()
+
     def take_action(self) -> str | None:
         action = self._action
         self._action = None

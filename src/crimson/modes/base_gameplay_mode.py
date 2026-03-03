@@ -396,6 +396,16 @@ class BaseGameplayMode:
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._runtime_updates_per_frame = max(0, int(value))
 
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+        return (
+            int(self._runtime_updates_per_frame),
+            int(self._input_stall_count),
+            int(self._ticks_advanced_per_frame),
+            float(self._sim_ms),
+            float(self._presentation_plan_ms),
+            float(self._presentation_apply_ms),
+        )
+
     def _reset_frame_telemetry(self) -> None:
         self._input_stall_count = 0
         self._ticks_advanced_per_frame = 0
