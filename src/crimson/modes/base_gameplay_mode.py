@@ -4,7 +4,7 @@ import random
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Literal, Protocol
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -22,7 +22,7 @@ from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
-from ..net.lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick, TickFrame
+from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
     ReplayStateSnapshotV2,
@@ -36,7 +36,6 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..replay.types import PackedPlayerInput
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSessionTick
 from ..sim.timing import FrameTiming
@@ -52,36 +51,7 @@ if TYPE_CHECKING:
     from ..replay import ReplayRecorder
     from ..sim.state_types import PlayerState
 
-@runtime_checkable
-class LanRuntimeLike(Protocol):
-    error: str
-    local_slot_index: int
-
-    def update(self) -> None: ...
-    def queue_local_input(self, packed_input: PackedPlayerInput, *, now_ms: int | None = None) -> None: ...
-    def host_remote_inputs_ready(self) -> bool: ...
-    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None: ...
-    def pop_tick_frame(self) -> TickFrame | None: ...
-    def note_desync(self, *, kind: str, tick_index: int, expected: str, actual: str) -> None: ...
-    def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None: ...
-    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None: ...
-    def broadcast_perk_menu_close(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        now_ms: int | None = None,
-    ) -> None: ...
-    def broadcast_perk_pick(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        choice_index: int,
-        now_ms: int | None = None,
-    ) -> None: ...
-    def debug_overlay_lines(self) -> list[str]: ...
-
+LanRuntime = LockstepRuntime | RollbackRuntime
 
 class DeterministicSessionLike(Protocol):
     detail_preset: int
@@ -177,7 +147,8 @@ class BaseGameplayMode:
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
-        self._lan_runtime: LanRuntimeLike | None = None
+        self._lan_runtime: LanRuntime | None = None
+        self._rollback_runtime: RollbackRuntime | None = None
         self._lan_local_slot_index = 0
         self._lan_seed_override: int | None = None
         self._lan_start_tick = 0
@@ -205,9 +176,10 @@ class BaseGameplayMode:
         # the underlying `GameWorld.state`, so `_bind_world()` also re-applies it).
         self.state.status = self._status_sim
 
-    def bind_lan_runtime(self, runtime: object | None) -> None:
-        self._lan_runtime = runtime if isinstance(runtime, LanRuntimeLike) else None
-        slot_index = int(getattr(runtime, "local_slot_index", 0))
+    def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
+        self._lan_runtime = runtime
+        self._rollback_runtime = runtime if isinstance(runtime, RollbackRuntime) else None
+        slot_index = 0 if runtime is None else int(runtime.local_slot_index)
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
     def set_lan_match_start(
@@ -637,8 +609,8 @@ class BaseGameplayMode:
         *,
         snapshot: ModeStateSnapshotV2,
     ) -> None:
-        runtime = self._lan_runtime
-        if runtime is None or not isinstance(runtime, RollbackRuntime):
+        runtime = self._rollback_runtime
+        if runtime is None:
             return
         tick = max(0, int(snapshot.tick_index))
         if (tick % 4) != 0:
@@ -647,8 +619,8 @@ class BaseGameplayMode:
         runtime.store_local_snapshot(int(tick), payload)
 
     def _consume_net_runtime_recovery(self, *, mode_name: Literal["survival", "rush", "quests"]) -> None:
-        runtime = self._lan_runtime
-        if runtime is None or not isinstance(runtime, RollbackRuntime):
+        runtime = self._rollback_runtime
+        if runtime is None:
             return
         rollback_from = runtime.pop_rollback_from()
         if rollback_from is not None:

@@ -9,6 +9,8 @@ from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.net.relay_protocol import RoomStart
+from crimson.net.rollback_runtime import RollbackRuntime, RollbackRuntimeConfig
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import QuestDeterministicSession
 from crimson.sim.timing import FrameTiming
@@ -228,7 +230,17 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
     register_core_cvars(console, width=1024, height=768)
     ctx = ViewContext(assets_dir=assets_dir)
     mode = RushMode(ctx, config=cfg, console=console)
-    mode.bind_lan_runtime(SimpleNamespace(local_slot_index=2))
+    runtime = RollbackRuntime(
+        RollbackRuntimeConfig(
+            role="join",
+            mode_id=1,
+            player_count=2,
+            relay_host="127.0.0.1",
+            relay_port=32000,
+        ),
+    )
+    runtime.match_start_event = RoomStart(slot_index=2)
+    mode.bind_lan_runtime(runtime)
 
     mode.set_lan_runtime(
         enabled=True,
