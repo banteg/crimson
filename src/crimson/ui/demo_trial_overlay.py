@@ -8,7 +8,11 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from ..demo_trial import DemoTrialOverlayInfo
+from ..demo_trial import (
+    DemoTrialOverlayInfo,
+    DemoTrialOverlayQuestGraceLeft,
+    DemoTrialOverlayQuestTierLimit,
+)
 from .perk_menu import (
     PerkMenuAssets,
     UiButtonState,
@@ -162,7 +166,7 @@ class DemoTrialOverlayUi:
             rl.draw_text(header, int(panel_pos.x + 28.0), int(panel_pos.y + 9.0), 16, rl.Color(220, 220, 220, 255))
 
         body = ""
-        if info.kind == "quest_tier_limit":
+        if isinstance(info, DemoTrialOverlayQuestTierLimit):
             body = (
                 "You have completed all Quest mode levels.\n"
                 f"However, you still have {info.remaining_label} time left.\n\n"
@@ -171,7 +175,7 @@ class DemoTrialOverlayUi:
                 "Buy the full version to gain unrestricted game modes and be able to post your high scores online.\n"
                 "Buy it now. You'll have a great time."
             )
-        elif info.kind == "quest_grace_left":
+        elif isinstance(info, DemoTrialOverlayQuestGraceLeft):
             body = (
                 "You have used up your play time in the Demo version.\n"
                 f"You have {info.remaining_label} time left to play Quest mode.\n\n"

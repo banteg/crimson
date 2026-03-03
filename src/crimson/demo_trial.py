@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal, TypeAlias
+
 import msgspec
 
 from .game_modes import GameMode
@@ -18,11 +20,53 @@ def format_demo_trial_time(ms: int) -> str:
     return f"{minutes}:{seconds:02d}.{centiseconds:02d}"
 
 
-class DemoTrialOverlayInfo(msgspec.Struct, frozen=True):
-    visible: bool
-    kind: str  # "none" | "quest_tier_limit" | "quest_grace_left" | "time_up"
+class DemoTrialOverlayHidden(msgspec.Struct, frozen=True):
     remaining_ms: int
     remaining_label: str
+    visible: Literal[False] = False
+    kind: Literal["none"] = "none"
+
+
+class DemoTrialOverlayQuestTierLimit(msgspec.Struct, frozen=True):
+    remaining_ms: int
+    remaining_label: str
+    visible: Literal[True] = True
+    kind: Literal["quest_tier_limit"] = "quest_tier_limit"
+
+
+class DemoTrialOverlayQuestGraceLeft(msgspec.Struct, frozen=True):
+    remaining_ms: int
+    remaining_label: str
+
+    visible: Literal[True] = True
+    kind: Literal["quest_grace_left"] = "quest_grace_left"
+
+
+class DemoTrialOverlayTimeUp(msgspec.Struct, frozen=True):
+    remaining_label: str
+    visible: Literal[True] = True
+    kind: Literal["time_up"] = "time_up"
+    remaining_ms: Literal[0] = 0
+
+
+DemoTrialOverlayInfo: TypeAlias = (
+    DemoTrialOverlayHidden
+    | DemoTrialOverlayQuestTierLimit
+    | DemoTrialOverlayQuestGraceLeft
+    | DemoTrialOverlayTimeUp
+)
+
+
+def _overlay_hidden(remaining_ms: int) -> DemoTrialOverlayHidden:
+    remaining = max(0, int(remaining_ms))
+    return DemoTrialOverlayHidden(
+        remaining_ms=remaining,
+        remaining_label=format_demo_trial_time(remaining),
+    )
+
+
+def _overlay_time_up() -> DemoTrialOverlayTimeUp:
+    return DemoTrialOverlayTimeUp(remaining_label=format_demo_trial_time(0))
 
 
 def tick_demo_trial_timers(
@@ -97,11 +141,11 @@ def demo_trial_overlay_info(
     """
 
     if not demo_build:
-        return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+        return _overlay_hidden(0)
 
     match game_mode_id:
         case GameMode.TUTORIAL:  # tutorial
-            return DemoTrialOverlayInfo(False, "none", 0, format_demo_trial_time(0))
+            return _overlay_hidden(0)
         case _:
             pass
 
@@ -115,36 +159,30 @@ def demo_trial_overlay_info(
 
     if grace_ms > 0:
         if grace_remaining_ms <= 0:
-            return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+            return _overlay_time_up()
         if tier_locked:
-            return DemoTrialOverlayInfo(
-                True,
-                "quest_tier_limit",
+            return DemoTrialOverlayQuestTierLimit(
                 int(grace_remaining_ms),
                 format_demo_trial_time(grace_remaining_ms),
             )
         # During the quest-only grace period, the classic demo blocks other modes
         # and points the player back to Quests.
         if game_mode_id != GameMode.QUESTS:
-            return DemoTrialOverlayInfo(
-                True,
-                "quest_grace_left",
+            return DemoTrialOverlayQuestGraceLeft(
                 int(grace_remaining_ms),
                 format_demo_trial_time(grace_remaining_ms),
             )
-        return DemoTrialOverlayInfo(False, "none", int(grace_remaining_ms), format_demo_trial_time(grace_remaining_ms))
+        return _overlay_hidden(grace_remaining_ms)
 
     if global_remaining_ms <= 0:
-        return DemoTrialOverlayInfo(True, "time_up", 0, format_demo_trial_time(0))
+        return _overlay_time_up()
 
     # Demo tier gating: the classic demo lets you play stage 1 quests only; once
     # the player reaches stage > 1, it shows the upsell overlay even if time remains.
     if tier_locked:
-        return DemoTrialOverlayInfo(
-            True,
-            "quest_tier_limit",
+        return DemoTrialOverlayQuestTierLimit(
             int(global_remaining_ms),
             format_demo_trial_time(global_remaining_ms),
         )
 
-    return DemoTrialOverlayInfo(False, "none", int(global_remaining_ms), format_demo_trial_time(global_remaining_ms))
+    return _overlay_hidden(global_remaining_ms)
