@@ -130,6 +130,12 @@ class ReplayRecorderHook(NoopTickHook):
         self._recorder = recorder
         self.recorded_tick_by_runner_tick: dict[int, int] = {}
 
+    def set_recorder(self, recorder: ReplayRecorderLike | None) -> None:
+        self._recorder = recorder
+
+    def clear_recorded_ticks(self) -> None:
+        self.recorded_tick_by_runner_tick.clear()
+
     def on_pre_sim(self, ctx: TickContext) -> None:
         recorder = self._recorder
         if recorder is None:
@@ -151,11 +157,14 @@ class CheckpointHook(NoopTickHook):
         self._replay_recorder_hook = replay_recorder_hook
         self._on_checkpoint = on_checkpoint
 
+    def set_on_checkpoint(self, callback: Callable[[int, object], None] | None) -> None:
+        self._on_checkpoint = callback
+
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
         callback = self._on_checkpoint
         if callback is None:
             return
-        replay_tick = self._replay_recorder_hook.recorded_tick_by_runner_tick.get(int(ctx.tick_index))
+        replay_tick = self._replay_recorder_hook.recorded_tick_by_runner_tick.pop(int(ctx.tick_index), None)
         if replay_tick is None:
             return
         payload = result.payload
@@ -167,6 +176,9 @@ class CheckpointHook(NoopTickHook):
 class NetworkSyncHook(NoopTickHook):
     def __init__(self, *, on_hash: Callable[[int, TickHashes], None] | None = None) -> None:
         self._on_hash = on_hash
+
+    def set_on_hash(self, callback: Callable[[int, TickHashes], None] | None) -> None:
+        self._on_hash = callback
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
         callback = self._on_hash

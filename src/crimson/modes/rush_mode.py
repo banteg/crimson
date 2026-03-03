@@ -91,7 +91,6 @@ class RushMode(BaseGameplayMode):
         self._rush = _RushState()
 
         self._ui_assets = None
-        self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
@@ -157,7 +156,7 @@ class RushMode(BaseGameplayMode):
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
         self._rush = _RushState()
-        self._sim_clock.reset()
+        self._reset_gameplay_tick_runner_clock()
         self._lan_capture_clock.reset()
 
         status = self.state.status
@@ -222,7 +221,7 @@ class RushMode(BaseGameplayMode):
                     seed=int(self.state.rng.state),
                     bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
-                    tick_rate=int(self._sim_clock.tick_rate),
+                    tick_rate=int(self._gameplay_tick_rate()),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
@@ -362,21 +361,15 @@ class RushMode(BaseGameplayMode):
 
         self._update_lan_wait_gate_debug_override()
         if self._lan_wait_gate_active():
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             return
 
         if not sim_active:
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             if not any_alive:
                 self._enter_game_over()
             return
 
-        ticks_to_run = self._sim_clock.advance(dt)
-        if ticks_to_run <= 0:
-            return
-        self._ticks_advanced_per_frame = int(ticks_to_run)
-
-        dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
@@ -399,8 +392,7 @@ class RushMode(BaseGameplayMode):
             )
 
         self._run_deterministic_session_ticks(
-            ticks_to_run=int(ticks_to_run),
-            dt_tick=dt_tick,
+            dt_frame=float(dt),
             input_frame=input_frame,
             session=session,
             recorder=self._replay_recorder,
@@ -426,7 +418,7 @@ class RushMode(BaseGameplayMode):
             return
 
         if bool(self._paused):
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             return
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())

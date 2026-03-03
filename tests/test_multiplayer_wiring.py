@@ -156,30 +156,16 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Pa
         waiting_for_players=True,
     )
 
-    class _FakeClock:
-        def __init__(self) -> None:
-            self.reset_calls = 0
-            self.advance_calls = 0
-            self.dt_tick = 1.0 / 60.0
-
-        def reset(self) -> None:
-            self.reset_calls += 1
-
-        def advance(self, _dt: float) -> int:
-            self.advance_calls += 1
-            return 1
-
-    clock = _FakeClock()
-    mode._sim_clock = clock
-
+    reset_clock = mocker.patch.object(mode, "_reset_gameplay_tick_runner_clock", side_effect=lambda: None)
+    run_ticks = mocker.patch.object(mode, "_run_deterministic_session_ticks", return_value=0)
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
 
     mode.update(0.02)
 
-    assert clock.reset_calls == 1
-    assert clock.advance_calls == 0
+    reset_clock.assert_called_once()
+    run_ticks.assert_not_called()
 
 
 def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> None:
@@ -197,22 +183,7 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> N
         waiting_for_players=True,
     )
 
-    class _FakeClock:
-        def __init__(self) -> None:
-            self.reset_calls = 0
-            self.advance_calls = 0
-            self.dt_tick = 1.0 / 60.0
-
-        def reset(self) -> None:
-            self.reset_calls += 1
-
-        def advance(self, _dt: float) -> int:
-            self.advance_calls += 1
-            return 0
-
-    clock = _FakeClock()
-    mode._sim_clock = clock
-
+    run_ticks = mocker.patch.object(mode, "_run_deterministic_session_ticks", return_value=1)
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
@@ -225,7 +196,7 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> N
 
     mode.update(0.02)
 
-    assert clock.advance_calls == 1
+    run_ticks.assert_called_once()
     assert mode._lan_wait_gate_active() is False
 
 

@@ -720,4 +720,4 @@ Treat these as stable unless failing tests demand change:
 - [x] LAN tick frame consumption delegates deterministic stepping to a shared `TickRunner` path (no direct LAN `session.step_tick(...)` callsite in mode orchestration).
 - [x] Gameplay telemetry counters/timers are propagated into `GameState` each frame (not only mode-local overlay).
 - [x] Input commands are consumed in deterministic tick execution; perk picks are queued as `InputCommand` and applied on tick consumption.
-- [ ] Move all non-LAN fixed-step clock ownership from mode-local clocks into persistent `TickRunner` instances.
+- [x] Move all non-LAN fixed-step clock ownership from mode-local clocks into persistent `TickRunner` instances.

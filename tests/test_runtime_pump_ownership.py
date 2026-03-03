@@ -104,6 +104,17 @@ def test_lan_tick_consumption_uses_tick_runner_instead_of_direct_step_call() -> 
     assert "session.step_tick(" not in source
 
 
+def test_gameplay_modes_no_longer_use_mode_local_sim_clock() -> None:
+    lan_methods = (
+        SurvivalMode.update,
+        RushMode.update,
+        QuestMode.update,
+    )
+    for method in lan_methods:
+        source = inspect.getsource(method)
+        assert "_sim_clock" not in source
+
+
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:
     state = make_game_state()
     loop = GameLoopView(state)

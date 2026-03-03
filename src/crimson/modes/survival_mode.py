@@ -120,7 +120,6 @@ class SurvivalMode(BaseGameplayMode):
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._perk_menu_assets = None
         self._cursor_time = 0.0
-        self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
@@ -329,7 +328,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.reset()
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
-        self._sim_clock.reset()
+        self._reset_gameplay_tick_runner_clock()
         self._lan_capture_clock.reset()
         self._survival = _SurvivalState()
         self._lan_last_tick_index = -1
@@ -399,7 +398,7 @@ class SurvivalMode(BaseGameplayMode):
                     seed=int(self.state.rng.state),
                     bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
-                    tick_rate=int(self._sim_clock.tick_rate),
+                    tick_rate=int(self._gameplay_tick_rate()),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
@@ -593,21 +592,15 @@ class SurvivalMode(BaseGameplayMode):
 
         self._update_lan_wait_gate_debug_override()
         if self._lan_wait_gate_active():
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             return
 
         if not sim_active:
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             if self._death_transition_ready():
                 self._enter_game_over()
             return
 
-        ticks_to_run = self._sim_clock.advance(dt)
-        if ticks_to_run <= 0:
-            return
-        self._ticks_advanced_per_frame = int(ticks_to_run)
-
-        dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
@@ -631,8 +624,7 @@ class SurvivalMode(BaseGameplayMode):
             )
 
         self._run_deterministic_session_ticks(
-            ticks_to_run=int(ticks_to_run),
-            dt_tick=dt_tick,
+            dt_frame=float(dt),
             input_frame=input_frame,
             session=session,
             recorder=self._replay_recorder,
@@ -658,7 +650,7 @@ class SurvivalMode(BaseGameplayMode):
             return
 
         if bool(self._paused):
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             if self._death_transition_ready():
                 self._enter_game_over()
             return

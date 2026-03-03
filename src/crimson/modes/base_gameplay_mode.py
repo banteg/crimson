@@ -120,6 +120,42 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         return player_inputs
 
 
+class _GameplayFrameInputProvider:
+    def __init__(
+        self,
+        *,
+        clear_edges: Callable[[list[PlayerInput]], list[PlayerInput]],
+        command_consumer: Callable[[InputCommand, float], None],
+        command_source: Callable[[], list[InputCommand]],
+    ) -> None:
+        self._clear_edges = clear_edges
+        self._command_consumer = command_consumer
+        self._command_source = command_source
+        self._base_inputs: list[PlayerInput] = []
+        self._dt_tick = 1.0 / 60.0
+        self._frame_first_tick_pending = True
+
+    def prepare_frame(self, *, base_inputs: list[PlayerInput], dt_tick: float) -> None:
+        self._base_inputs = base_inputs
+        self._dt_tick = float(dt_tick)
+
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
+        self._frame_first_tick_pending = True
+
+    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+        _ = tick_index
+        if self._frame_first_tick_pending:
+            self._frame_first_tick_pending = False
+            for command in self._command_source():
+                self._command_consumer(command, float(self._dt_tick))
+            return self._base_inputs
+        return self._clear_edges(self._base_inputs)
+
+    def push_command(self, command: InputCommand) -> None:
+        _ = command
+
+
 class DeterministicSessionLike(Protocol):
     detail_preset: int
     gore_disabled: int
@@ -240,6 +276,13 @@ class BaseGameplayMode:
             build_inputs=lambda: self._build_local_inputs(dt=0.0),
         )
         self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
+        self._gameplay_input_provider: _GameplayFrameInputProvider | None = None
+        self._gameplay_tick_runner: TickRunner | None = None
+        self._gameplay_tick_runner_session: DeterministicSessionLike | None = None
+        self._gameplay_replay_hook: ReplayRecorderHook | None = None
+        self._gameplay_checkpoint_hook: CheckpointHook | None = None
+        self._gameplay_network_sync_hook: NetworkSyncHook | None = None
+        self._gameplay_profiler_hook: ProfilerHook | None = None
         self._lan_tick_runner: TickRunner | None = None
         self._lan_tick_runner_session: DeterministicSessionLike | None = None
         self._lan_profiler_hook: ProfilerHook | None = None
@@ -449,6 +492,11 @@ class BaseGameplayMode:
     def _enqueue_input_command(self, command: InputCommand) -> None:
         self._pending_input_commands.append(command)
 
+    def _take_pending_input_commands(self) -> list[InputCommand]:
+        pending = list(self._pending_input_commands)
+        self._pending_input_commands.clear()
+        return pending
+
     def _record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
         recorder = self._replay_recorder
         if recorder is not None:
@@ -492,9 +540,7 @@ class BaseGameplayMode:
         return True
 
     def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
-        pending = list(self._pending_input_commands)
-        self._pending_input_commands.clear()
-        for command in pending:
+        for command in self._take_pending_input_commands():
             self._apply_input_command(command, dt_tick=float(dt_tick))
 
     def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
@@ -922,6 +968,13 @@ class BaseGameplayMode:
             build_inputs=lambda: self._build_local_inputs(dt=0.0),
         )
         self._network_input_provider = _LanRuntimeInputProvider(player_count=max(0, len(self.world.players)))
+        self._gameplay_input_provider = None
+        self._gameplay_tick_runner = None
+        self._gameplay_tick_runner_session = None
+        self._gameplay_replay_hook = None
+        self._gameplay_checkpoint_hook = None
+        self._gameplay_network_sync_hook = None
+        self._gameplay_profiler_hook = None
         self._lan_tick_runner = None
         self._lan_tick_runner_session = None
         self._lan_profiler_hook = None
@@ -939,6 +992,17 @@ class BaseGameplayMode:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
+        self._gameplay_input_provider = None
+        self._gameplay_tick_runner = None
+        self._gameplay_tick_runner_session = None
+        self._gameplay_replay_hook = None
+        self._gameplay_checkpoint_hook = None
+        self._gameplay_network_sync_hook = None
+        self._gameplay_profiler_hook = None
+        self._lan_tick_runner = None
+        self._lan_tick_runner_session = None
+        self._lan_profiler_hook = None
+        self._pending_input_commands.clear()
         self.world.close()
 
     def take_action(self) -> str | None:
@@ -1039,6 +1103,110 @@ class BaseGameplayMode:
     @staticmethod
     def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
         return clear_input_edges(inputs)
+
+    @staticmethod
+    def _deterministic_tick_rate() -> int:
+        return 60
+
+    def _gameplay_tick_rate(self) -> int:
+        runner = self._gameplay_tick_runner
+        if runner is not None:
+            return int(runner.clock.tick_rate)
+        return int(self._deterministic_tick_rate())
+
+    def _gameplay_tick_dt(self, *, session: DeterministicSessionLike | None = None) -> float:
+        if session is not None:
+            runner, *_ = self._ensure_gameplay_tick_runner(session=session)
+            return float(runner.clock.dt_tick)
+        runner = self._gameplay_tick_runner
+        if runner is not None:
+            return float(runner.clock.dt_tick)
+        return 1.0 / float(self._deterministic_tick_rate())
+
+    def _reset_gameplay_tick_runner_clock(self) -> None:
+        runner = self._gameplay_tick_runner
+        if runner is not None:
+            runner.reset_clock()
+
+    def _ensure_gameplay_tick_runner(
+        self,
+        *,
+        session: DeterministicSessionLike,
+    ) -> tuple[
+        TickRunner,
+        _GameplayFrameInputProvider,
+        ReplayRecorderHook,
+        CheckpointHook,
+        NetworkSyncHook,
+        ProfilerHook,
+    ]:
+        runner = self._gameplay_tick_runner
+        provider = self._gameplay_input_provider
+        replay_hook = self._gameplay_replay_hook
+        checkpoint_hook = self._gameplay_checkpoint_hook
+        network_sync_hook = self._gameplay_network_sync_hook
+        profiler_hook = self._gameplay_profiler_hook
+        if (
+            runner is not None
+            and provider is not None
+            and replay_hook is not None
+            and checkpoint_hook is not None
+            and network_sync_hook is not None
+            and profiler_hook is not None
+            and self._gameplay_tick_runner_session is session
+        ):
+            return (
+                runner,
+                provider,
+                replay_hook,
+                checkpoint_hook,
+                network_sync_hook,
+                profiler_hook,
+            )
+
+        provider = _GameplayFrameInputProvider(
+            clear_edges=self._clear_local_input_edges,
+            command_consumer=lambda command, dt_tick: self._apply_input_command(command, dt_tick=float(dt_tick)),
+            command_source=self._take_pending_input_commands,
+        )
+        replay_hook = ReplayRecorderHook(None)
+        checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook, on_checkpoint=None)
+        network_sync_hook = NetworkSyncHook(on_hash=None)
+        profiler_hook = ProfilerHook()
+        runner = TickRunner(
+            session=session,
+            input_provider=provider,
+            hook_bus=TickHookBus(
+                [
+                    replay_hook,
+                    checkpoint_hook,
+                    network_sync_hook,
+                    profiler_hook,
+                ],
+            ),
+            config=TickRunnerConfig(
+                tick_rate=int(self._deterministic_tick_rate()),
+                session_kind="gameplay",
+                mode_id=str(self.__class__.__name__),
+                is_networked=bool(self._lan_enabled),
+                is_replay=False,
+            ),
+        )
+        self._gameplay_tick_runner = runner
+        self._gameplay_input_provider = provider
+        self._gameplay_tick_runner_session = session
+        self._gameplay_replay_hook = replay_hook
+        self._gameplay_checkpoint_hook = checkpoint_hook
+        self._gameplay_network_sync_hook = network_sync_hook
+        self._gameplay_profiler_hook = profiler_hook
+        return (
+            runner,
+            provider,
+            replay_hook,
+            checkpoint_hook,
+            network_sync_hook,
+            profiler_hook,
+        )
 
     def _record_replay_checkpoint_from_tick(
         self,
@@ -1301,17 +1469,16 @@ class BaseGameplayMode:
     def _run_deterministic_session_ticks(
         self,
         *,
-        ticks_to_run: int,
-        dt_tick: float,
+        dt_frame: float,
         input_frame: list[PlayerInput],
         session: DeterministicSessionLike,
         recorder: ReplayRecorder | None,
         on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
         on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
         on_hash: Callable[[int, TickHashes], None] | None = None,
-    ) -> None:
-        if int(ticks_to_run) <= 0:
-            return
+    ) -> int:
+        if float(dt_frame) <= 0.0:
+            return 0
         if self.world.audio_router is not None:
             self.world.audio_router.audio = self.world.audio
             self.world.audio_router.audio_rng = self.world.audio_rng
@@ -1321,92 +1488,43 @@ class BaseGameplayMode:
             self.world.ground.process_pending()
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        first_inputs = input_frame
-        frame_commands = list(self._pending_input_commands)
-        self._pending_input_commands.clear()
 
-        class _ModeInputProvider:
-            def __init__(
-                self,
-                base_inputs: list[PlayerInput],
-                clear_edges: Callable[[list[PlayerInput]], list[PlayerInput]],
-                *,
-                commands: list[InputCommand],
-                command_consumer: Callable[[InputCommand], None],
-            ):
-                self._base_inputs = base_inputs
-                self._clear_edges = clear_edges
-                self._commands = list(commands)
-                self._command_consumer = command_consumer
-
-            def begin_frame(self, frame_ctx: FrameContext) -> None:
-                _ = frame_ctx
-
-            def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
-                if int(tick_index) == 0 and self._commands:
-                    for command in self._commands:
-                        self._command_consumer(command)
-                    self._commands.clear()
-                if int(tick_index) == 0:
-                    return self._base_inputs
-                return self._clear_edges(self._base_inputs)
-
-            def push_command(self, command: InputCommand) -> None:
-                _ = command
-
-        tick_rate = max(1, int(round(1.0 / max(1e-9, float(dt_tick)))))
-        replay_hook = ReplayRecorderHook(recorder)
-        checkpoint_hook = CheckpointHook(
-            replay_recorder_hook=replay_hook,
-            on_checkpoint=(
+        runner, provider, replay_hook, checkpoint_hook, net_sync_hook, profiler_hook = self._ensure_gameplay_tick_runner(
+            session=session,
+        )
+        dt_tick = float(runner.clock.dt_tick)
+        provider.prepare_frame(base_inputs=input_frame, dt_tick=float(dt_tick))
+        replay_hook.set_recorder(recorder)
+        replay_hook.clear_recorded_ticks()
+        checkpoint_hook.set_on_checkpoint(
+            (
                 (lambda tick_index, tick: on_checkpoint(int(tick_index), cast(DeterministicSessionStepTick, tick)))
                 if on_checkpoint is not None
                 else None
             ),
         )
-        net_sync_hook = NetworkSyncHook(on_hash=on_hash)
-        profiler_hook = ProfilerHook()
-        runner = TickRunner(
-            session=session,
-            input_provider=_ModeInputProvider(
-                base_inputs=first_inputs,
-                clear_edges=self._clear_local_input_edges,
-                commands=frame_commands,
-                command_consumer=lambda command: self._apply_input_command(command, dt_tick=float(dt_tick)),
-            ),
-            hook_bus=TickHookBus(
-                [
-                    replay_hook,
-                    checkpoint_hook,
-                    net_sync_hook,
-                    profiler_hook,
-                ],
-            ),
-            config=TickRunnerConfig(
-                tick_rate=int(tick_rate),
-                session_kind="gameplay",
-                mode_id=str(self.__class__.__name__),
-                is_networked=bool(self._lan_enabled),
-                is_replay=False,
-            ),
-        )
+        net_sync_hook.set_on_hash(on_hash)
+        profiler_hook.sim_ms = 0.0
+        profiler_hook.presentation_plan_ms = 0.0
+        profiler_hook.presentation_apply_ms = 0.0
 
-        def _on_tick_complete(tick_offset: int, tick: object) -> bool:
+        def _on_tick_complete(runner_tick_index: int, tick: object) -> bool:
             tick_row = cast(DeterministicSessionStepTick, tick)
-            tick_index = replay_hook.recorded_tick_by_runner_tick.get(int(tick_offset))
+            tick_index = replay_hook.recorded_tick_by_runner_tick.get(int(runner_tick_index))
             self.world.apply_step_result(
                 tick_row.step,
                 game_tune_started=session.game_tune_started,
                 apply_audio=True,
                 update_camera=True,
             )
+            self._ticks_advanced_per_frame += 1
             return on_tick(tick_row, tick_index)
 
-        runner.advance_frame(
-            float(dt_tick) * float(max(0, int(ticks_to_run))),
-            max_ticks=max(0, int(ticks_to_run)),
+        result = runner.advance_frame(
+            float(dt_frame),
             on_tick_complete=_on_tick_complete,
         )
         self._sim_ms = float(profiler_hook.sim_ms)
         self._presentation_plan_ms = float(profiler_hook.presentation_plan_ms)
         self._presentation_apply_ms = float(profiler_hook.presentation_apply_ms)
+        return int(result.ticks_completed)

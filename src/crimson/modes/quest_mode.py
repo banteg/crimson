@@ -162,7 +162,6 @@ class QuestMode(BaseGameplayMode):
             on_pick=self._record_perk_pick,
             defer_pick_apply=True,
         )
-        self._sim_clock = FixedStepClock(tick_rate=60)
         self._lan_capture_clock = FixedStepClock(tick_rate=60)
         self._session_factory = session_factory
         self._sim_session: QuestDeterministicSession | None = self._new_sim_session(spawn_entries=())
@@ -183,7 +182,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._perk_menu.reset()
-        self._sim_clock.reset()
+        self._reset_gameplay_tick_runner_clock()
         self._lan_capture_clock.reset()
         self._replay_recorder = None
         self._replay_checkpoints.clear()
@@ -461,7 +460,7 @@ class QuestMode(BaseGameplayMode):
             no_creatures_timer_ms=0.0,
             completion_transition_ms=-1.0,
         )
-        self._sim_clock.reset()
+        self._reset_gameplay_tick_runner_clock()
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
 
         weapon_usage_counts = normalize_weapon_usage_counts(
@@ -481,7 +480,7 @@ class QuestMode(BaseGameplayMode):
                     game_mode_id=GameMode.QUESTS,
                     seed=int(self.state.rng.state),
                     quest_level=str(quest.level),
-                    tick_rate=int(self._sim_clock.tick_rate),
+                    tick_rate=int(self._gameplay_tick_rate()),
                     difficulty_level=int(self.world.difficulty_level),
                     hardcore=bool(self.world.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
@@ -696,12 +695,12 @@ class QuestMode(BaseGameplayMode):
 
         self._update_lan_wait_gate_debug_override()
         if self._lan_wait_gate_active():
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             return
 
         dt_world = 0.0 if self._paused or self._perk_menu.active else dt
         if dt_world <= 0.0:
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             # Match legacy transition behavior: keep countdown moving, but at
             # real-time pace while perk-menu transition is holding world ticks.
             self._tick_death_timers(dt, rate=1.0)
@@ -709,12 +708,6 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        ticks_to_run = self._sim_clock.advance(dt_world)
-        if ticks_to_run <= 0:
-            return
-        self._ticks_advanced_per_frame = int(ticks_to_run)
-
-        dt_tick = float(self._sim_clock.dt_tick)
         input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
@@ -722,6 +715,7 @@ class QuestMode(BaseGameplayMode):
             if self._death_transition_ready():
                 self._close_failed_run()
             return
+        dt_tick = float(self._gameplay_tick_dt(session=session))
 
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
@@ -801,8 +795,7 @@ class QuestMode(BaseGameplayMode):
             )
 
         self._run_deterministic_session_ticks(
-            ticks_to_run=int(ticks_to_run),
-            dt_tick=dt_tick,
+            dt_frame=float(dt_world),
             input_frame=input_frame,
             session=session,
             recorder=self._replay_recorder,
@@ -828,7 +821,7 @@ class QuestMode(BaseGameplayMode):
             return
 
         if bool(self._paused):
-            self._sim_clock.reset()
+            self._reset_gameplay_tick_runner_clock()
             # Mirror legacy: keep the fail transition timers moving at real-time pace while paused.
             self._tick_death_timers(dt, rate=1.0)
             if self._death_transition_ready():
