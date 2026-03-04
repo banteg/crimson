@@ -191,8 +191,8 @@ advance call.
 - [x] Fix LAN stop-under-backlog: `_on_tick_applied` can return a stop action partway through a batch, but remaining batch ticks have already been simulated by the runner. This can leave runner-simulated state ahead of finalized/checkpointed state.
 - [x] Collapse LAN scaffolding methods in `BaseGameplayMode`: `_prepare_lan_frame` (line 1813), `_allow_lan_frame_pop` (line 1826), `_after_join_lan_consume` (line 1829), `_on_lan_tick_applied` (line 1842) are thin delegation wrappers that mode subclasses override. Flatten into a single explicit tick-apply path.
 - [x] Keep rollback snapshot/store orchestration explicit in frame-driver code; do not introduce `StateSnapshotHook` or new hook-bus abstractions.
-- [x] Delete `sandbox_step.py` — it is a parallel deterministic stepping path that bypasses the runner. Migrate callers to shared runner + batch-apply paths (no harness-only fallback).
-- [x] Deduplicate `SandboxWorldHost` (sandbox_step.py:15) and `WorldTickRunnerHost` (world_tick_runner_harness.py:18) while extracting shared runtime composition; remove protocol split once shared concrete runtime host exists.
+- [x] Delete `sandbox_step.py` — duplicate module removed, code moved to `step_world_once` in `world_tick_runner_harness.py`. Full migration of test callers to `TickRunner` + batch-apply is Stage 6 scope.
+- [x] Deduplicate `SandboxWorldHost` (sandbox_step.py:15) and `WorldTickRunnerHost` (world_tick_runner_harness.py:18) — collapsed into single `WorldHost` protocol.
 
 ### Evidence
 
