@@ -2098,8 +2098,8 @@ class LightingDebugView:
         detail_preset = 5
         gore_disabled = 0
         if self._world.config is not None:
-            detail_preset = int(self._world.config.detail_preset)
-            gore_disabled = int(self._world.config.gore_disabled)
+            detail_preset = self._world.config.detail_preset
+            gore_disabled = self._world.config.gore_disabled
 
         session = WorldTickDeterministicSession(
             world=world_state,
