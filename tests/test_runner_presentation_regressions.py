@@ -5,11 +5,11 @@ from typing import cast
 
 from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
-from crimson.game_world import GameWorld
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import LocalInputProvider
 from crimson.sim.sessions import DeterministicSessionTick, WorldTickDeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _assets_dir() -> Path:
@@ -17,7 +17,7 @@ def _assets_dir() -> Path:
 
 
 def _build_runner(
-    world: GameWorld,
+    world: WorldRuntimeHost,
     *,
     build_inputs,
 ) -> tuple[WorldTickDeterministicSession, TickRunner]:
@@ -50,7 +50,7 @@ def _build_runner(
 
 
 def _apply_batch(
-    world: GameWorld,
+    world: WorldRuntimeHost,
     *,
     session: WorldTickDeterministicSession,
     batch: TickBatchResult,
@@ -80,7 +80,7 @@ def _apply_batch(
 
 
 def test_runner_path_projectile_hits_enqueue_decals() -> None:
-    world = GameWorld(assets_dir=_assets_dir())
+    world = WorldRuntimeHost(assets_dir=_assets_dir())
     player = world.sim_world.players[0]
     target = player.pos.offset(dx=48.0)
     world.sim_world.creatures.spawn_template(
@@ -113,7 +113,7 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
 
 def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
     def _advance_once() -> tuple[list[int], list[str]]:
-        world = GameWorld(assets_dir=_assets_dir())
+        world = WorldRuntimeHost(assets_dir=_assets_dir())
         session, runner = _build_runner(
             world,
             build_inputs=lambda frame_ctx: [PlayerInput()],

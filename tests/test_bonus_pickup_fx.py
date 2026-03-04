@@ -3,14 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
-from crimson.game_world import GameWorld
 from crimson.sim.sandbox_step import run_sandbox_world_step
 from grim.geom import Vec2
+from tests.world_runtime import WorldRuntimeHost
 
 
 def test_bonus_pickup_spawns_burst_effect() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.sim_world.players[0]
     entry = world.sim_world.state.bonus_pool.spawn_at(
@@ -31,7 +31,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
 
 def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.sim_world.players[0]
     entry = world.sim_world.state.bonus_pool.spawn_at(

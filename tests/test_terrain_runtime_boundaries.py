@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game_world import GameWorld
 from crimson.terrain_assets import TerrainTextureId
 from crimson.world.terrain_runtime import DEFAULT_TERRAIN_IDS, normalize_terrain_ids
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
+from tests.world_runtime import WorldRuntimeHost
 
 
-def _build_world(assets_dir: Path) -> GameWorld:
-    return GameWorld(assets_dir=assets_dir)
+def _build_world(assets_dir: Path) -> WorldRuntimeHost:
+    return WorldRuntimeHost(assets_dir=assets_dir)
 
 
 def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypatch) -> None:

@@ -2,65 +2,46 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
-from typing import cast
 
-import msgspec
-
+from crimson.creatures.anim import creature_corpse_frame_for_type
+from crimson.render.frame import RenderFrame
+from crimson.render.rtx.mode import RtxRenderMode
+from crimson.render.world import WorldRenderer
+from crimson.sim.world_state import WorldState
+from crimson.world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
-from grim.raylib_api import rl
-
-from .creatures.anim import creature_corpse_frame_for_type
-from .render.frame import RenderFrame
-from .render.rtx.mode import RtxRenderMode
-from .render.world import WorldRenderer
-from .sim.world_state import WorldState
-from .world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 
 
-class GameWorld(msgspec.Struct):
-    assets_dir: Path
-    world_size: float = 1024.0
-    demo_mode_active: bool = False
-    difficulty_level: int = 0
-    hardcore: bool = False
-    preserve_bugs: bool = False
-    texture_cache: PaqTextureCache | None = None
-    config: CrimsonConfig | None = None
-    audio: AudioState | None = None
-    audio_rng: random.Random | None = None
-    rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
-    sim_world: SimWorldState = cast(SimWorldState, None)
-    render_resources: RenderResources = cast(RenderResources, None)
-    audio_bridge: AudioBridge = cast(AudioBridge, None)
-    terrain_runtime: TerrainRuntime = cast(TerrainRuntime, None)
-    renderer: WorldRenderer = cast(WorldRenderer, None)
-    camera: Vec2 = Vec2(-1.0, -1.0)
-    lan_player_rings_enabled: bool = False
-    lan_local_aim_indicators_only: bool = False
-    lan_local_player_slot_index: int = 0
-
-    def sync_audio_bridge_state(self) -> None:
-        self.audio_bridge.sync(
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-            demo_mode_active=bool(self.demo_mode_active),
-        )
-
-    def _sync_world_size_ownership(self) -> None:
-        world_size = float(self.world_size)
-        self.sim_world.world_size = world_size
-        self.render_resources.world_size = world_size
-        self.terrain_runtime.world_size = world_size
-        ground = self.render_resources.ground
-        if ground is not None:
-            side = max(0, int(world_size))
-            ground.width = side
-            ground.height = side
-
-    def __post_init__(self) -> None:
+class WorldRuntimeHost:
+    def __init__(
+        self,
+        *,
+        assets_dir: Path,
+        world_size: float = 1024.0,
+        demo_mode_active: bool = False,
+        difficulty_level: int = 0,
+        hardcore: bool = False,
+        preserve_bugs: bool = False,
+        texture_cache: PaqTextureCache | None = None,
+        config: CrimsonConfig | None = None,
+        audio: AudioState | None = None,
+        audio_rng: random.Random | None = None,
+        rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
+    ) -> None:
+        self.assets_dir = Path(assets_dir)
+        self.world_size = float(world_size)
+        self.demo_mode_active = bool(demo_mode_active)
+        self.difficulty_level = int(difficulty_level)
+        self.hardcore = bool(hardcore)
+        self.preserve_bugs = bool(preserve_bugs)
+        self.texture_cache = texture_cache
+        self.config = config
+        self.audio = audio
+        self.audio_rng = audio_rng
+        self.rtx_mode = rtx_mode
         self.sim_world = SimWorldState(
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
@@ -84,14 +65,35 @@ class GameWorld(msgspec.Struct):
             world_size=float(self.world_size),
             render_resources=self.render_resources,
         )
+        self.camera = Vec2(-1.0, -1.0)
+        self.lan_player_rings_enabled = False
+        self.lan_local_aim_indicators_only = False
+        self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.camera = Vec2(-1.0, -1.0)
         self.renderer = WorldRenderer(self)
         player_count = 1
         if self.config is not None:
-            player_count = self.config.player_count
-        self.reset(player_count=max(1, min(4, player_count)))
+            player_count = int(self.config.player_count)
+        self.reset(player_count=max(1, min(4, int(player_count))))
+
+    def sync_audio_bridge_state(self) -> None:
+        self.audio_bridge.sync(
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+            demo_mode_active=bool(self.demo_mode_active),
+        )
+
+    def _sync_world_size_ownership(self) -> None:
+        world_size = float(self.world_size)
+        self.sim_world.world_size = world_size
+        self.render_resources.world_size = world_size
+        self.terrain_runtime.world_size = world_size
+        ground = self.render_resources.ground
+        if ground is not None:
+            side = max(0, int(world_size))
+            ground.width = side
+            ground.height = side
 
     def reset(
         self,
@@ -114,17 +116,11 @@ class GameWorld(msgspec.Struct):
         self.render_resources.fx_queue_rotated.clear()
         self.camera = Vec2(-1.0, -1.0)
         if self.render_resources.ground is not None:
-            # Terrain generation seed should be stable across headless/interactive and must not
-            # advance the authoritative gameplay RNG stream.
             terrain_seed = int(self.sim_world.state.rng.state)
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def load_world_state(self, world_state: WorldState) -> None:
-        """Atomically swap the authoritative world-state backing references."""
         self.sim_world.load_world_state(world_state)
-
-    def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        return self.render_resources.load_texture(name, cache_path=cache_path)
 
     def sync_ground_settings(self) -> None:
         self.render_resources.config = self.config
@@ -137,7 +133,6 @@ class GameWorld(msgspec.Struct):
         seed: int,
         layers: int = 3,
     ) -> None:
-        """Apply a deterministic terrain selection/seed without consuming gameplay RNG."""
         self.terrain_runtime.apply_bootstrap_terrain(
             terrain_ids=terrain_ids,
             seed=int(seed),
@@ -183,8 +178,6 @@ class GameWorld(msgspec.Struct):
         return creature_corpse_frame_for_type(type_id)
 
     def draw(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        # Bake decals into the ground render target as part of the render pass,
-        # matching `fx_queue_render()` placement in `gameplay_render_world`.
         self._bake_fx_queues()
         self.renderer.draw(
             render_frame=self.build_render_frame(),
@@ -212,7 +205,6 @@ class GameWorld(msgspec.Struct):
             return
 
         screen_size = self.renderer._camera_screen_size()
-
         alive = [player for player in self.sim_world.players if player.health > 0.0]
         if alive:
             inv_alive = 1.0 / float(len(alive))
@@ -225,7 +217,6 @@ class GameWorld(msgspec.Struct):
             camera = self.camera
 
         camera = camera + self.sim_world.state.camera_shake_offset
-
         self.camera = self.renderer._clamp_camera(camera, screen_size)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
@@ -233,3 +224,4 @@ class GameWorld(msgspec.Struct):
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
         return self.renderer.screen_to_world(pos)
+

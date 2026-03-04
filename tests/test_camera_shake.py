@@ -5,7 +5,6 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
-from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.input import PlayerInput
@@ -16,6 +15,7 @@ from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 from tests.helpers import assert_float_close
+from tests.world_runtime import WorldRuntimeHost
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
@@ -98,7 +98,7 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
 
 def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
     player = world.sim_world.players[0]
     entry = world.sim_world.state.bonus_pool.spawn_at(

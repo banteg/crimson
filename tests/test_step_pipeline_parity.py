@@ -6,7 +6,6 @@ import msgspec
 
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
-from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -27,6 +26,7 @@ from crimson.sim.sessions import QuestDeterministicSession, RushDeterministicSes
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
@@ -69,7 +69,7 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
     return inputs
 
 
-def _enforce_rush_loadout(world: GameWorld) -> None:
+def _enforce_rush_loadout(world: WorldRuntimeHost) -> None:
     for player in world.sim_world.players:
         if player.weapon.weapon_id != WeaponId.ASSAULT_RIFLE:
             weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=world.sim_world.state)
@@ -78,7 +78,7 @@ def _enforce_rush_loadout(world: GameWorld) -> None:
 
 def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
     world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
@@ -160,7 +160,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
 
 def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
     world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
@@ -233,7 +233,7 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
 
 def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
     world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),

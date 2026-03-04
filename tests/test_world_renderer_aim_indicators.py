@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import Protocol, cast
 
 import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext, WorldRenderer
@@ -9,9 +9,6 @@ from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-
-if TYPE_CHECKING:
-    from crimson.game_world import GameWorld
 
 
 class _AimRenderResourcesLike(Protocol):
@@ -49,8 +46,8 @@ class _AimWorldStub(_AimWorldLike):
     lan_local_player_slot_index: int = 0
 
 
-def _as_world(world: _AimWorldLike) -> GameWorld:
-    return cast("GameWorld", world)
+def _as_world(world: _AimWorldLike) -> object:
+    return cast("object", world)
 
 
 def _make_players() -> list[PlayerState]:

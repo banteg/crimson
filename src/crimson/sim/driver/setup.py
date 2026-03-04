@@ -73,7 +73,7 @@ def reset_players(
     player_count: int,
     spawn_pos: Vec2 | None = None,
 ) -> None:
-    """Reset `players` to the classic initial layout used by `GameWorld.reset`."""
+    """Reset `players` to the classic initial layout used by runtime reset."""
 
     players.clear()
 
@@ -92,7 +92,7 @@ def reset_players(
         weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
         players.append(player)
-    # Player bootstrap mirrors GameWorld.reset: start with a clean runtime SFX
+    # Player bootstrap mirrors runtime reset: start with a clean runtime SFX
     # queue so replay/session tick 0 does not include setup reload sounds.
     state.sfx_queue.clear()
 

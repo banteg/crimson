@@ -12,7 +12,6 @@ from grim.terrain_render import GroundRenderer
 from tests.helpers import assert_float_close
 
 if TYPE_CHECKING:
-    from crimson.game_world import GameWorld
     from grim.raylib_api import rl
 
 
@@ -70,8 +69,8 @@ def _as_render_texture(render_target: _RenderTextureLike) -> rl.RenderTexture:
     return cast("rl.RenderTexture", render_target)
 
 
-def _as_world(world: _WorldLike) -> GameWorld:
-    return cast("GameWorld", world)
+def _as_world(world: _WorldLike) -> object:
+    return cast("object", world)
 
 
 def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:

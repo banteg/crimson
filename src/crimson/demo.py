@@ -15,7 +15,8 @@ from grim.raylib_api import rd, rl
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game.types import GameState
 from .game_modes import GameMode
-from .game_world import GameWorld
+from .render.rtx.mode import RtxRenderMode
+from .render.world.renderer import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
@@ -24,6 +25,7 @@ from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
+from .world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -72,18 +74,48 @@ class DemoView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
-        self._world = GameWorld(
-            assets_dir=state.assets_dir,
-            world_size=WORLD_SIZE,
-            demo_mode_active=True,
-            hardcore=state.config.hardcore,
-            difficulty_level=0,
-            preserve_bugs=bool(state.preserve_bugs),
-            texture_cache=state.texture_cache,
-            config=state.config,
-            audio=state.audio,
-            audio_rng=state.rng,
+        self.world_size = float(WORLD_SIZE)
+        self.demo_mode_active = True
+        self.difficulty_level = 0
+        self.hardcore = bool(state.config.hardcore)
+        self.preserve_bugs = bool(state.preserve_bugs)
+        self.texture_cache = state.texture_cache
+        self.config = state.config
+        self.audio = state.audio
+        self.audio_rng = state.rng
+        self.rtx_mode = RtxRenderMode.CLASSIC
+        self.sim_world = SimWorldState(
+            world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            hardcore=bool(self.hardcore),
+            difficulty_level=int(self.difficulty_level),
+            preserve_bugs=bool(self.preserve_bugs),
         )
+        self.render_resources = RenderResources(
+            assets_dir=state.assets_dir,
+            world_size=float(self.world_size),
+            texture_cache=self.texture_cache,
+            config=self.config,
+        )
+        self.audio_bridge = AudioBridge(
+            demo_mode_active=bool(self.demo_mode_active),
+            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+        )
+        self.terrain_runtime = TerrainRuntime(
+            world_size=float(self.world_size),
+            render_resources=self.render_resources,
+        )
+        self.camera = Vec2(-1.0, -1.0)
+        self.lan_player_rings_enabled = False
+        self.lan_local_aim_indicators_only = False
+        self.lan_local_player_slot_index = 0
+        self._sync_world_size_ownership()
+        self.sync_audio_bridge_state()
+        self.renderer = WorldRenderer(self)
+        self._reset_world_runtime()
+
         self._crand = Crand(0)
         self._demo_targets: list[int | None] = []
         self._variant_index = 0
@@ -101,10 +133,132 @@ class DemoView:
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
         self._tick_runtime = WorldTickRunnerHarness(
-            world=self._world,
+            world=self,
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
+
+    def _sync_world_size_ownership(self) -> None:
+        world_size = float(self.world_size)
+        self.sim_world.world_size = world_size
+        self.render_resources.world_size = world_size
+        self.terrain_runtime.world_size = world_size
+        ground = self.render_resources.ground
+        if ground is not None:
+            side = max(0, int(world_size))
+            ground.width = side
+            ground.height = side
+
+    def _reset_world_runtime(
+        self,
+        *,
+        seed: int = 0xBEEF,
+        player_count: int = 1,
+        spawn_pos: Vec2 | None = None,
+    ) -> None:
+        self._sync_world_size_ownership()
+        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
+        self.sim_world.hardcore = bool(self.hardcore)
+        self.sim_world.difficulty_level = int(self.difficulty_level)
+        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
+        self.sim_world.reset(
+            seed=int(seed),
+            player_count=int(player_count),
+            spawn_pos=spawn_pos,
+        )
+        self.render_resources.fx_queue.clear()
+        self.render_resources.fx_queue_rotated.clear()
+        self.camera = Vec2(-1.0, -1.0)
+        if self.render_resources.ground is not None:
+            self.terrain_runtime.schedule_from_rng_seed(
+                seed=int(self.sim_world.state.rng.state),
+                layers=3,
+            )
+
+    def _open_world_runtime(self) -> None:
+        self.render_resources.texture_cache = self.texture_cache
+        self.render_resources.config = self.config
+        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
+        self.texture_cache = self.render_resources.texture_cache
+        self.state.texture_cache = self.texture_cache
+
+    def _close_world_runtime(self) -> None:
+        self.render_resources.close()
+        self.sim_world.close_session()
+
+    def sync_audio_bridge_state(self) -> None:
+        self.audio_bridge.sync(
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+            demo_mode_active=bool(self.demo_mode_active),
+        )
+
+    def set_terrain(
+        self,
+        *,
+        base_key: str,
+        overlay_key: str,
+        base_path: str,
+        overlay_path: str,
+        detail_key: str | None = None,
+        detail_path: str | None = None,
+    ) -> None:
+        self.terrain_runtime.set_terrain(
+            base_key=base_key,
+            overlay_key=overlay_key,
+            base_path=base_path,
+            overlay_path=overlay_path,
+            detail_key=detail_key,
+            detail_path=detail_path,
+        )
+        self.terrain_runtime.schedule_from_rng_seed(
+            seed=int(self.sim_world.state.rng.state),
+            layers=3,
+        )
+
+    def build_render_frame(self):
+        return self.render_resources.build_render_frame(
+            state=self.sim_world.state,
+            players=self.sim_world.players,
+            creatures=self.sim_world.creatures,
+            camera=self.camera,
+            demo_mode_active=bool(self.demo_mode_active),
+            elapsed_ms=float(self.sim_world.elapsed_ms),
+            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
+            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
+            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
+            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
+            rtx_mode=self.rtx_mode,
+        )
+
+    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        self.render_resources.bake_fx_queues()
+        self.renderer.draw(
+            render_frame=self.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
+
+    def update_camera(self, _dt: float) -> None:
+        _ = _dt
+        if not self.sim_world.players:
+            return
+
+        screen_size = self.renderer._camera_screen_size()
+
+        alive = [player for player in self.sim_world.players if player.health > 0.0]
+        if alive:
+            inv_alive = 1.0 / float(len(alive))
+            focus = Vec2(
+                sum(player.pos.x for player in alive) * inv_alive,
+                sum(player.pos.y for player in alive) * inv_alive,
+            )
+            camera = screen_size * 0.5 - focus
+        else:
+            camera = self.camera
+
+        camera = camera + self.sim_world.state.camera_shake_offset
+        self.camera = self.renderer._clamp_camera(camera, screen_size)
 
     def open(self) -> None:
         self._finished = False
@@ -119,13 +273,13 @@ class DemoView:
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
         self._crand.srand(self.state.rng.getrandbits(32))
-        self._world.open()
+        self._open_world_runtime()
         self._reset_tick_runner()
         self._demo_mode_start()
 
     def close(self) -> None:
         self._reset_tick_runner()
-        self._world.close()
+        self._close_world_runtime()
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
             self._upsell_font = None
@@ -176,7 +330,7 @@ class DemoView:
         if self._purchase_active:
             self._draw_purchase_screen()
             return
-        self._world.draw()
+        self._draw_world()
         self._draw_overlay()
 
     def _skip_triggered(self) -> bool:
@@ -433,7 +587,7 @@ class DemoView:
         self._purchase_active = False
         self._purchase_url_opened = False
         self._spawn_rng.srand(self.state.rng.randrange(0, 0x1_0000_0000))
-        self._world.sim_world.state.bonuses.weapon_power_up = 0.0
+        self.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._apply_variant_ground(0)
             self._setup_variant_0()
@@ -460,17 +614,17 @@ class DemoView:
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self.state.rng.getrandbits(32))
-        self._world.reset(seed=seed, player_count=len(specs))
+        self._reset_world_runtime(seed=seed, player_count=len(specs))
         self._reset_tick_runner()
         for idx, (pos, weapon_id) in enumerate(specs):
-            if idx >= len(self._world.sim_world.players):
+            if idx >= len(self.sim_world.players):
                 continue
-            player = self._world.sim_world.players[idx]
+            player = self.sim_world.players[idx]
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim = pos
-            weapon_assign_player(player, WeaponId(weapon_id), state=self._world.sim_world.state)
-        self._demo_targets = [None] * len(self._world.sim_world.players)
+            weapon_assign_player(player, WeaponId(weapon_id), state=self.sim_world.state)
+        self._demo_targets = [None] * len(self.sim_world.players)
 
     def _apply_variant_ground(self, index: int) -> None:
         if index == 5:
@@ -516,7 +670,7 @@ class DemoView:
             ),
         )
         base_key, overlay_key, base_path, overlay_path = terrain
-        self._world.set_terrain(
+        self.set_terrain(
             base_key=base_key,
             overlay_key=overlay_key,
             base_path=base_path,
@@ -529,7 +683,7 @@ class DemoView:
         return int(self._crand.rand() % mod)
 
     def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
-        self._world.sim_world.creatures.spawn_template(
+        self.sim_world.creatures.spawn_template(
             int(spawn_id),
             pos,
             float(heading),
@@ -566,7 +720,7 @@ class DemoView:
                 (Vec2(480.0, 576.0), weapon_id),
             ],
         )
-        self._world.sim_world.state.bonuses.weapon_power_up = 15.0
+        self.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
@@ -613,7 +767,7 @@ class DemoView:
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
         weapons = ", ".join(
             f"P{p.index + 1}:{_weapon_name(p.weapon.weapon_id, preserve_bugs=bool(self.state.preserve_bugs))}"
-            for p in self._world.sim_world.players
+            for p in self.sim_world.players
         )
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
@@ -682,16 +836,16 @@ class DemoView:
         return self._build_demo_inputs(float(frame_ctx.dt_seconds))
 
     def _update_world(self, dt: float) -> None:
-        if not self._world.sim_world.players:
+        if not self.sim_world.players:
             return
         self._tick_runtime.advance_frame(float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
-        players = self._world.sim_world.players
-        creatures = self._world.sim_world.creatures.entries
+        players = self.sim_world.players
+        creatures = self.sim_world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
-        center = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
+        center = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
 
         dt = float(dt)
 
@@ -770,7 +924,7 @@ class DemoView:
     def _nearest_world_creature_index(self, pos: Vec2) -> int | None:
         best_idx = None
         best_dist = 0.0
-        for idx, creature in enumerate(self._world.sim_world.creatures.entries):
+        for idx, creature in enumerate(self.sim_world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
             d = Vec2.distance_sq(pos, creature.pos)

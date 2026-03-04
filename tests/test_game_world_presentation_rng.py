@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game_world import GameWorld
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import queue_projectile_decals
 from grim.geom import Vec2
+from tests.world_runtime import WorldRuntimeHost
 
 
 def test_projectile_decals_consume_authoritative_rng() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
     world.sim_world.state.rng.srand(0x1234)
     sim_before = int(world.sim_world.state.rng.state)
