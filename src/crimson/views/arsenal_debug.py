@@ -16,6 +16,7 @@ from ..game_modes import GameMode
 from ..game_world import GameWorld
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
+from ..sim.sandbox_step import run_sandbox_world_step
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -351,7 +352,7 @@ class ArsenalDebugView:
 
         self._apply_debug_player_cheats()
         input_state = self._build_input()
-        self._world.update(dt, inputs=[input_state], game_mode=GameMode.SURVIVAL)
+        run_sandbox_world_step(self._world, dt, inputs=[input_state], game_mode=GameMode.SURVIVAL)
 
         if self._audio is not None:
             update_audio(self._audio, dt)

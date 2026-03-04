@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.input import PlayerInput
+from crimson.sim.sandbox_step import run_sandbox_world_step
 from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -107,7 +108,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     )
     assert entry is not None
 
-    world.update(1.0 / 60.0, perk_progression_enabled=False)
+    run_sandbox_world_step(world, 1.0 / 60.0, perk_progression_enabled=False)
 
     assert entry.picked
     assert world.sim_world.state.camera_shake_pulses == 0x14

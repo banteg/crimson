@@ -9,6 +9,7 @@ from crimson.game_world import GameWorld
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
+from crimson.sim.sandbox_step import run_sandbox_world_step
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
@@ -117,7 +118,8 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     player = world.sim_world.players[0]
     player.experience = 10_000
 
-    world.update(
+    run_sandbox_world_step(
+        world,
         0.05,
         inputs=[PlayerInput()],
         auto_pick_perks=False,
@@ -143,7 +145,7 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     )
     assert entry is not None
 
-    world.update(0.016, perk_progression_enabled=False)
+    run_sandbox_world_step(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     play_sfx.assert_called_once()
@@ -165,7 +167,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     )
     assert entry is not None
 
-    world.update(0.016, perk_progression_enabled=False)
+    run_sandbox_world_step(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert play_sfx.call_count == 2
@@ -185,7 +187,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
-    world.update(0.2, inputs=[aim], perk_progression_enabled=False)
+    run_sandbox_world_step(world, 0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -194,7 +196,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.man_bomb_timer = 0.0
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
-    world.update(0.1, inputs=[aim], perk_progression_enabled=False)
+    run_sandbox_world_step(world, 0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -207,7 +209,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.weapon.reload_timer_max = 2.0
     player.weapon.clip_size = 10
     player.weapon.ammo = 0
-    world.update(0.2, inputs=[aim], perk_progression_enabled=False)
+    run_sandbox_world_step(world, 0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 

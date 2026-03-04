@@ -17,6 +17,7 @@ from .game.types import GameState
 from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
+from .sim.sandbox_step import run_sandbox_world_step
 from .sim.state_types import PlayerState
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
@@ -669,7 +670,8 @@ class DemoView:
         if not self._world.sim_world.players:
             return
         inputs = self._build_demo_inputs(dt)
-        self._world.update(
+        run_sandbox_world_step(
+            self._world,
             dt,
             inputs=inputs,
             auto_pick_perks=False,

@@ -22,6 +22,7 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
+from ..sim.sandbox_step import run_sandbox_world_step
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -2881,7 +2882,8 @@ class LightingDebugView:
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
-            self._world.update(
+            run_sandbox_world_step(
+                self._world,
                 sim_dt,
                 inputs=[self._build_input()],
                 game_mode=GameMode.SURVIVAL,
