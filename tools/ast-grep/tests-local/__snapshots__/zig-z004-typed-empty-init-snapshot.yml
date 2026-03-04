@@ -1,0 +1,16 @@
+id: zig-z004-typed-empty-init
+snapshots:
+  ? |
+    const cache = Cache{};
+  : labels:
+    - source: const cache = Cache{};
+      style: primary
+      start: 0
+      end: 22
+  ? |
+    var state = State{};
+  : labels:
+    - source: var state = State{};
+      style: primary
+      start: 0
+      end: 20

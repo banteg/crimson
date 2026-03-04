@@ -1,0 +1,11 @@
+id: zig-z004-typed-empty-init
+valid:
+  - |
+    const cache: Cache = .{};
+  - |
+    var state: State = .{};
+invalid:
+  - |
+    const cache = Cache{};
+  - |
+    var state = State{};
