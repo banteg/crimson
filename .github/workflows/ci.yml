@@ -31,7 +31,7 @@ jobs:
           - task: ast-grep
             use_uv: false
             do_sync: false
-            command: sg scan && sg test
+            command: sg scan && sg test && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg scan -c sgconfig.ci.yml && sg test -c sgconfig.ci.yml
             sync_args: ""
           - task: ty
             use_uv: true
