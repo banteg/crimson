@@ -29,6 +29,12 @@ check *args:
     uv run pytest --no-cov {{args}}
     just check-zig
 
+ast-grep-all:
+    sg scan
+    sg test
+    sg scan -c sgconfig.local.yml
+    sg test -c sgconfig.local.yml
+
 check-zig:
     cd crimson-zig && zig build test --summary all
     cd crimson-zig && zig build -Doptimize=ReleaseFast
