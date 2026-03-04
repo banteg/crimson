@@ -1283,8 +1283,6 @@ class BaseGameplayMode:
                 tick_rate=int(tick_rate),
                 is_networked=bool(is_networked),
                 is_replay=False,
-                session_kind=("lan" if bool(is_networked) else "gameplay"),
-                mode_id=str(self._config_game_mode_id().name).lower(),
             ),
         )
 

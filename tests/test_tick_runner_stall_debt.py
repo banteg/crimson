@@ -59,7 +59,7 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     assert first.ticks_completed == 1
     assert first.stalled is True
     assert first.remaining_debt_ticks >= 1
-    assert first.presentation_plans == ["plan"]
+    assert [result.command_hash for result in first.completed_results] == ["abc123"]
     assert runner.next_tick_index == 1
 
     provider.rows[1] = [PlayerInput()]
@@ -69,5 +69,5 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     assert second.ticks_completed == 1
     assert second.stalled is False
     assert second.remaining_debt_ticks == 0
-    assert second.presentation_plans == ["plan"]
+    assert [result.command_hash for result in second.completed_results] == ["abc123"]
     assert runner.next_tick_index == 2

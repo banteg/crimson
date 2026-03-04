@@ -27,8 +27,6 @@ class FrameContext(msgspec.Struct, frozen=True):
     candidate_ticks: int
     is_networked: bool = False
     is_replay: bool = False
-    session_kind: str = "gameplay"
-    mode_id: str = ""
 
 
 class InputProvider(Protocol):

@@ -16,8 +16,6 @@ class TickContext(msgspec.Struct, frozen=True):
     inputs_present: bool
     is_networked: bool
     is_replay: bool
-    session_kind: str = "gameplay"
-    mode_id: str = ""
     inputs: list[PlayerInput] | None = None
 
 

@@ -62,7 +62,7 @@ def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:
 
     assert result.ticks_completed == 2
     assert result.stalled is False
-    assert result.presentation_plans == ["plan-0", "plan-1"]
+    assert [row.command_hash for row in result.completed_results] == ["h0", "h1"]
 
 
 def test_tick_runner_returns_empty_plans_when_no_ticks_advanced() -> None:
@@ -74,4 +74,4 @@ def test_tick_runner_returns_empty_plans_when_no_ticks_advanced() -> None:
     result = runner.advance_frame(0.0)
 
     assert result.ticks_completed == 0
-    assert result.presentation_plans == []
+    assert result.completed_results == []

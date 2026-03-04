@@ -84,7 +84,7 @@ class _FakeLanRunner:
             self._on_advance()
         if self._results:
             return self._results.pop(0)
-        return TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[])
+        return TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)
 
 
 class _FakeLanProvider:
@@ -123,7 +123,6 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                 ticks_completed=1,
                 stalled=False,
                 remaining_debt_ticks=0,
-                presentation_plans=[],
                 completed_results=[
                     TickResult(
                         tick_index=0,
@@ -134,7 +133,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                     ),
                 ],
             ),
-            TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[]),
+            TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0),
         ],
     )
     provider = _FakeLanProvider()
@@ -173,7 +172,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
     provider = _FakeLanProvider()
     runner = _FakeLanRunner(
-        [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[])],
+        [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)],
         on_advance=lambda: setattr(provider, "pop_blocked", True),
     )
     replay_hook = ReplayRecorderHook(None)

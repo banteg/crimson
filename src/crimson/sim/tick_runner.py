@@ -35,15 +35,12 @@ class TickRunnerConfig(msgspec.Struct, frozen=True):
     tick_rate: int = 60
     is_networked: bool = False
     is_replay: bool = False
-    session_kind: str = "gameplay"
-    mode_id: str = ""
 
 
 class TickBatchResult(msgspec.Struct):
     ticks_completed: int = 0
     stalled: bool = False
     remaining_debt_ticks: int = 0
-    presentation_plans: list[object] = msgspec.field(default_factory=list)
     completed_results: list[TickResult] = msgspec.field(default_factory=list)
 
 
@@ -94,8 +91,6 @@ class TickRunner(Generic[TimingT, TickT]):
                 candidate_ticks=int(candidate_ticks),
                 is_networked=bool(self._config.is_networked),
                 is_replay=bool(self._config.is_replay),
-                session_kind=str(self._config.session_kind),
-                mode_id=str(self._config.mode_id),
             ),
         )
         if candidate_ticks <= 0:
@@ -103,14 +98,12 @@ class TickRunner(Generic[TimingT, TickT]):
                 ticks_completed=0,
                 stalled=False,
                 remaining_debt_ticks=int((self._clock.accum + 1e-9) / self._clock.dt_tick),
-                presentation_plans=[],
                 completed_results=[],
             )
 
         ticks_completed = 0
         stalled = False
         stopped_early = False
-        plans: list[object] = []
         completed_results: list[TickResult] = []
 
         for _ in range(candidate_ticks):
@@ -123,8 +116,6 @@ class TickRunner(Generic[TimingT, TickT]):
                 inputs_present=tick_inputs is not None,
                 is_networked=self._config.is_networked,
                 is_replay=self._config.is_replay,
-                session_kind=str(self._config.session_kind),
-                mode_id=str(self._config.mode_id),
                 inputs=tick_inputs,
             )
             self._hook_bus.on_tick_begin(tick_ctx)
@@ -143,7 +134,6 @@ class TickRunner(Generic[TimingT, TickT]):
             step = tick.step
             command_hash = step.command_hash
             dt_sim = step.dt_sim
-            presentation = step.presentation
             result = TickResult(
                 tick_index=tick_index,
                 command_hash=command_hash,
@@ -162,7 +152,6 @@ class TickRunner(Generic[TimingT, TickT]):
             )
             self._hook_bus.on_post_presentation(tick_ctx, result)
             should_stop = bool(self._hook_bus.on_tick_end(tick_ctx, result))
-            plans.append(presentation)
             completed_results.append(result)
             ticks_completed += 1
             self._next_tick_index += 1
@@ -179,6 +168,5 @@ class TickRunner(Generic[TimingT, TickT]):
             ticks_completed=ticks_completed,
             stalled=stalled,
             remaining_debt_ticks=remaining_debt_ticks,
-            presentation_plans=list(plans),
             completed_results=list(completed_results),
         )
