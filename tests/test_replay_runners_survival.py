@@ -240,10 +240,11 @@ def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> N
     class _StopRun(RuntimeError):
         pass
 
-    def _capture_provider(*, player_count: int, resolve_tick_input, tick_count: int):
+    def _capture_provider(*, player_count: int, resolve_tick_input, tick_count: int, resolve_tick_dt=None):
         captured["provider_player_count"] = int(player_count)
         captured["provider_tick_count"] = int(tick_count)
         captured["provider_resolver"] = resolve_tick_input
+        captured["provider_dt_resolver"] = resolve_tick_dt
         return object()
 
     def _capture_runner(*args, **kwargs):
@@ -264,5 +265,6 @@ def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> N
     assert captured["provider_player_count"] == int(replay.header.player_count)
     assert captured["provider_tick_count"] == int(driver.tick_limit)
     assert callable(cast(Any, captured["provider_resolver"]))
+    assert callable(cast(Any, captured["provider_dt_resolver"]))
     assert captured["runner_input_provider"] is not None
     assert captured["runner_config"] is not None

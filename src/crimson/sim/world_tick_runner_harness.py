@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import cast
+from typing import Protocol, cast
+
+from grim.config import CrimsonConfig
 
 from ..game_modes import GameMode
-from ..game_world import GameWorld
+from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from .input import PlayerInput
 from .input_providers import FrameContext, LocalInputProvider
 from .sessions import DeterministicSessionTick, WorldTickDeterministicSession
@@ -13,11 +15,25 @@ from .tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
+class WorldTickRunnerHost(Protocol):
+    world_size: float
+    config: CrimsonConfig | None
+    demo_mode_active: bool
+    sim_world: SimWorldState
+    render_resources: RenderResources
+    audio_bridge: AudioBridge
+    terrain_runtime: TerrainRuntime
+
+    def sync_audio_bridge_state(self) -> None: ...
+
+    def update_camera(self, dt: float) -> None: ...
+
+
 class WorldTickRunnerHarness:
     def __init__(
         self,
         *,
-        world: GameWorld,
+        world: WorldTickRunnerHost,
         game_mode: GameMode,
         build_inputs: WorldTickInputBuilder,
         tick_rate: int = 60,

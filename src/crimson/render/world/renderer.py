@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import msgspec
 
 from grim.fonts.small import SmallFontData
@@ -11,12 +9,9 @@ from ..frame import RenderFrame
 from .context import WorldRenderCtx, build_world_render_ctx
 from .draw import draw_world
 
-if TYPE_CHECKING:
-    from ...game_world import GameWorld
-
 
 class WorldRenderer(msgspec.Struct):
-    _world: GameWorld
+    _world: object
     _render_frame: RenderFrame | None = None
     _small_font: SmallFontData | None = None
 

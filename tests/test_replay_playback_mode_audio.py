@@ -73,16 +73,18 @@ def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view
 def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(5))
-    world = SimpleNamespace(
-        audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
-        render_resources=SimpleNamespace(
+    audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_audio_bridge", audio_bridge)
+    _set_private(
+        view,
+        "_render_resources",
+        SimpleNamespace(
             ground=None,
             fx_textures=None,
             fx_queue=[],
             fx_queue_rotated=[],
         ),
     )
-    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -97,7 +99,7 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     _set_private(
         view,
         "_on_runner_tick_complete",
-        lambda *_args, **_kwargs: observe_sfx_enabled.mock(bool(world.audio_bridge.router.sfx_enabled)),
+        lambda *_args, **_kwargs: observe_sfx_enabled.mock(bool(audio_bridge.router.sfx_enabled)),
     )
 
     @dataclass
@@ -125,23 +127,25 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view._skip_forward_seconds(2.0 / 60.0)
 
     assert observe_sfx_enabled.mock.call_args_list == [call(False), call(False)]
-    assert bool(world.audio_bridge.router.sfx_enabled)
+    assert bool(audio_bridge.router.sfx_enabled)
     assert view._dt_accum == 0.0
 
 
 def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(3))
-    world = SimpleNamespace(
-        audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
-        render_resources=SimpleNamespace(
+    audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
+    _set_private(view, "_audio_bridge", audio_bridge)
+    _set_private(
+        view,
+        "_render_resources",
+        SimpleNamespace(
             ground=None,
             fx_textures=None,
             fx_queue=[],
             fx_queue_rotated=[],
         ),
     )
-    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -152,7 +156,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     observe_sfx_enabled = Mock()
 
     def _on_runner_tick_complete(*_args, **_kwargs) -> bool:
-        observe_sfx_enabled(bool(world.audio_bridge.router.sfx_enabled))
+        observe_sfx_enabled(bool(audio_bridge.router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
     _set_private(view, "_on_runner_tick_complete", _on_runner_tick_complete)
@@ -183,7 +187,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
         view._skip_forward_seconds(1.0 / 60.0)
 
     assert observe_sfx_enabled.call_args_list == [call(False)]
-    assert bool(world.audio_bridge.router.sfx_enabled)
+    assert bool(audio_bridge.router.sfx_enabled)
 
 
 def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playback_view) -> None:
@@ -208,20 +212,18 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
         fx_queue_rotated.clear()
 
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
+    _set_private(view, "_audio_bridge", SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)))
     _set_private(
         view,
-        "_world",
+        "_render_resources",
         SimpleNamespace(
-            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
-            render_resources=SimpleNamespace(
-                ground=object(),
-                fx_textures=object(),
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
-            ),
-            _bake_fx_queues=_bake_fx_queues,
+            ground=object(),
+            fx_textures=object(),
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
         ),
     )
+    _set_private(view, "_bake_fx_queues", _bake_fx_queues)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -271,17 +273,15 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     fx_queue = _Queue()
     fx_queue_rotated = _Queue()
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
+    _set_private(view, "_audio_bridge", SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)))
     _set_private(
         view,
-        "_world",
+        "_render_resources",
         SimpleNamespace(
-            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
-            render_resources=SimpleNamespace(
-                ground=None,
-                fx_textures=None,
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
-            ),
+            ground=None,
+            fx_textures=None,
+            fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
         ),
     )
     view._tick_rate = 60

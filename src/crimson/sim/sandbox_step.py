@@ -1,19 +1,33 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Protocol
+
+from grim.config import CrimsonConfig
 
 from ..game_modes import GameMode
+from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from .input import PlayerInput
 from .step_pipeline import StepPipelineOptions, run_deterministic_step, time_scale_reflex_boost_factor
 from .timing import FrameTiming, zero_gate_active_from_state
 from .world_state import ProjectileHit
 
-if TYPE_CHECKING:
-    from ..game_world import GameWorld
+
+class SandboxWorldHost(Protocol):
+    world_size: float
+    config: CrimsonConfig | None
+    demo_mode_active: bool
+    sim_world: SimWorldState
+    render_resources: RenderResources
+    audio_bridge: AudioBridge
+    terrain_runtime: TerrainRuntime
+
+    def sync_audio_bridge_state(self) -> None: ...
+
+    def update_camera(self, dt: float) -> None: ...
 
 
 def run_sandbox_world_step(
-    world: GameWorld,
+    world: SandboxWorldHost,
     dt: float,
     *,
     inputs: list[PlayerInput] | None = None,

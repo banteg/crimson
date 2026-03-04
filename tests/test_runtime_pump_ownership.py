@@ -152,19 +152,12 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
     network_sync_hook = NetworkSyncHook()
     profiler = SimpleNamespace(sim_ms=1.5, presentation_plan_ms=0.75, presentation_apply_ms=0.25)
-    fake_policy = SimpleNamespace(
-        prepare_frame=lambda _phase: True,
-        before_tick_step=lambda _phase: None,
-        allow_frame_pop=lambda _phase: True,
-        after_join_consume=lambda _phase: False,
-        on_tick_applied=lambda _phase: "continue",
-    )
-    mocker.patch.object(mode, "_resolve_lan_mode_policy", return_value=fake_policy)
     mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(mode, "_on_lan_tick_applied", return_value="continue")
     mocker.patch.object(
         mode,
-        "_ensure_lan_tick_runner",
-        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler),
+        "_ensure_tick_runner",
+        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler, None, None),
     )
 
     stop = mode._consume_lan_tick_frames(
@@ -191,18 +184,10 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
     checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
     network_sync_hook = NetworkSyncHook()
     profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
-    fake_policy = SimpleNamespace(
-        prepare_frame=lambda _phase: True,
-        before_tick_step=lambda _phase: None,
-        allow_frame_pop=lambda _phase: True,
-        after_join_consume=lambda _phase: False,
-        on_tick_applied=lambda _phase: "continue",
-    )
-    mocker.patch.object(mode, "_resolve_lan_mode_policy", return_value=fake_policy)
     mocker.patch.object(
         mode,
-        "_ensure_lan_tick_runner",
-        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler),
+        "_ensure_tick_runner",
+        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler, None, None),
     )
 
     before_stall_count = int(mode._input_stall_count)

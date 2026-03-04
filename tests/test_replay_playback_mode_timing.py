@@ -26,7 +26,12 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     # Prevent key handlers from running.
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
     view._replay = _replay_with_ticks(16)
-    view._world = SimpleNamespace(render_resources=SimpleNamespace(ground=None))
+    view._render_resources = SimpleNamespace(
+        ground=None,
+        fx_textures=None,
+        fx_queue=[],
+        fx_queue_rotated=[],
+    )
     view._finished = False
     view._paused = False
     view._tick_index = 0
@@ -74,8 +79,11 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
-    view._world = SimpleNamespace(
-        sim_world=SimpleNamespace(players=[SimpleNamespace(health=0.0)]),
+    view._render_resources = SimpleNamespace(
+        ground=None,
+        fx_textures=None,
+        fx_queue=[],
+        fx_queue_rotated=[],
     )
     view._max_ticks = None
     view._tick_index = 0
@@ -121,38 +129,6 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     class _StopOpen(Exception):
         pass
 
-    class _FakeWorld:
-        def __init__(self, *args, **kwargs) -> None:
-            _ = args, kwargs
-            self.world_size = 1000.0
-            self.players = []
-            self.texture_cache = None
-            self.audio = None
-            self.audio_bridge = SimpleNamespace(router=None)
-            self.render_resources = SimpleNamespace(
-                fx_queue=[],
-                fx_queue_rotated=[],
-            )
-            self.sim_world = SimpleNamespace(
-                world_state=SimpleNamespace(),
-                game_tune_started=False,
-                players=[],
-                state=SimpleNamespace(
-                    preserve_bugs=False,
-                    status=None,
-                    rng=SimpleNamespace(state=0),
-                ),
-            )
-
-        def reset(self, *, seed: int, player_count: int) -> None:
-            _ = seed, player_count
-
-        def open(self) -> None:
-            return
-
-        def close(self) -> None:
-            return
-
     class _FakeDriver:
         def __init__(self, *_args, **_kwargs) -> None:
             self.survival_session = object()
@@ -171,7 +147,7 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
     mocker.patch.object(replay_playback_mode, "apply_replay_bootstrap", return_value=None)
-    mocker.patch.object(replay_playback_mode, "GameWorld", _FakeWorld)
+    mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "_open_world_runtime", return_value=None)
     mocker.patch.object(replay_playback_mode, "PlaybackDriver", _FakeDriver)
 
     with pytest.raises(_StopOpen):
