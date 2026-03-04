@@ -1,3 +1,11 @@
+"""Frame-driver orchestration tests.
+
+These tests isolate orchestration logic (pump counting, stall detection,
+sync emission suppression, telemetry propagation) from the sim layer
+using mocks. The mocking is intentional: each test asserts an observable
+behavioral contract of the frame-driver, not internal wiring.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
