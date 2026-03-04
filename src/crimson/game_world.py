@@ -14,15 +14,12 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from .creatures.anim import creature_corpse_frame_for_type
-from .creatures.runtime import CreaturePool
 from .game_modes import GameMode
-from .gameplay import GameplayState
 from .render.frame import RenderFrame
 from .render.rtx.mode import RtxRenderMode
 from .render.world import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.presentation_step import queue_projectile_decals
-from .sim.state_types import PlayerState
 from .sim.step_pipeline import (
     DeterministicStepResult,
     StepPipelineOptions,
@@ -55,18 +52,6 @@ class GameWorld(msgspec.Struct):
     lan_player_rings_enabled: bool = False
     lan_local_aim_indicators_only: bool = False
     lan_local_player_slot_index: int = 0
-
-    @property
-    def state(self) -> GameplayState:
-        return self.sim_world.state
-
-    @property
-    def players(self) -> list[PlayerState]:
-        return self.sim_world.players
-
-    @property
-    def creatures(self) -> CreaturePool:
-        return self.sim_world.creatures
 
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
@@ -142,7 +127,7 @@ class GameWorld(msgspec.Struct):
         if self.render_resources.ground is not None:
             # Terrain generation seed should be stable across headless/interactive and must not
             # advance the authoritative gameplay RNG stream.
-            terrain_seed = int(self.state.rng.state)
+            terrain_seed = int(self.sim_world.state.rng.state)
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def load_world_state(self, world_state: WorldState) -> None:
@@ -188,13 +173,13 @@ class GameWorld(msgspec.Struct):
             detail_key=detail_key,
             detail_path=detail_path,
         )
-        terrain_seed = int(self.state.rng.state)
+        terrain_seed = int(self.sim_world.state.rng.state)
         self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def open(self) -> None:
         self.render_resources.texture_cache = self.texture_cache
         self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=int(self.state.rng.state))
+        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
         self.texture_cache = self.render_resources.texture_cache
 
     def close(self) -> None:
@@ -224,13 +209,13 @@ class GameWorld(msgspec.Struct):
 
         timing = FrameTiming.compute(
             float(dt),
-            time_scale_active_entry=bool(self.state.time_scale_active),
+            time_scale_active_entry=bool(self.sim_world.state.time_scale_active),
             time_scale_factor=time_scale_reflex_boost_factor(
-                reflex_boost_timer=float(self.state.bonuses.reflex_boost),
-                time_scale_active=bool(self.state.time_scale_active),
+                reflex_boost_timer=float(self.sim_world.state.bonuses.reflex_boost),
+                time_scale_active=bool(self.sim_world.state.time_scale_active),
             ),
             zero_gate_active=zero_gate_active_from_state(
-                demo_mode_active=bool(self.state.demo_mode_active),
+                demo_mode_active=bool(self.sim_world.state.demo_mode_active),
             ),
         )
 
@@ -254,38 +239,20 @@ class GameWorld(msgspec.Struct):
             defer_camera_shake_update=defer_camera_shake_update,
             rng_marks_out=rng_marks_out,
         )
-        self.apply_step_result(
-            step,
-            game_tune_started=bool(self.sim_world.game_tune_started) or step.presentation.trigger_game_tune,
-            apply_audio=True,
-            update_camera=True,
-        )
-        return step.events.hits
-
-    def apply_step_result(
-        self,
-        step: DeterministicStepResult,
-        *,
-        game_tune_started: bool,
-        apply_audio: bool = True,
-        update_camera: bool = True,
-    ) -> None:
         self.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
             command_hash=str(step.command_hash),
             dt_sim=float(step.dt_sim),
-            game_tune_started=bool(game_tune_started),
+            game_tune_started=bool(self.sim_world.game_tune_started) or step.presentation.trigger_game_tune,
         )
-
         self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(
             plan=step.presentation,
-            apply_audio=bool(apply_audio),
+            apply_audio=True,
         )
-
-        if update_camera:
-            self.update_camera(step.dt_sim)
+        self.update_camera(step.dt_sim)
+        return step.events.hits
 
     def _queue_projectile_decals(self, hits: list[ProjectileHit], *, rand: Callable[[], int]) -> None:
         gore_disabled = 0
@@ -294,8 +261,8 @@ class GameWorld(msgspec.Struct):
             gore_disabled = self.config.gore_disabled
             detail_preset = self.config.detail_preset
         queue_projectile_decals(
-            state=self.state,
-            players=self.players,
+            state=self.sim_world.state,
+            players=self.sim_world.players,
             fx_queue=self.render_resources.fx_queue,
             hits=hits,
             rand=rand,
@@ -322,9 +289,9 @@ class GameWorld(msgspec.Struct):
 
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(
-            state=self.state,
-            players=self.players,
-            creatures=self.creatures,
+            state=self.sim_world.state,
+            players=self.sim_world.players,
+            creatures=self.sim_world.creatures,
             camera=self.camera,
             demo_mode_active=bool(self.demo_mode_active),
             elapsed_ms=float(self.sim_world.elapsed_ms),
@@ -336,12 +303,12 @@ class GameWorld(msgspec.Struct):
         )
 
     def update_camera(self, _dt: float) -> None:
-        if not self.players:
+        if not self.sim_world.players:
             return
 
         screen_size = self.renderer._camera_screen_size()
 
-        alive = [player for player in self.players if player.health > 0.0]
+        alive = [player for player in self.sim_world.players if player.health > 0.0]
         if alive:
             inv_alive = 1.0 / float(len(alive))
             focus = Vec2(
@@ -352,7 +319,7 @@ class GameWorld(msgspec.Struct):
         else:
             camera = self.camera
 
-        camera = camera + self.state.camera_shake_offset
+        camera = camera + self.sim_world.state.camera_shake_offset
 
         self.camera = self.renderer._clamp_camera(camera, screen_size)
 

@@ -23,7 +23,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     mode.prepare_new_run("1.1", status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
-        mode.world.players[idx].health = float(health)
+        mode.world.sim_world.players[idx].health = float(health)
     mode._close_failed_run()
     outcome = mode.consume_outcome()
     assert outcome is not None
@@ -48,7 +48,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
     assert quest is not None
     weapon = WEAPON_BY_ID[quest.start_weapon_id]
     reload_sfx = weapon.reload_sound
-    assert mode.state.sfx_queue == [reload_sfx] * len(mode.world.players)
+    assert mode.state.sfx_queue == [reload_sfx] * len(mode.world.sim_world.players)
 
 
 def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, mocker) -> None:

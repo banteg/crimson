@@ -18,8 +18,12 @@ class _AimRenderResourcesLike(Protocol):
     aim_texture: object
 
 
-class _AimWorldLike(Protocol):
+class _AimSimWorldLike(Protocol):
     players: list[PlayerState]
+
+
+class _AimWorldLike(Protocol):
+    sim_world: _AimSimWorldLike
     render_resources: _AimRenderResourcesLike
     lan_player_rings_enabled: bool
     lan_local_aim_indicators_only: bool
@@ -32,8 +36,13 @@ class _AimRenderResourcesStub(_AimRenderResourcesLike):
 
 
 @dataclass(slots=True)
-class _AimWorldStub(_AimWorldLike):
+class _AimSimWorldStub(_AimSimWorldLike):
     players: list[PlayerState]
+
+
+@dataclass(slots=True)
+class _AimWorldStub(_AimWorldLike):
+    sim_world: _AimSimWorldLike
     render_resources: _AimRenderResourcesLike = field(default_factory=_AimRenderResourcesStub)
     lan_player_rings_enabled: bool = False
     lan_local_aim_indicators_only: bool = False
@@ -54,7 +63,7 @@ def _make_players() -> list[PlayerState]:
 
 def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRenderer:
     world = _AimWorldStub(
-        players=players,
+        sim_world=_AimSimWorldStub(players=players),
         lan_player_rings_enabled=False,
         lan_local_aim_indicators_only=bool(local_only),
         lan_local_player_slot_index=int(local_slot),

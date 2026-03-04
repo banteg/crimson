@@ -99,15 +99,19 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.NUKE, state=world.state)
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=BonusId.NUKE,
+        state=world.sim_world.state,
+    )
     assert entry is not None
 
     world.update(1.0 / 60.0, perk_progression_enabled=False)
 
     assert entry.picked
-    assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2)
+    assert world.sim_world.state.camera_shake_pulses == 0x14
+    assert_float_close(world.sim_world.state.camera_shake_timer, 0.2)
 
 
 def _spawn_nuke_pickup_on_player(world: WorldState) -> object:

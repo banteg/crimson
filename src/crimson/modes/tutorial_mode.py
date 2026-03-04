@@ -379,7 +379,7 @@ class TutorialMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.players,
+                players=self.world.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self.player.experience),

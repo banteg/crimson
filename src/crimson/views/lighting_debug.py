@@ -1205,7 +1205,7 @@ class LightingDebugView:
             hardcore=False,
             preserve_bugs=bool(ctx.preserve_bugs),
         )
-        self._player = self._world.players[0] if self._world.players else None
+        self._player = self._world.sim_world.players[0] if self._world.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
 
         # Default to Ion Rifle so the first manual shot demonstrates shadows clearly.
@@ -1787,13 +1787,13 @@ class LightingDebugView:
         self._player.shield_timer = float(PLAYER_INVULNERABLE_SHIELD_TIMER)
 
     def _clear_scene_contents(self) -> None:
-        self._world.creatures.reset()
-        self._world.state.projectiles.reset()
-        self._world.state.secondary_projectiles.reset()
-        self._world.state.particles.reset()
-        self._world.state.sprite_effects.reset()
-        self._world.state.effects.reset()
-        self._world.state.bonus_pool.reset()
+        self._world.sim_world.creatures.reset()
+        self._world.sim_world.state.projectiles.reset()
+        self._world.sim_world.state.secondary_projectiles.reset()
+        self._world.sim_world.state.particles.reset()
+        self._world.sim_world.state.sprite_effects.reset()
+        self._world.sim_world.state.effects.reset()
+        self._world.sim_world.state.bonus_pool.reset()
         self._world.render_resources.fx_queue.clear()
         self._world.render_resources.fx_queue_rotated.clear()
         self._transient_lights.clear()
@@ -2037,7 +2037,7 @@ class LightingDebugView:
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
-        self._player = self._world.players[0] if self._world.players else None
+        self._player = self._world.sim_world.players[0] if self._world.sim_world.players else None
         self._apply_debug_player_cheats()
         self._clear_scene_contents()
         self._static_emitters = []
@@ -2089,7 +2089,7 @@ class LightingDebugView:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
                 16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
             )
-            self._world.state.secondary_projectiles.spawn_from_spec(
+            self._world.sim_world.state.secondary_projectiles.spawn_from_spec(
                 SecondarySpawnSpec(
                     pos=impact,
                     angle=float(heading),
@@ -2116,21 +2116,21 @@ class LightingDebugView:
         for i in range(count):
             angle = float(heading) + self._burst_angle(profile, i)
             if profile.primary_type_id is not None:
-                self._world.state.projectiles.spawn(
+                self._world.sim_world.state.projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
                     owner=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
-                self._world.state.secondary_projectiles.spawn_from_spec(
+                self._world.sim_world.state.secondary_projectiles.spawn_from_spec(
                     SecondarySpawnSpec(
                         pos=muzzle_pos,
                         angle=angle,
                         type_id=profile.secondary_type_id,
                         owner=OwnerRef.from_local_player(0),
                         time_to_live=float(profile.secondary_ttl),
-                        creatures=self._world.creatures.entries,
+                        creatures=self._world.sim_world.creatures.entries,
                         target_hint=player.aim,
                     ),
                 )
@@ -2166,16 +2166,16 @@ class LightingDebugView:
                 48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
-            self._world.creatures.spawn_template(
+            self._world.sim_world.creatures.spawn_template(
                 int(preset.spawn_id),
                 pos,
                 heading,
-                self._world.state.rng,
-                rand=self._world.state.rng.rand,
+                self._world.sim_world.state.rng,
+                rand=self._world.sim_world.state.rng.rand,
             )
 
     def _clear_spawned_enemies(self) -> None:
-        self._world.creatures.reset()
+        self._world.sim_world.creatures.reset()
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -2287,12 +2287,12 @@ class LightingDebugView:
             return
         self._last_occluders = collect_shadow_occluders(
             self._player,
-            self._world.creatures.entries,
+            self._world.sim_world.creatures.entries,
             max_occluders=MAX_OCCLUDERS,
         )
         self._last_lights = collect_shadow_lights(
-            self._world.state.projectiles.entries,
-            self._world.state.secondary_projectiles.entries,
+            self._world.sim_world.state.projectiles.entries,
+            self._world.sim_world.state.secondary_projectiles.entries,
             self._transient_lights,
             max_lights=MAX_LIGHTS,
             range_scale=self._range_scale,
@@ -2868,7 +2868,7 @@ class LightingDebugView:
         self._auto_tune_capture_frame(output_rt)
 
     def update(self, dt: float) -> None:
-        self._player = self._world.players[0] if self._world.players else None
+        self._player = self._world.sim_world.players[0] if self._world.sim_world.players else None
         self._handle_debug_input()
         self._run_autodiag()
 
@@ -2886,8 +2886,8 @@ class LightingDebugView:
                 inputs=[self._build_input()],
                 game_mode=GameMode.SURVIVAL,
             )
-        elif self._world.players:
-            self._player = self._world.players[0]
+        elif self._world.sim_world.players:
+            self._player = self._world.sim_world.players[0]
 
         if not self._static_scene_enabled:
             self._transient_lights = tick_transient_lights(self._transient_lights, sim_dt)
@@ -3077,9 +3077,9 @@ class LightingDebugView:
 
         profile = self._selected_profile()
         preset = self._selected_spawn_preset()
-        creatures_alive = sum(1 for creature in self._world.creatures.entries if creature.active and creature.hp > 0.0)
-        primary_count = sum(1 for entry in self._world.state.projectiles.entries if entry.active)
-        secondary_count = sum(1 for entry in self._world.state.secondary_projectiles.entries if entry.active)
+        creatures_alive = sum(1 for creature in self._world.sim_world.creatures.entries if creature.active and creature.hp > 0.0)
+        primary_count = sum(1 for entry in self._world.sim_world.state.projectiles.entries if entry.active)
+        secondary_count = sum(1 for entry in self._world.sim_world.state.secondary_projectiles.entries if entry.active)
 
         draw_ui_text(self._small, "Lighting debug: 2D SDF soft shadows", Vec2(x, y), color=UI_TEXT)
         y += line

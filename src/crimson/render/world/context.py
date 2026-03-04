@@ -68,19 +68,19 @@ class WorldRenderCtx(msgspec.Struct):
     def state(self) -> GameplayState:
         if self.frame is not None:
             return self.frame.state
-        return self.renderer._world.state
+        return self.renderer._world.sim_world.state
 
     @property
     def players(self) -> list[PlayerState]:
         if self.frame is not None:
             return self.frame.players
-        return self.renderer._world.players
+        return self.renderer._world.sim_world.players
 
     @property
     def creatures(self) -> CreaturePool:
         if self.frame is not None:
             return self.frame.creatures
-        return self.renderer._world.creatures
+        return self.renderer._world.sim_world.creatures
 
     @property
     def creature_textures(self) -> dict[str, rl.Texture]:

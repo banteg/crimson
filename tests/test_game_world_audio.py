@@ -34,7 +34,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -53,7 +53,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
 
     world.audio_bridge.router.handle_player_audio(
         player,
@@ -75,7 +75,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
 
     player.weapon.weapon_id = WeaponId.SHOTGUN  # Shotgun
     player.weapon.clip_size = 12
@@ -94,7 +94,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
 
     world.audio_bridge.router.handle_player_audio(
         player,
@@ -114,7 +114,7 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
     player.experience = 10_000
 
     world.update(
@@ -135,8 +135,12 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.POINTS, state=world.state)
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=BonusId.POINTS,
+        state=world.sim_world.state,
+    )
     assert entry is not None
 
     world.update(0.016, perk_progression_enabled=False)
@@ -153,11 +157,11 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FIREBLAST,
-        state=world.state,
+        state=world.sim_world.state,
     )
     assert entry is not None
 
@@ -175,7 +179,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
     play_sfx.reset_mock()
@@ -217,7 +221,7 @@ def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 
-    world.state.bonuses.reflex_boost = 0.75
+    world.sim_world.state.bonuses.reflex_boost = 0.75
     world.audio_bridge.router.play_sfx("sfx_pistol_fire")
 
     play_sfx.assert_called_once()

@@ -30,7 +30,7 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt: float, dt_ui_ms: float) -> None:
-        perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode.world.sim_world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)
