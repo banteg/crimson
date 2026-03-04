@@ -1810,27 +1810,23 @@ class BaseGameplayMode:
             ),
         )
         self._reset_profiler_hook(profiler)
+        self._consume_pending_input_commands(dt_tick=float(dt_tick))
+        policy.before_tick_step(
+            LanTickPhase(
+                role=str(role),
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                dt_tick=float(dt_tick),
+            ),
+        )
+        result = runner.advance_frame(float(dt_tick))
+
         ticks_applied = 0
         stop_after_finalize = False
-
-        while True:
-            self._consume_pending_input_commands(dt_tick=float(dt_tick))
-            policy.before_tick_step(
-                LanTickPhase(
-                    role=str(role),
-                    lockstep_runtime=lockstep_runtime,
-                    session=session,
-                    dt_tick=float(dt_tick),
-                ),
-            )
-            result = runner.advance_frame(
-                float(dt_tick),
-                max_ticks=1,
-            )
-            if bool(result.stalled) or int(result.ticks_completed) <= 0:
-                if provider.pop_blocked:
-                    return False
-                break
+        if int(result.ticks_completed) <= 0:
+            if provider.pop_blocked:
+                return False
+        else:
 
             def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
                 frame_tick_index = applied.frame_tick_index
@@ -1865,10 +1861,8 @@ class BaseGameplayMode:
                 apply_audio=True,
                 update_camera=True,
             )
-            ticks_applied += int(outcome.ticks_applied)
-            if outcome.stopped:
-                stop_after_finalize = bool(outcome.stop_after_finalize)
-                break
+            ticks_applied = int(outcome.ticks_applied)
+            stop_after_finalize = bool(outcome.stop_after_finalize)
 
         self._sim_ms += float(profiler.sim_ms)
         self._presentation_plan_ms += float(profiler.presentation_plan_ms)

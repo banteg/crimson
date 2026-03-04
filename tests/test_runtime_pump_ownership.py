@@ -139,7 +139,6 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                     ),
                 ],
             ),
-            TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0),
         ],
     )
     provider = _FakeLanProvider()
@@ -177,7 +176,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     )
 
     assert stop is False
-    assert runner.calls == 2
+    assert runner.calls == 1
     assert mode._input_stall_count == 0
 
 
