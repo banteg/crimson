@@ -321,7 +321,6 @@ class WorldRuntime:
     def advance_tick_frame(self, dt: float) -> int:
         if not self.sim_world.players:
             return 0
-        self.sync_audio_bridge_state()
         self.terrain_runtime.process_pending()
         runner, session = self._ensure_runner()
         session.demo_mode_active = bool(self.demo_mode_active)

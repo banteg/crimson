@@ -710,7 +710,9 @@ class ReplayPlaybackMode:
             def _on_output_applied(output: PresentationTickOutput) -> None:
                 payload = payloads_by_tick_index.get(int(output.tick_index))
                 if payload is None:
-                    return
+                    raise RuntimeError(
+                        f"missing replay payload for applied output tick {int(output.tick_index)}",
+                    )
                 if hasattr(payload, "step"):
                     outcome = cast(PlaybackTickOutcome, payload)
                     self._apply_tick_outcome(
@@ -731,9 +733,9 @@ class ReplayPlaybackMode:
             can_apply_output_phase = bool(
                 hasattr(runtime, "sync_audio_bridge_state")
                 and hasattr(runtime, "audio_bridge")
-                and hasattr(runtime.audio_bridge, "apply_plan")
-                and hasattr(runtime, "update_camera"),
+                and hasattr(runtime.audio_bridge, "apply_plan"),
             )
+            update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
             if outputs and has_step_outputs and can_apply_output_phase:
                 apply_presentation_outputs(
                     outputs=outputs,
@@ -742,7 +744,7 @@ class ReplayPlaybackMode:
                         plan=plan,
                         apply_audio=bool(should_apply_audio),
                     ),
-                    update_camera=runtime.update_camera,
+                    update_camera=update_camera,
                     on_output_applied=_on_output_applied,
                     apply_audio=True,
                 )
