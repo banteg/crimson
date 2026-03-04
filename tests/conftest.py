@@ -44,6 +44,9 @@ def pytest_configure(config: pytest.Config) -> None:
     src_str = str(src_dir)
     if src_str not in sys.path:
         sys.path.insert(0, src_str)
+    tests_dir = str(Path(__file__).resolve().parent)
+    if tests_dir not in sys.path:
+        sys.path.insert(0, tests_dir)
     config.addinivalue_line("markers", "terrain: terrain generation/rendering tests (slow, opt-in)")
     config.addinivalue_line("markers", "slow: long-running test")
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")

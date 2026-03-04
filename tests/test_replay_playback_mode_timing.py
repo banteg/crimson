@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
+from builders import FakeRunner
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
@@ -18,40 +19,6 @@ from crimson.world.terrain_runtime import TerrainRuntime
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
-
-
-@dataclass
-class _FakeRunner:
-    """Consolidated fake runner for replay timing tests."""
-
-    results: list[TickBatchResult] = field(default_factory=list)
-    frame_count: int = 0
-
-    def begin_frame(self, frame_ctx: object) -> None:
-        _ = frame_ctx
-        self.frame_count += 1
-
-    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
-        _ = tick_dt
-        if self.results:
-            result = self.results.pop(0)
-            return result
-        ticks = max(0, int(ticks_requested))
-        rows = [
-            TickResult(
-                tick_index=int(start_tick + i),
-                command_hash=f"h{int(start_tick + i)}",
-                dt_sim=1.0 / 60.0,
-                payload=object(),
-            )
-            for i in range(int(ticks))
-        ]
-        return TickBatchResult(
-            ticks_completed=int(ticks),
-            batch_status=InputStatus.READY,
-            next_tick_index=int(start_tick) + int(ticks),
-            completed_results=rows,
-        )
 
 
 @dataclass
@@ -88,7 +55,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view._dt_accum = 0.0
     view._on_runner_tick_complete = lambda _tick_index, _tick: False
 
-    view._tick_runner = _FakeRunner()
+    view._tick_runner = FakeRunner()
 
     view.update(0.05)
 
@@ -107,7 +74,7 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view._finished = False
     view._on_runner_tick_complete = lambda _tick_index, _tick: False
 
-    view._tick_runner = _FakeRunner(
+    view._tick_runner = FakeRunner(
         results=[
             TickBatchResult(
                 ticks_completed=1,
@@ -140,7 +107,7 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     applied_ticks: list[int] = []
     view._on_runner_tick_complete = lambda tick_index, _tick: applied_ticks.append(int(tick_index)) or False
 
-    view._tick_runner = _FakeRunner(
+    view._tick_runner = FakeRunner(
         results=[
             TickBatchResult(
                 ticks_completed=2,
