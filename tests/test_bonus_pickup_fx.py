@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
-from crimson.sim.sandbox_step import run_sandbox_world_step
+from crimson.sim.world_tick_runner_harness import step_world_once
 from grim.geom import Vec2
 from tests.world_runtime import WorldRuntimeHost
 
@@ -21,7 +21,7 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
     assert entry is not None
 
     assert not world.sim_world.state.effects.iter_active()
-    run_sandbox_world_step(world, 0.016, perk_progression_enabled=False)
+    step_world_once(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     active = world.sim_world.state.effects.iter_active()
@@ -43,7 +43,7 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     entry.time_left = 0.01
     world.sim_world.state.bonuses.freeze = 0.0
 
-    run_sandbox_world_step(world, 0.016, perk_progression_enabled=False)
+    step_world_once(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert entry.bonus_id == BonusId.UNUSED

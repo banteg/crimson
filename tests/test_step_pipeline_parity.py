@@ -19,7 +19,6 @@ from crimson.sim.driver.playback_driver import resolve_quest_level_from_replay
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
-from crimson.sim.sandbox_step import run_sandbox_world_step
 from crimson.sim.sessions import (
     DeterministicSession,
     QuestDeterministicSession,
@@ -27,6 +26,7 @@ from crimson.sim.sessions import (
     rush_input_transform,
     rush_mid_step,
 )
+from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -101,7 +101,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         elapsed_before_ms = float(elapsed_ms)
         rng_before_world_step = int(world.sim_world.state.rng.state)
         world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
-        run_sandbox_world_step(
+        step_world_once(
             world,
             dt,
             inputs=_inputs_for_tick(replay, tick_index),

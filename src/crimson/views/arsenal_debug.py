@@ -19,7 +19,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
-from ..sim.world_tick_runner_harness import WorldTickRunnerHarness, WorldTickRunnerHost
+from ..sim.world_tick_runner_harness import WorldHost, WorldTickRunnerHarness
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -160,7 +160,7 @@ class ArsenalDebugView:
         self._paused = False
         self._screenshot_requested = False
         self._tick_runtime = WorldTickRunnerHarness(
-            world=cast(WorldTickRunnerHost, self),
+            world=cast(WorldHost, self),
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )

@@ -9,9 +9,8 @@ from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.renderer import WorldRenderHost
-from crimson.sim.sandbox_step import SandboxWorldHost
 from crimson.sim.world_state import WorldState
-from crimson.sim.world_tick_runner_harness import WorldTickRunnerHost
+from crimson.sim.world_tick_runner_harness import WorldHost
 from crimson.world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -19,7 +18,7 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
 
-class WorldRuntimeHost(SandboxWorldHost, WorldTickRunnerHost, WorldRenderHost):
+class WorldRuntimeHost(WorldHost, WorldRenderHost):
     def __init__(
         self,
         *,

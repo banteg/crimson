@@ -21,7 +21,7 @@ from .render.world.renderer import WorldRenderer, WorldRenderHost
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
-from .sim.world_tick_runner_harness import WorldTickRunnerHarness, WorldTickRunnerHost
+from .sim.world_tick_runner_harness import WorldHost, WorldTickRunnerHarness
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -134,7 +134,7 @@ class DemoView:
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
         self._tick_runtime = WorldTickRunnerHarness(
-            world=cast(WorldTickRunnerHost, self),
+            world=cast(WorldHost, self),
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
