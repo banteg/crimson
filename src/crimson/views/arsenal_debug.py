@@ -16,7 +16,6 @@ from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
-from ..sim.world_tick_runner_harness import WorldTickRunnerHarness
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -121,8 +120,7 @@ class ArsenalDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
-        self._tick_runtime = WorldTickRunnerHarness(
-            world=self._runtime,
+        self._runtime.init_tick_runner(
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
@@ -290,7 +288,7 @@ class ArsenalDebugView:
         return [self._build_input()]
 
     def _reset_tick_runner(self) -> None:
-        self._tick_runtime.reset()
+        self._runtime.reset_tick_runner()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
@@ -382,7 +380,7 @@ class ArsenalDebugView:
             return
 
         self._apply_debug_player_cheats()
-        self._tick_runtime.advance_frame(float(dt))
+        self._runtime.advance_tick_frame(float(dt))
 
         if self._audio is not None:
             update_audio(self._audio, dt)

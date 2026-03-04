@@ -18,7 +18,6 @@ from .game_modes import GameMode
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
-from .sim.world_tick_runner_harness import WorldTickRunnerHarness
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -101,8 +100,7 @@ class DemoView:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
-        self._tick_runtime = WorldTickRunnerHarness(
-            world=self._runtime,
+        self._runtime.init_tick_runner(
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )
@@ -155,11 +153,11 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._crand.srand(self.state.rng.getrandbits(32))
         self._open_world_runtime()
-        self._reset_tick_runner()
+        self._runtime.reset_tick_runner()
         self._demo_mode_start()
 
     def close(self) -> None:
-        self._reset_tick_runner()
+        self._runtime.reset_tick_runner()
         self._close_world_runtime()
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
@@ -496,7 +494,7 @@ class DemoView:
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self.state.rng.getrandbits(32))
         self._runtime.reset(seed=seed, player_count=len(specs))
-        self._reset_tick_runner()
+        self._runtime.reset_tick_runner()
         for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._runtime.sim_world.players):
                 continue
@@ -710,16 +708,13 @@ class DemoView:
 
         draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
-    def _reset_tick_runner(self) -> None:
-        self._tick_runtime.reset()
-
     def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
         return self._build_demo_inputs(float(frame_ctx.dt_seconds))
 
     def _update_world(self, dt: float) -> None:
         if not self._runtime.sim_world.players:
             return
-        self._tick_runtime.advance_frame(float(dt))
+        self._runtime.advance_tick_frame(float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._runtime.sim_world.players

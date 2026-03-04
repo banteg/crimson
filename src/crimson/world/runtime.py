@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import cast
 
@@ -9,13 +10,21 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
+from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
+from ..sim.clock import FixedStepClock
+from ..sim.input import PlayerInput
+from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick
+from ..sim.tick_runner import TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
 from .sim_world_state import SimWorldState
 from .terrain_runtime import TerrainRuntime
+
+WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
 class WorldRuntime:
@@ -177,4 +186,156 @@ class WorldRuntime:
             lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
             rtx_mode=self.rtx_mode,
+        )
+
+    # ------------------------------------------------------------------
+    # Tick-stepping (absorbed from WorldTickRunnerHarness)
+    # ------------------------------------------------------------------
+
+    def init_tick_runner(
+        self,
+        *,
+        game_mode: GameMode,
+        build_inputs: WorldTickInputBuilder,
+        tick_rate: int = 60,
+    ) -> None:
+        self._game_mode = game_mode
+        self._build_inputs = build_inputs
+        self._tick_rate = max(1, int(tick_rate))
+        self._session: DeterministicSession | None = None
+        self._runner: TickRunner | None = None
+        self._world_state: object | None = None
+        self._player_count = 0
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
+
+    def reset_tick_runner(self) -> None:
+        self._session = None
+        self._runner = None
+        self._world_state = None
+        self._player_count = 0
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
+
+    def _ensure_runner(self) -> tuple[TickRunner, DeterministicSession]:
+        world_state = self.sim_world.world_state
+        player_count = len(self.sim_world.players)
+        session = self._session
+        runner = self._runner
+        if (
+            session is not None
+            and runner is not None
+            and self._world_state is world_state
+            and int(self._player_count) == int(player_count)
+        ):
+            return runner, session
+
+        detail_preset = 5
+        gore_disabled = 0
+        config = self.config
+        if config is not None:
+            detail_preset = config.detail_preset
+            gore_disabled = config.gore_disabled
+
+        session = DeterministicSession(
+            world=world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=self._game_mode,
+            detail_preset=int(detail_preset),
+            gore_disabled=int(gore_disabled),
+            game_tune_started=bool(self.sim_world.game_tune_started),
+            demo_mode_active=bool(self.demo_mode_active),
+            auto_pick_perks=False,
+            perk_progression_enabled=False,
+            apply_world_dt_steps=True,
+            clear_fx_queues_each_tick=False,
+        )
+        provider = LocalInputProvider(
+            player_count=int(player_count),
+            build_inputs=self._build_inputs,
+        )
+        runner = TickRunner(
+            session=session,
+            input_provider=provider,
+            config=TickRunnerConfig(),
+        )
+        self._session = session
+        self._runner = runner
+        self._world_state = world_state
+        self._player_count = int(player_count)
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
+        return runner, session
+
+    def _apply_tick_batch(
+        self,
+        *,
+        batch: object,
+        session: DeterministicSession,
+    ) -> int:
+        from ..sim.tick_runner import TickBatchResult
+
+        batch = cast(TickBatchResult, batch)
+        ticks_applied = 0
+        for result in batch.completed_results:
+            payload = result.payload
+            if payload is None:
+                continue
+            tick = cast(DeterministicSessionTick, payload)
+            step = tick.step
+            self.sim_world.apply_step_metadata(
+                events=step.events,
+                presentation=step.presentation,
+                command_hash=str(step.command_hash),
+                dt_sim=float(step.dt_sim),
+                game_tune_started=bool(session.game_tune_started),
+            )
+            self.sync_audio_bridge_state()
+            self.audio_bridge.apply_plan(
+                plan=step.presentation,
+                apply_audio=True,
+            )
+            self.update_camera(float(step.dt_sim))
+            ticks_applied += 1
+        return int(ticks_applied)
+
+    def advance_tick_frame(self, dt: float) -> int:
+        if not self.sim_world.players:
+            return 0
+        self.sync_audio_bridge_state()
+        self.terrain_runtime.process_pending()
+        runner, session = self._ensure_runner()
+        session.demo_mode_active = bool(self.demo_mode_active)
+        dt = float(dt)
+        ticks_requested = int(self._clock.advance(dt))
+        self._frame_index = int(self._frame_index) + 1
+        runner.begin_frame(
+            FrameContext(
+                dt_seconds=float(dt),
+                tick_dt_seconds=float(self._clock.dt_tick),
+                frame_index=int(self._frame_index),
+                candidate_ticks=max(0, int(ticks_requested)),
+                is_networked=False,
+                is_replay=False,
+            ),
+        )
+        batch = runner.advance_ticks(
+            start_tick=int(self._next_tick_index),
+            ticks_requested=max(0, int(ticks_requested)),
+            tick_dt=float(self._clock.dt_tick),
+        )
+        self._next_tick_index = int(batch.next_tick_index)
+        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
+            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+            if unconsumed_ticks > 0:
+                self._clock.accum += float(unconsumed_ticks) * float(self._clock.dt_tick)
+        return self._apply_tick_batch(
+            batch=batch,
+            session=session,
         )
