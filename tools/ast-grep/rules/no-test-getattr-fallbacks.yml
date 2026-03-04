@@ -1,0 +1,8 @@
+id: no-test-getattr-fallbacks
+language: python
+severity: warning
+message: Avoid `getattr(..., default)` in tests; prefer explicit typed contracts or purpose-built helpers.
+files:
+  - tests/**/*.py
+rule:
+  pattern: getattr($OBJ, $ATTR, $DEFAULT)

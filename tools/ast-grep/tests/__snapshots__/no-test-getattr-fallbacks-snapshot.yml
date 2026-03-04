@@ -1,0 +1,16 @@
+id: no-test-getattr-fallbacks
+snapshots:
+  ? |
+    close_requested = getattr(view, "close_requested", False)
+  : labels:
+    - source: getattr(view, "close_requested", False)
+      style: primary
+      start: 18
+      end: 57
+  ? |
+    score = getattr(result, "score", 0)
+  : labels:
+    - source: getattr(result, "score", 0)
+      style: primary
+      start: 8
+      end: 35

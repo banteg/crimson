@@ -1,0 +1,26 @@
+id: no-test-any-contract-gaps
+language: python
+severity: warning
+message: Avoid `Any` in tests; prefer concrete helper types, protocols, or typed fixtures.
+files:
+  - tests/**/*.py
+rule:
+  any:
+    - pattern: "$NAME: Any"
+    - pattern: "$NAME: TypeAlias = Any"
+    - pattern: "cast(Any, $EXPR)"
+    - pattern: |
+        def $FUNC($$$A, $ARG: Any, $$$B):
+          $$$BODY
+    - pattern: |
+        def $FUNC($$$A, $ARG: Any, $$$B) -> $RET:
+          $$$BODY
+    - pattern: |
+        def $FUNC($ARG: Any):
+          $$$BODY
+    - pattern: |
+        def $FUNC($ARG: Any) -> $RET:
+          $$$BODY
+    - pattern: |
+        def $FUNC($$$ARGS) -> Any:
+          $$$BODY
