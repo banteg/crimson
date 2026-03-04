@@ -4,7 +4,6 @@ severity: error
 message: Avoid broad `except Exception` in runtime hot paths; catch specific expected exception types.
 files:
   - src/crimson/assets_fetch.py
-  - src/crimson/cli.py
   - src/crimson/frontend/panels/databases.py
   - src/crimson/frontend/panels/mods.py
   - src/crimson/frontend/menu.py
@@ -18,13 +17,10 @@ files:
   - src/crimson/game/quest_views/quest_results.py
   - src/crimson/modes/components/highscore_record_builder.py
   - src/crimson/movement_controls.py
-  - src/crimson/net/runtime.py
   - src/crimson/net/transport.py
   - src/crimson/perks/availability.py
   - src/crimson/persistence/save_status.py
-  - src/crimson/sim/runners/common.py
   - src/crimson/views/audio_bootstrap.py
-  - src/crimson/views/ground.py
   - src/crimson/views/spawn_plan.py
   - src/crimson/weapon_runtime/assign.py
   - src/crimson/weapon_runtime/availability.py
