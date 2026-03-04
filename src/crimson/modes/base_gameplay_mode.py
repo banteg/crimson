@@ -111,6 +111,27 @@ class _LanFrameSample:
     remote_state_hash: str
 
 
+@dataclass(slots=True)
+class _AppliedBatchTick:
+    runner_tick_index: int
+    tick: DeterministicSessionStepTick
+    replay_tick_index: int | None
+    local_command_hash: str
+    hashes: TickHashes | None
+    frame_tick_index: int | None = None
+    frame_inputs: tuple[PackedPlayerInput, ...] = ()
+    remote_command_hash: str = ""
+    remote_state_hash: str = ""
+    host_state_hash: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class _BatchApplyOutcome:
+    ticks_applied: int = 0
+    stopped: bool = False
+    stop_after_finalize: bool = False
+
+
 class _LanRuntimeInputProvider(NetworkInputProvider):
     def __init__(self, *, player_count: int, tick_rate: int) -> None:
         self._runtime: LanRuntime | None = None
@@ -1728,107 +1749,90 @@ class BaseGameplayMode:
                     return False
                 break
 
-            stop_requested = False
-            for tick_result in result.completed_results:
-                payload = tick_result.payload
-                if payload is None:
-                    continue
-                tick = cast(DeterministicSessionStepTick, payload)
-                runner_tick_index = int(tick_result.tick_index)
-                sample = provider.take_frame_sample(runner_tick_index)
-                if sample is None:
+            def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
+                frame_tick_index = applied.frame_tick_index
+                if frame_tick_index is None:
                     raise RuntimeError("lan tick runner completed without runtime frame metadata")
-                frame_tick_index = int(sample.frame_tick_index)
-                frame_inputs = tuple(sample.frame_inputs)
-                replay_tick_index = replay_hook.recorded_tick_by_runner_tick.pop(runner_tick_index, None)
-                hashes = network_sync_hook.recorded_hashes_by_runner_tick.pop(runner_tick_index, None)
-                local_command_hash = str(
-                    hashes.command_hash if hashes is not None else tick.step.command_hash,
-                )
-                remote_command_hash = str(sample.remote_command_hash)
-                remote_state_hash = str(sample.remote_state_hash)
+                tick = applied.tick
                 elapsed_ms = float(tick.elapsed_ms)
                 creature_count_world_step = int(tick.creature_count_world_step)
-
                 if role == "join":
-                    if remote_command_hash and remote_command_hash != local_command_hash:
+                    if applied.remote_command_hash and applied.remote_command_hash != applied.local_command_hash:
                         runtime.note_desync(
                             kind="command_hash",
                             tick_index=int(frame_tick_index),
-                            expected=str(remote_command_hash),
-                            actual=str(local_command_hash),
+                            expected=str(applied.remote_command_hash),
+                            actual=str(applied.local_command_hash),
                         )
-                    if remote_state_hash:
+                    if applied.remote_state_hash:
                         local_state_hash = self._lan_state_hash_for_tick(
                             tick_index=int(frame_tick_index),
                             elapsed_ms=float(elapsed_ms),
                             creature_count_world_step=int(creature_count_world_step),
                         )
-                        if local_state_hash != remote_state_hash:
+                        if local_state_hash != applied.remote_state_hash:
                             runtime.note_desync(
                                 kind="state_hash",
                                 tick_index=int(frame_tick_index),
-                                expected=str(remote_state_hash),
+                                expected=str(applied.remote_state_hash),
                                 actual=str(local_state_hash),
                             )
-
-                host_state_hash = ""
                 if role == "host" and self._lan_should_emit_state_hash(tick_index=int(frame_tick_index)):
-                    host_state_hash = self._lan_state_hash_for_tick(
+                    applied.host_state_hash = self._lan_state_hash_for_tick(
                         tick_index=int(frame_tick_index),
                         elapsed_ms=float(elapsed_ms),
                         creature_count_world_step=int(creature_count_world_step),
                     )
 
-                self._apply_sim_step_result(
-                    step=tick.step,
-                    game_tune_started=bool(session.game_tune_started),
-                    apply_audio=True,
-                    update_camera=True,
-                )
-                self._ticks_advanced_per_frame += 1
-                ticks_applied += 1
-
                 lan_step = LanTickStep(
                     frame_tick_index=int(frame_tick_index),
-                    frame_inputs=tuple(frame_inputs),
+                    frame_inputs=tuple(applied.frame_inputs),
                     tick=tick,
-                    local_command_hash=str(local_command_hash),
-                    host_state_hash=str(host_state_hash),
-                    replay_tick_index=replay_tick_index,
+                    local_command_hash=str(applied.local_command_hash),
+                    host_state_hash=str(applied.host_state_hash),
+                    replay_tick_index=applied.replay_tick_index,
                 )
-                action = self._on_lan_tick_applied(
+                return self._on_lan_tick_applied(
                     role=str(role),
                     lockstep_runtime=lockstep_runtime,
                     session=session,
                     step=lan_step,
                     dt_tick=float(dt_tick),
                 )
-                if action == "stop_before_finalize":
-                    stop_requested = True
-                    break
 
-                if replay_tick_index is not None:
-                    self._record_replay_checkpoint_from_tick(
-                        tick_index=int(replay_tick_index),
-                        tick=tick,
-                    )
+            def _on_tick_finalize(applied: _AppliedBatchTick) -> None:
+                frame_tick_index = applied.frame_tick_index
+                if frame_tick_index is None:
+                    raise RuntimeError("lan tick runner completed without runtime frame metadata")
+                if role != "host" or lockstep_runtime is None:
+                    return
+                lockstep_runtime.broadcast_tick_frame(
+                    TickFrame(
+                        tick_index=int(frame_tick_index),
+                        frame_inputs=[list(packed) for packed in applied.frame_inputs],
+                        command_hash=str(applied.local_command_hash),
+                        state_hash=str(applied.host_state_hash),
+                    ),
+                )
 
-                if role == "host" and lockstep_runtime is not None:
-                    lockstep_runtime.broadcast_tick_frame(
-                        TickFrame(
-                            tick_index=int(frame_tick_index),
-                            frame_inputs=[list(packed) for packed in frame_inputs],
-                            command_hash=str(local_command_hash),
-                            state_hash=str(host_state_hash),
-                        ),
-                    )
-                if action == "stop_after_finalize":
-                    stop_after_finalize = True
-                    stop_requested = True
-                    break
-
-            if stop_requested:
+            outcome = self._process_tick_batch_results(
+                batch=result,
+                session=session,
+                replay_hook=replay_hook,
+                network_sync_hook=network_sync_hook,
+                frame_sample_resolver=provider.take_frame_sample,
+                on_tick_applied=_on_tick_applied,
+                on_tick_finalize=_on_tick_finalize,
+                on_checkpoint=lambda replay_tick_index, tick: self._record_replay_checkpoint_from_tick(
+                    tick_index=int(replay_tick_index),
+                    tick=tick,
+                ),
+                apply_audio=True,
+                update_camera=True,
+            )
+            ticks_applied += int(outcome.ticks_applied)
+            if outcome.stopped:
+                stop_after_finalize = bool(outcome.stop_after_finalize)
                 break
 
         self._sim_ms += float(profiler.sim_ms)
@@ -1871,6 +1875,88 @@ class BaseGameplayMode:
         if update_camera:
             self.world.update_camera(float(deterministic_step.dt_sim))
 
+    def _process_tick_batch_results(
+        self,
+        *,
+        batch: TickBatchResult,
+        session: DeterministicSessionLike,
+        replay_hook: ReplayRecorderHook,
+        network_sync_hook: NetworkSyncHook,
+        frame_sample_resolver: Callable[[int], _LanFrameSample | None] | None = None,
+        on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
+        on_tick_finalize: Callable[[_AppliedBatchTick], None] | None = None,
+        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
+        apply_audio: bool,
+        update_camera: bool,
+    ) -> _BatchApplyOutcome:
+        ticks_applied = 0
+        stop_after_finalize = False
+        for tick_result in batch.completed_results:
+            payload = tick_result.payload
+            if payload is None:
+                continue
+            tick = cast(DeterministicSessionStepTick, payload)
+            runner_tick_index = int(tick_result.tick_index)
+            replay_tick_index = replay_hook.recorded_tick_by_runner_tick.pop(runner_tick_index, None)
+            hashes = network_sync_hook.recorded_hashes_by_runner_tick.pop(runner_tick_index, None)
+            local_command_hash = str(
+                hashes.command_hash if hashes is not None else tick.step.command_hash,
+            )
+            applied = _AppliedBatchTick(
+                runner_tick_index=int(runner_tick_index),
+                tick=tick,
+                replay_tick_index=replay_tick_index,
+                local_command_hash=str(local_command_hash),
+                hashes=hashes,
+            )
+            if frame_sample_resolver is not None:
+                sample = frame_sample_resolver(int(runner_tick_index))
+                if sample is None:
+                    raise RuntimeError("lan tick runner completed without runtime frame metadata")
+                applied.frame_tick_index = int(sample.frame_tick_index)
+                applied.frame_inputs = tuple(sample.frame_inputs)
+                applied.remote_command_hash = str(sample.remote_command_hash)
+                applied.remote_state_hash = str(sample.remote_state_hash)
+
+            self._apply_sim_step_result(
+                step=tick.step,
+                game_tune_started=bool(session.game_tune_started),
+                apply_audio=bool(apply_audio),
+                update_camera=bool(update_camera),
+            )
+            self._ticks_advanced_per_frame += 1
+            ticks_applied += 1
+
+            action: LanStepAction = "continue"
+            if on_tick_applied is not None:
+                action = on_tick_applied(applied)
+            if action == "stop_before_finalize":
+                return _BatchApplyOutcome(
+                    ticks_applied=int(ticks_applied),
+                    stopped=True,
+                    stop_after_finalize=False,
+                )
+
+            if replay_tick_index is not None and on_checkpoint is not None:
+                on_checkpoint(int(replay_tick_index), tick)
+
+            if on_tick_finalize is not None:
+                on_tick_finalize(applied)
+
+            if action == "stop_after_finalize":
+                stop_after_finalize = True
+                return _BatchApplyOutcome(
+                    ticks_applied=int(ticks_applied),
+                    stopped=True,
+                    stop_after_finalize=bool(stop_after_finalize),
+                )
+
+        return _BatchApplyOutcome(
+            ticks_applied=int(ticks_applied),
+            stopped=False,
+            stop_after_finalize=bool(stop_after_finalize),
+        )
+
     def _run_deterministic_session_ticks(
         self,
         *,
@@ -1894,14 +1980,9 @@ class BaseGameplayMode:
         )
         replay_hook.set_recorder(recorder)
         replay_hook.clear_recorded_ticks()
-        checkpoint_hook.set_on_checkpoint(
-            (
-                (lambda tick_index, tick: on_checkpoint(int(tick_index), cast(DeterministicSessionStepTick, tick)))
-                if on_checkpoint is not None
-                else None
-            ),
-        )
+        checkpoint_hook.set_on_checkpoint(None)
         net_sync_hook.set_on_hash(on_hash)
+        net_sync_hook.clear_recorded_hashes()
         observer_hook.bind(on_tick)
         self._reset_profiler_hook(profiler_hook)
 
@@ -1910,18 +1991,19 @@ class BaseGameplayMode:
         )
         observer_hook.bind(None)
 
-        for tick_result in batch.completed_results:
-            payload = tick_result.payload
-            if payload is None:
-                continue
-            tick_row = cast(DeterministicSessionStepTick, payload)
-            self._apply_sim_step_result(
-                step=tick_row.step,
-                game_tune_started=session.game_tune_started,
-                apply_audio=True,
-                update_camera=True,
-            )
-            self._ticks_advanced_per_frame += 1
+        self._process_tick_batch_results(
+            batch=batch,
+            session=session,
+            replay_hook=replay_hook,
+            network_sync_hook=net_sync_hook,
+            on_checkpoint=(
+                (lambda tick_index, tick: on_checkpoint(int(tick_index), tick))
+                if on_checkpoint is not None
+                else None
+            ),
+            apply_audio=True,
+            update_camera=True,
+        )
         self._sim_ms = float(profiler_hook.sim_ms)
         self._presentation_plan_ms = float(profiler_hook.presentation_plan_ms)
         self._presentation_apply_ms = float(profiler_hook.presentation_apply_ms)
