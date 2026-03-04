@@ -28,15 +28,10 @@ jobs:
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
-          - task: ast-grep-scan
+          - task: ast-grep
             use_uv: false
             do_sync: false
-            command: sg scan && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg scan -c sgconfig.ci.yml
-            sync_args: ""
-          - task: ast-grep-test
-            use_uv: false
-            do_sync: false
-            command: sg test && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg test -c sgconfig.ci.yml
+            command: sg scan && sg test && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg scan -c sgconfig.ci.yml && sg test -c sgconfig.ci.yml
             sync_args: ""
           - task: ty
             use_uv: true
