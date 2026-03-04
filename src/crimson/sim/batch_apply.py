@@ -97,5 +97,5 @@ def apply_presentation_outputs(
         if output.presentation is None:
             continue
         apply_audio_plan(output.presentation, bool(apply_audio))
-    if update_camera is not None:
-        update_camera(float(outputs[-1].dt_sim))
+        if update_camera is not None:
+            update_camera(float(output.dt_sim))

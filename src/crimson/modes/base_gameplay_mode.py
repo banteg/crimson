@@ -67,7 +67,6 @@ from ..sim.batch_apply import (
     PresentationTickOutput,
     SimMetadataSink,
     apply_presentation_outputs,
-    apply_sim_metadata_batch,
     apply_tick_to_sim,
 )
 from ..sim.clock import FixedStepClock
@@ -2152,24 +2151,19 @@ class BaseGameplayMode:
                 applied.remote_state_hash = str(tick_result.lan_sync.remote_state_hash)
                 applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
-            try:
-                presentation_outputs.extend(
-                    apply_sim_metadata_batch(
-                        sim_world=cast(SimMetadataSink, self.sim_world),
-                        completed_results=[tick_result],
-                        game_tune_started=bool(session.game_tune_started),
-                        extract_step=_extract_step,
-                    ),
-                )
-            except AttributeError:
-                # Some tests inject minimal step stubs and patch
-                # _apply_sim_step_result; preserve that seam.
-                self._apply_sim_step_result(
-                    step=tick.step,
-                    game_tune_started=bool(session.game_tune_started),
-                    apply_audio=False,
-                    update_camera=False,
-                )
+            step = _extract_step(tick)
+            apply_tick_to_sim(
+                sim_world=cast(SimMetadataSink, self.sim_world),
+                step=step,
+                game_tune_started=bool(session.game_tune_started),
+            )
+            presentation_outputs.append(
+                PresentationTickOutput(
+                    tick_index=int(tick_result.tick_index),
+                    dt_sim=float(step.dt_sim),
+                    presentation=step.presentation,
+                ),
+            )
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 
