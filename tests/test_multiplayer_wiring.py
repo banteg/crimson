@@ -169,7 +169,7 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Pa
     run_ticks.assert_not_called()
 
 
-def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> None:
+def test_rush_mode_debug_f10_does_not_bypass_lan_wait_gate(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -197,8 +197,8 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> N
 
     mode.update(0.02)
 
-    run_ticks.assert_called_once()
-    assert mode._lan_wait_gate_active() is False
+    run_ticks.assert_not_called()
+    assert mode._lan_wait_gate_active() is True
 
 
 def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:

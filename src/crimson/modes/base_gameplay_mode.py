@@ -599,7 +599,6 @@ class BaseGameplayMode:
         on_sim_inactive: Callable[[_ModeFrameState, float], None] | None = None,
         on_session_missing: Callable[[_ModeFrameState, float], None] | None = None,
     ) -> None:
-        self._update_lan_wait_gate_debug_override()
         if self._lan_wait_gate_active():
             self._reset_gameplay_tick_runner_clock()
             return
@@ -929,21 +928,6 @@ class BaseGameplayMode:
         if not pending:
             self._lan_initial_terrain_ready = True
 
-    def _update_lan_wait_gate_debug_override(self) -> None:
-        if not self._lan_wait_gate_active():
-            return
-        if (not debug_enabled()) or (not rl.is_key_pressed(rl.KeyboardKey.KEY_F10)):
-            return
-        self._lan_connected_players = int(self._lan_expected_players)
-        self._lan_waiting_for_players = False
-        lan_debug_log(
-            "wait_gate_override",
-            mode=self.__class__.__name__,
-            role=str(self._lan_role),
-            connected_players=int(self._lan_connected_players),
-            expected_players=int(self._lan_expected_players),
-        )
-
     def _trace_lan_state_heartbeat(self) -> None:
         if not self._lan_enabled:
             return
@@ -1020,13 +1004,6 @@ class BaseGameplayMode:
                 scale=0.9,
             )
             y += float(line_h)
-            self._draw_ui_text(
-                "debug: F10 force start (temporary bring-up override)",
-                Vec2(float(x), float(y)),
-                rl.Color(130, 180, 240, 255),
-                scale=0.8,
-            )
-            y += float(line_h)
 
         return float(y)
 
@@ -1088,7 +1065,7 @@ class BaseGameplayMode:
 
         if debug_enabled():
             self._draw_ui_text(
-                "Debug override: press F10 to force start",
+                "Debug: waiting for all peers before simulation starts",
                 Vec2(text_x, text_y + line_h * 4.5),
                 rl.Color(232, 197, 117, 255),
                 scale=0.8,
