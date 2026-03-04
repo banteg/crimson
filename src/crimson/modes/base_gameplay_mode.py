@@ -1676,56 +1676,74 @@ class BaseGameplayMode:
                 on_hash(int(tick_result.tick_index), hashes)
 
     @staticmethod
-    def _annotate_lan_tick_sync(
+    def _prepare_lan_tick_sync(
         *,
-        batch: TickBatchResult,
-        callbacks: LanSyncCallbacks | None,
-    ) -> None:
-        if callbacks is None:
-            return
+        tick_result: TickResult,
+        callbacks: LanSyncCallbacks,
+    ) -> LanTickSync:
+        sample = callbacks.take_frame_sample(int(tick_result.tick_index))
+        if sample is None:
+            raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        sync = LanTickSync(
+            frame_tick_index=int(sample.frame_tick_index),
+            frame_inputs=tuple(sample.frame_inputs),
+            remote_command_hash=str(sample.remote_command_hash),
+            remote_state_hash=str(sample.remote_state_hash),
+            host_state_hash="",
+        )
+        tick_result.lan_sync = sync
+        return sync
+
+    @staticmethod
+    def _finalize_lan_tick_sync(
+        *,
+        tick_result: TickResult,
+        callbacks: LanSyncCallbacks,
+    ) -> LanTickSync:
+        hashes = tick_result.hashes
+        if hashes is None:
+            hashes = TickHashes(command_hash=str(tick_result.command_hash), state_hash=None)
+            tick_result.hashes = hashes
+
+        lan_sync = tick_result.lan_sync
+        if lan_sync is None:
+            raise RuntimeError("lan tick result missing frame metadata")
+        sync = cast(LanTickSync, lan_sync)
+        frame_tick_index = int(sync.frame_tick_index)
+        remote_command_hash = str(sync.remote_command_hash)
+        remote_state_hash = str(sync.remote_state_hash)
+        local_command_hash = str(hashes.command_hash)
+        host_state_hash = ""
         role = str(callbacks.role)
-        for tick_result in batch.completed_results:
-            hashes = tick_result.hashes
-            if hashes is None:
-                hashes = TickHashes(command_hash=str(tick_result.command_hash), state_hash=None)
-                tick_result.hashes = hashes
 
-            sample = callbacks.take_frame_sample(int(tick_result.tick_index))
-            if sample is None:
-                raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        if role == "join":
+            if remote_command_hash and remote_command_hash != local_command_hash:
+                callbacks.note_desync("command_hash", int(frame_tick_index), remote_command_hash, local_command_hash)
+            if remote_state_hash:
+                local_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
+                if local_state_hash != remote_state_hash:
+                    callbacks.note_desync("state_hash", int(frame_tick_index), remote_state_hash, local_state_hash)
+        elif role == "host" and bool(callbacks.should_emit_state_hash(int(frame_tick_index))):
+            host_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
 
-            frame_tick_index = int(sample.frame_tick_index)
-            remote_command_hash = str(sample.remote_command_hash)
-            remote_state_hash = str(sample.remote_state_hash)
-            local_command_hash = str(hashes.command_hash)
-            host_state_hash = ""
+        finalized = LanTickSync(
+            frame_tick_index=int(frame_tick_index),
+            frame_inputs=tuple(sync.frame_inputs),
+            remote_command_hash=str(remote_command_hash),
+            remote_state_hash=str(remote_state_hash),
+            host_state_hash=str(host_state_hash),
+        )
+        tick_result.lan_sync = finalized
 
-            if role == "join":
-                if remote_command_hash and remote_command_hash != local_command_hash:
-                    callbacks.note_desync("command_hash", int(frame_tick_index), remote_command_hash, local_command_hash)
-                if remote_state_hash:
-                    local_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
-                    if local_state_hash != remote_state_hash:
-                        callbacks.note_desync("state_hash", int(frame_tick_index), remote_state_hash, local_state_hash)
-            elif role == "host" and bool(callbacks.should_emit_state_hash(int(frame_tick_index))):
-                host_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
-
-            tick_result.lan_sync = LanTickSync(
-                frame_tick_index=int(frame_tick_index),
-                frame_inputs=tuple(sample.frame_inputs),
-                remote_command_hash=str(remote_command_hash),
-                remote_state_hash=str(remote_state_hash),
-                host_state_hash=str(host_state_hash),
+        broadcast = callbacks.broadcast_tick_frame
+        if role == "host" and broadcast is not None:
+            broadcast(
+                int(frame_tick_index),
+                tuple(sync.frame_inputs),
+                str(local_command_hash),
+                str(host_state_hash),
             )
-
-            broadcast = callbacks.broadcast_tick_frame
-            if role == "host" and broadcast is not None:
-                broadcast(
-                    int(frame_tick_index),
-                    tuple(sample.frame_inputs),
-                    str(local_command_hash),
-                    str(host_state_hash),
-                )
+        return finalized
 
     def _record_replay_checkpoint_from_tick(
         self,
@@ -1954,21 +1972,18 @@ class BaseGameplayMode:
             if provider.pop_blocked:
                 return False
         else:
+            lan_sync_callbacks = self._build_lan_sync_callbacks(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                role=str(role),
+                provider=provider,
+            )
             self._apply_tick_commands(
                 batch=batch,
                 provider=provider,
                 default_dt_tick=float(dt_tick),
             )
             self._annotate_tick_hashes(batch=batch, on_hash=None)
-            self._annotate_lan_tick_sync(
-                batch=batch,
-                callbacks=self._build_lan_sync_callbacks(
-                    runtime=runtime,
-                    lockstep_runtime=lockstep_runtime,
-                    role=str(role),
-                    provider=provider,
-                ),
-            )
 
             def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
                 frame_tick_index = applied.frame_tick_index
@@ -1987,6 +2002,7 @@ class BaseGameplayMode:
                 batch=batch,
                 session=session,
                 recorder=self._replay_recorder,
+                lan_sync_callbacks=lan_sync_callbacks,
                 on_tick_applied=_on_tick_applied,
                 on_checkpoint=lambda replay_tick_index, tick: self._record_replay_checkpoint_from_tick(
                     tick_index=int(replay_tick_index),
@@ -2042,6 +2058,7 @@ class BaseGameplayMode:
         batch: TickBatchResult,
         session: DeterministicSession | QuestDeterministicSession,
         recorder: ReplayRecorder | None = None,
+        lan_sync_callbacks: LanSyncCallbacks | None = None,
         on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
         on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
         apply_audio: bool,
@@ -2072,6 +2089,16 @@ class BaseGameplayMode:
                 local_command_hash=str(local_command_hash),
                 hashes=hashes,
             )
+            if lan_sync_callbacks is not None:
+                sync = self._prepare_lan_tick_sync(
+                    tick_result=tick_result,
+                    callbacks=lan_sync_callbacks,
+                )
+                applied.frame_tick_index = int(sync.frame_tick_index)
+                applied.frame_inputs = tuple(sync.frame_inputs)
+                applied.remote_command_hash = str(sync.remote_command_hash)
+                applied.remote_state_hash = str(sync.remote_state_hash)
+                applied.host_state_hash = str(sync.host_state_hash)
             lan_sync = tick_result.lan_sync
             if lan_sync is not None:
                 sync = cast(LanTickSync, lan_sync)
@@ -2102,6 +2129,13 @@ class BaseGameplayMode:
 
             if replay_tick_index is not None and on_checkpoint is not None:
                 on_checkpoint(int(replay_tick_index), tick)
+
+            if lan_sync_callbacks is not None:
+                finalized_sync = self._finalize_lan_tick_sync(
+                    tick_result=tick_result,
+                    callbacks=lan_sync_callbacks,
+                )
+                applied.host_state_hash = str(finalized_sync.host_state_hash)
 
             if action == "stop_after_finalize":
                 stop_after_finalize = True

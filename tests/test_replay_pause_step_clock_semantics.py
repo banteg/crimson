@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import SimpleNamespace
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -137,6 +137,7 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
     class _EosRunner:
         next_tick_index: int = 2
         reset_calls: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
         def reset_clock(self) -> None:
             self.reset_calls += 1

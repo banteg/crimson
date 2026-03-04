@@ -8,7 +8,8 @@ import pytest
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
-from crimson.sim.input_providers import ReplayEndOfStream
+from crimson.sim.hooks import TickResult
+from crimson.sim.tick_runner import ReplayAdvanceEndOfStream
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -135,22 +136,30 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     applied_ticks: list[int] = []
     view._on_runner_tick_complete = lambda tick_index, _tick: applied_ticks.append(int(tick_index)) or False
 
-    class _ReplayEos(ReplayEndOfStream):
-        def __init__(self, completed_results: list[object]) -> None:
-            super().__init__("eos")
-            self.completed_results = list(completed_results)
-
     @dataclass
     class _FakeRunner:
         next_tick_index: int = 2
         clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
         def advance_frame(self, *_args, **_kwargs) -> object:
-            raise _ReplayEos(
+            raise ReplayAdvanceEndOfStream(
+                "eos",
                 completed_results=[
-                    SimpleNamespace(tick_index=0, payload=object()),
-                    SimpleNamespace(tick_index=1, payload=object()),
+                    TickResult(
+                        tick_index=0,
+                        command_hash="h0",
+                        dt_sim=1.0 / 60.0,
+                        payload=object(),
+                    ),
+                    TickResult(
+                        tick_index=1,
+                        command_hash="h1",
+                        dt_sim=1.0 / 60.0,
+                        payload=object(),
+                    ),
                 ],
+                ticks_completed=2,
+                remaining_debt_ticks=0,
             )
 
     view._tick_runner = _FakeRunner()

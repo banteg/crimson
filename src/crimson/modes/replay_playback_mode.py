@@ -43,7 +43,7 @@ from ..sim.driver.playback_driver import (
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..sim.input_providers import ReplayEndOfStream
-from ..sim.tick_runner import TickRunner
+from ..sim.tick_runner import ReplayAdvanceEndOfStream, TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -872,20 +872,21 @@ class ReplayPlaybackMode:
                 max_ticks=max_ticks,
             )
             _apply_completed(list(batch.completed_results))
-        except ReplayEndOfStream as exc:
-            completed_results = cast(list[object], getattr(exc, "completed_results", []))
-            if completed_results:
-                _apply_completed(completed_results)
+        except ReplayAdvanceEndOfStream as exc:
+            _apply_completed(list(exc.completed_results))
             self._tick_index = int(runner.next_tick_index)
             self._mark_finished_if_complete()
-            clock = getattr(runner, "clock", None)
-            self._dt_accum = float(getattr(clock, "accum", 0.0))
+            self._dt_accum = float(runner.clock.accum)
+            return
+        except ReplayEndOfStream:
+            self._tick_index = int(runner.next_tick_index)
+            self._mark_finished_if_complete()
+            self._dt_accum = float(runner.clock.accum)
             return
 
         self._tick_index = int(runner.next_tick_index)
         self._mark_finished_if_complete()
-        clock = getattr(runner, "clock", None)
-        self._dt_accum = float(getattr(clock, "accum", 0.0))
+        self._dt_accum = float(runner.clock.accum)
 
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])

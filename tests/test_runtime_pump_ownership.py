@@ -9,7 +9,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.sim.hooks import LanTickSync, TickResult
+from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -180,6 +180,108 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
     assert stop is False
     assert runner.calls == 1
     assert int(mode._input_stall_count) == before_stall_count
+
+
+def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker) -> None:
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    ticks = [
+        TickResult(
+            tick_index=0,
+            command_hash="cmd-0",
+            dt_sim=1.0 / 60.0,
+            presentation_plan_ms=0.0,
+            payload=SimpleNamespace(
+                step=SimpleNamespace(
+                    events=SimpleNamespace(),
+                    command_hash="cmd-0",
+                    dt_sim=1.0 / 60.0,
+                    presentation=None,
+                    presentation_plan_ms=0.0,
+                ),
+                elapsed_ms=16.67,
+                creature_count_world_step=0,
+            ),
+        ),
+        TickResult(
+            tick_index=1,
+            command_hash="cmd-1",
+            dt_sim=1.0 / 60.0,
+            presentation_plan_ms=0.0,
+            payload=SimpleNamespace(
+                step=SimpleNamespace(
+                    events=SimpleNamespace(),
+                    command_hash="cmd-1",
+                    dt_sim=1.0 / 60.0,
+                    presentation=None,
+                    presentation_plan_ms=0.0,
+                ),
+                elapsed_ms=33.33,
+                creature_count_world_step=0,
+            ),
+        ),
+    ]
+    runner = _FakeLanRunner(
+        [
+            TickBatchResult(
+                ticks_completed=2,
+                stalled=False,
+                remaining_debt_ticks=0,
+                completed_results=ticks,
+            ),
+        ],
+    )
+    provider = _LanRuntimeInputProvider(
+        player_count=1,
+        tick_rate=60,
+    )
+    sync_samples = {
+        0: LanFrameSample(
+            frame_tick_index=10,
+            frame_inputs=([],),
+            remote_command_hash="",
+            remote_state_hash="",
+        ),
+        1: LanFrameSample(
+            frame_tick_index=11,
+            frame_inputs=([],),
+            remote_command_hash="",
+            remote_state_hash="",
+        ),
+    }
+    broadcast_calls: list[int] = []
+    callbacks = LanSyncCallbacks(
+        role="host",
+        take_frame_sample=lambda tick: sync_samples.pop(int(tick), None),
+        state_hash_for_tick=lambda _frame_tick_index, _result: "state-hash",
+        should_emit_state_hash=lambda _frame_tick_index: True,
+        note_desync=lambda *_args: None,
+        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _command_hash, _state_hash: broadcast_calls.append(
+            int(frame_tick_index),
+        ),
+    )
+
+    mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(mode, "_on_lan_tick_applied", return_value="stop_before_finalize")
+    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
+    mocker.patch.object(
+        mode,
+        "_ensure_tick_runner",
+        return_value=(runner, provider),
+    )
+
+    stop = mode._consume_lan_tick_frames(
+        runtime=cast(Any, SimpleNamespace()),
+        lockstep_runtime=None,
+        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        role="host",
+        dt_tick=1.0 / 60.0,
+    )
+
+    assert stop is False
+    assert runner.calls == 1
+    assert broadcast_calls == []
+    # Tick 1 was not finalized and its sample should remain untouched.
+    assert 1 in sync_samples
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:
