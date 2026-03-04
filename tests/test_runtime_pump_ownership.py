@@ -8,9 +8,8 @@ behavioral contract of the frame-driver, not internal wiring.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, cast
 
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
@@ -19,8 +18,45 @@ from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
 from crimson.sim.input_providers import FrameContext, InputStatus
+from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.sessions import DeterministicSessionTick
+from crimson.sim.step_pipeline import DeterministicStepResult, PresentationRngTrace
 from crimson.sim.tick_runner import TickBatchResult
+from crimson.sim.timing import FrameTiming
+from crimson.sim.world_state import WorldEvents
 from grim.view import ViewContext
+
+
+def _make_tick_payload(
+    *,
+    command_hash: str = "cmd-hash",
+    dt_sim: float = 1.0 / 60.0,
+    elapsed_ms: float = 16.67,
+    creature_count: int = 0,
+) -> DeterministicSessionTick:
+    timing = FrameTiming(dt=dt_sim, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt_sim)
+    step = DeterministicStepResult(
+        dt_sim=dt_sim,
+        timing=timing,
+        events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+        presentation=PresentationStepCommands(),
+        presentation_plan_ms=0.0,
+        command_hash=command_hash,
+        presentation_rng_trace=PresentationRngTrace(),
+    )
+    return DeterministicSessionTick(
+        step=step,
+        elapsed_ms=elapsed_ms,
+        rng_marks={},
+        creature_count_world_step=creature_count,
+    )
+
+
+@dataclass
+class _StubSession:
+    """Minimal stub matching the ``game_tune_started`` attribute access."""
+
+    game_tune_started: bool = False
 
 
 class _DummyRuntime:
@@ -110,17 +146,7 @@ class _FakeLanRunner:
 
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    tick_payload = SimpleNamespace(
-        step=SimpleNamespace(
-            events=SimpleNamespace(),
-            command_hash="cmd-hash",
-            dt_sim=1.0 / 60.0,
-            presentation=None,
-            presentation_plan_ms=0.0,
-        ),
-        elapsed_ms=16.67,
-        creature_count_world_step=0,
-    )
+    tick_payload = _make_tick_payload()
     runner = _FakeLanRunner(
         [
             TickBatchResult(
@@ -159,9 +185,9 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )
@@ -190,9 +216,9 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
 
     before_stall_count = int(mode._input_stall_count)
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )
@@ -210,34 +236,14 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             command_hash="cmd-0",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
-            payload=SimpleNamespace(
-                step=SimpleNamespace(
-                    events=SimpleNamespace(),
-                    command_hash="cmd-0",
-                    dt_sim=1.0 / 60.0,
-                    presentation=None,
-                    presentation_plan_ms=0.0,
-                ),
-                elapsed_ms=16.67,
-                creature_count_world_step=0,
-            ),
+            payload=_make_tick_payload(command_hash="cmd-0", elapsed_ms=16.67),
         ),
         TickResult(
             tick_index=1,
             command_hash="cmd-1",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
-            payload=SimpleNamespace(
-                step=SimpleNamespace(
-                    events=SimpleNamespace(),
-                    command_hash="cmd-1",
-                    dt_sim=1.0 / 60.0,
-                    presentation=None,
-                    presentation_plan_ms=0.0,
-                ),
-                elapsed_ms=33.33,
-                creature_count_world_step=0,
-            ),
+            payload=_make_tick_payload(command_hash="cmd-1", elapsed_ms=33.33),
         ),
     ]
     runner = _FakeLanRunner(
@@ -290,9 +296,9 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )
