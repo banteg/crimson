@@ -64,9 +64,11 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_p
             self.finished = False
             self.close_requested = False
             self.tick_index = 0
-            self._render_resources = SimpleNamespace(
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
+            self._runtime = SimpleNamespace(
+                render_resources=SimpleNamespace(
+                    fx_queue=fx_queue,
+                    fx_queue_rotated=fx_queue_rotated,
+                ),
             )
 
         def open(self) -> None:

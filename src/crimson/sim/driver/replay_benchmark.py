@@ -663,9 +663,10 @@ def _run_render_once(
 
 
 def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) -> RunResult:
-    sim_world = mode._sim_world
-    if sim_world is None:
+    runtime = mode._runtime
+    if runtime is None:
         raise ReplayBenchmarkError("render benchmark failed: replay playback sim world was not available")
+    sim_world = runtime.sim_world
 
     mode_raw = int(replay.header.game_mode_id)
     try:

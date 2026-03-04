@@ -27,9 +27,9 @@ def test_run_result_from_replay_mode_reads_sim_world_state(monkeypatch) -> None:
         creatures=SimpleNamespace(kill_count=12),
     )
     # Intentionally omit legacy facade attributes (`state`, `players`, `creatures`)
-    # at mode root. The replay benchmark must read from `mode._sim_world.*`.
+    # at mode root. The replay benchmark must read from `mode._runtime.sim_world`.
     mode = SimpleNamespace(
-        _sim_world=sim_world,
+        _runtime=SimpleNamespace(sim_world=sim_world),
         _quest_spawn_timeline_ms=999,
         tick_index=88,
     )

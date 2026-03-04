@@ -29,11 +29,13 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     # Prevent key handlers from running.
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
     view._replay = _replay_with_ticks(16)
-    view._render_resources = SimpleNamespace(
-        ground=None,
-        fx_textures=None,
-        fx_queue=[],
-        fx_queue_rotated=[],
+    view._runtime = SimpleNamespace(
+        render_resources=SimpleNamespace(
+            ground=None,
+            fx_textures=None,
+            fx_queue=[],
+            fx_queue_rotated=[],
+        ),
     )
     view._finished = False
     view._paused = False
@@ -83,11 +85,13 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
-    view._render_resources = SimpleNamespace(
-        ground=None,
-        fx_textures=None,
-        fx_queue=[],
-        fx_queue_rotated=[],
+    view._runtime = SimpleNamespace(
+        render_resources=SimpleNamespace(
+            ground=None,
+            fx_textures=None,
+            fx_queue=[],
+            fx_queue_rotated=[],
+        ),
     )
     view._max_ticks = None
     view._tick_index = 0
@@ -134,11 +138,13 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
-    view._render_resources = SimpleNamespace(
-        ground=None,
-        fx_textures=None,
-        fx_queue=[],
-        fx_queue_rotated=[],
+    view._runtime = SimpleNamespace(
+        render_resources=SimpleNamespace(
+            ground=None,
+            fx_textures=None,
+            fx_queue=[],
+            fx_queue_rotated=[],
+        ),
     )
     view._max_ticks = None
     view._tick_index = 0
@@ -217,7 +223,34 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
     mocker.patch.object(replay_playback_mode, "apply_replay_bootstrap", return_value=None)
-    mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "_open_world_runtime", return_value=None)
+    mocker.patch.object(
+        replay_playback_mode,
+        "WorldRuntime",
+        lambda **_kwargs: SimpleNamespace(
+            sim_world=SimpleNamespace(
+                world_state=object(),
+                players=[],
+                creatures=SimpleNamespace(kill_count=0),
+                state=SimpleNamespace(
+                    preserve_bugs=False,
+                    rng=SimpleNamespace(state=0),
+                    quest_stage_major=0,
+                    quest_stage_minor=0,
+                ),
+                game_tune_started=False,
+                elapsed_ms=0,
+            ),
+            render_resources=SimpleNamespace(
+                fx_queue=[],
+                fx_queue_rotated=[],
+                texture_cache=None,
+            ),
+            terrain_runtime=SimpleNamespace(),
+            texture_cache=None,
+            reset=lambda **_kw: None,
+            open_runtime=lambda: None,
+        ),
+    )
     mocker.patch.object(replay_playback_mode, "PlaybackDriver", _FakeDriver)
 
     with pytest.raises(_StopOpen):

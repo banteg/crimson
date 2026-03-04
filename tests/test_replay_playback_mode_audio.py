@@ -77,15 +77,17 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(5))
     audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
-    _set_private(view, "_audio_bridge", audio_bridge)
     _set_private(
         view,
-        "_render_resources",
+        "_runtime",
         SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
+            audio_bridge=audio_bridge,
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=[],
+                fx_queue_rotated=[],
+            ),
         ),
     )
     view._tick_rate = 60
@@ -145,15 +147,17 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(3))
     audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
-    _set_private(view, "_audio_bridge", audio_bridge)
     _set_private(
         view,
-        "_render_resources",
+        "_runtime",
         SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
+            audio_bridge=audio_bridge,
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=[],
+                fx_queue_rotated=[],
+            ),
         ),
     )
     view._tick_rate = 60
@@ -228,19 +232,22 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
         fx_queue.clear()
         fx_queue_rotated.clear()
 
+    render_resources = SimpleNamespace(
+        ground=object(),
+        fx_textures=object(),
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        bake_fx_queues=_bake_fx_queues,
+    )
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
-    _set_private(view, "_audio_bridge", SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)))
     _set_private(
         view,
-        "_render_resources",
+        "_runtime",
         SimpleNamespace(
-            ground=object(),
-            fx_textures=object(),
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
+            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
+            render_resources=render_resources,
         ),
     )
-    _set_private(view, "_bake_fx_queues", _bake_fx_queues)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -297,15 +304,17 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     fx_queue = _Queue()
     fx_queue_rotated = _Queue()
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
-    _set_private(view, "_audio_bridge", SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)))
     _set_private(
         view,
-        "_render_resources",
+        "_runtime",
         SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
+            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+            ),
         ),
     )
     view._tick_rate = 60

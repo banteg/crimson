@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import msgspec
@@ -376,7 +377,54 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
     mocker.patch.object(replay_playback_mode, "load_hud_assets", return_value=None)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
-    mocker.patch.object(mode, "_open_world_runtime", return_value=None)
+
+    # WorldRuntime is created inside open(); stub it to avoid GPU/resource
+    # initialisation while still exposing a real SimWorldState for the
+    # deterministic hash comparison that follows.
+    _real_cls = replay_playback_mode.WorldRuntime
+
+    class _StubRuntime:
+        def __init__(self, **kwargs: object) -> None:
+            self._inner = _real_cls.__new__(_real_cls)
+            # Only materialise the sim_world so the hash contract can run.
+            from crimson.world.sim_world_state import SimWorldState as _SWS
+
+            sw = _SWS(
+                world_size=float(kwargs.get("world_size", 1024.0)),  # type: ignore[arg-type]
+                demo_mode_active=bool(kwargs.get("demo_mode_active", False)),
+                hardcore=bool(kwargs.get("hardcore", False)),
+                difficulty_level=int(kwargs.get("difficulty_level", 0)),  # type: ignore[arg-type]
+                preserve_bugs=bool(kwargs.get("preserve_bugs", False)),
+            )
+            self.sim_world = sw
+            self.texture_cache = kwargs.get("texture_cache")
+            self.render_resources = SimpleNamespace(
+                fx_queue=FxQueue(),
+                fx_queue_rotated=FxQueueRotated(),
+                texture_cache=None,
+            )
+            self.terrain_runtime = SimpleNamespace(
+                apply_bootstrap_terrain=lambda **_kw: None,
+            )
+            self.audio_bridge = SimpleNamespace(router=None)
+            self.camera = Vec2(-1.0, -1.0)
+
+        def reset(self, *, seed: int, player_count: int, **_kw: object) -> None:
+            self.sim_world.reset(seed=int(seed), player_count=int(player_count))
+
+        def open_runtime(self) -> None:
+            pass
+
+        def close_runtime(self) -> None:
+            pass
+
+        def sync_audio_bridge_state(self) -> None:
+            pass
+
+        def update_camera(self, _dt: float) -> None:
+            pass
+
+    mocker.patch.object(replay_playback_mode, "WorldRuntime", _StubRuntime)
 
     mode.open()
     assert isinstance(mode._survival, DeterministicSession)
