@@ -14,10 +14,10 @@ default:
 
 # Tests
 test *args:
-    uv run pytest {{args}}
+    uv run pytest --no-cov {{args}}
 
 test-cov *args:
-    uv run pytest --cov-report=html --cov-report=xml {{args}}
+    uv run pytest --cov=crimson --cov-report=term-missing --cov-report=html --cov-report=xml {{args}}
 
 check *args:
     uv run ruff check .
@@ -26,7 +26,7 @@ check *args:
     uv run scripts/check_docs.py
     sg scan
     sg test
-    uv run pytest {{args}}
+    uv run pytest --no-cov {{args}}
     just check-zig
 
 check-zig:
