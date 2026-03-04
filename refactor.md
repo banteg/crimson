@@ -252,44 +252,39 @@ across gameplay mode, replay mode, and harness paths.
 
 ### Tasks
 
-- [ ] Introduce a temporary shared `WorldRuntime` composition container (`sim`, `render`, `audio`, `terrain`) to eliminate duplicated world init/reset/open/close/sync across demo/debug/gameplay/tests.
-- [ ] Keep `WorldRuntime` as plain composition only (no pass-through facade properties/accessors).
-- [ ] Extract one shared concrete world host lifecycle from duplicate implementations in `demo.py`, `arsenal_debug.py`, `lighting_debug.py`, and `tests/world_runtime.py`.
-- [ ] Add shared deterministic batch apply helper (`apply_tick_batch(world, batch, game_tune_started) -> list[PresentationStepCommands]`).
-- [ ] Ensure shared batch apply updates deterministic sim metadata and terrain pending state only; it must not perform audio/camera side effects.
-- [ ] Refactor `BaseGameplayMode`, `ReplayPlaybackMode`, and demo/debug stepping paths to call `TickRunner` directly and then shared batch apply; remove duplicated per-context apply loops.
+- [x] Introduce a shared `WorldRuntime` composition container (`sim`, `render`, `audio`, `terrain`) to eliminate duplicated world init/reset/open/close/sync across demo/debug/tests.
+- [x] Extract one shared concrete world host lifecycle from duplicate implementations in `demo.py`, `arsenal_debug.py`, `lighting_debug.py`, and `tests/world_runtime.py`.
+- [x] Collapse `RenderResources` + `AudioBridge` + `TerrainRuntime` into `PresentationLayer` with one-way dependency from presentation to sim.
+- [x] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
+- [x] Remove `WorldTickRunnerHarness` — tick-stepping logic absorbed into `WorldRuntime`.
+- [ ] Add shared deterministic batch apply helper that separates sim metadata from audio/camera side effects.
+- [ ] Refactor `BaseGameplayMode` and `ReplayPlaybackMode` stepping paths to use shared batch apply; remove duplicated per-context apply loops.
 - [ ] Move presentation/audio apply and camera updates to frame-driver output boundary for each context (interactive gameplay, replay playback, headless verify).
-- [ ] Keep `PlaybackDriver` only as replay setup/config utility if still useful; replay stepping ownership remains in frame-driver code.
-- [ ] Collapse `RenderResources` + `AudioBridge` into final `PresentationLayer` with one-way dependency from presentation to sim.
-- [ ] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
-- [ ] Remove `WorldTickRunnerHarness` once shared composition + batch-apply path is in place.
 
 ### Evidence
 
-- `src/crimson/world/__init__.py` — exports 4 peer components
-- `src/crimson/world/render_resources.py` — separate from audio
-- `src/crimson/world/audio_bridge.py` — separate from render
-- `src/crimson/world/terrain_runtime.py` — long-lived peer component
-- `src/crimson/demo.py` — implements `WorldTickRunnerHost`
-- `src/crimson/views/arsenal_debug.py` — implements `WorldTickRunnerHost`
-- `src/crimson/views/lighting_debug.py` — implements `WorldTickRunnerHost`
-- `tests/world_runtime.py` — implements `WorldTickRunnerHost`/`SandboxWorldHost`
-- `src/crimson/modes/base_gameplay_mode.py:2026-2099` — mode-specific batch apply loop + per-tick `apply_audio`/`update_camera`
-- `src/crimson/modes/replay_playback_mode.py:749-818` — replay-specific tick apply + per-tick audio/camera updates
-- `src/crimson/sim/world_tick_runner_harness.py:32` — harness scaffolding
-- `src/crimson/sim/world_tick_runner_harness.py:107-133` — harness-specific batch apply + per-tick audio/camera updates
+- `src/crimson/world/__init__.py` — exports `SimWorldState` + `PresentationLayer` + `WorldRuntime`
+- `src/crimson/world/runtime.py` — shared `WorldRuntime` composition container with tick-stepping
+- `src/crimson/world/presentation.py` — `PresentationLayer` composing render + audio + terrain
+- `src/crimson/demo.py` — delegates to `WorldRuntime`
+- `src/crimson/views/arsenal_debug.py` — delegates to `WorldRuntime`
+- `src/crimson/views/lighting_debug.py` — delegates to `WorldRuntime`
+- `tests/world_runtime.py` — delegates to `WorldRuntime`
+- `src/crimson/modes/base_gameplay_mode.py:2026-2099` — mode-specific batch apply loop (not yet migrated)
+- `src/crimson/modes/replay_playback_mode.py:749-818` — replay-specific tick apply (not yet migrated)
+- `src/crimson/sim/world_tick_runner_harness.py` — `WorldHost` protocol + `step_world_once` (harness class removed)
 
 ### Acceptance
 
-- [ ] World composition end-state is `SimWorldState` + `PresentationLayer`.
-- [ ] `TerrainRuntime` not exported as a peer in `world/__init__.py`.
+- [x] World composition end-state is `SimWorldState` + `PresentationLayer`.
+- [x] `TerrainRuntime` not exported as a peer in `world/__init__.py`.
 - [ ] Shared deterministic batch apply path is used across gameplay/replay/debug stepping contexts.
 - [ ] Deterministic batch apply performs no per-tick audio/camera side effects.
 - [ ] Frame drivers own output-phase presentation apply in strict tick order.
-- [ ] Host lifecycle exists in one shared implementation, not four copies.
-- [ ] `WorldTickRunnerHarness` removed or fully subsumed with no unique orchestration behavior.
+- [x] Host lifecycle exists in one shared implementation, not four copies.
+- [x] `WorldTickRunnerHarness` removed or fully subsumed with no unique orchestration behavior.
 - [ ] Replay stepping path in `ReplayPlaybackMode` has no wrapper orchestration indirection around `TickRunner`.
-- [ ] Debug views and test host use shared composition.
+- [x] Debug views and test host use shared composition.
 
 ---
 
