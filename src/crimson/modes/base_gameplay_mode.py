@@ -273,13 +273,16 @@ class _GameplayTickObserverHook:
         self,
         *,
         replay_hook: ReplayRecorderHook,
-        resolve_on_tick: Callable[[], Callable[[DeterministicSessionStepTick, int | None], bool] | None],
+        on_tick: Callable[[DeterministicSessionStepTick, int | None], bool] | None = None,
     ) -> None:
         self._replay_hook = replay_hook
-        self._resolve_on_tick = resolve_on_tick
+        self._on_tick = on_tick
+
+    def set_on_tick(self, on_tick: Callable[[DeterministicSessionStepTick, int | None], bool] | None) -> None:
+        self._on_tick = on_tick
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> bool:
-        callback = self._resolve_on_tick()
+        callback = self._on_tick
         if callback is None:
             return False
         payload = result.payload
@@ -478,10 +481,6 @@ class BaseGameplayMode:
         self._tick_command_hook: _InputCommandHook | None = None
         self._tick_runner_is_networked = False
         self._tick_runner_network_role = ""
-        self._tick_runner_record_replay: ReplayRecorder | None = None
-        self._tick_runner_on_tick: Callable[[DeterministicSessionStepTick, int | None], bool] | None = None
-        self._tick_runner_on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None
-        self._tick_runner_on_hash: Callable[[int, TickHashes], None] | None = None
 
     def _sync_world_size_ownership(self) -> None:
         world_size = float(self.world_size)
@@ -1655,10 +1654,6 @@ class BaseGameplayMode:
         self._tick_command_hook = None
         self._tick_runner_is_networked = False
         self._tick_runner_network_role = ""
-        self._tick_runner_record_replay = None
-        self._tick_runner_on_tick = None
-        self._tick_runner_on_checkpoint = None
-        self._tick_runner_on_hash = None
 
     def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
         self._queued_input_commands.clear()
@@ -1715,26 +1710,6 @@ class BaseGameplayMode:
                 else None
             ),
         )
-
-    def _resolve_tick_runner_replay_recorder(self) -> ReplayRecorder | None:
-        return self._tick_runner_record_replay
-
-    def _resolve_tick_runner_on_tick(
-        self,
-    ) -> Callable[[DeterministicSessionStepTick, int | None], bool] | None:
-        return self._tick_runner_on_tick
-
-    def _dispatch_tick_runner_checkpoint(self, tick_index: int, payload: object) -> None:
-        callback = self._tick_runner_on_checkpoint
-        if callback is None:
-            return
-        callback(int(tick_index), cast(DeterministicSessionStepTick, payload))
-
-    def _dispatch_tick_runner_hash(self, tick_index: int, hashes: TickHashes) -> None:
-        callback = self._tick_runner_on_hash
-        if callback is None:
-            return
-        callback(int(tick_index), hashes)
 
     def _ensure_tick_runner(
         self,
@@ -1801,13 +1776,9 @@ class BaseGameplayMode:
             )
         self._flush_queued_input_commands(provider=provider)
 
-        replay_hook = ReplayRecorderHook(
-            None,
-            resolve_recorder=self._resolve_tick_runner_replay_recorder,
-        )
+        replay_hook = ReplayRecorderHook(None)
         observer_hook = _GameplayTickObserverHook(
             replay_hook=replay_hook,
-            resolve_on_tick=self._resolve_tick_runner_on_tick,
         )
         command_hook = _InputCommandHook(
             provider=provider,
@@ -1815,9 +1786,9 @@ class BaseGameplayMode:
         )
         checkpoint_hook = CheckpointHook(
             replay_recorder_hook=replay_hook,
-            on_checkpoint=self._dispatch_tick_runner_checkpoint,
+            on_checkpoint=None,
         )
-        network_sync_hook = NetworkSyncHook(on_hash=self._dispatch_tick_runner_hash)
+        network_sync_hook = NetworkSyncHook(on_hash=None)
         if bool(is_networked) and lan_runtime is not None:
             network_sync_hook.set_lan_sync(
                 self._build_lan_sync_callbacks(
@@ -2288,25 +2259,37 @@ class BaseGameplayMode:
         self._sync_audio_and_ground()
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        self._tick_runner_record_replay = recorder
-        self._tick_runner_on_tick = on_tick
-        self._tick_runner_on_checkpoint = on_checkpoint
-        self._tick_runner_on_hash = on_hash
+        replay_hook: ReplayRecorderHook | None = None
+        checkpoint_hook: CheckpointHook | None = None
+        net_sync_hook: NetworkSyncHook | None = None
+        observer_hook: _GameplayTickObserverHook | None = None
 
         try:
             (
                 runner,
                 _provider,
                 replay_hook,
-                _checkpoint_hook,
-                _net_sync_hook,
+                checkpoint_hook,
+                net_sync_hook,
                 profiler_hook,
-                _observer_hook,
+                observer_hook,
                 _command_hook,
             ) = self._ensure_tick_runner(
                 session=session,
                 is_networked=False,
             )
+            replay_hook.set_recorder(recorder)
+            observer_hook.set_on_tick(on_tick)
+            if on_checkpoint is not None:
+                checkpoint_hook.set_on_checkpoint(
+                    lambda tick_index, payload: on_checkpoint(
+                        int(tick_index),
+                        cast(DeterministicSessionStepTick, payload),
+                    ),
+                )
+            else:
+                checkpoint_hook.set_on_checkpoint(None)
+            net_sync_hook.set_on_hash(on_hash)
             replay_hook.clear_recorded_ticks()
             self._reset_profiler_hook(profiler_hook)
             batch = self._advance_tick_runner(
@@ -2314,10 +2297,14 @@ class BaseGameplayMode:
                 dt_seconds=float(dt_frame),
             )
         finally:
-            self._tick_runner_record_replay = None
-            self._tick_runner_on_tick = None
-            self._tick_runner_on_checkpoint = None
-            self._tick_runner_on_hash = None
+            if replay_hook is not None:
+                replay_hook.set_recorder(None)
+            if observer_hook is not None:
+                observer_hook.set_on_tick(None)
+            if checkpoint_hook is not None:
+                checkpoint_hook.set_on_checkpoint(None)
+            if net_sync_hook is not None:
+                net_sync_hook.set_on_hash(None)
 
         self._process_tick_batch_results(
             batch=batch,

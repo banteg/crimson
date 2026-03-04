@@ -53,7 +53,25 @@ class _TickRunnerStackSpy:
 
 
 class _ReplayHookStub:
+    def set_recorder(self, _recorder: object | None) -> None:
+        return
+
     def clear_recorded_ticks(self) -> None:
+        return
+
+
+class _CheckpointHookStub:
+    def set_on_checkpoint(self, _callback: object | None) -> None:
+        return
+
+
+class _NetworkSyncHookStub:
+    def set_on_hash(self, _callback: object | None) -> None:
+        return
+
+
+class _ObserverHookStub:
+    def set_on_tick(self, _callback: object | None) -> None:
         return
 
 
@@ -252,10 +270,10 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
     runner_bundle = (
         _ReplayHookStub(),
-        object(),
-        object(),
+        _CheckpointHookStub(),
+        _NetworkSyncHookStub(),
         profiler,
-        None,
+        _ObserverHookStub(),
         None,
     )
     mode_frame = SimpleNamespace(dt=0.016, dt_ui_ms=16.0)
