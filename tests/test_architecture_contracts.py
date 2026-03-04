@@ -179,8 +179,7 @@ class _MockLockstepRuntime:
         }
 
     def broadcast_command(self, *, tick_index: int, command: InputCommand) -> None:
-        for peer in ("host", "client"):
-            self._commands_by_peer_and_tick[peer].setdefault(int(tick_index), []).append(command)
+        self._commands_by_peer_and_tick["client"].setdefault(int(tick_index), []).append(command)
 
     def pull_commands(self, *, peer: str, tick_index: int) -> list[InputCommand]:
         return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
@@ -302,6 +301,10 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         player_count=1,
         resolve_tick_input=lambda _tick: list(tick_input),
         resolve_tick_commands=lambda tick: runtime.pull_commands(peer="host", tick_index=int(tick)),
+        emit_tick_command=lambda tick, command: runtime.broadcast_command(
+            tick_index=int(tick),
+            command=command,
+        ),
     )
     client_provider = NetworkInputProvider(
         player_count=1,

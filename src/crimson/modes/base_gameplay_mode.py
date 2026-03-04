@@ -151,6 +151,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
             player_count=player_count,
             resolve_tick_input=self._resolve_tick_input,
             resolve_tick_commands=self._resolve_tick_commands,
+            emit_tick_command=self._emit_tick_command,
         )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
@@ -243,8 +244,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._pending_perk_events = future_events
         return commands
 
-    def _queue_tick_commands(self, tick_index: int, commands: list[InputCommand]) -> None:
-        super()._queue_tick_commands(int(tick_index), commands)
+    def _emit_tick_command(self, tick_index: int, command: InputCommand) -> None:
         if str(self._role) != "host":
             return
         runtime = self._runtime
@@ -254,17 +254,18 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         if sample is None:
             return
         frame_tick_index = int(sample.frame_tick_index)
-        for command in commands:
-            if str(command.name) != "perk_pick":
-                continue
-            raw_choice = command.payload.get("choice_index")
-            if not isinstance(raw_choice, int):
-                continue
-            runtime.broadcast_perk_pick(
-                tick_index=int(frame_tick_index),
-                player_index=0,
-                choice_index=int(raw_choice),
-            )
+        if str(command.name) != "perk_pick":
+            return
+        raw_choice = command.payload.get("choice_index")
+        if not isinstance(raw_choice, int):
+            raw_choice = command.payload.get("index")
+        if not isinstance(raw_choice, int):
+            return
+        runtime.broadcast_perk_pick(
+            tick_index=int(frame_tick_index),
+            player_index=0,
+            choice_index=int(raw_choice),
+        )
 
 
 class _GameplayTickObserverHook:
@@ -885,6 +886,8 @@ class BaseGameplayMode:
         if str(command.name) != "perk_pick":
             return False
         raw_choice_index = command.payload.get("choice_index")
+        if raw_choice_index is None:
+            raw_choice_index = command.payload.get("index")
         if not isinstance(raw_choice_index, int):
             raise TypeError("perk_pick command requires integer payload['choice_index']")
         ctx = cast(Any, perk_context)

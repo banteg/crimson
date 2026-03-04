@@ -42,6 +42,7 @@ TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickDtResolver: TypeAlias = Callable[[int], float]
 TickCommandResolver: TypeAlias = Callable[[int], Sequence[InputCommand] | None]
+TickCommandEmitter: TypeAlias = Callable[[int, InputCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
@@ -160,10 +161,12 @@ class NetworkInputProvider:
         player_count: int,
         resolve_tick_input: TickInputResolver | None = None,
         resolve_tick_commands: TickCommandResolver | None = None,
+        emit_tick_command: TickCommandEmitter | None = None,
     ) -> None:
         self._player_count = max(0, player_count)
         self._resolve_tick_input = resolve_tick_input
         self._resolve_tick_commands = resolve_tick_commands
+        self._emit_tick_command = emit_tick_command
         self._pending_commands: list[InputCommand] = []
         self._commands_by_tick: dict[int, list[InputCommand]] = {}
 
@@ -180,8 +183,13 @@ class NetworkInputProvider:
             return None
         commands: list[InputCommand] = []
         if self._pending_commands:
-            commands.extend(self._pending_commands)
+            pending_commands = list(self._pending_commands)
             self._pending_commands.clear()
+            emit_tick_command = self._emit_tick_command
+            if emit_tick_command is not None:
+                for command in pending_commands:
+                    emit_tick_command(int(tick_index), command)
+            commands.extend(pending_commands)
         resolve_commands = self._resolve_tick_commands
         if resolve_commands is not None:
             resolved_commands = resolve_commands(int(tick_index))
