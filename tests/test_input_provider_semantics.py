@@ -22,7 +22,7 @@ _FRAME_CTX = FrameContext(
 def test_local_provider_never_stalls_and_clears_edges() -> None:
     provider = LocalInputProvider(
         player_count=1,
-        build_inputs=lambda: [PlayerInput(fire_down=True, fire_pressed=True)],
+        build_inputs=lambda _frame_ctx: [PlayerInput(fire_down=True, fire_pressed=True)],
     )
     provider.begin_frame(_FRAME_CTX)
 
@@ -36,14 +36,14 @@ def test_local_provider_never_stalls_and_clears_edges() -> None:
 
 
 def test_local_provider_rejects_empty_inputs_when_players_exist() -> None:
-    provider = LocalInputProvider(player_count=1, build_inputs=lambda: [])
+    provider = LocalInputProvider(player_count=1, build_inputs=lambda _frame_ctx: [])
 
     with pytest.raises(ValueError, match="empty input list"):
         provider.begin_frame(_FRAME_CTX)
 
 
 def test_local_provider_allows_empty_inputs_for_zero_players() -> None:
-    provider = LocalInputProvider(player_count=0, build_inputs=lambda: [])
+    provider = LocalInputProvider(player_count=0, build_inputs=lambda _frame_ctx: [])
     provider.begin_frame(_FRAME_CTX)
 
     assert provider.pull_tick_input(0) == []

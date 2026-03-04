@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from collections.abc import Callable, Sequence
 from typing import Protocol, TypeAlias
 
@@ -39,7 +38,7 @@ class InputProvider(Protocol):
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
-LocalInputBuilder: TypeAlias = Callable[..., Sequence[PlayerInput]]
+LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
 def normalize_provider_tick_inputs(*, inputs: Sequence[PlayerInput], player_count: int) -> list[PlayerInput]:
@@ -63,10 +62,6 @@ class LocalInputProvider:
     ) -> None:
         self._player_count = max(0, player_count)
         self._build_inputs = build_inputs
-        try:
-            self._build_inputs_accepts_context = len(inspect.signature(build_inputs).parameters) > 0
-        except (TypeError, ValueError):
-            self._build_inputs_accepts_context = False
         self._command_consumer = command_consumer
         self._pending_commands: list[InputCommand] = []
         self._frame_inputs: list[PlayerInput] = []
@@ -74,10 +69,7 @@ class LocalInputProvider:
         self._first_tick_pending = False
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
-        if self._build_inputs_accepts_context:
-            frame_inputs = list(self._build_inputs(frame_ctx))
-        else:
-            frame_inputs = list(self._build_inputs())
+        frame_inputs = list(self._build_inputs(frame_ctx))
         self._frame_inputs = normalize_provider_tick_inputs(inputs=frame_inputs, player_count=self._player_count)
         self._edge_inputs = clear_input_edges(self._frame_inputs)
         self._first_tick_pending = True
