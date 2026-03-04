@@ -1,0 +1,10 @@
+id: no-test-inspect-stack
+language: python
+severity: error
+message: Do not use `inspect.stack()` in tests; assert behavior, not call-chain shape.
+files:
+  - tests/**/*.py
+rule:
+  any:
+    - pattern: inspect.stack()
+    - pattern: inspect.stack($$$)

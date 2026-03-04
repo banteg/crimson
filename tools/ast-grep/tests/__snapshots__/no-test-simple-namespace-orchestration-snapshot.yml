@@ -1,0 +1,11 @@
+id: no-test-simple-namespace-orchestration
+snapshots:
+  ? |
+    from types import SimpleNamespace
+
+    payload = SimpleNamespace(step=SimpleNamespace(command_hash="h0"))
+  : labels:
+    - source: SimpleNamespace(step=SimpleNamespace(command_hash="h0"))
+      style: primary
+      start: 45
+      end: 101

@@ -1,16 +1,6 @@
 id: no-object-return-contracts
 snapshots:
   ? |
-    def pick(value: int) -> object:
-      return value
-  : labels:
-    - source: |-
-        def pick(value: int) -> object:
-          return value
-      style: primary
-      start: 0
-      end: 46
-  ? |
     def maybe_pick(value: int) -> object | None:
       return value
   : labels:
@@ -20,3 +10,13 @@ snapshots:
       style: primary
       start: 0
       end: 59
+  ? |
+    def pick(value: int) -> object:
+      return value
+  : labels:
+    - source: |-
+        def pick(value: int) -> object:
+          return value
+      style: primary
+      start: 0
+      end: 46

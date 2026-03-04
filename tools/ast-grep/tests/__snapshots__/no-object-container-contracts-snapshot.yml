@@ -1,6 +1,22 @@
 id: no-object-container-contracts
 snapshots:
   ? |
+    from typing import Mapping
+
+    meta: Mapping[str, object]
+  : labels:
+    - source: 'meta: Mapping[str, object]'
+      style: primary
+      start: 28
+      end: 54
+  ? |
+    item: tuple[object]
+  : labels:
+    - source: 'item: tuple[object]'
+      style: primary
+      start: 0
+      end: 19
+  ? |
     payload: dict[str, object]
   : labels:
     - source: 'payload: dict[str, object]'
@@ -14,19 +30,3 @@ snapshots:
       style: primary
       start: 0
       end: 18
-  ? |
-    item: tuple[object]
-  : labels:
-    - source: 'item: tuple[object]'
-      style: primary
-      start: 0
-      end: 19
-  ? |
-    from typing import Mapping
-
-    meta: Mapping[str, object]
-  : labels:
-    - source: 'meta: Mapping[str, object]'
-      style: primary
-      start: 28
-      end: 54

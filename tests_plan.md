@@ -73,6 +73,81 @@ High-priority files:
 | `test_runtime_pump_ownership.py` timing | 0.33s (6 tests) |
 | `test_replay_playback_mode_timing.py` timing | 0.22s (4 tests) |
 
+### Final (Phase 7)
+
+| Metric | Baseline | Final | Delta |
+|--------|----------|-------|-------|
+| `inspect.stack` in `tests/` | 0 | 0 | — |
+| `SimpleNamespace` in 3 target files | 34 | 0 | -34 |
+| `cast(Any, ...)` in 3 target files | 10 | 0 | -10 |
+| `cast(LanTickSync, ...)` in production | 2 | 0 | -2 |
+| `test_architecture_contracts.py` timing | 2.40s | 0.29s | -88% |
+| `test_runtime_pump_ownership.py` timing | 0.33s | 0.23s | -30% |
+| `test_replay_playback_mode_timing.py` timing | 0.22s | 0.19s | -14% |
+| Shared typed builders in `tests/builders/` | 0 | 4 modules | +4 |
+
+## Contributor Guidance
+
+### When to mock
+
+Use mocks only at hard system boundaries:
+- GPU/raylib draw calls and texture operations
+- Network transport (`send_packet`, `recv_packets`)
+- Audio device/hardware I/O
+- File system loading (fonts, assets, terrain)
+- OS-level APIs (`time.perf_counter_ns`, screen queries)
+
+Do **not** mock:
+- Internal methods (`_reset_tick_runner_state`, `_apply_sim_step_result`)
+- Production types that are cheap to construct (msgspec.Struct, dataclass)
+- Implementation ordering (unless explicitly testing ordering contracts)
+
+### How to build typed fixtures
+
+Use shared builders from `tests/builders/`:
+
+```python
+from builders import FakeRunner, make_tick_payload, make_tick_result, make_tick_batch
+
+# Tick payload with defaults
+payload = make_tick_payload(command_hash="h0", elapsed_ms=16.67)
+
+# Full tick result
+result = make_tick_result(tick_index=0, command_hash="h0")
+
+# Batch of results
+batch = make_tick_batch(ticks=[result], status=InputStatus.READY)
+
+# Configurable fake runner
+runner = FakeRunner(results=[batch])
+```
+
+### Good vs bad patterns
+
+**Bad** — `SimpleNamespace` payload tree:
+```python
+payload = SimpleNamespace(
+    step=SimpleNamespace(events=SimpleNamespace(), command_hash="h0", ...),
+    elapsed_ms=16.67,
+)
+```
+
+**Good** — typed production struct:
+```python
+payload = make_tick_payload(command_hash="h0", elapsed_ms=16.67)
+```
+
+**Bad** — `cast(Any, ...)` to bypass types:
+```python
+result = cast(Any, batch.completed_results[0]).payload
+```
+
+**Good** — assert and narrow:
+```python
+result = batch.completed_results[0]
+assert isinstance(result.payload, DeterministicSessionTick)
+```
+
 ## Phase 0: Baseline And Guardrails
 
 Goal: establish a measurable baseline before changing tests.

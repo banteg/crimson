@@ -2,17 +2,17 @@ id: no-gameplay-rng-out-of-band
 snapshots:
   ? |
     def foo(self) -> None:
-      terrain_seed = int(self.state.rng.rand() % 10_000)
-  : labels:
-    - source: self.state.rng.rand()
-      style: primary
-      start: 44
-      end: 65
-  ? |
-    def foo(self) -> None:
       do(rand=self.state.rng.rand)
   : labels:
     - source: self.state.rng.rand
       style: primary
       start: 33
       end: 52
+  ? |
+    def foo(self) -> None:
+      terrain_seed = int(self.state.rng.rand() % 10_000)
+  : labels:
+    - source: self.state.rng.rand()
+      style: primary
+      start: 44
+      end: 65

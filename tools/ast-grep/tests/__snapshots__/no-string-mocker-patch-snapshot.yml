@@ -3,7 +3,7 @@ snapshots:
   ? |
     mocker.patch("crimson.audio_router.play_sfx")
   : labels:
-    - source: 'mocker.patch("crimson.audio_router.play_sfx")'
+    - source: mocker.patch("crimson.audio_router.play_sfx")
       style: primary
       start: 0
       end: 45

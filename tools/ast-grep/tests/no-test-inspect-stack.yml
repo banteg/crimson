@@ -1,0 +1,11 @@
+id: no-test-inspect-stack
+valid:
+  - |
+    import os
+
+    os.getpid()
+invalid:
+  - |
+    import inspect
+
+    frames = inspect.stack()

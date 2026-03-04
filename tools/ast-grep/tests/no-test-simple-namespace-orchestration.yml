@@ -1,0 +1,11 @@
+id: no-test-simple-namespace-orchestration
+valid:
+  - |
+    from builders import make_tick_payload
+
+    payload = make_tick_payload(command_hash="h0")
+invalid:
+  - |
+    from types import SimpleNamespace
+
+    payload = SimpleNamespace(step=SimpleNamespace(command_hash="h0"))
