@@ -1,0 +1,10 @@
+id: no-type-ignore-comments
+language: python
+severity: warning
+message: "Avoid `# type: ignore`; prefer fixing the contract or narrowing the type."
+files:
+  - src/**/*.py
+  - tests/**/*.py
+rule:
+  kind: comment
+  regex: '#\s*type:\s*ignore(?:\[[^\]]+\])?'

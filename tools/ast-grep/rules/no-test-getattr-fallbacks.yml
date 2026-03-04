@@ -1,6 +1,6 @@
 id: no-test-getattr-fallbacks
 language: python
-severity: warning
+severity: info
 message: Avoid `getattr(..., default)` in tests; prefer explicit typed contracts or purpose-built helpers.
 files:
   - tests/**/*.py

@@ -1,0 +1,16 @@
+id: no-cast-any
+valid:
+  - |
+    from typing import cast
+
+    value = cast(int, raw)
+invalid:
+  - |
+    from typing import Any, cast
+
+    value = cast(Any, raw)
+  - |
+    import typing
+    from typing import Any
+
+    value = typing.cast(Any, raw)

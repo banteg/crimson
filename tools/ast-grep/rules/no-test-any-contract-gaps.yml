@@ -8,7 +8,6 @@ rule:
   any:
     - pattern: "$NAME: Any"
     - pattern: "$NAME: TypeAlias = Any"
-    - pattern: "cast(Any, $EXPR)"
     - pattern: |
         def $FUNC($$$A, $ARG: Any, $$$B):
           $$$BODY

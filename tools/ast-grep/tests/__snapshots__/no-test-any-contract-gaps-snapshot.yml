@@ -22,15 +22,6 @@ snapshots:
       start: 24
       end: 74
   ? |
-    from typing import Any, cast
-
-    payload = cast(Any, {})
-  : labels:
-    - source: cast(Any, {})
-      style: primary
-      start: 40
-      end: 53
-  ? |
     from typing import Any
 
     def snapshot() -> Any:

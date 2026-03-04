@@ -1,0 +1,21 @@
+id: no-cast-any
+snapshots:
+  ? |
+    from typing import Any, cast
+
+    value = cast(Any, raw)
+  : labels:
+    - source: cast(Any, raw)
+      style: primary
+      start: 38
+      end: 52
+  ? |
+    import typing
+    from typing import Any
+
+    value = typing.cast(Any, raw)
+  : labels:
+    - source: typing.cast(Any, raw)
+      style: primary
+      start: 46
+      end: 67
