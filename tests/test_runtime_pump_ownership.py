@@ -8,7 +8,7 @@ import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ReplayRecorderHook, TickResult
+from crimson.sim.hooks import CheckpointHook, LanTickSync, NetworkSyncHook, ReplayRecorderHook, TickResult
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -130,6 +130,12 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                         dt_sim=1.0 / 60.0,
                         presentation_plan_ms=0.0,
                         payload=tick_payload,
+                        lan_sync=LanTickSync(
+                            frame_tick_index=0,
+                            frame_inputs=([],),
+                            remote_command_hash="",
+                            remote_state_hash="",
+                        ),
                     ),
                 ],
             ),
