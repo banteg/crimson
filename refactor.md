@@ -1,0 +1,157 @@
+# Refactor: Eliminate Split Brain & Scaffolding
+
+## Problem
+
+The feat/split20 branch delivers on the letter of the plan but betrays its spirit. Complexity was moved, not eliminated. Split-brain patterns persist behind new vocabulary. Abstractions exist but some are hollow — protocols that lie, generics nobody varies, hooks that dispatch on strings. The local/LAN split brain, the core problem the plan identified, still exists in the mode layer wearing different clothes.
+
+---
+
+## Stage 1: Consolidate Sessions
+
+Six session classes (`Survival`, `Rush`, `Tutorial`, `Typo`, `WorldTick`, `Quest`) are ~85% identical. Every one duplicates `timing_for_dt()`, `rng_marks` tracking, creature counting, lifecycle finalization. The only real difference is `_mid_step_spawns()`.
+
+672 lines → ~150 with composition.
+
+### Tasks
+
+- [ ] Extract shared tick-step boilerplate into a single base or helper
+- [ ] Accept spawn strategy as a callable parameter, not a class override
+- [ ] Collapse six session classes into one parameterized session (or one base + minimal subclasses)
+- [ ] Remove all duplicated `timing_for_dt()` implementations
+- [ ] Remove all duplicated `rng_marks` / creature-count / lifecycle-finalization boilerplate
+
+### Acceptance
+
+- [ ] Only one implementation of `timing_for_dt()` exists
+- [ ] Only one implementation of post-step boilerplate (rng_marks, creature count, lifecycle finalize) exists
+- [ ] A bug fix in shared tick logic requires touching exactly one file
+- [ ] All existing session tests pass without modification
+- [ ] Replay determinism parity unchanged (`uv run pytest --no-cov`)
+
+---
+
+## Stage 2: Eliminate Local/LAN Split Brain in Modes
+
+Same outcomes (state update, game-over detection, replay checkpoint, perk application) are reached through two parallel code paths: `_on_tick` callbacks for local and `_on_lan_tick_applied()` for LAN. This is the old split brain renamed.
+
+### Tasks
+
+- [ ] Unify tick-applied callbacks — one path for both local and LAN tick results
+- [ ] Remove `_on_lan_tick_applied()` as a separate override hierarchy
+- [ ] Merge `_apply_input_command()` and `_apply_perk_pick_input_command()` into one path
+- [ ] Remove `_before_lan_tick_step()`, `_after_join_lan_consume()`, `_allow_lan_frame_pop()` no-op overrides from base — push LAN-specific logic into hooks or the single tick-applied path
+- [ ] Remove dead parameters from `_prepare_lan_frame()` (dt_ui_ms is unused everywhere)
+
+### Acceptance
+
+- [ ] Each of these operations has exactly one code path, not two:
+  - [ ] State update (elapsed_ms, stage, spawn_cooldown)
+  - [ ] Game-over detection
+  - [ ] Replay checkpoint recording
+  - [ ] Perk application
+- [ ] No method in `BaseGameplayMode` has `_ = role, dt, dt_ui_ms, ...` ignoring all its parameters
+- [ ] LAN and local gameplay both pass existing tests
+- [ ] Replay determinism parity unchanged
+
+---
+
+## Stage 3: Drop Unused Generics from TickRunner
+
+`TimingT` and `TickT` generic parameters are never varied — all sessions use `FrameTiming` and `DeterministicSessionTick`. `inspect.signature()` introspection for `trace_rng` and `getattr` for `resolve_tick_dt` are duck-typing around the protocol.
+
+### Tasks
+
+- [ ] Replace `TickSession[TimingT, TickT]` with concrete types (`FrameTiming`, `DeterministicSessionStepTick`)
+- [ ] Remove `TickSessionWithTraceRng` protocol — add `trace_rng` to the single `TickSession` contract
+- [ ] Remove `inspect.signature()` introspection in `TickRunner.__init__`
+- [ ] Move `resolve_tick_dt` into the `InputProvider` protocol or a named optional protocol, remove `getattr` call
+- [ ] Remove redundant type coercions (`float(dt_seconds)` when already float, `int(self._frame_index)` when already int, etc.)
+
+### Acceptance
+
+- [ ] Zero `inspect.signature()` calls in tick_runner.py
+- [ ] Zero `getattr(self._input_provider, ...)` calls in tick_runner.py
+- [ ] Zero redundant `float()` / `int()` / `bool()` coercions on already-typed values
+- [ ] No generic type parameters on `TickRunner` or `TickSession`
+- [ ] All tick runner tests pass
+
+---
+
+## Stage 4: Make TickHook a Real Protocol
+
+`TickHook` is aliased to `object`. The bus dispatches via `getattr` with magic strings and runtime `callable()` checks. `on_tick_end` can't use the shared `_dispatch()` because it needs boolean aggregation — breaking the abstraction it supposedly uses.
+
+### Tasks
+
+- [ ] Define `TickHook` as a `Protocol` with all hook methods (default no-op via `...` or a base class)
+- [ ] Replace string-based `_dispatch()` / `_resolve_method()` with direct method calls
+- [ ] Remove `getattr` + `callable()` runtime checks from `TickHookBus`
+- [ ] Handle `on_tick_end` boolean aggregation directly, not as a special case of a broken abstraction
+
+### Acceptance
+
+- [ ] `TickHook` is a `Protocol` (or ABC), not `TypeAlias = object`
+- [ ] Zero `getattr` calls in hooks.py
+- [ ] Zero `callable()` checks in hooks.py
+- [ ] All hook ordering tests pass
+- [ ] Hook dispatch is type-safe (mypy/pyright clean)
+
+---
+
+## Stage 5: Fix InputProvider Protocol Honesty
+
+The protocol declares `push_command()` but `ReplayInputProvider` raises `RuntimeError` on it (LSP violation). `resolve_tick_dt` is used via `getattr` but isn't in the protocol. Three implementations have three different failure modes that the protocol documents none of.
+
+### Tasks
+
+- [ ] Remove `push_command()` and `pull_tick_commands()` from base `InputProvider` protocol — only providers that support commands should declare them
+- [ ] Create `CommandableInputProvider` (or similar) protocol for providers that accept commands
+- [ ] Add `resolve_tick_dt` to the protocol (or a named optional protocol) — remove `getattr` usage
+- [ ] Document stall semantics: local never stalls, replay raises, network returns None
+- [ ] Remove `ReplayInputProvider.push_command()` that just raises
+
+### Acceptance
+
+- [ ] No method in any InputProvider implementation raises "not supported"
+- [ ] Zero `getattr` calls against input providers in tick_runner.py
+- [ ] Each provider only implements methods it actually supports
+- [ ] All input provider tests pass
+- [ ] Replay and network provider contracts are documented in protocol docstrings
+
+---
+
+## Stage 6: Clean Up Composition Leaks
+
+Running ticks requires three separate calls (`_ensure_tick_runner`, `_advance_tick_runner`, `_process_tick_batch_results`). TickRunner internals leak into modes.
+
+### Tasks
+
+- [ ] Collapse the three-call tick sequence into a single method on BaseGameplayMode
+- [ ] Hide TickRunner, provider, and hook construction behind the single method
+- [ ] Modes should only see: "advance by dt, get outcome"
+
+### Acceptance
+
+- [ ] Modes call one method to advance ticks, not three
+- [ ] Modes do not reference `TickRunner`, `InputProvider`, or `TickHookBus` directly
+- [ ] All mode tests pass
+
+---
+
+## Stage 7: Trim Ceremonial Tests
+
+~30% of architecture contract tests are brittle or ceremonial. Stack inspection in contract_2 is coupled to internal call chains. LAN mocking tests check counters, not behavior.
+
+### Tasks
+
+- [ ] Replace stack inspection in contract_2 with behavioral assertions (e.g., "both paths call advance_frame once")
+- [ ] Simplify or remove `test_lan_tick_consumption_*` tests — replace with "did runner advance?" checks
+- [ ] Move `test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows` to unit tests
+- [ ] Remove any tests that only assert mock call counts without verifying observable behavior
+
+### Acceptance
+
+- [ ] Zero `inspect.stack()` or frame-inspection assertions in test suite
+- [ ] Every remaining architecture test asserts on observable behavior, not internal call chains
+- [ ] Test suite still catches: hook order changes, input validation skips, debt preservation failures, RNG mutation during terrain setup, replay pause/step semantics
+- [ ] `uv run pytest --no-cov` passes
