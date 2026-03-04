@@ -29,8 +29,11 @@ from ..sessions import (
     DeterministicSessionStepTick,
     QuestDeterministicSession,
     QuestDeterministicSessionTick,
-    RushDeterministicSession,
-    SurvivalDeterministicSession,
+    RushSpawnState,
+    SurvivalSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+    survival_mid_step,
 )
 from ..step_pipeline import DeterministicStepResult
 from ..tick_runner import TickRunner, TickRunnerConfig
@@ -377,7 +380,7 @@ class _PlaybackTickHook:
 
 @dataclass(slots=True)
 class SurvivalPlaybackRuntime:
-    session: SurvivalDeterministicSession
+    session: DeterministicSession
     partition_events: bool
 
     def partition_tick_events(
@@ -409,7 +412,7 @@ class SurvivalPlaybackRuntime:
 
 @dataclass(slots=True)
 class RushPlaybackRuntime:
-    session: RushDeterministicSession
+    session: DeterministicSession
 
     def partition_tick_events(
         self,
@@ -522,7 +525,7 @@ class PlaybackDriver:
             original_capture_replay=False,
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
-        self.session: DeterministicSession = self._mode_runtime.session
+        self.session: DeterministicSession | QuestDeterministicSession = self._mode_runtime.session
 
         inputs = replay.inputs
         self.tick_limit = (
@@ -620,17 +623,21 @@ class PlaybackDriver:
         sessions = self.config.sessions
         match self.mode_id:
             case GameMode.SURVIVAL:
-                session = SurvivalDeterministicSession(
+                survival_spawn = SurvivalSpawnState()
+                session = DeterministicSession(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
+                    game_mode=GameMode.SURVIVAL,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=bool(defaults.game_tune_started),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
                     clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
+                    finalize_post_render_lifecycle=True,
+                    mid_step_hook=lambda ctx: survival_mid_step(ctx, survival_spawn),
                 )
                 return SurvivalPlaybackRuntime(
                     session=session,
@@ -640,19 +647,25 @@ class PlaybackDriver:
                 rush_config = sessions.rush
                 if bool(rush_config.enforce_loadout):
                     enforce_rush_loadout(self.world)
-                session = RushDeterministicSession(
+                rush_spawn = RushSpawnState()
+                session = DeterministicSession(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
+                    game_mode=GameMode.RUSH,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=bool(defaults.game_tune_started),
                     clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-                    enforce_loadout=(lambda: enforce_rush_loadout(self.world))
+                    finalize_post_render_lifecycle=True,
+                    elapsed_uses_raw_dt=True,
+                    mid_step_hook=lambda ctx: rush_mid_step(ctx, rush_spawn),
+                    before_step_hook=(lambda: enforce_rush_loadout(self.world))
                     if bool(rush_config.enforce_loadout)
                     else None,
+                    input_transform=rush_input_transform,
                 )
                 return RushPlaybackRuntime(
                     session=session,
@@ -915,12 +928,16 @@ class PlaybackDriver:
         )
 
     @property
-    def survival_session(self) -> SurvivalDeterministicSession | None:
-        return self.session if isinstance(self.session, SurvivalDeterministicSession) else None
+    def survival_session(self) -> DeterministicSession | None:
+        if self.mode_id == GameMode.SURVIVAL and isinstance(self.session, DeterministicSession):
+            return self.session
+        return None
 
     @property
-    def rush_session(self) -> RushDeterministicSession | None:
-        return self.session if isinstance(self.session, RushDeterministicSession) else None
+    def rush_session(self) -> DeterministicSession | None:
+        if self.mode_id == GameMode.RUSH and isinstance(self.session, DeterministicSession):
+            return self.session
+        return None
 
     @property
     def quest_session(self) -> QuestDeterministicSession | None:

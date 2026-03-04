@@ -10,7 +10,7 @@ import crimson.modes.survival_mode as survival_mode_module
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
-from crimson.sim.sessions import SurvivalDeterministicSession
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.timing import FrameTiming
 from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
@@ -19,7 +19,7 @@ from grim.view import ViewContext
 
 def _make_survival_mode(
     *,
-    session_factory: Callable[..., SurvivalDeterministicSession] | None = None,
+    session_factory: Callable[..., DeterministicSession] | None = None,
 ) -> SurvivalMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
@@ -28,7 +28,7 @@ def _make_survival_mode(
     return SurvivalMode(ctx, session_factory=session_factory)
 
 
-def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicSession]:
+def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
     class _FakeSession:
         def __init__(self, *, world) -> None:
             self._world = world
@@ -69,7 +69,7 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
         "_apply_sim_step_result",
         side_effect=lambda *_args, **_kwargs: None,
     )
-    return lambda *, world, **_kwargs: cast(SurvivalDeterministicSession, _FakeSession(world=world))
+    return lambda *, world, **_kwargs: cast(DeterministicSession, _FakeSession(world=world))
 
 
 def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:

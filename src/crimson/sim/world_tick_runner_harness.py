@@ -9,7 +9,7 @@ from ..game_modes import GameMode
 from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from .input import PlayerInput
 from .input_providers import FrameContext, LocalInputProvider
-from .sessions import DeterministicSessionTick, WorldTickDeterministicSession
+from .sessions import DeterministicSession, DeterministicSessionTick
 from .tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 
 WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
@@ -42,7 +42,7 @@ class WorldTickRunnerHarness:
         self._game_mode = game_mode
         self._build_inputs = build_inputs
         self._tick_rate = max(1, int(tick_rate))
-        self._session: WorldTickDeterministicSession | None = None
+        self._session: DeterministicSession | None = None
         self._runner: TickRunner | None = None
         self._world_state: object | None = None
         self._player_count = 0
@@ -53,7 +53,7 @@ class WorldTickRunnerHarness:
         self._world_state = None
         self._player_count = 0
 
-    def _ensure_runner(self) -> tuple[TickRunner, WorldTickDeterministicSession]:
+    def _ensure_runner(self) -> tuple[TickRunner, DeterministicSession]:
         world_state = self._world.sim_world.world_state
         player_count = len(self._world.sim_world.players)
         session = self._session
@@ -73,7 +73,7 @@ class WorldTickRunnerHarness:
             detail_preset = config.detail_preset
             gore_disabled = config.gore_disabled
 
-        session = WorldTickDeterministicSession(
+        session = DeterministicSession(
             world=world_state,
             world_size=float(self._world.world_size),
             damage_scale_by_type=self._world.sim_world.damage_scale_by_type,
@@ -108,7 +108,7 @@ class WorldTickRunnerHarness:
         self,
         *,
         batch: TickBatchResult,
-        session: WorldTickDeterministicSession,
+        session: DeterministicSession,
     ) -> int:
         ticks_applied = 0
         for result in batch.completed_results:

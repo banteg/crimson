@@ -22,7 +22,7 @@ from crimson.sim.input_providers import (
     NetworkInputProvider,
 )
 from crimson.sim.presentation_step import PresentationStepCommands
-from crimson.sim.sessions import SurvivalDeterministicSession
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from crimson.world import AudioBridge, SimWorldState
 from grim.config import ensure_crimson_cfg
@@ -172,12 +172,13 @@ class _MockLockstepRuntime:
 
 def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
     sim_world = SimWorldState(world_size=1024.0)
-    session = SurvivalDeterministicSession(
+    session = DeterministicSession(
         world=sim_world.world_state,
         world_size=float(sim_world.world_size),
         damage_scale_by_type=sim_world.damage_scale_by_type,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
         detail_preset=5,
         gore_disabled=0,
         game_tune_started=False,
@@ -355,12 +356,13 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
 
     sim_world = SimWorldState(world_size=1024.0)
     sim_world.reset(seed=int(header.seed), player_count=int(header.player_count))
-    live_session = SurvivalDeterministicSession(
+    live_session = DeterministicSession(
         world=sim_world.world_state,
         world_size=float(sim_world.world_size),
         damage_scale_by_type=sim_world.damage_scale_by_type,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
         detail_preset=int(header.detail_preset),
         gore_disabled=int(header.gore_disabled),
         game_tune_started=False,
@@ -403,7 +405,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     mocker.patch.object(mode, "_open_world_runtime", return_value=None)
 
     mode.open()
-    assert isinstance(mode._survival, SurvivalDeterministicSession)
+    assert isinstance(mode._survival, DeterministicSession)
 
     replay_hashes: list[str] = []
 

@@ -38,7 +38,7 @@ from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.input_providers import InputCommand
-from ..sim.sessions import SurvivalDeterministicSession
+from ..sim.sessions import DeterministicSession, SurvivalSpawnState, survival_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -64,7 +64,7 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
-SurvivalSessionFactory = Callable[..., SurvivalDeterministicSession]
+SurvivalSessionFactory = Callable[..., DeterministicSession]
 
 
 class _SurvivalState(msgspec.Struct):
@@ -83,7 +83,7 @@ class SurvivalMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
-        session_factory: SurvivalSessionFactory = SurvivalDeterministicSession,
+        session_factory: SurvivalSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -113,20 +113,26 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._session_factory = session_factory
-        self._sim_session: SurvivalDeterministicSession | None = self._new_sim_session()
+        self._spawn_state = SurvivalSpawnState()
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
         self._lan_last_tick_index: int = -1
 
-    def _new_sim_session(self) -> SurvivalDeterministicSession:
+    def _new_sim_session(self) -> DeterministicSession:
+        self._spawn_state = SurvivalSpawnState()
+        spawn = self._spawn_state
         return self._session_factory(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.SURVIVAL,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
+            finalize_post_render_lifecycle=True,
+            mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
         )
 
     def _reset_perk_prompt(self) -> None:
@@ -388,7 +394,7 @@ class SurvivalMode(BaseGameplayMode):
     def _lan_mode_name(self) -> Literal["survival"]:
         return "survival"
 
-    def _lan_match_session(self) -> SurvivalDeterministicSession | None:
+    def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
     def _on_lan_paused(self, *, dt: float) -> None:
@@ -530,13 +536,12 @@ class SurvivalMode(BaseGameplayMode):
         dt_tick: float,
     ) -> LanStepAction:
         _ = role, lockstep_runtime, dt_tick
-        session_survival = cast(SurvivalDeterministicSession, session)
         frame_tick_index = step.frame_tick_index
         if frame_tick_index is None:
             raise RuntimeError("lan tick missing frame_tick_index")
-        session_elapsed_ms = float(session_survival.elapsed_ms)
-        session_stage = int(session_survival.stage)
-        session_spawn_cooldown_ms = float(session_survival.spawn_cooldown_ms)
+        session_elapsed_ms = float(step.tick.elapsed_ms)
+        session_stage = self._spawn_state.stage
+        session_spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
         self._survival.elapsed_ms = session_elapsed_ms
         self._survival.stage = session_stage
         self._survival.spawn_cooldown = session_spawn_cooldown_ms
@@ -678,8 +683,8 @@ class SurvivalMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             self._survival.elapsed_ms = float(session.elapsed_ms)
-            self._survival.stage = int(session.stage)
-            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+            self._survival.stage = self._spawn_state.stage
+            self._survival.spawn_cooldown = self._spawn_state.spawn_cooldown_ms
             _ = tick_index
 
             if self._death_transition_ready():

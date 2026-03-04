@@ -22,7 +22,7 @@ from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..perks.state import CreatureForPerks
 from ..sim.input import PlayerInput
-from ..sim.sessions import TutorialDeterministicSession
+from ..sim.sessions import DeterministicSession
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -50,7 +50,7 @@ class _TutorialUiLayout(msgspec.Struct):
     panel_padding: Vec2 = Vec2(20.0, 8.0)
 
 
-TutorialSessionFactory = Callable[..., TutorialDeterministicSession]
+TutorialSessionFactory = Callable[..., DeterministicSession]
 
 
 class TutorialMode(BaseGameplayMode):
@@ -64,7 +64,7 @@ class TutorialMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
-        session_factory: TutorialSessionFactory = TutorialDeterministicSession,
+        session_factory: TutorialSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -91,16 +91,17 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
         self._session_factory = session_factory
-        self._sim_session: TutorialDeterministicSession | None = self._new_sim_session()
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
         self._frame_input_state: PlayerInput | None = None
 
-    def _new_sim_session(self) -> TutorialDeterministicSession:
+    def _new_sim_session(self) -> DeterministicSession:
         return self._session_factory(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.TUTORIAL,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),

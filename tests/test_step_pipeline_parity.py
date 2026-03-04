@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import msgspec
-
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
@@ -22,7 +20,13 @@ from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
 from crimson.sim.sandbox_step import run_sandbox_world_step
-from crimson.sim.sessions import QuestDeterministicSession, RushDeterministicSession
+from crimson.sim.sessions import (
+    DeterministicSession,
+    QuestDeterministicSession,
+    RushSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+)
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -168,27 +172,32 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
 
-    session = RushDeterministicSession(
+    spawn = RushSpawnState()
+    session = DeterministicSession(
         world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
         fx_queue=world.render_resources.fx_queue,
         fx_queue_rotated=world.render_resources.fx_queue_rotated,
+        game_mode=GameMode.RUSH,
         detail_preset=5,
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
-        enforce_loadout=lambda: _enforce_rush_loadout(world),
+        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
+        before_step_hook=lambda: _enforce_rush_loadout(world),
+        input_transform=rush_input_transform,
+        elapsed_uses_raw_dt=True,
+        finalize_post_render_lifecycle=True,
     )
 
     checkpoints: list[ReplayCheckpoint] = []
     dt = 1.0 / float(replay.header.tick_rate)
     for tick_index in range(len(replay.inputs)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
-        rush_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in tick_inputs]
         timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
             timing=timing,
-            inputs=rush_inputs,
+            inputs=tick_inputs,
             trace_rng=False,
         )
         step = tick.step

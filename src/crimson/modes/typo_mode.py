@@ -18,7 +18,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
 from ..sim.input import PlayerInput
-from ..sim.sessions import TypoDeterministicSession
+from ..sim.sessions import DeterministicSession
 from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
@@ -53,7 +53,7 @@ class _TypoState(msgspec.Struct):
     spawn_cooldown_ms: int = 0
 
 
-TypoSessionFactory = Callable[..., TypoDeterministicSession]
+TypoSessionFactory = Callable[..., DeterministicSession]
 
 
 class TypoShooterMode(BaseGameplayMode):
@@ -66,7 +66,7 @@ class TypoShooterMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
-        session_factory: TypoSessionFactory = TypoDeterministicSession,
+        session_factory: TypoSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -89,16 +89,17 @@ class TypoShooterMode(BaseGameplayMode):
 
         self._ui_assets = None
         self._session_factory = session_factory
-        self._sim_session: TypoDeterministicSession | None = self._new_sim_session()
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
         self._frame_input_state: PlayerInput | None = None
 
-    def _new_sim_session(self) -> TypoDeterministicSession:
+    def _new_sim_session(self) -> DeterministicSession:
         return self._session_factory(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.TYPO,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Literal
 
 import msgspec
 
@@ -26,7 +26,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.sessions import RushDeterministicSession
+from ..sim.sessions import DeterministicSession, RushSpawnState, rush_input_transform, rush_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
@@ -49,7 +49,7 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
-RushSessionFactory = Callable[..., RushDeterministicSession]
+RushSessionFactory = Callable[..., DeterministicSession]
 
 
 class _RushState(msgspec.Struct):
@@ -67,7 +67,7 @@ class RushMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
-        session_factory: RushSessionFactory = RushDeterministicSession,
+        session_factory: RushSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -87,7 +87,8 @@ class RushMode(BaseGameplayMode):
         self._ui_assets = None
         self._replay_recorder: ReplayRecorder | None = None
         self._session_factory = session_factory
-        self._sim_session: RushDeterministicSession | None = self._new_sim_session()
+        self._spawn_state = RushSpawnState()
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
 
     def _enforce_rush_loadout(self) -> None:
         for player in self.sim_world.players:
@@ -96,18 +97,25 @@ class RushMode(BaseGameplayMode):
             # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
             player.weapon.ammo = float(RUSH_FORCED_AMMO)
 
-    def _new_sim_session(self) -> RushDeterministicSession:
+    def _new_sim_session(self) -> DeterministicSession:
+        self._spawn_state = RushSpawnState()
+        spawn = self._spawn_state
         return self._session_factory(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.RUSH,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
-            enforce_loadout=self._enforce_rush_loadout,
+            finalize_post_render_lifecycle=True,
+            elapsed_uses_raw_dt=True,
+            mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
+            before_step_hook=self._enforce_rush_loadout,
+            input_transform=rush_input_transform,
         )
 
     def open(self) -> None:
@@ -252,7 +260,7 @@ class RushMode(BaseGameplayMode):
     def _lan_mode_name(self) -> Literal["rush"]:
         return "rush"
 
-    def _lan_match_session(self) -> RushDeterministicSession | None:
+    def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
     def _prepare_lan_frame(
@@ -280,19 +288,18 @@ class RushMode(BaseGameplayMode):
         dt_tick: float,
     ) -> LanStepAction:
         _ = role, lockstep_runtime, dt_tick
-        session_rush = cast(RushDeterministicSession, session)
         frame_tick_index = step.frame_tick_index
         if frame_tick_index is None:
             raise RuntimeError("lan tick missing frame_tick_index")
         self._rush.elapsed_ms = float(step.tick.elapsed_ms)
-        self._rush.spawn_cooldown_ms = float(session_rush.spawn_cooldown_ms)
+        self._rush.spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
         self._store_net_runtime_snapshot(
             snapshot=RushStateSnapshotV2(
                 tick_index=int(frame_tick_index),
                 replay_state=self._net_replay_snapshot_state(),
                 runtime_state=RushRuntimeSnapshotV2(
                     elapsed_ms=float(step.tick.elapsed_ms),
-                    spawn_cooldown_ms=float(session_rush.spawn_cooldown_ms),
+                    spawn_cooldown_ms=self._spawn_state.spawn_cooldown_ms,
                     kill_count=int(self.creatures.kill_count),
                 ),
             ),
@@ -332,7 +339,7 @@ class RushMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             self._rush.elapsed_ms = float(tick.elapsed_ms)
-            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+            self._rush.spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
             _ = tick_index
 
             if not self._any_player_alive():

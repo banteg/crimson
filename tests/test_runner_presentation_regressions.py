@@ -7,7 +7,7 @@ from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import LocalInputProvider
-from crimson.sim.sessions import DeterministicSessionTick, WorldTickDeterministicSession
+from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from tests.world_runtime import WorldRuntimeHost
 
@@ -20,8 +20,8 @@ def _build_runner(
     world: WorldRuntimeHost,
     *,
     build_inputs,
-) -> tuple[WorldTickDeterministicSession, TickRunner]:
-    session = WorldTickDeterministicSession(
+) -> tuple[DeterministicSession, TickRunner]:
+    session = DeterministicSession(
         world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
@@ -52,7 +52,7 @@ def _build_runner(
 def _apply_batch(
     world: WorldRuntimeHost,
     *,
-    session: WorldTickDeterministicSession,
+    session: DeterministicSession,
     batch: TickBatchResult,
 ) -> list[int]:
     applied_ticks: list[int] = []

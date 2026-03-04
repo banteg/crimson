@@ -91,7 +91,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
             on_capture_state_transition=on_capture_state_transition,
         )
 
-    original_timing = sessions_module.SurvivalDeterministicSession.timing_for_dt
+    original_timing = sessions_module.DeterministicSession.timing_for_dt
 
     def _traced_timing(self, dt: float):
         order.append("timing")
@@ -99,7 +99,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
 
     mocker.patch.object(playback_driver_module, "apply_replay_tick_events", side_effect=_traced_apply)
     mocker.patch.object(
-        sessions_module.SurvivalDeterministicSession,
+        sessions_module.DeterministicSession,
         "timing_for_dt",
         autospec=True,
         side_effect=_traced_timing,

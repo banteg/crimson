@@ -14,19 +14,19 @@ Six session classes (`Survival`, `Rush`, `Tutorial`, `Typo`, `WorldTick`, `Quest
 
 ### Tasks
 
-- [ ] Extract shared tick-step boilerplate into a single base or helper
-- [ ] Accept spawn strategy as a callable parameter, not a class override
-- [ ] Collapse six session classes into one parameterized session (or one base + minimal subclasses)
-- [ ] Remove all duplicated `timing_for_dt()` implementations
-- [ ] Remove all duplicated `rng_marks` / creature-count / lifecycle-finalization boilerplate
+- [x] Extract shared tick-step boilerplate into a single base or helper
+- [x] Accept spawn strategy as a callable parameter, not a class override
+- [x] Collapse six session classes into one parameterized session (or one base + minimal subclasses)
+- [x] Remove all duplicated `timing_for_dt()` implementations
+- [x] Remove all duplicated `rng_marks` / creature-count / lifecycle-finalization boilerplate
 
 ### Acceptance
 
-- [ ] Only one implementation of `timing_for_dt()` exists
-- [ ] Only one implementation of post-step boilerplate (rng_marks, creature count, lifecycle finalize) exists
-- [ ] A bug fix in shared tick logic requires touching exactly one file
-- [ ] All existing session tests pass without modification
-- [ ] Replay determinism parity unchanged (`uv run pytest --no-cov`)
+- [x] Only one implementation of `timing_for_dt()` exists
+- [x] Only one implementation of post-step boilerplate (rng_marks, creature count, lifecycle finalize) exists
+- [x] A bug fix in shared tick logic requires touching exactly one file
+- [x] All existing session tests pass without modification
+- [x] Replay determinism parity unchanged (`uv run pytest --no-cov`)
 
 ---
 

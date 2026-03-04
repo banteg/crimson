@@ -5,11 +5,19 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.sandbox_step import run_sandbox_world_step
-from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
+from crimson.sim.sessions import (
+    DeterministicSession,
+    RushSpawnState,
+    SurvivalSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+    survival_mid_step,
+)
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -143,13 +151,16 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = SurvivalDeterministicSession(
+    spawn = SurvivalSpawnState()
+    session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        perk_progression_enabled=False,
+        game_mode=GameMode.SURVIVAL,
+        mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
+        finalize_post_render_lifecycle=True,
     )
 
     timing = session.timing_for_dt(1.0 / 60.0)
@@ -169,12 +180,18 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = RushDeterministicSession(
+    spawn = RushSpawnState()
+    session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
+        game_mode=GameMode.RUSH,
+        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
+        input_transform=rush_input_transform,
+        elapsed_uses_raw_dt=True,
+        finalize_post_render_lifecycle=True,
     )
 
     timing = session.timing_for_dt(1.0 / 60.0)
