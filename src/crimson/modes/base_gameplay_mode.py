@@ -67,7 +67,7 @@ from ..sim.batch_apply import (
     PresentationTickOutput,
     SimMetadataSink,
     apply_presentation_outputs,
-    apply_tick_to_sim,
+    apply_sim_metadata_tick_result,
 )
 from ..sim.clock import FixedStepClock
 from ..sim.hooks import (
@@ -2061,21 +2061,6 @@ class BaseGameplayMode:
             self.sync_ground_settings()
             self.render_resources.ground.process_pending()
 
-    def _apply_sim_step_result(
-        self,
-        *,
-        step: object,
-        game_tune_started: bool,
-        apply_audio: bool,
-        update_camera: bool,
-    ) -> None:
-        _ = apply_audio, update_camera
-        apply_tick_to_sim(
-            sim_world=cast(SimMetadataSink, self.sim_world),
-            step=cast(DeterministicStepPayload, step),
-            game_tune_started=bool(game_tune_started),
-        )
-
     def _apply_batch_presentation_outputs(
         self,
         *,
@@ -2151,19 +2136,14 @@ class BaseGameplayMode:
                 applied.remote_state_hash = str(tick_result.lan_sync.remote_state_hash)
                 applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
-            step = _extract_step(tick)
-            apply_tick_to_sim(
+            output = apply_sim_metadata_tick_result(
                 sim_world=cast(SimMetadataSink, self.sim_world),
-                step=step,
+                tick_result=tick_result,
                 game_tune_started=bool(session.game_tune_started),
+                extract_step=_extract_step,
             )
-            presentation_outputs.append(
-                PresentationTickOutput(
-                    tick_index=int(tick_result.tick_index),
-                    dt_sim=float(step.dt_sim),
-                    presentation=step.presentation,
-                ),
-            )
+            if output is not None:
+                presentation_outputs.append(output)
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 

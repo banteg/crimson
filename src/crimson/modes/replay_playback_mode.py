@@ -709,6 +709,23 @@ class ReplayPlaybackMode:
                     extract_step=lambda payload: cast(PlaybackTickOutcome, payload).step,
                 )
 
+            step_iter = iter(step_outcomes)
+
+            def _on_output_applied(output: PresentationTickOutput) -> None:
+                outcome = next(step_iter)
+                self._apply_tick_outcome(
+                    outcome=outcome,
+                    dt=float(self._dt),
+                )
+                self._on_runner_tick_complete(int(output.tick_index), outcome)
+                if not bake_fx_per_tick:
+                    return
+                if render_resources.ground is not None and render_resources.fx_textures is not None:
+                    render_resources.bake_fx_queues()
+                else:
+                    render_resources.fx_queue.clear()
+                    render_resources.fx_queue_rotated.clear()
+
             if outputs:
                 apply_presentation_outputs(
                     outputs=outputs,
@@ -718,21 +735,9 @@ class ReplayPlaybackMode:
                         apply_audio=bool(should_apply_audio),
                     ),
                     update_camera=runtime.update_camera,
+                    on_output_applied=_on_output_applied,
                     apply_audio=True,
                 )
-
-            for outcome, output in zip(step_outcomes, outputs, strict=True):
-                self._apply_tick_outcome(
-                    outcome=outcome,
-                    dt=float(self._dt),
-                )
-                self._on_runner_tick_complete(int(output.tick_index), outcome)
-                if bake_fx_per_tick:
-                    if render_resources.ground is not None and render_resources.fx_textures is not None:
-                        render_resources.bake_fx_queues()
-                    else:
-                        render_resources.fx_queue.clear()
-                        render_resources.fx_queue_rotated.clear()
 
         batch = runner.advance_ticks(
             start_tick=int(self._tick_index),

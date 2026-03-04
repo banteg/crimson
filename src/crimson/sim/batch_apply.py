@@ -35,6 +35,32 @@ class PresentationTickOutput:
     presentation: PresentationStepCommands | None
 
 
+def apply_sim_metadata_tick_result(
+    *,
+    sim_world: SimMetadataSink,
+    tick_result: TickResult,
+    game_tune_started: bool,
+    extract_step: Callable[[object], DeterministicStepPayload | None],
+) -> PresentationTickOutput | None:
+    payload = tick_result.payload
+    if payload is None:
+        return None
+    step = extract_step(payload)
+    if step is None:
+        return None
+
+    apply_tick_to_sim(
+        sim_world=sim_world,
+        step=step,
+        game_tune_started=bool(game_tune_started),
+    )
+    return PresentationTickOutput(
+        tick_index=int(tick_result.tick_index),
+        dt_sim=float(step.dt_sim),
+        presentation=step.presentation,
+    )
+
+
 def apply_tick_to_sim(
     *,
     sim_world: SimMetadataSink,
@@ -59,25 +85,15 @@ def apply_sim_metadata_batch(
 ) -> list[PresentationTickOutput]:
     outputs: list[PresentationTickOutput] = []
     for tick_result in completed_results:
-        payload = tick_result.payload
-        if payload is None:
-            continue
-        step = extract_step(payload)
-        if step is None:
-            continue
-
-        apply_tick_to_sim(
+        output = apply_sim_metadata_tick_result(
             sim_world=sim_world,
-            step=step,
+            tick_result=tick_result,
             game_tune_started=bool(game_tune_started),
+            extract_step=extract_step,
         )
-        outputs.append(
-            PresentationTickOutput(
-                tick_index=int(tick_result.tick_index),
-                dt_sim=float(step.dt_sim),
-                presentation=step.presentation,
-            ),
-        )
+        if output is None:
+            continue
+        outputs.append(output)
     return outputs
 
 
@@ -87,6 +103,7 @@ def apply_presentation_outputs(
     sync_audio_bridge_state: Callable[[], None],
     apply_audio_plan: Callable[[PresentationStepCommands, bool], None],
     update_camera: Callable[[float], None] | None,
+    on_output_applied: Callable[[PresentationTickOutput], None] | None = None,
     apply_audio: bool,
 ) -> None:
     if not outputs:
@@ -95,7 +112,11 @@ def apply_presentation_outputs(
     sync_audio_bridge_state()
     for output in outputs:
         if output.presentation is None:
+            if on_output_applied is not None:
+                on_output_applied(output)
             continue
         apply_audio_plan(output.presentation, bool(apply_audio))
         if update_camera is not None:
             update_camera(float(output.dt_sim))
+        if on_output_applied is not None:
+            on_output_applied(output)
