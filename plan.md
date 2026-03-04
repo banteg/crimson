@@ -1,234 +1,164 @@
-# PRD: Main Loop Orchestration Refactor (Python Runtime)
+# PRD: Main Loop Orchestration Simplification (Python Runtime)
 
 ## Document Control
 
 - Status: Approved for implementation
+- Last updated: 2026-03-04
 - Audience: implementer of gameplay/runtime architecture
 - Primary codebase scope: `src/crimson` Python runtime
-- Source synthesis: consolidated from prior codex/gem/claude plan drafts and notes
+- Source synthesis: consolidated from prior refactor drafts and review notes
 
 ## Problem Statement
 
-The deterministic kernel is strong, but orchestration around it is tangled. The current runtime has split ownership and duplicate control paths that make composability hard.
+The deterministic kernel is strong, but orchestration around it is still overly layered.
 
 Concrete issues:
 
-1. Network runtime is pumped in multiple layers.
-- `GameLoopView._tick_network_runtime()` calls `runtime.update()`.
-- Modes also call `runtime.update()` in LAN paths.
-- Evidence: `src/crimson/game/loop_view.py`, `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/quest_mode.py`.
+1. Runtime ownership is split across layers.
+- Runtime pumping has historically existed in both frame loop and mode-local/network paths.
 
 2. Input ownership is split.
-- Frame-latched input pipeline exists (`input_begin_frame()`), but raw raylib polling still drives mode logic.
-- Evidence: `src/crimson/input_codes.py`, `src/crimson/game/loop_view.py`, mode files.
+- Frame-latched input exists, but different control-flow conventions (`None`, exceptions, implicit queues) are mixed.
 
 3. Deterministic stepping orchestration is duplicated.
-- Base mode has `_run_deterministic_session_ticks`.
-- Replay mode uses a different stepping path.
-- Quest has bespoke loops.
-- Evidence: `src/crimson/modes/base_gameplay_mode.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/modes/quest_mode.py`.
+- Shared stepping logic is partially centralized, but orchestration remains distributed across mode and replay paths.
 
-4. Presentation planning and output-side effects are fused.
-- `run_deterministic_step` invokes `apply_world_presentation_step`, coupling planning and side effects.
-- Evidence: `src/crimson/sim/step_pipeline.py`, `src/crimson/sim/presentation_step.py`.
+4. Presentation planning and output application are still not fully isolated at boundaries.
 
-5. Rendering is hardwired to raylib/global state.
-- Global `rl` usage and telemetry monkeypatching block backend portability.
-- Evidence: `src/grim/raylib_api.py`, `src/crimson/sim/driver/render_telemetry.py`.
+5. Rendering abstraction has extra wrapper/facade layers without clear behavioral value.
 
-6. `GameWorld` carries too many roles.
-- Sim state + rendering resources + audio bridge + terrain lifecycle are bundled.
-- Evidence: `src/crimson/game_world.py`.
+6. World decomposition still contains compatibility-oriented facades that increase lifecycle complexity.
 
 ## Goals
 
-1. Make input source pluggable (`local`, `replay`, `network`) behind one contract.
-2. Make deterministic tick orchestration single-path and mode-agnostic.
-3. Keep deterministic contracts intact (RNG, hashes, replay parity).
-4. Separate presentation planning from side-effectful application.
-5. Make rendering destination pluggable (`window`, `video`, `headless`).
-6. Remove duplicated LAN orchestration and replay parallel-universe logic.
-7. Reduce mode classes to composition/configuration, not orchestration hosts.
+1. Make input source pluggable (`local`, `replay`, `network`) behind one explicit contract.
+2. Keep deterministic tick orchestration single-path and mode-agnostic.
+3. Preserve deterministic contracts (RNG stream, command hashes, replay parity).
+4. Keep presentation planning deterministic and separate from output application.
+5. Keep render destination pluggable (`window`, `video`, `headless`).
+6. Remove duplicated LAN/replay orchestration and implicit hook indirection.
+7. Reduce mode classes to composition/configuration instead of orchestration hosts.
+8. Collapse world architecture to meaningful components only.
 
 ## Non-Goals
 
 1. No redesign of gameplay rules or deterministic world math.
 2. No visual redesign of HUD/effects.
 3. No netcode protocol redesign beyond boundary cleanup.
-4. No immediate backend replacement for raylib; only abstraction boundary.
+4. No immediate renderer backend replacement beyond boundary enforcement.
 
 ## Hard Invariants
 
-1. Exactly one `RuntimePumpOwner` is responsible for `runtime.update()` in each execution context where a runtime exists.
-2. `InputProvider` implementations never call `runtime.update()` directly.
-3. `InputProvider` implementations may read external hardware/replay streams and pre-updated runtime queues only.
-4. `TickRunner` is the only owner of fixed-step deterministic advancement.
-5. Presentation planning is deterministic and side-effect free with respect to renderer/window I/O.
-6. Headless/replay verify still runs presentation planning for RNG parity, but may skip output application.
-7. Mode classes do not call raw net runtime methods except through adapters.
+1. `GameLoopView` is the authoritative owner of `runtime.update()` for interactive gameplay contexts.
+2. Replay playback/verify contexts are local-only and do not own a network runtime.
+3. Input control flow uses explicit status (`READY`, `STALLED`, `EOS`); no `None`/exception signaling for normal control flow.
+4. `TickRunner` is pure/stateless: it does not own fixed-step debt accumulation and does not own hook-bus dispatch.
+5. Presentation planning is deterministic, consumes the same RNG stream, and is side-effect free with respect to I/O.
+6. Headless/replay-verify may skip presentation apply, but must execute deterministic planning so RNG consumption stays identical.
+7. Mode classes assemble components and policies only; they do not call raw network runtime methods.
 
 ## Runtime Pump Ownership Matrix
 
-Authoritative ownership by execution context:
-
 | Context | Runtime Present | RuntimePumpOwner | Notes |
 |---|---|---|---|
-| Interactive gameplay (menu + survival/rush/quest) | Sometimes | `GameLoopView` frame loop | If runtime is active, pump once per frame in loop layer. |
-| Replay playback (interactive) | Optional | `ReplayPlaybackMode` frame driver | If runtime object is configured, pump exactly once per frame; if no runtime object exists, pump count is zero. |
-| Headless replay verify/benchmark | No | none | No runtime pump unless a dedicated runtime-backed verify mode is explicitly introduced. |
-| Dedicated net/headless session runner (future) | Yes | that runner's frame/tick loop | Must still satisfy one-owner invariant. |
+| Interactive gameplay (menu + survival/rush/quest) | Sometimes | `GameLoopView` frame loop | Pump exactly once per frame when runtime exists. |
+| Replay playback (interactive) | No | N/A | Replay is local-only. |
+| Headless replay verify/benchmark | No | N/A | Replay is local-only. |
+| Dedicated network runner (future, if added) | Yes | That runner's frame loop | Must still satisfy one-owner invariant. |
 
 ## Closed Design Decisions
 
-1. Runtime pump authority:
-- Context-specific `FrameDriver` is authoritative (`GameLoopView` for interactive gameplay, replay/headless runner for its own context when runtime exists).
-- Replay with runtime is not special-cased: if runtime exists, replay frame driver is the sole pump owner.
-
-2. Input pull semantics:
-- `None` means stall-only and is valid only for network provider.
-- Replay EOS is `ReplayEndOfStream` exception signaling, never `None`.
-- `[]` is invalid unless `player_count == 0`.
-
-3. Determinism artifacts:
-- Canonical artifacts are per-tick `command_hash`, per-tick `state_hash` (where enabled), checkpoint hashes, and terminal summary fields.
-
-4. Render contract minimum:
-- Backend owns GPU lifecycle and draw execution.
-- Sink owns destination transport lifecycle and failure policy.
-- Frame pacing ownership stays in frame loop.
+1. Runtime pump authority is `GameLoopView` for interactive gameplay.
+2. Replay is always local and never attaches a network runtime.
+3. `TickRunner` is pure/stateless; fixed-step debt is owned by frame-driver context.
+4. Hook bus is not an end-state architecture primitive.
+5. Input status is standardized (`InputStatus`) across providers.
+6. `ReplayInputProvider` remains, but only as a thin adapter over `Journal` read APIs.
+7. Headless verify skips presentation apply.
+8. World architecture end-state is `SimWorldState` + `PresentationLayer`.
+9. `NullSink` remains the headless sink contract.
 
 ## Functional Requirements
 
 ### FR-1: Input Boundary
 
-Introduce protocol:
+Introduce explicit status-based input contract:
 
 ```python
+class InputStatus(Enum):
+    READY = "ready"
+    STALLED = "stalled"
+    EOS = "eos"
+
+@dataclass
+class TickInput:
+    status: InputStatus
+    inputs: list[PlayerInput]
+
 class InputProvider(Protocol):
     def begin_frame(self, frame_ctx: FrameContext) -> None: ...
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None: ...
+    def pull_tick_input(self, tick_index: int) -> TickInput: ...
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]: ...
     def push_command(self, command: InputCommand) -> None: ...
 ```
 
 Requirements:
-- `pull_tick_input(...) -> None` means "tick input not ready yet (stall)" and is only valid for network-backed providers.
-- Local provider handles edge semantics consistently for multi-tick frames and must never stall.
-- Replay provider returns recorded tick inputs deterministically and must never use `None` for end-of-stream.
-- Network provider merges local + remote per tick and surfaces stall explicitly.
+- Replace `None`-based stalls and exception-driven EOS with `InputStatus`.
+- Local provider always returns `READY`.
+- Network provider may return `STALLED`.
+- Replay provider returns `EOS` when Journal read stream is exhausted.
+- For `player_count > 0`, no-op tick is a full-length list (`[PlayerInput() for _ in range(player_count)]`).
+- `[]` is invalid when players exist.
+- Tick input ordering is canonical by player index `0..player_count-1`.
+- Network merge/tie-break behavior remains runtime-canonical; providers do not invent merge rules.
 
-Provider semantic matrix:
+### FR-2: Pure TickRunner
 
-| Provider | `None` allowed | End-of-stream behavior | Empty input list `[]` |
-|---|---|---|---|
-| `LocalInputProvider` | No | Not applicable | Invalid unless `player_count == 0` |
-| `ReplayInputProvider` | No | Raise `ReplayEndOfStream` | Invalid unless replay explicitly encodes zero players |
-| `NetworkInputProvider` | Yes | Not applicable | Invalid unless `player_count == 0` |
+`TickRunner` is a pure deterministic orchestrator.
 
-`TickRunner` must treat `None` as stall-only, never as EOS.
+Requirements:
+- No internal `FixedStepClock`/accumulator ownership.
+- No hook-bus ownership.
+- Input: explicit tick range (`start_tick`, `ticks_requested`, `tick_dt`).
+- Output: `TickBatchResult` with ordered per-tick `TickResult` values and terminal batch status.
+- Batch status values include `ready`, `stalled`, and `eos`.
+- If batch status is `stalled` or `eos`, already-completed ticks in the same batch remain committed.
 
-Neutral no-op representation:
-- For `player_count > 0`, a no-op tick is represented as a full-length list:
-- `[PlayerInput() for _ in range(player_count)]`
-- `[]` is never a valid no-op alias when players exist.
+Required `TickBatchResult` minimum fields:
+- `ticks_completed`
+- `batch_status`
+- `next_tick_index`
+- `completed_results`
 
-Input normalization contract:
-- Normalized tick input length is exactly `player_count`.
-- Ordering is canonical by player index `0..player_count-1`.
-- Element `i` always corresponds to player `i` across all providers and modes.
-- Lockstep missing remote data for a required player results in stall (`None`), not synthetic fill.
-- Rollback provider consumes runtime-resolved input frames (including prediction/reconciliation decisions) and does not invent independent merge/tie-break rules.
-- Duplicate/conflicting network payload resolution is delegated to runtime; provider reads the runtime's canonical per-tick frame only.
+### FR-3: Replay Journal
 
-### FR-2: TickRunner
+Use a symmetric `Journal` abstraction for replay recording/playback.
 
-Create standalone runner (not inheritance mixin) that owns `FixedStepClock` and orchestrates per-tick stages.
-
-Proposed location:
-- `src/crimson/sim/tick_runner.py`
-
-Required per-tick stage order:
-1. `on_tick_begin`
-2. `InputNormalize` (fetch and normalize tick input)
-3. `on_pre_sim`
-4. `WorldSim` (`session.step_tick(...)`)
-5. `on_world_step_done`
-6. `PresentationPlan` (deterministic planning only)
-7. `on_pre_hash`
-8. `IntegrityHash`
-9. `on_post_hash`
-10. `on_post_presentation`
-11. `Emit` + `on_tick_end`
-
-Stall branch:
-- If `pull_tick_input(...)` returns `None`, call `on_tick_stall` and skip all remaining stage hooks for that candidate tick.
-
-Stall behavior:
-- If input provider returns `None`, stop advancing remaining ticks for this frame and return `stalled=True` in batch result.
-- Already-completed ticks in the current frame remain committed; no rollback is implied by stall.
-- Unconsumed fixed-step debt remains in the clock accumulator and is retried next frame.
-- `TickBatchResult` must expose `ticks_completed`, `stalled`, and `remaining_debt_ticks` (or equivalent fields).
-- Candidate stalled tick index is not advanced or committed.
-
-### FR-3: Hook Bus
-
-Introduce hook protocol:
-
-```python
-class TickHook(Protocol):
-    def on_tick_begin(self, ctx: TickContext) -> None: ...
-    def on_tick_stall(self, ctx: TickContext) -> None: ...
-    def on_pre_sim(self, ctx: TickContext) -> None: ...
-    def on_world_step_done(self, ctx: TickContext, result: StepResult) -> None: ...
-    def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None: ...
-    def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None: ...
-    def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None: ...
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None: ...
-```
-
-Required `TickContext` minimum fields:
-- `tick_index`
-- `dt_seconds`
-- `inputs` (normalized; `None` only for `on_tick_stall`)
-- `session_kind`
-- `mode_id`
-- `is_networked`
-- `is_replay`
-
-Required `TickHashes` minimum fields:
-- `command_hash` (canonical deterministic command stream hash)
-- `state_hash` (if enabled/available; otherwise explicit null marker)
-
-Required hook implementations:
-- ReplayRecorderHook
-- CheckpointHook
-- NetworkSyncHook
-- ProfilerHook
-- Optional telemetry/export hook
+Requirements:
+- Journal supports read mode (playback) and append mode (recording).
+- `ReplayInputProvider` is a thin adapter that forwards read requests to Journal and maps them to `TickInput`.
+- Frame drivers explicitly commit `TickResult`/checkpoint data to Journal.
+- Network sync and checkpoint side effects are explicit frame-driver calls, not implicit hook fan-out.
 
 ### FR-4: Presentation Split (Plan vs Apply)
 
-Current behavior in `apply_world_presentation_step` is split into:
-- `plan_world_presentation_step` (deterministic command plan)
-- `apply_presentation_plan` (output side effects)
+Split presentation logic into:
+- `plan_world_presentation_step` (deterministic planning)
+- `apply_presentation_plan` (output-side effects)
 
 Requirements:
-- Plan stage runs inside deterministic tick path.
-- Apply stage runs in output/render phase and may be skipped for headless.
-- Command hash and replay parity must remain stable after refactor.
-- Planning stage remains part of authoritative deterministic contract for RNG consumption.
-- Plan granularity is per completed tick (`TickPresentationPlan`).
-- `TickRunner.advance_frame(...)` returns an ordered list of per-tick plans for that frame.
-- Apply stage consumes plans in tick order within the same frame.
-- If multiple ticks run in one frame, all corresponding plans are applied in strict tick order.
-- If zero ticks run in a frame, apply stage receives an empty plan list.
-- Backend/sink-side batching is allowed only if it is order-preserving and side-effect equivalent to per-tick apply.
+- Plan stage executes in deterministic tick path.
+- Apply stage executes in output phase.
+- Headless/verify paths may skip apply.
+- Planning still runs in headless/verify to preserve RNG parity.
+- Multi-tick frame plans are applied in strict tick order when apply is enabled.
 
 ### FR-5: Render Abstraction
 
-Introduce two seams:
+Keep two seams:
 
-1. `RenderPipeline` (draw orchestration abstraction)
-2. `RenderSink` (frame destination)
+1. `RenderPipeline` (draw orchestration)
+2. `RenderSink` (destination transport)
 
 Minimum sinks:
 - `WindowSink`
@@ -237,169 +167,157 @@ Minimum sinks:
 
 Requirements:
 - Same render pass logic feeds window and video.
-- Replay render path reuses shared draw pipeline, not a bespoke one.
-- `RenderPipeline` owns resize/lifecycle orchestration and optional begin/end drawing ownership.
-- `RenderSink` owns destination/transport lifecycle (`open`, `present`, `flush`, `close`).
-- Frame pacing ownership is outside pipeline/sink (owned by frame loop / runner context).
-- Sink failure policy must be explicit:
-- `WindowSink`: present-frame callback is optional and no-op when absent.
-- `VideoSink`: fail-fast and surface non-zero/export error.
-- `NullSink`: always succeed/no-op.
+- Replay render path reuses shared pipeline.
+- `RenderPipeline` owns resize/lifecycle orchestration and optional begin/end drawing scope.
+- `RenderSink` owns destination lifecycle (`open`, `present`, `flush`, `close`).
+- Sink failure policy is explicit:
+- `WindowSink`: present callback optional/no-op when absent.
+- `VideoSink`: fail-fast on transport/export errors.
+- `NullSink`: always no-op/success.
 
-### FR-6: `GameWorld` Decomposition
+### FR-6: World Decomposition End-State
 
-Split `GameWorld` responsibilities into explicit components:
-- `SimWorldState`: deterministic state and step-result application data
-- `RenderResources`: textures/shaders/render objects and lifecycle
-- `AudioBridge`: audio routing and presentation-audio application
-- `TerrainRuntime`: terrain bootstrap/runtime state transitions
+Collapse world architecture to two meaningful components:
+
+- `SimWorldState`: deterministic sim state, deterministic terrain/bootstrap data, deterministic visual stamp data required for parity.
+- `PresentationLayer`: render resources + audio routing/application.
 
 Requirements:
-- One-way dependency: render/audio consume sim state; sim does not depend on GPU resources.
-- Keep a temporary compatibility facade if needed during migration.
-- Deterministic terrain state (seed/bootstrap stamps/collision-affecting data) belongs to `SimWorldState`.
-- Terrain render caches/meshes/textures belong to `RenderResources`.
-- `TerrainRuntime` coordinates data flow only; it does not own nondeterministic side effects that can mutate deterministic terrain state outside tick apply.
+- One-way dependency: `PresentationLayer` consumes `SimWorldState` outputs.
+- Sim layer has no dependency on GPU/audio runtime objects.
+- Remove compatibility facades that only forward between split classes.
+- `TerrainRuntime` is not a long-lived architectural runtime component in end-state; keep only helper/bootstrap utilities where needed.
 
 ### FR-7: Replay Path Unification
 
-`ReplayPlaybackMode` must use the same `TickRunner` orchestration path as gameplay modes.
+`ReplayPlaybackMode` must use the same frame-driver + `TickRunner` orchestration style as gameplay.
 
 Requirements:
-- Replay-specific behavior lives in provider/hook/sink adapters.
-- Remove replay-specific duplicate stepping glue from mode update loop.
+- Replay is local-only.
+- Replay input path: `Journal` -> `ReplayInputProvider` -> `TickRunner`.
+- Remove replay-specific bespoke stepping loops.
 
 ### FR-8: Event-Driven UI Commands
 
-Perk selection and similar UI outcomes must enter sim via input commands.
+UI outcomes (for example perk picks) enter deterministic sim via input commands.
 
 Flow:
-1. Tick result surfaces pending UI state (example: perk selection).
-2. UI opens and collects choice.
-3. Choice is translated to `InputCommand` (example: `PerkPickCommand`).
-4. Command is pushed into provider queue.
-5. Next deterministic tick consumes command as regular input.
+1. Tick result surfaces pending UI state.
+2. UI collects choice.
+3. Choice becomes `InputCommand`.
+4. Command is queued to provider.
+5. Next deterministic tick consumes command in canonical order.
 
 ### FR-9: Replay Pause/Step/Speed Semantics
 
+Replay interactivity remains in frame-driver layer.
+
 Requirements:
-- `paused=True`: replay advancement does not accumulate deterministic clock debt.
-- `step_once` while paused attempts exactly one tick (subject to stall/EOS) and does not create residual debt.
-- Playback `speed_multiplier` scales effective `dt` only when not paused.
-- On unpause, normal debt accumulation resumes from post-pause state (no hidden paused-time carry-over).
-- Stall during `step_once` commits zero ticks and preserves index/debt invariants.
-- EOS during `step_once` is terminal for replay stream and must not be converted into stall.
+- `paused=True`: no fixed-step debt accumulation.
+- `step_once` while paused advances exactly one deterministic tick, then returns to paused.
+- `speed_multiplier` scales effective dt only while unpaused.
+- On unpause, accumulation resumes from post-pause state with no hidden carry-over.
+- EOS is terminal and never converted into stall.
 
 ## Non-Functional Requirements
 
 1. Determinism
-- Golden replay checkpoint/hash parity must hold across phases.
+- Golden replay checkpoint/hash parity must hold.
 
 2. Observability
-- Must expose counters: `runtime_updates_per_frame`, `input_stall_count`, `ticks_advanced_per_frame`.
-- Must expose stage timing: `sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`.
+- Required counters: `runtime_updates_per_frame`, `input_stall_count`, `ticks_advanced_per_frame`.
+- Required timings: `sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`.
+
+3. Simplicity
+- Avoid architectural facades that only proxy calls.
+- Prefer explicit orchestration calls over implicit hook fan-out.
 
 ## Concrete End Shape
 
 ### Final Runtime Shape
 
-`FrameDriver` (context-specific frame owner)
+`FrameDriver` (context-specific owner):
+- owns fixed-step accumulator/debt
 - calls `input_provider.begin_frame(...)`
-- pumps runtime exactly once if runtime exists for the current context
-- calls `tick_runner.advance_frame(dt)` and receives `TickBatchResult`
-- sends ordered `presentation_plans` + world snapshot to shared render pipeline/sink
+- pumps runtime exactly once per frame in interactive gameplay (`GameLoopView`)
+- requests candidate tick count from accumulator
+- calls pure `tick_runner.advance_ticks(...)`
+- dispatches `TickBatchResult` explicitly to:
+- simulation state application
+- journal recording/checkpoint emission
+- network sync actions (where applicable)
+- presentation apply (if enabled)
+- telemetry collection
 
-`GameLoopView` is the `FrameDriver` for interactive gameplay contexts.
-`ReplayPlaybackMode` / replay runners are frame drivers for replay contexts.
+`GameLoopView`:
+- interactive frame driver and sole runtime pump owner for gameplay contexts
 
-`Mode` classes
-- assemble components only (session, providers, hooks, sinks)
-- no custom tick loop logic
-- no raw runtime/net pumping
+`ReplayPlaybackMode` / replay runners:
+- local-only frame drivers with no network runtime
+- `Journal`-backed replay input
 
-`TickRunner`
-- single deterministic orchestrator for survival/rush/quest/replay
+`Mode` classes:
+- configure session/policies/components
+- no custom deterministic orchestration loops
+- no raw runtime pumping or net runtime method calls
 
-`ReplayPlaybackMode`
-- same tick runner path, replay provider + replay hooks + chosen sink
+`TickRunner`:
+- pure deterministic orchestration over explicit tick ranges
 
 ### Expected Collapses / Cleanups
 
-The following logic must be collapsed into shared components:
-
-1. `BaseGameplayMode._run_deterministic_session_ticks`
-- collapsed into `TickRunner`
-
-2. `_update_lan_match` in:
-- `src/crimson/modes/survival_mode.py`
-- `src/crimson/modes/rush_mode.py`
-- `src/crimson/modes/quest_mode.py`
-- collapsed into shared network provider + network hook flow
-
-3. Mode-owned fixed clocks (`_sim_clock`, `_lan_capture_clock`)
-- moved under `TickRunner`/network adapter ownership
-
-4. Duplicate `runtime.update()` calls in modes
-- removed; only context-specific `FrameDriver` owner remains
-
-5. Replay-specific custom stepping in `ReplayPlaybackMode`
-- collapsed to standard `TickRunner` + `ReplayInputProvider`
-
-6. `GameWorld` mixed responsibilities
-- split into `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime`
-
-7. Presentation side-effect coupling
-- split plan/apply; apply becomes output-layer concern
+1. Collapse `BaseGameplayMode._run_deterministic_session_ticks` into pure `TickRunner` invocation + frame-driver dispatch.
+2. Collapse per-mode LAN orchestration duplication into shared frame-driver/network adapter path.
+3. Remove hook-bus architecture from deterministic tick pipeline.
+4. Remove exception/`None` input control flow in favor of `InputStatus`.
+5. Remove replay bespoke stepping loop and use shared runner path.
+6. Collapse world facades into `SimWorldState` + `PresentationLayer`.
+7. Keep headless output path minimal through `NullSink`.
 
 ### Expected Deletions (End-State)
 
-After migration stabilizes, these should be deleted or reduced to thin adapters:
+- Hook bus classes used only for orchestration indirection.
+- Replay/mode-specific bespoke deterministic stepping loops.
+- Mode-local runtime pumping paths.
+- Compatibility facades that proxy between split world components.
 
-- bespoke mode LAN loops
-- bespoke replay stepping loop
-- mode-local net pumping paths
-- duplicated checkpoint/record wiring inside mode update methods
+## Implementation Plan (Phases)
 
-## Implementation Plan (PR Slices)
-
-### PR-0: Safety Nets and Instrumentation
+### Phase 0: Instrumentation Baseline
 
 Changes:
-- Add counters/assertions for duplicate runtime pumping and stalls.
-- Add stage timing scaffolding for future hook timing.
+- Ensure runtime pump, stall, tick-count, and stage timing counters are emitted consistently.
 
 Primary files:
 - `src/crimson/game/loop_view.py`
 - `src/crimson/modes/survival_mode.py`
 - `src/crimson/modes/rush_mode.py`
 - `src/crimson/modes/quest_mode.py`
-- `src/crimson/logging.py` (or equivalent telemetry surface)
 
 Exit criteria:
 - Existing behavior unchanged.
-- Counters visible in debug/telemetry logs.
+- Required counters visible in telemetry/debug output.
 
-### PR-1: Interfaces and Adapters (No Behavior Change)
+### Phase 1: Status + Journal Interfaces
 
 Changes:
-- Add protocols for `InputProvider`, `TickHook`, `RenderSink`.
-- Add local adapter implementations wrapping existing logic.
+- Add `InputStatus`/`TickInput` contract.
+- Introduce `Journal` read/append interface.
+- Convert `ReplayInputProvider` to thin Journal adapter.
 
 Primary files:
-- `src/crimson/sim/tick_runner.py` (interfaces + placeholder runner)
 - `src/crimson/sim/input_providers.py`
-- `src/crimson/sim/hooks.py`
-- `src/crimson/render/pipeline.py`
-- `src/crimson/render/sink.py`
+- `src/crimson/replay/journal.py`
+- `src/crimson/sim/tick_runner.py`
 
 Exit criteria:
-- Adapters compile and tests pass; old call paths still primary.
+- Input status and replay journal APIs compile and tests pass.
 
-### PR-2: Single Network Owner
+### Phase 2: Runtime Ownership Consolidation
 
 Changes:
-- Enforce context-specific single-owner `runtime.update()` with `GameLoopView` as owner for interactive gameplay contexts.
-- Remove/disable mode-local duplicate updates.
+- Keep runtime pumping only in `GameLoopView` for interactive gameplay.
+- Remove/guard all mode-local runtime pumping codepaths.
 
 Primary files:
 - `src/crimson/game/loop_view.py`
@@ -408,43 +326,43 @@ Primary files:
 - `src/crimson/modes/quest_mode.py`
 
 Exit criteria:
-- LAN lockstep/rollback smoke tests pass.
-- Assertion proves one runtime pump per frame.
+- Exactly one runtime pump per interactive frame when runtime exists.
 
-### PR-3: TickRunner Extraction
+### Phase 3: Pure TickRunner + Frame Accumulator Ownership
 
 Changes:
-- Move shared deterministic stepping out of base mode into `TickRunner`.
-- Survival/Rush/Quest delegate to runner.
+- Make `TickRunner` stateless/pure.
+- Move fixed-step debt ownership to frame-driver context.
 
 Primary files:
 - `src/crimson/sim/tick_runner.py`
+- `src/crimson/game/loop_view.py`
 - `src/crimson/modes/base_gameplay_mode.py`
-- `src/crimson/modes/survival_mode.py`
-- `src/crimson/modes/rush_mode.py`
-- `src/crimson/modes/quest_mode.py`
+- `src/crimson/modes/replay_playback_mode.py`
 
 Exit criteria:
-- Survival/Rush/Quest use one orchestrator entrypoint.
+- Tick orchestration is shared and deterministic with frame-owned debt.
 
-### PR-4: Hook Bus Migration
+### Phase 4: Remove Hook-Bus Orchestration
 
 Changes:
-- Move replay recording/checkpoint/network hash hooks from mode update paths into hook implementations.
+- Replace implicit hook flow with explicit frame-driver dispatch for replay recording, checkpointing, sync, and telemetry.
 
 Primary files:
+- `src/crimson/sim/tick_runner.py`
 - `src/crimson/sim/hooks.py`
-- `src/crimson/replay/recorder.py`
-- `src/crimson/net/adapter.py`
-- mode files where inline logic is removed
+- `src/crimson/modes/base_gameplay_mode.py`
+- `src/crimson/replay/journal.py`
 
 Exit criteria:
-- Hook-based observability and recording parity with previous output.
+- No behavior regressions in replay/hash/checkpoint outputs.
+- Orchestration is explicit in frame-driver layer.
 
-### PR-5: Replay Path Unification
+### Phase 5: Replay Local Path Unification
 
 Changes:
-- Introduce `ReplayInputProvider` and run replay mode through shared `TickRunner`.
+- Ensure replay playback/verify are local-only.
+- Ensure replay uses the same runner orchestration shape as gameplay.
 
 Primary files:
 - `src/crimson/modes/replay_playback_mode.py`
@@ -452,47 +370,49 @@ Primary files:
 - `src/crimson/sim/input_providers.py`
 
 Exit criteria:
-- Replay playback no longer maintains a custom stepping loop.
+- Replay has no network runtime dependency and no bespoke stepping loop.
 
-### PR-6: Presentation Plan/Apply Split
+### Phase 6: Presentation Plan/Apply Finalization
 
 Changes:
-- Split presentation planning and side-effect apply.
-- Keep planning inside deterministic tick, apply in render/output layer.
+- Keep deterministic plan in tick path.
+- Keep apply in output phase.
+- Keep headless/verify apply skipped while preserving planning RNG parity.
 
 Primary files:
 - `src/crimson/sim/step_pipeline.py`
 - `src/crimson/sim/presentation_step.py`
-- `src/crimson/game_world.py`
+- `src/crimson/modes/replay_playback_mode.py`
 
 Exit criteria:
-- Golden replay parity preserved.
-- Headless verify plans presentation but skips apply safely.
+- Command hash/checkpoint parity remains stable across live/replay/headless paths.
 
-### PR-7: Render Pipeline/Sink + Video Path
+### Phase 7: Render Pipeline/Sink Cleanup
 
 Changes:
-- Use shared `RenderPipeline` and `RenderSink` in replay render paths.
-- Move replay video output to `VideoSink`.
+- Keep shared render pipeline for window/video.
+- Keep `NullSink` as headless sink.
 
 Primary files:
 - `src/crimson/render/pipeline.py`
 - `src/crimson/render/sink.py`
-- `src/crimson/sim/driver/replay_render.py`
-- `src/crimson/game/loop_view.py`
+- replay render driver files
 
 Exit criteria:
-- Same draw path supports window and video destinations.
+- Shared draw path across window/video; headless uses `NullSink`.
 
-### PR-8: `GameWorld` Split and Final Cleanup
+### Phase 8: World Collapse and Final Cleanup
 
 Changes:
-- Extract `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime`.
-- Remove temporary facades and dead orchestration paths.
+- Collapse world architecture to `SimWorldState` + `PresentationLayer`.
+- Remove obsolete compatibility facades and dead orchestration paths.
 
 Primary files:
-- `src/crimson/game_world.py` (split/compat removed)
-- new component modules under `src/crimson/` (or `src/crimson/world/`)
+- `src/crimson/world/sim_world_state.py`
+- `src/crimson/world/render_resources.py`
+- `src/crimson/world/audio_bridge.py`
+- `src/crimson/world/*` (new `presentation_layer` module as needed)
+- `src/crimson/modes/base_gameplay_mode.py`
 
 Exit criteria:
 - End-state architecture achieved.
@@ -503,7 +423,7 @@ Exit criteria:
 ### Functional
 
 1. Local gameplay works in Survival/Rush/Quest with unchanged behavior.
-2. Replay playback and replay verify are deterministic and unchanged in outcomes.
+2. Replay playback and replay verify remain deterministic and unchanged in outcomes.
 3. Lockstep and rollback sessions function with no duplicate runtime pumping.
 4. Video rendering path uses shared render pipeline.
 
@@ -511,22 +431,22 @@ Exit criteria:
 
 Canonical parity artifacts:
 
-1. Per-tick `command_hash` (authoritative).
-2. Per-tick `state_hash` where enabled (or explicit null marker where not enabled).
-3. Checkpoint hash rows produced by replay/checkpoint pipeline.
-4. Final replay/session terminal summary fields (tick_count, score/status tuple).
+1. Per-tick `command_hash`.
+2. Per-tick `state_hash` where enabled.
+3. Checkpoint hash rows.
+4. Terminal replay/session summary fields.
 
 Pass criteria:
 
-1. Golden replay checkpoints match baseline for all sampled ticks.
-2. `command_hash` matches baseline for all ticks in deterministic parity fixtures.
-3. `state_hash` behavior is unchanged where currently produced; if newly introduced, migration notes must document expected deltas.
-4. No first-bad-tick in parity runner outputs for the gated replay fixture set.
+1. Golden replay checkpoints match baseline for sampled ticks.
+2. `command_hash` matches baseline for deterministic parity fixtures.
+3. `state_hash` behavior is unchanged where produced.
+4. No first-bad-tick in parity runner outputs for gated fixtures.
 
 ### Observability
 
-1. Stall counters and runtime update counters are emitted.
-2. Hook stage timings are emitted.
+1. Runtime update and stall counters are emitted.
+2. Stage timing metrics are emitted.
 
 ## Test Gates
 
@@ -545,172 +465,39 @@ uv run crimson replay verify-checkpoints <replay.crd>
 uv run crimson replay diff-checkpoints <expected> <actual>
 ```
 
-### When to run each gate
+### Gate Policy
 
 1. After every commit: run `G0`.
-2. At the end of every PR phase: latest commit in that phase must already have a green `G0`.
-3. At PRs touching determinism/presentation/replay hashing (`PR-4`, `PR-5`, `PR-6`): run `G2`.
+2. At the end of each phase: latest commit in that phase has a green `G0`.
+3. For determinism/presentation/replay-hash phases (`Phase 4`, `Phase 5`, `Phase 6`): run `G2`.
+4. Do not stack new implementation commits on a failing suite; fix forward immediately.
 
-## Commit Quality Gate
-
-For this refactor track, after **every commit** (not only at PR boundaries), run `G0`.
-
-Rule:
-- Do not continue stacking new implementation commits on failing tests.
-- Fix forward immediately in the next commit until the suite is green again.
-
-Required new invariant-focused tests (add during refactor):
+### Required Invariant-Focused Tests
 
 - `tests/test_runtime_pump_ownership.py`
-- asserts exactly one runtime pump owner in each execution context.
-- `tests/test_input_provider_semantics.py`
-- validates local/replay/network semantics for stall (`None`), EOS, and empty-input handling.
-- `tests/test_tick_runner_hook_order.py`
-- validates hook order and visibility of pre/post hash data.
-- `tests/test_tick_runner_stall_debt.py`
-- validates mid-frame stall preserves clock debt and commits only completed ticks.
+- `tests/test_input_provider_semantics.py` (updated for `InputStatus`)
+- `tests/test_tick_runner_result_order.py`
+- `tests/test_tick_runner_stall_eos.py`
+- `tests/test_replay_journal_parity.py`
 - `tests/test_render_backend_sink_contract.py`
-- validates render pipeline lifecycle, resize, and sink failure behavior contracts.
 - `tests/test_presentation_plan_granularity.py`
-- validates per-tick plan generation and in-frame ordered apply behavior.
 - `tests/test_replay_pause_step_clock_semantics.py`
-- validates pause/step/speed debt semantics and EOS behavior.
 - `tests/test_input_normalization_contract.py`
-- validates canonical player ordering and network merge/stall rules.
-- `tests/test_terrain_runtime_boundaries.py`
-- validates deterministic terrain state ownership vs render/runtime cache ownership.
-
-## Detailed Execution Checklist
-
-Use this as the implementation punch-list. Do not start the next PR until all items in the current PR block are done.
-
-### PR-0 Checklist: Safety Nets and Instrumentation
-
-- [x] Add `runtime_updates_per_frame` counter at each context `FrameDriver` owner and reset/report each frame/tick.
-- [x] Add assertion/log when runtime pump count is not exactly 1 per frame in LAN mode.
-- [x] Add `input_stall_count` and `ticks_advanced_per_frame` counters to runtime telemetry/debug output.
-- [x] Add stage timer scaffolding fields (`sim_ms`, `presentation_plan_ms`, `presentation_apply_ms`) with placeholder values.
-- [x] Add `tests/test_runtime_pump_ownership.py` covering interactive/replay/headless contexts.
-- [x] Run `uv run pytest --no-cov` with the full test gate suite.
-
-### PR-1 Checklist: Interfaces and Adapters (No Behavior Change)
-
-- [x] Create `src/crimson/sim/input_providers.py` with `InputProvider` protocol.
-- [x] Create `src/crimson/sim/hooks.py` with `TickHook` protocol and no-op hook bus.
-- [x] Create `src/crimson/render/pipeline.py` with shared render orchestration helper.
-- [x] Create `src/crimson/render/sink.py` with `RenderSink` protocol.
-- [x] Add adapter stubs: `LocalInputProvider`, `ReplayInputProvider` (placeholder), `NetworkInputProvider` (placeholder), `WindowSink`, `NullSink`.
-- [x] Wire zero-impact construction paths (adapters instantiated but not yet primary control path).
-- [x] Add `tests/test_input_provider_semantics.py` for stall/EOS/empty-input contracts.
-- [x] Add `tests/test_input_normalization_contract.py` for canonical ordering/merge rules.
-- [x] Add `tests/test_tick_runner_hook_order.py` skeleton validating stage order contracts.
-- [x] Confirm no behavior change in gameplay/replay entrypoints.
-- [x] Run full test gate suite.
-
-### PR-2 Checklist: Single Network Owner
-
-- [x] Keep `runtime.update()` in `GameLoopView._tick_network_runtime()` as the only authoritative pump for interactive gameplay contexts.
-- [x] Enforce replay/headless pump rule: replay frame driver pumps once per frame when runtime exists, otherwise zero pumps.
-- [x] Remove direct `runtime.update()` calls from:
-- [x] `src/crimson/modes/survival_mode.py`
-- [x] `src/crimson/modes/rush_mode.py`
-- [x] `src/crimson/modes/quest_mode.py`
-- [x] Add regression assertion that mode update paths do not pump runtime.
-- [x] Validate lockstep and rollback host/client flows with tests.
-- [x] Run full test gate suite.
-
-### PR-3 Checklist: TickRunner Extraction
-
-- [x] Implement `TickRunner` in `src/crimson/sim/tick_runner.py` using `FixedStepClock`.
-- [x] Move shared logic from `BaseGameplayMode._run_deterministic_session_ticks` into `TickRunner`.
-- [x] Delegate Survival/Rush/Quest mode tick advancement to `TickRunner`.
-- [x] Keep output behavior identical (same tick counts and apply ordering).
-- [x] Delete or reduce `_run_deterministic_session_ticks` to thin wrapper/shim.
-- [x] Run full test gate suite.
-
-### PR-4 Checklist: Hook Bus Migration
-
-- [x] Implement concrete hooks: replay recording, checkpoint capture, profiling timing, net hash sync.
-- [x] Move inline replay/checkpoint wiring out of mode update paths into hooks.
-- [x] Ensure hook order matches required stage boundaries (pre-sim, post-sim, post-presentation, end).
-- [x] Emit hook timing metrics in telemetry output.
-- [x] Run full test gate suite.
-
-### PR-5 Checklist: Replay Path Unification
-
-- [x] Implement `ReplayInputProvider` against replay playback driver input stream.
-- [x] Make `ReplayPlaybackMode` use `TickRunner` for deterministic stepping.
-- [x] Remove bespoke replay stepping/orchestration loop from `ReplayPlaybackMode`.
-- [x] Keep replay controls (pause/step/speed) mapped through provider/runner boundaries.
-- [x] Add `tests/test_replay_pause_step_clock_semantics.py` for pause/step/speed debt and EOS semantics.
-- [x] Run replay-specific tests plus full test gate suite.
-
-### PR-6 Checklist: Presentation Plan/Apply Split
-
-- [x] Extract deterministic `plan_world_presentation_step(...)` from current presentation path.
-- [x] Extract side-effectful `apply_presentation_plan(...)` for audio/visual/output application.
-- [x] Ensure planning runs inside tick flow in live, replay, and headless verify modes.
-- [x] Ensure apply runs only in output/render phase and can be skipped in headless.
-- [x] Add `tests/test_presentation_plan_granularity.py` for per-tick plan and in-frame ordering behavior.
-- [x] Add/enable `tests/test_tick_runner_stall_debt.py` and determinism artifact assertions around hash/checkpoint parity.
-- [x] Keep command hash/checkpoint parity with baseline golden replays.
-- [x] Run full test gate suite.
-
-### PR-7 Checklist: Render Pipeline and Sink Migration
-
-- [x] Use `RenderPipeline` as the single replay render orchestration path (no separate backend adapter).
-- [x] Implement `VideoSink` and migrate replay render output path to it.
-- [x] Route replay rendering through shared pipeline + sink entrypoint.
-- [x] Keep `WindowSink` as default interactive target.
-- [x] Keep `NullSink` for headless verify.
-- [x] Add `tests/test_render_backend_sink_contract.py` for lifecycle/resize/error-policy behavior.
-- [x] Run replay render smoke checks.
-- [x] Run full test gate suite.
-
-### PR-8 Checklist: `GameWorld` Split and Final Cleanup
-
-- [x] Introduce `SimWorldState`, `RenderResources`, `AudioBridge`, `TerrainRuntime` modules.
-- [x] Move GPU lifecycle and render resources out of `GameWorld`.
-- [x] Move audio routing/state out of `GameWorld`.
-- [x] Add `tests/test_terrain_runtime_boundaries.py` for deterministic terrain vs render cache ownership contracts.
-- [x] Keep temporary compatibility facade only if needed for transitional call-sites.
-- [x] Remove compatibility shims once all call-sites migrated.
-- [x] Remove collapsed legacy paths:
-- [x] per-mode LAN orchestration duplication (`_update_lan_match` variants)
-- [x] mode-local runtime pumping
-- [x] replay bespoke stepping loop
-- [x] duplicated checkpoint/record code in mode update methods
-- [x] Run full test gate suite.
-
-### Final Merge Checklist
-
-- [x] Architecture matches \"Concrete End Shape\" exactly.
-- [x] No duplicate orchestration paths remain.
-- [x] All acceptance criteria in this PRD are met.
-- [x] `plan_synth.md` remains the single source of truth for loop architecture refactor.
-
-Final validation summary (2026-03-04):
-- `rg "world\\.update\\(" src/crimson/modes src/crimson/game src/crimson/views src/crimson/demo.py` returns no runtime call-sites.
-- Replay fixture integrations and LAN wiring suites pass with deterministic parity.
-- Hook bus, replay stepping, and mode orchestration run through the unified `TickRunner`-driven paths.
-
-Post-cutover migration notes (2026-03-04):
-- Removed legacy `GameWorld.update(...)`; runtime callers now advance deterministic sessions via `TickRunner` and apply tick payloads in ordered post-batch paths.
-- Moved LAN finalize ownership into hooks: `NetworkSyncHook` now owns command/state hash desync checks plus host tick-frame broadcast, and `CheckpointHook` remains the replay checkpoint emission boundary.
+- `tests/test_world_presentation_layer_boundaries.py`
 
 ## Risks and Mitigations
 
 1. Determinism drift during presentation split.
-- Mitigation: golden replay parity gates per PR.
+- Mitigation: golden replay parity gates per phase.
 
-2. Silent lockstep stalls from provider returning `None`.
-- Mitigation: explicit stall metrics + watchdog assertions.
+2. Silent lockstep stalls from provider status handling.
+- Mitigation: explicit stall metrics and watchdog assertions.
 
-3. `GameWorld` split causes broad API churn.
-- Mitigation: temporary compatibility facade and subsystem-by-subsystem migration.
+3. Frame-driver complexity increase after removing hook bus.
+- Mitigation: keep explicit, tested helper functions for dispatch and result application.
 
-4. Large refactor blast radius.
-- Mitigation: strict PR slice boundaries and behavior-preserving intermediate states.
+4. World collapse causes API churn.
+- Mitigation: phase migration and temporary shim removal only after call-site cutover.
 
 ## Scope Guardrails
 
@@ -719,14 +506,5 @@ Do not refactor deterministic gameplay math unless parity tests prove a bug.
 Treat these as stable unless failing tests demand change:
 - `run_deterministic_step` core semantics
 - session `step_tick` contracts
-- `FixedStepClock` semantics
-- `PlayerInput` / `InputFrame` contracts
-
-## Post-Review Remediation Checklist (2026-03-03)
-
-- [x] Replay playback tick path consumes `ReplayInputProvider` inputs instead of unpacking replay rows directly inside the driver loop.
-- [x] `TickRunner` enforces fail-fast required payload fields (`step`, `command_hash`, `dt_sim`, `presentation`) with explicit errors.
-- [x] LAN tick frame consumption delegates deterministic stepping to a shared `TickRunner` path (no direct LAN `session.step_tick(...)` callsite in mode orchestration).
-- [x] Gameplay telemetry counters/timers are propagated into `GameState` each frame (not only mode-local overlay).
-- [x] Input commands are consumed in deterministic tick execution; perk picks are queued as `InputCommand` and applied on tick consumption.
-- [x] Move all non-LAN fixed-step clock ownership from mode-local clocks into persistent `TickRunner` instances.
+- `PlayerInput`/input normalization contracts
+- deterministic RNG stream order and hash artifact semantics
