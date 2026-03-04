@@ -296,62 +296,54 @@ class RushMode(BaseGameplayMode):
         return _RushLanModePolicy(self)
 
     def update(self, dt: float) -> None:
-        self._update_audio(dt)
+        def _after_input(frame) -> bool:
+            if not self._game_over_active:
+                return False
+            self._update_game_over_ui(float(frame.dt))
+            return True
 
-        dt = self._tick_frame(dt)[0]
-        self._reset_frame_telemetry()
-        self._handle_input()
-        if self._action == "open_pause_menu":
-            return
+        def _run_non_lan(frame) -> None:
+            any_alive = self._any_player_alive()
+            sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
+            session = self._sim_session
 
-        if self._game_over_active:
-            self._update_game_over_ui(dt)
-            return
-
-        if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=dt, dt_ui_ms=0.0)
-            return
-
-        any_alive = any(player.health > 0.0 for player in self.world.sim_world.players)
-        sim_active = (not self._paused) and any_alive
-
-        self._update_lan_wait_gate_debug_override()
-        if self._lan_wait_gate_active():
-            self._reset_gameplay_tick_runner_clock()
-            return
-
-        if not sim_active:
-            self._reset_gameplay_tick_runner_clock()
-            if not any_alive:
+            def _on_sim_inactive(_frame, _sim_dt: float) -> None:
+                if any_alive:
+                    return
                 self._enter_game_over()
-            return
 
-        session = self._sim_session
-        if session is None:
-            return
+            def _on_tick(tick, tick_index: int | None) -> bool:
+                self._rush.elapsed_ms = float(tick.elapsed_ms)
+                if session is not None:
+                    self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+                _ = tick_index
 
-        def _on_tick(tick, tick_index: int | None) -> bool:
-            self._rush.elapsed_ms = float(tick.elapsed_ms)
-            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-            _ = tick_index
+                if not self._any_player_alive():
+                    self._enter_game_over()
+                    return True
+                return False
 
-            if not any(player.health > 0.0 for player in self.world.sim_world.players):
-                self._enter_game_over()
-                return True
-            return False
+            def _on_checkpoint(tick_index: int, tick) -> None:
+                self._record_replay_checkpoint_from_tick(
+                    tick_index=int(tick_index),
+                    tick=tick,
+                )
 
-        def _on_checkpoint(tick_index: int, tick) -> None:
-            self._record_replay_checkpoint_from_tick(
-                tick_index=int(tick_index),
-                tick=tick,
+            self._run_mode_deterministic_simulation(
+                frame=frame,
+                sim_dt=sim_dt,
+                session=session,
+                recorder=self._replay_recorder,
+                on_tick=_on_tick,
+                on_checkpoint=_on_checkpoint,
+                on_sim_inactive=_on_sim_inactive,
             )
 
-        self._run_deterministic_session_ticks(
-            dt_frame=float(dt),
-            session=session,
-            recorder=self._replay_recorder,
-            on_tick=_on_tick,
-            on_checkpoint=_on_checkpoint,
+        self._run_mode_update_frame(
+            dt=float(dt),
+            on_after_input=_after_input,
+            on_non_lan=_run_non_lan,
+            lan_dt_ui_ms=0.0,
         )
 
     def _draw_game_cursor(self) -> None:

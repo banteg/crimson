@@ -622,190 +622,193 @@ class QuestMode(BaseGameplayMode):
         )
 
     def update(self, dt: float) -> None:
-        self._update_audio(dt)
+        def _after_input(_frame) -> bool:
+            return bool(self.close_requested)
 
-        dt, dt_ui_ms = self._tick_frame(dt)
-        self._reset_frame_telemetry()
-        self._handle_input()
-        if self._action == "open_pause_menu":
-            return
+        def _run_non_lan(frame) -> None:
+            any_alive = self._any_player_alive()
+            perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
-        if self.close_requested:
-            return
+            self._perk_prompt_hover = False
+            perk_ctx = self._perk_menu_context()
+            if self._perk_menu.open:
+                self._perk_menu.handle_input(perk_ctx, dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
 
-        if bool(self._lan_enabled) and self._lan_runtime is not None:
-            self._update_lan_match(dt=dt, dt_ui_ms=dt_ui_ms)
-            return
+            perk_menu_active = self._perk_menu.active
 
-        any_alive = any(player.health > 0.0 for player in self.world.sim_world.players)
-        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
+            if (not perk_menu_active) and perk_pending and (not self._paused):
+                label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
+                if label:
+                    rect = PerkPromptUi.rect(
+                        label,
+                        ui_text_width=self._ui_text_width,
+                        ui_line_height=self._ui_line_height,
+                        assets=self._perk_menu_assets,
+                        scale=UI_TEXT_SCALE,
+                    )
+                    self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
 
-        self._perk_prompt_hover = False
-        perk_ctx = self._perk_menu_context()
-        if self._perk_menu.open:
-            self._perk_menu.handle_input(perk_ctx, dt=dt, dt_ui_ms=dt_ui_ms)
+                player0_binds = config_keybinds_for_player(self.config, player_index=0)
+                fire_key = 0x100
+                if len(player0_binds) >= 5:
+                    fire_key = int(player0_binds[4])
 
-        perk_menu_active = self._perk_menu.active
+                pick_key = self.config.keybind_pick_perk
 
-        if (not perk_menu_active) and perk_pending and (not self._paused):
-            label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
-            if label:
-                rect = PerkPromptUi.rect(
-                    label,
-                    ui_text_width=self._ui_text_width,
-                    ui_line_height=self._ui_line_height,
-                    assets=self._perk_menu_assets,
-                    scale=UI_TEXT_SCALE,
+                if input_code_is_pressed_for_player(pick_key, player_index=0) and (
+                    not input_code_is_down_for_player(fire_key, player_index=0)
+                ):
+                    self._perk_prompt_pulse = 1000.0
+                    if self._replay_recorder is not None:
+                        self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
+                    opened = self._perk_menu.open_if_available(perk_ctx)
+                    if opened and self._replay_recorder is not None:
+                        self._replay_recorder.record_perk_menu_open(player_index=0)
+                elif self._perk_prompt_hover and input_primary_just_pressed(
+                    self.config,
+                    player_count=len(self.world.sim_world.players),
+                ):
+                    self._perk_prompt_pulse = 1000.0
+                    if self._replay_recorder is not None:
+                        self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
+                    opened = self._perk_menu.open_if_available(perk_ctx)
+                    if opened and self._replay_recorder is not None:
+                        self._replay_recorder.record_perk_menu_open(player_index=0)
+
+            perk_menu_active = self._perk_menu.active
+
+            if not self._paused:
+                pulse_delta = float(frame.dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)
+                self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+
+            prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
+            if prompt_active:
+                self._perk_prompt_timer_ms = clamp(
+                    self._perk_prompt_timer_ms + float(frame.dt_ui_ms),
+                    0.0,
+                    PERK_PROMPT_MAX_TIMER_MS,
                 )
-                self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
+            else:
+                self._perk_prompt_timer_ms = clamp(
+                    self._perk_prompt_timer_ms - float(frame.dt_ui_ms),
+                    0.0,
+                    PERK_PROMPT_MAX_TIMER_MS,
+                )
 
-            player0_binds = config_keybinds_for_player(self.config, player_index=0)
-            fire_key = 0x100
-            if len(player0_binds) >= 5:
-                fire_key = int(player0_binds[4])
+            self._perk_menu.tick_timeline(float(frame.dt_ui_ms))
 
-            pick_key = self.config.keybind_pick_perk
+            sim_dt = 0.0 if (self._paused or self._perk_menu.active) else float(frame.dt)
+            session = self._sim_session
 
-            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
-                not input_code_is_down_for_player(fire_key, player_index=0)
-            ):
-                self._perk_prompt_pulse = 1000.0
-                if self._replay_recorder is not None:
-                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
-            elif self._perk_prompt_hover and input_primary_just_pressed(
-                self.config,
-                player_count=len(self.world.sim_world.players),
-            ):
-                self._perk_prompt_pulse = 1000.0
-                if self._replay_recorder is not None:
-                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
+            def _on_sim_inactive(idle_frame, _sim_dt: float) -> None:
+                # Match legacy transition behavior: keep countdown moving, but at
+                # real-time pace while perk-menu transition is holding world ticks.
+                self._tick_death_timers(float(idle_frame.dt), rate=1.0)
+                if self._death_transition_ready():
+                    self._close_failed_run()
 
-        perk_menu_active = self._perk_menu.active
+            def _on_session_missing(_frame, missing_sim_dt: float) -> None:
+                self._tick_death_timers(float(missing_sim_dt))
+                if self._death_transition_ready():
+                    self._close_failed_run()
 
-        if not self._paused:
-            pulse_delta = dt_ui_ms * (6.0 if self._perk_prompt_hover else -2.0)
-            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+            def _prepare_session(session, _sim_dt: float) -> None:
+                session.detail_preset = int(self._deterministic_detail_preset())
+                session.gore_disabled = int(self._deterministic_gore_disabled())
+                session.spawn_entries = tuple(self._quest.spawn_entries)
+                session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+                session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+                session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-        prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
-        if prompt_active:
-            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms + dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
-        else:
-            self._perk_prompt_timer_ms = clamp(self._perk_prompt_timer_ms - dt_ui_ms, 0.0, PERK_PROMPT_MAX_TIMER_MS)
+                if self.world.audio_bridge.router is not None:
+                    self.world.audio_bridge.router.audio = self.world.audio
+                    self.world.audio_bridge.router.audio_rng = self.world.audio_rng
+                    self.world.audio_bridge.router.demo_mode_active = self.world.demo_mode_active
+                if self.world.render_resources.ground is not None:
+                    self.world.sync_ground_settings()
+                    self.world.render_resources.ground.process_pending()
 
-        self._perk_menu.tick_timeline(dt_ui_ms)
+            def _on_tick(tick, tick_index: int | None) -> bool:
+                dt_tick = 0.0
+                if session is not None:
+                    dt_tick = float(self._gameplay_tick_dt(session=session))
+                    self._quest.spawn_entries = tuple(session.spawn_entries)
+                self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+                self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+                self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+                self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+                _ = tick_index
 
-        self._update_lan_wait_gate_debug_override()
-        if self._lan_wait_gate_active():
-            self._reset_gameplay_tick_runner_clock()
-            return
-
-        dt_world = 0.0 if self._paused or self._perk_menu.active else dt
-        if dt_world <= 0.0:
-            self._reset_gameplay_tick_runner_clock()
-            # Match legacy transition behavior: keep countdown moving, but at
-            # real-time pace while perk-menu transition is holding world ticks.
-            self._tick_death_timers(dt, rate=1.0)
-            if self._death_transition_ready():
-                self._close_failed_run()
-            return
-
-        session = self._sim_session
-        if session is None:
-            self._tick_death_timers(dt_world)
-            if self._death_transition_ready():
-                self._close_failed_run()
-            return
-        dt_tick = float(self._gameplay_tick_dt(session=session))
-
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
-        session.spawn_entries = tuple(self._quest.spawn_entries)
-        session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-        session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-        session.completion_transition_ms = float(self._quest.completion_transition_ms)
-
-        if self.world.audio_bridge.router is not None:
-            self.world.audio_bridge.router.audio = self.world.audio
-            self.world.audio_bridge.router.audio_rng = self.world.audio_rng
-            self.world.audio_bridge.router.demo_mode_active = self.world.demo_mode_active
-        if self.world.render_resources.ground is not None:
-            self.world.sync_ground_settings()
-            self.world.render_resources.ground.process_pending()
-
-        def _on_tick(tick, tick_index: int | None) -> bool:
-            self._quest.spawn_entries = tuple(session.spawn_entries)
-            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
-            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
-            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
-            _ = tick_index
-
-            if tick.play_hit_sfx:
-                self.world.audio_bridge.router.play_sfx("sfx_questhit")
-            if tick.play_completion_music and self.world.audio is not None:
-                play_music(self.world.audio, "crimsonquest")
-                playback = self.world.audio.music.playbacks.get("crimsonquest")
-                if playback is not None:
-                    playback.volume = 0.0
-                    try:
-                        rl.set_music_volume(playback.music, 0.0)
-                    except RuntimeError:
+                if tick.play_hit_sfx:
+                    self.world.audio_bridge.router.play_sfx("sfx_questhit")
+                if tick.play_completion_music and self.world.audio is not None:
+                    play_music(self.world.audio, "crimsonquest")
+                    playback = self.world.audio.music.playbacks.get("crimsonquest")
+                    if playback is not None:
                         playback.volume = 0.0
+                        try:
+                            rl.set_music_volume(playback.music, 0.0)
+                        except RuntimeError:
+                            playback.volume = 0.0
 
-            if tick.completed:
-                if self._outcome is None:
-                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
-                    most_used_weapon_id = most_used_weapon_id_for_player(
-                        self.state,
-                        player_index=int(self.player.index),
-                        fallback_weapon_id=self.player.weapon.weapon_id,
-                    )
-                    player_health_values = tuple(float(player.health) for player in self.world.sim_world.players)
-                    player2_health = None
-                    if len(player_health_values) >= 2:
-                        player2_health = float(player_health_values[1])
-                    self._outcome = QuestRunOutcome(
-                        kind="completed",
-                        level=str(self._quest.level),
-                        base_time_ms=int(self._quest.spawn_timeline_ms),
-                        player_health=float(player_health_values[0] if player_health_values else self.player.health),
-                        player2_health=player2_health,
-                        player_health_values=player_health_values,
-                        pending_perk_count=int(self.state.perk_selection.pending_count),
-                        experience=int(self.player.experience),
-                        kill_count=int(self.creatures.kill_count),
-                        weapon_id=self.player.weapon.weapon_id,
-                        shots_fired=fired,
-                        shots_hit=hit,
-                        most_used_weapon_id=most_used_weapon_id,
-                    )
-                self._save_replay()
-                self.close_requested = True
-                return True
+                if tick.completed:
+                    if self._outcome is None:
+                        fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+                        most_used_weapon_id = most_used_weapon_id_for_player(
+                            self.state,
+                            player_index=int(self.player.index),
+                            fallback_weapon_id=self.player.weapon.weapon_id,
+                        )
+                        player_health_values = tuple(float(player.health) for player in self.world.sim_world.players)
+                        player2_health = None
+                        if len(player_health_values) >= 2:
+                            player2_health = float(player_health_values[1])
+                        self._outcome = QuestRunOutcome(
+                            kind="completed",
+                            level=str(self._quest.level),
+                            base_time_ms=int(self._quest.spawn_timeline_ms),
+                            player_health=float(player_health_values[0] if player_health_values else self.player.health),
+                            player2_health=player2_health,
+                            player_health_values=player_health_values,
+                            pending_perk_count=int(self.state.perk_selection.pending_count),
+                            experience=int(self.player.experience),
+                            kill_count=int(self.creatures.kill_count),
+                            weapon_id=self.player.weapon.weapon_id,
+                            shots_fired=fired,
+                            shots_hit=hit,
+                            most_used_weapon_id=most_used_weapon_id,
+                        )
+                    self._save_replay()
+                    self.close_requested = True
+                    return True
 
-            if self._death_transition_ready():
-                self._close_failed_run()
-                return True
-            return False
+                if self._death_transition_ready():
+                    self._close_failed_run()
+                    return True
+                return False
 
-        def _on_checkpoint(tick_index: int, tick) -> None:
-            self._record_replay_checkpoint_from_tick(
-                tick_index=int(tick_index),
-                tick=tick,
+            def _on_checkpoint(tick_index: int, tick) -> None:
+                self._record_replay_checkpoint_from_tick(
+                    tick_index=int(tick_index),
+                    tick=tick,
+                )
+
+            self._run_mode_deterministic_simulation(
+                frame=frame,
+                sim_dt=sim_dt,
+                session=session,
+                recorder=self._replay_recorder,
+                on_tick=_on_tick,
+                on_checkpoint=_on_checkpoint,
+                prepare_session=_prepare_session,
+                on_sim_inactive=_on_sim_inactive,
+                on_session_missing=_on_session_missing,
             )
 
-        self._run_deterministic_session_ticks(
-            dt_frame=float(dt_world),
-            session=session,
-            recorder=self._replay_recorder,
-            on_tick=_on_tick,
-            on_checkpoint=_on_checkpoint,
+        self._run_mode_update_frame(
+            dt=float(dt),
+            on_after_input=_after_input,
+            on_non_lan=_run_non_lan,
         )
 
     def draw(self) -> None:

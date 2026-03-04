@@ -128,6 +128,12 @@ class _BatchApplyOutcome:
     stop_after_finalize: bool = False
 
 
+@dataclass(frozen=True, slots=True)
+class _ModeFrameState:
+    dt: float
+    dt_ui_ms: float
+
+
 class _LanRuntimeInputProvider(NetworkInputProvider):
     def __init__(self, *, player_count: int, tick_rate: int) -> None:
         self._runtime: LanRuntime | None = None
@@ -549,6 +555,75 @@ class BaseGameplayMode:
         self._cursor_pulse_time += pulse_dt * 1.1
 
         return dt, dt_ui_ms
+
+    def _run_mode_update_frame(
+        self,
+        *,
+        dt: float,
+        on_after_input: Callable[[_ModeFrameState], bool] | None,
+        on_non_lan: Callable[[_ModeFrameState], None],
+        lan_dt_ui_ms: float | None = None,
+    ) -> None:
+        self._update_audio(dt)
+
+        frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
+        self._reset_frame_telemetry()
+        self._handle_input()
+        frame = _ModeFrameState(
+            dt=float(frame_dt),
+            dt_ui_ms=float(frame_dt_ui_ms),
+        )
+
+        if self._action == "open_pause_menu":
+            return
+        if on_after_input is not None and on_after_input(frame):
+            return
+        if bool(self._lan_enabled) and self._lan_runtime is not None:
+            dt_ui_ms = float(frame.dt_ui_ms) if lan_dt_ui_ms is None else float(lan_dt_ui_ms)
+            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=dt_ui_ms)
+            return
+        on_non_lan(frame)
+
+    def _run_mode_deterministic_simulation(
+        self,
+        *,
+        frame: _ModeFrameState,
+        sim_dt: float,
+        session: DeterministicSessionLike | None,
+        recorder: ReplayRecorder | None,
+        on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
+        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None],
+        prepare_session: Callable[[DeterministicSessionLike, float], None] | None = None,
+        on_sim_inactive: Callable[[_ModeFrameState, float], None] | None = None,
+        on_session_missing: Callable[[_ModeFrameState, float], None] | None = None,
+    ) -> None:
+        self._update_lan_wait_gate_debug_override()
+        if self._lan_wait_gate_active():
+            self._reset_gameplay_tick_runner_clock()
+            return
+
+        sim_dt = float(sim_dt)
+        if sim_dt <= 0.0:
+            self._reset_gameplay_tick_runner_clock()
+            if on_sim_inactive is not None:
+                on_sim_inactive(frame, sim_dt)
+            return
+
+        if session is None:
+            if on_session_missing is not None:
+                on_session_missing(frame, sim_dt)
+            return
+
+        if prepare_session is not None:
+            prepare_session(session, sim_dt)
+
+        self._run_deterministic_session_ticks(
+            dt_frame=float(sim_dt),
+            session=session,
+            recorder=recorder,
+            on_tick=on_tick,
+            on_checkpoint=on_checkpoint,
+        )
 
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._runtime_updates_per_frame = max(0, int(value))
