@@ -27,6 +27,7 @@ from ..input_codes import (
     input_primary_just_pressed,
 )
 from ..net.rollback_resync_v5 import (
+    ModeStateSnapshotV2,
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
@@ -368,6 +369,15 @@ class QuestMode(BaseGameplayMode):
             self._close_failed_run()
             return "stop_after_finalize"
         return "continue"
+
+    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
+        if not isinstance(snapshot, QuestsStateSnapshotV2):
+            return
+        rs = snapshot.runtime_state
+        self._quest.spawn_timeline_ms = float(rs.spawn_timeline_ms)
+        self._quest.no_creatures_timer_ms = float(rs.no_creatures_timer_ms)
+        self._quest.completion_transition_ms = float(rs.completion_transition_ms)
+        self._quest.quest_name_timer_ms = float(rs.quest_name_timer_ms)
 
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled

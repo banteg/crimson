@@ -28,6 +28,7 @@ from ..input_codes import (
 )
 from ..net.debug_log import lan_debug_log
 from ..net.rollback_resync_v5 import (
+    ModeStateSnapshotV2,
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
@@ -539,6 +540,16 @@ class SurvivalMode(BaseGameplayMode):
             self._enter_game_over()
             return "stop_after_finalize"
         return "continue"
+
+    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
+        if not isinstance(snapshot, SurvivalStateSnapshotV2):
+            return
+        rs = snapshot.runtime_state
+        self._survival.elapsed_ms = float(rs.elapsed_ms)
+        self._survival.stage = int(rs.stage)
+        self._survival.spawn_cooldown = float(rs.spawn_cooldown_ms)
+        self._spawn_state.stage = int(rs.stage)
+        self._spawn_state.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
 
     def _try_open_lan_host_perk_menu(self) -> None:
         perk_ctx = self._perk_menu_context()

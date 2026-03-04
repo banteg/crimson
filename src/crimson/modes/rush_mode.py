@@ -18,6 +18,7 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
 from ..net.rollback_resync_v5 import (
+    ModeStateSnapshotV2,
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
 )
@@ -306,6 +307,15 @@ class RushMode(BaseGameplayMode):
             self._enter_game_over()
             return "stop_after_finalize"
         return "continue"
+
+    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
+        if not isinstance(snapshot, RushStateSnapshotV2):
+            return
+        rs = snapshot.runtime_state
+        self._rush.elapsed_ms = float(rs.elapsed_ms)
+        self._rush.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
+        self._spawn_state.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
+        self.creatures.kill_count = int(rs.kill_count)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))

@@ -1252,7 +1252,12 @@ class BaseGameplayMode:
         if int(snapshot.tick_index) != int(tick_index):
             runtime.error = "resync_tick_mismatch"
             return
+        self._apply_resync_snapshot(snapshot)
+        self._reset_tick_runner_state()
         runtime.mark_resync_applied(int(tick_index))
+
+    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}._apply_resync_snapshot() must be implemented")
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
