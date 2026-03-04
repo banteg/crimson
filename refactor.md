@@ -1,202 +1,196 @@
-# Refactor: Eliminate Split Brain & Scaffolding
+# Refactor: Remaining Work Toward Simplified End-State
 
-## Problem
+## Scope
 
-The feat/split20 branch delivers on the letter of the plan but betrays its spirit. Complexity was moved, not eliminated. Split-brain patterns persist behind new vocabulary. Abstractions exist but some are hollow — protocols that lie, generics nobody varies, hooks that dispatch on strings. The local/LAN split brain, the core problem the plan identified, still exists in the mode layer wearing different clothes.
+This document tracks only the remaining work.
+Completed stages were removed.
 
----
-
-## Stage 1: Consolidate Sessions
-
-Six session classes (`Survival`, `Rush`, `Tutorial`, `Typo`, `WorldTick`, `Quest`) are ~85% identical. Every one duplicates `timing_for_dt()`, `rng_marks` tracking, creature counting, lifecycle finalization. The only real difference is `_mid_step_spawns()`.
-
-672 lines → ~150 with composition.
-
-### Tasks
-
-- [x] Extract shared tick-step boilerplate into a single base or helper
-- [x] Accept spawn strategy as a callable parameter, not a class override
-- [x] Collapse six session classes into one parameterized session (or one base + minimal subclasses)
-- [x] Remove all duplicated `timing_for_dt()` implementations
-- [x] Remove all duplicated `rng_marks` / creature-count / lifecycle-finalization boilerplate
-
-### Acceptance
-
-- [x] Only one implementation of `timing_for_dt()` exists
-- [x] Only one implementation of post-step boilerplate (rng_marks, creature count, lifecycle finalize) exists
-- [x] A bug fix in shared tick logic requires touching exactly one file
-- [x] All existing session tests pass without modification
-- [x] Replay determinism parity unchanged (`uv run pytest --no-cov`)
+Target architecture is defined by `plan.md`:
+- `GameLoopView` is the only interactive runtime pump owner.
+- Replay paths are local-only.
+- `TickRunner` is pure/stateless (no internal clock/debt ownership).
+- Input control flow is explicit (`InputStatus`: `READY`/`STALLED`/`EOS`).
+- Replay uses `Journal` with `ReplayInputProvider` as a thin adapter.
+- Hook-bus orchestration is removed from end-state.
+- Headless verify skips apply but preserves deterministic planning RNG.
+- World architecture collapses to `SimWorldState` + `PresentationLayer`.
+- `NullSink` remains the headless sink.
+- Tests are runtime-first (no test-only runtime fallback/default behavior).
 
 ---
 
-## Stage 2: Eliminate Local/LAN Split Brain in Modes
+## Stage 1: Remove Hook-Bus Orchestration
 
-Same outcomes (state update, game-over detection, replay checkpoint, perk application) are reached through two parallel code paths: `_on_tick` callbacks for local and `_on_lan_tick_applied()` for LAN. This is the old split brain renamed.
+Current state still uses dynamic hook dispatch and hook-owned orchestration data flow.
 
 ### Tasks
 
-- [x] Unify tick-applied callbacks — one path for both local and LAN tick results
-- [x] Remove `_on_lan_tick_applied()` as a separate override hierarchy
-- [x] Merge `_apply_input_command()` and `_apply_perk_pick_input_command()` into one path
-- [x] Remove `_before_lan_tick_step()`, `_after_join_lan_consume()`, `_allow_lan_frame_pop()` no-op overrides from base — push LAN-specific logic into hooks or the single tick-applied path
-- [x] Remove dead parameters from `_prepare_lan_frame()` (`dt` and `lockstep_runtime` removed; `role`, `dt_ui_ms`, `dt_tick` kept — used by survival perk menu)
-- [x] Remove dead `_after_join_lan_consume` override from survival (on join `_perk_menu.active` is always False; `_allow_lan_frame_pop` kept — correctly stalls host tick consumption during perk menu)
+- [ ] Remove `TickHookBus` as the runtime orchestration primitive.
+- [ ] Move replay/checkpoint/network-sync/profiler side effects to explicit frame-driver dispatch from `TickBatchResult`.
+- [ ] Delete dynamic method lookup dispatch (`getattr` + string method names) from tick orchestration path.
+- [ ] Remove mode-level hook wiring fields that only exist to feed `TickHookBus`.
+- [ ] Keep deterministic ordering guarantees by explicit, ordered dispatch calls in one place.
 
-### Remaining findings
+### Evidence (current code)
 
-- **[medium]** Survival LAN perk-menu flow is intentionally asymmetric: only `PerkPick` affects sim state (mapped via `_resolve_tick_commands`); `PerkMenuOpen`/`PerkMenuClose` events exist for replay recording, not sim commands. Host-side menu pause gating uses local menu state by design. Join-side `_allow_lan_frame_pop` is not called (join pops from received frames, not capture clock). `_after_join_lan_consume` was dead code (removed).
+- `src/crimson/sim/hooks.py:40` (`TickHook: TypeAlias = object`)
+- `src/crimson/sim/hooks.py:55` (`getattr` dispatch)
+- `src/crimson/sim/tick_runner.py:8` (`TickHookBus` dependency)
+- `src/crimson/modes/base_gameplay_mode.py:1661` (hook bundle construction in `_ensure_tick_runner`)
 
 ### Acceptance
 
-- [x] Each of these operations has exactly one code path, not two:
-  - [x] State update (elapsed_ms, stage, spawn_cooldown)
-  - [x] Game-over detection
-  - [x] Replay checkpoint recording
-  - [x] Perk application
-- [x] No method in `BaseGameplayMode` has `_ = role, dt, dt_ui_ms, ...` ignoring all its parameters (base `_on_lan_tick_applied` discards role/lockstep/session but delegates immediately)
-- [x] LAN and local gameplay both pass existing tests
-- [x] Replay determinism parity unchanged
+- [ ] No `TickHookBus` used in runtime tick orchestration.
+- [ ] Zero `getattr`-based hook dispatch in runtime orchestration path.
+- [ ] Replay/checkpoint/network sync behavior parity preserved.
+- [ ] `uv run pytest --no-cov` passes.
 
 ---
 
-## Stage 3: Drop Unused Generics from TickRunner
+## Stage 2: Standardize Input Status + Journal Replay Contract
 
-`TimingT` and `TickT` generic parameters are never varied — all sessions use `FrameTiming` and `DeterministicSessionTick`. `inspect.signature()` introspection for `trace_rng` and `getattr` for `resolve_tick_dt` are duck-typing around the protocol.
+Current state still mixes `None` stalls and exception-driven EOS (`ReplayEndOfStream`).
 
 ### Tasks
 
-- [x] Replace `TickSession[TimingT, TickT]` with concrete types (`FrameTiming`, `DeterministicSessionStepTick`)
-- [x] Remove `TickSessionWithTraceRng` protocol — add `trace_rng` to the single `TickSession` contract
-- [x] Remove `inspect.signature()` introspection in `TickRunner.__init__`
-- [x] Move `resolve_tick_dt` into the `InputProvider` protocol or a named optional protocol, remove `getattr` call
-- [x] Remove redundant type coercions (`float(dt_seconds)` when already float, `int(self._frame_index)` when already int, etc.)
+- [ ] Introduce `InputStatus` and `TickInput` contract in `input_providers`.
+- [ ] Convert providers to return explicit status (`READY`/`STALLED`/`EOS`) instead of `None`/exceptions.
+- [ ] Remove `ReplayEndOfStream` / `ReplayAdvanceEndOfStream` control-flow exceptions from normal tick advancement.
+- [ ] Keep `ReplayInputProvider` as a thin adapter over `Journal` read APIs.
+- [ ] Define command semantics explicitly for all providers (no “not supported” runtime errors in normal interface usage).
+- [ ] Update runner/mode/replay callers to consume status-based control flow only.
 
-### Remaining findings
+### Evidence (current code)
 
-- **[high]** Replay RNG trace sink has an exception-path leak: trace context is manually entered in `on_pre_sim` and only exited in `on_tick_end`; if stepping raises, sink restoration is skipped. `playback_driver.py:296,343`, `tick_runner.py:144`
-- **[low]** TickRunner no longer touches `step.presentation`; malformed payloads can pass runner execution and fail later in apply consumers. `tick_runner.py:159`
+- `src/crimson/sim/input_providers.py:13` (`ReplayEndOfStream`)
+- `src/crimson/sim/input_providers.py:34` (`pull_tick_input -> list[...] | None`)
+- `src/crimson/sim/input_providers.py:146` (`ReplayInputProvider.push_command` raises)
+- `src/crimson/sim/tick_runner.py:180` (exception-based replay EOS path)
 
 ### Acceptance
 
-- [x] Zero `inspect.signature()` calls in tick_runner.py
-- [x] Zero `getattr(self._input_provider, ...)` calls in tick_runner.py
-- [x] Zero redundant `float()` / `int()` / `bool()` coercions on already-typed values
-- [x] No generic type parameters on `TickRunner` or `TickSession`
-- [x] All tick runner tests pass
+- [ ] No `None`-as-stall control flow in provider/runner contracts.
+- [ ] No replay EOS exceptions used for normal per-frame advancement control flow.
+- [ ] Replay input path is `Journal -> ReplayInputProvider -> TickRunner`.
+- [ ] Input provider tests cover status semantics and pass.
 
 ---
 
-## Stage 4: Make TickHook a Real Protocol
+## Stage 3: Make TickRunner Pure and Frame-Owned for Debt
 
-`TickHook` is aliased to `object`. The bus dispatches via `getattr` with magic strings and runtime `callable()` checks. `on_tick_end` can't use the shared `_dispatch()` because it needs boolean aggregation — breaking the abstraction it supposedly uses.
+Current state still keeps fixed-step clock/debt inside `TickRunner`.
 
 ### Tasks
 
-- [ ] Define `TickHook` as a `Protocol` with all hook methods (default no-op via `...` or a base class)
-- [ ] Replace string-based `_dispatch()` / `_resolve_method()` with direct method calls
-- [ ] Remove `getattr` + `callable()` runtime checks from `TickHookBus`
-- [ ] Handle `on_tick_end` boolean aggregation directly, not as a special case of a broken abstraction
+- [ ] Remove `FixedStepClock` ownership from `TickRunner`.
+- [ ] Replace `advance_frame(dt, max_ticks)` with explicit tick-range advancement API (frame drivers compute candidate ticks/debt).
+- [ ] Move all accumulator/debt ownership to frame-driver layer(s).
+- [ ] Delete pass-through call chain (`_invoke_tick_runner_advance` -> `_advance_tick_runner_with_profile` -> `_advance_tick_runner`).
+- [ ] Ensure stop actions cannot advance hidden extra ticks before finalize decisions.
 
-### Remaining findings
+### Evidence (current code)
 
-- **[medium]** Hook contract is looser than intended: `TickHook` typed as `object`, `TickContext` missing richer identity fields like mode/session kind, which weakens enforceability. `hooks.py:14,40`
+- `src/crimson/sim/tick_runner.py:7` (`FixedStepClock` import)
+- `src/crimson/sim/tick_runner.py:76` (clock stored in runner)
+- `src/crimson/sim/tick_runner.py:91` (`advance_frame`)
+- `src/crimson/modes/base_gameplay_mode.py:1543` (pass-through chain)
+- `src/crimson/modes/base_gameplay_mode.py:2137` (stop action after batched application)
 
 ### Acceptance
 
-- [ ] `TickHook` is a `Protocol` (or ABC), not `TypeAlias = object`
-- [ ] Zero `getattr` calls in hooks.py
-- [ ] Zero `callable()` checks in hooks.py
-- [ ] All hook ordering tests pass
-- [ ] Hook dispatch is type-safe (mypy/pyright clean)
+- [ ] `TickRunner` has no internal accumulator/clock state.
+- [ ] Frame drivers own debt and candidate tick count calculation.
+- [ ] No pass-through orchestration chain remains.
+- [ ] Determinism parity and stall/debt tests pass.
 
 ---
 
-## Stage 5: Fix InputProvider Protocol Honesty
+## Stage 4: Close Correctness Gaps in LAN/Recovery Paths
 
-The protocol declares `push_command()` but `ReplayInputProvider` raises `RuntimeError` on it (LSP violation). `resolve_tick_dt` is used via `getattr` but isn't in the protocol. Three implementations have three different failure modes that the protocol documents none of.
+Before final cleanup, fix existing correctness holes.
 
 ### Tasks
 
-- [ ] Remove `push_command()` and `pull_tick_commands()` from base `InputProvider` protocol — only providers that support commands should declare them
-- [ ] Create `CommandableInputProvider` (or similar) protocol for providers that accept commands
-- [ ] Add `resolve_tick_dt` to the protocol (or a named optional protocol) — remove `getattr` usage
-- [ ] Document stall semantics: local never stalls, replay raises, network returns None
-- [ ] Remove `ReplayInputProvider.push_command()` that just raises
+- [ ] Ensure rollback resync snapshots are actually applied to runtime/mode state, not only validated and marked applied.
+- [ ] Ensure LAN stop semantics are honored without state/checkpoint divergence under backlog.
+- [ ] Remove or migrate any remaining non-shared deterministic stepping path (`sandbox_step`) that bypasses final orchestration architecture.
+
+### Evidence (current code)
+
+- `src/crimson/modes/base_gameplay_mode.py:1272` (decode path)
+- `src/crimson/modes/base_gameplay_mode.py:1300` (`mark_resync_applied` without state apply)
+- `src/crimson/sim/sandbox_step.py:62` (alternate direct deterministic path)
 
 ### Acceptance
 
-- [ ] No method in any InputProvider implementation raises "not supported"
-- [ ] Zero `getattr` calls against input providers in tick_runner.py
-- [ ] Each provider only implements methods it actually supports
-- [ ] All input provider tests pass
-- [ ] Replay and network provider contracts are documented in protocol docstrings
+- [ ] Recovery snapshots have observable state-application behavior.
+- [ ] No known backlog-induced finalize/checkpoint divergence remains.
+- [ ] Deterministic stepping paths are unified behind target architecture.
 
 ---
 
-## Stage 6: Clean Up Composition Leaks
+## Stage 5: Runtime-First Test Suite Cleanup
 
-Running ticks requires three separate calls (`_ensure_tick_runner`, `_advance_tick_runner`, `_process_tick_batch_results`). TickRunner internals leak into modes.
+Replace brittle/internal-chain assertions with runtime-type behavioral coverage.
 
 ### Tasks
 
-- [ ] Collapse the three-call tick sequence into a single method on BaseGameplayMode
-- [ ] Hide TickRunner, provider, and hook construction behind the single method
-- [ ] Modes should only see: "advance by dt, get outcome"
-- [ ] Collapse pass-through orchestration chain (`_invoke_tick_runner_advance` → `_advance_tick_runner_with_profile` → `_advance_tick_runner`) into a single method
+- [ ] Remove stack/frame inspection assertions (for example `inspect.stack()`-based architecture checks).
+- [ ] Reduce heavy mock-based tests of runtime internals; prefer runtime-type integration for orchestration paths.
+- [ ] Keep only behaviorally meaningful assertions (observable output/state/telemetry), not incidental call-chain shape.
+- [ ] Fix stale ast-grep guardrail paths that reference deleted files.
+- [ ] Align tests with `InputStatus` + Journal + pure-runner contracts.
 
-### Remaining findings
+### Evidence (current code)
 
-- **[high]** LAN stop actions are applied after batch simulation, so the runner can advance extra ticks before `stop_before_finalize` / `stop_after_finalize` is honored. Under backlog conditions this leaves sim state ahead of finalized/checkpointed state. `base_gameplay_mode.py:2097`, `tick_runner.py:122`, `base_gameplay_mode.py:2236`
-- **[high]** Rollback resync snapshots are encoded/stored but never applied in mode recovery; recovery path validates payload and immediately marks applied (`mark_resync_applied`). Snapshot content is effectively dead. `base_gameplay_mode.py:1272,1300`, `survival_mode.py:545`, `rush_mode.py:289`, `quest_mode.py:301`
-- **[medium]** A non-TickRunner deterministic path still exists (`sandbox_step.py`) and fuses planning/application side effects — remaining split-brain scaffolding against the stated architecture. `sandbox_step.py:62,82`
-- **[low]** Pass-through orchestration scaffolding `_invoke_tick_runner_advance` → `_advance_tick_runner_with_profile` → `_advance_tick_runner` with no specialization at any layer. `base_gameplay_mode.py:1543`
+- `tests/test_architecture_contracts.py:48` (`inspect.stack`)
+- `tests/test_runtime_pump_ownership.py:91` (mock-heavy LAN runner simulation)
+- `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` (`src/crimson/game_world.py` stale path)
 
 ### Acceptance
 
-- [ ] Modes call one method to advance ticks, not three
-- [ ] Modes do not reference `TickRunner`, `InputProvider`, or `TickHookBus` directly
-- [ ] All mode tests pass
+- [ ] Zero stack/frame-inspection assertions in test suite.
+- [ ] Runtime orchestration tests primarily use real runtime types and composition.
+- [ ] Guardrail rules reference only existing files.
+- [ ] `uv run pytest --no-cov` passes.
 
 ---
 
-## Stage 7: Trim Ceremonial Tests
+## Stage 6: Collapse World Facades and Host Duplication
 
-~30% of architecture contract tests are brittle or ceremonial. Stack inspection in contract_2 is coupled to internal call chains. LAN mocking tests check counters, not behavior.
+Current world/runtime hosting still has duplication and facade residue.
 
 ### Tasks
 
-- [ ] Replace stack inspection in contract_2 with behavioral assertions (e.g., "both paths call advance_frame once")
-- [ ] Simplify or remove `test_lan_tick_consumption_*` tests — replace with "did runner advance?" checks
-- [ ] Move `test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows` to unit tests
-- [ ] Remove any tests that only assert mock call counts without verifying observable behavior
-- [ ] Fix stale ast-grep guardrail targeting deleted `game_world.py` (`tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6`)
+- [ ] Collapse to end-state components: `SimWorldState` + `PresentationLayer`.
+- [ ] Remove long-lived `TerrainRuntime` facade role; keep only helper/bootstrap utilities.
+- [ ] Deduplicate host lifecycle/camera/render glue across debug/test hosts.
+- [ ] Reconcile `world_tick_runner_harness` and host protocols with collapsed world architecture.
+
+### Evidence (current code)
+
+- `src/crimson/world/render_resources.py`
+- `src/crimson/world/audio_bridge.py`
+- `src/crimson/world/terrain_runtime.py`
+- `src/crimson/views/arsenal_debug.py:162`
+- `src/crimson/views/lighting_debug.py:1325`
+- `tests/world_runtime.py:22`
 
 ### Acceptance
 
-- [ ] Zero `inspect.stack()` or frame-inspection assertions in test suite
-- [ ] Every remaining architecture test asserts on observable behavior, not internal call chains
-- [ ] Test suite still catches: hook order changes, input validation skips, debt preservation failures, RNG mutation during terrain setup, replay pause/step semantics
-- [ ] `uv run pytest --no-cov` passes
-- [ ] All guardrail rules reference only files that exist
+- [ ] Runtime-facing world composition is `SimWorldState` + `PresentationLayer`.
+- [ ] Host lifecycle/camera/render setup exists in one shared implementation path.
+- [ ] Debug and world-runtime tests pass.
 
 ---
 
-## Stage 8: Fix GameWorld Runtime Host Duplication
+## Prioritization
 
-`GameWorld` split did not result in a clean shared runtime-host abstraction. Lifecycle, camera, and render ownership glue is duplicated across debug/test hosts.
+1. Stage 1 (remove hook-bus orchestration)
+2. Stage 2 (InputStatus + Journal contract)
+3. Stage 3 (pure runner + frame-owned debt)
+4. Stage 4 (LAN/recovery correctness)
+5. Stage 5 (runtime-first tests + guardrail cleanup)
+6. Stage 6 (world collapse + host dedupe)
 
-### Tasks
-
-- [ ] Extract shared lifecycle/camera/render host interface from `arsenal_debug.py`, `lighting_debug.py`, and `tests/world_runtime.py`
-- [ ] Eliminate duplication — each host should only override what is actually different
-
-### Remaining findings
-
-- **[medium]** Debug and test hosts (`arsenal_debug.py:168`, `lighting_debug.py:1331`, `tests/world_runtime.py:91`) duplicate the same initialization and camera/render ownership glue
-
-### Acceptance
-
-- [ ] Lifecycle, camera, and render setup code exists in exactly one place
-- [ ] Debug/test hosts compose or inherit from the shared abstraction
-- [ ] All debug view and world runtime tests pass
+This order minimizes risk: first remove hidden orchestration indirection, then lock contracts, then move time/debt ownership, then finish correctness and cleanup.
