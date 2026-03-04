@@ -17,7 +17,6 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
-from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
@@ -272,13 +271,11 @@ class RushMode(BaseGameplayMode):
         self,
         *,
         role: str,
-        dt: float,
         dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
         session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> bool:
-        _ = role, dt, dt_ui_ms, lockstep_runtime, dt_tick
+        _ = role, dt_ui_ms, dt_tick
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
         return True

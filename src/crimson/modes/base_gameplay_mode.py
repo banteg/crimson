@@ -1814,13 +1814,11 @@ class BaseGameplayMode:
         self,
         *,
         role: str,
-        dt: float,
         dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
         session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> bool:
-        _ = role, dt, dt_ui_ms, lockstep_runtime, session, dt_tick
+        _ = role, dt_ui_ms, session, dt_tick
         return True
 
     def _allow_lan_frame_pop(self) -> bool:
@@ -1878,9 +1876,7 @@ class BaseGameplayMode:
         dt_tick = float(self._lan_capture_tick_dt())
         if not self._prepare_lan_frame(
             role=str(role),
-            dt=float(dt),
             dt_ui_ms=float(dt_ui_ms),
-            lockstep_runtime=lockstep_runtime,
             session=session,
             dt_tick=float(dt_tick),
         ):

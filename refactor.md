@@ -40,11 +40,12 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 - [x] Remove `_on_lan_tick_applied()` as a separate override hierarchy
 - [x] Merge `_apply_input_command()` and `_apply_perk_pick_input_command()` into one path
 - [x] Remove `_before_lan_tick_step()`, `_after_join_lan_consume()`, `_allow_lan_frame_pop()` no-op overrides from base — push LAN-specific logic into hooks or the single tick-applied path
-- [ ] Remove dead parameters from `_prepare_lan_frame()` (dt_ui_ms is used by survival for perk menu input; unused by rush/quest — could narrow signature or accept the asymmetry)
+- [x] Remove dead parameters from `_prepare_lan_frame()` (`dt` and `lockstep_runtime` removed; `role`, `dt_ui_ms`, `dt_tick` kept — used by survival perk menu)
+- [x] Remove dead `_after_join_lan_consume` override from survival (on join `_perk_menu.active` is always False; `_allow_lan_frame_pop` kept — correctly stalls host tick consumption during perk menu)
 
 ### Remaining findings
 
-- **[high]** Survival LAN perk-menu flow is still asymmetric: only `PerkPick` is mapped from network events, while menu pause gating uses local menu state; join peer still captures/queues local inputs during host pause windows. `base_gameplay_mode.py:231`, `survival_mode.py:426,479,509`
+- **[medium]** Survival LAN perk-menu flow is intentionally asymmetric: only `PerkPick` affects sim state (mapped via `_resolve_tick_commands`); `PerkMenuOpen`/`PerkMenuClose` events exist for replay recording, not sim commands. Host-side menu pause gating uses local menu state by design. Join-side `_allow_lan_frame_pop` is not called (join pops from received frames, not capture clock). `_after_join_lan_consume` was dead code (removed).
 
 ### Acceptance
 

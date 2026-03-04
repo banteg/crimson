@@ -26,7 +26,6 @@ from ..input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
-from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
@@ -278,13 +277,11 @@ class QuestMode(BaseGameplayMode):
         self,
         *,
         role: str,
-        dt: float,
         dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
         session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> bool:
-        _ = role, dt, dt_ui_ms, lockstep_runtime, dt_tick
+        _ = role, dt_ui_ms, dt_tick
         session_quest = cast(QuestDeterministicSession, session)
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())

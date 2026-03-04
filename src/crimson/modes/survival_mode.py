@@ -27,7 +27,6 @@ from ..input_codes import (
     input_primary_just_pressed,
 )
 from ..net.debug_log import lan_debug_log
-from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
@@ -420,13 +419,10 @@ class SurvivalMode(BaseGameplayMode):
         self,
         *,
         role: str,
-        dt: float,
         dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
         session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> bool:
-        _ = dt
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
 
@@ -505,12 +501,6 @@ class SurvivalMode(BaseGameplayMode):
 
     def _allow_lan_frame_pop(self) -> bool:
         return not self._perk_menu.active
-
-    def _after_join_lan_consume(self) -> bool:
-        if self._perk_menu.active:
-            self._reset_lan_capture_clock()
-            return True
-        return False
 
     def _on_tick_applied(
         self,
