@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Protocol, TypeAlias, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, TypeAlias, cast, runtime_checkable
 
 import msgspec
 
@@ -32,56 +32,8 @@ class TickResult(msgspec.Struct, frozen=True):
     payload: object | None = None
 
 
-@runtime_checkable
-class SupportsTickBegin(Protocol):
-    def on_tick_begin(self, ctx: TickContext) -> None: ...
-
-
-@runtime_checkable
-class SupportsTickStall(Protocol):
-    def on_tick_stall(self, ctx: TickContext) -> None: ...
-
-
-@runtime_checkable
-class SupportsPreSim(Protocol):
-    def on_pre_sim(self, ctx: TickContext) -> None: ...
-
-
-@runtime_checkable
-class SupportsWorldStepDone(Protocol):
-    def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None: ...
-
-
-@runtime_checkable
-class SupportsPreHash(Protocol):
-    def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None: ...
-
-
-@runtime_checkable
-class SupportsPostHash(Protocol):
-    def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None: ...
-
-
-@runtime_checkable
-class SupportsPostPresentation(Protocol):
-    def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None: ...
-
-
-@runtime_checkable
-class SupportsTickEnd(Protocol):
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> bool | None: ...
-
-
-TickHook: TypeAlias = (
-    SupportsTickBegin
-    | SupportsTickStall
-    | SupportsPreSim
-    | SupportsWorldStepDone
-    | SupportsPreHash
-    | SupportsPostHash
-    | SupportsPostPresentation
-    | SupportsTickEnd
-)
+# Hooks provide an explicit subset of tick callbacks through optional methods.
+TickHook: TypeAlias = object
 
 
 class TickHookBus:
@@ -95,47 +47,51 @@ class TickHookBus:
     def add_hook(self, hook: TickHook) -> None:
         self._hooks.append(hook)
 
-    def on_tick_begin(self, ctx: TickContext) -> None:
+    @staticmethod
+    def _resolve_method(hook: TickHook, method_name: str) -> Callable[..., object] | None:
+        method = getattr(hook, method_name, None)
+        if method is None:
+            return None
+        if not callable(method):
+            raise TypeError(f"{type(hook).__name__}.{method_name} must be callable")
+        return cast(Callable[..., object], method)
+
+    def _dispatch(self, method_name: str, *args: object) -> None:
         for hook in self._hooks:
-            if isinstance(hook, SupportsTickBegin):
-                hook.on_tick_begin(ctx)
+            method = self._resolve_method(hook, method_name)
+            if method is None:
+                continue
+            method(*args)
+
+    def on_tick_begin(self, ctx: TickContext) -> None:
+        self._dispatch("on_tick_begin", ctx)
 
     def on_tick_stall(self, ctx: TickContext) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsTickStall):
-                hook.on_tick_stall(ctx)
+        self._dispatch("on_tick_stall", ctx)
 
     def on_pre_sim(self, ctx: TickContext) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsPreSim):
-                hook.on_pre_sim(ctx)
+        self._dispatch("on_pre_sim", ctx)
 
     def on_world_step_done(self, ctx: TickContext, result: TickResult) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsWorldStepDone):
-                hook.on_world_step_done(ctx, result)
+        self._dispatch("on_world_step_done", ctx, result)
 
     def on_pre_hash(self, ctx: TickContext, result: TickResult) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsPreHash):
-                hook.on_pre_hash(ctx, result)
+        self._dispatch("on_pre_hash", ctx, result)
 
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsPostHash):
-                hook.on_post_hash(ctx, hashes)
+        self._dispatch("on_post_hash", ctx, hashes)
 
     def on_post_presentation(self, ctx: TickContext, result: TickResult) -> None:
-        for hook in self._hooks:
-            if isinstance(hook, SupportsPostPresentation):
-                hook.on_post_presentation(ctx, result)
+        self._dispatch("on_post_presentation", ctx, result)
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> bool:
         should_stop = False
         for hook in self._hooks:
-            if isinstance(hook, SupportsTickEnd):
-                if bool(hook.on_tick_end(ctx, result)):
-                    should_stop = True
+            method = self._resolve_method(hook, "on_tick_end")
+            if method is None:
+                continue
+            if bool(method(ctx, result)):
+                should_stop = True
         return should_stop
 
 
