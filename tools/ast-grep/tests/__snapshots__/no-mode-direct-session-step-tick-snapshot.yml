@@ -1,0 +1,16 @@
+id: no-mode-direct-session-step-tick
+snapshots:
+  ? |
+    tick = session.step_tick(timing=timing, inputs=inputs)
+  : labels:
+    - source: session.step_tick(timing=timing, inputs=inputs)
+      style: primary
+      start: 7
+      end: 54
+  ? |
+    step = run_deterministic_step(world=world, timing=timing, options=options)
+  : labels:
+    - source: run_deterministic_step(world=world, timing=timing, options=options)
+      style: primary
+      start: 7
+      end: 74

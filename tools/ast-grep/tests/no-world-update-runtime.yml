@@ -1,0 +1,15 @@
+id: no-world-update-runtime
+valid:
+  - |
+    world.update_camera(dt)
+  - |
+    self.world.sync_audio_bridge_state()
+  - |
+    batch = runner.advance_frame(dt_seconds=dt_seconds)
+invalid:
+  - |
+    world.update(dt, inputs=inputs)
+  - |
+    self.world.update(dt, inputs=inputs)
+  - |
+    self._world.update(dt, inputs=inputs)

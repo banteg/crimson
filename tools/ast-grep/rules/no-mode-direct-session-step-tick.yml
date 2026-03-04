@@ -1,0 +1,10 @@
+id: no-mode-direct-session-step-tick
+language: python
+severity: error
+message: Mode orchestration must step deterministic sessions through TickRunner, not direct `step_tick(...)` or `run_deterministic_step(...)` calls.
+files:
+  - src/crimson/modes/**/*.py
+rule:
+  any:
+    - pattern: $SESSION.step_tick($$$ARGS)
+    - pattern: run_deterministic_step($$$ARGS)
