@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import call
@@ -107,30 +107,30 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
-            ticks = int(max_ticks or 0)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
             rows = [
                 TickResult(
-                    tick_index=int(self.next_tick_index + i),
-                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
                     dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
-            self.next_tick_index += int(ticks)
             return TickBatchResult(
                 ticks_completed=int(ticks),
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + int(ticks),
                 completed_results=rows,
             )
-
-        def reset_clock(self) -> None:
-            self.clock.accum = 0.0
 
     _set_private(view, "_tick_runner", _FakeRunner())
 
@@ -173,30 +173,30 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
-            ticks = int(max_ticks or 0)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
             rows = [
                 TickResult(
-                    tick_index=int(self.next_tick_index + i),
-                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
                     dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
-            self.next_tick_index += int(ticks)
             return TickBatchResult(
                 ticks_completed=int(ticks),
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + int(ticks),
                 completed_results=rows,
             )
-
-        def reset_clock(self) -> None:
-            self.clock.accum = 0.0
 
     _set_private(view, "_tick_runner", _FakeRunner())
 
@@ -249,30 +249,30 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
-            ticks = int(max_ticks or 0)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
             rows = [
                 TickResult(
-                    tick_index=int(self.next_tick_index + i),
-                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
                     dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
-            self.next_tick_index += int(ticks)
             return TickBatchResult(
                 ticks_completed=int(ticks),
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + int(ticks),
                 completed_results=rows,
             )
-
-        def reset_clock(self) -> None:
-            self.clock.accum = 0.0
 
     _set_private(view, "_tick_runner", _FakeRunner())
 
@@ -316,30 +316,30 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
-            ticks = int(max_ticks or 0)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
             rows = [
                 TickResult(
-                    tick_index=int(self.next_tick_index + i),
-                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
                     dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
-            self.next_tick_index += int(ticks)
             return TickBatchResult(
                 ticks_completed=int(ticks),
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + int(ticks),
                 completed_results=rows,
             )
-
-        def reset_clock(self) -> None:
-            self.clock.accum = 0.0
 
     _set_private(view, "_tick_runner", _FakeRunner())
 

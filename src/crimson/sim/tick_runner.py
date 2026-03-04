@@ -4,7 +4,6 @@ from typing import Protocol
 
 import msgspec
 
-from .clock import FixedStepClock
 from .hooks import TickResult
 from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider, InputStatus
@@ -39,7 +38,7 @@ class TickRunnerConfig(msgspec.Struct, frozen=True):
 class TickBatchResult(msgspec.Struct):
     ticks_completed: int = 0
     batch_status: InputStatus = InputStatus.READY
-    remaining_debt_ticks: int = 0
+    next_tick_index: int = 0
     completed_results: list[TickResult] = msgspec.field(default_factory=list)
 
 
@@ -54,47 +53,34 @@ class TickRunner:
         self._session = session
         self._input_provider = input_provider
         self._config = config if config is not None else TickRunnerConfig()
-        self._clock = FixedStepClock(tick_rate=self._config.tick_rate)
-        self._next_tick_index = 0
-        self._frame_index = 0
 
-    @property
-    def clock(self) -> FixedStepClock:
-        return self._clock
-
-    @property
-    def next_tick_index(self) -> int:
-        return self._next_tick_index
-
-    def reset_clock(self) -> None:
-        self._clock.reset()
-
-    def advance_frame(
+    def begin_frame(
         self,
-        dt_seconds: float,
-        *,
-        max_ticks: int | None = None,
-    ) -> TickBatchResult:
-        self._frame_index += 1
-
-        candidate_ticks = self._clock.advance(dt_seconds)
-        if max_ticks is not None:
-            candidate_ticks = min(candidate_ticks, max(0, max_ticks))
+        frame_ctx: FrameContext,
+    ) -> None:
         self._input_provider.begin_frame(
-            FrameContext(
-                dt_seconds=dt_seconds,
-                tick_dt_seconds=self._clock.dt_tick,
-                frame_index=self._frame_index,
-                candidate_ticks=candidate_ticks,
-                is_networked=self._config.is_networked,
-                is_replay=self._config.is_replay,
-            ),
+            frame_ctx,
         )
-        if candidate_ticks <= 0:
+
+    def advance_ticks(
+        self,
+        *,
+        start_tick: int,
+        ticks_requested: int,
+        tick_dt: float,
+    ) -> TickBatchResult:
+        start_tick = int(start_tick)
+        ticks_requested = max(0, int(ticks_requested))
+        tick_dt = float(tick_dt)
+
+        if tick_dt <= 0.0:
+            raise ValueError("tick_dt must be positive")
+
+        if ticks_requested <= 0:
             return TickBatchResult(
                 ticks_completed=0,
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=int((self._clock.accum + 1e-9) / self._clock.dt_tick),
+                next_tick_index=int(start_tick),
                 completed_results=[],
             )
 
@@ -102,8 +88,8 @@ class TickRunner:
         batch_status = InputStatus.READY
         completed_results: list[TickResult] = []
 
-        for _ in range(candidate_ticks):
-            tick_index = self._next_tick_index
+        for tick_offset in range(ticks_requested):
+            tick_index = int(start_tick + tick_offset)
             tick_input = self._input_provider.pull_tick_input(tick_index)
             status = tick_input.status
             if status is InputStatus.STALLED:
@@ -114,7 +100,7 @@ class TickRunner:
                 break
 
             tick_inputs = list(tick_input.inputs)
-            tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, self._clock.dt_tick)
+            tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, tick_dt)
 
             # Snapshot list identity before stepping so replay recording can
             # happen later in frame-driver code with pre-step inputs.
@@ -138,16 +124,10 @@ class TickRunner:
             )
             completed_results.append(result)
             ticks_completed += 1
-            self._next_tick_index += 1
 
-        unconsumed_ticks = candidate_ticks - ticks_completed
-        if batch_status in (InputStatus.STALLED, InputStatus.EOS) and unconsumed_ticks > 0:
-            self._clock.accum += unconsumed_ticks * self._clock.dt_tick
-
-        remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
         return TickBatchResult(
             ticks_completed=ticks_completed,
             batch_status=batch_status,
-            remaining_debt_ticks=remaining_debt_ticks,
+            next_tick_index=int(start_tick) + int(ticks_completed),
             completed_results=list(completed_results),
         )

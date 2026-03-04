@@ -402,6 +402,9 @@ class BaseGameplayMode:
         self._tick_runner_session: DeterministicSession | QuestDeterministicSession | None = None
         self._tick_runner_is_networked = False
         self._tick_runner_network_role = ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock: FixedStepClock | None = None
 
     def _sync_world_size_ownership(self) -> None:
         world_size = float(self.world_size)
@@ -1483,55 +1486,63 @@ class BaseGameplayMode:
             ),
         )
 
-    @staticmethod
-    def _invoke_tick_runner_advance(
-        *,
-        runner: TickRunner,
-        dt_seconds: float,
-    ) -> TickBatchResult:
-        return runner.advance_frame(float(dt_seconds))
-
-    def _advance_tick_runner_with_profile(
+    def _advance_tick_runner_batch(
         self,
         *,
         runner: TickRunner,
         dt_seconds: float,
+        tick_dt_seconds: float,
+        candidate_ticks: int,
+        is_networked: bool,
+        is_replay: bool = False,
     ) -> TickBatchResult:
-        return self._invoke_tick_runner_advance(
-            runner=runner,
-            dt_seconds=float(dt_seconds),
+        frame_index = int(self._tick_runner_frame_index) + 1
+        self._tick_runner_frame_index = int(frame_index)
+        ticks_requested = max(0, int(candidate_ticks))
+        runner.begin_frame(
+            FrameContext(
+                dt_seconds=float(dt_seconds),
+                tick_dt_seconds=float(tick_dt_seconds),
+                frame_index=int(frame_index),
+                candidate_ticks=int(ticks_requested),
+                is_networked=bool(is_networked),
+                is_replay=bool(is_replay),
+            ),
         )
+        batch = runner.advance_ticks(
+            start_tick=int(self._tick_runner_next_tick_index),
+            ticks_requested=int(ticks_requested),
+            tick_dt=float(tick_dt_seconds),
+        )
+        self._tick_runner_next_tick_index = int(batch.next_tick_index)
 
-    def _advance_tick_runner(
-        self,
-        *,
-        runner: TickRunner,
-        dt_seconds: float,
-    ) -> TickBatchResult:
-        return self._advance_tick_runner_with_profile(
-            runner=runner,
-            dt_seconds=float(dt_seconds),
-        )
+        if not bool(is_networked):
+            local_clock = self._tick_runner_local_clock
+            if (
+                local_clock is not None
+                and batch.batch_status in (InputStatus.STALLED, InputStatus.EOS)
+            ):
+                unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+                if unconsumed_ticks > 0:
+                    local_clock.accum += float(unconsumed_ticks) * float(tick_dt_seconds)
+
+        return batch
 
     def _gameplay_tick_rate(self) -> int:
-        runner = self._tick_runner
-        if runner is not None:
-            return int(runner.clock.tick_rate)
         return int(self._deterministic_tick_rate())
 
-    def _gameplay_tick_dt(self, *, session: DeterministicSession | QuestDeterministicSession | None = None) -> float:
-        if session is not None:
-            runner, _ = self._ensure_tick_runner(session=session, is_networked=bool(self._lan_enabled))
-            return float(runner.clock.dt_tick)
-        runner = self._tick_runner
-        if runner is not None:
-            return float(runner.clock.dt_tick)
-        return 1.0 / float(self._deterministic_tick_rate())
+    def _gameplay_tick_dt(
+        self,
+        *,
+        session: DeterministicSession | QuestDeterministicSession | None = None,
+    ) -> float:
+        _ = session
+        return 1.0 / float(self._gameplay_tick_rate())
 
     def _reset_gameplay_tick_runner_clock(self) -> None:
-        runner = self._tick_runner
-        if runner is not None:
-            runner.reset_clock()
+        clock = self._tick_runner_local_clock
+        if clock is not None:
+            clock.reset()
 
     def _reset_tick_runner_state(self) -> None:
         self._tick_input_provider = None
@@ -1539,6 +1550,9 @@ class BaseGameplayMode:
         self._tick_runner_session = None
         self._tick_runner_is_networked = False
         self._tick_runner_network_role = ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock = None
 
     def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
         self._queued_input_commands.clear()
@@ -1627,6 +1641,11 @@ class BaseGameplayMode:
                 provider.bind_runtime(lan_runtime)
                 provider.set_role(str(role))
                 provider.set_before_pop(None)
+                self._tick_runner_local_clock = None
+            elif self._tick_runner_local_clock is None:
+                self._tick_runner_local_clock = FixedStepClock(
+                    tick_rate=int(self._gameplay_tick_rate()),
+                )
             return (runner, provider)
 
         if bool(is_networked):
@@ -1652,6 +1671,13 @@ class BaseGameplayMode:
         self._tick_runner_session = session
         self._tick_runner_is_networked = bool(is_networked)
         self._tick_runner_network_role = str(role) if bool(is_networked) else ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock = (
+            None
+            if bool(is_networked)
+            else FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
+        )
         return (runner, provider)
 
     def _apply_tick_commands(
@@ -1968,9 +1994,13 @@ class BaseGameplayMode:
         provider.bind_runtime(runtime)
         provider.set_before_pop(self._allow_lan_frame_pop)
         sim_ns_start = time.perf_counter_ns()
-        batch = self._advance_tick_runner(
+        ticks_requested = 1 if float(dt_tick) > 0.0 else 0
+        batch = self._advance_tick_runner_batch(
             runner=runner,
             dt_seconds=float(dt_tick),
+            tick_dt_seconds=float(dt_tick),
+            candidate_ticks=int(ticks_requested),
+            is_networked=True,
         )
         sim_ms = (time.perf_counter_ns() - sim_ns_start) / 1_000_000.0
         self._sim_ms += float(sim_ms)
@@ -2184,11 +2214,20 @@ class BaseGameplayMode:
         )
         if not isinstance(provider, LocalInputProvider):
             raise TypeError("local tick runner provider must be LocalInputProvider")
+        local_clock = self._tick_runner_local_clock
+        if local_clock is None:
+            local_clock = FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
+            self._tick_runner_local_clock = local_clock
 
+        candidate_ticks = int(local_clock.advance(float(dt_frame)))
+        tick_dt = float(local_clock.dt_tick)
         sim_ns_start = time.perf_counter_ns()
-        batch = self._advance_tick_runner(
+        batch = self._advance_tick_runner_batch(
             runner=runner,
             dt_seconds=float(dt_frame),
+            tick_dt_seconds=float(tick_dt),
+            candidate_ticks=int(candidate_ticks),
+            is_networked=False,
         )
         self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
         self._presentation_plan_ms = float(
@@ -2198,7 +2237,7 @@ class BaseGameplayMode:
         self._apply_tick_commands(
             batch=batch,
             provider=provider,
-            default_dt_tick=float(runner.clock.dt_tick),
+            default_dt_tick=float(tick_dt),
         )
         self._annotate_tick_hashes(
             batch=batch,

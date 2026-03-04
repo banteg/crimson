@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 import pytest
@@ -44,35 +44,29 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view._on_runner_tick_complete = lambda _tick_index, _tick: False
 
     @dataclass
-    class _FakeClock:
-        dt_tick: float = 1.0 / 60.0
-        accum: float = 0.0
-
-    @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: _FakeClock = field(default_factory=_FakeClock)
+        frame_count: int = 0
 
-        def advance_frame(self, dt_seconds: float, *, max_ticks: int | None = None) -> object:
-            self.clock.accum += float(dt_seconds)
-            ticks = int((self.clock.accum + 1e-9) / float(self.clock.dt_tick))
-            if max_ticks is not None:
-                ticks = min(int(ticks), int(max_ticks))
-            self.clock.accum -= float(ticks) * float(self.clock.dt_tick)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
             rows = [
                 TickResult(
-                    tick_index=int(self.next_tick_index + i),
-                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
                     dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
-            self.next_tick_index += int(ticks)
             return TickBatchResult(
                 ticks_completed=int(ticks),
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + int(ticks),
                 completed_results=rows,
             )
 
@@ -102,16 +96,19 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, *_args, **_kwargs) -> object:
-            tick_index = int(self.next_tick_index)
-            self.next_tick_index += 1
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = ticks_requested, tick_dt
+            tick_index = int(start_tick)
             return TickBatchResult(
                 ticks_completed=1,
                 batch_status=InputStatus.READY,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + 1,
                 completed_results=[
                     TickResult(
                         tick_index=tick_index,
@@ -151,23 +148,27 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
 
     @dataclass
     class _FakeRunner:
-        next_tick_index: int = 2
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def advance_frame(self, *_args, **_kwargs) -> object:
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = ticks_requested, tick_dt
             return TickBatchResult(
                 ticks_completed=2,
                 batch_status=InputStatus.EOS,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + 2,
                 completed_results=[
                     TickResult(
-                        tick_index=0,
+                        tick_index=int(start_tick),
                         command_hash="h0",
                         dt_sim=1.0 / 60.0,
                         payload=object(),
                     ),
                     TickResult(
-                        tick_index=1,
+                        tick_index=int(start_tick) + 1,
                         command_hash="h1",
                         dt_sim=1.0 / 60.0,
                         payload=object(),

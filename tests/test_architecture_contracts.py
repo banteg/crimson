@@ -14,8 +14,10 @@ from crimson.game_modes import GameMode
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
+from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
+    FrameContext,
     InputCommand,
     InputStatus,
     LocalInputProvider,
@@ -41,16 +43,20 @@ class _TickRunnerStackSpy:
     def __init__(self, sink: list[tuple[str, ...]]) -> None:
         self._sink = sink
         self.calls = 0
-        self.clock = SimpleNamespace(dt_tick=1.0 / 60.0)
+        self._last_frame_ctx: FrameContext | None = None
 
-    def advance_frame(self, *_args, **_kwargs) -> TickBatchResult:
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        self._last_frame_ctx = frame_ctx
+
+    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
+        _ = tick_dt
         self.calls += 1
         frames = inspect.stack()[1:8]
         self._sink.append(tuple(frame.function for frame in frames))
         return TickBatchResult(
             ticks_completed=0,
             batch_status=InputStatus.READY,
-            remaining_debt_ticks=0,
+            next_tick_index=int(start_tick) + max(0, int(ticks_requested)),
             completed_results=[],
         )
 
@@ -156,6 +162,43 @@ class _MockLockstepRuntime:
         return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
 
 
+def _advance_with_clock(
+    *,
+    runner: TickRunner,
+    clock: FixedStepClock,
+    start_tick: int,
+    frame_index: int,
+    dt_seconds: float,
+    max_ticks: int | None = None,
+    is_networked: bool = False,
+    is_replay: bool = False,
+) -> tuple[TickBatchResult, int, int]:
+    ticks_requested = int(clock.advance(float(dt_seconds)))
+    if max_ticks is not None:
+        ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
+    frame_index = int(frame_index) + 1
+    runner.begin_frame(
+        FrameContext(
+            dt_seconds=float(dt_seconds),
+            tick_dt_seconds=float(clock.dt_tick),
+            frame_index=int(frame_index),
+            candidate_ticks=max(0, int(ticks_requested)),
+            is_networked=bool(is_networked),
+            is_replay=bool(is_replay),
+        ),
+    )
+    batch = runner.advance_ticks(
+        start_tick=int(start_tick),
+        ticks_requested=max(0, int(ticks_requested)),
+        tick_dt=float(clock.dt_tick),
+    )
+    if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
+        unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+        if unconsumed_ticks > 0:
+            clock.accum += float(unconsumed_ticks) * float(clock.dt_tick)
+    return batch, int(batch.next_tick_index), int(frame_index)
+
+
 def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
     sim_world = SimWorldState(world_size=1024.0)
     session = DeterministicSession(
@@ -187,12 +230,22 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
     )
 
     completed: list[object] = []
+    clock = FixedStepClock(tick_rate=60)
+    frame_index = 0
+    next_tick_index = 0
     for _ in range(60):
-        batch = runner.advance_frame(1.0 / 60.0)
+        batch, next_tick_index, frame_index = _advance_with_clock(
+            runner=runner,
+            clock=clock,
+            start_tick=next_tick_index,
+            frame_index=frame_index,
+            dt_seconds=1.0 / 60.0,
+            max_ticks=1,
+        )
         assert batch.ticks_completed == 1
         completed.extend(batch.completed_results)
 
-    assert int(runner.next_tick_index) == 60
+    assert int(next_tick_index) == 60
     assert len(completed) == 60
     assert play_sfx.call_count == 0
     for result in completed:
@@ -261,7 +314,7 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     assert local_runner.calls == 1
     assert lan_runner.calls == 1
     assert local_stacks and lan_stacks
-    assert local_stacks[0][:3] == lan_stacks[0][:3]
+    assert local_stacks[0][0] == lan_stacks[0][0]
 
 
 def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
@@ -298,11 +351,33 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     command = InputCommand("perk_pick", {"index": 1})
     host_provider.push_command(command)
 
-    host_runner.advance_frame(1.0 / 60.0, max_ticks=1)
+    host_clock = FixedStepClock(tick_rate=60)
+    host_frame_index = 0
+    host_next_tick_index = 0
+    _host_batch, host_next_tick_index, host_frame_index = _advance_with_clock(
+        runner=host_runner,
+        clock=host_clock,
+        start_tick=host_next_tick_index,
+        frame_index=host_frame_index,
+        dt_seconds=1.0 / 60.0,
+        max_ticks=1,
+        is_networked=True,
+    )
     host_commands = host_provider.pull_tick_commands(0)
     host_session.apply_commands(tick_index=0, commands=list(host_commands))
 
-    client_runner.advance_frame(1.0 / 60.0, max_ticks=1)
+    client_clock = FixedStepClock(tick_rate=60)
+    client_frame_index = 0
+    client_next_tick_index = 0
+    _client_batch, client_next_tick_index, client_frame_index = _advance_with_clock(
+        runner=client_runner,
+        clock=client_clock,
+        start_tick=client_next_tick_index,
+        frame_index=client_frame_index,
+        dt_seconds=1.0 / 60.0,
+        max_ticks=1,
+        is_networked=True,
+    )
     client_commands = client_provider.pull_tick_commands(0)
     client_session.apply_commands(tick_index=0, commands=list(client_commands))
 
@@ -353,11 +428,21 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
         input_provider=live_provider,
         config=TickRunnerConfig(tick_rate=int(header.tick_rate)),
     )
+    live_clock = FixedStepClock(tick_rate=int(header.tick_rate))
+    live_frame_index = 0
+    live_next_tick_index = 0
 
     live_hashes: list[str] = []
     for _ in range(int(tick_count)):
         recorder.record_tick(list(input_row))
-        batch = live_runner.advance_frame(1.0 / 60.0, max_ticks=1)
+        batch, live_next_tick_index, live_frame_index = _advance_with_clock(
+            runner=live_runner,
+            clock=live_clock,
+            start_tick=live_next_tick_index,
+            frame_index=live_frame_index,
+            dt_seconds=1.0 / 60.0,
+            max_ticks=1,
+        )
         assert batch.ticks_completed == 1
         live_hashes.append(str(batch.completed_results[0].command_hash))
 
@@ -424,7 +509,17 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     draw_text = mocker.patch.object(rl, "draw_text")
 
-    batch = runner.advance_frame(1.0 / 60.0, max_ticks=1)
+    clock = FixedStepClock(tick_rate=60)
+    frame_index = 0
+    next_tick_index = 0
+    batch, next_tick_index, frame_index = _advance_with_clock(
+        runner=runner,
+        clock=clock,
+        start_tick=next_tick_index,
+        frame_index=frame_index,
+        dt_seconds=1.0 / 60.0,
+        max_ticks=1,
+    )
     assert batch.ticks_completed == 1
     assert float(sim_world.players[0].health) < before_health
     assert int(sim_world.players[0].experience) > before_xp

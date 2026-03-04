@@ -23,7 +23,7 @@ from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickResult
-from ..input_providers import InputStatus, ReplayInputProvider
+from ..input_providers import FrameContext, InputStatus, ReplayInputProvider
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
@@ -851,9 +851,10 @@ class PlaybackDriver:
         tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
         terminal_observer: Callable[[PlaybackTerminalOutcome], None] | None = None,
         defer_menu_open: bool | None = None,
-    ) -> RunResult:
+        ) -> RunResult:
         tick_runner = self.build_tick_runner(defer_menu_open=defer_menu_open)
         completed_ticks = 0
+        frame_index = 0
 
         tick_limit = int(self.tick_limit)
         while int(completed_ticks) < int(tick_limit):
@@ -864,9 +865,21 @@ class PlaybackDriver:
                 dt_tick=float(dt_tick),
                 defer_menu_open=defer_menu_open,
             )
-            batch = tick_runner.advance_frame(
-                float(tick_runner.clock.dt_tick),
-                max_ticks=1,
+            frame_index += 1
+            tick_runner.begin_frame(
+                FrameContext(
+                    dt_seconds=float(dt_tick),
+                    tick_dt_seconds=float(dt_tick),
+                    frame_index=int(frame_index),
+                    candidate_ticks=1,
+                    is_networked=False,
+                    is_replay=True,
+                ),
+            )
+            batch = tick_runner.advance_ticks(
+                start_tick=int(tick_index),
+                ticks_requested=1,
+                tick_dt=float(dt_tick),
             )
             if batch.batch_status is InputStatus.STALLED:
                 trace_ctx = cast(Any, tick_meta.trace_ctx)

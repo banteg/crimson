@@ -5,8 +5,9 @@ from typing import cast
 
 from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
+from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import LocalInputProvider
+from crimson.sim.input_providers import FrameContext, InputStatus, LocalInputProvider
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from tests.world_runtime import WorldRuntimeHost
@@ -79,6 +80,38 @@ def _apply_batch(
     return applied_ticks
 
 
+def _advance_with_clock(
+    *,
+    runner: TickRunner,
+    clock: FixedStepClock,
+    start_tick: int,
+    frame_index: int,
+    dt_seconds: float,
+) -> tuple[TickBatchResult, int, int]:
+    ticks_requested = int(clock.advance(float(dt_seconds)))
+    frame_index = int(frame_index) + 1
+    runner.begin_frame(
+        FrameContext(
+            dt_seconds=float(dt_seconds),
+            tick_dt_seconds=float(clock.dt_tick),
+            frame_index=int(frame_index),
+            candidate_ticks=max(0, int(ticks_requested)),
+            is_networked=False,
+            is_replay=False,
+        ),
+    )
+    batch = runner.advance_ticks(
+        start_tick=int(start_tick),
+        ticks_requested=max(0, int(ticks_requested)),
+        tick_dt=float(clock.dt_tick),
+    )
+    if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
+        unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+        if unconsumed_ticks > 0:
+            clock.accum += float(unconsumed_ticks) * float(clock.dt_tick)
+    return batch, int(batch.next_tick_index), int(frame_index)
+
+
 def test_runner_path_projectile_hits_enqueue_decals() -> None:
     world = WorldRuntimeHost(assets_dir=_assets_dir())
     player = world.sim_world.players[0]
@@ -101,9 +134,18 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
             ),
         ],
     )
+    clock = FixedStepClock(tick_rate=60)
+    frame_index = 0
+    next_tick_index = 0
 
     for _ in range(120):
-        batch = runner.advance_frame(1.0 / 60.0)
+        batch, next_tick_index, frame_index = _advance_with_clock(
+            runner=runner,
+            clock=clock,
+            start_tick=next_tick_index,
+            frame_index=frame_index,
+            dt_seconds=1.0 / 60.0,
+        )
         _apply_batch(world, session=session, batch=batch)
         if int(world.render_resources.fx_queue.count) > 0:
             break
@@ -118,7 +160,16 @@ def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
             world,
             build_inputs=lambda frame_ctx: [PlayerInput()],
         )
-        batch = runner.advance_frame((3.0 / 60.0) + 1e-9)
+        clock = FixedStepClock(tick_rate=60)
+        frame_index = 0
+        next_tick_index = 0
+        batch, next_tick_index, frame_index = _advance_with_clock(
+            runner=runner,
+            clock=clock,
+            start_tick=next_tick_index,
+            frame_index=frame_index,
+            dt_seconds=(3.0 / 60.0) + 1e-9,
+        )
         order = _apply_batch(world, session=session, batch=batch)
         command_hashes = [str(result.command_hash) for result in batch.completed_results]
         return order, command_hashes

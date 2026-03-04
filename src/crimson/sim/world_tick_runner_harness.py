@@ -7,8 +7,9 @@ from grim.config import CrimsonConfig
 
 from ..game_modes import GameMode
 from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
+from .clock import FixedStepClock
 from .input import PlayerInput
-from .input_providers import FrameContext, LocalInputProvider
+from .input_providers import FrameContext, InputStatus, LocalInputProvider
 from .sessions import DeterministicSession, DeterministicSessionTick
 from .tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 
@@ -46,12 +47,18 @@ class WorldTickRunnerHarness:
         self._runner: TickRunner | None = None
         self._world_state: object | None = None
         self._player_count = 0
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
 
     def reset(self) -> None:
         self._session = None
         self._runner = None
         self._world_state = None
         self._player_count = 0
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
 
     def _ensure_runner(self) -> tuple[TickRunner, DeterministicSession]:
         world_state = self._world.sim_world.world_state
@@ -102,6 +109,9 @@ class WorldTickRunnerHarness:
         self._runner = runner
         self._world_state = world_state
         self._player_count = int(player_count)
+        self._clock = FixedStepClock(tick_rate=int(self._tick_rate))
+        self._frame_index = 0
+        self._next_tick_index = 0
         return runner, session
 
     def _apply_batch(
@@ -140,7 +150,29 @@ class WorldTickRunnerHarness:
         self._world.terrain_runtime.process_pending()
         runner, session = self._ensure_runner()
         session.demo_mode_active = bool(self._world.demo_mode_active)
-        batch = runner.advance_frame(float(dt))
+        dt = float(dt)
+        ticks_requested = int(self._clock.advance(dt))
+        self._frame_index = int(self._frame_index) + 1
+        runner.begin_frame(
+            FrameContext(
+                dt_seconds=float(dt),
+                tick_dt_seconds=float(self._clock.dt_tick),
+                frame_index=int(self._frame_index),
+                candidate_ticks=max(0, int(ticks_requested)),
+                is_networked=False,
+                is_replay=False,
+            ),
+        )
+        batch = runner.advance_ticks(
+            start_tick=int(self._next_tick_index),
+            ticks_requested=max(0, int(ticks_requested)),
+            tick_dt=float(self._clock.dt_tick),
+        )
+        self._next_tick_index = int(batch.next_tick_index)
+        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
+            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+            if unconsumed_ticks > 0:
+                self._clock.accum += float(unconsumed_ticks) * float(self._clock.dt_tick)
         return self._apply_batch(
             batch=batch,
             session=session,

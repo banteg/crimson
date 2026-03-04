@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -60,6 +60,7 @@ def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt
     view._paused = True
     view._step_once_pending = True
     view._dt_accum = 0.5
+    view._clock.accum = 0.5
 
     advance_calls = 0
 
@@ -67,22 +68,13 @@ def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt
         nonlocal advance_calls
         advance_calls += 1
 
-    @dataclass
-    class _FakeRunner:
-        reset_calls: int = 0
-
-        def reset_clock(self) -> None:
-            self.reset_calls += 1
-
-    runner = _FakeRunner()
-    _set_private(view, "_tick_runner", runner)
     _set_private(view, "_advance_runner", _advance_runner)
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     view.update(0.25)
 
     assert advance_calls == 1
-    assert runner.reset_calls == 2
+    assert view._clock.accum == 0.0
     assert view._step_once_pending is False
     assert view._dt_accum == 0.0
 
@@ -136,18 +128,18 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
 
     @dataclass
     class _EosRunner:
-        next_tick_index: int = 2
-        reset_calls: int = 0
-        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+        frame_count: int = 0
 
-        def reset_clock(self) -> None:
-            self.reset_calls += 1
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
 
-        def advance_frame(self, *_args, **_kwargs) -> TickBatchResult:
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
+            _ = ticks_requested, tick_dt
             return TickBatchResult(
                 ticks_completed=0,
                 batch_status=InputStatus.EOS,
-                remaining_debt_ticks=0,
+                next_tick_index=int(start_tick) + 1,
                 completed_results=[],
             )
 

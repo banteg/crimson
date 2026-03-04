@@ -26,6 +26,7 @@ from ..replay import (
 )
 from ..replay.types import ReplayHeader
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
+from ..sim.clock import FixedStepClock
 from ..sim.driver.playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
@@ -42,7 +43,7 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.input_providers import InputStatus
+from ..sim.input_providers import FrameContext, InputStatus
 from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
@@ -146,6 +147,8 @@ class ReplayPlaybackMode:
         self._tick_rate = 60
         self._dt = 1.0 / 60.0
         self._dt_accum = 0.0
+        self._clock = FixedStepClock(tick_rate=60)
+        self._frame_index = 0
         self._tick_index = 0
         self._finished = False
         self._terminal_events_applied = False
@@ -509,6 +512,8 @@ class ReplayPlaybackMode:
         self._tick_rate = tick_rate
         self._dt = 1.0 / float(tick_rate)
         self._dt_accum = 0.0
+        self._clock = FixedStepClock(tick_rate=int(tick_rate))
+        self._frame_index = 0
         self._tick_index = 0
         self._finished = False
         self._terminal_events_applied = False
@@ -850,6 +855,22 @@ class ReplayPlaybackMode:
             self._mark_finished_if_complete()
             return
 
+        frame_dt = float(dt_seconds)
+        ticks_requested = int(self._clock.advance(frame_dt))
+        if max_ticks is not None:
+            ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
+        self._frame_index = int(self._frame_index) + 1
+        runner.begin_frame(
+            FrameContext(
+                dt_seconds=float(frame_dt),
+                tick_dt_seconds=float(self._dt),
+                frame_index=int(self._frame_index),
+                candidate_ticks=max(0, int(ticks_requested)),
+                is_networked=False,
+                is_replay=True,
+            ),
+        )
+
         def _apply_completed(batch_results: list[object]) -> None:
             for tick_result in batch_results:
                 result = cast(Any, tick_result)
@@ -866,13 +887,14 @@ class ReplayPlaybackMode:
                         render_resources.fx_queue.clear()
                         render_resources.fx_queue_rotated.clear()
 
-        batch = runner.advance_frame(
-            float(dt_seconds),
-            max_ticks=max_ticks,
+        batch = runner.advance_ticks(
+            start_tick=int(self._tick_index),
+            ticks_requested=max(0, int(ticks_requested)),
+            tick_dt=float(self._dt),
         )
         _apply_completed(list(batch.completed_results))
 
-        self._tick_index = int(runner.next_tick_index)
+        self._tick_index = int(batch.next_tick_index)
         if batch.batch_status is InputStatus.STALLED:
             raise RuntimeError(
                 f"replay tick runner stalled before completion at tick {int(self._tick_index)}",
@@ -881,8 +903,12 @@ class ReplayPlaybackMode:
             raise RuntimeError(
                 f"replay tick runner hit eos before completion at tick {int(self._tick_index)}",
             )
+        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
+            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+            if unconsumed_ticks > 0:
+                self._clock.accum += float(unconsumed_ticks) * float(self._dt)
         self._mark_finished_if_complete()
-        self._dt_accum = float(runner.clock.accum)
+        self._dt_accum = float(self._clock.accum)
 
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
@@ -916,9 +942,7 @@ class ReplayPlaybackMode:
         finally:
             if prev_sfx_enabled is not None and audio_bridge is not None and audio_bridge.router is not None:
                 audio_bridge.router.sfx_enabled = bool(prev_sfx_enabled)
-        runner = self._tick_runner
-        if runner is not None:
-            runner.reset_clock()
+        self._clock.reset()
         self._dt_accum = 0.0
 
     def update(self, dt: float) -> None:
@@ -941,15 +965,12 @@ class ReplayPlaybackMode:
             self._skip_forward_seconds(_SKIP_LONG_SECONDS)
 
         if not self._finished and bool(self._paused) and bool(self._step_once_pending):
-            runner = self._tick_runner
-            if runner is not None:
-                runner.reset_clock()
+            self._clock.reset()
             self._advance_runner(
                 dt_seconds=float(self._dt),
                 max_ticks=1,
             )
-            if runner is not None:
-                runner.reset_clock()
+            self._clock.reset()
             self._step_once_pending = False
             self._dt_accum = 0.0
 
