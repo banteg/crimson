@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import QuestDeterministicSession
 from grim.geom import Vec2
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministicSession:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(seed), player_count=1)
     quest = quest_by_level(level)
     assert quest is not None
@@ -27,11 +27,11 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> QuestDeterministic
         ),
     )
     return QuestDeterministicSession(
-        world=world.world_state,
+        world=world.sim_world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
-        fx_queue=world.fx_queue,
-        fx_queue_rotated=world.fx_queue_rotated,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         spawn_entries=entries,
     )
 

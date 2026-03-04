@@ -4,6 +4,8 @@ from collections.abc import Callable
 from types import SimpleNamespace
 from typing import cast
 
+import pytest
+
 import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
@@ -162,6 +164,174 @@ def test_perk_menu_pick_invokes_on_pick(mocker) -> None:
     menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
 
     on_pick.assert_called_once_with(0)
+
+
+def test_perk_menu_deferred_pick_invokes_callback_without_direct_pick_apply(mocker) -> None:
+    on_pick = mocker.Mock(return_value=True)
+    menu = PerkMenuController(on_pick=on_pick, defer_pick_apply=True)
+    menu.open = True
+
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
+    pick_apply = mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_pick",
+        side_effect=lambda *args, **kwargs: object(),
+    )
+
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
+
+    ctx = PerkMenuContext(
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
+        players=[],
+        creatures=[],
+        player=_dummy_player(),
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+        gore_disabled=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=None,
+    )
+
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
+
+    on_pick.assert_called_once_with(0)
+    pick_apply.assert_not_called()
+    assert menu.open is False
+
+
+def test_perk_menu_deferred_pick_does_not_play_bonus_sfx_immediately(mocker) -> None:
+    on_pick = mocker.Mock(return_value=True)
+    play_sfx = mocker.Mock()
+    menu = PerkMenuController(on_pick=on_pick, defer_pick_apply=True)
+    menu.open = True
+
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
+    pick_apply = mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_pick",
+        side_effect=lambda *args, **kwargs: object(),
+    )
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
+
+    ctx = PerkMenuContext(
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
+        players=[],
+        creatures=[],
+        player=_dummy_player(),
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+        gore_disabled=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=play_sfx,
+    )
+
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
+
+    on_pick.assert_called_once_with(0)
+    pick_apply.assert_not_called()
+    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert menu.open is False
+
+
+def test_perk_menu_deferred_pick_requires_callback() -> None:
+    with pytest.raises(ValueError, match="on_pick is required"):
+        PerkMenuController(on_pick=None, defer_pick_apply=True)
+
+
+def test_perk_menu_deferred_pick_rejected_keeps_menu_open(mocker) -> None:
+    on_pick = mocker.Mock(return_value=False)
+    play_sfx = mocker.Mock()
+    menu = PerkMenuController(on_pick=on_pick, defer_pick_apply=True)
+    menu.open = True
+
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
+
+    ctx = PerkMenuContext(
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
+        players=[],
+        creatures=[],
+        player=_dummy_player(),
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+        gore_disabled=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=play_sfx,
+    )
+
+    menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
+
+    on_pick.assert_called_once_with(0)
+    assert [call.args[0] for call in play_sfx.call_args_list] == ["sfx_ui_buttonclick"]
+    assert menu.open is True
+
+
+def test_perk_menu_deferred_pick_callback_requires_bool_return(mocker) -> None:
+    on_pick = mocker.Mock(return_value=None)
+    menu = PerkMenuController(on_pick=on_pick, defer_pick_apply=True)
+    menu.open = True
+
+    mocker.patch.object(
+        perk_menu_controller_module,
+        "perk_selection_current_choices",
+        side_effect=lambda *args, **kwargs: [PerkId.SHARPSHOOTER],
+    )
+    mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
+    _patch_perk_menu_raylib(
+        mocker,
+        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
+    )
+
+    ctx = PerkMenuContext(
+        state=GameplayState(),
+        perk_state=PerkSelectionState(),
+        players=[],
+        creatures=[],
+        player=_dummy_player(),
+        game_mode=GameMode.SURVIVAL,
+        player_count=1,
+        gore_disabled=0,
+        font=None,
+        assets=_dummy_assets(),
+        mouse=rl.Vector2(0.0, 0.0),
+        play_sfx=None,
+    )
+
+    with pytest.raises(TypeError, match="must return bool"):
+        menu.handle_input(ctx, dt=0.0, dt_ui_ms=0.0)
 
 
 def test_perk_menu_cancel_plays_button_click(mocker) -> None:

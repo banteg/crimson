@@ -2,11 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import msgspec
-
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
-from crimson.game_world import GameWorld
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
@@ -22,10 +19,18 @@ from crimson.sim.driver.playback_driver import resolve_quest_level_from_replay
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import QuestDeterministicSession, RushDeterministicSession
+from crimson.sim.sessions import (
+    DeterministicSession,
+    QuestDeterministicSession,
+    RushSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+)
+from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
@@ -68,18 +73,18 @@ def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
     return inputs
 
 
-def _enforce_rush_loadout(world: GameWorld) -> None:
-    for player in world.players:
+def _enforce_rush_loadout(world: WorldRuntimeHost) -> None:
+    for player in world.sim_world.players:
         if player.weapon.weapon_id != WeaponId.ASSAULT_RIFLE:
-            weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=world.state)
+            weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=world.sim_world.state)
         player.weapon.ammo = 30.0
 
 
 def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
+    world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
@@ -94,9 +99,10 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
 
     for tick_index in range(len(replay.inputs)):
         elapsed_before_ms = float(elapsed_ms)
-        rng_before_world_step = int(world.state.rng.state)
+        rng_before_world_step = int(world.sim_world.state.rng.state)
         world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
-        world.update(
+        step_world_once(
+            world,
             dt,
             inputs=_inputs_for_tick(replay, tick_index),
             auto_pick_perks=False,
@@ -105,41 +111,41 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
             defer_camera_shake_update=True,
             rng_marks_out=world_step_marks,
         )
-        world_events = world.last_events
-        rng_after_world_step = int(world.state.rng.state)
+        world_events = world.sim_world.last_events
+        rng_after_world_step = int(world.sim_world.state.rng.state)
 
-        player_level = world.players[0].level if world.players else 1
+        player_level = world.sim_world.players[0].level if world.sim_world.players else 1
         stage, milestone_calls = advance_survival_spawn_stage(stage, player_level=int(player_level))
         for call in milestone_calls:
-            world.creatures.spawn_template(
+            world.sim_world.creatures.spawn_template(
                 int(call.template_id),
                 call.pos,
                 float(call.heading),
-                world.state.rng,
-                rand=world.state.rng.rand,
+                world.sim_world.state.rng,
+                rand=world.sim_world.state.rng.rand,
             )
-        rng_after_stage_spawns = int(world.state.rng.state)
+        rng_after_stage_spawns = int(world.sim_world.state.rng.state)
 
-        player_xp = world.players[0].experience if world.players else 0
+        player_xp = world.sim_world.players[0].experience if world.sim_world.players else 0
         cooldown, wave_spawns = tick_survival_wave_spawns(
             spawn_cooldown_ms,
             dt_ms,
-            world.state.rng,
-            player_count=len(world.players),
+            world.sim_world.state.rng,
+            player_count=len(world.sim_world.players),
             survival_elapsed_ms=elapsed_before_ms,
             player_experience=int(player_xp),
             terrain_width=int(world.world_size),
             terrain_height=int(world.world_size),
         )
         spawn_cooldown_ms = cooldown
-        world.creatures.spawn_inits(wave_spawns)
-        rng_after_wave_spawns = int(world.state.rng.state)
+        world.sim_world.creatures.spawn_inits(wave_spawns)
+        rng_after_wave_spawns = int(world.sim_world.state.rng.state)
         elapsed_ms += float(dt_ms)
 
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(elapsed_ms),
                 rng_marks={
                     **world_step_marks,
@@ -149,7 +155,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 },
                 deaths=world_events.deaths,
                 events=world_events,
-                command_hash=str(world.last_command_hash),
+                command_hash=str(world.sim_world.last_command_hash),
             ),
         )
 
@@ -158,48 +164,57 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
 
 def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
+    world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
     )
 
-    session = RushDeterministicSession(
-        world=world.world_state,
+    spawn = RushSpawnState()
+    session = DeterministicSession(
+        world=world.sim_world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
-        fx_queue=world.fx_queue,
-        fx_queue_rotated=world.fx_queue_rotated,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
+        game_mode=GameMode.RUSH,
+        perk_progression_enabled=False,
         detail_preset=5,
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
-        enforce_loadout=lambda: _enforce_rush_loadout(world),
+        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
+        before_step_hook=lambda: _enforce_rush_loadout(world),
+        input_transform=rush_input_transform,
+        elapsed_uses_raw_dt=True,
+        finalize_post_render_lifecycle=True,
     )
 
     checkpoints: list[ReplayCheckpoint] = []
     dt = 1.0 / float(replay.header.tick_rate)
     for tick_index in range(len(replay.inputs)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
-        rush_inputs = [msgspec.structs.replace(inp, reload_pressed=False) for inp in tick_inputs]
         timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
             timing=timing,
-            inputs=rush_inputs,
+            inputs=tick_inputs,
             trace_rng=False,
         )
         step = tick.step
-        world.apply_step_result(
-            step,
+        world.sim_world.apply_step_metadata(
+            events=step.events,
+            presentation=step.presentation,
+            command_hash=str(step.command_hash),
+            dt_sim=float(step.dt_sim),
             game_tune_started=bool(session.game_tune_started),
-            apply_audio=False,
-            update_camera=False,
         )
+        world.sync_audio_bridge_state()
+        world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(tick.elapsed_ms),
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
@@ -228,9 +243,9 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
 
 def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(seed=int(replay.header.seed), player_count=int(replay.header.player_count))
-    world.state.status = status_from_snapshot(
+    world.sim_world.state.status = status_from_snapshot(
         quest_unlock_index=int(replay.header.status.quest_unlock_index),
         quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
         weapon_usage_counts=replay.header.status.weapon_usage_counts,
@@ -238,18 +253,18 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     quest_level = resolve_quest_level_from_replay(replay)
     quest = quest_by_level(quest_level) if quest_level else None
     if quest is not None:
-        world.state.quest_stage_major = int(quest.level_key[0])
-        world.state.quest_stage_minor = int(quest.level_key[1])
+        world.sim_world.state.quest_stage_major = int(quest.level_key[0])
+        world.sim_world.state.quest_stage_minor = int(quest.level_key[1])
     weapon_id = quest.start_weapon_id if quest is not None else WeaponId.PISTOL
-    for player in world.players:
-        weapon_assign_player(player, weapon_id, state=world.state)
+    for player in world.sim_world.players:
+        weapon_assign_player(player, weapon_id, state=world.sim_world.state)
 
     session = QuestDeterministicSession(
-        world=world.world_state,
+        world=world.sim_world.world_state,
         world_size=float(world.world_size),
-        damage_scale_by_type=world._damage_scale_by_type,
-        fx_queue=world.fx_queue,
-        fx_queue_rotated=world.fx_queue_rotated,
+        damage_scale_by_type=world.sim_world.damage_scale_by_type,
+        fx_queue=world.render_resources.fx_queue,
+        fx_queue_rotated=world.render_resources.fx_queue_rotated,
         spawn_entries=tuple(spawn_entries),
         detail_preset=5,
         gore_disabled=0,
@@ -268,17 +283,20 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         )
         step = tick.step
 
-        world.apply_step_result(
-            step,
+        world.sim_world.apply_step_metadata(
+            events=step.events,
+            presentation=step.presentation,
+            command_hash=str(step.command_hash),
+            dt_sim=float(step.dt_sim),
             game_tune_started=False,
-            apply_audio=False,
-            update_camera=False,
         )
+        world.sync_audio_bridge_state()
+        world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
 
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.world_state,
+                world=world.sim_world.world_state,
                 elapsed_ms=float(tick.spawn_timeline_ms),
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,

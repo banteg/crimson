@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, cast
 
 import grim.terrain_render as terrain_render
-from crimson.render.world import WorldRenderer
 from crimson.render.world import context as world_context
+from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
 from tests.helpers import assert_float_close
+from tests.world_runtime import WorldRuntimeHost
 
 if TYPE_CHECKING:
-    from crimson.game_world import GameWorld
     from grim.raylib_api import rl
 
 
@@ -25,16 +26,6 @@ class _TextureLike(Protocol):
 class _RenderTextureLike(Protocol):
     id: int
     texture: _TextureLike
-
-
-class _ConfigLike(Protocol):
-    screen_width: int
-    screen_height: int
-
-
-class _WorldLike(Protocol):
-    world_size: float
-    config: _ConfigLike | None
 
 
 @dataclass(slots=True)
@@ -50,18 +41,6 @@ class _RenderTextureStub(_RenderTextureLike):
     texture: _TextureStub = field(default_factory=lambda: _TextureStub(id=2, width=1024, height=1024))
 
 
-@dataclass(slots=True)
-class _WorldConfigStub(_ConfigLike):
-    screen_width: int
-    screen_height: int
-
-
-@dataclass(slots=True)
-class _WorldStub(_WorldLike):
-    world_size: float = 1024.0
-    config: _WorldConfigStub | None = None
-
-
 def _as_texture(texture: _TextureLike) -> rl.Texture:
     return cast("rl.Texture", texture)
 
@@ -70,8 +49,23 @@ def _as_render_texture(render_target: _RenderTextureLike) -> rl.RenderTexture:
     return cast("rl.RenderTexture", render_target)
 
 
-def _as_world(world: _WorldLike) -> GameWorld:
-    return cast("GameWorld", world)
+def _runtime_world(
+    *,
+    world_size: float = 1024.0,
+    screen_width: int | None = None,
+    screen_height: int | None = None,
+) -> WorldRuntimeHost:
+    repo_root = Path(__file__).resolve().parents[1]
+    cfg: CrimsonConfig | None = None
+    if screen_width is not None and screen_height is not None:
+        cfg = CrimsonConfig(path=repo_root / "artifacts" / "tmp_crimson.cfg", data=default_crimson_cfg_data())
+        cfg.screen_width = int(screen_width)
+        cfg.screen_height = int(screen_height)
+    return WorldRuntimeHost(
+        assets_dir=repo_root / "artifacts" / "assets",
+        world_size=float(world_size),
+        config=cfg,
+    )
 
 
 def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:
@@ -82,29 +76,28 @@ def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:
 
 
 def test_world_clamp_is_stable_when_screen_matches_world_width() -> None:
-    world = _WorldStub(world_size=1024.0)
-    renderer = WorldRenderer(_as_world(world))
+    renderer = _runtime_world(world_size=1024.0).renderer
     clamped = renderer._clamp_camera(Vec2(-0.25, -5.0), Vec2(1024.0, 768.0))
     assert clamped.x == 0.0
 
 
 def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
-    world = _WorldStub(
+    renderer = _runtime_world(
         world_size=1024.0,
-        config=_WorldConfigStub(screen_width=1280, screen_height=720),
-    )
-    renderer = WorldRenderer(_as_world(world))
-    size = renderer._camera_screen_size()
+        screen_width=1280,
+        screen_height=720,
+    ).renderer
+    size = renderer._camera_screen_size(runtime_w=0.0, runtime_h=0.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(mocker) -> None:
-    world = _WorldStub(
+    renderer = _runtime_world(
         world_size=1024.0,
-        config=_WorldConfigStub(screen_width=1024, screen_height=768),
-    )
-    renderer = WorldRenderer(_as_world(world))
+        screen_width=1024,
+        screen_height=768,
+    ).renderer
     mocker.patch.object(world_context.rl, "get_screen_width", return_value=1280)
     mocker.patch.object(world_context.rl, "get_screen_height", return_value=720)
     size = renderer._camera_screen_size()
@@ -113,11 +106,11 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
 
 
 def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> None:
-    world = _WorldStub(
+    renderer = _runtime_world(
         world_size=1024.0,
-        config=_WorldConfigStub(screen_width=1024, screen_height=768),
-    )
-    renderer = WorldRenderer(_as_world(world))
+        screen_width=1024,
+        screen_height=768,
+    ).renderer
     mocker.patch.object(world_context.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(world_context.rl, "get_screen_height", return_value=768)
     size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)

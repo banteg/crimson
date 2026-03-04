@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import call
@@ -8,6 +9,9 @@ import pytest
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader
+from crimson.sim.hooks import TickResult
+from crimson.sim.input_providers import InputStatus
+from crimson.sim.tick_runner import TickBatchResult
 from grim.console import ConsoleState
 
 
@@ -72,68 +76,139 @@ def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view
 def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(5))
-    world = SimpleNamespace(
-        audio_router=SimpleNamespace(sfx_enabled=True),
-        ground=None,
-        fx_textures=None,
-        fx_queue=[],
-        fx_queue_rotated=[],
+    audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
+    _set_private(
+        view,
+        "_runtime",
+        SimpleNamespace(
+            audio_bridge=audio_bridge,
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=[],
+                fx_queue_rotated=[],
+            ),
+        ),
     )
-    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
     view._dt_accum = 1.0
+    view._dt = 1.0 / 60.0
 
     observe_sfx_enabled = SimpleNamespace(mock=None)
     # Keep this as an autospecced call recorder instead of a list spy.
     from unittest.mock import Mock
 
     observe_sfx_enabled.mock = Mock()
+    _set_private(
+        view,
+        "_on_runner_tick_complete",
+        lambda *_args, **_kwargs: observe_sfx_enabled.mock(bool(audio_bridge.router.sfx_enabled)),
+    )
 
-    def fake_tick_one() -> None:
-        observe_sfx_enabled.mock(bool(world.audio_router.sfx_enabled))
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        frame_count: int = 0
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
+            rows = [
+                TickResult(
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
+                    dt_sim=1.0 / 60.0,
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                next_tick_index=int(start_tick) + int(ticks),
+                completed_results=rows,
+            )
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(2.0 / 60.0)
 
     assert observe_sfx_enabled.mock.call_args_list == [call(False), call(False)]
-    assert bool(world.audio_router.sfx_enabled)
+    assert bool(audio_bridge.router.sfx_enabled)
     assert view._dt_accum == 0.0
 
 
 def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(3))
-    world = SimpleNamespace(
-        audio_router=SimpleNamespace(sfx_enabled=True),
-        ground=None,
-        fx_textures=None,
-        fx_queue=[],
-        fx_queue_rotated=[],
+    audio_bridge = SimpleNamespace(router=SimpleNamespace(sfx_enabled=True))
+    _set_private(
+        view,
+        "_runtime",
+        SimpleNamespace(
+            audio_bridge=audio_bridge,
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=[],
+                fx_queue_rotated=[],
+            ),
+        ),
     )
-    _set_private(view, "_world", world)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
 
     from unittest.mock import Mock
 
     observe_sfx_enabled = Mock()
 
-    def fake_tick_one() -> None:
-        observe_sfx_enabled(bool(world.audio_router.sfx_enabled))
+    def _on_runner_tick_complete(*_args, **_kwargs) -> bool:
+        observe_sfx_enabled(bool(audio_bridge.router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    _set_private(view, "_tick_one", fake_tick_one)
+    _set_private(view, "_on_runner_tick_complete", _on_runner_tick_complete)
+
+    @dataclass
+    class _FakeRunner:
+        frame_count: int = 0
+
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
+            rows = [
+                TickResult(
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
+                    dt_sim=1.0 / 60.0,
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                next_tick_index=int(start_tick) + int(ticks),
+                completed_results=rows,
+            )
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
 
     assert observe_sfx_enabled.call_args_list == [call(False)]
-    assert bool(world.audio_router.sfx_enabled)
+    assert bool(audio_bridge.router.sfx_enabled)
 
 
 def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playback_view) -> None:
@@ -157,27 +232,56 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
         fx_queue.clear()
         fx_queue_rotated.clear()
 
+    render_resources = SimpleNamespace(
+        ground=object(),
+        fx_textures=object(),
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        bake_fx_queues=_bake_fx_queues,
+    )
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
     _set_private(
         view,
-        "_world",
+        "_runtime",
         SimpleNamespace(
-            audio_router=SimpleNamespace(sfx_enabled=True),
-            ground=object(),
-            fx_textures=object(),
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            _bake_fx_queues=_bake_fx_queues,
+            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
+            render_resources=render_resources,
         ),
     )
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
+    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
 
-    def fake_tick_one() -> None:
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        frame_count: int = 0
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
+            rows = [
+                TickResult(
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
+                    dt_sim=1.0 / 60.0,
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                next_tick_index=int(start_tick) + int(ticks),
+                completed_results=rows,
+            )
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(3.0 / 60.0)
 
@@ -202,23 +306,51 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     _set_private(view, "_replay", _replay_with_ticks(len(replay_inputs)))
     _set_private(
         view,
-        "_world",
+        "_runtime",
         SimpleNamespace(
-            audio_router=SimpleNamespace(sfx_enabled=True),
-            ground=None,
-            fx_textures=None,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
+            audio_bridge=SimpleNamespace(router=SimpleNamespace(sfx_enabled=True)),
+            render_resources=SimpleNamespace(
+                ground=None,
+                fx_textures=None,
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+            ),
         ),
     )
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
+    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
 
-    def fake_tick_one() -> None:
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        frame_count: int = 0
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = tick_dt
+            ticks = max(0, int(ticks_requested))
+            rows = [
+                TickResult(
+                    tick_index=int(start_tick + i),
+                    command_hash=f"h{int(start_tick + i)}",
+                    dt_sim=1.0 / 60.0,
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                next_tick_index=int(start_tick) + int(ticks),
+                completed_results=rows,
+            )
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(3.0 / 60.0)
 

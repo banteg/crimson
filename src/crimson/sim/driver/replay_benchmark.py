@@ -15,6 +15,7 @@ from tqdm import tqdm
 
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ...game_modes import GameMode
@@ -595,8 +596,6 @@ def _run_render_once(
     telemetry_session: RenderTelemetrySession | None = None,
     tick_progress_callback: Callable[[int], None] | None = None,
 ) -> _RenderOnceResult:
-    from grim.raylib_api import rl
-
     mode = ReplayPlaybackMode(
         ctx,
         replay_path=Path(replay_path),
@@ -632,8 +631,10 @@ def _run_render_once(
 
             draw_start_ns = time.perf_counter_ns()
             rl.begin_drawing()
-            mode.draw()
-            rl.end_drawing()
+            try:
+                mode.draw()
+            finally:
+                rl.end_drawing()
             draw_ns = max(0, int(time.perf_counter_ns()) - int(draw_start_ns))
             frame_ns = max(0, int(time.perf_counter_ns()) - int(frame_start_ns))
 
@@ -662,9 +663,10 @@ def _run_render_once(
 
 
 def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) -> RunResult:
-    world = mode._world
-    if world is None:
-        raise ReplayBenchmarkError("render benchmark failed: replay playback world was not available")
+    runtime = mode._runtime
+    if runtime is None:
+        raise ReplayBenchmarkError("render benchmark failed: replay playback sim world was not available")
+    sim_world = runtime.sim_world
 
     mode_raw = int(replay.header.game_mode_id)
     try:
@@ -676,22 +678,22 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
         case GameMode.QUESTS:
             elapsed_ms = int(mode._quest_spawn_timeline_ms)
         case _:
-            elapsed_ms = int(world._elapsed_ms)
+            elapsed_ms = int(sim_world.elapsed_ms)
 
-    shots_fired, shots_hit = player0_shots(world.state)
-    most_used_weapon_id = player0_most_used_weapon_id(world.state, world.players)
-    score_xp = int(world.players[0].experience) if world.players else 0
+    shots_fired, shots_hit = player0_shots(sim_world.state)
+    most_used_weapon_id = player0_most_used_weapon_id(sim_world.state, sim_world.players)
+    score_xp = int(sim_world.players[0].experience) if sim_world.players else 0
     return RunResult(
         game_mode_id=game_mode_id,
         tick_rate=int(replay.header.tick_rate),
         ticks=int(mode.tick_index),
         elapsed_ms=int(elapsed_ms),
         score_xp=int(score_xp),
-        creature_kill_count=int(world.creatures.kill_count),
+        creature_kill_count=int(sim_world.creatures.kill_count),
         most_used_weapon_id=most_used_weapon_id,
         shots_fired=int(shots_fired),
         shots_hit=int(shots_hit),
-        rng_state=int(world.state.rng.state),
+        rng_state=int(sim_world.state.rng.state),
     )
 
 

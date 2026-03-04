@@ -1,0 +1,12 @@
+id: no-mode-direct-session-step-tick
+valid:
+  - |
+    batch = runner.advance_frame(dt_seconds=float(dt))
+  - |
+    timing = session.timing_for_dt(dt)
+    on_tick = callback
+invalid:
+  - |
+    tick = session.step_tick(timing=timing, inputs=inputs)
+  - |
+    step = run_deterministic_step(world=world, timing=timing, options=options)

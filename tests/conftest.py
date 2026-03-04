@@ -29,6 +29,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="run terrain generation/render parity tests",
     )
+    parser.addoption(
+        "--run-replay-fixtures",
+        action="store_true",
+        default=False,
+        help="run replay fixture integration tests",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -42,6 +48,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "slow: long-running test")
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
     config.addinivalue_line("markers", "network: network/lan/relay integration tests")
+    config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
@@ -57,11 +64,22 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(pytest.mark.slow)
 
     if config.getoption("--run-terrain"):
-        return
-    skip_terrain = pytest.mark.skip(reason="use --run-terrain to run terrain generation/rendering tests")
+        skip_terrain = None
+    else:
+        skip_terrain = pytest.mark.skip(reason="use --run-terrain to run terrain generation/rendering tests")
+
+    if config.getoption("--run-replay-fixtures"):
+        skip_replay_fixtures = None
+    else:
+        skip_replay_fixtures = pytest.mark.skip(
+            reason="use --run-replay-fixtures to run replay fixture integration tests",
+        )
+
     for item in items:
-        if "terrain" in item.keywords:
+        if skip_terrain is not None and "terrain" in item.keywords:
             item.add_marker(skip_terrain)
+        if skip_replay_fixtures is not None and "replay_fixture" in item.keywords:
+            item.add_marker(skip_replay_fixtures)
 
 
 @pytest.fixture

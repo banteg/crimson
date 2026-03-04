@@ -1,0 +1,23 @@
+id: no-world-update-runtime
+snapshots:
+  ? |
+    world.update(dt, inputs=inputs)
+  : labels:
+    - source: world.update(dt, inputs=inputs)
+      style: primary
+      start: 0
+      end: 31
+  ? |
+    self.world.update(dt, inputs=inputs)
+  : labels:
+    - source: self.world.update(dt, inputs=inputs)
+      style: primary
+      start: 0
+      end: 36
+  ? |
+    self._world.update(dt, inputs=inputs)
+  : labels:
+    - source: self._world.update(dt, inputs=inputs)
+      style: primary
+      start: 0
+      end: 37

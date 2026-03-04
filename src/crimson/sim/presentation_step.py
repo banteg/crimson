@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
+from typing import Protocol
 
 import msgspec
 
@@ -75,6 +76,12 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 class PresentationStepCommands(msgspec.Struct):
     trigger_game_tune: bool = False
     sfx_keys: list[str] = msgspec.field(default_factory=list)
+
+
+class PresentationAudioSink(Protocol):
+    def trigger_game_tune(self) -> str | None: ...
+
+    def play_sfx_resolved(self, key: str | None) -> None: ...
 
 
 def plan_player_audio_sfx(
@@ -361,7 +368,7 @@ def queue_projectile_decals_post_hit(
         )
 
 
-def apply_world_presentation_step(
+def plan_world_presentation_step(
     *,
     state: GameplayState,
     players: Sequence[PlayerState],
@@ -436,3 +443,17 @@ def apply_world_presentation_step(
         commands.sfx_keys.extend("sfx_ui_bonus" for _ in pickups)
     commands.sfx_keys.extend(str(key) for key in event_sfx[:4])
     return commands
+
+
+def apply_presentation_plan(
+    *,
+    plan: PresentationStepCommands,
+    audio_sink: PresentationAudioSink | None,
+    apply_audio: bool = True,
+) -> None:
+    if not bool(apply_audio) or audio_sink is None:
+        return
+    if bool(plan.trigger_game_tune):
+        audio_sink.trigger_game_tune()
+    for key in plan.sfx_keys:
+        audio_sink.play_sfx_resolved(str(key))

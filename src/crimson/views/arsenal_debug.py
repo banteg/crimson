@@ -13,9 +13,9 @@ from grim.view import View, ViewContext
 from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
-from ..game_world import GameWorld
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
+from ..sim.input_providers import FrameContext
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -24,6 +24,7 @@ from ..weapons import (
     WeaponId,
     projectile_type_id_for_weapon_id,
 )
+from ..world import WorldRuntime
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -98,15 +99,14 @@ class ArsenalDebugView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
 
-        self._world = GameWorld(
+        self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
-            world_size=WORLD_SIZE,
-            demo_mode_active=False,
-            difficulty_level=0,
-            hardcore=False,
+            world_size=float(WORLD_SIZE),
             preserve_bugs=bool(ctx.preserve_bugs),
         )
-        self._player = self._world.players[0] if self._world.players else None
+        self._runtime.reset(player_count=1)
+
+        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
@@ -120,6 +120,27 @@ class ArsenalDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
+        self._runtime.init_tick_runner(
+            game_mode=GameMode.SURVIVAL,
+            build_inputs=self._build_runner_inputs,
+        )
+
+    def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
+        return self._runtime.render_resources.load_texture(name, cache_path=cache_path)
+
+    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        self._runtime.render_resources.bake_fx_queues()
+        self._runtime.renderer.draw(
+            render_frame=self._runtime.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
+
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return self._runtime.renderer.world_to_screen(pos)
+
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return self._runtime.renderer.screen_to_world(pos)
 
     def _apply_debug_player_cheats(self) -> None:
         player = self._player
@@ -136,25 +157,26 @@ class ArsenalDebugView:
     def _apply_weapon(self) -> None:
         if self._player is None:
             return
-        weapon_assign_player(self._player, self._selected_weapon_id(), state=self._world.state)
+        weapon_assign_player(self._player, self._selected_weapon_id(), state=self._runtime.sim_world.state)
 
     def _reset_scene(self) -> None:
-        self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
-        self._player = self._world.players[0] if self._world.players else None
+        self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
+        self._reset_tick_runner()
+        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._apply_weapon()
         self._reset_creatures()
-        self._world.update_camera(0.0)
+        self._runtime.update_camera(0.0)
 
     def _reset_creatures(self) -> None:
-        self._world.creatures.reset()
-        self._world.state.projectiles.reset()
-        self._world.state.secondary_projectiles.reset()
-        self._world.state.particles.reset()
-        self._world.state.sprite_effects.reset()
-        self._world.state.effects.reset()
-        self._world.state.bonus_pool.reset()
-        self._world.fx_queue.clear()
-        self._world.fx_queue_rotated.clear()
+        self._runtime.sim_world.creatures.reset()
+        self._runtime.sim_world.state.projectiles.reset()
+        self._runtime.sim_world.state.secondary_projectiles.reset()
+        self._runtime.sim_world.state.particles.reset()
+        self._runtime.sim_world.state.sprite_effects.reset()
+        self._runtime.sim_world.state.effects.reset()
+        self._runtime.sim_world.state.bonus_pool.reset()
+        self._runtime.render_resources.fx_queue.clear()
+        self._runtime.render_resources.fx_queue_rotated.clear()
 
         player = self._player
         if player is None:
@@ -169,12 +191,12 @@ class ArsenalDebugView:
                 48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
-            self._world.creatures.spawn_template(
+            self._runtime.sim_world.creatures.spawn_template(
                 spawn_id,
                 spawn_pos,
                 heading,
-                self._world.state.rng,
-                rand=self._world.state.rng.rand,
+                self._runtime.sim_world.state.rng,
+                rand=self._runtime.sim_world.state.rng.rand,
             )
 
     def _spawn_all_bonuses(self) -> None:
@@ -182,14 +204,14 @@ class ArsenalDebugView:
         if player is None:
             return
 
-        bonus_pool = self._world.state.bonus_pool
+        bonus_pool = self._runtime.sim_world.state.bonus_pool
         bonus_pool.reset()
 
         bonus_ids = [entry.bonus_id for entry in BONUS_TABLE if entry.bonus_id != BonusId.UNUSED]
         count = max(1, len(bonus_ids))
 
         player_pos = player.pos
-        rng = self._world.state.rng.rand
+        rng = self._runtime.sim_world.state.rng.rand
         current_weapon_id = player.weapon.weapon_id
 
         for idx, bonus_id in enumerate(bonus_ids):
@@ -209,7 +231,7 @@ class ArsenalDebugView:
                 pos=pos,
                 bonus_id=bonus_id,
                 duration_override=int(amount_override),
-                state=self._world.state,
+                state=self._runtime.sim_world.state,
                 world_width=float(WORLD_SIZE),
                 world_height=float(WORLD_SIZE),
             )
@@ -247,7 +269,7 @@ class ArsenalDebugView:
         )
 
         mouse = rl.get_mouse_position()
-        aim = self._world.screen_to_world(Vec2.from_xy(mouse))
+        aim = self.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -260,6 +282,13 @@ class ArsenalDebugView:
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
         )
+
+    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        _ = frame_ctx
+        return [self._build_input()]
+
+    def _reset_tick_runner(self) -> None:
+        self._runtime.reset_tick_runner()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
         special = SPECIAL_PROJECTILES.get(int(weapon_id))
@@ -302,17 +331,17 @@ class ArsenalDebugView:
     def open(self) -> None:
         self._missing_assets.clear()
         bootstrap = init_view_audio(self._assets_root)
-        self._world.config = bootstrap.config
+        self._runtime.config = bootstrap.config
         self._console = bootstrap.console
         self._audio = bootstrap.audio
         self._audio_rng = bootstrap.audio_rng
-        self._world.audio = self._audio
-        self._world.audio_rng = self._audio_rng
+        self._runtime.audio = self._audio
+        self._runtime.audio_rng = self._audio_rng
 
         self._small = load_small_font(self._assets_root)
 
-        self._world.open()
-        self._aim_texture = self._world._load_texture(
+        self._runtime.open_runtime()
+        self._aim_texture = self._load_texture(
             "ui_aim",
             cache_path="ui/ui_aim.jaz",
         )
@@ -321,6 +350,7 @@ class ArsenalDebugView:
 
     def close(self) -> None:
         rl.show_cursor()
+        self._reset_tick_runner()
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
@@ -329,9 +359,9 @@ class ArsenalDebugView:
             self._audio = None
             self._audio_rng = None
             self._console = None
-        self._world.audio = None
-        self._world.audio_rng = None
-        self._world.close()
+        self._runtime.audio = None
+        self._runtime.audio_rng = None
+        self._runtime.close_runtime()
         self._aim_texture = None
 
     def consume_screenshot_request(self) -> bool:
@@ -350,8 +380,7 @@ class ArsenalDebugView:
             return
 
         self._apply_debug_player_cheats()
-        input_state = self._build_input()
-        self._world.update(dt, inputs=[input_state], game_mode=GameMode.SURVIVAL)
+        self._runtime.advance_tick_frame(float(dt))
 
         if self._audio is not None:
             update_audio(self._audio, dt)
@@ -359,11 +388,12 @@ class ArsenalDebugView:
     def draw(self) -> None:
         rl.clear_background(BG)
 
-        if self._world.ground is not None:
-            self._world._sync_ground_settings()
-            self._world.ground.process_pending()
+        if self._runtime.render_resources.ground is not None:
+            self._runtime.render_resources.config = self._runtime.config
+            self._runtime.render_resources.sync_ground_settings()
+            self._runtime.render_resources.ground.process_pending()
 
-        self._world.draw(draw_aim_indicators=True)
+        self._draw_world(draw_aim_indicators=True)
 
         warn_x = 24.0
         warn_y = 24.0
@@ -386,8 +416,8 @@ class ArsenalDebugView:
             y += line
 
         if self._player is not None:
-            alive = sum(1 for c in self._world.creatures.entries if c.active and c.hp > 0.0)
-            total = sum(1 for c in self._world.creatures.entries if c.active)
+            alive = sum(1 for c in self._runtime.sim_world.creatures.entries if c.active and c.hp > 0.0)
+            total = sum(1 for c in self._runtime.sim_world.creatures.entries if c.active)
             draw_ui_text(self._small, f"creatures alive {alive}/{total}", Vec2(x, y), color=UI_TEXT)
             y += line
 
@@ -402,7 +432,7 @@ class ArsenalDebugView:
         draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._world.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(self._runtime.render_resources.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("arsenal", "Arsenal")

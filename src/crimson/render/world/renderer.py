@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 import msgspec
 
@@ -12,11 +12,33 @@ from .context import WorldRenderCtx, build_world_render_ctx
 from .draw import draw_world
 
 if TYPE_CHECKING:
-    from ...game_world import GameWorld
+    from pathlib import Path
+
+    from grim.config import CrimsonConfig
+
+    from ...world.render_resources import RenderResources
+    from ...world.sim_world_state import SimWorldState
+    from ..rtx.mode import RtxRenderMode
+
+
+class WorldRenderHost(Protocol):
+    assets_dir: Path
+    world_size: float
+    demo_mode_active: bool
+    config: CrimsonConfig | None
+    camera: Vec2
+    render_resources: RenderResources
+    sim_world: SimWorldState
+    lan_player_rings_enabled: bool
+    lan_local_aim_indicators_only: bool
+    lan_local_player_slot_index: int
+    rtx_mode: RtxRenderMode
+
+    def build_render_frame(self) -> RenderFrame: ...
 
 
 class WorldRenderer(msgspec.Struct):
-    _world: GameWorld
+    _world: WorldRenderHost
     _render_frame: RenderFrame | None = None
     _small_font: SmallFontData | None = None
 

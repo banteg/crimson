@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Callable
 
 import msgspec
 
@@ -16,6 +17,8 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
+from ..sim.input import PlayerInput
+from ..sim.sessions import DeterministicSession
 from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
@@ -50,6 +53,9 @@ class _TypoState(msgspec.Struct):
     spawn_cooldown_ms: int = 0
 
 
+TypoSessionFactory = Callable[..., DeterministicSession]
+
+
 class TypoShooterMode(BaseGameplayMode):
     def __init__(
         self,
@@ -60,6 +66,7 @@ class TypoShooterMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: TypoSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -81,14 +88,34 @@ class TypoShooterMode(BaseGameplayMode):
         self._unique_words: list[str] | None = None
 
         self._ui_assets = None
+        self._session_factory = session_factory
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
+        self._frame_input_state: PlayerInput | None = None
+
+    def _new_sim_session(self) -> DeterministicSession:
+        return self._session_factory(
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.TYPO,
+            perk_progression_enabled=False,
+            detail_preset=5,
+            gore_disabled=0,
+            game_tune_started=bool(self.sim_world.game_tune_started),
+            clear_fx_queues_each_tick=False,
+        )
 
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
+        self._sim_session = self._new_sim_session()
         self._typo = _TypoState()
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(len(self.creatures.entries))
         self._unique_words = None
+        self._frame_input_state = None
 
         dictionary_path = self._base_dir / "typo_dictionary.txt"
         if dictionary_path.is_file():
@@ -103,7 +130,16 @@ class TypoShooterMode(BaseGameplayMode):
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
+        self._sim_session = None
+        self._frame_input_state = None
         super().close()
+
+    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+        _ = dt
+        frame_input_state = self._frame_input_state
+        if frame_input_state is None:
+            return [build_typo_player_input(aim=self.player.aim, fire_requested=False, reload_requested=False)]
+        return [frame_input_state]
 
     def _handle_input(self) -> None:
         if self._game_over_active:
@@ -135,8 +171,8 @@ class TypoShooterMode(BaseGameplayMode):
                 return self._names.find_by_name(name, active_mask=active)
 
             result = self._typing.enter(find_target=_find_target)
-            if had_text and self.world.audio_router is not None:
-                self.world.audio_router.play_sfx_resolved("sfx_ui_typeenter")
+            if had_text and self.audio_bridge.router is not None:
+                self.audio_bridge.router.play_sfx_resolved("sfx_ui_typeenter")
             if result.fire_requested and result.target_creature_idx is not None:
                 target_idx = int(result.target_creature_idx)
                 if 0 <= target_idx < len(self.creatures.entries):
@@ -157,8 +193,8 @@ class TypoShooterMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) or rl.is_key_pressed_repeat(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
             key = _typeclick_key()
-            if self.world.audio_router is not None:
-                self.world.audio_router.play_sfx_resolved(key)
+            if self.audio_bridge.router is not None:
+                self.audio_bridge.router.play_sfx_resolved(key)
         else:
             codepoint = int(rl.get_char_pressed())
             if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
@@ -169,8 +205,8 @@ class TypoShooterMode(BaseGameplayMode):
                 if ch:
                     self._typing.push_char(ch)
                     key = _typeclick_key()
-                    if self.world.audio_router is not None:
-                        self.world.audio_router.play_sfx_resolved(key)
+                    if self.audio_bridge.router is not None:
+                        self.audio_bridge.router.play_sfx_resolved(key)
 
         return fire_pressed, reload_pressed
 
@@ -262,13 +298,20 @@ class TypoShooterMode(BaseGameplayMode):
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )
-        self.world.update(
-            dt_world,
-            inputs=[input_state],
-            auto_pick_perks=False,
-            game_mode=GameMode.TYPO,
-            perk_progression_enabled=False,
-        )
+        self._frame_input_state = input_state
+        session = self._sim_session
+        if session is not None:
+            try:
+                self._run_deterministic_session_ticks(
+                    dt_frame=float(dt_world),
+                    session=session,
+                    recorder=None,
+                    on_tick=lambda _tick, _tick_index: False,
+                )
+            finally:
+                self._frame_input_state = None
+        else:
+            self._frame_input_state = None
         enforce_typo_player_frame(self.player, state=self.state)
 
         self.state.bonuses.weapon_power_up = 0.0
@@ -280,8 +323,8 @@ class TypoShooterMode(BaseGameplayMode):
             spawn_cooldown_ms=int(self._typo.spawn_cooldown_ms),
             frame_dt_ms=int(dt_world * 1000.0),
             player_count=1,
-            world_width=float(self.world.world_size),
-            world_height=float(self.world.world_size),
+            world_width=float(self.world_size),
+            world_height=float(self.world_size),
         )
         self._typo.spawn_cooldown_ms = int(cooldown)
         for call in spawns:
@@ -306,7 +349,7 @@ class TypoShooterMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self.world.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -333,7 +376,7 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            screen_pos = self.world.world_to_screen(creature.pos)
+            screen_pos = self.world_to_screen(creature.pos)
             y = screen_pos.y - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
@@ -393,7 +436,7 @@ class TypoShooterMode(BaseGameplayMode):
         alive = self.player.health > 0.0
         show_gameplay_ui = alive and (not self._game_over_active)
 
-        self.world.draw(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
+        self._draw_world(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()
 
         if show_gameplay_ui:
@@ -415,7 +458,7 @@ class TypoShooterMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
                 frame_dt_ms=self._last_dt_ms,

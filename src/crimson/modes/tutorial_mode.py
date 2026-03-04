@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from typing import cast
 
 import msgspec
@@ -21,6 +22,7 @@ from ..gameplay import survival_check_level_up
 from ..input_codes import config_keybinds, input_code_is_down, input_code_is_pressed, player_move_fire_binds
 from ..perks.state import CreatureForPerks
 from ..sim.input import PlayerInput
+from ..sim.sessions import DeterministicSession
 from ..tutorial.timeline import TutorialFrameActions, TutorialState, tick_tutorial_timeline
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -48,6 +50,9 @@ class _TutorialUiLayout(msgspec.Struct):
     panel_padding: Vec2 = Vec2(20.0, 8.0)
 
 
+TutorialSessionFactory = Callable[..., DeterministicSession]
+
+
 class TutorialMode(BaseGameplayMode):
     def __init__(
         self,
@@ -59,6 +64,7 @@ class TutorialMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: TutorialSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -84,10 +90,31 @@ class TutorialMode(BaseGameplayMode):
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
+        self._session_factory = session_factory
+        self._sim_session: DeterministicSession | None = self._new_sim_session()
+        self._frame_input_state: PlayerInput | None = None
+
+    def _new_sim_session(self) -> DeterministicSession:
+        return self._session_factory(
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
+            game_mode=GameMode.TUTORIAL,
+            detail_preset=5,
+            gore_disabled=0,
+            game_tune_started=bool(self.sim_world.game_tune_started),
+            demo_mode_active=bool(self.demo_mode_active),
+            auto_pick_perks=False,
+            perk_progression_enabled=True,
+            clear_fx_queues_each_tick=False,
+        )
 
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
+        self._sim_session = self._new_sim_session()
 
         self._perk_menu.reset()
 
@@ -97,16 +124,19 @@ class TutorialMode(BaseGameplayMode):
 
         self._tutorial = TutorialState(preserve_bugs=bool(self.state.preserve_bugs))
         self._tutorial_actions = TutorialFrameActions()
+        self._frame_input_state = None
 
         self.state.perk_selection.pending_count = 0
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
-        self.player.pos = Vec2(float(self.world.world_size) * 0.5, float(self.world.world_size) * 0.5)
+        self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
 
     def close(self) -> None:
         self._ui_assets = None
+        self._sim_session = None
+        self._frame_input_state = None
         super().close()
 
     def _perk_menu_context(self) -> PerkMenuContext:
@@ -152,7 +182,7 @@ class TutorialMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self.world.screen_to_world(Vec2.from_xy(mouse))
+        aim = self.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -166,6 +196,13 @@ class TutorialMode(BaseGameplayMode):
             fire_pressed=bool(fire_pressed),
             reload_pressed=bool(reload_pressed),
         )
+
+    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+        _ = dt
+        frame_input_state = self._frame_input_state
+        if frame_input_state is None:
+            frame_input_state = self._build_input()
+        return [frame_input_state]
 
     def _prompt_panel_rect(self, text: str, *, pos: Vec2, scale: float) -> tuple[rl.Rectangle, list[str], float]:
         lines = text.splitlines() if text else [""]
@@ -271,13 +308,18 @@ class TutorialMode(BaseGameplayMode):
             hint_alive_before = bool(entry.active and entry.hp > 0.0)
 
         if dt_world > 0.0:
-            self.world.update(
-                dt_world,
-                inputs=[input_state],
-                auto_pick_perks=False,
-                game_mode=GameMode.TUTORIAL,
-                perk_progression_enabled=True,
-            )
+            session = self._sim_session
+            if session is not None:
+                self._frame_input_state = input_state
+                try:
+                    self._run_deterministic_session_ticks(
+                        dt_frame=float(dt_world),
+                        session=session,
+                        recorder=None,
+                        on_tick=lambda _tick, _tick_index: False,
+                    )
+                finally:
+                    self._frame_input_state = None
 
         hint_alive_after = hint_alive_before
         if hint_ref is not None and 0 <= int(hint_ref) < len(self.creatures.entries):
@@ -307,9 +349,7 @@ class TutorialMode(BaseGameplayMode):
             self.player.experience = int(actions.force_player_experience)
             survival_check_level_up(self.player, self.state.perk_selection)
 
-        detail_preset = 5
-        if self.world.config is not None:
-            detail_preset = self.world.config.detail_preset
+        detail_preset = self.config.detail_preset
 
         for call in actions.spawn_bonuses:
             spawned = self.state.bonus_pool.spawn_at(
@@ -317,8 +357,8 @@ class TutorialMode(BaseGameplayMode):
                 bonus_id=call.bonus_id,
                 duration_override=int(call.amount),
                 state=self.state,
-                world_width=float(self.world.world_size),
-                world_height=float(self.world.world_size),
+                world_width=float(self.world_size),
+                world_height=float(self.world_size),
             )
             if spawned is not None:
                 self.state.effects.spawn_burst(
@@ -355,7 +395,7 @@ class TutorialMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self.world.draw(
+        self._draw_world(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
         )
@@ -379,7 +419,7 @@ class TutorialMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self.player.experience),
@@ -472,7 +512,7 @@ class TutorialMode(BaseGameplayMode):
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self.world.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

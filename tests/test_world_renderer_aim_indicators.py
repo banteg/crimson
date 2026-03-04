@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from pathlib import Path
 
 import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext, WorldRenderer
@@ -9,30 +8,7 @@ from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-
-if TYPE_CHECKING:
-    from crimson.game_world import GameWorld
-
-
-class _AimWorldLike(Protocol):
-    players: list[PlayerState]
-    aim_texture: object
-    lan_player_rings_enabled: bool
-    lan_local_aim_indicators_only: bool
-    lan_local_player_slot_index: int
-
-
-@dataclass(slots=True)
-class _AimWorldStub(_AimWorldLike):
-    players: list[PlayerState]
-    aim_texture: object = field(default_factory=object)
-    lan_player_rings_enabled: bool = False
-    lan_local_aim_indicators_only: bool = False
-    lan_local_player_slot_index: int = 0
-
-
-def _as_world(world: _AimWorldLike) -> GameWorld:
-    return cast("GameWorld", world)
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _make_players() -> list[PlayerState]:
@@ -44,13 +20,17 @@ def _make_players() -> list[PlayerState]:
 
 
 def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRenderer:
-    world = _AimWorldStub(
-        players=players,
-        lan_player_rings_enabled=False,
-        lan_local_aim_indicators_only=bool(local_only),
-        lan_local_player_slot_index=int(local_slot),
-    )
-    return WorldRenderer(_world=_as_world(world))
+    repo_root = Path(__file__).resolve().parents[1]
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    world.reset(player_count=len(players))
+    for runtime_player, test_player in zip(world.sim_world.players, players, strict=False):
+        runtime_player.pos = test_player.pos
+        runtime_player.aim = test_player.aim
+        runtime_player.spread_heat = test_player.spread_heat
+        runtime_player.health = test_player.health
+    world.lan_local_aim_indicators_only = bool(local_only)
+    world.lan_local_player_slot_index = int(local_slot)
+    return world.renderer
 
 
 def _draw_ctx() -> WorldDrawContext:

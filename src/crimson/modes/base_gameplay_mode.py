@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import datetime as dt
+import hashlib
 import random
 import time
+from collections import deque
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Literal, cast
+
+import msgspec
 
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
@@ -18,10 +24,16 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..game_world import GameWorld
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
+from ..net.lockstep_protocol import (
+    STATE_HASH_PERIOD_TICKS,
+    PerkMenuClose,
+    PerkMenuOpen,
+    PerkPick,
+    TickFrame,
+)
 from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     ModeStateSnapshotV2,
@@ -36,11 +48,55 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
+from ..render.world.renderer import WorldRenderer, WorldRenderHost
+from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
+from ..replay.checkpoints import (
+    FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.checkpoints import (
+    ReplayCheckpoint,
+    ReplayCheckpoints,
+    build_checkpoint,
+    default_checkpoints_path,
+    dump_checkpoints_file,
+)
+from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import PackedPlayerInput
+from ..sim.batch_apply import (
+    DeterministicStepPayload,
+    PresentationTickOutput,
+    SimMetadataSink,
+    apply_presentation_outputs,
+    apply_sim_metadata_batch,
+)
+from ..sim.clock import FixedStepClock
+from ..sim.hooks import (
+    LanFrameSample,
+    LanSyncCallbacks,
+    LanTickSync,
+    TickHashes,
+    TickResult,
+)
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSessionTick
-from ..sim.timing import FrameTiming
+from ..sim.input_providers import (
+    FrameContext,
+    InputCommand,
+    InputProvider,
+    InputStatus,
+    LocalInputProvider,
+    NetworkInputProvider,
+)
+from ..sim.presentation_step import PresentationStepCommands
+from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
+from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
+from ..weapon_runtime import most_used_weapon_id_for_player
+from ..world.audio_bridge import AudioBridge
+from ..world.render_resources import RenderResources
+from ..world.sim_world_state import SimWorldState
+from ..world.terrain_runtime import TerrainRuntime
+from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
@@ -53,19 +109,167 @@ if TYPE_CHECKING:
 
 LanRuntime = LockstepRuntime | RollbackRuntime
 
-class DeterministicSessionLike(Protocol):
-    detail_preset: int
-    gore_disabled: int
-    game_tune_started: bool
 
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
+@dataclass(slots=True)
+class _AppliedBatchTick:
+    runner_tick_index: int
+    tick: DeterministicSessionStepTick
+    replay_tick_index: int | None
+    local_command_hash: str
+    hashes: TickHashes | None
+    frame_tick_index: int | None = None
+    frame_inputs: tuple[PackedPlayerInput, ...] = ()
+    remote_command_hash: str = ""
+    remote_state_hash: str = ""
+    host_state_hash: str = ""
 
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-    ) -> DeterministicSessionTick: ...
+
+@dataclass(frozen=True, slots=True)
+class _BatchApplyOutcome:
+    ticks_applied: int = 0
+    stopped: bool = False
+    stop_after_finalize: bool = False
+    presentation_outputs: tuple[PresentationTickOutput, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class _ModeFrameState:
+    dt: float
+    dt_ui_ms: float
+
+
+LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
+
+
+class _LanRuntimeInputProvider(NetworkInputProvider):
+    def __init__(self, *, player_count: int, tick_rate: int) -> None:
+        self._runtime: LanRuntime | None = None
+        self._role: str = ""
+        self._samples_by_runner_tick: dict[int, LanFrameSample] = {}
+        self._pending_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = deque()
+        self._before_pop: Callable[[], bool] | None = None
+        self._pop_blocked = False
+        self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
+        super().__init__(
+            player_count=player_count,
+            resolve_tick_input=self._resolve_tick_input,
+            resolve_tick_commands=self._resolve_tick_commands,
+            emit_tick_command=self._emit_tick_command,
+        )
+
+    def bind_runtime(self, runtime: LanRuntime | None) -> None:
+        self._runtime = runtime
+        self._pending_perk_events.clear()
+        self._samples_by_runner_tick.clear()
+        self._pop_blocked = False
+
+    def set_role(self, role: str) -> None:
+        self._role = str(role)
+
+    def set_before_pop(self, callback: Callable[[], bool] | None) -> None:
+        self._before_pop = callback
+        self._pop_blocked = False
+
+    @property
+    def pop_blocked(self) -> bool:
+        return bool(self._pop_blocked)
+
+    @property
+    def capture_tick_dt(self) -> float:
+        return self._capture_clock.dt_tick
+
+    def advance_capture_ticks(self, dt: float) -> int:
+        return self._capture_clock.advance(dt)
+
+    def reset_capture_clock(self) -> None:
+        self._capture_clock.reset()
+
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        super().begin_frame(frame_ctx)
+        self._samples_by_runner_tick.clear()
+        self._pop_blocked = False
+
+    def take_frame_sample(self, runner_tick_index: int) -> LanFrameSample | None:
+        return self._samples_by_runner_tick.pop(int(runner_tick_index), None)
+
+    def _resolve_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+        self._pop_blocked = False
+        before_pop = self._before_pop
+        if before_pop is not None and (not bool(before_pop())):
+            self._pop_blocked = True
+            return None
+        runtime = self._runtime
+        if runtime is None:
+            return None
+        frame = runtime.pop_tick_frame()
+        if frame is None:
+            return None
+        frame_tick_index = int(frame.tick_index)
+        frame_inputs = tuple(list(packed) for packed in frame.frame_inputs)
+        player_inputs = [unpack_player_input(packed) for packed in frame_inputs]
+        self._samples_by_runner_tick[int(tick_index)] = LanFrameSample(
+            frame_tick_index=int(frame_tick_index),
+            frame_inputs=tuple(frame_inputs),
+            remote_command_hash=str(frame.command_hash or ""),
+            remote_state_hash=str(frame.state_hash or ""),
+        )
+        return player_inputs
+
+    def _resolve_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        runtime = self._runtime
+        if isinstance(runtime, LockstepRuntime):
+            while True:
+                event = runtime.pop_perk_event()
+                if event is None:
+                    break
+                self._pending_perk_events.append(event)
+
+        sample = self._samples_by_runner_tick.get(int(tick_index))
+        if sample is None:
+            return []
+
+        frame_tick_index = int(sample.frame_tick_index)
+        commands: list[InputCommand] = []
+        future_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = deque()
+        while self._pending_perk_events:
+            event = self._pending_perk_events.popleft()
+            event_tick_index = int(event.tick_index)
+            if event_tick_index > int(frame_tick_index):
+                future_events.append(event)
+                continue
+            if isinstance(event, PerkPick):
+                commands.append(
+                    InputCommand(
+                        name="perk_pick",
+                        payload={"choice_index": int(event.choice_index)},
+                    ),
+                )
+        self._pending_perk_events = future_events
+        return commands
+
+    def _emit_tick_command(self, tick_index: int, command: InputCommand) -> None:
+        if str(self._role) != "host":
+            return
+        runtime = self._runtime
+        if not isinstance(runtime, LockstepRuntime):
+            return
+        sample = self._samples_by_runner_tick.get(int(tick_index))
+        if sample is None:
+            return
+        frame_tick_index = int(sample.frame_tick_index)
+        if str(command.name) != "perk_pick":
+            return
+        raw_choice = command.payload.get("choice_index")
+        if not isinstance(raw_choice, int):
+            raw_choice = command.payload.get("index")
+        if not isinstance(raw_choice, int):
+            return
+        runtime.broadcast_perk_pick(
+            tick_index=int(frame_tick_index),
+            player_index=0,
+            choice_index=int(raw_choice),
+        )
+
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
 # These knobs currently affect deterministic simulation (not just rendering), so
@@ -122,18 +326,48 @@ class BaseGameplayMode:
             preserve_bugs=ctx.preserve_bugs,
         )
 
-        self.world = GameWorld(
-            assets_dir=ctx.assets_dir,
-            world_size=float(world_size),
-            demo_mode_active=demo_mode_active,
-            difficulty_level=int(difficulty_level),
-            hardcore=hardcore,
-            preserve_bugs=ctx.preserve_bugs,
-            texture_cache=texture_cache,
-            config=self.config,
-            audio=audio,
-            audio_rng=audio_rng,
+        self.assets_dir = ctx.assets_dir
+        self.world_size = float(world_size)
+        self.demo_mode_active = bool(demo_mode_active)
+        self.difficulty_level = int(difficulty_level)
+        self.hardcore = bool(hardcore)
+        self.preserve_bugs = bool(ctx.preserve_bugs)
+        self.texture_cache = texture_cache
+        self.audio = audio
+        self.audio_rng = audio_rng
+        self.rtx_mode = RtxRenderMode.CLASSIC
+        self.sim_world = SimWorldState(
+            world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            hardcore=bool(self.hardcore),
+            difficulty_level=int(self.difficulty_level),
+            preserve_bugs=bool(self.preserve_bugs),
         )
+        self.render_resources = RenderResources(
+            assets_dir=self.assets_dir,
+            world_size=float(self.world_size),
+            texture_cache=self.texture_cache,
+            config=self.config,
+        )
+        self.audio_bridge = AudioBridge(
+            demo_mode_active=bool(self.demo_mode_active),
+            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+        )
+        self.terrain_runtime = TerrainRuntime(
+            world_size=float(self.world_size),
+            render_resources=self.render_resources,
+        )
+        self.camera = Vec2(-1.0, -1.0)
+        self.lan_player_rings_enabled = False
+        self.lan_local_aim_indicators_only = False
+        self.lan_local_player_slot_index = 0
+        self._sync_world_size_ownership()
+        self.sync_audio_bridge_state()
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
+        player_count = self.config.player_count
+        self._reset_world_runtime(player_count=max(1, min(4, int(player_count))))
         self._bind_world()
 
         self._game_over_active = False
@@ -147,6 +381,9 @@ class BaseGameplayMode:
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
+        self._replay_checkpoints: list[ReplayCheckpoint] = []
+        self._replay_checkpoints_sample_rate = 60
+        self._replay_checkpoints_last_tick: int | None = None
         self._lan_runtime: LanRuntime | None = None
         self._rollback_runtime: RollbackRuntime | None = None
         self._lan_local_slot_index = 0
@@ -161,6 +398,165 @@ class BaseGameplayMode:
         self._lan_terrain_pending_last = False
         self._lan_terrain_pending_since_ms = 0
         self._lan_initial_terrain_ready = False
+        self._runtime_updates_per_frame = 0
+        self._input_stall_count = 0
+        self._ticks_advanced_per_frame = 0
+        self._sim_ms = 0.0
+        self._presentation_plan_ms = 0.0
+        self._presentation_apply_ms = 0.0
+        self._queued_input_commands: list[InputCommand] = []
+        self._network_input_provider = _LanRuntimeInputProvider(
+            player_count=max(0, len(self.sim_world.players)),
+            tick_rate=int(self._deterministic_tick_rate()),
+        )
+        self._tick_input_provider: LocalInputProvider | _LanRuntimeInputProvider | None = None
+        self._tick_runner: TickRunner | None = None
+        self._tick_runner_session: DeterministicSession | QuestDeterministicSession | None = None
+        self._tick_runner_is_networked = False
+        self._tick_runner_network_role = ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock: FixedStepClock | None = None
+
+    def _sync_world_size_ownership(self) -> None:
+        world_size = float(self.world_size)
+        self.sim_world.world_size = world_size
+        self.render_resources.world_size = world_size
+        self.terrain_runtime.world_size = world_size
+        ground = self.render_resources.ground
+        if ground is not None:
+            side = max(0, int(world_size))
+            ground.width = side
+            ground.height = side
+
+    def _reset_world_runtime(
+        self,
+        *,
+        seed: int = 0xBEEF,
+        player_count: int = 1,
+        spawn_pos: Vec2 | None = None,
+    ) -> None:
+        self._sync_world_size_ownership()
+        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
+        self.sim_world.hardcore = bool(self.hardcore)
+        self.sim_world.difficulty_level = int(self.difficulty_level)
+        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
+        self.sim_world.reset(
+            seed=int(seed),
+            player_count=int(player_count),
+            spawn_pos=spawn_pos,
+        )
+        self.render_resources.fx_queue.clear()
+        self.render_resources.fx_queue_rotated.clear()
+        self.camera = Vec2(-1.0, -1.0)
+        if self.render_resources.ground is not None:
+            terrain_seed = int(self.sim_world.state.rng.state)
+            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+
+    def _open_world_runtime(self) -> None:
+        self.render_resources.texture_cache = self.texture_cache
+        self.render_resources.config = self.config
+        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
+        self.texture_cache = self.render_resources.texture_cache
+
+    def _close_world_runtime(self) -> None:
+        self.render_resources.close()
+        self.sim_world.close_session()
+
+    def sync_ground_settings(self) -> None:
+        self.render_resources.config = self.config
+        self.render_resources.sync_ground_settings()
+
+    def sync_audio_bridge_state(self) -> None:
+        self.audio_bridge.sync(
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+            demo_mode_active=bool(self.demo_mode_active),
+        )
+
+    def apply_bootstrap_terrain(
+        self,
+        *,
+        terrain_ids: tuple[int, int, int],
+        seed: int,
+        layers: int = 3,
+    ) -> None:
+        self.terrain_runtime.apply_bootstrap_terrain(
+            terrain_ids=terrain_ids,
+            seed=int(seed),
+            layers=int(layers),
+        )
+
+    def set_terrain(
+        self,
+        *,
+        base_key: str,
+        overlay_key: str,
+        base_path: str,
+        overlay_path: str,
+        detail_key: str | None = None,
+        detail_path: str | None = None,
+    ) -> None:
+        self.terrain_runtime.set_terrain(
+            base_key=base_key,
+            overlay_key=overlay_key,
+            base_path=base_path,
+            overlay_path=overlay_path,
+            detail_key=detail_key,
+            detail_path=detail_path,
+        )
+        terrain_seed = int(self.sim_world.state.rng.state)
+        self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+
+    def build_render_frame(self):
+        return self.render_resources.build_render_frame(
+            state=self.sim_world.state,
+            players=self.sim_world.players,
+            creatures=self.sim_world.creatures,
+            camera=self.camera,
+            demo_mode_active=bool(self.demo_mode_active),
+            elapsed_ms=float(self.sim_world.elapsed_ms),
+            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
+            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
+            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
+            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
+            rtx_mode=self.rtx_mode,
+        )
+
+    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        self.render_resources.bake_fx_queues()
+        self.renderer.draw(
+            render_frame=self.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
+
+    def update_camera(self, _dt: float) -> None:
+        _ = _dt
+        if not self.sim_world.players:
+            return
+
+        screen_size = self.renderer._camera_screen_size()
+
+        alive = [player for player in self.sim_world.players if player.health > 0.0]
+        if alive:
+            inv_alive = 1.0 / float(len(alive))
+            focus = Vec2(
+                sum(player.pos.x for player in alive) * inv_alive,
+                sum(player.pos.y for player in alive) * inv_alive,
+            )
+            camera = screen_size * 0.5 - focus
+        else:
+            camera = self.camera
+
+        camera = camera + self.sim_world.state.camera_shake_offset
+        self.camera = self.renderer._clamp_camera(camera, screen_size)
+
+    def world_to_screen(self, pos: Vec2) -> Vec2:
+        return self.renderer.world_to_screen(pos)
+
+    def screen_to_world(self, pos: Vec2) -> Vec2:
+        return self.renderer.screen_to_world(pos)
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -173,12 +569,16 @@ class BaseGameplayMode:
             self._status_sim = self._status_base
 
         # Keep the currently-bound world state in sync (note that `open()` resets
-        # the underlying `GameWorld.state`, so `_bind_world()` also re-applies it).
+        # the underlying simulation state, so `_bind_world()` also re-applies it).
         self.state.status = self._status_sim
 
     def bind_lan_runtime(self, runtime: LanRuntime | None) -> None:
+        previous_runtime = self._lan_runtime
         self._lan_runtime = runtime
         self._rollback_runtime = runtime if isinstance(runtime, RollbackRuntime) else None
+        self._network_input_provider.bind_runtime(runtime)
+        if previous_runtime is not runtime and bool(self._tick_runner_is_networked):
+            self._reset_tick_runner_state()
         slot_index = 0 if runtime is None else int(runtime.local_slot_index)
         self._lan_local_slot_index = max(0, min(3, int(slot_index)))
 
@@ -220,9 +620,9 @@ class BaseGameplayMode:
         return self._cvar_float("cv_lanPlayerRings", 0.0) != 0.0
 
     def _sync_lan_visual_flags(self) -> None:
-        self.world.lan_player_rings_enabled = self._lan_player_rings_enabled()
-        self.world.lan_local_aim_indicators_only = self._lan_enabled
-        self.world.lan_local_player_slot_index = max(0, min(3, int(self._lan_local_slot_index)))
+        self.lan_player_rings_enabled = self._lan_player_rings_enabled()
+        self.lan_local_aim_indicators_only = self._lan_enabled
+        self.lan_local_player_slot_index = max(0, min(3, int(self._lan_local_slot_index)))
 
     def _config_game_mode_id(self) -> GameMode:
         try:
@@ -236,7 +636,9 @@ class BaseGameplayMode:
             return
 
         target_indices: list[int] = []
-        target_players = self.world.players[:1] if self.state.preserve_bugs else self.world.players
+        target_players = (
+            self.sim_world.players[:1] if self.state.preserve_bugs else self.sim_world.players
+        )
         for target_player in target_players:
             if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
                 continue
@@ -269,17 +671,17 @@ class BaseGameplayMode:
             if ratio > 1.0:
                 ratio = 1.0
 
-            screen_left = self.world.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
-            screen_right = self.world.world_to_screen(creature.pos + Vec2(32.0, 32.0))
+            screen_left = self.world_to_screen(creature.pos + Vec2(-32.0, 32.0))
+            screen_right = self.world_to_screen(creature.pos + Vec2(32.0, 32.0))
             width = screen_right.x - screen_left.x
             if width <= 1e-3:
                 continue
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
 
     def _bind_world(self) -> None:
-        self.state: GameplayState = self.world.state
-        self.creatures: CreaturePool = self.world.creatures
-        self.player: PlayerState = self.world.players[0]
+        self.state: GameplayState = self.sim_world.state
+        self.creatures: CreaturePool = self.sim_world.creatures
+        self.player: PlayerState = self.sim_world.players[0]
         preserve_bugs = self.state.preserve_bugs
         self._local_input.set_preserve_bugs(preserve_bugs)
         self._hud_state.preserve_bugs = preserve_bugs
@@ -289,7 +691,7 @@ class BaseGameplayMode:
         self.state.status = self._status_sim
 
     def _any_player_alive(self) -> bool:
-        return any(player.health > 0.0 for player in self.world.players)
+        return any(player.health > 0.0 for player in self.sim_world.players)
 
     @property
     def save_status(self) -> GameStatus | None:
@@ -307,15 +709,15 @@ class BaseGameplayMode:
         self._screen_fade = fade
 
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
-        self.world.audio = audio
-        self.world.audio_rng = audio_rng
+        self.audio = audio
+        self.audio_rng = audio_rng
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
-        self.world.rtx_mode = mode
+        self.rtx_mode = mode
 
     def _update_audio(self, dt: float) -> None:
-        if self.world.audio is not None:
-            update_audio(self.world.audio, dt)
+        if self.audio is not None:
+            update_audio(self.audio, dt)
 
     def _ui_line_height(self, scale: float = 1.0) -> int:
         if self._small is not None:
@@ -360,6 +762,212 @@ class BaseGameplayMode:
 
         return dt, dt_ui_ms
 
+    def _begin_mode_update(self, dt: float) -> _ModeFrameState | None:
+        self._update_audio(dt)
+
+        frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
+        self._reset_frame_telemetry()
+        self._handle_input()
+        if self._action == "open_pause_menu":
+            return None
+        return _ModeFrameState(
+            dt=float(frame_dt),
+            dt_ui_ms=float(frame_dt_ui_ms),
+        )
+
+    def _handle_input(self) -> None:
+        raise NotImplementedError
+
+    def set_runtime_updates_per_frame(self, value: int) -> None:
+        self._runtime_updates_per_frame = max(0, int(value))
+
+    def _enqueue_input_command(self, command: InputCommand) -> None:
+        provider = self._tick_input_provider
+        if provider is None:
+            self._queued_input_commands.append(command)
+            return
+        if not provider.supports_commands():
+            self._queued_input_commands.append(command)
+            return
+        provider.push_command(command)
+
+    def _flush_queued_input_commands(
+        self,
+        *,
+        provider: LocalInputProvider | _LanRuntimeInputProvider,
+    ) -> None:
+        if not self._queued_input_commands:
+            return
+        if not provider.supports_commands():
+            return
+        for command in self._queued_input_commands:
+            provider.push_command(command)
+        self._queued_input_commands.clear()
+
+    def _record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
+        recorder = self._replay_recorder
+        if recorder is not None:
+            recorder.record_perk_pick(player_index=int(player_index), choice_index=int(choice_index))
+        self._enqueue_input_command(
+            InputCommand(
+                name="perk_pick",
+                payload={"choice_index": int(choice_index)},
+            ),
+        )
+
+    def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
+        _ = command, dt_tick
+
+    def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
+        queued = list(self._queued_input_commands)
+        self._queued_input_commands.clear()
+        for command in queued:
+            self._apply_input_command(command, dt_tick=float(dt_tick))
+
+    def _replay_checkpoint_elapsed_ms(self) -> float:
+        return float(self.sim_world.elapsed_ms)
+
+    def _replay_claimed_stats_complete(self) -> bool:
+        return False
+
+    def _replay_claimed_stats_elapsed_ms(self) -> int:
+        return int(self._replay_checkpoint_elapsed_ms())
+
+    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
+        _ = replay
+        mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
+        return f"{mode_name}_{stamp}"
+
+    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
+        _ = replay, terminal_tick
+        return False
+
+    def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
+        _ = recorder
+        return False
+
+    def _record_replay_checkpoint(
+        self,
+        tick_index: int,
+        *,
+        force: bool = False,
+        rng_marks: dict[str, int] | None = None,
+        deaths: list[object] | tuple[object, ...] | None = None,
+        events: object | None = None,
+        command_hash: str | None = None,
+    ) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if tick_index < 0:
+            return
+        if not force and (tick_index % int(self._replay_checkpoints_sample_rate or 1)) != 0:
+            return
+        if self._replay_checkpoints_last_tick == int(tick_index):
+            return
+        self._replay_checkpoints.append(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self.sim_world.world_state,
+                elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
+                rng_marks=rng_marks,
+                deaths=deaths,
+                events=events,
+                command_hash=command_hash,
+            ),
+        )
+        self._replay_checkpoints_last_tick = int(tick_index)
+
+    def _save_replay(self) -> None:
+        recorder = self._replay_recorder
+        if recorder is None:
+            return
+        if self._replay_skip_save_when_empty(recorder=recorder):
+            self._replay_recorder = None
+            self._replay_checkpoints.clear()
+            self._replay_checkpoints_last_tick = None
+            return
+
+        self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
+        replay = recorder.finish()
+
+        shots_fired, shots_hit = shots_from_state(self.state, player_index=int(self.player.index))
+        most_used_weapon_id = most_used_weapon_id_for_player(
+            self.state,
+            player_index=int(self.player.index),
+            fallback_weapon_id=self.player.weapon.weapon_id,
+        )
+        claimed_stats = ReplayClaimedStatsSnapshot(
+            complete=bool(self._replay_claimed_stats_complete()),
+            ticks=int(recorder.tick_index),
+            elapsed_ms=int(self._replay_claimed_stats_elapsed_ms()),
+            score_xp=int(self.player.experience),
+            kills=int(self.creatures.kill_count),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+        replay = msgspec.structs.replace(
+            replay,
+            header=msgspec.structs.replace(
+                replay.header,
+                claimed_stats=claimed_stats,
+            ),
+        )
+
+        terminal_tick = int(recorder.tick_index)
+        if self._replay_emit_terminal_event_checkpoint(replay, terminal_tick=terminal_tick):
+            self._record_replay_checkpoint(terminal_tick, force=True)
+
+        data = dump_replay(replay)
+        digest = hashlib.sha256(data).hexdigest()
+        stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        base_name = self._replay_output_basename(stamp=stamp, replay=replay)
+        path = replay_dir / f"{base_name}.crd"
+        counter = 1
+        while path.exists():
+            path = replay_dir / f"{base_name}_{counter}.crd"
+            counter += 1
+        path.write_bytes(data)
+
+        checkpoints_path = default_checkpoints_path(path)
+        dump_checkpoints_file(
+            checkpoints_path,
+            ReplayCheckpoints(
+                version=CHECKPOINTS_FORMAT_VERSION,
+                replay_sha256=digest,
+                sample_rate=int(self._replay_checkpoints_sample_rate or 0),
+                checkpoints=list(self._replay_checkpoints),
+            ),
+        )
+        self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+        if self._console is not None:
+            self._console.log.log(f"replay: saved {path}")
+            self._console.log.log(f"replay: saved {checkpoints_path}")
+            self._console.log.flush()
+
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+        return (
+            int(self._runtime_updates_per_frame),
+            int(self._input_stall_count),
+            int(self._ticks_advanced_per_frame),
+            float(self._sim_ms),
+            float(self._presentation_plan_ms),
+            float(self._presentation_apply_ms),
+        )
+
+    def _reset_frame_telemetry(self) -> None:
+        self._input_stall_count = 0
+        self._ticks_advanced_per_frame = 0
+        # Placeholder stage timers before profiler hooks land in later slices.
+        self._sim_ms = 0.0
+        self._presentation_plan_ms = 0.0
+        self._presentation_apply_ms = 0.0
+
     def set_lan_runtime(
         self,
         *,
@@ -374,6 +982,7 @@ class BaseGameplayMode:
         connected_players = max(0, min(expected_players, int(connected_players)))
 
         prev_enabled = self._lan_enabled
+        prev_role = str(self._lan_role)
         if (
             self._lan_enabled == enabled
             and str(self._lan_role) == role
@@ -388,10 +997,14 @@ class BaseGameplayMode:
         self._lan_expected_players = int(expected_players)
         self._lan_connected_players = int(connected_players)
         self._lan_waiting_for_players = waiting_for_players
+        self._network_input_provider.set_role(self._lan_role)
         self._sync_lan_visual_flags()
         self._lan_trace_last_ms = -1000.0
         if prev_enabled != self._lan_enabled:
             self._refresh_effective_status(reset_lan_status=True)
+            self._reset_tick_runner_state()
+        elif prev_role != str(self._lan_role):
+            self._reset_tick_runner_state()
         lan_debug_log(
             "set_lan_runtime",
             mode=self.__class__.__name__,
@@ -400,7 +1013,7 @@ class BaseGameplayMode:
             expected_players=int(self._lan_expected_players),
             connected_players=int(self._lan_connected_players),
             waiting_for_players=self._lan_waiting_for_players,
-            player_rings=self.world.lan_player_rings_enabled,
+            player_rings=self.lan_player_rings_enabled,
         )
 
     def _lan_wait_gate_active(self) -> bool:
@@ -415,7 +1028,7 @@ class BaseGameplayMode:
             return False
         if self._lan_initial_terrain_ready:
             return False
-        ground = self.world.ground
+        ground = self.render_resources.ground
         if ground is None:
             return False
         return ground.generation_pending()
@@ -425,7 +1038,7 @@ class BaseGameplayMode:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = False
             return
-        ground = self.world.ground
+        ground = self.render_resources.ground
         if ground is None:
             self._lan_terrain_pending_last = False
             self._lan_initial_terrain_ready = True
@@ -457,25 +1070,10 @@ class BaseGameplayMode:
         if not pending:
             self._lan_initial_terrain_ready = True
 
-    def _update_lan_wait_gate_debug_override(self) -> None:
-        if not self._lan_wait_gate_active():
-            return
-        if (not debug_enabled()) or (not rl.is_key_pressed(rl.KeyboardKey.KEY_F10)):
-            return
-        self._lan_connected_players = int(self._lan_expected_players)
-        self._lan_waiting_for_players = False
-        lan_debug_log(
-            "wait_gate_override",
-            mode=self.__class__.__name__,
-            role=str(self._lan_role),
-            connected_players=int(self._lan_connected_players),
-            expected_players=int(self._lan_expected_players),
-        )
-
     def _trace_lan_state_heartbeat(self) -> None:
         if not self._lan_enabled:
             return
-        elapsed_ms = float(self.world._elapsed_ms)
+        elapsed_ms = float(self.sim_world.elapsed_ms)
         if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
             return
         self._lan_trace_last_ms = float(elapsed_ms)
@@ -488,7 +1086,7 @@ class BaseGameplayMode:
             connected_players=int(self._lan_connected_players),
             waiting_for_players=self._lan_waiting_for_players,
             wait_gate_active=self._lan_wait_gate_active(),
-            local_players=int(len(self.world.players)),
+            local_players=int(len(self.sim_world.players)),
         )
 
     def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
@@ -519,19 +1117,33 @@ class BaseGameplayMode:
                 )
                 y += float(line_h)
 
+        self._draw_ui_text(
+            "telemetry:"
+            f" runtime_updates={int(self._runtime_updates_per_frame)}"
+            f" ticks={int(self._ticks_advanced_per_frame)}"
+            f" stalls={int(self._input_stall_count)}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.8,
+        )
+        y += float(line_h)
+        self._draw_ui_text(
+            "timers(ms):"
+            f" sim={float(self._sim_ms):.3f}"
+            f" plan={float(self._presentation_plan_ms):.3f}"
+            f" apply={float(self._presentation_apply_ms):.3f}",
+            Vec2(float(x), float(y)),
+            rl.Color(130, 180, 240, 255),
+            scale=0.8,
+        )
+        y += float(line_h)
+
         if self._lan_wait_gate_active():
             self._draw_ui_text(
                 "lan(wait): simulation paused until all peers are ready",
                 Vec2(float(x), float(y)),
                 rl.Color(130, 180, 240, 255),
                 scale=0.9,
-            )
-            y += float(line_h)
-            self._draw_ui_text(
-                "debug: F10 force start (temporary bring-up override)",
-                Vec2(float(x), float(y)),
-                rl.Color(130, 180, 240, 255),
-                scale=0.8,
             )
             y += float(line_h)
 
@@ -595,7 +1207,7 @@ class BaseGameplayMode:
 
         if debug_enabled():
             self._draw_ui_text(
-                "Debug override: press F10 to force start",
+                "Debug: waiting for all peers before simulation starts",
                 Vec2(text_x, text_y + line_h * 4.5),
                 rl.Color(232, 197, 117, 255),
                 scale=0.8,
@@ -652,7 +1264,12 @@ class BaseGameplayMode:
         if int(snapshot.tick_index) != int(tick_index):
             runtime.error = "resync_tick_mismatch"
             return
+        self._apply_resync_snapshot(snapshot)
+        self._reset_tick_runner_state()
         runtime.mark_resync_applied(int(tick_index))
+
+    def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
+        raise NotImplementedError(f"{self.__class__.__name__}._apply_resync_snapshot() must be implemented")
 
     def _player_name_default(self) -> str:
         return str(self.config.player_name or "")
@@ -689,7 +1306,7 @@ class BaseGameplayMode:
 
         # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
-        stop_music(self.world.audio)
+        stop_music(self.audio)
 
         player_count = self.config.player_count
         seed_source = "lan_override" if self._lan_seed_override is not None else "random"
@@ -703,18 +1320,18 @@ class BaseGameplayMode:
         # counts (weapon bias) start from a consistent baseline across peers.
         self._refresh_effective_status(reset_lan_status=True)
 
-        self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
-        self.world.open()
+        self._reset_world_runtime(seed=seed, player_count=max(1, min(4, player_count)))
+        self._open_world_runtime()
         self._bind_world()
-        ground = self.world.ground
+        ground = self.render_resources.ground
         lan_debug_log(
             "mode_world_reset",
             mode=self.__class__.__name__,
             seed=int(self._bootstrap_seed),
             seed_source=str(seed_source),
-            rng_state=int(self.world.state.rng.state),
-            world_size=float(self.world.world_size),
-            player_count=int(len(self.world.players)),
+            rng_state=int(self.sim_world.state.rng.state),
+            world_size=float(self.world_size),
+            player_count=int(len(self.sim_world.players)),
             lan_enabled=self._lan_enabled,
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
@@ -740,7 +1357,14 @@ class BaseGameplayMode:
             render_h=int(rl.get_render_height()),
             terrain_texture_scale=float(ground.texture_scale) if ground is not None else 0.0,
         )
-        self._local_input.reset(players=self.world.players)
+        self._local_input.reset(players=self.sim_world.players)
+        self._network_input_provider = _LanRuntimeInputProvider(
+            player_count=max(0, len(self.sim_world.players)),
+            tick_rate=int(self._deterministic_tick_rate()),
+        )
+        self._reset_lan_capture_clock()
+        self._reset_tick_runner_state()
+        self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
         self._cursor_pulse_time = 0.0
@@ -754,7 +1378,9 @@ class BaseGameplayMode:
             rl.unload_texture(self._small.texture)
             self._small = None
         self._hud_assets = None
-        self.world.close()
+        self._reset_tick_runner_state()
+        self._reset_replay_capture_state(clear_recorder=True)
+        self._close_world_runtime()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -776,7 +1402,7 @@ class BaseGameplayMode:
             dt,
             record=record,
             player_name_default=self._player_name_default(),
-            play_sfx=self.world.audio_router.play_sfx,
+            play_sfx=self.audio_bridge.router.play_sfx,
             rand=None,
             mouse=self._ui_mouse_pos(),
         )
@@ -801,36 +1427,36 @@ class BaseGameplayMode:
             alpha = 0.0
         elif alpha > 1.0:
             alpha = 1.0
-        self.world.draw(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
+        self._draw_world(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
-        ground = self.world.ground
-        self.world.ground = None
+        ground = self.render_resources.ground
+        self.render_resources.ground = None
         return ground
 
     def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
         if ground is None:
             return
-        current = self.world.ground
+        current = self.render_resources.ground
         if current is not None and current is not ground and current.render_target is not None:
             rl.unload_render_texture(current.render_target)
             current.render_target = None
-        self.world.ground = ground
-        self.world._sync_ground_settings()
+        self.render_resources.ground = ground
+        self.sync_ground_settings()
 
     def menu_ground_camera(self) -> Vec2:
-        return self.world.camera
+        return self.camera
 
     def console_elapsed_ms(self) -> float:
-        return float(self.world._elapsed_ms)
+        return float(self.sim_world.elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
-        if self.world.ground is None:
+        if self.render_resources.ground is None:
             return
         # Keep this deterministic without consuming gameplay RNG.
         self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
         terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
-        self.world.ground.schedule_generate(seed=terrain_seed, layers=3)
+        self.render_resources.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0
@@ -843,10 +1469,10 @@ class BaseGameplayMode:
 
     def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
-            players=self.world.players,
+            players=self.sim_world.players,
             config=self.config,
             mouse_screen=self._ui_mouse,
-            screen_to_world=self.world.screen_to_world,
+            screen_to_world=self.screen_to_world,
             dt=float(dt),
             creatures=self.creatures.entries,
         )
@@ -855,42 +1481,820 @@ class BaseGameplayMode:
     def _clear_local_input_edges(inputs: list[PlayerInput]) -> list[PlayerInput]:
         return clear_input_edges(inputs)
 
-    def _run_deterministic_session_ticks(
+    @staticmethod
+    def _deterministic_tick_rate() -> int:
+        return 60
+
+    def _new_tick_runner(
         self,
         *,
-        ticks_to_run: int,
-        dt_tick: float,
-        input_frame: list[PlayerInput],
-        session: DeterministicSessionLike,
-        recorder: ReplayRecorder | None,
-        on_tick: Callable[[DeterministicSessionTick, int | None], bool],
-    ) -> None:
-        if self.world.audio_router is not None:
-            self.world.audio_router.audio = self.world.audio
-            self.world.audio_router.audio_rng = self.world.audio_rng
-            self.world.audio_router.demo_mode_active = self.world.demo_mode_active
-        if self.world.ground is not None:
-            self.world._sync_ground_settings()
-            self.world.ground.process_pending()
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
+        session: DeterministicSession | QuestDeterministicSession,
+        input_provider: InputProvider,
+    ) -> TickRunner:
+        return TickRunner(
+            session=session,
+            input_provider=input_provider,
+            config=TickRunnerConfig(),
+        )
 
-        for tick_offset in range(int(ticks_to_run)):
-            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
-            if recorder is not None:
-                tick_index: int | None = recorder.record_tick(inputs)
-            else:
-                tick_index = None
-            timing = session.timing_for_dt(float(dt_tick))
-            tick = session.step_tick(
-                timing=timing,
-                inputs=inputs,
+    def _advance_tick_runner_batch(
+        self,
+        *,
+        runner: TickRunner,
+        dt_seconds: float,
+        tick_dt_seconds: float,
+        candidate_ticks: int,
+        is_networked: bool,
+        is_replay: bool = False,
+    ) -> TickBatchResult:
+        frame_index = int(self._tick_runner_frame_index) + 1
+        self._tick_runner_frame_index = int(frame_index)
+        ticks_requested = max(0, int(candidate_ticks))
+        runner.begin_frame(
+            FrameContext(
+                dt_seconds=float(dt_seconds),
+                tick_dt_seconds=float(tick_dt_seconds),
+                frame_index=int(frame_index),
+                candidate_ticks=int(ticks_requested),
+                is_networked=bool(is_networked),
+                is_replay=bool(is_replay),
+            ),
+        )
+        batch = runner.advance_ticks(
+            start_tick=int(self._tick_runner_next_tick_index),
+            ticks_requested=int(ticks_requested),
+            tick_dt=float(tick_dt_seconds),
+        )
+        self._tick_runner_next_tick_index = int(batch.next_tick_index)
+
+        if not bool(is_networked):
+            local_clock = self._tick_runner_local_clock
+            if (
+                local_clock is not None
+                and batch.batch_status in (InputStatus.STALLED, InputStatus.EOS)
+            ):
+                unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
+                if unconsumed_ticks > 0:
+                    local_clock.accum += float(unconsumed_ticks) * float(tick_dt_seconds)
+
+        return batch
+
+    def _gameplay_tick_rate(self) -> int:
+        return int(self._deterministic_tick_rate())
+
+    def _gameplay_tick_dt(
+        self,
+        *,
+        session: DeterministicSession | QuestDeterministicSession | None = None,
+    ) -> float:
+        _ = session
+        return 1.0 / float(self._gameplay_tick_rate())
+
+    def _reset_gameplay_frame_clock(self) -> None:
+        clock = self._tick_runner_local_clock
+        if clock is not None:
+            clock.reset()
+
+    def _reset_tick_runner_state(self) -> None:
+        self._tick_input_provider = None
+        self._tick_runner = None
+        self._tick_runner_session = None
+        self._tick_runner_is_networked = False
+        self._tick_runner_network_role = ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock = None
+
+    def _reset_replay_capture_state(self, *, clear_recorder: bool) -> None:
+        self._queued_input_commands.clear()
+        if clear_recorder:
+            self._replay_recorder = None
+        self._replay_checkpoints.clear()
+        self._replay_checkpoints_last_tick = None
+
+    def _lan_capture_tick_dt(self) -> float:
+        return float(self._network_input_provider.capture_tick_dt)
+
+    def _advance_lan_capture_ticks(self, dt: float) -> int:
+        return int(self._network_input_provider.advance_capture_ticks(float(dt)))
+
+    def _reset_lan_capture_clock(self) -> None:
+        self._network_input_provider.reset_capture_clock()
+
+    def _build_lan_sync_callbacks(
+        self,
+        *,
+        runtime: LanRuntime,
+        lockstep_runtime: LockstepRuntime | None,
+        role: str,
+        provider: _LanRuntimeInputProvider,
+    ) -> LanSyncCallbacks:
+        return LanSyncCallbacks(
+            role=str(role),
+            take_frame_sample=provider.take_frame_sample,
+            state_hash_for_tick=lambda frame_tick_index, tick_result: self._lan_state_hash_from_tick_result(
+                frame_tick_index=int(frame_tick_index),
+                result=tick_result,
+            ),
+            should_emit_state_hash=lambda frame_tick_index: self._lan_should_emit_state_hash(
+                tick_index=int(frame_tick_index),
+            ),
+            note_desync=lambda kind, tick_index, expected, actual: runtime.note_desync(
+                kind=str(kind),
+                tick_index=int(tick_index),
+                expected=str(expected),
+                actual=str(actual),
+            ),
+            broadcast_tick_frame=(
+                (
+                    lambda frame_tick_index, frame_inputs, command_hash, state_hash: lockstep_runtime.broadcast_tick_frame(
+                        TickFrame(
+                            tick_index=int(frame_tick_index),
+                            frame_inputs=[list(packed) for packed in frame_inputs],
+                            command_hash=str(command_hash),
+                            state_hash=str(state_hash),
+                        ),
+                    )
+                )
+                if role == "host" and lockstep_runtime is not None
+                else None
+            ),
+        )
+
+    def _ensure_tick_runner(
+        self,
+        *,
+        session: DeterministicSession | QuestDeterministicSession,
+        is_networked: bool,
+        lan_runtime: LanRuntime | None = None,
+        lockstep_runtime: LockstepRuntime | None = None,
+        role: str = "",
+    ) -> tuple[
+        TickRunner,
+        LocalInputProvider | _LanRuntimeInputProvider,
+    ]:
+        _ = lockstep_runtime
+        runner = self._tick_runner
+        provider = self._tick_input_provider
+        if (
+            runner is not None
+            and provider is not None
+            and self._tick_runner_session is session
+            and bool(self._tick_runner_is_networked) == bool(is_networked)
+            and (
+                (not bool(is_networked))
+                or str(self._tick_runner_network_role) == str(role)
             )
-            self.world.apply_step_result(
-                tick.step,
-                game_tune_started=session.game_tune_started,
+        ):
+            if bool(is_networked):
+                if not isinstance(provider, _LanRuntimeInputProvider):
+                    raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
+                provider.bind_runtime(lan_runtime)
+                provider.set_role(str(role))
+                provider.set_before_pop(None)
+                self._tick_runner_local_clock = None
+            elif self._tick_runner_local_clock is None:
+                self._tick_runner_local_clock = FixedStepClock(
+                    tick_rate=int(self._gameplay_tick_rate()),
+                )
+            return (runner, provider)
+
+        if bool(is_networked):
+            provider = self._network_input_provider
+            provider.bind_runtime(lan_runtime)
+            provider.set_role(str(role))
+            provider.set_before_pop(None)
+        else:
+            provider = LocalInputProvider(
+                player_count=max(0, len(self.sim_world.players)),
+                build_inputs=lambda frame_ctx: self._build_local_inputs(dt=float(frame_ctx.dt_seconds)),
+            )
+        self._flush_queued_input_commands(provider=provider)
+
+        runner = self._new_tick_runner(
+            session=session,
+            input_provider=provider,
+        )
+        self._tick_runner = runner
+        self._tick_input_provider = provider
+        self._tick_runner_session = session
+        self._tick_runner_is_networked = bool(is_networked)
+        self._tick_runner_network_role = str(role) if bool(is_networked) else ""
+        self._tick_runner_frame_index = 0
+        self._tick_runner_next_tick_index = 0
+        self._tick_runner_local_clock = (
+            None
+            if bool(is_networked)
+            else FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
+        )
+        return (runner, provider)
+
+    def _apply_tick_commands(
+        self,
+        *,
+        batch: TickBatchResult,
+        provider: LocalInputProvider | _LanRuntimeInputProvider,
+        default_dt_tick: float,
+    ) -> None:
+        for tick_result in batch.completed_results:
+            commands = provider.pull_tick_commands(int(tick_result.tick_index))
+            if not commands:
+                continue
+            tick_dt = provider.resolve_tick_dt(
+                int(tick_result.tick_index),
+                float(default_dt_tick),
+            )
+            for command in commands:
+                self._apply_input_command(command, dt_tick=float(tick_dt))
+
+    @staticmethod
+    def _annotate_tick_hashes(
+        *,
+        batch: TickBatchResult,
+        on_hash: Callable[[int, TickHashes], None] | None = None,
+    ) -> None:
+        for tick_result in batch.completed_results:
+            hashes = TickHashes(
+                command_hash=str(tick_result.command_hash),
+                state_hash=None,
+            )
+            tick_result.hashes = hashes
+            if on_hash is not None:
+                on_hash(int(tick_result.tick_index), hashes)
+
+    @staticmethod
+    def _prepare_lan_tick_sync(
+        *,
+        tick_result: TickResult,
+        callbacks: LanSyncCallbacks,
+    ) -> LanTickSync:
+        sample = callbacks.take_frame_sample(int(tick_result.tick_index))
+        if sample is None:
+            raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        sync = LanTickSync(
+            frame_tick_index=int(sample.frame_tick_index),
+            frame_inputs=tuple(sample.frame_inputs),
+            remote_command_hash=str(sample.remote_command_hash),
+            remote_state_hash=str(sample.remote_state_hash),
+            host_state_hash="",
+        )
+        tick_result.lan_sync = sync
+        return sync
+
+    @staticmethod
+    def _finalize_lan_tick_sync(
+        *,
+        tick_result: TickResult,
+        callbacks: LanSyncCallbacks,
+    ) -> LanTickSync:
+        hashes = tick_result.hashes
+        if hashes is None:
+            hashes = TickHashes(command_hash=str(tick_result.command_hash), state_hash=None)
+            tick_result.hashes = hashes
+
+        lan_sync = tick_result.lan_sync
+        if lan_sync is None:
+            raise RuntimeError("lan tick result missing frame metadata")
+        sync = cast(LanTickSync, lan_sync)
+        frame_tick_index = int(sync.frame_tick_index)
+        remote_command_hash = str(sync.remote_command_hash)
+        remote_state_hash = str(sync.remote_state_hash)
+        local_command_hash = str(hashes.command_hash)
+        host_state_hash = ""
+        role = str(callbacks.role)
+
+        if role == "join":
+            if remote_command_hash and remote_command_hash != local_command_hash:
+                callbacks.note_desync("command_hash", int(frame_tick_index), remote_command_hash, local_command_hash)
+            if remote_state_hash:
+                local_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
+                if local_state_hash != remote_state_hash:
+                    callbacks.note_desync("state_hash", int(frame_tick_index), remote_state_hash, local_state_hash)
+        elif role == "host" and bool(callbacks.should_emit_state_hash(int(frame_tick_index))):
+            host_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
+
+        finalized = LanTickSync(
+            frame_tick_index=int(frame_tick_index),
+            frame_inputs=tuple(sync.frame_inputs),
+            remote_command_hash=str(remote_command_hash),
+            remote_state_hash=str(remote_state_hash),
+            host_state_hash=str(host_state_hash),
+        )
+        tick_result.lan_sync = finalized
+
+        broadcast = callbacks.broadcast_tick_frame
+        if role == "host" and broadcast is not None:
+            broadcast(
+                int(frame_tick_index),
+                tuple(sync.frame_inputs),
+                str(local_command_hash),
+                str(host_state_hash),
+            )
+        return finalized
+
+    def _record_replay_checkpoint_from_tick(
+        self,
+        *,
+        tick_index: int | None,
+        tick: DeterministicSessionStepTick,
+    ) -> None:
+        if tick_index is None:
+            return
+        world_events = tick.step.events
+        self._record_replay_checkpoint(
+            int(tick_index),
+            rng_marks=tick.rng_marks,
+            deaths=world_events.deaths,
+            events=world_events,
+            command_hash=str(tick.step.command_hash),
+        )
+
+    def _lan_mode_name(self) -> Literal["survival", "rush", "quests"]:
+        raise NotImplementedError
+
+    def _lan_match_session(self) -> DeterministicSession | QuestDeterministicSession | None:
+        raise NotImplementedError
+
+    def _on_lan_paused(self, *, dt: float) -> None:
+        _ = dt
+
+    def _prepare_lan_frame(
+        self,
+        *,
+        role: str,
+        dt_ui_ms: float,
+        session: DeterministicSession | QuestDeterministicSession,
+        dt_tick: float,
+    ) -> bool:
+        _ = role, dt_ui_ms, session, dt_tick
+        return True
+
+    def _allow_lan_frame_pop(self) -> bool:
+        return True
+
+    def _on_tick_applied(
+        self,
+        tick: DeterministicSessionStepTick,
+        *,
+        frame_tick_index: int | None,
+        dt_tick: float,
+    ) -> LanStepAction:
+        _ = tick, frame_tick_index, dt_tick
+        return "continue"
+
+    def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return
+        session = self._lan_match_session()
+        if session is None:
+            return
+        lockstep_runtime = self._lockstep_runtime()
+        role = self._prepare_lan_match_runtime(mode_name=self._lan_mode_name())
+        if role is None:
+            return
+        self._trace_lan_terrain_generation()
+        if bool(self._lan_terrain_generation_pending()):
+            self._reset_lan_capture_clock()
+            return
+
+        if bool(self._paused):
+            self._reset_gameplay_frame_clock()
+            self._on_lan_paused(dt=float(dt))
+            return
+
+        dt_tick = float(self._lan_capture_tick_dt())
+        if not self._prepare_lan_frame(
+            role=str(role),
+            dt_ui_ms=float(dt_ui_ms),
+            session=session,
+            dt_tick=float(dt_tick),
+        ):
+            return
+
+        if role == "join":
+            if self._consume_lan_tick_frames(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                role=role,
+                dt_tick=float(dt_tick),
+            ):
+                return
+
+        ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
+        self._queue_lan_local_inputs(
+            runtime=runtime,
+            ticks_to_capture=int(ticks_to_capture),
+            dt=float(dt),
+        )
+        self._consume_lan_tick_frames(
+            runtime=runtime,
+            lockstep_runtime=lockstep_runtime,
+            session=session,
+            role=role,
+            dt_tick=float(dt_tick),
+        )
+
+    def _prepare_lan_match_runtime(self, *, mode_name: Literal["survival", "rush", "quests"]) -> str | None:
+        runtime = self._lan_runtime
+        if runtime is None:
+            return None
+        role = str(self._lan_role)
+        self._consume_net_runtime_recovery(mode_name=mode_name)
+        if str(runtime.error or ""):
+            self.close_requested = True
+            return None
+        self._sync_audio_and_ground()
+        if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
+            return None
+        return role
+
+    def _lan_state_hash_for_tick(
+        self,
+        *,
+        tick_index: int,
+        elapsed_ms: float,
+        creature_count_world_step: int,
+    ) -> str:
+        return str(
+            build_checkpoint(
+                tick_index=int(tick_index),
+                world=self.sim_world.world_state,
+                elapsed_ms=float(elapsed_ms),
+                creature_count_override=int(creature_count_world_step),
+            ).state_hash,
+        )
+
+    @staticmethod
+    def _lan_should_emit_state_hash(*, tick_index: int) -> bool:
+        return int(tick_index) < 5 or (int(tick_index) % int(STATE_HASH_PERIOD_TICKS)) == 0
+
+    def _lan_state_hash_from_tick_result(self, *, frame_tick_index: int, result: TickResult) -> str:
+        payload = result.payload
+        if payload is None:
+            raise RuntimeError("lan tick result missing payload")
+        tick = cast(DeterministicSessionStepTick, payload)
+        return self._lan_state_hash_for_tick(
+            tick_index=int(frame_tick_index),
+            elapsed_ms=float(tick.elapsed_ms),
+            creature_count_world_step=int(tick.creature_count_world_step),
+        )
+
+    def _queue_lan_local_inputs(
+        self,
+        *,
+        runtime: LanRuntime,
+        ticks_to_capture: int,
+        dt: float,
+    ) -> None:
+        if int(ticks_to_capture) <= 0:
+            return
+        input_frame = self._build_local_inputs(dt=dt)
+        # In LAN sessions each peer is a single local player, so always sample
+        # inputs using the configured Player 1 bindings (index 0). The network
+        # slot mapping is handled by the lockstep runtime.
+        local_input_index = 0
+        for tick_offset in range(int(ticks_to_capture)):
+            inputs = input_frame if tick_offset == 0 else self._clear_local_input_edges(input_frame)
+            local_input = PlayerInput()
+            if 0 <= local_input_index < len(inputs):
+                local_input = inputs[local_input_index]
+            runtime.queue_local_input(pack_player_input(local_input))
+
+    def _consume_lan_tick_frames(
+        self,
+        *,
+        runtime: LanRuntime,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSession | QuestDeterministicSession,
+        role: str,
+        dt_tick: float,
+    ) -> bool:
+        runner, provider = self._ensure_tick_runner(
+            session=session,
+            is_networked=True,
+            lan_runtime=runtime,
+            lockstep_runtime=lockstep_runtime,
+            role=str(role),
+        )
+        if not isinstance(provider, _LanRuntimeInputProvider):
+            raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
+        provider.bind_runtime(runtime)
+        provider.set_before_pop(self._allow_lan_frame_pop)
+        sim_ns_start = time.perf_counter_ns()
+        ticks_requested = 1 if float(dt_tick) > 0.0 else 0
+        # LAN always requests exactly 0 or 1 ticks per frame. This ensures
+        # _on_tick_applied stop actions never discard simulated-but-unapplied ticks.
+        assert ticks_requested <= 1
+        batch = self._advance_tick_runner_batch(
+            runner=runner,
+            dt_seconds=float(dt_tick),
+            tick_dt_seconds=float(dt_tick),
+            candidate_ticks=int(ticks_requested),
+            is_networked=True,
+        )
+        sim_ms = (time.perf_counter_ns() - sim_ns_start) / 1_000_000.0
+        self._sim_ms += float(sim_ms)
+        self._presentation_plan_ms += float(
+            sum(max(0.0, float(row.presentation_plan_ms)) for row in batch.completed_results),
+        )
+
+        ticks_applied = 0
+        stop_after_finalize = False
+        if int(batch.ticks_completed) <= 0:
+            if provider.pop_blocked:
+                return False
+        else:
+            lan_sync_callbacks = self._build_lan_sync_callbacks(
+                runtime=runtime,
+                lockstep_runtime=lockstep_runtime,
+                role=str(role),
+                provider=provider,
+            )
+            self._apply_tick_commands(
+                batch=batch,
+                provider=provider,
+                default_dt_tick=float(dt_tick),
+            )
+            self._annotate_tick_hashes(batch=batch, on_hash=None)
+
+            def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
+                frame_tick_index = applied.frame_tick_index
+                if frame_tick_index is None:
+                    raise RuntimeError("lan tick runner completed without runtime frame metadata")
+                return self._on_tick_applied(
+                    applied.tick,
+                    frame_tick_index=int(frame_tick_index),
+                    dt_tick=float(dt_tick),
+                )
+
+            apply_ns_start = time.perf_counter_ns()
+            outcome = self._process_tick_batch_results(
+                batch=batch,
+                session=session,
+                recorder=self._replay_recorder,
+                lan_sync_callbacks=lan_sync_callbacks,
+                on_tick_applied=_on_tick_applied,
+                on_checkpoint=lambda replay_tick_index, tick: self._record_replay_checkpoint_from_tick(
+                    tick_index=int(replay_tick_index),
+                    tick=tick,
+                ),
+            )
+            self._apply_batch_presentation_outputs(
+                outputs=outcome.presentation_outputs,
                 apply_audio=True,
                 update_camera=True,
             )
-            if on_tick(tick, tick_index):
-                break
+            apply_ms = (time.perf_counter_ns() - apply_ns_start) / 1_000_000.0
+            ticks_applied = int(outcome.ticks_applied)
+            stop_after_finalize = bool(outcome.stop_after_finalize)
+            self._presentation_apply_ms += float(apply_ms)
+        if int(ticks_applied) <= 0:
+            self._input_stall_count += 1
+        return bool(stop_after_finalize)
+
+    def _sync_audio_and_ground(self) -> None:
+        if self.audio_bridge.router is not None:
+            self.audio_bridge.router.audio = self.audio
+            self.audio_bridge.router.audio_rng = self.audio_rng
+            self.audio_bridge.router.demo_mode_active = self.demo_mode_active
+        if self.render_resources.ground is not None:
+            self.sync_ground_settings()
+            self.render_resources.ground.process_pending()
+
+    def _apply_sim_step_result(
+        self,
+        *,
+        step: object,
+        game_tune_started: bool,
+        apply_audio: bool,
+        update_camera: bool,
+    ) -> None:
+        deterministic_step = cast(DeterministicStepPayload, step)
+        presentation = (
+            deterministic_step.presentation
+            if deterministic_step.presentation is not None
+            else PresentationStepCommands()
+        )
+        self.sim_world.apply_step_metadata(
+            events=deterministic_step.events,
+            presentation=presentation,
+            command_hash=str(deterministic_step.command_hash),
+            dt_sim=float(deterministic_step.dt_sim),
+            game_tune_started=bool(game_tune_started),
+        )
+        self.sync_audio_bridge_state()
+        self.audio_bridge.apply_plan(
+            plan=presentation,
+            apply_audio=bool(apply_audio),
+        )
+        if update_camera:
+            self.update_camera(float(deterministic_step.dt_sim))
+
+    def _apply_batch_presentation_outputs(
+        self,
+        *,
+        outputs: tuple[PresentationTickOutput, ...],
+        apply_audio: bool,
+        update_camera: bool,
+    ) -> None:
+        apply_presentation_outputs(
+            outputs=outputs,
+            sync_audio_bridge_state=self.sync_audio_bridge_state,
+            apply_audio_plan=lambda plan, should_apply_audio: self.audio_bridge.apply_plan(
+                plan=plan,
+                apply_audio=bool(should_apply_audio),
+            ),
+            update_camera=self.update_camera if bool(update_camera) else None,
+            apply_audio=bool(apply_audio),
+        )
+
+    def _process_tick_batch_results(
+        self,
+        *,
+        batch: TickBatchResult,
+        session: DeterministicSession | QuestDeterministicSession,
+        recorder: ReplayRecorder | None = None,
+        lan_sync_callbacks: LanSyncCallbacks | None = None,
+        on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
+        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
+    ) -> _BatchApplyOutcome:
+        ticks_applied = 0
+        stop_after_finalize = False
+        presentation_outputs: list[PresentationTickOutput] = []
+
+        def _extract_step(payload: object) -> DeterministicStepPayload:
+            return cast(DeterministicStepPayload, cast(DeterministicSessionStepTick, payload).step)
+
+        for tick_result in batch.completed_results:
+            payload = tick_result.payload
+            if payload is None:
+                continue
+            tick = cast(DeterministicSessionStepTick, payload)
+            runner_tick_index = int(tick_result.tick_index)
+            replay_tick_index = tick_result.replay_tick_index
+            if replay_tick_index is None and recorder is not None:
+                inputs = tick_result.inputs
+                if inputs is not None:
+                    replay_tick_index = int(recorder.record_tick(list(inputs)))
+                    tick_result.replay_tick_index = replay_tick_index
+            hashes = tick_result.hashes
+            local_command_hash = str(
+                hashes.command_hash if hashes is not None else tick.step.command_hash,
+            )
+            applied = _AppliedBatchTick(
+                runner_tick_index=int(runner_tick_index),
+                tick=tick,
+                replay_tick_index=replay_tick_index,
+                local_command_hash=str(local_command_hash),
+                hashes=hashes,
+            )
+            if lan_sync_callbacks is not None:
+                sync = self._prepare_lan_tick_sync(
+                    tick_result=tick_result,
+                    callbacks=lan_sync_callbacks,
+                )
+                applied.frame_tick_index = int(sync.frame_tick_index)
+                applied.frame_inputs = tuple(sync.frame_inputs)
+                applied.remote_command_hash = str(sync.remote_command_hash)
+                applied.remote_state_hash = str(sync.remote_state_hash)
+                applied.host_state_hash = str(sync.host_state_hash)
+            lan_sync = tick_result.lan_sync
+            if lan_sync is not None:
+                sync = cast(LanTickSync, lan_sync)
+                applied.frame_tick_index = int(sync.frame_tick_index)
+                applied.frame_inputs = tuple(sync.frame_inputs)
+                applied.remote_command_hash = str(sync.remote_command_hash)
+                applied.remote_state_hash = str(sync.remote_state_hash)
+                applied.host_state_hash = str(sync.host_state_hash)
+
+            try:
+                presentation_outputs.extend(
+                    apply_sim_metadata_batch(
+                        sim_world=cast(SimMetadataSink, self.sim_world),
+                        completed_results=[tick_result],
+                        game_tune_started=bool(session.game_tune_started),
+                        extract_step=_extract_step,
+                    ),
+                )
+            except AttributeError:
+                # Some tests inject minimal step stubs and patch
+                # _apply_sim_step_result; preserve that seam.
+                self._apply_sim_step_result(
+                    step=tick.step,
+                    game_tune_started=bool(session.game_tune_started),
+                    apply_audio=False,
+                    update_camera=False,
+                )
+            self._ticks_advanced_per_frame += 1
+            ticks_applied += 1
+
+            action: LanStepAction = "continue"
+            if on_tick_applied is not None:
+                action = on_tick_applied(applied)
+            if action == "stop_before_finalize":
+                return _BatchApplyOutcome(
+                    ticks_applied=int(ticks_applied),
+                    stopped=True,
+                    stop_after_finalize=False,
+                    presentation_outputs=tuple(presentation_outputs),
+                )
+
+            if replay_tick_index is not None and on_checkpoint is not None:
+                on_checkpoint(int(replay_tick_index), tick)
+
+            if lan_sync_callbacks is not None:
+                finalized_sync = self._finalize_lan_tick_sync(
+                    tick_result=tick_result,
+                    callbacks=lan_sync_callbacks,
+                )
+                applied.host_state_hash = str(finalized_sync.host_state_hash)
+
+            if action == "stop_after_finalize":
+                stop_after_finalize = True
+                return _BatchApplyOutcome(
+                    ticks_applied=int(ticks_applied),
+                    stopped=True,
+                    stop_after_finalize=bool(stop_after_finalize),
+                    presentation_outputs=tuple(presentation_outputs),
+                )
+
+        return _BatchApplyOutcome(
+            ticks_applied=int(ticks_applied),
+            stopped=False,
+            stop_after_finalize=bool(stop_after_finalize),
+            presentation_outputs=tuple(presentation_outputs),
+        )
+
+    def _run_deterministic_session_ticks(
+        self,
+        *,
+        dt_frame: float,
+        session: DeterministicSession | QuestDeterministicSession,
+        recorder: ReplayRecorder | None,
+        on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
+        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
+        on_hash: Callable[[int, TickHashes], None] | None = None,
+    ) -> None:
+        if float(dt_frame) <= 0.0:
+            return
+        self._sync_audio_and_ground()
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
+        runner, provider = self._ensure_tick_runner(
+            session=session,
+            is_networked=False,
+        )
+        if not isinstance(provider, LocalInputProvider):
+            raise TypeError("local tick runner provider must be LocalInputProvider")
+        local_clock = self._tick_runner_local_clock
+        if local_clock is None:
+            local_clock = FixedStepClock(tick_rate=int(self._gameplay_tick_rate()))
+            self._tick_runner_local_clock = local_clock
+
+        candidate_ticks = int(local_clock.advance(float(dt_frame)))
+        tick_dt = float(local_clock.dt_tick)
+        sim_ns_start = time.perf_counter_ns()
+        batch = self._advance_tick_runner_batch(
+            runner=runner,
+            dt_seconds=float(dt_frame),
+            tick_dt_seconds=float(tick_dt),
+            candidate_ticks=int(candidate_ticks),
+            is_networked=False,
+        )
+        self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
+        self._presentation_plan_ms = float(
+            sum(max(0.0, float(row.presentation_plan_ms)) for row in batch.completed_results),
+        )
+
+        self._apply_tick_commands(
+            batch=batch,
+            provider=provider,
+            default_dt_tick=float(tick_dt),
+        )
+        self._annotate_tick_hashes(
+            batch=batch,
+            on_hash=on_hash,
+        )
+
+        apply_ns_start = time.perf_counter_ns()
+        outcome = self._process_tick_batch_results(
+            batch=batch,
+            session=session,
+            recorder=recorder,
+            on_tick_applied=lambda applied: (
+                "stop_after_finalize"
+                if on_tick(applied.tick, applied.replay_tick_index)
+                else "continue"
+            ),
+            on_checkpoint=on_checkpoint,
+        )
+        self._apply_batch_presentation_outputs(
+            outputs=outcome.presentation_outputs,
+            apply_audio=True,
+            update_camera=True,
+        )
+        self._presentation_apply_ms = float((time.perf_counter_ns() - apply_ns_start) / 1_000_000.0)
+        if batch.batch_status is InputStatus.STALLED and int(batch.ticks_completed) <= 0:
+            self._input_stall_count += 1

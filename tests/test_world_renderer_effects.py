@@ -30,10 +30,15 @@ class _StateStub:
     effects: _EffectPoolStub
 
 
+@dataclass(slots=True)
+class _SimWorldStub:
+    state: _StateStub
+
+
 class _WorldStub:
     def __init__(self, entries: list[EffectEntry]) -> None:
-        self.particles_texture = _TextureStub()
-        self.state = _StateStub(effects=_EffectPoolStub(entries=entries))
+        self.render_resources = SimpleNamespace(particles_texture=_TextureStub())
+        self.sim_world = _SimWorldStub(state=_StateStub(effects=_EffectPoolStub(entries=entries)))
 
 
 def _entry(*, flags: int, pos: Vec2) -> EffectEntry:

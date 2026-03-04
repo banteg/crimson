@@ -786,6 +786,7 @@ def cmd_replay_list(
     console.print(table)
     parsed_count = len(rows) - len(parse_errors)
     typer.echo(f"count={len(rows)} parsed={parsed_count} errors={len(parse_errors)}")
+    typer.echo(f"replays_dir={replays_dir}")
     for parse_error in parse_errors:
         typer.echo(f"warning: {parse_error}")
 

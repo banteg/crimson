@@ -7,11 +7,10 @@ from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.survival_mode as survival_mode_module
-from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
-from crimson.sim.sessions import SurvivalDeterministicSession
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.timing import FrameTiming
 from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
@@ -20,7 +19,7 @@ from grim.view import ViewContext
 
 def _make_survival_mode(
     *,
-    session_factory: Callable[..., SurvivalDeterministicSession] | None = None,
+    session_factory: Callable[..., DeterministicSession] | None = None,
 ) -> SurvivalMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
@@ -29,7 +28,7 @@ def _make_survival_mode(
     return SurvivalMode(ctx, session_factory=session_factory)
 
 
-def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicSession]:
+def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
     class _FakeSession:
         def __init__(self, *, world) -> None:
             self._world = world
@@ -56,11 +55,29 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
             for player in self._world.players:
                 if float(player.health) <= 0.0:
                     player.death_timer -= float(dt) * 20.0
-            step = SimpleNamespace(events=SimpleNamespace(deaths=()), command_hash=0)
-            return SimpleNamespace(step=step, rng_marks={})
+            step = SimpleNamespace(
+                events=SimpleNamespace(deaths=()),
+                command_hash="0",
+                dt_sim=float(dt),
+                presentation=None,
+                presentation_plan_ms=0.0,
+            )
+            return SimpleNamespace(
+                step=step,
+                command_hash="0",
+                dt_sim=float(dt),
+                presentation_plan_ms=0.0,
+                rng_marks={},
+                elapsed_ms=float(self.elapsed_ms),
+                creature_count_world_step=0,
+            )
 
-    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
-    return lambda *, world, **_kwargs: cast(SurvivalDeterministicSession, _FakeSession(world=world))
+    mocker.patch.object(
+        base_gameplay_mode_module.BaseGameplayMode,
+        "_apply_sim_step_result",
+        side_effect=lambda *_args, **_kwargs: None,
+    )
+    return lambda *, world, **_kwargs: cast(DeterministicSession, _FakeSession(world=world))
 
 
 def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:
@@ -74,7 +91,7 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt: float, dt_ui_ms: float) -> None:
-        perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode.sim_world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)

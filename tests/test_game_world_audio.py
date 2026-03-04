@@ -5,16 +5,17 @@ from pathlib import Path
 
 import crimson.audio_router as audio_router_module
 from crimson.bonuses import BonusId
-from crimson.game_world import GameWorld
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
+from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.sfx import init_sfx_state
 from tests.helpers import assert_float_close
+from tests.world_runtime import WorldRuntimeHost
 
 
 def _audio_state_stub() -> AudioState:
@@ -27,14 +28,14 @@ def _audio_state_stub() -> AudioState:
 
 def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -53,9 +54,9 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
 
-    world.audio_router.handle_player_audio(
+    world.audio_bridge.router.handle_player_audio(
         player,
         prev_shot_seq=prev_shot_seq,
         prev_reload_active=prev_reload_active,
@@ -68,14 +69,14 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
 
 def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
 
     player.weapon.weapon_id = WeaponId.SHOTGUN  # Shotgun
     player.weapon.clip_size = 12
@@ -94,9 +95,9 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
 
-    world.audio_router.handle_player_audio(
+    world.audio_bridge.router.handle_player_audio(
         player,
         prev_shot_seq=prev_shot_seq,
         prev_reload_active=prev_reload_active,
@@ -109,15 +110,16 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
 
 def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
     player.experience = 10_000
 
-    world.update(
+    step_world_once(
+        world,
         0.05,
         inputs=[PlayerInput()],
         auto_pick_perks=False,
@@ -130,16 +132,20 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
 
 def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.POINTS, state=world.state)
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=BonusId.POINTS,
+        state=world.sim_world.state,
+    )
     assert entry is not None
 
-    world.update(0.016, perk_progression_enabled=False)
+    step_world_once(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     play_sfx.assert_called_once()
@@ -148,20 +154,20 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
 
 def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FIREBLAST,
-        state=world.state,
+        state=world.sim_world.state,
     )
     assert entry is not None
 
-    world.update(0.016, perk_progression_enabled=False)
+    step_world_once(world, 0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert play_sfx.call_count == 2
@@ -170,18 +176,18 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
 
-    player = world.players[0]
+    player = world.sim_world.players[0]
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
-    world.update(0.2, inputs=[aim], perk_progression_enabled=False)
+    step_world_once(world, 0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -190,7 +196,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.man_bomb_timer = 0.0
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
-    world.update(0.1, inputs=[aim], perk_progression_enabled=False)
+    step_world_once(world, 0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -203,22 +209,22 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.weapon.reload_timer_max = 2.0
     player.weapon.clip_size = 10
     player.weapon.ammo = 0
-    world.update(0.2, inputs=[aim], perk_progression_enabled=False)
+    step_world_once(world, 0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
 
 def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = random.Random(0)
-    world.audio_router.audio = world.audio
-    world.audio_router.audio_rng = world.audio_rng
+    world.audio_bridge.router.audio = world.audio
+    world.audio_bridge.router.audio_rng = world.audio_rng
 
-    world.state.bonuses.reflex_boost = 0.75
-    world.audio_router.play_sfx("sfx_pistol_fire")
+    world.sim_world.state.bonuses.reflex_boost = 0.75
+    world.audio_bridge.router.play_sfx("sfx_pistol_fire")
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_pistol_fire"

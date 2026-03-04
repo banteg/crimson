@@ -62,115 +62,115 @@ class WorldRenderCtx(msgspec.Struct):
     def ground(self) -> GroundRenderer | None:
         if self.frame is not None:
             return self.frame.ground
-        return self.renderer._world.ground
+        return self.renderer._world.render_resources.ground
 
     @property
     def state(self) -> GameplayState:
         if self.frame is not None:
             return self.frame.state
-        return self.renderer._world.state
+        return self.renderer._world.sim_world.state
 
     @property
     def players(self) -> list[PlayerState]:
         if self.frame is not None:
             return self.frame.players
-        return self.renderer._world.players
+        return self.renderer._world.sim_world.players
 
     @property
     def creatures(self) -> CreaturePool:
         if self.frame is not None:
             return self.frame.creatures
-        return self.renderer._world.creatures
+        return self.renderer._world.sim_world.creatures
 
     @property
     def creature_textures(self) -> dict[str, rl.Texture]:
         if self.frame is not None:
             return self.frame.creature_textures
-        return self.renderer._world.creature_textures
+        return self.renderer._world.render_resources.creature_textures
 
     @property
     def projs_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.projs_texture
-        return self.renderer._world.projs_texture
+        return self.renderer._world.render_resources.projs_texture
 
     @property
     def particles_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.particles_texture
-        return self.renderer._world.particles_texture
+        return self.renderer._world.render_resources.particles_texture
 
     @property
     def bullet_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.bullet_texture
-        return self.renderer._world.bullet_texture
+        return self.renderer._world.render_resources.bullet_texture
 
     @property
     def bullet_trail_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.bullet_trail_texture
-        return self.renderer._world.bullet_trail_texture
+        return self.renderer._world.render_resources.bullet_trail_texture
 
     @property
     def arrow_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.arrow_texture
-        return self.renderer._world.arrow_texture
+        return self.renderer._world.render_resources.arrow_texture
 
     @property
     def bonuses_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.bonuses_texture
-        return self.renderer._world.bonuses_texture
+        return self.renderer._world.render_resources.bonuses_texture
 
     @property
     def bodyset_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.bodyset_texture
-        return self.renderer._world.bodyset_texture
+        return self.renderer._world.render_resources.bodyset_texture
 
     @property
     def clock_table_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.clock_table_texture
-        return self.renderer._world.clock_table_texture
+        return self.renderer._world.render_resources.clock_table_texture
 
     @property
     def clock_pointer_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.clock_pointer_texture
-        return self.renderer._world.clock_pointer_texture
+        return self.renderer._world.render_resources.clock_pointer_texture
 
     @property
     def aim_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.aim_texture
-        return self.renderer._world.aim_texture
+        return self.renderer._world.render_resources.aim_texture
 
     @property
     def muzzle_flash_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.muzzle_flash_texture
-        return self.renderer._world.muzzle_flash_texture
+        return self.renderer._world.render_resources.muzzle_flash_texture
 
     @property
     def wicons_texture(self) -> rl.Texture | None:
         if self.frame is not None:
             return self.frame.wicons_texture
-        return self.renderer._world.wicons_texture
+        return self.renderer._world.render_resources.wicons_texture
 
     @property
     def elapsed_ms(self) -> float:
         if self.frame is not None:
             return self.frame.elapsed_ms
-        return float(self.renderer._world._elapsed_ms)
+        return float(self.renderer._world.sim_world.elapsed_ms)
 
     @property
     def bonus_anim_phase(self) -> float:
         if self.frame is not None:
             return self.frame.bonus_anim_phase
-        return float(self.renderer._world._bonus_anim_phase)
+        return float(self.renderer._world.sim_world.bonus_anim_phase)
 
     @property
     def lan_player_rings_enabled(self) -> bool:

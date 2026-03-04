@@ -11,9 +11,11 @@ from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.presentation_step import (
-    apply_world_presentation_step,
+    PresentationStepCommands,
+    apply_presentation_plan,
     plan_death_sfx_keys,
     plan_hit_sfx_keys,
+    plan_world_presentation_step,
     queue_projectile_decals,
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
@@ -133,7 +135,7 @@ def test_plan_death_sfx_skips_suppressed_deaths() -> None:
     )
 
 
-def test_apply_world_presentation_step_orders_sfx() -> None:
+def test_plan_world_presentation_step_orders_sfx() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -141,7 +143,7 @@ def test_apply_world_presentation_step_orders_sfx() -> None:
 
     state.perk_selection.pending_count = 1
 
-    commands = apply_world_presentation_step(
+    commands = plan_world_presentation_step(
         state=state,
         players=[player],
         fx_queue=FxQueue(),
@@ -382,14 +384,14 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     assert fx_queue.count == 12
 
 
-def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
+def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
     rng = MockCrand(0, fallback="repeat_last")
     before_calls = rng.calls
     before_state = rng.state
 
-    commands = apply_world_presentation_step(
+    commands = plan_world_presentation_step(
         state=state,
         players=[player],
         fx_queue=FxQueue(),
@@ -420,3 +422,48 @@ def test_apply_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
     )
     assert commands.trigger_game_tune is True
     assert commands.sfx_keys == ["sfx_bullet_hit_01"]
+
+
+def test_apply_presentation_plan_dispatches_audio_in_order() -> None:
+    class _Sink:
+        def __init__(self) -> None:
+            self.events: list[str] = []
+
+        def trigger_game_tune(self) -> str | None:
+            self.events.append("tune")
+            return None
+
+        def play_sfx_resolved(self, key: str | None) -> None:
+            self.events.append(str(key))
+
+    sink = _Sink()
+    apply_presentation_plan(
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["a", "b"]),
+        audio_sink=sink,
+        apply_audio=True,
+    )
+
+    assert sink.events == ["tune", "a", "b"]
+
+
+def test_apply_presentation_plan_skips_when_audio_disabled() -> None:
+    class _Sink:
+        def __init__(self) -> None:
+            self.called = False
+
+        def trigger_game_tune(self) -> str | None:
+            self.called = True
+            return None
+
+        def play_sfx_resolved(self, key: str | None) -> None:
+            _ = key
+            self.called = True
+
+    sink = _Sink()
+    apply_presentation_plan(
+        plan=PresentationStepCommands(trigger_game_tune=True, sfx_keys=["x"]),
+        audio_sink=sink,
+        apply_audio=False,
+    )
+
+    assert sink.called is False

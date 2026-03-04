@@ -73,7 +73,7 @@ def reset_players(
     player_count: int,
     spawn_pos: Vec2 | None = None,
 ) -> None:
-    """Reset `players` to the classic initial layout used by `GameWorld.reset`."""
+    """Reset `players` to the classic initial layout used by runtime reset."""
 
     players.clear()
 
@@ -92,7 +92,7 @@ def reset_players(
         weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
         players.append(player)
-    # Player bootstrap mirrors GameWorld.reset: start with a clean runtime SFX
+    # Player bootstrap mirrors runtime reset: start with a clean runtime SFX
     # queue so replay/session tick 0 does not include setup reload sounds.
     state.sfx_queue.clear()
 
@@ -115,7 +115,7 @@ def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]
 
 
 def time_scale_reflex_boost_bonus(state: GameplayState, dt: float) -> float:
-    """Time scale (Reflex Boost bonus), mirroring `GameWorld.update`."""
+    """Time scale (Reflex Boost bonus), mirroring deterministic world-step timing."""
     return _time_scale_reflex_boost_bonus(
         reflex_boost_timer=float(state.bonuses.reflex_boost),
         time_scale_active=bool(state.time_scale_active),

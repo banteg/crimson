@@ -8,6 +8,7 @@ import msgspec
 
 from grim.raylib_api import rl
 
+from .render_pipeline import RenderPipeline, WindowSink
 from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
@@ -53,30 +54,44 @@ def run_view(
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
     run_hooks = hooks if hooks is not None else RunViewHooks()
-    view.open()
-    screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
-    screenshot_index = _next_screenshot_index(screenshot_dir)
-    while not rl.window_should_close():
-        dt = rl.get_frame_time()
-        view.update(dt)
-        take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
-        if run_hooks.consume_screenshot_request():
-            take_screenshot = True
-        rl.begin_drawing()
-        view.draw()
-        rl.end_drawing()
-        if run_hooks.should_close():
-            break
-        if take_screenshot:
-            screenshot_dir.mkdir(parents=True, exist_ok=True)
-            filename = f"{screenshot_index:05d}.png"
-            rl.take_screenshot(filename)
-            src = Path.cwd() / filename
-            if src.exists():
-                shutil.move(str(src), str(screenshot_dir / filename))
-            screenshot_index += 1
-    view.close()
-    rl.close_window()
+    render_pipeline = RenderPipeline(
+        sink=WindowSink(),
+        begin_end_drawing=True,
+        begin_draw=rl.begin_drawing,
+        end_draw=rl.end_drawing,
+    )
+    try:
+        view.open()
+        screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
+        screenshot_index = _next_screenshot_index(screenshot_dir)
+        while not rl.window_should_close():
+            dt = rl.get_frame_time()
+            view.update(dt)
+            take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
+            if run_hooks.consume_screenshot_request():
+                take_screenshot = True
+            render_pipeline.draw(
+                draw_frame=view.draw,
+                width=rl.get_render_width(),
+                height=rl.get_render_height(),
+            )
+            render_pipeline.present()
+            if run_hooks.should_close():
+                break
+            if take_screenshot:
+                screenshot_dir.mkdir(parents=True, exist_ok=True)
+                filename = f"{screenshot_index:05d}.png"
+                rl.take_screenshot(filename)
+                src = Path.cwd() / filename
+                if src.exists():
+                    shutil.move(str(src), str(screenshot_dir / filename))
+                screenshot_index += 1
+    finally:
+        try:
+            view.close()
+        finally:
+            render_pipeline.close()
+            rl.close_window()
 
 
 def run_window(

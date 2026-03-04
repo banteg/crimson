@@ -5,16 +5,25 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
-from crimson.game_world import GameWorld
+from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import RushDeterministicSession, SurvivalDeterministicSession
+from crimson.sim.sessions import (
+    DeterministicSession,
+    RushSpawnState,
+    SurvivalSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+    survival_mid_step,
+)
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.sim.world_tick_runner_harness import step_world_once
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 from tests.helpers import assert_float_close
+from tests.world_runtime import WorldRuntimeHost
 
 
 def test_camera_shake_update_resets_offsets_when_inactive() -> None:
@@ -97,17 +106,21 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
 
 def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = GameWorld(assets_dir=repo_root / "artifacts" / "assets")
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
-    player = world.players[0]
-    entry = world.state.bonus_pool.spawn_at(pos=Vec2(player.pos.x, player.pos.y), bonus_id=BonusId.NUKE, state=world.state)
+    player = world.sim_world.players[0]
+    entry = world.sim_world.state.bonus_pool.spawn_at(
+        pos=Vec2(player.pos.x, player.pos.y),
+        bonus_id=BonusId.NUKE,
+        state=world.sim_world.state,
+    )
     assert entry is not None
 
-    world.update(1.0 / 60.0, perk_progression_enabled=False)
+    step_world_once(world, 1.0 / 60.0, perk_progression_enabled=False)
 
     assert entry.picked
-    assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, 0.2)
+    assert world.sim_world.state.camera_shake_pulses == 0x14
+    assert_float_close(world.sim_world.state.camera_shake_timer, 0.2)
 
 
 def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
@@ -138,13 +151,17 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = SurvivalDeterministicSession(
+    spawn = SurvivalSpawnState()
+    session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
-        perk_progression_enabled=False,
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=True,
+        mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
+        finalize_post_render_lifecycle=True,
     )
 
     timing = session.timing_for_dt(1.0 / 60.0)
@@ -164,12 +181,19 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
     fx_queue, fx_queue_rotated = build_empty_fx_queues()
-    session = RushDeterministicSession(
+    spawn = RushSpawnState()
+    session = DeterministicSession(
         world=world,
         world_size=1024.0,
         damage_scale_by_type=build_damage_scale_by_type(),
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
+        game_mode=GameMode.RUSH,
+        perk_progression_enabled=False,
+        mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
+        input_transform=rush_input_transform,
+        elapsed_uses_raw_dt=True,
+        finalize_post_render_lifecycle=True,
     )
 
     timing = session.timing_for_dt(1.0 / 60.0)

@@ -15,13 +15,14 @@ from grim.raylib_api import rd, rl
 from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game.types import GameState
 from .game_modes import GameMode
-from .game_world import GameWorld
 from .sim.input import PlayerInput
+from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
+from .world import WorldRuntime
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -70,18 +71,19 @@ class DemoView:
 
     def __init__(self, state: GameState) -> None:
         self.state = state
-        self._world = GameWorld(
+        self._runtime = WorldRuntime(
             assets_dir=state.assets_dir,
-            world_size=WORLD_SIZE,
+            world_size=float(WORLD_SIZE),
             demo_mode_active=True,
             hardcore=state.config.hardcore,
-            difficulty_level=0,
             preserve_bugs=bool(state.preserve_bugs),
             texture_cache=state.texture_cache,
             config=state.config,
             audio=state.audio,
             audio_rng=state.rng,
         )
+        self._runtime.reset()
+
         self._crand = Crand(0)
         self._demo_targets: list[int | None] = []
         self._variant_index = 0
@@ -98,6 +100,44 @@ class DemoView:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
+        self._runtime.init_tick_runner(
+            game_mode=GameMode.DEMO,
+            build_inputs=self._build_runner_inputs,
+        )
+
+    def _open_world_runtime(self) -> None:
+        self._runtime.open_runtime()
+        self.state.texture_cache = self._runtime.texture_cache
+
+    def _close_world_runtime(self) -> None:
+        self._runtime.close_runtime()
+
+    def _set_terrain(
+        self,
+        *,
+        base_key: str,
+        overlay_key: str,
+        base_path: str,
+        overlay_path: str,
+    ) -> None:
+        self._runtime.terrain_runtime.set_terrain(
+            base_key=base_key,
+            overlay_key=overlay_key,
+            base_path=base_path,
+            overlay_path=overlay_path,
+        )
+        self._runtime.terrain_runtime.schedule_from_rng_seed(
+            seed=int(self._runtime.sim_world.state.rng.state),
+            layers=3,
+        )
+
+    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+        self._runtime.render_resources.bake_fx_queues()
+        self._runtime.renderer.draw(
+            render_frame=self._runtime.build_render_frame(),
+            draw_aim_indicators=draw_aim_indicators,
+            entity_alpha=entity_alpha,
+        )
 
     def open(self) -> None:
         self._finished = False
@@ -112,11 +152,13 @@ class DemoView:
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
         self._crand.srand(self.state.rng.getrandbits(32))
-        self._world.open()
+        self._open_world_runtime()
+        self._runtime.reset_tick_runner()
         self._demo_mode_start()
 
     def close(self) -> None:
-        self._world.close()
+        self._runtime.reset_tick_runner()
+        self._close_world_runtime()
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
             self._upsell_font = None
@@ -167,7 +209,7 @@ class DemoView:
         if self._purchase_active:
             self._draw_purchase_screen()
             return
-        self._world.draw()
+        self._draw_world()
         self._draw_overlay()
 
     def _skip_triggered(self) -> bool:
@@ -424,7 +466,7 @@ class DemoView:
         self._purchase_active = False
         self._purchase_url_opened = False
         self._spawn_rng.srand(self.state.rng.randrange(0, 0x1_0000_0000))
-        self._world.state.bonuses.weapon_power_up = 0.0
+        self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._apply_variant_ground(0)
             self._setup_variant_0()
@@ -451,16 +493,17 @@ class DemoView:
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self.state.rng.getrandbits(32))
-        self._world.reset(seed=seed, player_count=len(specs))
+        self._runtime.reset(seed=seed, player_count=len(specs))
+        self._runtime.reset_tick_runner()
         for idx, (pos, weapon_id) in enumerate(specs):
-            if idx >= len(self._world.players):
+            if idx >= len(self._runtime.sim_world.players):
                 continue
-            player = self._world.players[idx]
+            player = self._runtime.sim_world.players[idx]
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim = pos
-            weapon_assign_player(player, WeaponId(weapon_id), state=self._world.state)
-        self._demo_targets = [None] * len(self._world.players)
+            weapon_assign_player(player, WeaponId(weapon_id), state=self._runtime.sim_world.state)
+        self._demo_targets = [None] * len(self._runtime.sim_world.players)
 
     def _apply_variant_ground(self, index: int) -> None:
         if index == 5:
@@ -506,7 +549,7 @@ class DemoView:
             ),
         )
         base_key, overlay_key, base_path, overlay_path = terrain
-        self._world.set_terrain(
+        self._set_terrain(
             base_key=base_key,
             overlay_key=overlay_key,
             base_path=base_path,
@@ -519,7 +562,7 @@ class DemoView:
         return int(self._crand.rand() % mod)
 
     def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
-        self._world.creatures.spawn_template(
+        self._runtime.sim_world.creatures.spawn_template(
             int(spawn_id),
             pos,
             float(heading),
@@ -556,7 +599,7 @@ class DemoView:
                 (Vec2(480.0, 576.0), weapon_id),
             ],
         )
-        self._world.state.bonuses.weapon_power_up = 15.0
+        self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
@@ -603,7 +646,7 @@ class DemoView:
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
         weapons = ", ".join(
             f"P{p.index + 1}:{_weapon_name(p.weapon.weapon_id, preserve_bugs=bool(self.state.preserve_bugs))}"
-            for p in self._world.players
+            for p in self._runtime.sim_world.players
         )
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
@@ -665,24 +708,20 @@ class DemoView:
 
         draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
+    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        return self._build_demo_inputs(float(frame_ctx.dt_seconds))
+
     def _update_world(self, dt: float) -> None:
-        if not self._world.players:
+        if not self._runtime.sim_world.players:
             return
-        inputs = self._build_demo_inputs(dt)
-        self._world.update(
-            dt,
-            inputs=inputs,
-            auto_pick_perks=False,
-            game_mode=GameMode.DEMO,
-            perk_progression_enabled=False,
-        )
+        self._runtime.advance_tick_frame(float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
-        players = self._world.players
-        creatures = self._world.creatures.entries
+        players = self._runtime.sim_world.players
+        creatures = self._runtime.sim_world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
-        center = Vec2(float(self._world.world_size) * 0.5, float(self._world.world_size) * 0.5)
+        center = Vec2(float(self._runtime.world_size) * 0.5, float(self._runtime.world_size) * 0.5)
 
         dt = float(dt)
 
@@ -761,7 +800,7 @@ class DemoView:
     def _nearest_world_creature_index(self, pos: Vec2) -> int | None:
         best_idx = None
         best_dist = 0.0
-        for idx, creature in enumerate(self._world.creatures.entries):
+        for idx, creature in enumerate(self._runtime.sim_world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
             d = Vec2.distance_sq(pos, creature.pos)

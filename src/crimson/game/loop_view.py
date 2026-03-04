@@ -181,6 +181,7 @@ class GameLoopView:
                 self._front_views["start_quest"],
             },
         )
+        self._runtime_updates_per_frame = 0
 
     def _pending_session(self):
         return self.state.pending_network_session
@@ -435,6 +436,8 @@ class GameLoopView:
         return forward_action
 
     def _tick_network_runtime(self) -> None:
+        self._runtime_updates_per_frame = 0
+        self.state.runtime_updates_per_frame = 0
         pending = self._pending_session()
         runtime = self.state.network_runtime
         if pending is None or runtime is None:
@@ -449,6 +452,8 @@ class GameLoopView:
             lan_debug_log("net_open_error", role=str(pending.role), error=str(exc))
             return
         runtime.update()
+        self._runtime_updates_per_frame += 1
+        self.state.runtime_updates_per_frame = int(self._runtime_updates_per_frame)
         self.state.network_desync_count = int(runtime.desync_count)
         lobby_state = runtime.lobby_state()
         if lobby_state is not None:
@@ -460,6 +465,39 @@ class GameLoopView:
         error = str(runtime.error)
         if error and not self.state.network_last_error:
             self.state.network_last_error = error
+        if bool(self.state.network_in_lobby) and int(self._runtime_updates_per_frame) != 1:
+            lan_debug_log(
+                "runtime_pump_violation",
+                context="interactive_gameplay",
+                expected=1,
+                actual=int(self._runtime_updates_per_frame),
+            )
+
+    def _clear_state_frame_telemetry(self) -> None:
+        self.state.input_stall_count = 0
+        self.state.ticks_advanced_per_frame = 0
+        self.state.sim_ms = 0.0
+        self.state.presentation_plan_ms = 0.0
+        self.state.presentation_apply_ms = 0.0
+
+    def _sync_gameplay_frame_telemetry_to_state(self) -> None:
+        gameplay = self._as_gameplay_view(self._front_active)
+        if gameplay is None:
+            return
+        (
+            runtime_updates_per_frame,
+            input_stall_count,
+            ticks_advanced_per_frame,
+            sim_ms,
+            presentation_plan_ms,
+            presentation_apply_ms,
+        ) = gameplay.frame_telemetry()
+        self.state.runtime_updates_per_frame = int(runtime_updates_per_frame)
+        self.state.input_stall_count = int(input_stall_count)
+        self.state.ticks_advanced_per_frame = int(ticks_advanced_per_frame)
+        self.state.sim_ms = float(sim_ms)
+        self.state.presentation_plan_ms = float(presentation_plan_ms)
+        self.state.presentation_apply_ms = float(presentation_apply_ms)
 
     def update(self, dt: float) -> None:
         input_begin_frame()
@@ -471,6 +509,12 @@ class GameLoopView:
         self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
         self._tick_network_runtime()
+        self._clear_state_frame_telemetry()
+        front_active = self._front_active
+        if front_active is not None:
+            setter = getattr(front_active, "set_runtime_updates_per_frame", None)
+            if callable(setter):
+                setter(int(self._runtime_updates_per_frame))
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_P):
@@ -488,6 +532,7 @@ class GameLoopView:
                 return
 
         self._active.update(dt)
+        self._sync_gameplay_frame_telemetry_to_state()
         if self._front_active is not None:
             action = self._front_active.take_action()
             if action is not None:
@@ -871,7 +916,7 @@ class GameLoopView:
         self.state.console.draw()
         self.state.console.draw_fps_counter()
 
-    def draw(self) -> None:
+    def _draw_with_gamma(self) -> None:
         gamma_gain = max(0.0, float(self.state.gamma_ramp))
         if abs(gamma_gain - 1.0) <= 1e-6:
             self._draw_scene_layers()
@@ -888,6 +933,9 @@ class GameLoopView:
             self._draw_scene_layers()
         finally:
             rl.end_shader_mode()
+
+    def draw(self) -> None:
+        self._draw_with_gamma()
 
     def close(self) -> None:
         if self._menu_active:

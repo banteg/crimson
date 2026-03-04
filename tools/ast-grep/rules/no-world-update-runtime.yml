@@ -1,0 +1,14 @@
+id: no-world-update-runtime
+language: python
+severity: error
+message: Runtime gameplay/debug/view orchestration must not call `world.update(...)`; use TickRunner/session paths instead.
+files:
+  - src/crimson/modes/**/*.py
+  - src/crimson/game/**/*.py
+  - src/crimson/views/**/*.py
+  - src/crimson/demo.py
+rule:
+  any:
+    - pattern: world.update($$$ARGS)
+    - pattern: self.world.update($$$ARGS)
+    - pattern: self._world.update($$$ARGS)

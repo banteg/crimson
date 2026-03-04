@@ -5,7 +5,6 @@ from types import SimpleNamespace
 from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
-from crimson.game_world import GameWorld
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -19,6 +18,7 @@ from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import ViewContext
+from tests.world_runtime import WorldRuntimeHost
 
 
 def test_game_world_init_honors_config_player_count(tmp_path: Path) -> None:
@@ -28,18 +28,18 @@ def test_game_world_init_honors_config_player_count(tmp_path: Path) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.data["player_count"] = 2
 
-    world = GameWorld(assets_dir=assets_dir, config=cfg)
-    assert [player.index for player in world.players] == [0, 1]
+    world = WorldRuntimeHost(assets_dir=assets_dir, config=cfg)
+    assert [player.index for player in world.sim_world.players] == [0, 1]
 
 
 def test_game_world_reset_spreads_player_spawn_positions() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
-    world = GameWorld(assets_dir=assets_dir)
+    world = WorldRuntimeHost(assets_dir=assets_dir)
     world.reset(seed=0xBEEF, player_count=4)
 
-    positions = {(round(player.pos.x, 3), round(player.pos.y, 3)) for player in world.players}
+    positions = {(round(player.pos.x, 3), round(player.pos.y, 3)) for player in world.sim_world.players}
     assert len(positions) == 4
 
 
@@ -52,7 +52,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = SurvivalMode(ctx, config=cfg)
-    assert len(mode.world.players) == 2  # intentional: wiring smoke test
+    assert len(mode.sim_world.players) == 2  # intentional: wiring smoke test
 
 
 def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -> None:
@@ -64,7 +64,15 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     ctx = ViewContext(assets_dir=assets_dir)
     step_tick = mocker.Mock(
         return_value=SimpleNamespace(
-            step=SimpleNamespace(),
+            step=SimpleNamespace(
+                command_hash="0",
+                dt_sim=1.0 / 60.0,
+                presentation=None,
+                presentation_plan_ms=0.0,
+            ),
+            command_hash="0",
+            dt_sim=1.0 / 60.0,
+            presentation_plan_ms=0.0,
             spawn_timeline_ms=0.0,
             no_creatures_timer_ms=0.0,
             completion_transition_ms=-1.0,
@@ -101,18 +109,18 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
         config=cfg,
         session_factory=lambda **_kwargs: cast(QuestDeterministicSession, fake_session),
     )
-    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
+    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.sim_world.players))]
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
     mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt: inputs)
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
-    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
 
     mode.update(0.02)
 
     step_tick.assert_called_once()
-    assert step_tick.call_args.kwargs["inputs"] is inputs
+    assert step_tick.call_args.kwargs["inputs"] == inputs
     assert len(inputs) == 3
 
 
@@ -131,7 +139,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
 
     frame = mode._build_local_inputs(dt=0.016)
 
-    assert len(frame) == len(mode.world.players)
+    assert len(frame) == len(mode.sim_world.players)
     build_frame_inputs.assert_called_once()
     assert build_frame_inputs.call_args.kwargs["creatures"] is mode.creatures.entries
     assert bool(mode._local_input._preserve_bugs) == bool(mode.state.preserve_bugs)
@@ -152,33 +160,19 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Pa
         waiting_for_players=True,
     )
 
-    class _FakeClock:
-        def __init__(self) -> None:
-            self.reset_calls = 0
-            self.advance_calls = 0
-            self.dt_tick = 1.0 / 60.0
-
-        def reset(self) -> None:
-            self.reset_calls += 1
-
-        def advance(self, _dt: float) -> int:
-            self.advance_calls += 1
-            return 1
-
-    clock = _FakeClock()
-    mode._sim_clock = clock
-
+    reset_clock = mocker.patch.object(mode, "_reset_gameplay_frame_clock", side_effect=lambda: None)
+    run_ticks = mocker.patch.object(mode, "_run_deterministic_session_ticks", return_value=0)
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
 
     mode.update(0.02)
 
-    assert clock.reset_calls == 1
-    assert clock.advance_calls == 0
+    reset_clock.assert_called_once()
+    run_ticks.assert_not_called()
 
 
-def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> None:
+def test_rush_mode_debug_f10_does_not_bypass_lan_wait_gate(mocker, tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     assets_dir = repo_root / "artifacts" / "assets"
 
@@ -193,22 +187,7 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> N
         waiting_for_players=True,
     )
 
-    class _FakeClock:
-        def __init__(self) -> None:
-            self.reset_calls = 0
-            self.advance_calls = 0
-            self.dt_tick = 1.0 / 60.0
-
-        def reset(self) -> None:
-            self.reset_calls += 1
-
-        def advance(self, _dt: float) -> int:
-            self.advance_calls += 1
-            return 0
-
-    clock = _FakeClock()
-    mode._sim_clock = clock
-
+    run_ticks = mocker.patch.object(mode, "_run_deterministic_session_ticks", return_value=1)
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
@@ -221,8 +200,8 @@ def test_rush_mode_debug_f10_releases_lan_wait_gate(mocker, tmp_path: Path) -> N
 
     mode.update(0.02)
 
-    assert clock.advance_calls == 1
-    assert mode._lan_wait_gate_active() is False
+    run_ticks.assert_not_called()
+    assert mode._lan_wait_gate_active() is True
 
 
 def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
@@ -252,9 +231,9 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
         connected_players=1,
         waiting_for_players=True,
     )
-    assert mode.world.lan_player_rings_enabled is False
-    assert mode.world.lan_local_aim_indicators_only is True
-    assert mode.world.lan_local_player_slot_index == 2
+    assert mode.lan_player_rings_enabled is False
+    assert mode.lan_local_aim_indicators_only is True
+    assert mode.lan_local_player_slot_index == 2
 
     console.exec_line("cv_lanPlayerRings 1")
     mode.set_lan_runtime(
@@ -264,7 +243,7 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
         connected_players=1,
         waiting_for_players=True,
     )
-    assert mode.world.lan_player_rings_enabled is True
+    assert mode.lan_player_rings_enabled is True
 
     mode.set_lan_runtime(
         enabled=False,
@@ -273,5 +252,5 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
         connected_players=1,
         waiting_for_players=False,
     )
-    assert mode.world.lan_player_rings_enabled is False
-    assert mode.world.lan_local_aim_indicators_only is False
+    assert mode.lan_player_rings_enabled is False
+    assert mode.lan_local_aim_indicators_only is False

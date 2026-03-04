@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from typing import Any, cast
+
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_survival_replay
@@ -87,7 +91,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
             on_capture_state_transition=on_capture_state_transition,
         )
 
-    original_timing = sessions_module.SurvivalDeterministicSession.timing_for_dt
+    original_timing = sessions_module.DeterministicSession.timing_for_dt
 
     def _traced_timing(self, dt: float):
         order.append("timing")
@@ -95,7 +99,7 @@ def test_survival_runner_applies_pre_step_events_before_timing(mocker) -> None:
 
     mocker.patch.object(playback_driver_module, "apply_replay_tick_events", side_effect=_traced_apply)
     mocker.patch.object(
-        sessions_module.SurvivalDeterministicSession,
+        sessions_module.DeterministicSession,
         "timing_for_dt",
         autospec=True,
         side_effect=_traced_timing,
@@ -186,6 +190,33 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
 
 
+def test_survival_runner_tick_rng_trace_rows_include_draws_before_trace_exit(mocker) -> None:
+    import crimson.sim.driver.playback_driver as playback_driver_module
+
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    rows_by_tick: dict[int, list[tuple[int, int, int]]] = {}
+
+    @contextmanager
+    def _fake_tick_rng_trace(_rng: object, *, enabled: bool):
+        draws: list[tuple[int, int, int]] = []
+        try:
+            yield draws
+        finally:
+            if enabled:
+                draws.append((1, 2, 3))
+
+    mocker.patch.object(playback_driver_module, "_tick_rng_trace", side_effect=_fake_tick_rng_trace)
+
+    run_replay(
+        replay,
+        trace_rng=True,
+        tick_rng_trace_observer=lambda tick_index, draws: rows_by_tick.setdefault(int(tick_index), list(draws)),
+    )
+
+    assert rows_by_tick == {0: [(1, 2, 3)]}
+
+
 def test_survival_runner_applies_terminal_tick_events() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     rec.record_perk_menu_open(player_index=0, tick_index=3)
@@ -214,3 +245,57 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [3]
     assert checkpoints[0].rng_marks == {}
+
+
+def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> None:
+    import crimson.sim.driver.playback_driver as playback_driver_module
+
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    captured: dict[str, object] = {}
+
+    class _StopRun(RuntimeError):
+        pass
+
+    def _capture_provider(
+        *,
+        player_count: int,
+        journal=None,
+        resolve_tick_input=None,
+        tick_count: int | None = None,
+        resolve_tick_dt=None,
+    ):
+        captured["provider_player_count"] = int(player_count)
+        captured["provider_tick_count"] = None if tick_count is None else int(tick_count)
+        captured["provider_journal"] = journal
+        captured["provider_resolver"] = resolve_tick_input
+        captured["provider_dt_resolver"] = resolve_tick_dt
+        return object()
+
+    def _capture_runner(*args, **kwargs):
+        _ = args
+        captured["runner_input_provider"] = kwargs.get("input_provider")
+        captured["runner_config"] = kwargs.get("config")
+        raise _StopRun("stop after runner construction")
+
+    from unittest.mock import patch
+
+    with (
+        patch.object(playback_driver_module, "ReplayInputProvider", side_effect=_capture_provider),
+        patch.object(playback_driver_module, "TickRunner", side_effect=_capture_runner),
+        pytest.raises(_StopRun, match="runner construction"),
+    ):
+        driver.run_to_completion()
+
+    assert captured["provider_player_count"] == int(replay.header.player_count)
+    journal = cast(Any, captured["provider_journal"])
+    assert journal is not None
+    assert callable(journal.read_tick_inputs)
+    assert callable(journal.read_tick_dt)
+    assert int(journal.tick_count()) == int(driver.tick_limit)
+    assert captured["provider_tick_count"] is None
+    assert captured["provider_resolver"] is None
+    assert captured["provider_dt_resolver"] is None
+    assert captured["runner_input_provider"] is not None
+    assert captured["runner_config"] is not None

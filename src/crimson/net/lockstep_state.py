@@ -208,6 +208,9 @@ class ClientLockstepState(msgspec.Struct):
         self._next_consume_tick += 1
         return frame
 
+    def has_canonical_frame(self) -> bool:
+        return int(self._next_consume_tick) in self._canonical_by_tick
+
     def pop_desync_notice(self) -> tuple[int, str, str] | None:
         if not self._pending_desync:
             return None

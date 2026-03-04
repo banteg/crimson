@@ -169,6 +169,12 @@ class GameState(msgspec.Struct):
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
+    runtime_updates_per_frame: int = 0
+    input_stall_count: int = 0
+    ticks_advanced_per_frame: int = 0
+    sim_ms: float = 0.0
+    presentation_plan_ms: float = 0.0
+    presentation_apply_ms: float = 0.0
 
     @property
     def pending_quest_level_value(self) -> QuestLevel | None:
