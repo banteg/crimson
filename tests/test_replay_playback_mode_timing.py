@@ -70,7 +70,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     assert view._dt_accum <= (1.0 / 60.0)
 
 
-def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> None:
+def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_view) -> None:
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
@@ -101,7 +101,10 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
 
     view._tick_runner = _FakeRunner()
 
-    view._tick_one()
+    view._advance_runner(
+        dt_seconds=float(view._dt),
+        max_ticks=1,
+    )
 
     assert view._tick_index == 1
     assert not view._finished

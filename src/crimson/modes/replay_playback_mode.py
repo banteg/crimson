@@ -669,12 +669,6 @@ class ReplayPlaybackMode:
         clock = getattr(runner, "clock", None)
         self._dt_accum = float(getattr(clock, "accum", 0.0))
 
-    def _tick_one(self) -> None:
-        self._advance_runner(
-            dt_seconds=float(self._dt),
-            max_ticks=1,
-        )
-
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
 
