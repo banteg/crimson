@@ -40,6 +40,7 @@ class _TickRunnerStackSpy:
     def __init__(self, sink: list[tuple[str, ...]]) -> None:
         self._sink = sink
         self.calls = 0
+        self.clock = SimpleNamespace(dt_tick=1.0 / 60.0)
 
     def advance_frame(self, *_args, **_kwargs) -> TickBatchResult:
         self.calls += 1
@@ -276,7 +277,6 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     mocker.patch.object(lan_mode, "_advance_lan_capture_ticks", return_value=0)
     mocker.patch.object(lan_mode, "_queue_lan_local_inputs", return_value=None)
     mocker.patch.object(lan_mode, "_reset_profiler_hook", return_value=None)
-    mocker.patch.object(lan_mode, "_before_lan_tick_step", return_value=None)
     mocker.patch.object(
         lan_mode,
         "_ensure_tick_runner",

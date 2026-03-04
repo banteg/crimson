@@ -32,6 +32,7 @@ from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
+from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
@@ -47,7 +48,6 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanStepAction,
-    _AppliedBatchTick,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -146,12 +146,26 @@ class SurvivalMode(BaseGameplayMode):
         return True
 
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
-        self._apply_perk_pick_input_command(
-            command,
-            dt_tick=float(dt_tick),
+        if str(command.name) != "perk_pick":
+            return
+        raw_choice_index = command.payload.get("choice_index")
+        if raw_choice_index is None:
+            raw_choice_index = command.payload.get("index")
+        if not isinstance(raw_choice_index, int):
+            raise TypeError("perk_pick command requires integer payload['choice_index']")
+        ctx = self._perk_menu_context()
+        picked = perk_selection_pick(
+            ctx.state,
+            ctx.players,
+            ctx.perk_state,
+            int(raw_choice_index),
             game_mode=GameMode.SURVIVAL,
-            perk_context=self._perk_menu_context(),
+            player_count=int(ctx.player_count),
+            dt=float(dt_tick),
+            creatures=ctx.creatures,
         )
+        if picked is not None and self.audio_bridge.router is not None:
+            self.audio_bridge.router.play_sfx("sfx_ui_bonus")
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._survival.elapsed_ms)
@@ -488,76 +502,45 @@ class SurvivalMode(BaseGameplayMode):
             return False
         return True
 
-    def _before_lan_tick_step(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> None:
-        _ = role, lockstep_runtime, dt_tick
-        session.detail_preset = int(self._deterministic_detail_preset())
-        session.gore_disabled = int(self._deterministic_gore_disabled())
-
-    def _allow_lan_frame_pop(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, lockstep_runtime, session, dt_tick
+    def _allow_lan_frame_pop(self) -> bool:
         return not self._perk_menu.active
 
-    def _after_join_lan_consume(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, lockstep_runtime, session, dt_tick
+    def _after_join_lan_consume(self) -> bool:
         if self._perk_menu.active:
             self._reset_lan_capture_clock()
             return True
         return False
 
-    def _on_lan_tick_applied(
+    def _on_tick_applied(
         self,
+        tick,
         *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        step: _AppliedBatchTick,
+        frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
-        _ = role, lockstep_runtime, dt_tick
-        frame_tick_index = step.frame_tick_index
-        if frame_tick_index is None:
-            raise RuntimeError("lan tick missing frame_tick_index")
-        session_elapsed_ms = float(step.tick.elapsed_ms)
+        _ = dt_tick
+        session_elapsed_ms = float(tick.elapsed_ms)
         session_stage = self._spawn_state.stage
         session_spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
         self._survival.elapsed_ms = session_elapsed_ms
         self._survival.stage = session_stage
         self._survival.spawn_cooldown = session_spawn_cooldown_ms
 
-        self._lan_last_tick_index = int(frame_tick_index)
-        self._store_net_runtime_snapshot(
-            snapshot=SurvivalStateSnapshotV2(
-                tick_index=int(frame_tick_index),
-                replay_state=self._net_replay_snapshot_state(),
-                runtime_state=SurvivalRuntimeSnapshotV2(
-                    elapsed_ms=float(session_elapsed_ms),
-                    stage=int(session_stage),
-                    spawn_cooldown_ms=float(session_spawn_cooldown_ms),
-                    perk_pending_count=int(self.state.perk_selection.pending_count),
+        if frame_tick_index is not None:
+            self._lan_last_tick_index = int(frame_tick_index)
+            self._store_net_runtime_snapshot(
+                snapshot=SurvivalStateSnapshotV2(
+                    tick_index=int(frame_tick_index),
+                    replay_state=self._net_replay_snapshot_state(),
+                    runtime_state=SurvivalRuntimeSnapshotV2(
+                        elapsed_ms=float(session_elapsed_ms),
+                        stage=int(session_stage),
+                        spawn_cooldown_ms=float(session_spawn_cooldown_ms),
+                        perk_pending_count=int(self.state.perk_selection.pending_count),
+                    ),
                 ),
-            ),
-        )
+            )
+
         if self._perk_menu.active:
             return "stop_before_finalize"
 
@@ -680,16 +663,12 @@ class SurvivalMode(BaseGameplayMode):
         if session is None:
             return
 
-        def _on_tick(tick, tick_index: int | None) -> bool:
-            self._survival.elapsed_ms = float(session.elapsed_ms)
-            self._survival.stage = self._spawn_state.stage
-            self._survival.spawn_cooldown = self._spawn_state.spawn_cooldown_ms
-            _ = tick_index
+        tick_dt = float(self._gameplay_tick_dt(session=session))
 
-            if self._death_transition_ready():
-                self._enter_game_over()
-                return True
-            return False
+        def _on_tick(tick, tick_index: int | None) -> bool:
+            _ = tick_index
+            action = self._on_tick_applied(tick, frame_tick_index=None, dt_tick=tick_dt)
+            return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:
             self._record_replay_checkpoint_from_tick(

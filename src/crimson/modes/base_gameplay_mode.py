@@ -46,7 +46,6 @@ from ..net.rollback_runtime import RollbackRuntime
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
-from ..perks.selection import perk_selection_pick
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
@@ -851,36 +850,6 @@ class BaseGameplayMode:
 
     def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
         _ = command, dt_tick
-
-    def _apply_perk_pick_input_command(
-        self,
-        command: InputCommand,
-        *,
-        dt_tick: float,
-        game_mode: GameMode,
-        perk_context: object,
-    ) -> bool:
-        if str(command.name) != "perk_pick":
-            return False
-        raw_choice_index = command.payload.get("choice_index")
-        if raw_choice_index is None:
-            raw_choice_index = command.payload.get("index")
-        if not isinstance(raw_choice_index, int):
-            raise TypeError("perk_pick command requires integer payload['choice_index']")
-        ctx = cast(Any, perk_context)
-        picked = perk_selection_pick(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            int(raw_choice_index),
-            game_mode=game_mode,
-            player_count=int(ctx.player_count),
-            dt=float(dt_tick),
-            creatures=ctx.creatures,
-        )
-        if picked is not None and self.audio_bridge.router is not None:
-            self.audio_bridge.router.play_sfx("sfx_ui_bonus")
-        return True
 
     def _consume_pending_input_commands(self, *, dt_tick: float) -> None:
         queued = list(self._queued_input_commands)
@@ -1854,37 +1823,21 @@ class BaseGameplayMode:
         _ = role, dt, dt_ui_ms, lockstep_runtime, session, dt_tick
         return True
 
-    def _before_lan_tick_step(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> None:
-        _ = role, lockstep_runtime, session, dt_tick
-
-    def _allow_lan_frame_pop(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, lockstep_runtime, session, dt_tick
+    def _allow_lan_frame_pop(self) -> bool:
         return True
 
-    def _after_join_lan_consume(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, lockstep_runtime, session, dt_tick
+    def _after_join_lan_consume(self) -> bool:
         return False
+
+    def _on_tick_applied(
+        self,
+        tick: DeterministicSessionStepTick,
+        *,
+        frame_tick_index: int | None,
+        dt_tick: float,
+    ) -> LanStepAction:
+        _ = tick, frame_tick_index, dt_tick
+        return "continue"
 
     def _on_lan_tick_applied(
         self,
@@ -1895,8 +1848,11 @@ class BaseGameplayMode:
         step: _AppliedBatchTick,
         dt_tick: float,
     ) -> LanStepAction:
-        _ = role, lockstep_runtime, session, step, dt_tick
-        return "continue"
+        _ = role, lockstep_runtime, session
+        frame_tick_index = step.frame_tick_index
+        if frame_tick_index is None:
+            raise RuntimeError("lan tick missing frame_tick_index")
+        return self._on_tick_applied(step.tick, frame_tick_index=int(frame_tick_index), dt_tick=float(dt_tick))
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
         runtime = self._lan_runtime
@@ -1939,12 +1895,7 @@ class BaseGameplayMode:
                 dt_tick=float(dt_tick),
             ):
                 return
-            if self._after_join_lan_consume(
-                role=str(role),
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                dt_tick=float(dt_tick),
-            ):
+            if self._after_join_lan_consume():
                 return
 
         ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
@@ -2056,21 +2007,8 @@ class BaseGameplayMode:
             raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
         replay_hook.clear_recorded_ticks()
         provider.bind_runtime(runtime)
-        provider.set_before_pop(
-            lambda: self._allow_lan_frame_pop(
-                role=str(role),
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                dt_tick=float(dt_tick),
-            ),
-        )
+        provider.set_before_pop(self._allow_lan_frame_pop)
         self._reset_profiler_hook(profiler)
-        self._before_lan_tick_step(
-            role=str(role),
-            lockstep_runtime=lockstep_runtime,
-            session=session,
-            dt_tick=float(dt_tick),
-        )
         result = self._advance_tick_runner(
             runner=runner,
             dt_seconds=float(dt_tick),

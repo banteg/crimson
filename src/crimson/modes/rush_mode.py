@@ -41,7 +41,6 @@ from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
     LanStepAction,
-    _AppliedBatchTick,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -283,33 +282,29 @@ class RushMode(BaseGameplayMode):
         session.gore_disabled = int(self._deterministic_gore_disabled())
         return True
 
-    def _on_lan_tick_applied(
+    def _on_tick_applied(
         self,
+        tick,
         *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        step: _AppliedBatchTick,
+        frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
-        _ = role, lockstep_runtime, dt_tick
-        frame_tick_index = step.frame_tick_index
-        if frame_tick_index is None:
-            raise RuntimeError("lan tick missing frame_tick_index")
-        self._rush.elapsed_ms = float(step.tick.elapsed_ms)
+        _ = dt_tick
+        self._rush.elapsed_ms = float(tick.elapsed_ms)
         self._rush.spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
-        self._store_net_runtime_snapshot(
-            snapshot=RushStateSnapshotV2(
-                tick_index=int(frame_tick_index),
-                replay_state=self._net_replay_snapshot_state(),
-                runtime_state=RushRuntimeSnapshotV2(
-                    elapsed_ms=float(step.tick.elapsed_ms),
-                    spawn_cooldown_ms=self._spawn_state.spawn_cooldown_ms,
-                    kill_count=int(self.creatures.kill_count),
+        if frame_tick_index is not None:
+            self._store_net_runtime_snapshot(
+                snapshot=RushStateSnapshotV2(
+                    tick_index=int(frame_tick_index),
+                    replay_state=self._net_replay_snapshot_state(),
+                    runtime_state=RushRuntimeSnapshotV2(
+                        elapsed_ms=float(tick.elapsed_ms),
+                        spawn_cooldown_ms=self._spawn_state.spawn_cooldown_ms,
+                        kill_count=int(self.creatures.kill_count),
+                    ),
                 ),
-            ),
-        )
-        if not any(player.health > 0.0 for player in self.sim_world.players):
+            )
+        if not self._any_player_alive():
             self._enter_game_over()
             return "stop_after_finalize"
         return "continue"
@@ -342,15 +337,12 @@ class RushMode(BaseGameplayMode):
         if session is None:
             return
 
-        def _on_tick(tick, tick_index: int | None) -> bool:
-            self._rush.elapsed_ms = float(tick.elapsed_ms)
-            self._rush.spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
-            _ = tick_index
+        tick_dt = float(self._gameplay_tick_dt(session=session))
 
-            if not self._any_player_alive():
-                self._enter_game_over()
-                return True
-            return False
+        def _on_tick(tick, tick_index: int | None) -> bool:
+            _ = tick_index
+            action = self._on_tick_applied(tick, frame_tick_index=None, dt_tick=tick_dt)
+            return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:
             self._record_replay_checkpoint_from_tick(

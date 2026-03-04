@@ -62,7 +62,7 @@ def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
                 presentation=None,
                 presentation_plan_ms=0.0,
             )
-            return SimpleNamespace(step=step, rng_marks={})
+            return SimpleNamespace(step=step, rng_marks={}, elapsed_ms=float(self.elapsed_ms), creature_count_world_step=0)
 
     mocker.patch.object(
         base_gameplay_mode_module.BaseGameplayMode,
