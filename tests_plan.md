@@ -186,6 +186,39 @@ Acceptance:
 1. A reviewed list of top mock-heavy files exists with status (`keep`, `refactor`, `defer`).
 2. Core runtime path files no longer rely on private-method patch webs.
 
+### Boundary-Mock Policy
+
+Valid mock boundaries (keep):
+- **GPU/raylib**: `rl.*` draw calls, texture operations, blend modes, screen queries
+- **Network I/O**: `transport.send_packet`, `transport.recv_packets`
+- **Audio hardware**: audio device init, playback via OS audio subsystem
+- **File I/O**: font loading, asset loading, terrain file I/O
+- **Process/OS**: `time.perf_counter_ns`, screen resolution
+
+Invalid mock targets (refactor):
+- Internal method patches (e.g. `_reset_tick_runner_state`, `_apply_sim_step_result`)
+- Internal draw helpers (`_draw_small`, `_text_width`)
+- Implementation ordering checks via spy capture
+
+### Mock Triage Table
+
+| File | Mocks | Status | Notes |
+|------|-------|--------|-------|
+| test_primary_beam_rtx.py | 9 | keep | GPU boundary; 2 internal draw helpers are borderline |
+| test_net_runtime_rollback.py | 4 | keep | network I/O boundary |
+| test_relay_service.py | 3 | keep | network I/O boundary |
+| test_net_runtime_resync.py | 3 | keep | network I/O boundary |
+| test_net_reconnect.py | 3 | keep | network I/O boundary |
+| test_resync_snapshot_apply.py | 2 | refactor | internal method mocks |
+| test_quest_results_layout.py | 2 | keep | GPU boundary; internal draw methods borderline |
+| test_perk_database_view.py | 2 | refactor | internal utility mocks |
+| test_net_runtime_heartbeat.py | 2 | keep | network I/O boundary |
+| test_game_over_sfx.py | 2 | keep | GPU/input boundary |
+| test_console_command_generateterrain.py | 2 | refactor | internal state management mocks |
+| test_replay_playback_mode_audio.py | 1 | defer | test infrastructure |
+| test_replay_runners_survival.py | 1 | refactor | internal implementation ordering |
+| test_game_tune_trigger.py | 1 | refactor | internal audio method mocks |
+
 ## Phase 6: Contract Tightening For Typed Runtime Results
 
 Goal: reduce type-erasure pressure in production-facing test seams.
