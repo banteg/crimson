@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import webbrowser
+from typing import cast
 
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import update_audio
@@ -20,7 +21,7 @@ from .render.world.renderer import WorldRenderer
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
-from .sim.world_tick_runner_harness import WorldTickRunnerHarness
+from .sim.world_tick_runner_harness import WorldTickRunnerHarness, WorldTickRunnerHost
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -77,7 +78,7 @@ class DemoView:
         self.world_size = float(WORLD_SIZE)
         self.demo_mode_active = True
         self.difficulty_level = 0
-        self.hardcore = bool(state.config.hardcore)
+        self.hardcore = state.config.hardcore
         self.preserve_bugs = bool(state.preserve_bugs)
         self.texture_cache = state.texture_cache
         self.config = state.config
@@ -133,7 +134,7 @@ class DemoView:
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
         self._tick_runtime = WorldTickRunnerHarness(
-            world=self,
+            world=cast(WorldTickRunnerHost, self),
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
         )

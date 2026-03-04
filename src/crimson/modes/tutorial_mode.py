@@ -348,9 +348,7 @@ class TutorialMode(BaseGameplayMode):
             self.player.experience = int(actions.force_player_experience)
             survival_check_level_up(self.player, self.state.perk_selection)
 
-        detail_preset = 5
-        if self.config is not None:
-            detail_preset = self.config.detail_preset
+        detail_preset = self.config.detail_preset
 
         for call in actions.spawn_bonuses:
             spawned = self.state.bonus_pool.spawn_at(
