@@ -11,9 +11,10 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.modes.base_gameplay_mode import _GameplayTickObserverHook
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
-from crimson.sim.hooks import TickContext, TickHookBus
+from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ReplayRecorderHook, TickContext, TickHookBus
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     InputCommand,
@@ -50,29 +51,6 @@ class _TickRunnerStackSpy:
             remaining_debt_ticks=0,
             completed_results=[],
         )
-
-
-class _ReplayHookStub:
-    def set_recorder(self, _recorder: object | None) -> None:
-        return
-
-    def clear_recorded_ticks(self) -> None:
-        return
-
-
-class _CheckpointHookStub:
-    def set_on_checkpoint(self, _callback: object | None) -> None:
-        return
-
-
-class _NetworkSyncHookStub:
-    def set_on_hash(self, _callback: object | None) -> None:
-        return
-
-
-class _ObserverHookStub:
-    def set_on_tick(self, _callback: object | None) -> None:
-        return
 
 
 class _LanProviderStub:
@@ -268,12 +246,16 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     )
 
     profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
+    replay_hook = ReplayRecorderHook(None)
+    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook, on_checkpoint=None)
+    network_sync_hook = NetworkSyncHook(on_hash=None)
+    observer_hook = _GameplayTickObserverHook(replay_hook=replay_hook)
     runner_bundle = (
-        _ReplayHookStub(),
-        _CheckpointHookStub(),
-        _NetworkSyncHookStub(),
+        replay_hook,
+        checkpoint_hook,
+        network_sync_hook,
         profiler,
-        _ObserverHookStub(),
+        observer_hook,
         None,
     )
     mode_frame = SimpleNamespace(dt=0.016, dt_ui_ms=16.0)
