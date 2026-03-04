@@ -1752,10 +1752,9 @@ class BaseGameplayMode:
             hashes = TickHashes(command_hash=str(tick_result.command_hash), state_hash=None)
             tick_result.hashes = hashes
 
-        lan_sync = tick_result.lan_sync
-        if lan_sync is None:
+        sync = tick_result.lan_sync
+        if sync is None:
             raise RuntimeError("lan tick result missing frame metadata")
-        sync = cast(LanTickSync, lan_sync)
         frame_tick_index = int(sync.frame_tick_index)
         remote_command_hash = str(sync.remote_command_hash)
         remote_state_hash = str(sync.remote_state_hash)
@@ -2160,14 +2159,12 @@ class BaseGameplayMode:
                 applied.remote_command_hash = str(sync.remote_command_hash)
                 applied.remote_state_hash = str(sync.remote_state_hash)
                 applied.host_state_hash = str(sync.host_state_hash)
-            lan_sync = tick_result.lan_sync
-            if lan_sync is not None:
-                sync = cast(LanTickSync, lan_sync)
-                applied.frame_tick_index = int(sync.frame_tick_index)
-                applied.frame_inputs = tuple(sync.frame_inputs)
-                applied.remote_command_hash = str(sync.remote_command_hash)
-                applied.remote_state_hash = str(sync.remote_state_hash)
-                applied.host_state_hash = str(sync.host_state_hash)
+            if tick_result.lan_sync is not None:
+                applied.frame_tick_index = int(tick_result.lan_sync.frame_tick_index)
+                applied.frame_inputs = tuple(tick_result.lan_sync.frame_inputs)
+                applied.remote_command_hash = str(tick_result.lan_sync.remote_command_hash)
+                applied.remote_state_hash = str(tick_result.lan_sync.remote_state_hash)
+                applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
             try:
                 presentation_outputs.extend(
