@@ -1,0 +1,20 @@
+id: no-driver-direct-sim-metadata-apply
+valid:
+  - |
+    apply_tick_to_sim(sim_world=sim_world, step=step, game_tune_started=False)
+  - |
+    outputs = apply_sim_metadata_batch(
+        sim_world=sim_world,
+        completed_results=batch.completed_results,
+        game_tune_started=session.game_tune_started,
+        extract_step=lambda payload: payload.step,
+    )
+invalid:
+  - |
+    self.sim_world.apply_step_metadata(
+        events=step.events,
+        presentation=step.presentation,
+        command_hash=str(step.command_hash),
+        dt_sim=float(step.dt_sim),
+        game_tune_started=False,
+    )
