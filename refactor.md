@@ -219,12 +219,12 @@ advance call.
 
 ### Tasks
 
-- [ ] Remove `inspect.stack()`-based architecture assertion in `test_architecture_contracts.py:48`. This asserts internal call-chain shape and breaks on any refactor.
-- [ ] Review `test_architecture_contracts.py` broadly — decide which behavioral invariants to keep vs. which are incidental wiring checks that should be deleted.
-- [ ] Reduce mock-heavy tests in `test_runtime_pump_ownership.py` (line 91+) — currently simulates LAN with heavy mocking instead of runtime types.
-- [ ] Keep only behaviorally meaningful assertions (observable state/telemetry), not internal call-chain shape.
-- [ ] Fix stale ast-grep guardrail: `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` references deleted `src/crimson/game_world.py`.
-- [ ] Align test assertions with new contracts after Stages 1-3 land (`InputStatus`, pure runner, no hook bus).
+- [x] Remove `inspect.stack()`-based architecture assertion in `test_architecture_contracts.py:48`. This asserts internal call-chain shape and breaks on any refactor.
+- [x] Review `test_architecture_contracts.py` broadly — decide which behavioral invariants to keep vs. which are incidental wiring checks that should be deleted.
+- [x] Reduce mock-heavy tests in `test_runtime_pump_ownership.py` (line 91+) — currently simulates LAN with heavy mocking instead of runtime types.
+- [x] Keep only behaviorally meaningful assertions (observable state/telemetry), not internal call-chain shape.
+- [x] Fix stale ast-grep guardrail: `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` references deleted `src/crimson/game_world.py`.
+- [x] Align test assertions with new contracts after Stages 1-3 land (`InputStatus`, pure runner, no hook bus).
 
 ### Evidence
 
@@ -234,10 +234,10 @@ advance call.
 
 ### Acceptance
 
-- [ ] Zero `inspect.stack` assertions in test suite.
-- [ ] Runtime orchestration tests use real types where possible.
-- [ ] Guardrail rules reference only existing files.
-- [ ] `uv run pytest --no-cov` passes.
+- [x] Zero `inspect.stack` assertions in test suite.
+- [x] Runtime orchestration tests use real types where possible.
+- [x] Guardrail rules reference only existing files.
+- [x] `uv run pytest --no-cov` passes.
 
 ---
 
