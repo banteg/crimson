@@ -64,8 +64,8 @@ from ..views.quest_run_overlay import (
 )
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
-from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
-from ..world.terrain_runtime import normalize_terrain_ids
+from ..world import AudioBridge, RenderResources, SimWorldState
+from ..world.terrain_runtime import TerrainRuntime, normalize_terrain_ids
 
 _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2

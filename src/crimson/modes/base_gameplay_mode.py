@@ -84,7 +84,8 @@ from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
-from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
+from ..world import AudioBridge, RenderResources, SimWorldState
+from ..world.terrain_runtime import TerrainRuntime
 from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
