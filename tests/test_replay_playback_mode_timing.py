@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from types import SimpleNamespace
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import pytest
 
@@ -11,6 +11,56 @@ from crimson.replay import Replay, ReplayHeader
 from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
+from crimson.world.render_resources import RenderResources
+from crimson.world.sim_world_state import SimWorldState
+from crimson.world.terrain_runtime import TerrainRuntime
+
+
+def _assets_dir() -> Path:
+    return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+@dataclass
+class _FakeRunner:
+    """Consolidated fake runner for replay timing tests."""
+
+    results: list[TickBatchResult] = field(default_factory=list)
+    frame_count: int = 0
+
+    def begin_frame(self, frame_ctx: object) -> None:
+        _ = frame_ctx
+        self.frame_count += 1
+
+    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
+        _ = tick_dt
+        if self.results:
+            result = self.results.pop(0)
+            return result
+        ticks = max(0, int(ticks_requested))
+        rows = [
+            TickResult(
+                tick_index=int(start_tick + i),
+                command_hash=f"h{int(start_tick + i)}",
+                dt_sim=1.0 / 60.0,
+                payload=object(),
+            )
+            for i in range(int(ticks))
+        ]
+        return TickBatchResult(
+            ticks_completed=int(ticks),
+            batch_status=InputStatus.READY,
+            next_tick_index=int(start_tick) + int(ticks),
+            completed_results=rows,
+        )
+
+
+@dataclass
+class _StubReplayRuntime:
+    """Minimal stub for ``view._runtime`` in replay timing tests."""
+
+    render_resources: RenderResources = field(
+        default_factory=lambda: RenderResources(assets_dir=_assets_dir()),
+    )
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -29,14 +79,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     # Prevent key handlers from running.
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
     view._replay = _replay_with_ticks(16)
-    view._runtime = SimpleNamespace(
-        render_resources=SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
-        ),
-    )
+    view._runtime = _StubReplayRuntime()
     view._finished = False
     view._paused = False
     view._tick_index = 0
@@ -44,33 +87,6 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
     view._dt = 1.0 / 60.0
     view._dt_accum = 0.0
     view._on_runner_tick_complete = lambda _tick_index, _tick: False
-
-    @dataclass
-    class _FakeRunner:
-        frame_count: int = 0
-
-        def begin_frame(self, frame_ctx) -> None:
-            _ = frame_ctx
-            self.frame_count += 1
-
-        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
-            _ = tick_dt
-            ticks = max(0, int(ticks_requested))
-            rows = [
-                TickResult(
-                    tick_index=int(start_tick + i),
-                    command_hash=f"h{int(start_tick + i)}",
-                    dt_sim=1.0 / 60.0,
-                    payload=object(),
-                )
-                for i in range(int(ticks))
-            ]
-            return TickBatchResult(
-                ticks_completed=int(ticks),
-                batch_status=InputStatus.READY,
-                next_tick_index=int(start_tick) + int(ticks),
-                completed_results=rows,
-            )
 
     view._tick_runner = _FakeRunner()
 
@@ -85,45 +101,24 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
-    view._runtime = SimpleNamespace(
-        render_resources=SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
-        ),
-    )
+    view._runtime = _StubReplayRuntime()
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
     view._on_runner_tick_complete = lambda _tick_index, _tick: False
 
-    @dataclass
-    class _FakeRunner:
-        frame_count: int = 0
-
-        def begin_frame(self, frame_ctx) -> None:
-            _ = frame_ctx
-            self.frame_count += 1
-
-        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
-            _ = ticks_requested, tick_dt
-            tick_index = int(start_tick)
-            return TickBatchResult(
+    view._tick_runner = _FakeRunner(
+        results=[
+            TickBatchResult(
                 ticks_completed=1,
                 batch_status=InputStatus.READY,
-                next_tick_index=int(start_tick) + 1,
+                next_tick_index=1,
                 completed_results=[
-                    TickResult(
-                        tick_index=tick_index,
-                        command_hash=f"h{tick_index}",
-                        dt_sim=1.0 / 60.0,
-                        payload=object(),
-                    ),
+                    TickResult(tick_index=0, command_hash="h0", dt_sim=1.0 / 60.0, payload=object()),
                 ],
-            )
-
-    view._tick_runner = _FakeRunner()
+            ),
+        ],
+    )
 
     view._advance_runner(
         dt_seconds=float(view._dt),
@@ -138,51 +133,26 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = _replay_with_ticks(2)
-    view._runtime = SimpleNamespace(
-        render_resources=SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
-        ),
-    )
+    view._runtime = _StubReplayRuntime()
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
     applied_ticks: list[int] = []
     view._on_runner_tick_complete = lambda tick_index, _tick: applied_ticks.append(int(tick_index)) or False
 
-    @dataclass
-    class _FakeRunner:
-        frame_count: int = 0
-
-        def begin_frame(self, frame_ctx) -> None:
-            _ = frame_ctx
-            self.frame_count += 1
-
-        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
-            _ = ticks_requested, tick_dt
-            return TickBatchResult(
+    view._tick_runner = _FakeRunner(
+        results=[
+            TickBatchResult(
                 ticks_completed=2,
                 batch_status=InputStatus.EOS,
-                next_tick_index=int(start_tick) + 2,
+                next_tick_index=2,
                 completed_results=[
-                    TickResult(
-                        tick_index=int(start_tick),
-                        command_hash="h0",
-                        dt_sim=1.0 / 60.0,
-                        payload=object(),
-                    ),
-                    TickResult(
-                        tick_index=int(start_tick) + 1,
-                        command_hash="h1",
-                        dt_sim=1.0 / 60.0,
-                        payload=object(),
-                    ),
+                    TickResult(tick_index=0, command_hash="h0", dt_sim=1.0 / 60.0, payload=object()),
+                    TickResult(tick_index=1, command_hash="h1", dt_sim=1.0 / 60.0, payload=object()),
                 ],
-            )
-
-    view._tick_runner = _FakeRunner()
+            ),
+        ],
+    )
 
     view._advance_runner(
         dt_seconds=float(view._dt),
@@ -223,33 +193,26 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
     mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
     mocker.patch.object(replay_playback_mode, "apply_replay_bootstrap", return_value=None)
+
+    @dataclass
+    class _StubWorldRuntime:
+        sim_world: SimWorldState = field(default_factory=SimWorldState)
+        render_resources: RenderResources = field(
+            default_factory=lambda: RenderResources(assets_dir=_assets_dir()),
+        )
+        terrain_runtime: TerrainRuntime = field(default_factory=lambda: TerrainRuntime())
+        texture_cache: object = None
+
+        def reset(self, **_kw: object) -> None:
+            pass
+
+        def open_runtime(self) -> None:
+            pass
+
     mocker.patch.object(
         replay_playback_mode,
         "WorldRuntime",
-        lambda **_kwargs: SimpleNamespace(
-            sim_world=SimpleNamespace(
-                world_state=object(),
-                players=[],
-                creatures=SimpleNamespace(kill_count=0),
-                state=SimpleNamespace(
-                    preserve_bugs=False,
-                    rng=SimpleNamespace(state=0),
-                    quest_stage_major=0,
-                    quest_stage_minor=0,
-                ),
-                game_tune_started=False,
-                elapsed_ms=0,
-            ),
-            render_resources=SimpleNamespace(
-                fx_queue=[],
-                fx_queue_rotated=[],
-                texture_cache=None,
-            ),
-            terrain_runtime=SimpleNamespace(),
-            texture_cache=None,
-            reset=lambda **_kw: None,
-            open_runtime=lambda: None,
-        ),
+        lambda **_kwargs: _StubWorldRuntime(),
     )
     mocker.patch.object(replay_playback_mode, "PlaybackDriver", _FakeDriver)
 
