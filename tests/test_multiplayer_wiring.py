@@ -29,7 +29,7 @@ def test_game_world_init_honors_config_player_count(tmp_path: Path) -> None:
     cfg.data["player_count"] = 2
 
     world = GameWorld(assets_dir=assets_dir, config=cfg)
-    assert [player.index for player in world.players] == [0, 1]
+    assert [player.index for player in world.sim_world.players] == [0, 1]
 
 
 def test_game_world_reset_spreads_player_spawn_positions() -> None:
@@ -39,7 +39,7 @@ def test_game_world_reset_spreads_player_spawn_positions() -> None:
     world = GameWorld(assets_dir=assets_dir)
     world.reset(seed=0xBEEF, player_count=4)
 
-    positions = {(round(player.pos.x, 3), round(player.pos.y, 3)) for player in world.players}
+    positions = {(round(player.pos.x, 3), round(player.pos.y, 3)) for player in world.sim_world.players}
     assert len(positions) == 4
 
 
@@ -52,7 +52,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = SurvivalMode(ctx, config=cfg)
-    assert len(mode.world.players) == 2  # intentional: wiring smoke test
+    assert len(mode.world.sim_world.players) == 2  # intentional: wiring smoke test
 
 
 def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -> None:
@@ -106,18 +106,18 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
         config=cfg,
         session_factory=lambda **_kwargs: cast(QuestDeterministicSession, fake_session),
     )
-    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.players))]
+    inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.world.sim_world.players))]
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
     mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt: inputs)
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
-    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
 
     mode.update(0.02)
 
     step_tick.assert_called_once()
-    assert step_tick.call_args.kwargs["inputs"] is inputs
+    assert step_tick.call_args.kwargs["inputs"] == inputs
     assert len(inputs) == 3
 
 
@@ -136,7 +136,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
 
     frame = mode._build_local_inputs(dt=0.016)
 
-    assert len(frame) == len(mode.world.players)
+    assert len(frame) == len(mode.world.sim_world.players)
     build_frame_inputs.assert_called_once()
     assert build_frame_inputs.call_args.kwargs["creatures"] is mode.creatures.entries
     assert bool(mode._local_input._preserve_bugs) == bool(mode.state.preserve_bugs)

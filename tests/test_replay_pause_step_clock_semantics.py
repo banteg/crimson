@@ -33,18 +33,18 @@ def test_replay_paused_update_does_not_accumulate_clock_debt(mocker, replay_play
     view._paused = True
     view._dt_accum = 0.375
 
-    tick_calls = 0
+    advance_calls = 0
 
-    def _tick_one() -> None:
-        nonlocal tick_calls
-        tick_calls += 1
+    def _advance_runner(**_kwargs) -> None:
+        nonlocal advance_calls
+        advance_calls += 1
 
-    _set_private(view, "_tick_one", _tick_one)
+    _set_private(view, "_advance_runner", _advance_runner)
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     view.update(0.5)
 
-    assert tick_calls == 0
+    assert advance_calls == 0
     assert view._dt_accum == 0.375
 
 
@@ -57,11 +57,11 @@ def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt
     view._step_once_pending = True
     view._dt_accum = 0.5
 
-    tick_calls = 0
+    advance_calls = 0
 
-    def _tick_one() -> None:
-        nonlocal tick_calls
-        tick_calls += 1
+    def _advance_runner(**_kwargs) -> None:
+        nonlocal advance_calls
+        advance_calls += 1
 
     @dataclass
     class _FakeRunner:
@@ -72,12 +72,12 @@ def test_replay_step_once_while_paused_advances_exactly_one_tick_and_clears_debt
 
     runner = _FakeRunner()
     _set_private(view, "_tick_runner", runner)
-    _set_private(view, "_tick_one", _tick_one)
+    _set_private(view, "_advance_runner", _advance_runner)
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     view.update(0.25)
 
-    assert tick_calls == 1
+    assert advance_calls == 1
     assert runner.reset_calls == 2
     assert view._step_once_pending is False
     assert view._dt_accum == 0.0
@@ -92,23 +92,25 @@ def test_replay_speed_multiplier_scales_dt_only_while_unpaused(mocker, replay_pl
     view._speed_index = 3  # 2.0x
     view._dt_accum = 0.0
 
-    tick_calls = 0
+    advance_dts: list[float] = []
 
-    def _tick_one() -> None:
-        nonlocal tick_calls
-        tick_calls += 1
+    def _advance_runner(*, dt_seconds: float, **_kwargs) -> None:
+        advance_dts.append(float(dt_seconds))
+        # Mirror runner clock debt as if ~6 ticks ran for 0.1s at 60 Hz.
+        view._dt_accum = 0.0
 
-    _set_private(view, "_tick_one", _tick_one)
+    _set_private(view, "_advance_runner", _advance_runner)
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     view.update(0.05)
-    assert tick_calls == 6
+    assert len(advance_dts) == 1
+    assert advance_dts[0] == 0.1
     assert view._dt_accum <= (1.0 / 60.0)
 
-    tick_calls = 0
+    advance_dts.clear()
     view._paused = True
     view.update(0.05)
-    assert tick_calls == 0
+    assert len(advance_dts) == 0
 
 
 def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view) -> None:

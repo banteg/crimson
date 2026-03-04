@@ -16,6 +16,8 @@ class TickContext(msgspec.Struct, frozen=True):
     inputs_present: bool
     is_networked: bool
     is_replay: bool
+    session_kind: str = "gameplay"
+    mode_id: str = ""
     inputs: list[PlayerInput] | None = None
 
 
@@ -69,7 +71,7 @@ class SupportsPostPresentation(Protocol):
 
 @runtime_checkable
 class SupportsTickEnd(Protocol):
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None: ...
+    def on_tick_end(self, ctx: TickContext, result: TickResult) -> bool | None: ...
 
 
 TickHook: TypeAlias = (
@@ -130,10 +132,13 @@ class TickHookBus:
             if isinstance(hook, SupportsPostPresentation):
                 hook.on_post_presentation(ctx, result)
 
-    def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:
+    def on_tick_end(self, ctx: TickContext, result: TickResult) -> bool:
+        should_stop = False
         for hook in self._hooks:
             if isinstance(hook, SupportsTickEnd):
-                hook.on_tick_end(ctx, result)
+                if bool(hook.on_tick_end(ctx, result)):
+                    should_stop = True
+        return should_stop
 
 
 @runtime_checkable
@@ -192,11 +197,16 @@ class CheckpointHook:
 class NetworkSyncHook:
     def __init__(self, *, on_hash: Callable[[int, TickHashes], None] | None = None) -> None:
         self._on_hash = on_hash
+        self.recorded_hashes_by_runner_tick: dict[int, TickHashes] = {}
 
     def set_on_hash(self, callback: Callable[[int, TickHashes], None] | None) -> None:
         self._on_hash = callback
 
+    def clear_recorded_hashes(self) -> None:
+        self.recorded_hashes_by_runner_tick.clear()
+
     def on_post_hash(self, ctx: TickContext, hashes: TickHashes) -> None:
+        self.recorded_hashes_by_runner_tick[ctx.tick_index] = hashes
         callback = self._on_hash
         if callback is None:
             return

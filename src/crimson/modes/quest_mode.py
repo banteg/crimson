@@ -55,7 +55,6 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
     DeterministicSessionLike,
-    LanMatchCallbacks,
     LanStepAction,
     LanTickStep,
 )
@@ -262,107 +261,106 @@ class QuestMode(BaseGameplayMode):
         if self._death_transition_ready():
             self._close_failed_run()
 
-    def _build_lan_match_callbacks(
+    def _before_lan_tick_step(
         self,
         *,
         role: str,
-        dt: float,
-        dt_ui_ms: float,
         lockstep_runtime: LockstepRuntime | None,
         session: DeterministicSessionLike,
-    ) -> LanMatchCallbacks | None:
-        _ = role, dt, dt_ui_ms, lockstep_runtime
+        dt_tick: float,
+    ) -> None:
+        _ = role, lockstep_runtime, dt_tick
         quest_session = cast(QuestDeterministicSession, session)
-        dt_tick = float(self._lan_capture_tick_dt())
+        quest_session.detail_preset = int(self._deterministic_detail_preset())
+        quest_session.gore_disabled = int(self._deterministic_gore_disabled())
+        quest_session.spawn_entries = tuple(self._quest.spawn_entries)
+        quest_session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+        quest_session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+        quest_session.completion_transition_ms = float(self._quest.completion_transition_ms)
 
-        def _before_step() -> None:
-            quest_session.detail_preset = int(self._deterministic_detail_preset())
-            quest_session.gore_disabled = int(self._deterministic_gore_disabled())
-            quest_session.spawn_entries = tuple(self._quest.spawn_entries)
-            quest_session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-            quest_session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-            quest_session.completion_transition_ms = float(self._quest.completion_transition_ms)
-
-        def _on_tick_applied(step: LanTickStep) -> LanStepAction:
-            tick = cast(QuestDeterministicSessionTick, step.tick)
-            self._quest.spawn_entries = tuple(quest_session.spawn_entries)
-            self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-            self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
-            self._quest.completion_transition_ms = float(tick.completion_transition_ms)
-            self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
-            self._store_net_runtime_snapshot(
-                snapshot=QuestsStateSnapshotV2(
-                    tick_index=int(step.frame_tick_index),
-                    replay_state=self._net_replay_snapshot_state(),
-                    runtime_state=QuestsRuntimeSnapshotV2(
-                        elapsed_ms=float(tick.elapsed_ms),
-                        spawn_timeline_ms=float(tick.spawn_timeline_ms),
-                        no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
-                        completion_transition_ms=float(tick.completion_transition_ms),
-                        quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
-                        perk_pending_count=int(self.state.perk_selection.pending_count),
-                    ),
+    def _on_lan_tick_applied(
+        self,
+        *,
+        role: str,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+        step: LanTickStep,
+        dt_tick: float,
+    ) -> LanStepAction:
+        _ = role, lockstep_runtime, session
+        tick = cast(QuestDeterministicSessionTick, step.tick)
+        self._quest.spawn_entries = tuple(cast(QuestDeterministicSession, session).spawn_entries)
+        self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
+        self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
+        self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+        self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+        self._store_net_runtime_snapshot(
+            snapshot=QuestsStateSnapshotV2(
+                tick_index=int(step.frame_tick_index),
+                replay_state=self._net_replay_snapshot_state(),
+                runtime_state=QuestsRuntimeSnapshotV2(
+                    elapsed_ms=float(tick.elapsed_ms),
+                    spawn_timeline_ms=float(tick.spawn_timeline_ms),
+                    no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
+                    completion_transition_ms=float(tick.completion_transition_ms),
+                    quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
+                    perk_pending_count=int(self.state.perk_selection.pending_count),
                 ),
-            )
-
-            if tick.play_hit_sfx:
-                self.world.audio_bridge.router.play_sfx("sfx_questhit")
-            if tick.play_completion_music and self.world.audio is not None:
-                play_music(self.world.audio, "crimsonquest")
-                playback = self.world.audio.music.playbacks.get("crimsonquest")
-                if playback is not None:
-                    playback.volume = 0.0
-                    try:
-                        rl.set_music_volume(playback.music, 0.0)
-                    except RuntimeError:
-                        playback.volume = 0.0
-
-            if tick.completed:
-                if self._outcome is None:
-                    fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
-                    most_used_weapon_id = most_used_weapon_id_for_player(
-                        self.state,
-                        player_index=int(self.player.index),
-                        fallback_weapon_id=self.player.weapon.weapon_id,
-                    )
-                    player_health_values = tuple(float(player.health) for player in self.world.players)
-                    player2_health = None
-                    if len(player_health_values) >= 2:
-                        player2_health = float(player_health_values[1])
-                    self._outcome = QuestRunOutcome(
-                        kind="completed",
-                        level=str(self._quest.level),
-                        base_time_ms=int(self._quest.spawn_timeline_ms),
-                        player_health=float(player_health_values[0] if player_health_values else self.player.health),
-                        player2_health=player2_health,
-                        player_health_values=player_health_values,
-                        pending_perk_count=int(self.state.perk_selection.pending_count),
-                        experience=int(self.player.experience),
-                        kill_count=int(self.creatures.kill_count),
-                        weapon_id=self.player.weapon.weapon_id,
-                        shots_fired=fired,
-                        shots_hit=hit,
-                        most_used_weapon_id=most_used_weapon_id,
-                    )
-                self._save_replay()
-                self.close_requested = True
-                return "stop_after_finalize"
-
-            if self._death_transition_ready():
-                self._close_failed_run()
-                return "stop_after_finalize"
-            return "continue"
-
-        return LanMatchCallbacks(
-            dt_tick=float(dt_tick),
-            before_step=_before_step,
-            on_tick_applied=_on_tick_applied,
+            ),
         )
+
+        if tick.play_hit_sfx:
+            self.world.audio_bridge.router.play_sfx("sfx_questhit")
+        if tick.play_completion_music and self.world.audio is not None:
+            play_music(self.world.audio, "crimsonquest")
+            playback = self.world.audio.music.playbacks.get("crimsonquest")
+            if playback is not None:
+                playback.volume = 0.0
+                try:
+                    rl.set_music_volume(playback.music, 0.0)
+                except RuntimeError:
+                    playback.volume = 0.0
+
+        if tick.completed:
+            if self._outcome is None:
+                fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+                most_used_weapon_id = most_used_weapon_id_for_player(
+                    self.state,
+                    player_index=int(self.player.index),
+                    fallback_weapon_id=self.player.weapon.weapon_id,
+                )
+                player_health_values = tuple(float(player.health) for player in self.world.sim_world.players)
+                player2_health = None
+                if len(player_health_values) >= 2:
+                    player2_health = float(player_health_values[1])
+                self._outcome = QuestRunOutcome(
+                    kind="completed",
+                    level=str(self._quest.level),
+                    base_time_ms=int(self._quest.spawn_timeline_ms),
+                    player_health=float(player_health_values[0] if player_health_values else self.player.health),
+                    player2_health=player2_health,
+                    player_health_values=player_health_values,
+                    pending_perk_count=int(self.state.perk_selection.pending_count),
+                    experience=int(self.player.experience),
+                    kill_count=int(self.creatures.kill_count),
+                    weapon_id=self.player.weapon.weapon_id,
+                    shots_fired=fired,
+                    shots_hit=hit,
+                    most_used_weapon_id=most_used_weapon_id,
+                )
+            self._save_replay()
+            self.close_requested = True
+            return "stop_after_finalize"
+
+        if self._death_transition_ready():
+            self._close_failed_run()
+            return "stop_after_finalize"
+        return "continue"
 
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
-        players = self.world.players
+        players = self.world.sim_world.players
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,
@@ -407,7 +405,7 @@ class QuestMode(BaseGameplayMode):
         player_count = self.config.player_count
         self.world.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
-        self._local_input.reset(players=self.world.players)
+        self._local_input.reset(players=self.world.sim_world.players)
         self.bind_status(status)
         self.state.quest_stage_major, self.state.quest_stage_minor = quest.level_key
 
@@ -443,13 +441,13 @@ class QuestMode(BaseGameplayMode):
         start_weapon_id = quest.start_weapon_id
         if start_weapon_id <= WeaponId.NONE:
             start_weapon_id = WeaponId.PISTOL
-        for player in self.world.players:
+        for player in self.world.sim_world.players:
             weapon_assign_player(player, start_weapon_id, state=self.state)
 
         ctx = QuestContext(
             width=int(self.world.world_size),
             height=int(self.world.world_size),
-            player_count=len(self.world.players),
+            player_count=len(self.world.sim_world.players),
         )
         entries = build_quest_spawn_table(
             quest,
@@ -499,7 +497,7 @@ class QuestMode(BaseGameplayMode):
                     detail_preset=self.config.detail_preset,
                     gore_disabled=self.config.gore_disabled,
                     world_size=float(self.world.world_size),
-                    player_count=len(self.world.players),
+                    player_count=len(self.world.sim_world.players),
                     status=status_snapshot,
                 ),
             )
@@ -555,7 +553,7 @@ class QuestMode(BaseGameplayMode):
 
     def _death_transition_ready(self) -> bool:
         dead_players = 0
-        for player in self.world.players:
+        for player in self.world.sim_world.players:
             if float(player.health) > 0.0:
                 return False
             dead_players += 1
@@ -567,7 +565,7 @@ class QuestMode(BaseGameplayMode):
         delta = float(dt) * float(rate)
         if delta <= 0.0:
             return
-        for player in self.world.players:
+        for player in self.world.sim_world.players:
             if float(player.health) > 0.0:
                 continue
             if float(player.death_timer) < 0.0:
@@ -582,7 +580,7 @@ class QuestMode(BaseGameplayMode):
                 player_index=int(self.player.index),
                 fallback_weapon_id=self.player.weapon.weapon_id,
             )
-            player_health_values = tuple(float(player.health) for player in self.world.players)
+            player_health_values = tuple(float(player.health) for player in self.world.sim_world.players)
             player2_health = None
             if len(player_health_values) >= 2:
                 player2_health = float(player_health_values[1])
@@ -607,7 +605,7 @@ class QuestMode(BaseGameplayMode):
     def _draw_perk_prompt(self) -> None:
         if self._perk_menu.active:
             return
-        if not any(player.health > 0.0 for player in self.world.players):
+        if not any(player.health > 0.0 for player in self.world.sim_world.players):
             return
         pending_count = int(self.state.perk_selection.pending_count)
         if pending_count <= 0:
@@ -642,7 +640,7 @@ class QuestMode(BaseGameplayMode):
             self._update_lan_match(dt=dt, dt_ui_ms=dt_ui_ms)
             return
 
-        any_alive = any(player.health > 0.0 for player in self.world.players)
+        any_alive = any(player.health > 0.0 for player in self.world.sim_world.players)
         perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
         self._perk_prompt_hover = False
@@ -682,7 +680,7 @@ class QuestMode(BaseGameplayMode):
                     self._replay_recorder.record_perk_menu_open(player_index=0)
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
-                player_count=len(self.world.players),
+                player_count=len(self.world.sim_world.players),
             ):
                 self._perk_prompt_pulse = 1000.0
                 if self._replay_recorder is not None:
@@ -720,7 +718,6 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        input_frame = self._build_local_inputs(dt=dt)
         session = self._sim_session
         if session is None:
             self._tick_death_timers(dt_world)
@@ -772,7 +769,7 @@ class QuestMode(BaseGameplayMode):
                         player_index=int(self.player.index),
                         fallback_weapon_id=self.player.weapon.weapon_id,
                     )
-                    player_health_values = tuple(float(player.health) for player in self.world.players)
+                    player_health_values = tuple(float(player.health) for player in self.world.sim_world.players)
                     player2_health = None
                     if len(player_health_values) >= 2:
                         player2_health = float(player_health_values[1])
@@ -808,7 +805,6 @@ class QuestMode(BaseGameplayMode):
 
         self._run_deterministic_session_ticks(
             dt_frame=float(dt_world),
-            input_frame=input_frame,
             session=session,
             recorder=self._replay_recorder,
             on_tick=_on_tick,
@@ -844,7 +840,7 @@ class QuestMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.players,
+                players=self.world.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._quest.spawn_timeline_ms),
                 frame_dt_ms=self._last_dt_ms,

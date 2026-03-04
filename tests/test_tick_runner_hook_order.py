@@ -5,7 +5,7 @@ import pytest
 
 from crimson.sim.hooks import TickHashes, TickHookBus, TickResult
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import InputProvider
+from crimson.sim.input_providers import FrameContext, InputProvider
 from crimson.sim.tick_runner import TickRunner
 
 
@@ -48,11 +48,15 @@ class _FixedInputProvider(InputProvider):
     def __init__(self, *, rows: dict[int, list[PlayerInput] | None]) -> None:
         self._rows = rows
 
-    def begin_frame(self) -> None:
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
         return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         return self._rows.get(int(tick_index), [PlayerInput()])
+
+    def push_command(self, command) -> None:
+        _ = command
 
 
 class _RecorderHook:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import SimpleNamespace
 
 import pytest
@@ -18,34 +18,56 @@ def _replay_with_ticks(tick_count: int) -> Replay:
 
 
 def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback_view) -> None:
-    # Regression test: a missing `dt_accum -= dt` inside the playback loop
-    # can cause the entire replay to run in a single frame (or an infinite loop).
+    # Regression test: frame delta should be consumed by runner clock debt and
+    # advance the expected number of ticks in one `advance_frame` call.
     import crimson.modes.replay_playback_mode as replay_playback_mode
     view, _console = replay_playback_view
 
     # Prevent key handlers from running.
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
-
-    calls = 0
-
-    def fake_tick_one() -> None:
-        nonlocal calls
-        calls += 1
-        # If the loop does not decrement accumulated time, it would spin forever.
-        if calls > 64:
-            raise RuntimeError("playback tick loop did not consume accumulated dt")
-
-    view._tick_one = fake_tick_one
+    view._replay = _replay_with_ticks(16)
+    view._world = SimpleNamespace(render_resources=SimpleNamespace(ground=None))
     view._finished = False
     view._paused = False
+    view._tick_index = 0
     view._tick_rate = 60
     view._dt = 1.0 / 60.0
     view._dt_accum = 0.0
+    view._on_runner_tick_complete = lambda _tick_index, _tick: False
+
+    @dataclass
+    class _FakeClock:
+        dt_tick: float = 1.0 / 60.0
+        accum: float = 0.0
+
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+        clock: _FakeClock = field(default_factory=_FakeClock)
+
+        def advance_frame(self, dt_seconds: float, *, max_ticks: int | None = None) -> object:
+            self.clock.accum += float(dt_seconds)
+            ticks = int((self.clock.accum + 1e-9) / float(self.clock.dt_tick))
+            if max_ticks is not None:
+                ticks = min(int(ticks), int(max_ticks))
+            self.clock.accum -= float(ticks) * float(self.clock.dt_tick)
+            rows = [
+                SimpleNamespace(
+                    tick_index=int(self.next_tick_index + i),
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            self.next_tick_index += int(ticks)
+            return SimpleNamespace(completed_results=rows)
+
+    view._tick_runner = _FakeRunner()
 
     view.update(0.05)
 
     # 0.05s at 60Hz should advance exactly 3 ticks (0.0166.. * 3 == 0.05).
-    assert calls == 3
+    assert view._tick_index == 3
+    assert view._dt_accum <= (1.0 / 60.0)
 
 
 def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> None:
@@ -53,7 +75,7 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
 
     view._replay = _replay_with_ticks(2)
     view._world = SimpleNamespace(
-        players=[SimpleNamespace(health=0.0)],
+        sim_world=SimpleNamespace(players=[SimpleNamespace(health=0.0)]),
     )
     view._max_ticks = None
     view._tick_index = 0
@@ -63,11 +85,19 @@ def test_replay_tick_one_does_not_stop_on_player_death(replay_playback_view) -> 
     @dataclass
     class _FakeRunner:
         next_tick_index: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
-        def advance_frame(self, *_args, on_tick_complete, **_kwargs) -> object:
-            on_tick_complete(int(self.next_tick_index), object())
+        def advance_frame(self, *_args, **_kwargs) -> object:
+            batch = SimpleNamespace(
+                completed_results=[
+                    SimpleNamespace(
+                        tick_index=int(self.next_tick_index),
+                        payload=object(),
+                    ),
+                ],
+            )
             self.next_tick_index += 1
-            return object()
+            return batch
 
     view._tick_runner = _FakeRunner()
 
@@ -103,11 +133,12 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
             self.sim_world = SimpleNamespace(
                 world_state=SimpleNamespace(),
                 game_tune_started=False,
-            )
-            self.state = SimpleNamespace(
-                preserve_bugs=False,
-                status=None,
-                rng=SimpleNamespace(state=0),
+                players=[],
+                state=SimpleNamespace(
+                    preserve_bugs=False,
+                    status=None,
+                    rng=SimpleNamespace(state=0),
+                ),
             )
 
         def reset(self, *, seed: int, player_count: int) -> None:

@@ -3,9 +3,17 @@ from __future__ import annotations
 import msgspec
 import pytest
 
-from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ProfilerHook, ReplayRecorderHook, TickHookBus
+from crimson.sim.hooks import (
+    CheckpointHook,
+    NetworkSyncHook,
+    ProfilerHook,
+    ReplayRecorderHook,
+    TickContext,
+    TickHookBus,
+    TickResult,
+)
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import InputProvider
+from crimson.sim.input_providers import FrameContext, InputProvider
 from crimson.sim.tick_runner import TickRunner
 
 
@@ -30,12 +38,16 @@ class _FakeSession:
 
 
 class _FixedInputProvider(InputProvider):
-    def begin_frame(self) -> None:
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
         return
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         _ = tick_index
         return [PlayerInput()]
+
+    def push_command(self, command) -> None:
+        _ = command
 
 
 class _Recorder:
@@ -81,20 +93,30 @@ def test_tick_runner_concrete_hooks_record_and_emit() -> None:
     assert profiler.presentation_apply_ms >= 0.0
 
 
-def test_checkpoint_hook_fires_after_tick_complete_callback() -> None:
+def test_tick_runner_hook_stop_ends_frame_early() -> None:
     recorder = _Recorder()
     replay_hook = ReplayRecorderHook(recorder)
-    applied_flag = {"applied": False}
-    checkpoint_seen_applied: list[bool] = []
+    checkpoint_rows: list[int] = []
+
+    class _StopAfterFirstTickHook:
+        def __init__(self) -> None:
+            self.stop_count = 0
+
+        def on_tick_end(self, _ctx: TickContext, _result: TickResult) -> bool:
+            self.stop_count += 1
+            return True
+
+    stop_hook = _StopAfterFirstTickHook()
     hook_bus = TickHookBus(
         [
             replay_hook,
             CheckpointHook(
                 replay_recorder_hook=replay_hook,
-                on_checkpoint=lambda _tick_index, _payload: checkpoint_seen_applied.append(bool(applied_flag["applied"])),
+                on_checkpoint=lambda tick_index, _payload: checkpoint_rows.append(int(tick_index)),
             ),
             NetworkSyncHook(),
             ProfilerHook(),
+            stop_hook,
         ],
     )
     runner = TickRunner(
@@ -103,14 +125,11 @@ def test_checkpoint_hook_fires_after_tick_complete_callback() -> None:
         hook_bus=hook_bus,
     )
 
-    def _on_tick_complete(_tick_index: int, _tick: object) -> bool:
-        applied_flag["applied"] = True
-        return False
-
-    result = runner.advance_frame(1.0 / 60.0, on_tick_complete=_on_tick_complete)
+    result = runner.advance_frame(2.0 / 60.0)
 
     assert result.ticks_completed == 1
-    assert checkpoint_seen_applied == [True]
+    assert checkpoint_rows == [0]
+    assert stop_hook.stop_count == 1
 
 
 def test_profiler_hook_uses_step_reported_presentation_plan_time() -> None:

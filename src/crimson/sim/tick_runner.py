@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Generic, Protocol, TypeVar
 
 import msgspec
@@ -8,7 +7,7 @@ import msgspec
 from .clock import FixedStepClock
 from .hooks import TickContext, TickHashes, TickHookBus, TickResult
 from .input import PlayerInput
-from .input_providers import InputProvider
+from .input_providers import FrameContext, InputProvider
 
 
 class TickStepPayload(Protocol):
@@ -36,6 +35,8 @@ class TickRunnerConfig(msgspec.Struct, frozen=True):
     tick_rate: int = 60
     is_networked: bool = False
     is_replay: bool = False
+    session_kind: str = "gameplay"
+    mode_id: str = ""
 
 
 class TickBatchResult(msgspec.Struct):
@@ -43,6 +44,7 @@ class TickBatchResult(msgspec.Struct):
     stalled: bool = False
     remaining_debt_ticks: int = 0
     presentation_plans: list[object] = msgspec.field(default_factory=list)
+    completed_results: list[TickResult] = msgspec.field(default_factory=list)
 
 
 class TickRunner(Generic[TimingT, TickT]):
@@ -78,25 +80,38 @@ class TickRunner(Generic[TimingT, TickT]):
         dt_seconds: float,
         *,
         max_ticks: int | None = None,
-        on_tick_complete: Callable[[int, TickT], bool] | None = None,
     ) -> TickBatchResult:
-        self._input_provider.begin_frame()
         self._frame_index += 1
 
         candidate_ticks = self._clock.advance(dt_seconds)
         if max_ticks is not None:
             candidate_ticks = min(candidate_ticks, max(0, max_ticks))
+        self._input_provider.begin_frame(
+            FrameContext(
+                dt_seconds=float(dt_seconds),
+                tick_dt_seconds=float(self._clock.dt_tick),
+                frame_index=int(self._frame_index),
+                candidate_ticks=int(candidate_ticks),
+                is_networked=bool(self._config.is_networked),
+                is_replay=bool(self._config.is_replay),
+                session_kind=str(self._config.session_kind),
+                mode_id=str(self._config.mode_id),
+            ),
+        )
         if candidate_ticks <= 0:
             return TickBatchResult(
                 ticks_completed=0,
                 stalled=False,
                 remaining_debt_ticks=int((self._clock.accum + 1e-9) / self._clock.dt_tick),
                 presentation_plans=[],
+                completed_results=[],
             )
 
         ticks_completed = 0
         stalled = False
+        stopped_early = False
         plans: list[object] = []
+        completed_results: list[TickResult] = []
 
         for _ in range(candidate_ticks):
             tick_index = self._next_tick_index
@@ -108,6 +123,8 @@ class TickRunner(Generic[TimingT, TickT]):
                 inputs_present=tick_inputs is not None,
                 is_networked=self._config.is_networked,
                 is_replay=self._config.is_replay,
+                session_kind=str(self._config.session_kind),
+                mode_id=str(self._config.mode_id),
                 inputs=tick_inputs,
             )
             self._hook_bus.on_tick_begin(tick_ctx)
@@ -144,18 +161,17 @@ class TickRunner(Generic[TimingT, TickT]):
                 ),
             )
             self._hook_bus.on_post_presentation(tick_ctx, result)
-            should_stop = False
-            if on_tick_complete is not None and on_tick_complete(tick_index, tick):
-                should_stop = True
-            self._hook_bus.on_tick_end(tick_ctx, result)
+            should_stop = bool(self._hook_bus.on_tick_end(tick_ctx, result))
             plans.append(presentation)
+            completed_results.append(result)
             ticks_completed += 1
             self._next_tick_index += 1
             if should_stop:
+                stopped_early = True
                 break
 
         unconsumed_ticks = candidate_ticks - ticks_completed
-        if stalled and unconsumed_ticks > 0:
+        if (stalled or stopped_early) and unconsumed_ticks > 0:
             self._clock.accum += unconsumed_ticks * self._clock.dt_tick
 
         remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
@@ -164,4 +180,5 @@ class TickRunner(Generic[TimingT, TickT]):
             stalled=stalled,
             remaining_debt_ticks=remaining_debt_ticks,
             presentation_plans=list(plans),
+            completed_results=list(completed_results),
         )

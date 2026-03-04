@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import call
@@ -86,18 +87,40 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
     view._tick_index = 0
     view._finished = False
     view._dt_accum = 1.0
+    view._dt = 1.0 / 60.0
 
     observe_sfx_enabled = SimpleNamespace(mock=None)
     # Keep this as an autospecced call recorder instead of a list spy.
     from unittest.mock import Mock
 
     observe_sfx_enabled.mock = Mock()
+    _set_private(
+        view,
+        "_on_runner_tick_complete",
+        lambda *_args, **_kwargs: observe_sfx_enabled.mock(bool(world.audio_bridge.router.sfx_enabled)),
+    )
 
-    def fake_tick_one() -> None:
-        observe_sfx_enabled.mock(bool(world.audio_bridge.router.sfx_enabled))
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
+            ticks = int(max_ticks or 0)
+            rows = [
+                SimpleNamespace(
+                    tick_index=int(self.next_tick_index + i),
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            self.next_tick_index += int(ticks)
+            return SimpleNamespace(completed_results=rows)
+
+        def reset_clock(self) -> None:
+            self.clock.accum = 0.0
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(2.0 / 60.0)
 
@@ -122,16 +145,39 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
 
     from unittest.mock import Mock
 
     observe_sfx_enabled = Mock()
 
-    def fake_tick_one() -> None:
+    def _on_runner_tick_complete(*_args, **_kwargs) -> bool:
         observe_sfx_enabled(bool(world.audio_bridge.router.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    _set_private(view, "_tick_one", fake_tick_one)
+    _set_private(view, "_on_runner_tick_complete", _on_runner_tick_complete)
+
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+
+        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
+            ticks = int(max_ticks or 0)
+            rows = [
+                SimpleNamespace(
+                    tick_index=int(self.next_tick_index + i),
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            self.next_tick_index += int(ticks)
+            return SimpleNamespace(completed_results=rows)
+
+        def reset_clock(self) -> None:
+            self.clock.accum = 0.0
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
@@ -179,11 +225,30 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
+    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
 
-    def fake_tick_one() -> None:
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
+            ticks = int(max_ticks or 0)
+            rows = [
+                SimpleNamespace(
+                    tick_index=int(self.next_tick_index + i),
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            self.next_tick_index += int(ticks)
+            return SimpleNamespace(completed_results=rows)
+
+        def reset_clock(self) -> None:
+            self.clock.accum = 0.0
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(3.0 / 60.0)
 
@@ -222,11 +287,30 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
+    view._dt = 1.0 / 60.0
+    _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
 
-    def fake_tick_one() -> None:
-        view._tick_index += 1
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 0
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
-    _set_private(view, "_tick_one", fake_tick_one)
+        def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
+            ticks = int(max_ticks or 0)
+            rows = [
+                SimpleNamespace(
+                    tick_index=int(self.next_tick_index + i),
+                    payload=object(),
+                )
+                for i in range(int(ticks))
+            ]
+            self.next_tick_index += int(ticks)
+            return SimpleNamespace(completed_results=rows)
+
+        def reset_clock(self) -> None:
+            self.clock.accum = 0.0
+
+    _set_private(view, "_tick_runner", _FakeRunner())
 
     view._skip_forward_seconds(3.0 / 60.0)
 

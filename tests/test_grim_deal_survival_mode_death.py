@@ -7,7 +7,6 @@ from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.survival_mode as survival_mode_module
-from crimson.game_world import GameWorld
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
@@ -65,7 +64,11 @@ def _install_minimal_sim_session(mocker) -> Callable[..., SurvivalDeterministicS
             )
             return SimpleNamespace(step=step, rng_marks={})
 
-    mocker.patch.object(GameWorld, "apply_step_result", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(
+        base_gameplay_mode_module.BaseGameplayMode,
+        "_apply_sim_step_result",
+        side_effect=lambda *_args, **_kwargs: None,
+    )
     return lambda *, world, **_kwargs: cast(SurvivalDeterministicSession, _FakeSession(world=world))
 
 
@@ -80,7 +83,7 @@ def test_survival_mode_enters_game_over_when_grim_deal_kills_player_during_perk_
     mode._perk_menu.timeline_ms = 100.0
 
     def _apply_grim_deal_and_close(_ctx, *, dt: float, dt_ui_ms: float) -> None:
-        perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)
+        perk_apply(mode.state, mode.world.sim_world.players, PerkId.GRIM_DEAL)
         mode._perk_menu.close()
 
     mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)

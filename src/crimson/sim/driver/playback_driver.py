@@ -817,61 +817,60 @@ class PlaybackDriver:
         tick_runner = self.build_tick_runner(defer_menu_open=defer_menu_open)
         completed_ticks = 0
 
-        def _on_tick_complete(_tick_index: int, tick: object) -> bool:
-            nonlocal completed_ticks
-            outcome = cast(PlaybackTickOutcome, tick)
-            completed_ticks += 1
-
-            if tick_begin_observer is not None:
-                tick_begin_observer(
-                    int(outcome.tick_index),
-                    outcome.world,
-                    float(outcome.dt_tick),
-                    list(outcome.tick_events),
-                    list(outcome.pre_step_events),
-                    list(outcome.post_step_events),
-                )
-
-            if tick_rng_trace_observer is not None:
-                tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
-
-            if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
-                self._append_checkpoint_for_tick(
-                    outcome=outcome,
-                    checkpoints_out=checkpoints_out,
-                    checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
-                )
-
-            if tick_trace_observer is not None:
-                tick_trace_observer(
-                    int(outcome.tick_index),
-                    self.world,
-                    float(outcome.elapsed_ms),
-                    outcome.step_events,
-                    dict(outcome.rng_marks),
-                )
-
-            if tick_observer is not None:
-                tick_observer(int(outcome.tick_index), self.world)
-
-            if tick_end_observer is not None:
-                tick_end_observer(outcome)
-
-            if tick_progress_callback is not None:
-                tick_progress_callback(int(outcome.tick_index) + 1)
-            return False
-
         tick_limit = int(self.tick_limit)
         while int(completed_ticks) < int(tick_limit):
             batch = tick_runner.advance_frame(
                 float(tick_runner.clock.dt_tick),
                 max_ticks=1,
-                on_tick_complete=_on_tick_complete,
             )
             if int(batch.ticks_completed) <= 0:
                 raise ReplayRunnerError(
                     f"playback tick runner stalled before completion at tick {int(completed_ticks)}",
                 )
+            for tick_result in batch.completed_results:
+                payload = tick_result.payload
+                if payload is None:
+                    continue
+                outcome = cast(PlaybackTickOutcome, payload)
+                completed_ticks += 1
+
+                if tick_begin_observer is not None:
+                    tick_begin_observer(
+                        int(outcome.tick_index),
+                        outcome.world,
+                        float(outcome.dt_tick),
+                        list(outcome.tick_events),
+                        list(outcome.pre_step_events),
+                        list(outcome.post_step_events),
+                    )
+
+                if tick_rng_trace_observer is not None:
+                    tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
+
+                if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
+                    self._append_checkpoint_for_tick(
+                        outcome=outcome,
+                        checkpoints_out=checkpoints_out,
+                        checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
+                    )
+
+                if tick_trace_observer is not None:
+                    tick_trace_observer(
+                        int(outcome.tick_index),
+                        self.world,
+                        float(outcome.elapsed_ms),
+                        outcome.step_events,
+                        dict(outcome.rng_marks),
+                    )
+
+                if tick_observer is not None:
+                    tick_observer(int(outcome.tick_index), self.world)
+
+                if tick_end_observer is not None:
+                    tick_end_observer(outcome)
+
+                if tick_progress_callback is not None:
+                    tick_progress_callback(int(outcome.tick_index) + 1)
 
         terminal = self.apply_terminal_events(int(tick_limit))
         if terminal is not None:

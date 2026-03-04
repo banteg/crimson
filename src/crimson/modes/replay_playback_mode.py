@@ -361,15 +361,15 @@ class ReplayPlaybackMode:
             player_count=int(replay.header.player_count),
         )
         world.open()
-        self._hud_state.preserve_bugs = bool(world.state.preserve_bugs)
-        world.state.status = status_from_snapshot(
+        self._hud_state.preserve_bugs = bool(world.sim_world.state.preserve_bugs)
+        world.sim_world.state.status = status_from_snapshot(
             quest_unlock_index=int(replay.header.status.quest_unlock_index),
             quest_unlock_index_full=int(replay.header.status.quest_unlock_index_full),
             weapon_usage_counts=replay.header.status.weapon_usage_counts,
         )
         bootstrap = apply_replay_bootstrap(
             replay.header,
-            rng=world.state.rng,
+            rng=world.sim_world.state.rng,
             world_size=float(world_size),
         )
         if bootstrap is not None:
@@ -391,7 +391,7 @@ class ReplayPlaybackMode:
                 quest, spawn_entries = resolve_replay_quest_setup(
                     replay,
                     world_size=float(world.world_size),
-                    player_count=len(world.players),
+                    player_count=len(world.sim_world.players),
                 )
 
                 self._quest_title = str(quest.title)
@@ -399,8 +399,8 @@ class ReplayPlaybackMode:
                 self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
                 self._quest_complete_texture = self._load_quest_complete_texture(world)
                 quest_stage_major, quest_stage_minor = quest.level_key
-                world.state.quest_stage_major = int(quest_stage_major)
-                world.state.quest_stage_minor = int(quest_stage_minor)
+                world.sim_world.state.quest_stage_major = int(quest_stage_major)
+                world.sim_world.state.quest_stage_minor = int(quest_stage_minor)
 
                 base_id, overlay_id, detail_id = normalize_terrain_ids(quest.terrain_ids)
                 base = terrain_texture_by_id(base_id)
@@ -423,8 +423,8 @@ class ReplayPlaybackMode:
                 start_weapon_id = quest.start_weapon_id
                 if start_weapon_id <= WeaponId.NONE:
                     start_weapon_id = WeaponId.PISTOL
-                for player in world.players:
-                    weapon_assign_player(player, start_weapon_id, state=world.state)
+                for player in world.sim_world.players:
+                    weapon_assign_player(player, start_weapon_id, state=world.sim_world.state)
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
                 self._quest_spawn_timeline_ms = 0.0
             case _:
@@ -546,11 +546,17 @@ class ReplayPlaybackMode:
         if world is None:
             return 0.0
 
-        world.apply_step_result(
-            outcome.step,
+        world.sim_world.apply_step_metadata(
+            events=outcome.step.events,
+            presentation=outcome.step.presentation,
+            command_hash=str(outcome.step.command_hash),
+            dt_sim=float(outcome.step.dt_sim),
             game_tune_started=bool(game_tune_started),
+        )
+        world.sync_audio_bridge_state()
+        world.audio_bridge.apply_plan(
+            plan=outcome.step.presentation,
             apply_audio=True,
-            update_camera=False,
         )
         if outcome.spawn_timeline_ms is not None:
             self._quest_spawn_timeline_ms = float(outcome.spawn_timeline_ms)
@@ -617,30 +623,57 @@ class ReplayPlaybackMode:
             driver.apply_terminal_events(int(self._tick_index))
         self._finished = True
 
-    def _tick_one(self) -> None:
+    def _advance_runner(
+        self,
+        *,
+        dt_seconds: float,
+        max_ticks: int | None = None,
+        bake_fx_per_tick: bool = False,
+    ) -> None:
         replay = self._replay
         world = self._world
         runner = self._tick_runner
         if replay is None or world is None or runner is None:
             self._finished = True
             return
-
         if int(self._tick_index) >= int(self._tick_limit()):
             self._mark_finished_if_complete()
             return
-
         try:
-            runner.advance_frame(
-                float(self._dt),
-                max_ticks=1,
-                on_tick_complete=self._on_runner_tick_complete,
+            batch = runner.advance_frame(
+                float(dt_seconds),
+                max_ticks=max_ticks,
             )
+            for tick_result in batch.completed_results:
+                payload = tick_result.payload
+                if payload is None:
+                    continue
+                self._on_runner_tick_complete(int(tick_result.tick_index), payload)
+                if bake_fx_per_tick:
+                    # Fast-seek runs many ticks without rendering; drain/clear
+                    # per tick to mirror gameplay-side FX queue lifetime.
+                    if world.render_resources.ground is not None and world.render_resources.fx_textures is not None:
+                        world._bake_fx_queues()
+                    else:
+                        world.render_resources.fx_queue.clear()
+                        world.render_resources.fx_queue_rotated.clear()
         except ReplayEndOfStream:
             self._tick_index = int(runner.next_tick_index)
             self._mark_finished_if_complete()
+            clock = getattr(runner, "clock", None)
+            self._dt_accum = float(getattr(clock, "accum", 0.0))
             return
+
         self._tick_index = int(runner.next_tick_index)
         self._mark_finished_if_complete()
+        clock = getattr(runner, "clock", None)
+        self._dt_accum = float(getattr(clock, "accum", 0.0))
+
+    def _tick_one(self) -> None:
+        self._advance_runner(
+            dt_seconds=float(self._dt),
+            max_ticks=1,
+        )
 
     def _playback_speed(self) -> float:
         return float(_PLAYBACK_SPEED_STEPS[int(self._speed_index)])
@@ -664,21 +697,19 @@ class ReplayPlaybackMode:
             prev_sfx_enabled = bool(world.audio_bridge.router.sfx_enabled)
             world.audio_bridge.router.sfx_enabled = False
         try:
-            while self._tick_index < target and not self._finished:
-                self._tick_one()
-                if world is not None:
-                    # Gameplay drains decal queues during render (`draw()` -> `_bake_fx_queues`).
-                    # Fast-seek runs many ticks without drawing, so mirror that behavior per tick:
-                    # bake when render targets are ready, otherwise clear to avoid queue saturation.
-                    if world.render_resources.ground is not None and world.render_resources.fx_textures is not None:
-                        world._bake_fx_queues()
-                    else:
-                        world.render_resources.fx_queue.clear()
-                        world.render_resources.fx_queue_rotated.clear()
+            ticks_to_advance = max(0, int(target) - int(self._tick_index))
+            if ticks_to_advance > 0:
+                self._advance_runner(
+                    dt_seconds=float(ticks_to_advance) * float(self._dt),
+                    max_ticks=int(ticks_to_advance),
+                    bake_fx_per_tick=True,
+                )
         finally:
             if prev_sfx_enabled is not None and world is not None and world.audio_bridge.router is not None:
                 world.audio_bridge.router.sfx_enabled = bool(prev_sfx_enabled)
-        # Avoid accidental overshoot from stale accumulated frame time after seek.
+        runner = self._tick_runner
+        if runner is not None:
+            runner.reset_clock()
         self._dt_accum = 0.0
 
     def update(self, dt: float) -> None:
@@ -704,7 +735,10 @@ class ReplayPlaybackMode:
             runner = self._tick_runner
             if runner is not None:
                 runner.reset_clock()
-            self._tick_one()
+            self._advance_runner(
+                dt_seconds=float(self._dt),
+                max_ticks=1,
+            )
             if runner is not None:
                 runner.reset_clock()
             self._step_once_pending = False
@@ -716,11 +750,9 @@ class ReplayPlaybackMode:
                 dt = 0.0
             if dt > 0.1:
                 dt = 0.1
-            self._dt_accum += dt * self._playback_speed()
-
-            while self._dt_accum + 1e-9 >= self._dt and not self._finished:
-                self._tick_one()
-                self._dt_accum -= self._dt
+            self._advance_runner(
+                dt_seconds=dt * self._playback_speed(),
+            )
 
         if self._audio is not None:
             update_audio(self._audio, float(dt))
@@ -763,7 +795,12 @@ class ReplayPlaybackMode:
             rl.clear_background(rl.BLACK)
 
         replay = self._replay
-        if world is not None and replay is not None and self._hud_assets is not None and world.players:
+        if (
+            world is not None
+            and replay is not None
+            and self._hud_assets is not None
+            and world.sim_world.players
+        ):
             mode_id = replay.header.game_mode_id
             hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
@@ -771,7 +808,7 @@ class ReplayPlaybackMode:
             match mode_id:
                 case GameMode.QUESTS:
                     total = int(self._quest_total_spawn_count)
-                    kills = int(world.creatures.kill_count)
+                    kills = int(world.sim_world.creatures.kill_count)
                     quest_progress_ratio = float(kills) / float(total) if total > 0 else None
                     elapsed_ms = float(self._quest_spawn_timeline_ms)
                 case _:
@@ -788,9 +825,9 @@ class ReplayPlaybackMode:
                     show_quest_hud=bool(hud_flags.show_quest_hud),
                     small_indicators=False,
                 ),
-                player=world.players[0],
-                players=world.players,
-                bonus_hud=world.state.bonus_hud,
+                player=world.sim_world.players[0],
+                players=world.sim_world.players,
+                bonus_hud=world.sim_world.state.bonus_hud,
                 elapsed_ms=elapsed_ms,
                 frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
                 quest_progress_ratio=quest_progress_ratio,

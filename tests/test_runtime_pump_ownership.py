@@ -8,6 +8,7 @@ import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ReplayRecorderHook, TickResult
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -91,6 +92,7 @@ class _FakeLanProvider:
         self.runtime = None
         self.before_pop = None
         self.pop_blocked = False
+        self.samples_by_tick: dict[int, object] = {}
 
     def bind_runtime(self, runtime) -> None:
         self.runtime = runtime
@@ -98,43 +100,60 @@ class _FakeLanProvider:
     def set_before_pop(self, callback) -> None:
         self.before_pop = callback
 
-
-class _FakePreSimHook:
-    def __init__(self) -> None:
-        self.dt_tick = 0.0
-        self.before_step = None
-
-    def bind(self, *, dt_tick: float, before_step) -> None:
-        self.dt_tick = float(dt_tick)
-        self.before_step = before_step
-
-
-class _FakeFinalizeHook:
-    def __init__(self, *, ticks_applied: int = 0, stop_requested: bool = False, stop_after_finalize: bool = False) -> None:
-        self.ticks_applied = int(ticks_applied)
-        self.stop_requested = bool(stop_requested)
-        self.stop_after_finalize = bool(stop_after_finalize)
-
-    def bind(self, **_kwargs) -> None:
-        return
+    def take_frame_sample(self, runner_tick_index: int):
+        return self.samples_by_tick.pop(int(runner_tick_index), None)
 
 
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    tick_payload = SimpleNamespace(
+        step=SimpleNamespace(
+            events=SimpleNamespace(),
+            command_hash="cmd-hash",
+            dt_sim=1.0 / 60.0,
+            presentation=None,
+            presentation_plan_ms=0.0,
+        ),
+        elapsed_ms=16.67,
+        creature_count_world_step=0,
+    )
     runner = _FakeLanRunner(
         [
-            TickBatchResult(ticks_completed=1, stalled=False, remaining_debt_ticks=0, presentation_plans=[]),
+            TickBatchResult(
+                ticks_completed=1,
+                stalled=False,
+                remaining_debt_ticks=0,
+                presentation_plans=[],
+                completed_results=[
+                    TickResult(
+                        tick_index=0,
+                        command_hash="cmd-hash",
+                        dt_sim=1.0 / 60.0,
+                        presentation_plan_ms=0.0,
+                        payload=tick_payload,
+                    ),
+                ],
+            ),
             TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[]),
         ],
     )
     provider = _FakeLanProvider()
-    pre_sim_hook = _FakePreSimHook()
+    provider.samples_by_tick[0] = SimpleNamespace(
+        frame_tick_index=0,
+        frame_inputs=([],),
+        remote_command_hash="",
+        remote_state_hash="",
+    )
+    replay_hook = ReplayRecorderHook(None)
+    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
+    network_sync_hook = NetworkSyncHook()
     profiler = SimpleNamespace(sim_ms=1.5, presentation_plan_ms=0.75, presentation_apply_ms=0.25)
-    finalize_hook = _FakeFinalizeHook(ticks_applied=1)
+    mocker.patch.object(mode, "_on_lan_tick_applied", return_value="continue")
+    mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(
         mode,
         "_ensure_lan_tick_runner",
-        return_value=(runner, provider, pre_sim_hook, profiler, finalize_hook),
+        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler),
     )
 
     stop = mode._consume_lan_tick_frames(
@@ -157,13 +176,14 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0, presentation_plans=[])],
         on_advance=lambda: setattr(provider, "pop_blocked", True),
     )
-    pre_sim_hook = _FakePreSimHook()
+    replay_hook = ReplayRecorderHook(None)
+    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
+    network_sync_hook = NetworkSyncHook()
     profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
-    finalize_hook = _FakeFinalizeHook(ticks_applied=0)
     mocker.patch.object(
         mode,
         "_ensure_lan_tick_runner",
-        return_value=(runner, provider, pre_sim_hook, profiler, finalize_hook),
+        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler),
     )
 
     before_stall_count = int(mode._input_stall_count)
