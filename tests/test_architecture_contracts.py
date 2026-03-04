@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import inspect
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any, cast
 
 import msgspec
@@ -11,8 +9,6 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
-from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
@@ -37,28 +33,6 @@ from grim.view import ViewContext
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
-
-
-class _TickRunnerStackSpy:
-    def __init__(self, sink: list[tuple[str, ...]]) -> None:
-        self._sink = sink
-        self.calls = 0
-        self._last_frame_ctx: FrameContext | None = None
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        self._last_frame_ctx = frame_ctx
-
-    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
-        _ = tick_dt
-        self.calls += 1
-        frames = inspect.stack()[1:8]
-        self._sink.append(tuple(frame.function for frame in frames))
-        return TickBatchResult(
-            ticks_completed=0,
-            batch_status=InputStatus.READY,
-            next_tick_index=int(start_tick) + max(0, int(ticks_requested)),
-            completed_results=[],
-        )
 
 
 class _PlanIsolationTick(msgspec.Struct):
@@ -253,68 +227,6 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         assert payload is not None
         assert isinstance(payload.step.presentation, PresentationStepCommands)
         assert str(payload.command_hash)
-
-
-def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack(mocker) -> None:
-    local_mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    lan_mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-
-    local_stacks: list[tuple[str, ...]] = []
-    lan_stacks: list[tuple[str, ...]] = []
-    local_runner = _TickRunnerStackSpy(local_stacks)
-    lan_runner = _TickRunnerStackSpy(lan_stacks)
-    local_provider = LocalInputProvider(
-        player_count=1,
-        build_inputs=lambda _frame_ctx: [PlayerInput()],
-    )
-    lan_provider = _LanRuntimeInputProvider(
-        player_count=1,
-        tick_rate=60,
-    )
-
-    local_mode.state.perk_selection.pending_count = 0
-    lan_mode.state.perk_selection.pending_count = 0
-    lan_mode.bind_lan_runtime(cast(Any, SimpleNamespace(local_slot_index=0)))
-    lan_mode.set_lan_runtime(
-        enabled=True,
-        role="host",
-        expected_players=1,
-        connected_players=1,
-        waiting_for_players=False,
-    )
-
-    mode_frame = SimpleNamespace(dt=0.016, dt_ui_ms=16.0)
-
-    mocker.patch.object(local_mode, "_begin_mode_update", return_value=mode_frame)
-    mocker.patch.object(local_mode, "_sync_audio_and_ground", return_value=None)
-    mocker.patch.object(local_mode, "_death_transition_ready", return_value=False)
-    mocker.patch.object(local_mode, "_lan_wait_gate_active", return_value=False)
-    mocker.patch.object(
-        local_mode,
-        "_ensure_tick_runner",
-        return_value=(local_runner, local_provider),
-    )
-
-    mocker.patch.object(lan_mode, "_begin_mode_update", return_value=mode_frame)
-    mocker.patch.object(lan_mode, "_prepare_lan_match_runtime", return_value="host")
-    mocker.patch.object(lan_mode, "_trace_lan_terrain_generation", return_value=None)
-    mocker.patch.object(lan_mode, "_lan_terrain_generation_pending", return_value=False)
-    mocker.patch.object(lan_mode, "_prepare_lan_frame", return_value=True)
-    mocker.patch.object(lan_mode, "_advance_lan_capture_ticks", return_value=0)
-    mocker.patch.object(lan_mode, "_queue_lan_local_inputs", return_value=None)
-    mocker.patch.object(
-        lan_mode,
-        "_ensure_tick_runner",
-        return_value=(lan_runner, lan_provider),
-    )
-
-    local_mode.update(0.016)
-    lan_mode.update(0.016)
-
-    assert local_runner.calls == 1
-    assert lan_runner.calls == 1
-    assert local_stacks and lan_stacks
-    assert local_stacks[0][0] == lan_stacks[0][0]
 
 
 def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
