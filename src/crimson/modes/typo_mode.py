@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Callable
 
 import msgspec
 
@@ -16,6 +17,8 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
 from ..game_modes import GameMode
+from ..sim.input import PlayerInput
+from ..sim.sessions import TypoDeterministicSession
 from ..typo.names import CreatureNameTable, load_typo_dictionary
 from ..typo.player import build_typo_player_input, enforce_typo_player_frame
 from ..typo.spawns import tick_typo_spawns
@@ -50,6 +53,9 @@ class _TypoState(msgspec.Struct):
     spawn_cooldown_ms: int = 0
 
 
+TypoSessionFactory = Callable[..., TypoDeterministicSession]
+
+
 class TypoShooterMode(BaseGameplayMode):
     def __init__(
         self,
@@ -60,6 +66,7 @@ class TypoShooterMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
+        session_factory: TypoSessionFactory = TypoDeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -81,14 +88,32 @@ class TypoShooterMode(BaseGameplayMode):
         self._unique_words: list[str] | None = None
 
         self._ui_assets = None
+        self._session_factory = session_factory
+        self._sim_session: TypoDeterministicSession | None = self._new_sim_session()
+        self._frame_input_state: PlayerInput | None = None
+
+    def _new_sim_session(self) -> TypoDeterministicSession:
+        return self._session_factory(
+            world=self.world.sim_world.world_state,
+            world_size=float(self.world.world_size),
+            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
+            fx_queue=self.world.render_resources.fx_queue,
+            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
+            detail_preset=5,
+            gore_disabled=0,
+            game_tune_started=bool(self.world.sim_world.game_tune_started),
+            clear_fx_queues_each_tick=False,
+        )
 
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
+        self._sim_session = self._new_sim_session()
         self._typo = _TypoState()
         self._typing = TypingBuffer()
         self._names = CreatureNameTable.sized(len(self.creatures.entries))
         self._unique_words = None
+        self._frame_input_state = None
 
         dictionary_path = self._base_dir / "typo_dictionary.txt"
         if dictionary_path.is_file():
@@ -103,7 +128,16 @@ class TypoShooterMode(BaseGameplayMode):
     def close(self) -> None:
         if self._ui_assets is not None:
             self._ui_assets = None
+        self._sim_session = None
+        self._frame_input_state = None
         super().close()
+
+    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+        _ = dt
+        frame_input_state = self._frame_input_state
+        if frame_input_state is None:
+            return [build_typo_player_input(aim=self.player.aim, fire_requested=False, reload_requested=False)]
+        return [frame_input_state]
 
     def _handle_input(self) -> None:
         if self._game_over_active:
@@ -262,13 +296,20 @@ class TypoShooterMode(BaseGameplayMode):
             fire_requested=bool(fire_pressed),
             reload_requested=bool(reload_pressed),
         )
-        self.world.update(
-            dt_world,
-            inputs=[input_state],
-            auto_pick_perks=False,
-            game_mode=GameMode.TYPO,
-            perk_progression_enabled=False,
-        )
+        self._frame_input_state = input_state
+        session = self._sim_session
+        if session is not None:
+            try:
+                self._run_deterministic_session_ticks(
+                    dt_frame=float(dt_world),
+                    session=session,
+                    recorder=None,
+                    on_tick=lambda _tick, _tick_index: False,
+                )
+            finally:
+                self._frame_input_state = None
+        else:
+            self._frame_input_state = None
         enforce_typo_player_frame(self.player, state=self.state)
 
         self.state.bonuses.weapon_power_up = 0.0
