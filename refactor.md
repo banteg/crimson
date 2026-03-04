@@ -36,22 +36,26 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 
 ### Tasks
 
-- [ ] Unify tick-applied callbacks — one path for both local and LAN tick results
-- [ ] Remove `_on_lan_tick_applied()` as a separate override hierarchy
-- [ ] Merge `_apply_input_command()` and `_apply_perk_pick_input_command()` into one path
-- [ ] Remove `_before_lan_tick_step()`, `_after_join_lan_consume()`, `_allow_lan_frame_pop()` no-op overrides from base — push LAN-specific logic into hooks or the single tick-applied path
-- [ ] Remove dead parameters from `_prepare_lan_frame()` (dt_ui_ms is unused everywhere)
+- [x] Unify tick-applied callbacks — one path for both local and LAN tick results
+- [x] Remove `_on_lan_tick_applied()` as a separate override hierarchy
+- [x] Merge `_apply_input_command()` and `_apply_perk_pick_input_command()` into one path
+- [x] Remove `_before_lan_tick_step()`, `_after_join_lan_consume()`, `_allow_lan_frame_pop()` no-op overrides from base — push LAN-specific logic into hooks or the single tick-applied path
+- [ ] Remove dead parameters from `_prepare_lan_frame()` (dt_ui_ms is used by survival for perk menu input; unused by rush/quest — could narrow signature or accept the asymmetry)
+
+### Remaining findings
+
+- **[high]** Survival LAN perk-menu flow is still asymmetric: only `PerkPick` is mapped from network events, while menu pause gating uses local menu state; join peer still captures/queues local inputs during host pause windows. `base_gameplay_mode.py:231`, `survival_mode.py:426,479,509`
 
 ### Acceptance
 
-- [ ] Each of these operations has exactly one code path, not two:
-  - [ ] State update (elapsed_ms, stage, spawn_cooldown)
-  - [ ] Game-over detection
-  - [ ] Replay checkpoint recording
-  - [ ] Perk application
-- [ ] No method in `BaseGameplayMode` has `_ = role, dt, dt_ui_ms, ...` ignoring all its parameters
-- [ ] LAN and local gameplay both pass existing tests
-- [ ] Replay determinism parity unchanged
+- [x] Each of these operations has exactly one code path, not two:
+  - [x] State update (elapsed_ms, stage, spawn_cooldown)
+  - [x] Game-over detection
+  - [x] Replay checkpoint recording
+  - [x] Perk application
+- [x] No method in `BaseGameplayMode` has `_ = role, dt, dt_ui_ms, ...` ignoring all its parameters (base `_on_lan_tick_applied` discards role/lockstep/session but delegates immediately)
+- [x] LAN and local gameplay both pass existing tests
+- [x] Replay determinism parity unchanged
 
 ---
 
@@ -66,6 +70,11 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 - [ ] Remove `inspect.signature()` introspection in `TickRunner.__init__`
 - [ ] Move `resolve_tick_dt` into the `InputProvider` protocol or a named optional protocol, remove `getattr` call
 - [ ] Remove redundant type coercions (`float(dt_seconds)` when already float, `int(self._frame_index)` when already int, etc.)
+
+### Remaining findings
+
+- **[high]** Replay RNG trace sink has an exception-path leak: trace context is manually entered in `on_pre_sim` and only exited in `on_tick_end`; if stepping raises, sink restoration is skipped. `playback_driver.py:296,343`, `tick_runner.py:144`
+- **[low]** TickRunner no longer touches `step.presentation`; malformed payloads can pass runner execution and fail later in apply consumers. `tick_runner.py:159`
 
 ### Acceptance
 
@@ -87,6 +96,10 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 - [ ] Replace string-based `_dispatch()` / `_resolve_method()` with direct method calls
 - [ ] Remove `getattr` + `callable()` runtime checks from `TickHookBus`
 - [ ] Handle `on_tick_end` boolean aggregation directly, not as a special case of a broken abstraction
+
+### Remaining findings
+
+- **[medium]** Hook contract is looser than intended: `TickHook` typed as `object`, `TickContext` missing richer identity fields like mode/session kind, which weakens enforceability. `hooks.py:14,40`
 
 ### Acceptance
 
@@ -129,6 +142,14 @@ Running ticks requires three separate calls (`_ensure_tick_runner`, `_advance_ti
 - [ ] Collapse the three-call tick sequence into a single method on BaseGameplayMode
 - [ ] Hide TickRunner, provider, and hook construction behind the single method
 - [ ] Modes should only see: "advance by dt, get outcome"
+- [ ] Collapse pass-through orchestration chain (`_invoke_tick_runner_advance` → `_advance_tick_runner_with_profile` → `_advance_tick_runner`) into a single method
+
+### Remaining findings
+
+- **[high]** LAN stop actions are applied after batch simulation, so the runner can advance extra ticks before `stop_before_finalize` / `stop_after_finalize` is honored. Under backlog conditions this leaves sim state ahead of finalized/checkpointed state. `base_gameplay_mode.py:2097`, `tick_runner.py:122`, `base_gameplay_mode.py:2236`
+- **[high]** Rollback resync snapshots are encoded/stored but never applied in mode recovery; recovery path validates payload and immediately marks applied (`mark_resync_applied`). Snapshot content is effectively dead. `base_gameplay_mode.py:1272,1300`, `survival_mode.py:545`, `rush_mode.py:289`, `quest_mode.py:301`
+- **[medium]** A non-TickRunner deterministic path still exists (`sandbox_step.py`) and fuses planning/application side effects — remaining split-brain scaffolding against the stated architecture. `sandbox_step.py:62,82`
+- **[low]** Pass-through orchestration scaffolding `_invoke_tick_runner_advance` → `_advance_tick_runner_with_profile` → `_advance_tick_runner` with no specialization at any layer. `base_gameplay_mode.py:1543`
 
 ### Acceptance
 
@@ -148,6 +169,7 @@ Running ticks requires three separate calls (`_ensure_tick_runner`, `_advance_ti
 - [ ] Simplify or remove `test_lan_tick_consumption_*` tests — replace with "did runner advance?" checks
 - [ ] Move `test_normalize_terrain_ids_falls_back_to_defaults_on_invalid_rows` to unit tests
 - [ ] Remove any tests that only assert mock call counts without verifying observable behavior
+- [ ] Fix stale ast-grep guardrail targeting deleted `game_world.py` (`tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6`)
 
 ### Acceptance
 
@@ -155,3 +177,25 @@ Running ticks requires three separate calls (`_ensure_tick_runner`, `_advance_ti
 - [ ] Every remaining architecture test asserts on observable behavior, not internal call chains
 - [ ] Test suite still catches: hook order changes, input validation skips, debt preservation failures, RNG mutation during terrain setup, replay pause/step semantics
 - [ ] `uv run pytest --no-cov` passes
+- [ ] All guardrail rules reference only files that exist
+
+---
+
+## Stage 8: Fix GameWorld Runtime Host Duplication
+
+`GameWorld` split did not result in a clean shared runtime-host abstraction. Lifecycle, camera, and render ownership glue is duplicated across debug/test hosts.
+
+### Tasks
+
+- [ ] Extract shared lifecycle/camera/render host interface from `arsenal_debug.py`, `lighting_debug.py`, and `tests/world_runtime.py`
+- [ ] Eliminate duplication — each host should only override what is actually different
+
+### Remaining findings
+
+- **[medium]** Debug and test hosts (`arsenal_debug.py:168`, `lighting_debug.py:1331`, `tests/world_runtime.py:91`) duplicate the same initialization and camera/render ownership glue
+
+### Acceptance
+
+- [ ] Lifecycle, camera, and render setup code exists in exactly one place
+- [ ] Debug/test hosts compose or inherit from the shared abstraction
+- [ ] All debug view and world runtime tests pass
