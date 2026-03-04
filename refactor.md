@@ -74,16 +74,16 @@ returns `list[PlayerInput] | None` (None = stall). `ReplayInputProvider` raises
 
 ### Tasks
 
-- [ ] Introduce `InputStatus` enum (`READY`/`STALLED`/`EOS`) and `TickInput` dataclass with `status` + `inputs` fields.
-- [ ] Change `InputProvider.pull_tick_input` return type from `list[PlayerInput] | None` to `TickInput`.
-- [ ] Convert `LocalInputProvider` to always return `TickInput(status=READY, ...)`.
-- [ ] Convert `NetworkInputProvider` to return `TickInput(status=STALLED, ...)` instead of `None`.
-- [ ] Convert `ReplayInputProvider` to return `TickInput(status=EOS, ...)` instead of raising `ReplayEndOfStream`.
-- [ ] Delete `ReplayEndOfStream` and `ReplayAdvanceEndOfStream` exception classes.
-- [ ] Fix `ReplayInputProvider.push_command`: either split `InputProvider` into read-only and command-capable protocols, or make replay's `push_command` a silent no-op. Current `RuntimeError` raise on a protocol method is an LSP violation.
-- [ ] Update `TickRunner.advance_frame` (or its pure replacement) to match on `TickInput.status` instead of `None` checks (line 141) and `try/except ReplayEndOfStream` (line 180).
-- [ ] Update `TickBatchResult` to carry `batch_status` (`ready`/`stalled`/`eos`) instead of just `stalled: bool`.
-- [ ] Update all mode and replay driver callers to consume status-based results.
+- [x] Introduce `InputStatus` enum (`READY`/`STALLED`/`EOS`) and `TickInput` dataclass with `status` + `inputs` fields.
+- [x] Change `InputProvider.pull_tick_input` return type from `list[PlayerInput] | None` to `TickInput`.
+- [x] Convert `LocalInputProvider` to always return `TickInput(status=READY, ...)`.
+- [x] Convert `NetworkInputProvider` to return `TickInput(status=STALLED, ...)` instead of `None`.
+- [x] Convert `ReplayInputProvider` to return `TickInput(status=EOS, ...)` instead of raising `ReplayEndOfStream`.
+- [x] Delete `ReplayEndOfStream` and `ReplayAdvanceEndOfStream` exception classes.
+- [x] Fix `ReplayInputProvider.push_command`: either split `InputProvider` into read-only and command-capable protocols, or make replay's `push_command` a silent no-op. Current `RuntimeError` raise on a protocol method is an LSP violation.
+- [x] Update `TickRunner.advance_frame` (or its pure replacement) to match on `TickInput.status` instead of `None` checks (line 141) and `try/except ReplayEndOfStream` (line 180).
+- [x] Update `TickBatchResult` to carry `batch_status` (`ready`/`stalled`/`eos`) instead of just `stalled: bool`.
+- [x] Update all mode and replay driver callers to consume status-based results.
 
 ### Evidence
 
@@ -98,12 +98,12 @@ returns `list[PlayerInput] | None` (None = stall). `ReplayInputProvider` raises
 
 ### Acceptance
 
-- [ ] `InputStatus` enum with `READY`/`STALLED`/`EOS`.
-- [ ] No `None`-as-stall in provider/runner contracts.
-- [ ] No replay EOS exceptions in normal tick advancement.
-- [ ] No `RuntimeError` from protocol methods during normal operation.
-- [ ] `TickBatchResult.batch_status` replaces `stalled: bool`.
-- [ ] Input provider tests cover all three status paths.
+- [x] `InputStatus` enum with `READY`/`STALLED`/`EOS`.
+- [x] No `None`-as-stall in provider/runner contracts.
+- [x] No replay EOS exceptions in normal tick advancement.
+- [x] No `RuntimeError` from protocol methods during normal operation.
+- [x] `TickBatchResult.batch_status` replaces `stalled: bool`.
+- [x] Input provider tests cover all three status paths.
 
 ### Execution Plan (Next Phase)
 
