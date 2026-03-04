@@ -1992,6 +1992,9 @@ class BaseGameplayMode:
         provider.set_before_pop(self._allow_lan_frame_pop)
         sim_ns_start = time.perf_counter_ns()
         ticks_requested = 1 if float(dt_tick) > 0.0 else 0
+        # LAN always requests exactly 0 or 1 ticks per frame. This ensures
+        # _on_tick_applied stop actions never discard simulated-but-unapplied ticks.
+        assert ticks_requested <= 1
         batch = self._advance_tick_runner_batch(
             runner=runner,
             dt_seconds=float(dt_tick),
