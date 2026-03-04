@@ -17,7 +17,7 @@ from .creatures.spawn import RANDOM_HEADING_SENTINEL
 from .game.types import GameState
 from .game_modes import GameMode
 from .render.rtx.mode import RtxRenderMode
-from .render.world.renderer import WorldRenderer
+from .render.world.renderer import WorldRenderer, WorldRenderHost
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
@@ -114,7 +114,7 @@ class DemoView:
         self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self)
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
         self._reset_world_runtime()
 
         self._crand = Crand(0)

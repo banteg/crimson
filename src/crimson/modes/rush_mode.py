@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -17,6 +17,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
+from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
@@ -33,6 +34,9 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    DeterministicSessionLike,
+    LanStepAction,
+    _AppliedBatchTick,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
@@ -257,8 +261,8 @@ class RushMode(BaseGameplayMode):
         role: str,
         dt: float,
         dt_ui_ms: float,
-        lockstep_runtime: object | None,
-        session: RushDeterministicSession,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> bool:
         _ = role, dt, dt_ui_ms, lockstep_runtime, dt_tick
@@ -270,22 +274,25 @@ class RushMode(BaseGameplayMode):
         self,
         *,
         role: str,
-        lockstep_runtime: object | None,
-        session: RushDeterministicSession,
-        step: object,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+        step: _AppliedBatchTick,
         dt_tick: float,
-    ) -> str:
+    ) -> LanStepAction:
         _ = role, lockstep_runtime, dt_tick
-        applied = cast(Any, step)
-        self._rush.elapsed_ms = float(applied.tick.elapsed_ms)
-        self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+        session_rush = cast(RushDeterministicSession, session)
+        frame_tick_index = step.frame_tick_index
+        if frame_tick_index is None:
+            raise RuntimeError("lan tick missing frame_tick_index")
+        self._rush.elapsed_ms = float(step.tick.elapsed_ms)
+        self._rush.spawn_cooldown_ms = float(session_rush.spawn_cooldown_ms)
         self._store_net_runtime_snapshot(
             snapshot=RushStateSnapshotV2(
-                tick_index=int(applied.frame_tick_index),
+                tick_index=int(frame_tick_index),
                 replay_state=self._net_replay_snapshot_state(),
                 runtime_state=RushRuntimeSnapshotV2(
-                    elapsed_ms=float(applied.tick.elapsed_ms),
-                    spawn_cooldown_ms=float(session.spawn_cooldown_ms),
+                    elapsed_ms=float(step.tick.elapsed_ms),
+                    spawn_cooldown_ms=float(session_rush.spawn_cooldown_ms),
                     kill_count=int(self.creatures.kill_count),
                 ),
             ),

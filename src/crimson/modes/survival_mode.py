@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -46,6 +46,9 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    DeterministicSessionLike,
+    LanStepAction,
+    _AppliedBatchTick,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -400,7 +403,7 @@ class SurvivalMode(BaseGameplayMode):
         dt: float,
         dt_ui_ms: float,
         lockstep_runtime: LockstepRuntime | None,
-        session: SurvivalDeterministicSession,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> bool:
         _ = dt
@@ -485,7 +488,7 @@ class SurvivalMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: SurvivalDeterministicSession,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> None:
         _ = role, lockstep_runtime, dt_tick
@@ -497,7 +500,7 @@ class SurvivalMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: SurvivalDeterministicSession,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> bool:
         _ = role, lockstep_runtime, session, dt_tick
@@ -508,7 +511,7 @@ class SurvivalMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: SurvivalDeterministicSession,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> bool:
         _ = role, lockstep_runtime, session, dt_tick
@@ -522,16 +525,18 @@ class SurvivalMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: SurvivalDeterministicSession,
-        step: object,
+        session: DeterministicSessionLike,
+        step: _AppliedBatchTick,
         dt_tick: float,
-    ) -> str:
+    ) -> LanStepAction:
         _ = role, lockstep_runtime, dt_tick
-        step_tick = cast(Any, step)
-        frame_tick_index = int(step_tick.frame_tick_index)
-        session_elapsed_ms = float(session.elapsed_ms)
-        session_stage = int(session.stage)
-        session_spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+        session_survival = cast(SurvivalDeterministicSession, session)
+        frame_tick_index = step.frame_tick_index
+        if frame_tick_index is None:
+            raise RuntimeError("lan tick missing frame_tick_index")
+        session_elapsed_ms = float(session_survival.elapsed_ms)
+        session_stage = int(session_survival.stage)
+        session_spawn_cooldown_ms = float(session_survival.spawn_cooldown_ms)
         self._survival.elapsed_ms = session_elapsed_ms
         self._survival.stage = session_stage
         self._survival.spawn_cooldown = session_spawn_cooldown_ms

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Generic, Protocol, TypeVar
+from typing import Generic, Protocol, TypeVar, cast
 
 import msgspec
 
@@ -30,6 +30,16 @@ class TickSession(Protocol[TimingT, TickT]):
     def timing_for_dt(self, dt: float) -> TimingT: ...
 
     def step_tick(self, *, timing: TimingT, inputs: list[PlayerInput] | None) -> TickT: ...
+
+
+class TickSessionWithTraceRng(TickSession[TimingT, TickT], Protocol[TimingT, TickT]):
+    def step_tick(
+        self,
+        *,
+        timing: TimingT,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> TickT: ...
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
@@ -135,7 +145,8 @@ class TickRunner(Generic[TimingT, TickT]):
 
             timing = self._session.timing_for_dt(float(tick_dt_seconds))
             if self._step_accepts_trace_rng:
-                tick = self._session.step_tick(
+                session_with_trace = cast(TickSessionWithTraceRng[TimingT, TickT], self._session)
+                tick = session_with_trace.step_tick(
                     timing=timing,
                     inputs=tick_inputs,
                     trace_rng=bool(self._config.trace_rng),

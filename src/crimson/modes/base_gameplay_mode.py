@@ -49,7 +49,7 @@ from ..perks.runtime.effects_context import creature_find_in_radius
 from ..perks.selection import perk_selection_pick
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer
+from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -214,7 +214,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
 
     def _resolve_tick_commands(self, tick_index: int) -> list[InputCommand]:
         runtime = self._runtime
-        if runtime is not None:
+        if isinstance(runtime, LockstepRuntime):
             while True:
                 event = runtime.pop_perk_event()
                 if event is None:
@@ -424,7 +424,7 @@ class BaseGameplayMode:
         self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self)
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
         player_count = self.config.player_count
         self._reset_world_runtime(player_count=max(1, min(4, int(player_count))))
         self._bind_world()

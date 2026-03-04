@@ -17,7 +17,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..render.rtx.mode import mode_from_rtx_flag
-from ..render.world.renderer import WorldRenderer
+from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..replay import (
     Replay,
     apply_replay_bootstrap,
@@ -534,13 +534,14 @@ class ReplayPlaybackMode:
         self._demo_mode_active = False
         self._rtx_mode = mode_from_rtx_flag(self._rtx)
 
-        self._sim_world = SimWorldState(
+        sim_world = SimWorldState(
             world_size=float(self._world_size),
             demo_mode_active=bool(self._demo_mode_active),
             hardcore=bool(self._hardcore),
             difficulty_level=int(self._difficulty_level),
             preserve_bugs=bool(self._preserve_bugs),
         )
+        self._sim_world = sim_world
         self._render_resources = RenderResources(
             assets_dir=self._ctx.assets_dir,
             world_size=float(self._world_size),
@@ -549,7 +550,7 @@ class ReplayPlaybackMode:
         )
         self._audio_bridge = AudioBridge(
             demo_mode_active=bool(self._demo_mode_active),
-            reflex_boost_timer_source=lambda: float(self._sim_world.state.bonuses.reflex_boost),
+            reflex_boost_timer_source=lambda: float(sim_world.state.bonuses.reflex_boost),
             audio=self._audio,
             audio_rng=self._audio_rng,
         )
@@ -557,7 +558,7 @@ class ReplayPlaybackMode:
             world_size=float(self._world_size),
             render_resources=self._render_resources,
         )
-        self._renderer = WorldRenderer(self)
+        self._renderer = WorldRenderer(cast(WorldRenderHost, self))
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
         self._reset_world_runtime(

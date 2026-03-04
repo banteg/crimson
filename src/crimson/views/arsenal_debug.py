@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import random
+from typing import cast
 
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
@@ -15,10 +16,10 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer
+from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
-from ..sim.world_tick_runner_harness import WorldTickRunnerHarness
+from ..sim.world_tick_runner_harness import WorldTickRunnerHarness, WorldTickRunnerHost
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -141,7 +142,7 @@ class ArsenalDebugView:
         self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self)
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
         self._reset_world_runtime(player_count=1)
 
         self._player = self.sim_world.players[0] if self.sim_world.players else None
@@ -159,7 +160,7 @@ class ArsenalDebugView:
         self._paused = False
         self._screenshot_requested = False
         self._tick_runtime = WorldTickRunnerHarness(
-            world=self,
+            world=cast(WorldTickRunnerHost, self),
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )

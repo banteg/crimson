@@ -4,7 +4,7 @@ import math
 import os
 import random
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import msgspec
 
@@ -21,10 +21,10 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer
+from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
-from ..sim.world_tick_runner_harness import WorldTickRunnerHarness
+from ..sim.world_tick_runner_harness import WorldTickRunnerHarness, WorldTickRunnerHost
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
@@ -1240,7 +1240,7 @@ class LightingDebugView:
         self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self)
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
         self._reset_world_runtime(player_count=1)
         self._player = self.sim_world.players[0] if self.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
@@ -1323,7 +1323,7 @@ class LightingDebugView:
         self._paused = False
         self._screenshot_requested = False
         self._tick_runtime = WorldTickRunnerHarness(
-            world=self,
+            world=cast(WorldTickRunnerHost, self),
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )

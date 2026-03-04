@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -26,6 +26,7 @@ from ..input_codes import (
     input_code_is_pressed_for_player,
     input_primary_just_pressed,
 )
+from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
@@ -53,6 +54,9 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    DeterministicSessionLike,
+    LanStepAction,
+    _AppliedBatchTick,
 )
 from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
@@ -261,38 +265,42 @@ class QuestMode(BaseGameplayMode):
         self,
         *,
         role: str,
-        lockstep_runtime: object | None,
-        session: QuestDeterministicSession,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
         dt_tick: float,
     ) -> None:
         _ = role, lockstep_runtime, dt_tick
+        session_quest = cast(QuestDeterministicSession, session)
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        session.spawn_entries = tuple(self._quest.spawn_entries)
-        session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-        session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-        session.completion_transition_ms = float(self._quest.completion_transition_ms)
+        session_quest.spawn_entries = tuple(self._quest.spawn_entries)
+        session_quest.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+        session_quest.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+        session_quest.completion_transition_ms = float(self._quest.completion_transition_ms)
 
     def _on_lan_tick_applied(
         self,
         *,
         role: str,
-        lockstep_runtime: object | None,
-        session: QuestDeterministicSession,
-        step: object,
+        lockstep_runtime: LockstepRuntime | None,
+        session: DeterministicSessionLike,
+        step: _AppliedBatchTick,
         dt_tick: float,
-    ) -> str:
+    ) -> LanStepAction:
         _ = role, lockstep_runtime
-        applied = cast(Any, step)
-        tick = cast(QuestDeterministicSessionTick, applied.tick)
-        self._quest.spawn_entries = tuple(session.spawn_entries)
+        session_quest = cast(QuestDeterministicSession, session)
+        frame_tick_index = step.frame_tick_index
+        if frame_tick_index is None:
+            raise RuntimeError("lan tick missing frame_tick_index")
+        tick = cast(QuestDeterministicSessionTick, step.tick)
+        self._quest.spawn_entries = tuple(session_quest.spawn_entries)
         self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
         self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
         self._quest.completion_transition_ms = float(tick.completion_transition_ms)
         self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
         self._store_net_runtime_snapshot(
             snapshot=QuestsStateSnapshotV2(
-                tick_index=int(applied.frame_tick_index),
+                tick_index=int(frame_tick_index),
                 replay_state=self._net_replay_snapshot_state(),
                 runtime_state=QuestsRuntimeSnapshotV2(
                     elapsed_ms=float(tick.elapsed_ms),
