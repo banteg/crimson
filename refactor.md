@@ -21,27 +21,43 @@ Target architecture is defined by `plan.md`:
 
 ## Stage 1: Remove Hook-Bus Orchestration
 
-Current state still uses dynamic hook dispatch and hook-owned orchestration data flow.
+Current state uses dynamic hook dispatch inside the deterministic tick loop.
+`TickRunner` calls 8 hook dispatch points per tick via `TickHookBus`, which uses
+`getattr`-string-based method lookup on `TickHook: TypeAlias = object` (fully
+type-erased). Replay recording, checkpoint emission, network sync, and profiling
+all happen through this implicit dispatch instead of explicit frame-driver calls.
 
 ### Tasks
 
-- [ ] Remove `TickHookBus` as the runtime orchestration primitive.
-- [ ] Move replay/checkpoint/network-sync/profiler side effects to explicit frame-driver dispatch from `TickBatchResult`.
-- [ ] Delete dynamic method lookup dispatch (`getattr` + string method names) from tick orchestration path.
-- [ ] Remove mode-level hook wiring fields that only exist to feed `TickHookBus`.
+- [ ] Remove `TickHookBus` from `TickRunner`. The runner should return `TickBatchResult` with completed tick payloads only — no side-effect dispatch.
+- [ ] Replace `TickHook: TypeAlias = object` with nothing. Hook objects should not exist as a concept in the runner; side effects belong to the frame driver.
+- [ ] Delete `getattr`-string method lookup dispatch (`_resolve_method`, `_dispatch`) from tick orchestration.
+- [ ] Move replay recording to explicit frame-driver dispatch: after `advance_ticks` returns, iterate `TickBatchResult.completed_results` and call `recorder.record_tick(inputs)` directly. Currently this happens inside `ReplayRecorderHook.on_pre_sim` (hooks.py:157).
+- [ ] Move checkpoint emission to explicit frame-driver dispatch: after batch apply, call checkpoint from completed results directly. Currently this happens inside `CheckpointHook.on_tick_end` (hooks.py:182).
+- [ ] Move network sync to explicit frame-driver dispatch: hash broadcast and desync detection currently happen inside `NetworkSyncHook.on_post_hash`/`on_tick_end` (hooks.py:216, 223).
+- [ ] Move profiling to explicit frame-driver timing: wrap `advance_ticks` + apply with `time.perf_counter_ns()` instead of scattering timing across `ProfilerHook.on_pre_sim`/`on_world_step_done`/`on_post_hash`/`on_tick_end` (hooks.py:285-304).
+- [ ] Delete mode-level hook wiring instance vars: `_tick_replay_hook`, `_tick_checkpoint_hook`, `_tick_network_sync_hook`, `_tick_profiler_hook`, `_tick_observer_hook`, `_tick_command_hook` (base_gameplay_mode.py:1596-1601).
+- [ ] Collapse `_ensure_tick_runner` from 125-line 8-tuple return to simple runner creation. It currently returns `(TickRunner, InputProvider, ReplayRecorderHook, CheckpointHook, NetworkSyncHook, ProfilerHook, ObserverHook, CommandHook)`. After hook removal, it only needs to return `(TickRunner, InputProvider)`.
 - [ ] Keep deterministic ordering guarantees by explicit, ordered dispatch calls in one place.
 
-### Evidence (current code)
+### Evidence
 
-- `src/crimson/sim/hooks.py:40` (`TickHook: TypeAlias = object`)
-- `src/crimson/sim/hooks.py:55` (`getattr` dispatch)
-- `src/crimson/sim/tick_runner.py:8` (`TickHookBus` dependency)
-- `src/crimson/modes/base_gameplay_mode.py:1661` (hook bundle construction in `_ensure_tick_runner`)
+- `src/crimson/sim/hooks.py:40` — `TickHook: TypeAlias = object` (type-erased)
+- `src/crimson/sim/hooks.py:54-61` — `_resolve_method` uses `getattr` + string names
+- `src/crimson/sim/hooks.py:134-166` — `ReplayRecorderHook` (implicit recording via `on_pre_sim`)
+- `src/crimson/sim/hooks.py:169-193` — `CheckpointHook` (implicit checkpoint via `on_tick_end`)
+- `src/crimson/sim/hooks.py:196-270` — `NetworkSyncHook` (implicit sync via `on_post_hash`/`on_tick_end`)
+- `src/crimson/sim/hooks.py:273-304` — `ProfilerHook` (timing scattered across 4 hook methods)
+- `src/crimson/sim/tick_runner.py:69-74` — runner accepts and defaults `TickHookBus`
+- `src/crimson/sim/tick_runner.py:140-173` — 8 hook dispatch points inside deterministic tick loop
+- `src/crimson/modes/base_gameplay_mode.py:1661-1785` — `_ensure_tick_runner` 125-line 8-tuple factory
+- `src/crimson/modes/base_gameplay_mode.py:1596-1601` — 6 hook instance vars in reset
 
 ### Acceptance
 
-- [ ] No `TickHookBus` used in runtime tick orchestration.
-- [ ] Zero `getattr`-based hook dispatch in runtime orchestration path.
+- [ ] No `TickHookBus` or hook objects in runtime tick orchestration.
+- [ ] Zero `getattr`-based dispatch in runtime path.
+- [ ] `_ensure_tick_runner` returns at most `(TickRunner, InputProvider)`.
 - [ ] Replay/checkpoint/network sync behavior parity preserved.
 - [ ] `uv run pytest --no-cov` passes.
 
@@ -49,108 +65,141 @@ Current state still uses dynamic hook dispatch and hook-owned orchestration data
 
 ## Stage 2: Standardize Input Status + Journal Replay Contract
 
-Current state still mixes `None` stalls and exception-driven EOS (`ReplayEndOfStream`).
+Current state mixes `None`-as-stall and exception-driven EOS. `pull_tick_input`
+returns `list[PlayerInput] | None` (None = stall). `ReplayInputProvider` raises
+`ReplayEndOfStream` for EOS. `TickRunner` catches this and re-wraps it as
+`ReplayAdvanceEndOfStream`. `ReplayInputProvider.push_command` raises
+`RuntimeError` — a protocol violation on a method that's part of `InputProvider`.
 
 ### Tasks
 
-- [ ] Introduce `InputStatus` and `TickInput` contract in `input_providers`.
-- [ ] Convert providers to return explicit status (`READY`/`STALLED`/`EOS`) instead of `None`/exceptions.
-- [ ] Remove `ReplayEndOfStream` / `ReplayAdvanceEndOfStream` control-flow exceptions from normal tick advancement.
-- [ ] Keep `ReplayInputProvider` as a thin adapter over `Journal` read APIs.
-- [ ] Define command semantics explicitly for all providers (no “not supported” runtime errors in normal interface usage).
-- [ ] Update runner/mode/replay callers to consume status-based control flow only.
+- [ ] Introduce `InputStatus` enum (`READY`/`STALLED`/`EOS`) and `TickInput` dataclass with `status` + `inputs` fields.
+- [ ] Change `InputProvider.pull_tick_input` return type from `list[PlayerInput] | None` to `TickInput`.
+- [ ] Convert `LocalInputProvider` to always return `TickInput(status=READY, ...)`.
+- [ ] Convert `NetworkInputProvider` to return `TickInput(status=STALLED, ...)` instead of `None`.
+- [ ] Convert `ReplayInputProvider` to return `TickInput(status=EOS, ...)` instead of raising `ReplayEndOfStream`.
+- [ ] Delete `ReplayEndOfStream` and `ReplayAdvanceEndOfStream` exception classes.
+- [ ] Fix `ReplayInputProvider.push_command`: either split `InputProvider` into read-only and command-capable protocols, or make replay's `push_command` a silent no-op. Current `RuntimeError` raise on a protocol method is an LSP violation.
+- [ ] Update `TickRunner.advance_frame` (or its pure replacement) to match on `TickInput.status` instead of `None` checks (line 141) and `try/except ReplayEndOfStream` (line 180).
+- [ ] Update `TickBatchResult` to carry `batch_status` (`ready`/`stalled`/`eos`) instead of just `stalled: bool`.
+- [ ] Update all mode and replay driver callers to consume status-based results.
 
-### Evidence (current code)
+### Evidence
 
-- `src/crimson/sim/input_providers.py:13` (`ReplayEndOfStream`)
-- `src/crimson/sim/input_providers.py:34` (`pull_tick_input -> list[...] | None`)
-- `src/crimson/sim/input_providers.py:146` (`ReplayInputProvider.push_command` raises)
-- `src/crimson/sim/tick_runner.py:180` (exception-based replay EOS path)
+- `src/crimson/sim/input_providers.py:13` — `ReplayEndOfStream` exception class
+- `src/crimson/sim/input_providers.py:34` — `pull_tick_input -> list[...] | None`
+- `src/crimson/sim/input_providers.py:136-142` — `ReplayInputProvider` raises exception for EOS
+- `src/crimson/sim/input_providers.py:146-147` — `push_command` raises `RuntimeError`
+- `src/crimson/sim/tick_runner.py:39-44` — `TickBatchResult` has `stalled: bool` instead of `batch_status`
+- `src/crimson/sim/tick_runner.py:46-60` — `ReplayAdvanceEndOfStream` re-wrap class
+- `src/crimson/sim/tick_runner.py:141` — `if tick_inputs is None:` stall detection
+- `src/crimson/sim/tick_runner.py:180-195` — exception-based replay EOS with re-wrap
 
 ### Acceptance
 
-- [ ] No `None`-as-stall control flow in provider/runner contracts.
-- [ ] No replay EOS exceptions used for normal per-frame advancement control flow.
-- [ ] Replay input path is `Journal -> ReplayInputProvider -> TickRunner`.
-- [ ] Input provider tests cover status semantics and pass.
+- [ ] `InputStatus` enum with `READY`/`STALLED`/`EOS`.
+- [ ] No `None`-as-stall in provider/runner contracts.
+- [ ] No replay EOS exceptions in normal tick advancement.
+- [ ] No `RuntimeError` from protocol methods during normal operation.
+- [ ] `TickBatchResult.batch_status` replaces `stalled: bool`.
+- [ ] Input provider tests cover all three status paths.
 
 ---
 
 ## Stage 3: Make TickRunner Pure and Frame-Owned for Debt
 
-Current state still keeps fixed-step clock/debt inside `TickRunner`.
+`TickRunner` currently owns `FixedStepClock`, `_next_tick_index`, and
+`_frame_index` as mutable state. It exposes `runner.clock` to callers (modes
+read `tick_rate`, `dt_tick`, `accum`; replay reads `clock` directly). Modes call
+`runner.reset_clock()`. The runner also mutates the clock accumulator internally
+to restore unconsumed ticks (line 186). A 3-layer no-op call chain wraps the
+advance call.
 
 ### Tasks
 
 - [ ] Remove `FixedStepClock` ownership from `TickRunner`.
-- [ ] Replace `advance_frame(dt, max_ticks)` with explicit tick-range advancement API (frame drivers compute candidate ticks/debt).
-- [ ] Move all accumulator/debt ownership to frame-driver layer(s).
-- [ ] Delete pass-through call chain (`_invoke_tick_runner_advance` -> `_advance_tick_runner_with_profile` -> `_advance_tick_runner`).
-- [ ] Ensure stop actions cannot advance hidden extra ticks before finalize decisions.
+- [ ] Remove `self._next_tick_index` and `self._frame_index` mutable state.
+- [ ] Replace `advance_frame(dt, max_ticks)` with `advance_ticks(start_tick, ticks_requested, tick_dt)` returning `TickBatchResult`. Frame drivers compute candidate ticks from their own clock.
+- [ ] Move clock/debt ownership to frame-driver contexts: `_update_local_match` in base mode, `_advance_runner` in replay mode, `advance_frame` in harness.
+- [ ] Remove `runner.clock` property and all external reads: `_gameplay_tick_rate()` reads `runner.clock.tick_rate` (line 1575), `_gameplay_tick_dt()` reads `runner.clock.dt_tick` (line 1581-1584), replay reads `runner.clock` (line 881-888).
+- [ ] Delete `reset_clock()` method and its caller `_reset_gameplay_tick_runner_clock()` (line 1587-1590).
+- [ ] Delete 3-layer pass-through: `_invoke_tick_runner_advance` (line 1543) → `_advance_tick_runner_with_profile` (line 1550) → `_advance_tick_runner` (line 1561). Each just calls the next with zero added behavior.
+- [ ] Remove clock accumulator mutation inside runner: `self._clock.accum += unconsumed_ticks * self._clock.dt_tick` (line 186).
 
-### Evidence (current code)
+### Evidence
 
-- `src/crimson/sim/tick_runner.py:7` (`FixedStepClock` import)
-- `src/crimson/sim/tick_runner.py:76` (clock stored in runner)
-- `src/crimson/sim/tick_runner.py:91` (`advance_frame`)
-- `src/crimson/modes/base_gameplay_mode.py:1543` (pass-through chain)
-- `src/crimson/modes/base_gameplay_mode.py:2137` (stop action after batched application)
+- `src/crimson/sim/tick_runner.py:7` — `FixedStepClock` import
+- `src/crimson/sim/tick_runner.py:76-78` — clock, tick index, frame index stored as mutable state
+- `src/crimson/sim/tick_runner.py:80-82` — `clock` property exposing internal state
+- `src/crimson/sim/tick_runner.py:88-89` — `reset_clock()` method
+- `src/crimson/sim/tick_runner.py:99` — `self._clock.advance(dt_seconds)` internal mutation
+- `src/crimson/sim/tick_runner.py:186` — accumulator restoration for unconsumed ticks
+- `src/crimson/modes/base_gameplay_mode.py:1543-1570` — 3-layer pass-through chain
+- `src/crimson/modes/base_gameplay_mode.py:1572-1590` — mode methods that read/reset runner clock
+- `src/crimson/modes/replay_playback_mode.py:881-888` — replay directly accesses `runner.clock`
 
 ### Acceptance
 
-- [ ] `TickRunner` has no internal accumulator/clock state.
-- [ ] Frame drivers own debt and candidate tick count calculation.
-- [ ] No pass-through orchestration chain remains.
+- [ ] `TickRunner` has zero mutable state (no clock, no tick index, no frame index).
+- [ ] `TickRunner` API takes explicit tick range, not `dt_seconds`.
+- [ ] Frame drivers own their own `FixedStepClock`.
+- [ ] No external code reads `runner.clock`.
+- [ ] No pass-through call chain remains.
 - [ ] Determinism parity and stall/debt tests pass.
 
 ---
 
-## Stage 4: Close Correctness Gaps in LAN/Recovery Paths
-
-Before final cleanup, fix existing correctness holes.
+## Stage 4: Close Correctness Gaps and Collapse LAN Scaffolding
 
 ### Tasks
 
-- [ ] Ensure rollback resync snapshots are actually applied to runtime/mode state, not only validated and marked applied.
-- [ ] Ensure LAN stop semantics are honored without state/checkpoint divergence under backlog.
-- [ ] Remove or migrate any remaining non-shared deterministic stepping path (`sandbox_step`) that bypasses final orchestration architecture.
+- [ ] Apply rollback resync snapshots to mode/runtime state. Current code decodes the snapshot (line 1272) but calls `mark_resync_applied` (line 1300) without actually applying the decoded state to the sim world.
+- [ ] Fix LAN stop-under-backlog: `_on_tick_applied` can return a stop action partway through a batch, but remaining batch ticks have already been simulated by the runner. This can leave runner-simulated state ahead of finalized/checkpointed state.
+- [ ] Collapse LAN scaffolding methods in `BaseGameplayMode`: `_prepare_lan_frame` (line 1813), `_allow_lan_frame_pop` (line 1826), `_after_join_lan_consume` (line 1829), `_on_lan_tick_applied` (line 1842) are thin delegation wrappers that mode subclasses override. Flatten into a single explicit tick-apply path.
+- [ ] Delete `sandbox_step.py` — it is a parallel deterministic stepping path that bypasses the runner. Migrate its 3 test callers and `world_runtime.py` to use `WorldTickRunnerHarness` or the runner directly.
+- [ ] Deduplicate `SandboxWorldHost` (sandbox_step.py:15) and `WorldTickRunnerHost` (world_tick_runner_harness.py:18) — they are identical protocols defined in separate files.
 
-### Evidence (current code)
+### Evidence
 
-- `src/crimson/modes/base_gameplay_mode.py:1272` (decode path)
-- `src/crimson/modes/base_gameplay_mode.py:1300` (`mark_resync_applied` without state apply)
-- `src/crimson/sim/sandbox_step.py:62` (alternate direct deterministic path)
+- `src/crimson/modes/base_gameplay_mode.py:1285-1300` — decode + `mark_resync_applied` without state apply
+- `src/crimson/modes/base_gameplay_mode.py:2017-2055` — `_consume_lan_tick_frames` applies batch then checks stop
+- `src/crimson/modes/base_gameplay_mode.py:1813-1855` — LAN scaffolding methods
+- `src/crimson/sim/sandbox_step.py:15-95` — duplicate `SandboxWorldHost` + parallel stepping path
+- `src/crimson/sim/world_tick_runner_harness.py:18` — duplicate `WorldTickRunnerHost`
+- `tests/test_camera_shake.py`, `tests/test_bonus_pickup_fx.py`, `tests/test_game_world_audio.py` — `run_sandbox_world_step` callers
+- `tests/world_runtime.py` — `SandboxWorldHost` implementor
 
 ### Acceptance
 
 - [ ] Recovery snapshots have observable state-application behavior.
-- [ ] No known backlog-induced finalize/checkpoint divergence remains.
-- [ ] Deterministic stepping paths are unified behind target architecture.
+- [ ] Stop action under LAN backlog does not leave divergent runner/checkpoint state.
+- [ ] Only one world host protocol exists.
+- [ ] `sandbox_step.py` deleted; callers migrated.
+- [ ] LAN scaffolding methods collapsed.
 
 ---
 
 ## Stage 5: Runtime-First Test Suite Cleanup
 
-Replace brittle/internal-chain assertions with runtime-type behavioral coverage.
-
 ### Tasks
 
-- [ ] Remove stack/frame inspection assertions (for example `inspect.stack()`-based architecture checks).
-- [ ] Reduce heavy mock-based tests of runtime internals; prefer runtime-type integration for orchestration paths.
-- [ ] Keep only behaviorally meaningful assertions (observable output/state/telemetry), not incidental call-chain shape.
-- [ ] Fix stale ast-grep guardrail paths that reference deleted files.
-- [ ] Align tests with `InputStatus` + Journal + pure-runner contracts.
+- [ ] Remove `inspect.stack()`-based architecture assertion in `test_architecture_contracts.py:48`. This asserts internal call-chain shape and breaks on any refactor.
+- [ ] Review `test_architecture_contracts.py` broadly — decide which behavioral invariants to keep vs. which are incidental wiring checks that should be deleted.
+- [ ] Reduce mock-heavy tests in `test_runtime_pump_ownership.py` (line 91+) — currently simulates LAN with heavy mocking instead of runtime types.
+- [ ] Keep only behaviorally meaningful assertions (observable state/telemetry), not internal call-chain shape.
+- [ ] Fix stale ast-grep guardrail: `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` references deleted `src/crimson/game_world.py`.
+- [ ] Align test assertions with new contracts after Stages 1-3 land (`InputStatus`, pure runner, no hook bus).
 
-### Evidence (current code)
+### Evidence
 
-- `tests/test_architecture_contracts.py:48` (`inspect.stack`)
-- `tests/test_runtime_pump_ownership.py:91` (mock-heavy LAN runner simulation)
-- `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` (`src/crimson/game_world.py` stale path)
+- `tests/test_architecture_contracts.py:48` — `inspect.stack()` frame inspection
+- `tests/test_runtime_pump_ownership.py:91` — mock-heavy LAN runner simulation
+- `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6` — references `src/crimson/game_world.py`
 
 ### Acceptance
 
-- [ ] Zero stack/frame-inspection assertions in test suite.
-- [ ] Runtime orchestration tests primarily use real runtime types and composition.
+- [ ] Zero `inspect.stack` assertions in test suite.
+- [ ] Runtime orchestration tests use real types where possible.
 - [ ] Guardrail rules reference only existing files.
 - [ ] `uv run pytest --no-cov` passes.
 
@@ -158,29 +207,38 @@ Replace brittle/internal-chain assertions with runtime-type behavioral coverage.
 
 ## Stage 6: Collapse World Facades and Host Duplication
 
-Current world/runtime hosting still has duplication and facade residue.
+World is currently 4 peer components (`SimWorldState`, `RenderResources`,
+`AudioBridge`, `TerrainRuntime`). Plan end-state is 2: `SimWorldState` +
+`PresentationLayer`. Four separate files implement the identical
+`WorldTickRunnerHost` / `SandboxWorldHost` protocol with near-identical
+init/sync/camera patterns.
 
 ### Tasks
 
-- [ ] Collapse to end-state components: `SimWorldState` + `PresentationLayer`.
-- [ ] Remove long-lived `TerrainRuntime` facade role; keep only helper/bootstrap utilities.
-- [ ] Deduplicate host lifecycle/camera/render glue across debug/test hosts.
-- [ ] Reconcile `world_tick_runner_harness` and host protocols with collapsed world architecture.
+- [ ] Collapse `RenderResources` + `AudioBridge` into a single `PresentationLayer` component. One-way dependency: `PresentationLayer` consumes `SimWorldState` outputs. Sim has no dependency on GPU/audio objects.
+- [ ] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
+- [ ] Extract a shared concrete world host from the 4 copies in `demo.py`, `arsenal_debug.py`, `lighting_debug.py`, `tests/world_runtime.py`. Each re-implements `sync_audio_bridge_state` + `update_camera` + world init identically.
+- [ ] Remove `WorldTickRunnerHarness` once demo/debug views use the shared host with standard runner composition.
 
-### Evidence (current code)
+### Evidence
 
-- `src/crimson/world/render_resources.py`
-- `src/crimson/world/audio_bridge.py`
-- `src/crimson/world/terrain_runtime.py`
-- `src/crimson/views/arsenal_debug.py:162`
-- `src/crimson/views/lighting_debug.py:1325`
-- `tests/world_runtime.py:22`
+- `src/crimson/world/__init__.py` — exports 4 peer components
+- `src/crimson/world/render_resources.py` — separate from audio
+- `src/crimson/world/audio_bridge.py` — separate from render
+- `src/crimson/world/terrain_runtime.py` — long-lived peer component
+- `src/crimson/demo.py` — implements `WorldTickRunnerHost`
+- `src/crimson/views/arsenal_debug.py` — implements `WorldTickRunnerHost`
+- `src/crimson/views/lighting_debug.py` — implements `WorldTickRunnerHost`
+- `tests/world_runtime.py` — implements `WorldTickRunnerHost`/`SandboxWorldHost`
+- `src/crimson/sim/world_tick_runner_harness.py:32` — harness scaffolding
 
 ### Acceptance
 
-- [ ] Runtime-facing world composition is `SimWorldState` + `PresentationLayer`.
-- [ ] Host lifecycle/camera/render setup exists in one shared implementation path.
-- [ ] Debug and world-runtime tests pass.
+- [ ] World composition is `SimWorldState` + `PresentationLayer`.
+- [ ] `TerrainRuntime` not exported as a peer in `world/__init__.py`.
+- [ ] Host lifecycle exists in one shared implementation, not four copies.
+- [ ] `WorldTickRunnerHarness` removed or subsumed.
+- [ ] Debug views and test host use shared composition.
 
 ---
 
@@ -189,44 +247,10 @@ Current world/runtime hosting still has duplication and facade residue.
 1. Stage 1 (remove hook-bus orchestration)
 2. Stage 2 (InputStatus + Journal contract)
 3. Stage 3 (pure runner + frame-owned debt)
-4. Stage 4 (LAN/recovery correctness)
+4. Stage 4 (LAN/recovery correctness + scaffold collapse)
 5. Stage 5 (runtime-first tests + guardrail cleanup)
 6. Stage 6 (world collapse + host dedupe)
 
-This order minimizes risk: first remove hidden orchestration indirection, then lock contracts, then move time/debt ownership, then finish correctness and cleanup.
-
----
-
-## Strict Audit Addendum (2026-03-04)
-
-These work items were added from the latest strict branch review so nothing remains implicit.
-
-### Added work items
-
-- [ ] Stage 1: Replace `TickHook: TypeAlias = object` with a real protocol/ABC and remove dynamic hook method lookup from runtime orchestration.
-- [ ] Stage 2: Remove the `InputProvider.push_command` LSP violation by splitting command-capable and read-only providers (replay provider must not expose a runtime-throwing command method).
-- [ ] Stage 3: Remove LAN wrapper/no-op scaffolding in `BaseGameplayMode` (`_on_lan_tick_applied`, `_prepare_lan_frame`, `_allow_lan_frame_pop`, `_after_join_lan_consume`) and collapse to one explicit tick-apply path.
-- [ ] Stage 4: Apply decoded rollback resync snapshot payloads to mode/runtime state (not just validate + `mark_resync_applied`).
-- [ ] Stage 4: Ensure stop semantics cannot leave runner-simulated state ahead of finalized/checkpointed state under backlog.
-- [ ] Stage 5: Replace architecture tests that assert internal call-stack shape/call-chain form with observable behavior assertions.
-- [ ] Stage 5: Fix stale ast-grep guardrail scope in `no-gameplay-rng-out-of-band.yml` (`src/crimson/game_world.py` no longer exists).
-- [ ] Stage 6: Extract shared world host bootstrap/lifecycle ownership used by demo, debug views, and test host runtime.
-
-### Added evidence references
-
-- `src/crimson/sim/hooks.py:40`
-- `src/crimson/sim/hooks.py:55`
-- `src/crimson/sim/input_providers.py:31`
-- `src/crimson/sim/input_providers.py:146`
-- `src/crimson/modes/base_gameplay_mode.py:1813`
-- `src/crimson/modes/base_gameplay_mode.py:1840`
-- `src/crimson/modes/base_gameplay_mode.py:2008`
-- `src/crimson/modes/base_gameplay_mode.py:2137`
-- `src/crimson/modes/base_gameplay_mode.py:1285`
-- `src/crimson/modes/base_gameplay_mode.py:1300`
-- `tests/test_architecture_contracts.py:48`
-- `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6`
-- `src/crimson/demo.py:88`
-- `src/crimson/views/arsenal_debug.py:116`
-- `src/crimson/views/lighting_debug.py:1214`
-- `tests/world_runtime.py:49`
+This order minimizes risk: first remove hidden orchestration indirection, then
+lock contracts, then move time/debt ownership, then finish correctness and
+cleanup.
