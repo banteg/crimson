@@ -77,6 +77,10 @@ Concrete issues:
 7. Headless verify skips presentation apply.
 8. World architecture end-state is `SimWorldState` + `PresentationLayer`.
 9. `NullSink` remains the headless sink contract.
+10. Presentation apply dispatch is frame-driver-owned by context (`GameLoopView` for interactive gameplay; replay/headless drivers for replay contexts).
+11. Shared deterministic tick-apply helpers may update simulation metadata but must not perform audio/camera side effects inline.
+12. Rollback snapshot/checkpoint orchestration stays explicit in frame-driver logic; do not reintroduce hook-bus style orchestration.
+13. A temporary `WorldRuntime` composition container is allowed only for migration/deduplication and must not become a long-lived facade API.
 
 ## Functional Requirements
 
@@ -152,6 +156,9 @@ Requirements:
 - Headless/verify paths may skip apply.
 - Planning still runs in headless/verify to preserve RNG parity.
 - Multi-tick frame plans are applied in strict tick order when apply is enabled.
+- Deterministic tick-apply paths return ordered `PresentationStepCommands` to the owning frame driver.
+- `apply_audio` / `update_camera` are not deterministic tick-apply controls; audio apply and camera update run at frame/output boundary.
+- Each frame-driver context (interactive gameplay, replay playback, headless verify) owns its own apply phase while preserving strict tick order.
 
 ### FR-5: Render Abstraction
 
@@ -187,6 +194,7 @@ Requirements:
 - Sim layer has no dependency on GPU/audio runtime objects.
 - Remove compatibility facades that only forward between split classes.
 - `TerrainRuntime` is not a long-lived architectural runtime component in end-state; keep only helper/bootstrap utilities where needed.
+- A temporary `WorldRuntime` grouping (`sim`, `render`, `audio`, `terrain`) may be used to remove duplicated lifecycle wiring during migration, but it is not an end-state API.
 
 ### FR-7: Replay Path Unification
 
@@ -196,6 +204,7 @@ Requirements:
 - Replay is local-only.
 - Replay input path: `Journal` -> `ReplayInputProvider` -> `TickRunner`.
 - Remove replay-specific bespoke stepping loops.
+- Replay stepping ownership stays in replay frame-driver code; helper utilities may remain for setup/config only when they do not own stepping control flow.
 
 ### FR-8: Event-Driven UI Commands
 
@@ -250,10 +259,10 @@ Requirements:
 - requests candidate tick count from accumulator
 - calls pure `tick_runner.advance_ticks(...)`
 - dispatches `TickBatchResult` explicitly to:
-- simulation state application
+- simulation state application via shared deterministic batch-apply helper
 - journal recording/checkpoint emission
 - network sync actions (where applicable)
-- presentation apply (if enabled)
+- presentation command buffering + output-phase apply (if enabled)
 - telemetry collection
 
 `GameLoopView`:
@@ -280,6 +289,9 @@ Requirements:
 5. Remove replay bespoke stepping loop and use shared runner path.
 6. Collapse world facades into `SimWorldState` + `PresentationLayer`.
 7. Keep headless output path minimal through `NullSink`.
+8. Collapse duplicated tick-batch apply loops (`BaseGameplayMode`, replay mode, debug/demo harness) into one shared apply path.
+9. Remove `WorldTickRunnerHarness` and related scaffolding wrappers once direct runner + shared apply path is in place.
+10. Keep replay setup helpers only where they provide configuration/data; replay stepping ownership remains in frame-driver code.
 
 ### Expected Deletions (End-State)
 
@@ -287,6 +299,7 @@ Requirements:
 - Replay/mode-specific bespoke deterministic stepping loops.
 - Mode-local runtime pumping paths.
 - Compatibility facades that proxy between split world components.
+- `WorldTickRunnerHarness` and parallel deterministic stepping helpers once call sites use direct runner + shared apply path.
 
 ## Implementation Plan (Phases)
 
@@ -370,6 +383,8 @@ Exit criteria:
 Changes:
 - Ensure replay playback/verify are local-only.
 - Ensure replay uses the same runner orchestration shape as gameplay.
+- Remove replay-only wrapper orchestration around `TickRunner` in `ReplayPlaybackMode`.
+- Keep replay setup/config helpers (for example `PlaybackDriver`) only when they do not own stepping control flow.
 
 Primary files:
 - `src/crimson/modes/replay_playback_mode.py`
@@ -382,14 +397,20 @@ Exit criteria:
 ### Phase 6: Presentation Plan/Apply Finalization
 
 Changes:
+- Introduce a shared deterministic batch-apply helper (`apply_tick_batch(...)`) used by gameplay/replay/debug stepping contexts.
 - Keep deterministic plan in tick path.
 - Keep apply in output phase.
 - Keep headless/verify apply skipped while preserving planning RNG parity.
+- Remove per-tick audio/camera side effects from deterministic apply loops.
+- Frame-driver output phases apply plans and update camera once per frame for their context.
 
 Primary files:
 - `src/crimson/sim/step_pipeline.py`
 - `src/crimson/sim/presentation_step.py`
+- `src/crimson/sim/tick_apply.py`
+- `src/crimson/modes/base_gameplay_mode.py`
 - `src/crimson/modes/replay_playback_mode.py`
+- `src/crimson/game/loop_view.py`
 
 Exit criteria:
 - Command hash/checkpoint parity remains stable across live/replay/headless paths.
@@ -411,8 +432,9 @@ Exit criteria:
 ### Phase 8: World Collapse and Final Cleanup
 
 Changes:
+- Use shared world composition (temporary `WorldRuntime` if needed) to deduplicate lifecycle wiring across demo/debug/gameplay/tests during migration.
 - Collapse world architecture to `SimWorldState` + `PresentationLayer`.
-- Remove obsolete compatibility facades and dead orchestration paths.
+- Remove obsolete compatibility facades, harness wrappers, and dead orchestration paths.
 
 Primary files:
 - `src/crimson/world/sim_world_state.py`

@@ -13,6 +13,7 @@ Target architecture is defined by `plan.md`:
 - Replay uses `Journal` with `ReplayInputProvider` as a thin adapter.
 - Hook-bus orchestration is removed from end-state.
 - Headless verify skips apply but preserves deterministic planning RNG.
+- Presentation apply is frame-driver-owned by context (`GameLoopView` for interactive gameplay; replay/headless frame drivers for replay contexts).
 - World architecture collapses to `SimWorldState` + `PresentationLayer`.
 - `NullSink` remains the headless sink.
 - Tests are runtime-first (no test-only runtime fallback/default behavior).
@@ -120,7 +121,7 @@ advance call.
 - [ ] Remove `FixedStepClock` ownership from `TickRunner`.
 - [ ] Remove `self._next_tick_index` and `self._frame_index` mutable state.
 - [ ] Replace `advance_frame(dt, max_ticks)` with `advance_ticks(start_tick, ticks_requested, tick_dt)` returning `TickBatchResult`. Frame drivers compute candidate ticks from their own clock.
-- [ ] Move clock/debt ownership to frame-driver contexts: `_update_local_match` in base mode, `_advance_runner` in replay mode, `advance_frame` in harness.
+- [ ] Move clock/debt ownership to frame-driver contexts: `_update_local_match` in base mode, `_advance_runner` in replay mode, and demo/debug frame drivers (temporary harness path only until Stage 6 removal).
 - [ ] Remove `runner.clock` property and all external reads: `_gameplay_tick_rate()` reads `runner.clock.tick_rate` (line 1575), `_gameplay_tick_dt()` reads `runner.clock.dt_tick` (line 1581-1584), replay reads `runner.clock` (line 881-888).
 - [ ] Delete `reset_clock()` method and its caller `_reset_gameplay_tick_runner_clock()` (line 1587-1590).
 - [ ] Delete 3-layer pass-through: `_invoke_tick_runner_advance` (line 1543) → `_advance_tick_runner_with_profile` (line 1550) → `_advance_tick_runner` (line 1561). Each just calls the next with zero added behavior.
@@ -156,8 +157,9 @@ advance call.
 - [ ] Apply rollback resync snapshots to mode/runtime state. Current code decodes the snapshot (line 1272) but calls `mark_resync_applied` (line 1300) without actually applying the decoded state to the sim world.
 - [ ] Fix LAN stop-under-backlog: `_on_tick_applied` can return a stop action partway through a batch, but remaining batch ticks have already been simulated by the runner. This can leave runner-simulated state ahead of finalized/checkpointed state.
 - [ ] Collapse LAN scaffolding methods in `BaseGameplayMode`: `_prepare_lan_frame` (line 1813), `_allow_lan_frame_pop` (line 1826), `_after_join_lan_consume` (line 1829), `_on_lan_tick_applied` (line 1842) are thin delegation wrappers that mode subclasses override. Flatten into a single explicit tick-apply path.
-- [ ] Delete `sandbox_step.py` — it is a parallel deterministic stepping path that bypasses the runner. Migrate its 3 test callers and `world_runtime.py` to use `WorldTickRunnerHarness` or the runner directly.
-- [ ] Deduplicate `SandboxWorldHost` (sandbox_step.py:15) and `WorldTickRunnerHost` (world_tick_runner_harness.py:18) — they are identical protocols defined in separate files.
+- [ ] Keep rollback snapshot/store orchestration explicit in frame-driver code; do not introduce `StateSnapshotHook` or new hook-bus abstractions.
+- [ ] Delete `sandbox_step.py` — it is a parallel deterministic stepping path that bypasses the runner. Migrate callers to shared runner + batch-apply paths (no harness-only fallback).
+- [ ] Deduplicate `SandboxWorldHost` (sandbox_step.py:15) and `WorldTickRunnerHost` (world_tick_runner_harness.py:18) while extracting shared runtime composition; remove protocol split once shared concrete runtime host exists.
 
 ### Evidence
 
@@ -173,6 +175,7 @@ advance call.
 
 - [ ] Recovery snapshots have observable state-application behavior.
 - [ ] Stop action under LAN backlog does not leave divergent runner/checkpoint state.
+- [ ] No new hook/snapshot orchestration layer is introduced in LAN paths.
 - [ ] Only one world host protocol exists.
 - [ ] `sandbox_step.py` deleted; callers migrated.
 - [ ] LAN scaffolding methods collapsed.
@@ -211,14 +214,22 @@ World is currently 4 peer components (`SimWorldState`, `RenderResources`,
 `AudioBridge`, `TerrainRuntime`). Plan end-state is 2: `SimWorldState` +
 `PresentationLayer`. Four separate files implement the identical
 `WorldTickRunnerHost` / `SandboxWorldHost` protocol with near-identical
-init/sync/camera patterns.
+init/sync/camera patterns. Deterministic tick-apply logic is also duplicated
+across gameplay mode, replay mode, and harness paths.
 
 ### Tasks
 
-- [ ] Collapse `RenderResources` + `AudioBridge` into a single `PresentationLayer` component. One-way dependency: `PresentationLayer` consumes `SimWorldState` outputs. Sim has no dependency on GPU/audio objects.
+- [ ] Introduce a temporary shared `WorldRuntime` composition container (`sim`, `render`, `audio`, `terrain`) to eliminate duplicated world init/reset/open/close/sync across demo/debug/gameplay/tests.
+- [ ] Keep `WorldRuntime` as plain composition only (no pass-through facade properties/accessors).
+- [ ] Extract one shared concrete world host lifecycle from duplicate implementations in `demo.py`, `arsenal_debug.py`, `lighting_debug.py`, and `tests/world_runtime.py`.
+- [ ] Add shared deterministic batch apply helper (`apply_tick_batch(world, batch, game_tune_started) -> list[PresentationStepCommands]`).
+- [ ] Ensure shared batch apply updates deterministic sim metadata and terrain pending state only; it must not perform audio/camera side effects.
+- [ ] Refactor `BaseGameplayMode`, `ReplayPlaybackMode`, and demo/debug stepping paths to call `TickRunner` directly and then shared batch apply; remove duplicated per-context apply loops.
+- [ ] Move presentation/audio apply and camera updates to frame-driver output boundary for each context (interactive gameplay, replay playback, headless verify).
+- [ ] Keep `PlaybackDriver` only as replay setup/config utility if still useful; replay stepping ownership remains in frame-driver code.
+- [ ] Collapse `RenderResources` + `AudioBridge` into final `PresentationLayer` with one-way dependency from presentation to sim.
 - [ ] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
-- [ ] Extract a shared concrete world host from the 4 copies in `demo.py`, `arsenal_debug.py`, `lighting_debug.py`, `tests/world_runtime.py`. Each re-implements `sync_audio_bridge_state` + `update_camera` + world init identically.
-- [ ] Remove `WorldTickRunnerHarness` once demo/debug views use the shared host with standard runner composition.
+- [ ] Remove `WorldTickRunnerHarness` once shared composition + batch-apply path is in place.
 
 ### Evidence
 
@@ -230,14 +241,21 @@ init/sync/camera patterns.
 - `src/crimson/views/arsenal_debug.py` — implements `WorldTickRunnerHost`
 - `src/crimson/views/lighting_debug.py` — implements `WorldTickRunnerHost`
 - `tests/world_runtime.py` — implements `WorldTickRunnerHost`/`SandboxWorldHost`
+- `src/crimson/modes/base_gameplay_mode.py:2026-2099` — mode-specific batch apply loop + per-tick `apply_audio`/`update_camera`
+- `src/crimson/modes/replay_playback_mode.py:749-818` — replay-specific tick apply + per-tick audio/camera updates
 - `src/crimson/sim/world_tick_runner_harness.py:32` — harness scaffolding
+- `src/crimson/sim/world_tick_runner_harness.py:107-133` — harness-specific batch apply + per-tick audio/camera updates
 
 ### Acceptance
 
-- [ ] World composition is `SimWorldState` + `PresentationLayer`.
+- [ ] World composition end-state is `SimWorldState` + `PresentationLayer`.
 - [ ] `TerrainRuntime` not exported as a peer in `world/__init__.py`.
+- [ ] Shared deterministic batch apply path is used across gameplay/replay/debug stepping contexts.
+- [ ] Deterministic batch apply performs no per-tick audio/camera side effects.
+- [ ] Frame drivers own output-phase presentation apply in strict tick order.
 - [ ] Host lifecycle exists in one shared implementation, not four copies.
-- [ ] `WorldTickRunnerHarness` removed or subsumed.
+- [ ] `WorldTickRunnerHarness` removed or fully subsumed with no unique orchestration behavior.
+- [ ] Replay stepping path in `ReplayPlaybackMode` has no wrapper orchestration indirection around `TickRunner`.
 - [ ] Debug views and test host use shared composition.
 
 ---
