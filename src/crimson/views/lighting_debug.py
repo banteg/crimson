@@ -4,7 +4,7 @@ import math
 import os
 import random
 import time
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -20,14 +20,12 @@ from ..game_modes import GameMode
 from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
-from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
-from ..sim.world_tick_runner_harness import WorldHost, WorldTickRunnerHarness
+from ..sim.world_tick_runner_harness import WorldTickRunnerHarness
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
-from ..world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
+from ..world import WorldRuntime
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -1201,48 +1199,13 @@ class LightingDebugView:
         self._audio_rng: random.Random | None = None
         self._console: ConsoleState | None = None
 
-        self.world_size = float(WORLD_SIZE)
-        self.demo_mode_active = False
-        self.difficulty_level = 0
-        self.hardcore = False
-        self.preserve_bugs = bool(ctx.preserve_bugs)
-        self.texture_cache = None
-        self.config = None
-        self.audio: AudioState | None = None
-        self.audio_rng: random.Random | None = None
-        self.rtx_mode = RtxRenderMode.CLASSIC
-        self.sim_world = SimWorldState(
-            world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
-            hardcore=bool(self.hardcore),
-            difficulty_level=int(self.difficulty_level),
-            preserve_bugs=bool(self.preserve_bugs),
-        )
-        self.render_resources = RenderResources(
+        self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
-            world_size=float(self.world_size),
-            texture_cache=self.texture_cache,
-            config=self.config,
+            world_size=float(WORLD_SIZE),
+            preserve_bugs=bool(ctx.preserve_bugs),
         )
-        self.audio_bridge = AudioBridge(
-            demo_mode_active=bool(self.demo_mode_active),
-            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-        )
-        self.terrain_runtime = TerrainRuntime(
-            world_size=float(self.world_size),
-            render_resources=self.render_resources,
-        )
-        self.camera = Vec2(-1.0, -1.0)
-        self.lan_player_rings_enabled = False
-        self.lan_local_aim_indicators_only = False
-        self.lan_local_player_slot_index = 0
-        self._sync_world_size_ownership()
-        self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
-        self._reset_world_runtime(player_count=1)
-        self._player = self.sim_world.players[0] if self.sim_world.players else None
+        self._runtime.reset(player_count=1)
+        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
 
         # Default to Ion Rifle so the first manual shot demonstrates shadows clearly.
@@ -1323,121 +1286,27 @@ class LightingDebugView:
         self._paused = False
         self._screenshot_requested = False
         self._tick_runtime = WorldTickRunnerHarness(
-            world=cast(WorldHost, self),
+            world=self._runtime,
             game_mode=GameMode.SURVIVAL,
             build_inputs=self._build_runner_inputs,
         )
 
-    def _sync_world_size_ownership(self) -> None:
-        world_size = float(self.world_size)
-        self.sim_world.world_size = world_size
-        self.render_resources.world_size = world_size
-        self.terrain_runtime.world_size = world_size
-        ground = self.render_resources.ground
-        if ground is not None:
-            side = max(0, int(world_size))
-            ground.width = side
-            ground.height = side
-
-    def _reset_world_runtime(
-        self,
-        *,
-        seed: int = 0xBEEF,
-        player_count: int = 1,
-        spawn_pos: Vec2 | None = None,
-    ) -> None:
-        self._sync_world_size_ownership()
-        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
-        self.sim_world.hardcore = bool(self.hardcore)
-        self.sim_world.difficulty_level = int(self.difficulty_level)
-        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
-        self.sim_world.reset(
-            seed=int(seed),
-            player_count=int(player_count),
-            spawn_pos=spawn_pos,
-        )
-        self.render_resources.fx_queue.clear()
-        self.render_resources.fx_queue_rotated.clear()
-        self.camera = Vec2(-1.0, -1.0)
-        if self.render_resources.ground is not None:
-            self.terrain_runtime.schedule_from_rng_seed(
-                seed=int(self.sim_world.state.rng.state),
-                layers=3,
-            )
-
-    def _open_world_runtime(self) -> None:
-        self.render_resources.texture_cache = self.texture_cache
-        self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
-        self.texture_cache = self.render_resources.texture_cache
-
-    def _close_world_runtime(self) -> None:
-        self.render_resources.close()
-        self.sim_world.close_session()
-
-    def sync_audio_bridge_state(self) -> None:
-        self.audio_bridge.sync(
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-            demo_mode_active=bool(self.demo_mode_active),
-        )
-
     def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        return self.render_resources.load_texture(name, cache_path=cache_path)
-
-    def sync_ground_settings(self) -> None:
-        self.render_resources.config = self.config
-        self.render_resources.sync_ground_settings()
-
-    def build_render_frame(self):
-        return self.render_resources.build_render_frame(
-            state=self.sim_world.state,
-            players=self.sim_world.players,
-            creatures=self.sim_world.creatures,
-            camera=self.camera,
-            demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self.sim_world.elapsed_ms),
-            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
-            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
-            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
-            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
-            rtx_mode=self.rtx_mode,
-        )
+        return self._runtime.render_resources.load_texture(name, cache_path=cache_path)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self.render_resources.bake_fx_queues()
-        self.renderer.draw(
-            render_frame=self.build_render_frame(),
+        self._runtime.render_resources.bake_fx_queues()
+        self._runtime.renderer.draw(
+            render_frame=self._runtime.build_render_frame(),
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
 
-    def update_camera(self, _dt: float) -> None:
-        _ = _dt
-        if not self.sim_world.players:
-            return
-
-        screen_size = self.renderer._camera_screen_size()
-
-        alive = [player for player in self.sim_world.players if player.health > 0.0]
-        if alive:
-            inv_alive = 1.0 / float(len(alive))
-            focus = Vec2(
-                sum(player.pos.x for player in alive) * inv_alive,
-                sum(player.pos.y for player in alive) * inv_alive,
-            )
-            camera = screen_size * 0.5 - focus
-        else:
-            camera = self.camera
-
-        camera = camera + self.sim_world.state.camera_shake_offset
-        self.camera = self.renderer._clamp_camera(camera, screen_size)
-
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.renderer.world_to_screen(pos)
+        return self._runtime.renderer.world_to_screen(pos)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.renderer.screen_to_world(pos)
+        return self._runtime.renderer.screen_to_world(pos)
 
     @staticmethod
     def _autodiag_config_from_env() -> tuple[bool, int]:
@@ -1940,15 +1809,15 @@ class LightingDebugView:
         self._player.shield_timer = float(PLAYER_INVULNERABLE_SHIELD_TIMER)
 
     def _clear_scene_contents(self) -> None:
-        self.sim_world.creatures.reset()
-        self.sim_world.state.projectiles.reset()
-        self.sim_world.state.secondary_projectiles.reset()
-        self.sim_world.state.particles.reset()
-        self.sim_world.state.sprite_effects.reset()
-        self.sim_world.state.effects.reset()
-        self.sim_world.state.bonus_pool.reset()
-        self.render_resources.fx_queue.clear()
-        self.render_resources.fx_queue_rotated.clear()
+        self._runtime.sim_world.creatures.reset()
+        self._runtime.sim_world.state.projectiles.reset()
+        self._runtime.sim_world.state.secondary_projectiles.reset()
+        self._runtime.sim_world.state.particles.reset()
+        self._runtime.sim_world.state.sprite_effects.reset()
+        self._runtime.sim_world.state.effects.reset()
+        self._runtime.sim_world.state.bonus_pool.reset()
+        self._runtime.render_resources.fx_queue.clear()
+        self._runtime.render_resources.fx_queue_rotated.clear()
         self._transient_lights.clear()
         self._invalidate_shadow_history()
 
@@ -1977,7 +1846,7 @@ class LightingDebugView:
         if self._static_scene_enabled:
             self._clear_scene_contents()
             self._seed_static_scene()
-            self.update_camera(0.0)
+            self._runtime.update_camera(0.0)
             return
 
         self._reset_scene()
@@ -2189,9 +2058,9 @@ class LightingDebugView:
         self._last_lights = lights
 
     def _reset_scene(self) -> None:
-        self._reset_world_runtime(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
+        self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
         self._reset_tick_runner()
-        self._player = self.sim_world.players[0] if self.sim_world.players else None
+        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._apply_debug_player_cheats()
         self._clear_scene_contents()
         self._static_emitters = []
@@ -2201,7 +2070,7 @@ class LightingDebugView:
         self._spawn_preset_ring()
         self._auto_emit_timer = 0.0
         self._shadow_frame_index = 0
-        self.update_camera(0.0)
+        self._runtime.update_camera(0.0)
 
     def _build_input(self) -> PlayerInput:
         move = Vec2(
@@ -2250,7 +2119,7 @@ class LightingDebugView:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
                 16.0, 16.0, WORLD_SIZE - 16.0, WORLD_SIZE - 16.0,
             )
-            self.sim_world.state.secondary_projectiles.spawn_from_spec(
+            self._runtime.sim_world.state.secondary_projectiles.spawn_from_spec(
                 SecondarySpawnSpec(
                     pos=impact,
                     angle=float(heading),
@@ -2277,21 +2146,21 @@ class LightingDebugView:
         for i in range(count):
             angle = float(heading) + self._burst_angle(profile, i)
             if profile.primary_type_id is not None:
-                self.sim_world.state.projectiles.spawn(
+                self._runtime.sim_world.state.projectiles.spawn(
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
                     owner=OwnerRef.from_local_player(0),
                 )
             if profile.secondary_type_id is not None:
-                self.sim_world.state.secondary_projectiles.spawn_from_spec(
+                self._runtime.sim_world.state.secondary_projectiles.spawn_from_spec(
                     SecondarySpawnSpec(
                         pos=muzzle_pos,
                         angle=angle,
                         type_id=profile.secondary_type_id,
                         owner=OwnerRef.from_local_player(0),
                         time_to_live=float(profile.secondary_ttl),
-                        creatures=self.sim_world.creatures.entries,
+                        creatures=self._runtime.sim_world.creatures.entries,
                         target_hint=player.aim,
                     ),
                 )
@@ -2327,16 +2196,16 @@ class LightingDebugView:
                 48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
-            self.sim_world.creatures.spawn_template(
+            self._runtime.sim_world.creatures.spawn_template(
                 int(preset.spawn_id),
                 pos,
                 heading,
-                self.sim_world.state.rng,
-                rand=self.sim_world.state.rng.rand,
+                self._runtime.sim_world.state.rng,
+                rand=self._runtime.sim_world.state.rng.rand,
             )
 
     def _clear_spawned_enemies(self) -> None:
-        self.sim_world.creatures.reset()
+        self._runtime.sim_world.creatures.reset()
 
     def _handle_debug_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -2448,12 +2317,12 @@ class LightingDebugView:
             return
         self._last_occluders = collect_shadow_occluders(
             self._player,
-            self.sim_world.creatures.entries,
+            self._runtime.sim_world.creatures.entries,
             max_occluders=MAX_OCCLUDERS,
         )
         self._last_lights = collect_shadow_lights(
-            self.sim_world.state.projectiles.entries,
-            self.sim_world.state.secondary_projectiles.entries,
+            self._runtime.sim_world.state.projectiles.entries,
+            self._runtime.sim_world.state.secondary_projectiles.entries,
             self._transient_lights,
             max_lights=MAX_LIGHTS,
             range_scale=self._range_scale,
@@ -2465,12 +2334,12 @@ class LightingDebugView:
         self._missing_assets.clear()
 
         bootstrap = init_view_audio(self._assets_root)
-        self.config = bootstrap.config
+        self._runtime.config = bootstrap.config
         self._console = bootstrap.console
         self._audio = bootstrap.audio
         self._audio_rng = bootstrap.audio_rng
-        self.audio = self._audio
-        self.audio_rng = self._audio_rng
+        self._runtime.audio = self._audio
+        self._runtime.audio_rng = self._audio_rng
 
         try:
             # Load after audio/bootstrap so missing PAQs can be downloaded first.
@@ -2479,7 +2348,7 @@ class LightingDebugView:
             self._small = None
             self._missing_assets.append("load/smallFnt.dat + load/smallWhite.tga")
 
-        self._open_world_runtime()
+        self._runtime.open_runtime()
         self._aim_texture = self._load_texture(
             "ui_aim",
             cache_path="ui/ui_aim.jaz",
@@ -2525,9 +2394,9 @@ class LightingDebugView:
             self._audio = None
             self._audio_rng = None
             self._console = None
-        self.audio = None
-        self.audio_rng = None
-        self._close_world_runtime()
+        self._runtime.audio = None
+        self._runtime.audio_rng = None
+        self._runtime.close_runtime()
         self._aim_texture = None
 
     def consume_screenshot_request(self) -> bool:
@@ -2762,7 +2631,7 @@ class LightingDebugView:
         uniforms = self._shadow_uniforms
         shader = self._shadow_shader
 
-        camera, view_scale = self.renderer._world_params()
+        camera, view_scale = self._runtime.renderer._world_params()
         rt_w, rt_h = self._shadow_rt_size
         screen_w = max(1.0, float(rl.get_screen_width()))
         screen_h = max(1.0, float(rl.get_screen_height()))
@@ -3030,7 +2899,7 @@ class LightingDebugView:
         self._auto_tune_capture_frame(output_rt)
 
     def update(self, dt: float) -> None:
-        self._player = self.sim_world.players[0] if self.sim_world.players else None
+        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._handle_debug_input()
         self._run_autodiag()
 
@@ -3039,13 +2908,13 @@ class LightingDebugView:
             sim_dt = 0.0
 
         if self._static_scene_enabled:
-            self.update_camera(0.0)
+            self._runtime.update_camera(0.0)
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
             self._tick_runtime.advance_frame(float(sim_dt))
-        elif self.sim_world.players:
-            self._player = self.sim_world.players[0]
+        elif self._runtime.sim_world.players:
+            self._player = self._runtime.sim_world.players[0]
 
         if not self._static_scene_enabled:
             self._transient_lights = tick_transient_lights(self._transient_lights, sim_dt)
@@ -3055,7 +2924,7 @@ class LightingDebugView:
             update_audio(self._audio, sim_dt)
 
     def _world_scale(self) -> float:
-        _camera, view_scale = self.renderer._world_params()
+        _camera, view_scale = self._runtime.renderer._world_params()
         return view_scale.avg_component()
 
     def _draw_shadow_debug_geometry(self) -> None:
@@ -3235,9 +3104,9 @@ class LightingDebugView:
 
         profile = self._selected_profile()
         preset = self._selected_spawn_preset()
-        creatures_alive = sum(1 for creature in self.sim_world.creatures.entries if creature.active and creature.hp > 0.0)
-        primary_count = sum(1 for entry in self.sim_world.state.projectiles.entries if entry.active)
-        secondary_count = sum(1 for entry in self.sim_world.state.secondary_projectiles.entries if entry.active)
+        creatures_alive = sum(1 for creature in self._runtime.sim_world.creatures.entries if creature.active and creature.hp > 0.0)
+        primary_count = sum(1 for entry in self._runtime.sim_world.state.projectiles.entries if entry.active)
+        secondary_count = sum(1 for entry in self._runtime.sim_world.state.secondary_projectiles.entries if entry.active)
 
         draw_ui_text(self._small, "Lighting debug: 2D SDF soft shadows", Vec2(x, y), color=UI_TEXT)
         y += line
@@ -3421,7 +3290,7 @@ class LightingDebugView:
             )
 
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self.render_resources.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(self._runtime.render_resources.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("lighting-debug", "Lighting debug")
