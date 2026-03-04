@@ -4,7 +4,7 @@ import math
 import os
 import random
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import msgspec
 
@@ -22,7 +22,9 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
-from ..sim.sandbox_step import run_sandbox_world_step
+from ..sim.input_providers import FrameContext, LocalInputProvider
+from ..sim.sessions import DeterministicSessionTick, WorldTickDeterministicSession
+from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ._ui_helpers import draw_ui_text, ui_line_height
@@ -1286,6 +1288,10 @@ class LightingDebugView:
         self.close_requested = False
         self._paused = False
         self._screenshot_requested = False
+        self._tick_session: WorldTickDeterministicSession | None = None
+        self._tick_runner: TickRunner | None = None
+        self._tick_world_state: object | None = None
+        self._tick_player_count = 0
 
     @staticmethod
     def _autodiag_config_from_env() -> tuple[bool, int]:
@@ -2038,6 +2044,7 @@ class LightingDebugView:
 
     def _reset_scene(self) -> None:
         self._world.reset(seed=0xBEEF, player_count=1, spawn_pos=WORLD_CENTER)
+        self._reset_tick_runner()
         self._player = self._world.sim_world.players[0] if self._world.sim_world.players else None
         self._apply_debug_player_cheats()
         self._clear_scene_contents()
@@ -2064,6 +2071,92 @@ class LightingDebugView:
             fire_pressed=False,
             reload_pressed=False,
         )
+
+    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        _ = frame_ctx
+        return [self._build_input()]
+
+    def _reset_tick_runner(self) -> None:
+        self._tick_session = None
+        self._tick_runner = None
+        self._tick_world_state = None
+        self._tick_player_count = 0
+
+    def _ensure_tick_runner(self) -> tuple[TickRunner, WorldTickDeterministicSession]:
+        world_state = self._world.sim_world.world_state
+        player_count = len(self._world.sim_world.players)
+        session = self._tick_session
+        runner = self._tick_runner
+        if (
+            session is not None
+            and runner is not None
+            and self._tick_world_state is world_state
+            and int(self._tick_player_count) == int(player_count)
+        ):
+            return runner, session
+
+        detail_preset = 5
+        gore_disabled = 0
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.detail_preset)
+            gore_disabled = int(self._world.config.gore_disabled)
+
+        session = WorldTickDeterministicSession(
+            world=world_state,
+            world_size=float(self._world.world_size),
+            damage_scale_by_type=self._world.sim_world.damage_scale_by_type,
+            fx_queue=self._world.render_resources.fx_queue,
+            fx_queue_rotated=self._world.render_resources.fx_queue_rotated,
+            game_mode=GameMode.SURVIVAL,
+            detail_preset=int(detail_preset),
+            gore_disabled=int(gore_disabled),
+            game_tune_started=bool(self._world.sim_world.game_tune_started),
+            demo_mode_active=bool(self._world.demo_mode_active),
+            auto_pick_perks=False,
+            perk_progression_enabled=False,
+            apply_world_dt_steps=True,
+            clear_fx_queues_each_tick=False,
+        )
+        provider = LocalInputProvider(
+            player_count=int(player_count),
+            build_inputs=self._build_runner_inputs,
+        )
+        runner = TickRunner(
+            session=session,
+            input_provider=provider,
+            config=TickRunnerConfig(tick_rate=60),
+        )
+        self._tick_session = session
+        self._tick_runner = runner
+        self._tick_world_state = world_state
+        self._tick_player_count = int(player_count)
+        return runner, session
+
+    def _apply_tick_batch(
+        self,
+        *,
+        batch: TickBatchResult,
+        session: WorldTickDeterministicSession,
+    ) -> None:
+        for result in batch.completed_results:
+            payload = result.payload
+            if payload is None:
+                continue
+            tick = cast(DeterministicSessionTick, payload)
+            step = tick.step
+            self._world.sim_world.apply_step_metadata(
+                events=step.events,
+                presentation=step.presentation,
+                command_hash=str(step.command_hash),
+                dt_sim=float(step.dt_sim),
+                game_tune_started=bool(session.game_tune_started),
+            )
+            self._world.sync_audio_bridge_state()
+            self._world.audio_bridge.apply_plan(
+                plan=step.presentation,
+                apply_audio=True,
+            )
+            self._world.update_camera(float(step.dt_sim))
 
     @staticmethod
     def _burst_angle(profile: EmissiveProfile, index: int) -> float:
@@ -2354,6 +2447,7 @@ class LightingDebugView:
 
     def close(self) -> None:
         rl.show_cursor()
+        self._reset_tick_runner()
         self._release_shadow_resources()
 
         if self._small is not None:
@@ -2882,12 +2976,11 @@ class LightingDebugView:
         elif self._player is not None:
             self._apply_debug_player_cheats()
             self._update_auto_emit(sim_dt)
-            run_sandbox_world_step(
-                self._world,
-                sim_dt,
-                inputs=[self._build_input()],
-                game_mode=GameMode.SURVIVAL,
-            )
+            self._world.sync_audio_bridge_state()
+            self._world.terrain_runtime.process_pending()
+            runner, session = self._ensure_tick_runner()
+            batch = runner.advance_frame(float(sim_dt))
+            self._apply_tick_batch(batch=batch, session=session)
         elif self._world.sim_world.players:
             self._player = self._world.sim_world.players[0]
 

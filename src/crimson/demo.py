@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import webbrowser
+from typing import cast
 
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import update_audio
@@ -17,8 +18,10 @@ from .game.types import GameState
 from .game_modes import GameMode
 from .game_world import GameWorld
 from .sim.input import PlayerInput
-from .sim.sandbox_step import run_sandbox_world_step
+from .sim.input_providers import FrameContext, LocalInputProvider
+from .sim.sessions import DeterministicSessionTick, WorldTickDeterministicSession
 from .sim.state_types import PlayerState
+from .sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -99,6 +102,10 @@ class DemoView:
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._spawn_rng = Crand(0)
+        self._tick_session: WorldTickDeterministicSession | None = None
+        self._tick_runner: TickRunner | None = None
+        self._tick_world_state: object | None = None
+        self._tick_player_count = 0
 
     def open(self) -> None:
         self._finished = False
@@ -114,9 +121,11 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._crand.srand(self.state.rng.getrandbits(32))
         self._world.open()
+        self._reset_tick_runner()
         self._demo_mode_start()
 
     def close(self) -> None:
+        self._reset_tick_runner()
         self._world.close()
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
@@ -453,6 +462,7 @@ class DemoView:
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         seed = int(self.state.rng.getrandbits(32))
         self._world.reset(seed=seed, player_count=len(specs))
+        self._reset_tick_runner()
         for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._world.sim_world.players):
                 continue
@@ -666,18 +676,100 @@ class DemoView:
 
         draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
+    def _reset_tick_runner(self) -> None:
+        self._tick_session = None
+        self._tick_runner = None
+        self._tick_world_state = None
+        self._tick_player_count = 0
+
+    def _build_runner_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
+        return self._build_demo_inputs(float(frame_ctx.dt_seconds))
+
+    def _ensure_tick_runner(self) -> tuple[TickRunner, WorldTickDeterministicSession]:
+        world_state = self._world.sim_world.world_state
+        player_count = len(self._world.sim_world.players)
+        session = self._tick_session
+        runner = self._tick_runner
+        if (
+            session is not None
+            and runner is not None
+            and self._tick_world_state is world_state
+            and int(self._tick_player_count) == int(player_count)
+        ):
+            return runner, session
+
+        detail_preset = 5
+        gore_disabled = 0
+        if self._world.config is not None:
+            detail_preset = int(self._world.config.detail_preset)
+            gore_disabled = int(self._world.config.gore_disabled)
+
+        session = WorldTickDeterministicSession(
+            world=world_state,
+            world_size=float(self._world.world_size),
+            damage_scale_by_type=self._world.sim_world.damage_scale_by_type,
+            fx_queue=self._world.render_resources.fx_queue,
+            fx_queue_rotated=self._world.render_resources.fx_queue_rotated,
+            game_mode=GameMode.DEMO,
+            detail_preset=int(detail_preset),
+            gore_disabled=int(gore_disabled),
+            game_tune_started=bool(self._world.sim_world.game_tune_started),
+            demo_mode_active=bool(self._world.demo_mode_active),
+            auto_pick_perks=False,
+            perk_progression_enabled=False,
+            apply_world_dt_steps=True,
+            clear_fx_queues_each_tick=False,
+        )
+        provider = LocalInputProvider(
+            player_count=int(player_count),
+            build_inputs=self._build_runner_inputs,
+        )
+        runner = TickRunner(
+            session=session,
+            input_provider=provider,
+            config=TickRunnerConfig(tick_rate=60),
+        )
+        self._tick_session = session
+        self._tick_runner = runner
+        self._tick_world_state = world_state
+        self._tick_player_count = int(player_count)
+        return runner, session
+
+    def _apply_tick_batch(
+        self,
+        *,
+        batch: TickBatchResult,
+        session: WorldTickDeterministicSession,
+    ) -> None:
+        for result in batch.completed_results:
+            payload = result.payload
+            if payload is None:
+                continue
+            tick = cast(DeterministicSessionTick, payload)
+            step = tick.step
+            self._world.sim_world.apply_step_metadata(
+                events=step.events,
+                presentation=step.presentation,
+                command_hash=str(step.command_hash),
+                dt_sim=float(step.dt_sim),
+                game_tune_started=bool(session.game_tune_started),
+            )
+            self._world.sync_audio_bridge_state()
+            self._world.audio_bridge.apply_plan(
+                plan=step.presentation,
+                apply_audio=True,
+            )
+            self._world.update_camera(float(step.dt_sim))
+
     def _update_world(self, dt: float) -> None:
         if not self._world.sim_world.players:
             return
-        inputs = self._build_demo_inputs(dt)
-        run_sandbox_world_step(
-            self._world,
-            dt,
-            inputs=inputs,
-            auto_pick_perks=False,
-            game_mode=GameMode.DEMO,
-            perk_progression_enabled=False,
-        )
+        self._world.sync_audio_bridge_state()
+        self._world.terrain_runtime.process_pending()
+        runner, session = self._ensure_tick_runner()
+        session.demo_mode_active = bool(self._world.demo_mode_active)
+        batch = runner.advance_frame(float(dt))
+        self._apply_tick_batch(batch=batch, session=session)
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
         players = self._world.sim_world.players

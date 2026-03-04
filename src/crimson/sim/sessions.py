@@ -430,6 +430,88 @@ class TypoDeterministicSession(msgspec.Struct):
         )
 
 
+class WorldTickDeterministicSession(msgspec.Struct):
+    world: WorldState
+    world_size: float
+    damage_scale_by_type: dict[int, float]
+    fx_queue: FxQueue
+    fx_queue_rotated: FxQueueRotated
+    game_mode: GameMode = GameMode.SURVIVAL
+    detail_preset: int = 5
+    gore_disabled: int = 0
+    game_tune_started: bool = False
+    demo_mode_active: bool = False
+    auto_pick_perks: bool = False
+    perk_progression_enabled: bool = False
+    apply_world_dt_steps: bool = True
+    defer_camera_shake_update: bool = False
+    clear_fx_queues_each_tick: bool = False
+    elapsed_ms: float = 0.0
+
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        state = self.world.state
+        return FrameTiming.compute(
+            float(dt),
+            time_scale_active_entry=bool(state.time_scale_active),
+            time_scale_factor=time_scale_reflex_boost_factor(
+                reflex_boost_timer=float(state.bonuses.reflex_boost),
+                time_scale_active=bool(state.time_scale_active),
+            ),
+            zero_gate_active=zero_gate_active_from_state(
+                demo_mode_active=bool(state.demo_mode_active),
+            ),
+        )
+
+    def step_tick(
+        self,
+        *,
+        timing: FrameTiming,
+        inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
+    ) -> DeterministicSessionTick:
+        state = self.world.state
+        rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
+        step = run_deterministic_step(
+            world=self.world,
+            timing=timing,
+            options=StepPipelineOptions(
+                world_size=float(self.world_size),
+                damage_scale_by_type=self.damage_scale_by_type,
+                detail_preset=int(self.detail_preset),
+                gore_disabled=int(self.gore_disabled),
+                auto_pick_perks=bool(self.auto_pick_perks),
+                game_mode=self.game_mode,
+                demo_mode_active=bool(self.demo_mode_active),
+                perk_progression_enabled=bool(self.perk_progression_enabled),
+                game_tune_started=bool(self.game_tune_started),
+            ),
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
+            inputs=inputs,
+            fx_queue=self.fx_queue,
+            fx_queue_rotated=self.fx_queue_rotated,
+            defer_camera_shake_update=bool(self.defer_camera_shake_update),
+            rng_marks_out=rng_marks,
+            trace_presentation_rng=bool(trace_rng),
+        )
+        if step.presentation.trigger_game_tune:
+            self.game_tune_started = True
+
+        if self.clear_fx_queues_each_tick:
+            self.fx_queue.clear()
+            self.fx_queue_rotated.clear()
+
+        self.elapsed_ms += float(timing.dt_sim_ms_i32)
+        creature_count_world_step = sum(1 for creature in self.world.creatures.entries if creature.active)
+        rng_marks["after_world_step"] = int(state.rng.state)
+        rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
+        return DeterministicSessionTick(
+            step=step,
+            elapsed_ms=float(self.elapsed_ms),
+            rng_marks=rng_marks,
+            creature_count_world_step=int(creature_count_world_step),
+        )
+
+
 class QuestDeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
