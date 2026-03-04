@@ -194,3 +194,39 @@ Current world/runtime hosting still has duplication and facade residue.
 6. Stage 6 (world collapse + host dedupe)
 
 This order minimizes risk: first remove hidden orchestration indirection, then lock contracts, then move time/debt ownership, then finish correctness and cleanup.
+
+---
+
+## Strict Audit Addendum (2026-03-04)
+
+These work items were added from the latest strict branch review so nothing remains implicit.
+
+### Added work items
+
+- [ ] Stage 1: Replace `TickHook: TypeAlias = object` with a real protocol/ABC and remove dynamic hook method lookup from runtime orchestration.
+- [ ] Stage 2: Remove the `InputProvider.push_command` LSP violation by splitting command-capable and read-only providers (replay provider must not expose a runtime-throwing command method).
+- [ ] Stage 3: Remove LAN wrapper/no-op scaffolding in `BaseGameplayMode` (`_on_lan_tick_applied`, `_prepare_lan_frame`, `_allow_lan_frame_pop`, `_after_join_lan_consume`) and collapse to one explicit tick-apply path.
+- [ ] Stage 4: Apply decoded rollback resync snapshot payloads to mode/runtime state (not just validate + `mark_resync_applied`).
+- [ ] Stage 4: Ensure stop semantics cannot leave runner-simulated state ahead of finalized/checkpointed state under backlog.
+- [ ] Stage 5: Replace architecture tests that assert internal call-stack shape/call-chain form with observable behavior assertions.
+- [ ] Stage 5: Fix stale ast-grep guardrail scope in `no-gameplay-rng-out-of-band.yml` (`src/crimson/game_world.py` no longer exists).
+- [ ] Stage 6: Extract shared world host bootstrap/lifecycle ownership used by demo, debug views, and test host runtime.
+
+### Added evidence references
+
+- `src/crimson/sim/hooks.py:40`
+- `src/crimson/sim/hooks.py:55`
+- `src/crimson/sim/input_providers.py:31`
+- `src/crimson/sim/input_providers.py:146`
+- `src/crimson/modes/base_gameplay_mode.py:1813`
+- `src/crimson/modes/base_gameplay_mode.py:1840`
+- `src/crimson/modes/base_gameplay_mode.py:2008`
+- `src/crimson/modes/base_gameplay_mode.py:2137`
+- `src/crimson/modes/base_gameplay_mode.py:1285`
+- `src/crimson/modes/base_gameplay_mode.py:1300`
+- `tests/test_architecture_contracts.py:48`
+- `tools/ast-grep/rules/no-gameplay-rng-out-of-band.yml:6`
+- `src/crimson/demo.py:88`
+- `src/crimson/views/arsenal_debug.py:116`
+- `src/crimson/views/lighting_debug.py:1214`
+- `tests/world_runtime.py:49`
