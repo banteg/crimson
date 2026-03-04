@@ -14,7 +14,7 @@ from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
-from ..sim.batch_apply import SimMetadataSink, apply_presentation_outputs, apply_sim_metadata_batch
+from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
@@ -301,7 +301,7 @@ class WorldRuntime:
         session: DeterministicSession,
     ) -> int:
         outputs = apply_sim_metadata_batch(
-            sim_world=cast(SimMetadataSink, self.sim_world),
+            sim_world=self.sim_world,
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
             extract_step=lambda payload: cast(DeterministicSessionTick, payload).step,

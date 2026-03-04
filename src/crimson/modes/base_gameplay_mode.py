@@ -65,7 +65,6 @@ from ..replay.types import PackedPlayerInput
 from ..sim.batch_apply import (
     DeterministicStepPayload,
     PresentationTickOutput,
-    SimMetadataSink,
     apply_presentation_outputs,
     apply_sim_metadata_tick_result,
 )
@@ -2137,7 +2136,7 @@ class BaseGameplayMode:
                 applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
             output = apply_sim_metadata_tick_result(
-                sim_world=cast(SimMetadataSink, self.sim_world),
+                sim_world=self.sim_world,
                 tick_result=tick_result,
                 game_tune_started=bool(session.game_tune_started),
                 extract_step=_extract_step,

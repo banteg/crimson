@@ -481,10 +481,16 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
 
 
 def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases() -> None:
-    deterministic_source = inspect.getsource(batch_apply_module.apply_sim_metadata_batch)
+    deterministic_batch_source = inspect.getsource(batch_apply_module.apply_sim_metadata_batch)
+    deterministic_tick_source = inspect.getsource(batch_apply_module.apply_sim_metadata_tick_result)
+    deterministic_apply_source = inspect.getsource(batch_apply_module.apply_tick_to_sim)
     output_source = inspect.getsource(batch_apply_module.apply_presentation_outputs)
 
-    assert "apply_audio_plan" not in deterministic_source
-    assert "update_camera" not in deterministic_source
+    assert "apply_audio_plan" not in deterministic_batch_source
+    assert "update_camera" not in deterministic_batch_source
+    assert "apply_audio_plan" not in deterministic_tick_source
+    assert "update_camera" not in deterministic_tick_source
+    assert "apply_audio_plan" not in deterministic_apply_source
+    assert "update_camera" not in deterministic_apply_source
     assert "apply_step_metadata" not in output_source
     assert output_source.count("sync_audio_bridge_state()") == 1

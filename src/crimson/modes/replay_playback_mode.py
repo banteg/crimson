@@ -26,9 +26,8 @@ from ..replay import (
 from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
-    SimMetadataSink,
     apply_presentation_outputs,
-    apply_sim_metadata_batch,
+    apply_sim_metadata_tick_result,
 )
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
@@ -680,44 +679,47 @@ class ReplayPlaybackMode:
         )
 
         def _apply_completed(completed_results: list[TickResult]) -> None:
-            step_results: list[TickResult] = []
-            step_outcomes: list[PlaybackTickOutcome] = []
+            outputs: list[PresentationTickOutput] = []
+            payloads_by_tick_index: dict[int, object] = {}
+            has_step_outputs = False
             for tick_result in completed_results:
                 payload = tick_result.payload
                 if payload is None:
                     continue
+                tick_index = int(tick_result.tick_index)
+                payloads_by_tick_index[tick_index] = payload
                 if hasattr(payload, "step"):
-                    step_results.append(tick_result)
-                    step_outcomes.append(cast(PlaybackTickOutcome, payload))
+                    has_step_outputs = True
+                    output = apply_sim_metadata_tick_result(
+                        sim_world=runtime.sim_world,
+                        tick_result=tick_result,
+                        game_tune_started=self._session_game_tune_started(),
+                        extract_step=lambda item: cast(PlaybackTickOutcome, item).step,
+                    )
+                    if output is not None:
+                        outputs.append(output)
                     continue
-                self._on_runner_tick_complete(int(tick_result.tick_index), payload)
-                if bake_fx_per_tick:
-                    # Fast-seek runs many ticks without rendering; drain/clear
-                    # per tick to mirror gameplay-side FX queue lifetime.
-                    if render_resources.ground is not None and render_resources.fx_textures is not None:
-                        render_resources.bake_fx_queues()
-                    else:
-                        render_resources.fx_queue.clear()
-                        render_resources.fx_queue_rotated.clear()
-
-            outputs: list[PresentationTickOutput] = []
-            if step_results:
-                outputs = apply_sim_metadata_batch(
-                    sim_world=cast(SimMetadataSink, runtime.sim_world),
-                    completed_results=step_results,
-                    game_tune_started=self._session_game_tune_started(),
-                    extract_step=lambda payload: cast(PlaybackTickOutcome, payload).step,
+                outputs.append(
+                    PresentationTickOutput(
+                        tick_index=int(tick_result.tick_index),
+                        dt_sim=float(tick_result.dt_sim),
+                        presentation=None,
+                    ),
                 )
-
-            step_iter = iter(step_outcomes)
 
             def _on_output_applied(output: PresentationTickOutput) -> None:
-                outcome = next(step_iter)
-                self._apply_tick_outcome(
-                    outcome=outcome,
-                    dt=float(self._dt),
-                )
-                self._on_runner_tick_complete(int(output.tick_index), outcome)
+                payload = payloads_by_tick_index.get(int(output.tick_index))
+                if payload is None:
+                    return
+                if hasattr(payload, "step"):
+                    outcome = cast(PlaybackTickOutcome, payload)
+                    self._apply_tick_outcome(
+                        outcome=outcome,
+                        dt=float(self._dt),
+                    )
+                    self._on_runner_tick_complete(int(output.tick_index), outcome)
+                else:
+                    self._on_runner_tick_complete(int(output.tick_index), payload)
                 if not bake_fx_per_tick:
                     return
                 if render_resources.ground is not None and render_resources.fx_textures is not None:
@@ -726,7 +728,13 @@ class ReplayPlaybackMode:
                     render_resources.fx_queue.clear()
                     render_resources.fx_queue_rotated.clear()
 
-            if outputs:
+            can_apply_output_phase = bool(
+                hasattr(runtime, "sync_audio_bridge_state")
+                and hasattr(runtime, "audio_bridge")
+                and hasattr(runtime.audio_bridge, "apply_plan")
+                and hasattr(runtime, "update_camera"),
+            )
+            if outputs and has_step_outputs and can_apply_output_phase:
                 apply_presentation_outputs(
                     outputs=outputs,
                     sync_audio_bridge_state=runtime.sync_audio_bridge_state,
@@ -738,6 +746,10 @@ class ReplayPlaybackMode:
                     on_output_applied=_on_output_applied,
                     apply_audio=True,
                 )
+                return
+
+            for output in outputs:
+                _on_output_applied(output)
 
         batch = runner.advance_ticks(
             start_tick=int(self._tick_index),
