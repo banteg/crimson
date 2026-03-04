@@ -55,6 +55,24 @@ High-priority files:
 4. Number of tests using typed builders instead of ad-hoc fake payloads.
 5. Pass/fail and duration for targeted suites and full suite.
 
+## Quality Dashboard
+
+### Baseline (Phase 0)
+
+| Metric | Value |
+|--------|-------|
+| `inspect.stack` in `tests/` | 0 |
+| `SimpleNamespace` in `test_architecture_contracts.py` | 4 |
+| `SimpleNamespace` in `test_runtime_pump_ownership.py` | 16 |
+| `SimpleNamespace` in `test_replay_playback_mode_timing.py` | 14 |
+| `cast(Any, ...)` in `test_architecture_contracts.py` | 4 |
+| `cast(Any, ...)` in `test_runtime_pump_ownership.py` | 6 |
+| `cast(Any, ...)` in `test_replay_playback_mode_timing.py` | 0 |
+| Files importing `unittest.mock` | 13 |
+| `test_architecture_contracts.py` timing | 2.40s (4 tests) |
+| `test_runtime_pump_ownership.py` timing | 0.33s (6 tests) |
+| `test_replay_playback_mode_timing.py` timing | 0.22s (4 tests) |
+
 ## Phase 0: Baseline And Guardrails
 
 Goal: establish a measurable baseline before changing tests.
