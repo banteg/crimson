@@ -1593,6 +1593,36 @@ class BaseGameplayMode:
         profiler.presentation_plan_ms = 0.0
         profiler.presentation_apply_ms = 0.0
 
+    @staticmethod
+    def _invoke_tick_runner_advance(
+        *,
+        runner: TickRunner,
+        dt_seconds: float,
+    ) -> TickBatchResult:
+        return runner.advance_frame(float(dt_seconds))
+
+    def _advance_tick_runner_with_profile(
+        self,
+        *,
+        runner: TickRunner,
+        dt_seconds: float,
+    ) -> TickBatchResult:
+        return self._invoke_tick_runner_advance(
+            runner=runner,
+            dt_seconds=float(dt_seconds),
+        )
+
+    def _advance_tick_runner(
+        self,
+        *,
+        runner: TickRunner,
+        dt_seconds: float,
+    ) -> TickBatchResult:
+        return self._advance_tick_runner_with_profile(
+            runner=runner,
+            dt_seconds=float(dt_seconds),
+        )
+
     def _gameplay_tick_rate(self) -> int:
         runner = self._tick_runner
         if runner is not None:
@@ -2090,7 +2120,10 @@ class BaseGameplayMode:
             session=session,
             dt_tick=float(dt_tick),
         )
-        result = runner.advance_frame(float(dt_tick))
+        result = self._advance_tick_runner(
+            runner=runner,
+            dt_seconds=float(dt_tick),
+        )
 
         ticks_applied = 0
         stop_after_finalize = False
@@ -2276,7 +2309,10 @@ class BaseGameplayMode:
             )
             replay_hook.clear_recorded_ticks()
             self._reset_profiler_hook(profiler_hook)
-            batch = runner.advance_frame(float(dt_frame))
+            batch = self._advance_tick_runner(
+                runner=runner,
+                dt_seconds=float(dt_frame),
+            )
         finally:
             self._tick_runner_record_replay = None
             self._tick_runner_on_tick = None
