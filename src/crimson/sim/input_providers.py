@@ -36,6 +36,14 @@ class TickInput(msgspec.Struct, frozen=True):
     inputs: list[PlayerInput] = msgspec.field(default_factory=list)
 
 
+class ReplayJournal(Protocol):
+    def read_tick_inputs(self, tick_index: int) -> Sequence[PlayerInput] | None: ...
+
+    def read_tick_dt(self, tick_index: int, default_dt: float) -> float: ...
+
+    def tick_count(self) -> int | None: ...
+
+
 class InputProvider(Protocol):
     def begin_frame(self, frame_ctx: FrameContext) -> None: ...
 
@@ -127,17 +135,23 @@ class ReplayInputProvider:
         self,
         *,
         player_count: int,
-        resolve_tick_input: ReplayTickInputResolver,
+        resolve_tick_input: ReplayTickInputResolver | None = None,
         tick_count: int | None = None,
         resolve_tick_dt: ReplayTickDtResolver | None = None,
+        journal: ReplayJournal | None = None,
     ) -> None:
+        if journal is not None and resolve_tick_input is not None:
+            raise ValueError("ReplayInputProvider accepts either journal or resolve_tick_input, not both")
+        if journal is None and resolve_tick_input is None:
+            raise ValueError("ReplayInputProvider requires journal or resolve_tick_input")
+
         self._player_count = max(0, player_count)
+        self._journal = journal
         self._resolve_tick_input = resolve_tick_input
         self._resolve_tick_dt = resolve_tick_dt
-        if tick_count is not None:
-            self._tick_count = max(0, tick_count)
-        else:
-            self._tick_count = None
+        journal_tick_count = journal.tick_count() if journal is not None else None
+        resolved_tick_count = journal_tick_count if tick_count is None else tick_count
+        self._tick_count = max(0, int(resolved_tick_count)) if resolved_tick_count is not None else None
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         _ = frame_ctx
@@ -150,7 +164,14 @@ class ReplayInputProvider:
         tick_count = self._tick_count
         if tick_count is not None and idx >= tick_count:
             return TickInput(status=InputStatus.EOS, inputs=[])
-        resolved = self._resolve_tick_input(idx)
+        journal = self._journal
+        if journal is not None:
+            resolved = journal.read_tick_inputs(idx)
+        else:
+            resolver = self._resolve_tick_input
+            if resolver is None:
+                return TickInput(status=InputStatus.EOS, inputs=[])
+            resolved = resolver(idx)
         if resolved is None:
             return TickInput(status=InputStatus.EOS, inputs=[])
         row = list(resolved)
@@ -171,6 +192,9 @@ class ReplayInputProvider:
         return []
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        journal = self._journal
+        if journal is not None:
+            return float(journal.read_tick_dt(int(tick_index), float(default_dt)))
         resolver = self._resolve_tick_dt
         if resolver is None:
             return float(default_dt)

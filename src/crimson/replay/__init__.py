@@ -3,6 +3,7 @@ from __future__ import annotations
 from .bootstrap import AppliedReplayBootstrap, ReplayBootstrapError, apply_replay_bootstrap
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
 from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
+from .journal import ReplayJournal
 from .recorder import ReplayRecorder
 from .types import (
     AIM_SCHEME_PRESENT_FLAG,
@@ -59,6 +60,7 @@ __all__ = [
     "ReplayBootstrapError",
     "ReplayHeader",
     "ReplayRecorder",
+    "ReplayJournal",
     "ReplayStatusSnapshot",
     "ReplayGameVersionError",
     "ReplayGameVersionWarning",

@@ -16,7 +16,7 @@ from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ...replay import Replay, apply_replay_bootstrap, unpack_tick_inputs, warn_on_game_version_mismatch
+from ...replay import Replay, ReplayJournal, apply_replay_bootstrap, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.types import ReplayEvent
@@ -818,11 +818,13 @@ class PlaybackDriver:
         defer_menu_open: bool | None = None,
     ) -> TickRunner:
         _ = defer_menu_open
+        journal = ReplayJournal(
+            replay=self.replay,
+            resolve_tick_dt=lambda tick_index: self._resolve_replay_dt_row(int(tick_index)),
+        )
         provider = ReplayInputProvider(
             player_count=max(0, int(self.replay.header.player_count)),
-            resolve_tick_input=lambda tick_index: unpack_tick_inputs(self.replay.inputs[int(tick_index)]),
-            tick_count=int(self.tick_limit),
-            resolve_tick_dt=lambda tick_index: self._resolve_replay_dt_row(int(tick_index)),
+            journal=journal,
         )
         return TickRunner(
             session=self.session,
