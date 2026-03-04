@@ -11,7 +11,7 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.modes.base_gameplay_mode import _GameplayTickObserverHook
+from crimson.modes.base_gameplay_mode import _GameplayTickObserverHook, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ReplayRecorderHook, TickContext, TickHookBus
@@ -51,17 +51,6 @@ class _TickRunnerStackSpy:
             remaining_debt_ticks=0,
             completed_results=[],
         )
-
-
-class _LanProviderStub:
-    def __init__(self) -> None:
-        self.pop_blocked = False
-
-    def bind_runtime(self, _runtime: object) -> None:
-        return
-
-    def set_before_pop(self, _callback: object) -> None:
-        return
 
 
 class _PlanIsolationStep(msgspec.Struct):
@@ -233,6 +222,14 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     lan_stacks: list[tuple[str, ...]] = []
     local_runner = _TickRunnerStackSpy(local_stacks)
     lan_runner = _TickRunnerStackSpy(lan_stacks)
+    local_provider = LocalInputProvider(
+        player_count=1,
+        build_inputs=lambda _frame_ctx: [PlayerInput()],
+    )
+    lan_provider = _LanRuntimeInputProvider(
+        player_count=1,
+        tick_rate=60,
+    )
 
     local_mode.state.perk_selection.pending_count = 0
     lan_mode.state.perk_selection.pending_count = 0
@@ -267,7 +264,7 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     mocker.patch.object(
         local_mode,
         "_ensure_tick_runner",
-        return_value=(local_runner, _LanProviderStub(), *runner_bundle),
+        return_value=(local_runner, local_provider, *runner_bundle),
     )
 
     mocker.patch.object(lan_mode, "_begin_mode_update", return_value=mode_frame)
@@ -282,7 +279,7 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     mocker.patch.object(
         lan_mode,
         "_ensure_tick_runner",
-        return_value=(lan_runner, _LanProviderStub(), *runner_bundle),
+        return_value=(lan_runner, lan_provider, *runner_bundle),
     )
 
     local_mode.update(0.016)
