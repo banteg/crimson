@@ -257,8 +257,9 @@ across gameplay mode, replay mode, and harness paths.
 - [x] Collapse `RenderResources` + `AudioBridge` + `TerrainRuntime` into `PresentationLayer` with one-way dependency from presentation to sim.
 - [x] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
 - [x] Remove `WorldTickRunnerHarness` — tick-stepping logic absorbed into `WorldRuntime`.
+- [x] Migrate `ReplayPlaybackMode` world lifecycle to `WorldRuntime` — eliminates duplicated component fields and lifecycle methods.
 - [ ] Add shared deterministic batch apply helper that separates sim metadata from audio/camera side effects.
-- [ ] Refactor `BaseGameplayMode` and `ReplayPlaybackMode` stepping paths to use shared batch apply; remove duplicated per-context apply loops.
+- [ ] Refactor `BaseGameplayMode` stepping path to use shared batch apply; remove duplicated per-context apply loops.
 - [ ] Move presentation/audio apply and camera updates to frame-driver output boundary for each context (interactive gameplay, replay playback, headless verify).
 
 ### Evidence
@@ -270,8 +271,8 @@ across gameplay mode, replay mode, and harness paths.
 - `src/crimson/views/arsenal_debug.py` — delegates to `WorldRuntime`
 - `src/crimson/views/lighting_debug.py` — delegates to `WorldRuntime`
 - `tests/world_runtime.py` — delegates to `WorldRuntime`
+- `src/crimson/modes/replay_playback_mode.py` — world lifecycle delegates to `WorldRuntime`; tick-stepping remains replay-specific (PlaybackDriver)
 - `src/crimson/modes/base_gameplay_mode.py:2026-2099` — mode-specific batch apply loop (not yet migrated)
-- `src/crimson/modes/replay_playback_mode.py:749-818` — replay-specific tick apply (not yet migrated)
 - `src/crimson/sim/world_tick_runner_harness.py` — `WorldHost` protocol + `step_world_once` (harness class removed)
 
 ### Acceptance
@@ -283,7 +284,7 @@ across gameplay mode, replay mode, and harness paths.
 - [ ] Frame drivers own output-phase presentation apply in strict tick order.
 - [x] Host lifecycle exists in one shared implementation, not four copies.
 - [x] `WorldTickRunnerHarness` removed or fully subsumed with no unique orchestration behavior.
-- [ ] Replay stepping path in `ReplayPlaybackMode` has no wrapper orchestration indirection around `TickRunner`.
+- [x] Replay stepping path in `ReplayPlaybackMode` uses `WorldRuntime` for lifecycle; tick-stepping remains PlaybackDriver-specific by design.
 - [x] Debug views and test host use shared composition.
 
 ---
