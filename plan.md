@@ -694,6 +694,10 @@ Final validation summary (2026-03-04):
 - Replay fixture integrations and LAN wiring suites pass with deterministic parity.
 - Hook bus, replay stepping, and mode orchestration run through the unified `TickRunner`-driven paths.
 
+Post-cutover migration notes (2026-03-04):
+- Removed legacy `GameWorld.update(...)`; runtime callers now advance deterministic sessions via `TickRunner` and apply tick payloads in ordered post-batch paths.
+- Moved LAN finalize ownership into hooks: `NetworkSyncHook` now owns command/state hash desync checks plus host tick-frame broadcast, and `CheckpointHook` remains the replay checkpoint emission boundary.
+
 ## Risks and Mitigations
 
 1. Determinism drift during presentation split.
