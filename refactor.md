@@ -2,8 +2,8 @@
 
 ## Scope
 
-This document tracks only the remaining work.
-Completed stages were removed.
+This document tracks remaining work and immediate next execution steps.
+Completed stages may stay temporarily for auditability until the next cleanup pass.
 
 Target architecture is defined by `plan.md`:
 - `GameLoopView` is the only interactive runtime pump owner.
@@ -30,16 +30,16 @@ all happen through this implicit dispatch instead of explicit frame-driver calls
 
 ### Tasks
 
-- [ ] Remove `TickHookBus` from `TickRunner`. The runner should return `TickBatchResult` with completed tick payloads only — no side-effect dispatch.
-- [ ] Replace `TickHook: TypeAlias = object` with nothing. Hook objects should not exist as a concept in the runner; side effects belong to the frame driver.
-- [ ] Delete `getattr`-string method lookup dispatch (`_resolve_method`, `_dispatch`) from tick orchestration.
-- [ ] Move replay recording to explicit frame-driver dispatch: after `advance_ticks` returns, iterate `TickBatchResult.completed_results` and call `recorder.record_tick(inputs)` directly. Currently this happens inside `ReplayRecorderHook.on_pre_sim` (hooks.py:157).
-- [ ] Move checkpoint emission to explicit frame-driver dispatch: after batch apply, call checkpoint from completed results directly. Currently this happens inside `CheckpointHook.on_tick_end` (hooks.py:182).
-- [ ] Move network sync to explicit frame-driver dispatch: hash broadcast and desync detection currently happen inside `NetworkSyncHook.on_post_hash`/`on_tick_end` (hooks.py:216, 223).
-- [ ] Move profiling to explicit frame-driver timing: wrap `advance_ticks` + apply with `time.perf_counter_ns()` instead of scattering timing across `ProfilerHook.on_pre_sim`/`on_world_step_done`/`on_post_hash`/`on_tick_end` (hooks.py:285-304).
-- [ ] Delete mode-level hook wiring instance vars: `_tick_replay_hook`, `_tick_checkpoint_hook`, `_tick_network_sync_hook`, `_tick_profiler_hook`, `_tick_observer_hook`, `_tick_command_hook` (base_gameplay_mode.py:1596-1601).
-- [ ] Collapse `_ensure_tick_runner` from 125-line 8-tuple return to simple runner creation. It currently returns `(TickRunner, InputProvider, ReplayRecorderHook, CheckpointHook, NetworkSyncHook, ProfilerHook, ObserverHook, CommandHook)`. After hook removal, it only needs to return `(TickRunner, InputProvider)`.
-- [ ] Keep deterministic ordering guarantees by explicit, ordered dispatch calls in one place.
+- [x] Remove `TickHookBus` from `TickRunner`. The runner should return `TickBatchResult` with completed tick payloads only — no side-effect dispatch.
+- [x] Replace `TickHook: TypeAlias = object` with nothing. Hook objects should not exist as a concept in the runner; side effects belong to the frame driver.
+- [x] Delete `getattr`-string method lookup dispatch (`_resolve_method`, `_dispatch`) from tick orchestration.
+- [x] Move replay recording to explicit frame-driver dispatch: after `advance_ticks` returns, iterate `TickBatchResult.completed_results` and call `recorder.record_tick(inputs)` directly. Currently this happens inside `ReplayRecorderHook.on_pre_sim` (hooks.py:157).
+- [x] Move checkpoint emission to explicit frame-driver dispatch: after batch apply, call checkpoint from completed results directly. Currently this happens inside `CheckpointHook.on_tick_end` (hooks.py:182).
+- [x] Move network sync to explicit frame-driver dispatch: hash broadcast and desync detection currently happen inside `NetworkSyncHook.on_post_hash`/`on_tick_end` (hooks.py:216, 223).
+- [x] Move profiling to explicit frame-driver timing: wrap `advance_ticks` + apply with `time.perf_counter_ns()` instead of scattering timing across `ProfilerHook.on_pre_sim`/`on_world_step_done`/`on_post_hash`/`on_tick_end` (hooks.py:285-304).
+- [x] Delete mode-level hook wiring instance vars: `_tick_replay_hook`, `_tick_checkpoint_hook`, `_tick_network_sync_hook`, `_tick_profiler_hook`, `_tick_observer_hook`, `_tick_command_hook` (base_gameplay_mode.py:1596-1601).
+- [x] Collapse `_ensure_tick_runner` from 125-line 8-tuple return to simple runner creation. It currently returns `(TickRunner, InputProvider, ReplayRecorderHook, CheckpointHook, NetworkSyncHook, ProfilerHook, ObserverHook, CommandHook)`. After hook removal, it only needs to return `(TickRunner, InputProvider)`.
+- [x] Keep deterministic ordering guarantees by explicit, ordered dispatch calls in one place.
 
 ### Evidence
 
@@ -56,11 +56,11 @@ all happen through this implicit dispatch instead of explicit frame-driver calls
 
 ### Acceptance
 
-- [ ] No `TickHookBus` or hook objects in runtime tick orchestration.
-- [ ] Zero `getattr`-based dispatch in runtime path.
-- [ ] `_ensure_tick_runner` returns at most `(TickRunner, InputProvider)`.
-- [ ] Replay/checkpoint/network sync behavior parity preserved.
-- [ ] `uv run pytest --no-cov` passes.
+- [x] No `TickHookBus` or hook objects in runtime tick orchestration.
+- [x] Zero `getattr`-based dispatch in runtime path.
+- [x] `_ensure_tick_runner` returns at most `(TickRunner, InputProvider)`.
+- [x] Replay/checkpoint/network sync behavior parity preserved.
+- [x] `uv run pytest --no-cov` passes.
 
 ---
 
@@ -104,6 +104,39 @@ returns `list[PlayerInput] | None` (None = stall). `ReplayInputProvider` raises
 - [ ] No `RuntimeError` from protocol methods during normal operation.
 - [ ] `TickBatchResult.batch_status` replaces `stalled: bool`.
 - [ ] Input provider tests cover all three status paths.
+
+### Execution Plan (Next Phase)
+
+1. Contract-first types
+- Add `InputStatus` and `TickInput` in `sim/input_providers.py`.
+- Update `InputProvider.pull_tick_input` protocol signature to return `TickInput`.
+- Keep type aliases and names stable where possible to reduce call-site churn.
+
+2. Provider migration
+- Update `LocalInputProvider` to always return `TickInput(status=READY, inputs=...)`.
+- Update `NetworkInputProvider` to return `STALLED` instead of `None`.
+- Update `ReplayInputProvider` to return `EOS` instead of raising `ReplayEndOfStream`.
+- Make replay `push_command` contract-safe (no `RuntimeError` in normal flow).
+
+3. Runner migration
+- Replace `None`/exception flow in `TickRunner.advance_frame` with status branching.
+- Remove `ReplayAdvanceEndOfStream` and propagate EOS via `TickBatchResult.batch_status`.
+- Introduce `batch_status` and keep `ticks_completed`/`completed_results` semantics unchanged.
+
+4. Caller migration
+- Update `BaseGameplayMode` and `ReplayPlaybackMode` to consume `batch_status`.
+- Remove all normal-path replay EOS exception handling from frame drivers.
+- Preserve current deterministic ordering for command apply, record, checkpoint, sync, and apply.
+
+5. Test migration
+- Update provider and runner tests to cover `READY`, `STALLED`, and `EOS`.
+- Replace exception-based replay EOS assertions with status-based assertions.
+- Add targeted regressions for replay boundary (`tick_index == tick_limit`) and LAN stall behavior.
+
+6. Validation gates
+- Run focused suites first: `test_input_provider_semantics.py`, `test_tick_runner_*`, `test_replay_playback_mode_*`.
+- Then run full gate: `uv run pytest --no-cov`.
+- Do not start Stage 3 until Stage 2 acceptance checklist is fully checked.
 
 ---
 
@@ -262,12 +295,11 @@ across gameplay mode, replay mode, and harness paths.
 
 ## Prioritization
 
-1. Stage 1 (remove hook-bus orchestration)
-2. Stage 2 (InputStatus + Journal contract)
-3. Stage 3 (pure runner + frame-owned debt)
-4. Stage 4 (LAN/recovery correctness + scaffold collapse)
-5. Stage 5 (runtime-first tests + guardrail cleanup)
-6. Stage 6 (world collapse + host dedupe)
+1. Stage 2 (InputStatus + Journal contract)
+2. Stage 3 (pure runner + frame-owned debt)
+3. Stage 4 (LAN/recovery correctness + scaffold collapse)
+4. Stage 5 (runtime-first tests + guardrail cleanup)
+5. Stage 6 (world collapse + host dedupe)
 
 This order minimizes risk: first remove hidden orchestration indirection, then
 lock contracts, then move time/debt ownership, then finish correctness and
