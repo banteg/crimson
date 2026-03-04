@@ -71,12 +71,21 @@ from ..sim.hooks import (
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
 from ..sim.sessions import DeterministicSessionStepTick
-from ..sim.tick_runner import TickRunner, TickRunnerConfig
+from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..sim.timing import FrameTiming
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
 from .components.highscore_record_builder import shots_from_state
+from .components.lan_policy import (
+    BaseLanModePolicy,
+    LanFramePhase,
+    LanModePolicy,
+    LanStepAction,
+    LanTickAppliedPhase,
+    LanTickPhase,
+    LanTickStep,
+)
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreaturePool
@@ -88,19 +97,6 @@ if TYPE_CHECKING:
     from ..sim.state_types import PlayerState
 
 LanRuntime = LockstepRuntime | RollbackRuntime
-
-
-LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
-
-
-@dataclass(frozen=True, slots=True)
-class LanTickStep:
-    frame_tick_index: int
-    frame_inputs: tuple[PackedPlayerInput, ...]
-    tick: DeterministicSessionStepTick
-    local_command_hash: str
-    host_state_hash: str
-    replay_tick_index: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -352,6 +348,7 @@ class BaseGameplayMode:
         self._lan_network_sync_hook: NetworkSyncHook | None = None
         self._lan_profiler_hook: ProfilerHook | None = None
         self._pending_input_commands: list[InputCommand] = []
+        self._lan_mode_policy: LanModePolicy | None = None
 
     def _refresh_effective_status(self, *, reset_lan_status: bool) -> None:
         if self._lan_enabled:
@@ -1474,61 +1471,15 @@ class BaseGameplayMode:
     def _on_lan_paused(self, *, dt: float) -> None:
         _ = dt
 
-    def _prepare_lan_match_frame(
-        self,
-        *,
-        role: str,
-        dt: float,
-        dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, dt, dt_ui_ms, lockstep_runtime, session, dt_tick
-        return True
+    def _create_lan_mode_policy(self) -> LanModePolicy:
+        return BaseLanModePolicy()
 
-    def _before_lan_tick_step(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        dt_tick: float,
-    ) -> None:
-        _ = role, lockstep_runtime, session, dt_tick
-
-    def _lan_allow_frame_pop(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        dt_tick: float,
-    ) -> bool:
-        _ = role, lockstep_runtime, session, dt_tick
-        return True
-
-    def _after_lan_join_consume(
-        self,
-        *,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        dt_tick: float,
-    ) -> bool:
-        _ = lockstep_runtime, session, dt_tick
-        return False
-
-    def _on_lan_tick_applied(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        step: LanTickStep,
-        dt_tick: float,
-    ) -> LanStepAction:
-        _ = role, lockstep_runtime, session, step, dt_tick
-        return "continue"
+    def _resolve_lan_mode_policy(self) -> LanModePolicy:
+        policy = self._lan_mode_policy
+        if policy is None:
+            policy = self._create_lan_mode_policy()
+            self._lan_mode_policy = policy
+        return policy
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
         runtime = self._lan_runtime
@@ -1541,6 +1492,7 @@ class BaseGameplayMode:
         role = self._prepare_lan_match_runtime(mode_name=self._lan_mode_name())
         if role is None:
             return
+        policy = self._resolve_lan_mode_policy()
         self._trace_lan_terrain_generation()
         if bool(self._lan_terrain_generation_pending()):
             self._reset_lan_capture_clock()
@@ -1552,13 +1504,15 @@ class BaseGameplayMode:
             return
 
         dt_tick = float(self._lan_capture_tick_dt())
-        if not self._prepare_lan_match_frame(
-            role=str(role),
-            dt=float(dt),
-            dt_ui_ms=float(dt_ui_ms),
-            lockstep_runtime=lockstep_runtime,
-            session=session,
-            dt_tick=float(dt_tick),
+        if not policy.prepare_frame(
+            LanFramePhase(
+                role=str(role),
+                dt=float(dt),
+                dt_ui_ms=float(dt_ui_ms),
+                lockstep_runtime=lockstep_runtime,
+                session=session,
+                dt_tick=float(dt_tick),
+            ),
         ):
             return
 
@@ -1571,10 +1525,13 @@ class BaseGameplayMode:
                 dt_tick=float(dt_tick),
             ):
                 return
-            if self._after_lan_join_consume(
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                dt_tick=float(dt_tick),
+            if policy.after_join_consume(
+                LanTickPhase(
+                    role=str(role),
+                    lockstep_runtime=lockstep_runtime,
+                    session=session,
+                    dt_tick=float(dt_tick),
+                ),
             ):
                 return
 
@@ -1714,6 +1671,7 @@ class BaseGameplayMode:
         runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler = self._ensure_lan_tick_runner(
             session=session,
         )
+        policy = self._resolve_lan_mode_policy()
         replay_hook.set_recorder(self._replay_recorder)
         replay_hook.clear_recorded_ticks()
         checkpoint_hook.set_on_checkpoint(None)
@@ -1721,11 +1679,13 @@ class BaseGameplayMode:
         network_sync_hook.clear_recorded_hashes()
         provider.bind_runtime(runtime)
         provider.set_before_pop(
-            lambda: self._lan_allow_frame_pop(
-                role=str(role),
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                dt_tick=float(dt_tick),
+            lambda: policy.allow_frame_pop(
+                LanTickPhase(
+                    role=str(role),
+                    lockstep_runtime=lockstep_runtime,
+                    session=session,
+                    dt_tick=float(dt_tick),
+                ),
             ),
         )
         self._reset_profiler_hook(profiler)
@@ -1734,11 +1694,13 @@ class BaseGameplayMode:
 
         while True:
             self._consume_pending_input_commands(dt_tick=float(dt_tick))
-            self._before_lan_tick_step(
-                role=str(role),
-                lockstep_runtime=lockstep_runtime,
-                session=session,
-                dt_tick=float(dt_tick),
+            policy.before_tick_step(
+                LanTickPhase(
+                    role=str(role),
+                    lockstep_runtime=lockstep_runtime,
+                    session=session,
+                    dt_tick=float(dt_tick),
+                ),
             )
             result = runner.advance_frame(
                 float(dt_tick),
@@ -1792,12 +1754,14 @@ class BaseGameplayMode:
                     host_state_hash=str(applied.host_state_hash),
                     replay_tick_index=applied.replay_tick_index,
                 )
-                return self._on_lan_tick_applied(
-                    role=str(role),
-                    lockstep_runtime=lockstep_runtime,
-                    session=session,
-                    step=lan_step,
-                    dt_tick=float(dt_tick),
+                return policy.on_tick_applied(
+                    LanTickAppliedPhase(
+                        role=str(role),
+                        lockstep_runtime=lockstep_runtime,
+                        session=session,
+                        step=lan_step,
+                        dt_tick=float(dt_tick),
+                    ),
                 )
 
             def _on_tick_finalize(applied: _AppliedBatchTick) -> None:

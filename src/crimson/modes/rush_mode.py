@@ -17,7 +17,6 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..net.debug_log import lan_debug_log
-from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     RushRuntimeSnapshotV2,
     RushStateSnapshotV2,
@@ -34,11 +33,15 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    DeterministicSessionLike,
-    LanStepAction,
-    LanTickStep,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.lan_policy import (
+    BaseLanModePolicy,
+    LanFramePhase,
+    LanModePolicy,
+    LanStepAction,
+    LanTickAppliedPhase,
+)
 
 WORLD_SIZE = 1024.0
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -55,6 +58,40 @@ RushSessionFactory = Callable[..., RushDeterministicSession]
 class _RushState(msgspec.Struct):
     elapsed_ms: float = 0.0
     spawn_cooldown_ms: float = 0.0
+
+
+class _RushLanModePolicy(BaseLanModePolicy):
+    def __init__(self, mode: "RushMode") -> None:
+        self._mode = mode
+
+    def prepare_frame(self, phase: LanFramePhase) -> bool:
+        mode = self._mode
+        rush_session = cast(RushDeterministicSession, phase.session)
+        rush_session.detail_preset = int(mode._deterministic_detail_preset())
+        rush_session.gore_disabled = int(mode._deterministic_gore_disabled())
+        return True
+
+    def on_tick_applied(self, phase: LanTickAppliedPhase) -> LanStepAction:
+        mode = self._mode
+        step = phase.step
+        rush_session = cast(RushDeterministicSession, phase.session)
+        mode._rush.elapsed_ms = float(step.tick.elapsed_ms)
+        mode._rush.spawn_cooldown_ms = float(rush_session.spawn_cooldown_ms)
+        mode._store_net_runtime_snapshot(
+            snapshot=RushStateSnapshotV2(
+                tick_index=int(step.frame_tick_index),
+                replay_state=mode._net_replay_snapshot_state(),
+                runtime_state=RushRuntimeSnapshotV2(
+                    elapsed_ms=float(step.tick.elapsed_ms),
+                    spawn_cooldown_ms=float(rush_session.spawn_cooldown_ms),
+                    kill_count=int(mode.creatures.kill_count),
+                ),
+            ),
+        )
+        if not any(player.health > 0.0 for player in mode.world.sim_world.players):
+            mode._enter_game_over()
+            return "stop_after_finalize"
+        return "continue"
 
 
 class RushMode(BaseGameplayMode):
@@ -255,51 +292,8 @@ class RushMode(BaseGameplayMode):
     def _lan_match_session(self) -> RushDeterministicSession | None:
         return self._sim_session
 
-    def _prepare_lan_match_frame(
-        self,
-        *,
-        role: str,
-        dt: float,
-        dt_ui_ms: float,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        dt_tick: float,
-    ) -> bool:
-        _ = dt, dt_ui_ms
-        rush_session = cast(RushDeterministicSession, session)
-        rush_session.detail_preset = int(self._deterministic_detail_preset())
-        rush_session.gore_disabled = int(self._deterministic_gore_disabled())
-        _ = role, lockstep_runtime, dt_tick
-        return True
-
-    def _on_lan_tick_applied(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
-        step: LanTickStep,
-        dt_tick: float,
-    ) -> LanStepAction:
-        _ = role, lockstep_runtime, dt_tick
-        rush_session = cast(RushDeterministicSession, session)
-        self._rush.elapsed_ms = float(step.tick.elapsed_ms)
-        self._rush.spawn_cooldown_ms = float(rush_session.spawn_cooldown_ms)
-        self._store_net_runtime_snapshot(
-            snapshot=RushStateSnapshotV2(
-                tick_index=int(step.frame_tick_index),
-                replay_state=self._net_replay_snapshot_state(),
-                runtime_state=RushRuntimeSnapshotV2(
-                    elapsed_ms=float(step.tick.elapsed_ms),
-                    spawn_cooldown_ms=float(rush_session.spawn_cooldown_ms),
-                    kill_count=int(self.creatures.kill_count),
-                ),
-            ),
-        )
-        if not any(player.health > 0.0 for player in self.world.sim_world.players):
-            self._enter_game_over()
-            return "stop_after_finalize"
-        return "continue"
+    def _create_lan_mode_policy(self) -> LanModePolicy:
+        return _RushLanModePolicy(self)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
