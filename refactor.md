@@ -151,14 +151,14 @@ advance call.
 
 ### Tasks
 
-- [ ] Remove `FixedStepClock` ownership from `TickRunner`.
-- [ ] Remove `self._next_tick_index` and `self._frame_index` mutable state.
-- [ ] Replace `advance_frame(dt, max_ticks)` with `advance_ticks(start_tick, ticks_requested, tick_dt)` returning `TickBatchResult`. Frame drivers compute candidate ticks from their own clock.
-- [ ] Move clock/debt ownership to frame-driver contexts: `_update_local_match` in base mode, `_advance_runner` in replay mode, and demo/debug frame drivers (temporary harness path only until Stage 6 removal).
-- [ ] Remove `runner.clock` property and all external reads: `_gameplay_tick_rate()` reads `runner.clock.tick_rate` (line 1575), `_gameplay_tick_dt()` reads `runner.clock.dt_tick` (line 1581-1584), replay reads `runner.clock` (line 881-888).
-- [ ] Delete `reset_clock()` method and its caller `_reset_gameplay_tick_runner_clock()` (line 1587-1590).
-- [ ] Delete 3-layer pass-through: `_invoke_tick_runner_advance` (line 1543) → `_advance_tick_runner_with_profile` (line 1550) → `_advance_tick_runner` (line 1561). Each just calls the next with zero added behavior.
-- [ ] Remove clock accumulator mutation inside runner: `self._clock.accum += unconsumed_ticks * self._clock.dt_tick` (line 186).
+- [x] Remove `FixedStepClock` ownership from `TickRunner`.
+- [x] Remove `self._next_tick_index` and `self._frame_index` mutable state.
+- [x] Replace `advance_frame(dt, max_ticks)` with `advance_ticks(start_tick, ticks_requested, tick_dt)` returning `TickBatchResult`. Frame drivers compute candidate ticks from their own clock.
+- [x] Move clock/debt ownership to frame-driver contexts: `_update_local_match` in base mode, `_advance_runner` in replay mode, and demo/debug frame drivers (temporary harness path only until Stage 6 removal).
+- [x] Remove `runner.clock` property and all external reads: `_gameplay_tick_rate()` reads `runner.clock.tick_rate` (line 1575), `_gameplay_tick_dt()` reads `runner.clock.dt_tick` (line 1581-1584), replay reads `runner.clock` (line 881-888).
+- [x] Delete `reset_clock()` method and its caller `_reset_gameplay_tick_runner_clock()` (line 1587-1590).
+- [x] Delete 3-layer pass-through: `_invoke_tick_runner_advance` (line 1543) → `_advance_tick_runner_with_profile` (line 1550) → `_advance_tick_runner` (line 1561). Each just calls the next with zero added behavior.
+- [x] Remove clock accumulator mutation inside runner: `self._clock.accum += unconsumed_ticks * self._clock.dt_tick` (line 186).
 
 ### Evidence
 
@@ -174,12 +174,12 @@ advance call.
 
 ### Acceptance
 
-- [ ] `TickRunner` has zero mutable state (no clock, no tick index, no frame index).
-- [ ] `TickRunner` API takes explicit tick range, not `dt_seconds`.
-- [ ] Frame drivers own their own `FixedStepClock`.
-- [ ] No external code reads `runner.clock`.
-- [ ] No pass-through call chain remains.
-- [ ] Determinism parity and stall/debt tests pass.
+- [x] `TickRunner` has zero mutable state (no clock, no tick index, no frame index).
+- [x] `TickRunner` API takes explicit tick range, not `dt_seconds`.
+- [x] Frame drivers own their own `FixedStepClock`.
+- [x] No external code reads `runner.clock`.
+- [x] No pass-through call chain remains.
+- [x] Determinism parity and stall/debt tests pass.
 
 ---
 
