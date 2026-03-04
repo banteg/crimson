@@ -103,7 +103,7 @@ class WorldTickRunnerHarness:
         runner = TickRunner(
             session=session,
             input_provider=provider,
-            config=TickRunnerConfig(tick_rate=int(self._tick_rate)),
+            config=TickRunnerConfig(),
         )
         self._session = session
         self._runner = runner

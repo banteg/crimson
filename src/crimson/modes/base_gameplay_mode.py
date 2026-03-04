@@ -1473,17 +1473,11 @@ class BaseGameplayMode:
         *,
         session: DeterministicSession | QuestDeterministicSession,
         input_provider: InputProvider,
-        tick_rate: int,
-        is_networked: bool,
     ) -> TickRunner:
         return TickRunner(
             session=session,
             input_provider=input_provider,
-            config=TickRunnerConfig(
-                tick_rate=int(tick_rate),
-                is_networked=bool(is_networked),
-                is_replay=False,
-            ),
+            config=TickRunnerConfig(),
         )
 
     def _advance_tick_runner_batch(
@@ -1539,7 +1533,7 @@ class BaseGameplayMode:
         _ = session
         return 1.0 / float(self._gameplay_tick_rate())
 
-    def _reset_gameplay_tick_runner_clock(self) -> None:
+    def _reset_gameplay_frame_clock(self) -> None:
         clock = self._tick_runner_local_clock
         if clock is not None:
             clock.reset()
@@ -1663,8 +1657,6 @@ class BaseGameplayMode:
         runner = self._new_tick_runner(
             session=session,
             input_provider=provider,
-            tick_rate=int(self._deterministic_tick_rate()),
-            is_networked=bool(is_networked),
         )
         self._tick_runner = runner
         self._tick_input_provider = provider
@@ -1868,7 +1860,7 @@ class BaseGameplayMode:
             return
 
         if bool(self._paused):
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             self._on_lan_paused(dt=float(dt))
             return
 

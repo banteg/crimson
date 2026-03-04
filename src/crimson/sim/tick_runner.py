@@ -29,9 +29,6 @@ class TickSession(Protocol):
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
-    tick_rate: int = 60
-    is_networked: bool = False
-    is_replay: bool = False
     trace_rng: bool = False
 
 

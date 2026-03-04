@@ -221,7 +221,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
     runner = TickRunner(
         session=session,
         input_provider=provider,
-        config=TickRunnerConfig(tick_rate=60),
+        config=TickRunnerConfig(),
     )
     play_sfx = mocker.patch.object(
         audio_router_module,
@@ -340,12 +340,12 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     host_runner = TickRunner(
         session=host_session,
         input_provider=host_provider,
-        config=TickRunnerConfig(tick_rate=60, is_networked=True),
+        config=TickRunnerConfig(),
     )
     client_runner = TickRunner(
         session=client_session,
         input_provider=client_provider,
-        config=TickRunnerConfig(tick_rate=60, is_networked=True),
+        config=TickRunnerConfig(),
     )
 
     command = InputCommand("perk_pick", {"index": 1})
@@ -426,7 +426,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     live_runner = TickRunner(
         session=live_session,
         input_provider=live_provider,
-        config=TickRunnerConfig(tick_rate=int(header.tick_rate)),
+        config=TickRunnerConfig(),
     )
     live_clock = FixedStepClock(tick_rate=int(header.tick_rate))
     live_frame_index = 0
@@ -497,7 +497,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     runner = TickRunner(
         session=_PlanIsolationSession(sim_world),
         input_provider=provider,
-        config=TickRunnerConfig(tick_rate=60),
+        config=TickRunnerConfig(),
     )
 
     audio_bridge = AudioBridge(

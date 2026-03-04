@@ -45,7 +45,7 @@ def _build_runner(
     runner = TickRunner(
         session=session,
         input_provider=provider,
-        config=TickRunnerConfig(tick_rate=60),
+        config=TickRunnerConfig(),
     )
     return session, runner
 

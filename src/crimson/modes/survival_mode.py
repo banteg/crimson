@@ -236,7 +236,7 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_menu.reset()
         self._cursor_time = 0.0
         self._cursor_pulse_time = 0.0
-        self._reset_gameplay_tick_runner_clock()
+        self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
         self._survival = _SurvivalState()
         self._lan_last_tick_index = -1
@@ -644,10 +644,10 @@ class SurvivalMode(BaseGameplayMode):
         sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
         session = self._sim_session
         if self._lan_wait_gate_active():
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             return
         if sim_dt <= 0.0:
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             if self._death_transition_ready():
                 self._enter_game_over()
             return

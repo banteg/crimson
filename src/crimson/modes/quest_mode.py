@@ -166,7 +166,7 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt_hover = False
         self._perk_prompt_pulse = 0.0
         self._perk_menu.reset()
-        self._reset_gameplay_tick_runner_clock()
+        self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
         self._replay_recorder = None
         self._replay_checkpoints.clear()
@@ -482,7 +482,7 @@ class QuestMode(BaseGameplayMode):
             no_creatures_timer_ms=0.0,
             completion_transition_ms=-1.0,
         )
-        self._reset_gameplay_tick_runner_clock()
+        self._reset_gameplay_frame_clock()
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
 
         weapon_usage_counts = normalize_weapon_usage_counts(
@@ -720,10 +720,10 @@ class QuestMode(BaseGameplayMode):
         sim_dt = 0.0 if (self._paused or self._perk_menu.active) else float(frame.dt)
         session = self._sim_session
         if self._lan_wait_gate_active():
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             return
         if sim_dt <= 0.0:
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             # Match legacy transition behavior: keep countdown moving, but at
             # real-time pace while perk-menu transition is holding world ticks.
             self._tick_death_timers(float(frame.dt), rate=1.0)

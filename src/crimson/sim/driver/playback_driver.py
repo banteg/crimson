@@ -829,12 +829,7 @@ class PlaybackDriver:
         return TickRunner(
             session=self.session,
             input_provider=provider,
-            config=TickRunnerConfig(
-                tick_rate=int(self.tick_rate),
-                is_networked=False,
-                is_replay=True,
-                trace_rng=bool(self.options.trace_rng),
-            ),
+            config=TickRunnerConfig(trace_rng=bool(self.options.trace_rng)),
         )
 
     def run_to_completion(

@@ -126,7 +126,7 @@ class RushMode(BaseGameplayMode):
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
         self._rush = _RushState()
-        self._reset_gameplay_tick_runner_clock()
+        self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
 
         status = self.state.status
@@ -325,10 +325,10 @@ class RushMode(BaseGameplayMode):
         session = self._sim_session
 
         if self._lan_wait_gate_active():
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             return
         if sim_dt <= 0.0:
-            self._reset_gameplay_tick_runner_clock()
+            self._reset_gameplay_frame_clock()
             if not any_alive:
                 self._enter_game_over()
             return

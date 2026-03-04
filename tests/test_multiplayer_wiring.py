@@ -160,7 +160,7 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Pa
         waiting_for_players=True,
     )
 
-    reset_clock = mocker.patch.object(mode, "_reset_gameplay_tick_runner_clock", side_effect=lambda: None)
+    reset_clock = mocker.patch.object(mode, "_reset_gameplay_frame_clock", side_effect=lambda: None)
     run_ticks = mocker.patch.object(mode, "_run_deterministic_session_ticks", return_value=0)
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
