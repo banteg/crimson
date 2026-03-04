@@ -5,7 +5,7 @@ from typing import Protocol
 import msgspec
 
 from .clock import FixedStepClock
-from .hooks import TickContext, TickHashes, TickHookBus, TickResult
+from .hooks import TickResult
 from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider, ReplayEndOfStream
 from .timing import FrameTiming
@@ -66,12 +66,10 @@ class TickRunner:
         *,
         session: TickSession,
         input_provider: InputProvider,
-        hook_bus: TickHookBus | None = None,
         config: TickRunnerConfig | None = None,
     ) -> None:
         self._session = session
         self._input_provider = input_provider
-        self._hook_bus = hook_bus if hook_bus is not None else TickHookBus()
         self._config = config if config is not None else TickRunnerConfig()
         self._clock = FixedStepClock(tick_rate=self._config.tick_rate)
         self._next_tick_index = 0
@@ -119,7 +117,6 @@ class TickRunner:
 
         ticks_completed = 0
         stalled = False
-        stopped_early = False
         completed_results: list[TickResult] = []
         replay_eos: ReplayEndOfStream | None = None
 
@@ -129,21 +126,13 @@ class TickRunner:
                 inputs = self._input_provider.pull_tick_input(tick_index)
                 tick_inputs: list[PlayerInput] | None = inputs
                 tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, self._clock.dt_tick)
-                tick_ctx = TickContext(
-                    tick_index=tick_index,
-                    dt_seconds=tick_dt_seconds,
-                    inputs_present=tick_inputs is not None,
-                    is_networked=self._config.is_networked,
-                    is_replay=self._config.is_replay,
-                    inputs=tick_inputs,
-                )
-                self._hook_bus.on_tick_begin(tick_ctx)
                 if tick_inputs is None:
                     stalled = True
-                    self._hook_bus.on_tick_stall(tick_ctx)
                     break
 
-                self._hook_bus.on_pre_sim(tick_ctx)
+                # Snapshot list identity before stepping so replay recording can
+                # happen later in frame-driver code with pre-step inputs.
+                result_inputs: list[PlayerInput] | None = list(tick_inputs)
 
                 timing = self._session.timing_for_dt(tick_dt_seconds)
                 tick = self._session.step_tick(
@@ -159,30 +148,17 @@ class TickRunner:
                     dt_sim=dt_sim,
                     presentation_plan_ms=tick.presentation_plan_ms,
                     payload=tick,
+                    inputs=result_inputs,
                 )
-                self._hook_bus.on_world_step_done(tick_ctx, result)
-                self._hook_bus.on_pre_hash(tick_ctx, result)
-                self._hook_bus.on_post_hash(
-                    tick_ctx,
-                    TickHashes(
-                        command_hash=command_hash,
-                        state_hash=None,
-                    ),
-                )
-                self._hook_bus.on_post_presentation(tick_ctx, result)
-                should_stop = self._hook_bus.on_tick_end(tick_ctx, result)
                 completed_results.append(result)
                 ticks_completed += 1
                 self._next_tick_index += 1
-                if should_stop:
-                    stopped_early = True
-                    break
             except ReplayEndOfStream as exc:
                 replay_eos = exc
                 break
 
         unconsumed_ticks = candidate_ticks - ticks_completed
-        if (stalled or stopped_early or replay_eos is not None) and unconsumed_ticks > 0:
+        if (stalled or replay_eos is not None) and unconsumed_ticks > 0:
             self._clock.accum += unconsumed_ticks * self._clock.dt_tick
 
         remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)

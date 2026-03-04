@@ -11,10 +11,9 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.modes.base_gameplay_mode import _GameplayTickObserverHook, _LanRuntimeInputProvider
+from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
-from crimson.sim.hooks import CheckpointHook, NetworkSyncHook, ReplayRecorderHook, TickContext, TickHookBus
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     InputCommand,
@@ -142,16 +141,6 @@ class _CommandFlowSession:
         )
 
 
-class _CommandCaptureHook:
-    def __init__(self, *, provider: NetworkInputProvider, session: _CommandFlowSession) -> None:
-        self._provider = provider
-        self._session = session
-
-    def on_pre_sim(self, ctx: TickContext) -> None:
-        commands = self._provider.pull_tick_commands(int(ctx.tick_index))
-        self._session.apply_commands(tick_index=int(ctx.tick_index), commands=list(commands))
-
-
 class _MockLockstepRuntime:
     def __init__(self) -> None:
         self._commands_by_peer_and_tick: dict[str, dict[int, list[InputCommand]]] = {
@@ -240,19 +229,6 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
         waiting_for_players=False,
     )
 
-    profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
-    replay_hook = ReplayRecorderHook(None)
-    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook, on_checkpoint=None)
-    network_sync_hook = NetworkSyncHook(on_hash=None)
-    observer_hook = _GameplayTickObserverHook(replay_hook=replay_hook)
-    runner_bundle = (
-        replay_hook,
-        checkpoint_hook,
-        network_sync_hook,
-        profiler,
-        observer_hook,
-        None,
-    )
     mode_frame = SimpleNamespace(dt=0.016, dt_ui_ms=16.0)
 
     mocker.patch.object(local_mode, "_begin_mode_update", return_value=mode_frame)
@@ -262,7 +238,7 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     mocker.patch.object(
         local_mode,
         "_ensure_tick_runner",
-        return_value=(local_runner, local_provider, *runner_bundle),
+        return_value=(local_runner, local_provider),
     )
 
     mocker.patch.object(lan_mode, "_begin_mode_update", return_value=mode_frame)
@@ -272,11 +248,10 @@ def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack
     mocker.patch.object(lan_mode, "_prepare_lan_frame", return_value=True)
     mocker.patch.object(lan_mode, "_advance_lan_capture_ticks", return_value=0)
     mocker.patch.object(lan_mode, "_queue_lan_local_inputs", return_value=None)
-    mocker.patch.object(lan_mode, "_reset_profiler_hook", return_value=None)
     mocker.patch.object(
         lan_mode,
         "_ensure_tick_runner",
-        return_value=(lan_runner, lan_provider, *runner_bundle),
+        return_value=(lan_runner, lan_provider),
     )
 
     local_mode.update(0.016)
@@ -311,21 +286,24 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     host_runner = TickRunner(
         session=host_session,
         input_provider=host_provider,
-        hook_bus=TickHookBus([_CommandCaptureHook(provider=host_provider, session=host_session)]),
         config=TickRunnerConfig(tick_rate=60, is_networked=True),
     )
     client_runner = TickRunner(
         session=client_session,
         input_provider=client_provider,
-        hook_bus=TickHookBus([_CommandCaptureHook(provider=client_provider, session=client_session)]),
         config=TickRunnerConfig(tick_rate=60, is_networked=True),
     )
 
     command = InputCommand("perk_pick", {"index": 1})
     host_provider.push_command(command)
 
-    host_runner.advance_frame(1.0 / 60.0)
-    client_runner.advance_frame(1.0 / 60.0)
+    host_runner.advance_frame(1.0 / 60.0, max_ticks=1)
+    host_commands = host_provider.pull_tick_commands(0)
+    host_session.apply_commands(tick_index=0, commands=list(host_commands))
+
+    client_runner.advance_frame(1.0 / 60.0, max_ticks=1)
+    client_commands = client_provider.pull_tick_commands(0)
+    client_session.apply_commands(tick_index=0, commands=list(client_commands))
 
     assert host_session.commands_by_tick.get(0, []) == [command]
     assert client_session.commands_by_tick.get(0, []) == [command]

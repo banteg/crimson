@@ -3,17 +3,8 @@ from __future__ import annotations
 import msgspec
 import pytest
 
-from crimson.sim.hooks import (
-    CheckpointHook,
-    NetworkSyncHook,
-    ProfilerHook,
-    ReplayRecorderHook,
-    TickContext,
-    TickHookBus,
-    TickResult,
-)
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider
+from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider
 from crimson.sim.tick_runner import TickRunner
 from crimson.sim.timing import FrameTiming
 
@@ -46,96 +37,45 @@ class _FixedInputProvider(InputProvider):
         _ = tick_index
         return [PlayerInput()]
 
-    def push_command(self, command) -> None:
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        _ = tick_index
+        return []
+
+    def push_command(self, command: InputCommand) -> None:
         _ = command
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        _ = tick_index
         return default_dt
 
 
-class _Recorder:
-    def __init__(self) -> None:
-        self.rows: list[list[PlayerInput]] = []
-
-    def record_tick(self, inputs: list[PlayerInput]) -> int:
-        self.rows.append(inputs)
-        return len(self.rows) - 1
-
-
-def test_tick_runner_concrete_hooks_record_and_emit() -> None:
-    recorder = _Recorder()
-    replay_hook = ReplayRecorderHook(recorder)
-    checkpoint_rows: list[tuple[int, object]] = []
-    hash_rows: list[tuple[int, str]] = []
-    profiler = ProfilerHook()
-    hook_bus = TickHookBus(
-        [
-            replay_hook,
-            CheckpointHook(
-                replay_recorder_hook=replay_hook,
-                on_checkpoint=lambda tick_index, payload: checkpoint_rows.append((int(tick_index), payload)),
-            ),
-            NetworkSyncHook(on_hash=lambda tick_index, hashes: hash_rows.append((int(tick_index), str(hashes.command_hash)))),
-            profiler,
-        ],
-    )
+def test_tick_runner_exposes_tick_inputs_for_explicit_replay_recording() -> None:
     runner = TickRunner(
         session=_FakeSession(),
         input_provider=_FixedInputProvider(),
-        hook_bus=hook_bus,
     )
 
     result = runner.advance_frame(1.0 / 60.0)
 
     assert result.ticks_completed == 1
-    assert len(recorder.rows) == 1
-    assert checkpoint_rows and checkpoint_rows[0][0] == 0
-    assert hash_rows == [(0, "abc123")]
-    assert profiler.sim_ms >= 0.0
-    assert profiler.presentation_plan_ms >= 0.0
-    assert profiler.presentation_apply_ms >= 0.0
+    assert len(result.completed_results) == 1
+    assert result.completed_results[0].inputs is not None
+    assert len(result.completed_results[0].inputs or []) == 1
 
 
-def test_tick_runner_hook_stop_ends_frame_early() -> None:
-    recorder = _Recorder()
-    replay_hook = ReplayRecorderHook(recorder)
-    checkpoint_rows: list[int] = []
-
-    class _StopAfterFirstTickHook:
-        def __init__(self) -> None:
-            self.stop_count = 0
-
-        def on_tick_end(self, _ctx: TickContext, _result: TickResult) -> bool:
-            self.stop_count += 1
-            return True
-
-    stop_hook = _StopAfterFirstTickHook()
-    hook_bus = TickHookBus(
-        [
-            replay_hook,
-            CheckpointHook(
-                replay_recorder_hook=replay_hook,
-                on_checkpoint=lambda tick_index, _payload: checkpoint_rows.append(int(tick_index)),
-            ),
-            NetworkSyncHook(),
-            ProfilerHook(),
-            stop_hook,
-        ],
-    )
+def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() -> None:
     runner = TickRunner(
         session=_FakeSession(),
         input_provider=_FixedInputProvider(),
-        hook_bus=hook_bus,
     )
 
     result = runner.advance_frame(2.0 / 60.0)
 
-    assert result.ticks_completed == 1
-    assert checkpoint_rows == [0]
-    assert stop_hook.stop_count == 1
+    assert result.ticks_completed == 2
+    assert [row.tick_index for row in result.completed_results] == [0, 1]
 
 
-def test_profiler_hook_uses_step_reported_presentation_plan_time() -> None:
+def test_tick_runner_preserves_step_reported_presentation_plan_ms() -> None:
     class _MeasuredSession:
         def timing_for_dt(self, dt: float) -> FrameTiming:
             return _timing(dt)
@@ -144,14 +84,12 @@ def test_profiler_hook_uses_step_reported_presentation_plan_time() -> None:
             _ = timing, inputs, trace_rng
             return _FakeTick(presentation_plan_ms=2.75)
 
-    profiler = ProfilerHook()
     runner = TickRunner(
         session=_MeasuredSession(),
         input_provider=_FixedInputProvider(),
-        hook_bus=TickHookBus([profiler]),
     )
 
     result = runner.advance_frame(1.0 / 60.0)
 
     assert result.ticks_completed == 1
-    assert profiler.presentation_plan_ms == pytest.approx(2.75)
+    assert result.completed_results[0].presentation_plan_ms == pytest.approx(2.75)

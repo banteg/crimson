@@ -9,7 +9,7 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.sim.hooks import CheckpointHook, LanTickSync, NetworkSyncHook, ReplayRecorderHook, TickResult
+from crimson.sim.hooks import LanTickSync, TickResult
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -129,16 +129,13 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
         player_count=1,
         tick_rate=60,
     )
-    replay_hook = ReplayRecorderHook(None)
-    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
-    network_sync_hook = NetworkSyncHook()
-    profiler = SimpleNamespace(sim_ms=1.5, presentation_plan_ms=0.75, presentation_apply_ms=0.25)
     mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(mode, "_on_lan_tick_applied", return_value="continue")
+    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
     mocker.patch.object(
         mode,
         "_ensure_tick_runner",
-        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler, None, None),
+        return_value=(runner, provider),
     )
 
     stop = mode._consume_lan_tick_frames(
@@ -164,15 +161,12 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)],
         on_advance=lambda: setattr(provider, "_pop_blocked", True),
     )
-    replay_hook = ReplayRecorderHook(None)
-    checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
-    network_sync_hook = NetworkSyncHook()
-    profiler = SimpleNamespace(sim_ms=0.0, presentation_plan_ms=0.0, presentation_apply_ms=0.0)
     mocker.patch.object(
         mode,
         "_ensure_tick_runner",
-        return_value=(runner, provider, replay_hook, checkpoint_hook, network_sync_hook, profiler, None, None),
+        return_value=(runner, provider),
     )
+    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
 
     before_stall_count = int(mode._input_stall_count)
     stop = mode._consume_lan_tick_frames(
