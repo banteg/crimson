@@ -142,7 +142,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
         tick_rate=60,
     )
     mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(mode, "_on_lan_tick_applied", return_value="continue")
+    mocker.patch.object(mode, "_on_tick_applied", return_value="continue")
     mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
     mocker.patch.object(
         mode,
@@ -273,7 +273,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     )
 
     mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(mode, "_on_lan_tick_applied", return_value="stop_before_finalize")
+    mocker.patch.object(mode, "_on_tick_applied", return_value="stop_before_finalize")
     mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
     mocker.patch.object(
         mode,

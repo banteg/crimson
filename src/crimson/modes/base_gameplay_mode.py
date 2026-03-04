@@ -1820,9 +1820,6 @@ class BaseGameplayMode:
     def _allow_lan_frame_pop(self) -> bool:
         return True
 
-    def _after_join_lan_consume(self) -> bool:
-        return False
-
     def _on_tick_applied(
         self,
         tick: DeterministicSessionStepTick,
@@ -1832,21 +1829,6 @@ class BaseGameplayMode:
     ) -> LanStepAction:
         _ = tick, frame_tick_index, dt_tick
         return "continue"
-
-    def _on_lan_tick_applied(
-        self,
-        *,
-        role: str,
-        lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
-        step: _AppliedBatchTick,
-        dt_tick: float,
-    ) -> LanStepAction:
-        _ = role, lockstep_runtime, session
-        frame_tick_index = step.frame_tick_index
-        if frame_tick_index is None:
-            raise RuntimeError("lan tick missing frame_tick_index")
-        return self._on_tick_applied(step.tick, frame_tick_index=int(frame_tick_index), dt_tick=float(dt_tick))
 
     def _update_lan_match(self, *, dt: float, dt_ui_ms: float = 0.0) -> None:
         runtime = self._lan_runtime
@@ -1886,8 +1868,6 @@ class BaseGameplayMode:
                 role=role,
                 dt_tick=float(dt_tick),
             ):
-                return
-            if self._after_join_lan_consume():
                 return
 
         ticks_to_capture = self._advance_lan_capture_ticks(float(dt))
@@ -2031,11 +2011,9 @@ class BaseGameplayMode:
                 frame_tick_index = applied.frame_tick_index
                 if frame_tick_index is None:
                     raise RuntimeError("lan tick runner completed without runtime frame metadata")
-                return self._on_lan_tick_applied(
-                    role=str(role),
-                    lockstep_runtime=lockstep_runtime,
-                    session=session,
-                    step=applied,
+                return self._on_tick_applied(
+                    applied.tick,
+                    frame_tick_index=int(frame_tick_index),
                     dt_tick=float(dt_tick),
                 )
 
