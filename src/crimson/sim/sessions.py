@@ -175,7 +175,8 @@ class DeterministicSession(msgspec.Struct):
     fx_queue_rotated: FxQueueRotated
 
     # Mode identity
-    game_mode: GameMode = GameMode.SURVIVAL
+    game_mode: GameMode
+    perk_progression_enabled: bool
 
     # Sim config
     detail_preset: int = 5
@@ -183,7 +184,6 @@ class DeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     demo_mode_active: bool = False
     auto_pick_perks: bool = False
-    perk_progression_enabled: bool = False
     apply_world_dt_steps: bool = True
     defer_camera_shake_update: bool = False
     clear_fx_queues_each_tick: bool = False

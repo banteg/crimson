@@ -131,6 +131,7 @@ class SurvivalMode(BaseGameplayMode):
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
+            perk_progression_enabled=True,
             mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
         )
 

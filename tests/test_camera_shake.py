@@ -159,6 +159,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=True,
         mid_step_hook=lambda ctx: survival_mid_step(ctx, spawn),
         finalize_post_render_lifecycle=True,
     )
@@ -188,6 +189,7 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         fx_queue=fx_queue,
         fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.RUSH,
+        perk_progression_enabled=False,
         mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
         input_transform=rush_input_transform,
         elapsed_uses_raw_dt=True,

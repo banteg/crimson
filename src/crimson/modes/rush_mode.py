@@ -111,6 +111,7 @@ class RushMode(BaseGameplayMode):
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
             game_mode=GameMode.RUSH,
+            perk_progression_enabled=False,
             detail_preset=5,
             gore_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),

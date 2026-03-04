@@ -180,6 +180,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         fx_queue=world.render_resources.fx_queue,
         fx_queue_rotated=world.render_resources.fx_queue_rotated,
         game_mode=GameMode.RUSH,
+        perk_progression_enabled=False,
         detail_preset=5,
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
