@@ -2075,6 +2075,8 @@ class BaseGameplayMode:
             lockstep_runtime=lockstep_runtime,
             role=str(role),
         )
+        if not isinstance(provider, _LanRuntimeInputProvider):
+            raise TypeError("networked tick runner provider must be _LanRuntimeInputProvider")
         replay_hook.clear_recorded_ticks()
         provider.bind_runtime(runtime)
         provider.set_before_pop(
@@ -2268,7 +2270,7 @@ class BaseGameplayMode:
         try:
             (
                 runner,
-                _provider,
+                provider,
                 replay_hook,
                 checkpoint_hook,
                 net_sync_hook,
@@ -2279,6 +2281,8 @@ class BaseGameplayMode:
                 session=session,
                 is_networked=False,
             )
+            if not isinstance(provider, LocalInputProvider):
+                raise TypeError("local tick runner provider must be LocalInputProvider")
             replay_hook.set_recorder(recorder)
             observer_hook.set_on_tick(on_tick)
             if on_checkpoint is not None:
