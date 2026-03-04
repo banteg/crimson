@@ -5,37 +5,34 @@ import msgspec
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import FrameContext, InputProvider
 from crimson.sim.tick_runner import TickRunner
-
-
-class _FakeStep(msgspec.Struct):
-    command_hash: str
-    dt_sim: float
-    presentation: object
-    presentation_plan_ms: float
+from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    step: _FakeStep
+    command_hash: str
+    dt_sim: float
+    presentation_plan_ms: float
+
+
+def _timing(dt: float) -> FrameTiming:
+    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
 
 
 class _SequencedSession:
     def __init__(self) -> None:
         self._tick_index = 0
 
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        return _timing(dt)
 
-    def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _FakeTick:
-        _ = timing, inputs
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
+        _ = timing, inputs, trace_rng
         tick_index = int(self._tick_index)
         self._tick_index += 1
         return _FakeTick(
-            step=_FakeStep(
-                command_hash=f"h{tick_index}",
-                dt_sim=1.0 / 60.0,
-                presentation=f"plan-{tick_index}",
-                presentation_plan_ms=0.0,
-            ),
+            command_hash=f"h{tick_index}",
+            dt_sim=1.0 / 60.0,
+            presentation_plan_ms=0.0,
         )
 
 
@@ -50,6 +47,9 @@ class _ReadyInputProvider(InputProvider):
 
     def push_command(self, command) -> None:
         _ = command
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        return default_dt
 
 
 def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:

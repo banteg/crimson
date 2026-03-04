@@ -24,6 +24,7 @@ from crimson.sim.input_providers import (
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
+from crimson.sim.timing import FrameTiming
 from crimson.world import AudioBridge, SimWorldState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
@@ -54,15 +55,15 @@ class _TickRunnerStackSpy:
         )
 
 
-class _PlanIsolationStep(msgspec.Struct):
+class _PlanIsolationTick(msgspec.Struct):
     command_hash: str
     dt_sim: float
     presentation: PresentationStepCommands
     presentation_plan_ms: float
 
 
-class _PlanIsolationTick(msgspec.Struct):
-    step: _PlanIsolationStep
+def _timing(dt: float) -> FrameTiming:
+    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
 
 
 class _PlanIsolationSession:
@@ -70,42 +71,37 @@ class _PlanIsolationSession:
         self._sim_world = sim_world
         self._tick = 0
 
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        return _timing(dt)
 
     def step_tick(
         self,
         *,
-        timing: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
     ) -> _PlanIsolationTick:
-        _ = timing, inputs
+        _ = timing, inputs, trace_rng
         player = self._sim_world.players[0]
         player.health = max(0.0, float(player.health) - 10.0)
         player.experience = int(player.experience) + 250
         tick_index = int(self._tick)
         self._tick += 1
         return _PlanIsolationTick(
-            step=_PlanIsolationStep(
-                command_hash=f"plan-{tick_index}",
-                dt_sim=1.0 / 60.0,
-                presentation=PresentationStepCommands(
-                    sfx_keys=["sfx_explosion", "sfx_ui_levelup"],
-                ),
-                presentation_plan_ms=0.0,
+            command_hash=f"plan-{tick_index}",
+            dt_sim=1.0 / 60.0,
+            presentation=PresentationStepCommands(
+                sfx_keys=["sfx_explosion", "sfx_ui_levelup"],
             ),
+            presentation_plan_ms=0.0,
         )
 
 
-class _CommandFlowStep(msgspec.Struct):
+class _CommandFlowTick(msgspec.Struct):
     command_hash: str
     dt_sim: float
     presentation: PresentationStepCommands
     presentation_plan_ms: float
-
-
-class _CommandFlowTick(msgspec.Struct):
-    step: _CommandFlowStep
 
 
 class _CommandFlowSession:
@@ -115,8 +111,8 @@ class _CommandFlowSession:
         self.perk_pick_index: int | None = None
         self.commands_by_tick: dict[int, list[InputCommand]] = {}
 
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        return _timing(dt)
 
     def apply_commands(self, *, tick_index: int, commands: list[InputCommand]) -> None:
         self.commands_by_tick[int(tick_index)] = list(commands)
@@ -130,20 +126,19 @@ class _CommandFlowSession:
     def step_tick(
         self,
         *,
-        timing: float,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
+        trace_rng: bool = False,
     ) -> _CommandFlowTick:
-        _ = timing, inputs
+        _ = timing, inputs, trace_rng
         tick_index = int(self._tick)
         self._tick += 1
         perk_index = -1 if self.perk_pick_index is None else int(self.perk_pick_index)
         return _CommandFlowTick(
-            step=_CommandFlowStep(
-                command_hash=f"{self.name}:{tick_index}:{perk_index}",
-                dt_sim=1.0 / 60.0,
-                presentation=PresentationStepCommands(),
-                presentation_plan_ms=0.0,
-            ),
+            command_hash=f"{self.name}:{tick_index}:{perk_index}",
+            dt_sim=1.0 / 60.0,
+            presentation=PresentationStepCommands(),
+            presentation_plan_ms=0.0,
         )
 
 
@@ -214,7 +209,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         payload = cast(Any, result).payload
         assert payload is not None
         assert isinstance(payload.step.presentation, PresentationStepCommands)
-        assert str(payload.step.command_hash)
+        assert str(payload.command_hash)
 
 
 def test_contract_2_control_flow_parity_local_and_lan_use_identical_runner_stack(mocker) -> None:
@@ -458,7 +453,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     assert draw_text.call_count == 0
 
     payload = cast(Any, batch.completed_results[0].payload)
-    plan = cast(PresentationStepCommands, payload.step.presentation)
+    plan = cast(PresentationStepCommands, payload.presentation)
     audio_bridge.apply_plan(plan=plan, apply_audio=True)
 
     assert [str(call.args[1]) for call in play_sfx.call_args_list] == [

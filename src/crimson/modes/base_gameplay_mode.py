@@ -78,7 +78,7 @@ from ..sim.hooks import (
     TickResult,
 )
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputCommand, LocalInputProvider, NetworkInputProvider
+from ..sim.input_providers import FrameContext, InputCommand, InputProvider, LocalInputProvider, NetworkInputProvider
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -1517,14 +1517,14 @@ class BaseGameplayMode:
         self,
         *,
         session: DeterministicSession | QuestDeterministicSession,
-        input_provider: object,
+        input_provider: InputProvider,
         hooks: list[TickHook],
         tick_rate: int,
         is_networked: bool,
     ) -> TickRunner:
         return TickRunner(
             session=session,
-            input_provider=cast(Any, input_provider),
+            input_provider=input_provider,
             hook_bus=TickHookBus(hooks),
             config=TickRunnerConfig(
                 tick_rate=int(tick_rate),

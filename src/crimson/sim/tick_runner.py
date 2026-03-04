@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import inspect
-from typing import Generic, Protocol, TypeVar, cast
+from typing import Protocol
 
 import msgspec
 
@@ -9,37 +8,25 @@ from .clock import FixedStepClock
 from .hooks import TickContext, TickHashes, TickHookBus, TickResult
 from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider, ReplayEndOfStream
-
-
-class TickStepPayload(Protocol):
-    command_hash: str
-    dt_sim: float
-    presentation: object
-    presentation_plan_ms: float
+from .timing import FrameTiming
 
 
 class TickPayload(Protocol):
-    step: TickStepPayload
+    command_hash: str
+    dt_sim: float
+    presentation_plan_ms: float
 
 
-TimingT = TypeVar("TimingT")
-TickT = TypeVar("TickT", bound=TickPayload)
+class TickSession(Protocol):
+    def timing_for_dt(self, dt: float) -> FrameTiming: ...
 
-
-class TickSession(Protocol[TimingT, TickT]):
-    def timing_for_dt(self, dt: float) -> TimingT: ...
-
-    def step_tick(self, *, timing: TimingT, inputs: list[PlayerInput] | None) -> TickT: ...
-
-
-class TickSessionWithTraceRng(TickSession[TimingT, TickT], Protocol[TimingT, TickT]):
     def step_tick(
         self,
         *,
-        timing: TimingT,
+        timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-    ) -> TickT: ...
+    ) -> TickPayload: ...
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
@@ -69,15 +56,15 @@ class ReplayAdvanceEndOfStream(ReplayEndOfStream):
     ) -> None:
         super().__init__(message)
         self.completed_results = list(completed_results)
-        self.ticks_completed = int(ticks_completed)
-        self.remaining_debt_ticks = int(remaining_debt_ticks)
+        self.ticks_completed = ticks_completed
+        self.remaining_debt_ticks = remaining_debt_ticks
 
 
-class TickRunner(Generic[TimingT, TickT]):
+class TickRunner:
     def __init__(
         self,
         *,
-        session: TickSession[TimingT, TickT],
+        session: TickSession,
         input_provider: InputProvider,
         hook_bus: TickHookBus | None = None,
         config: TickRunnerConfig | None = None,
@@ -89,7 +76,6 @@ class TickRunner(Generic[TimingT, TickT]):
         self._clock = FixedStepClock(tick_rate=self._config.tick_rate)
         self._next_tick_index = 0
         self._frame_index = 0
-        self._step_accepts_trace_rng = "trace_rng" in inspect.signature(self._session.step_tick).parameters
 
     @property
     def clock(self) -> FixedStepClock:
@@ -115,12 +101,12 @@ class TickRunner(Generic[TimingT, TickT]):
             candidate_ticks = min(candidate_ticks, max(0, max_ticks))
         self._input_provider.begin_frame(
             FrameContext(
-                dt_seconds=float(dt_seconds),
-                tick_dt_seconds=float(self._clock.dt_tick),
-                frame_index=int(self._frame_index),
-                candidate_ticks=int(candidate_ticks),
-                is_networked=bool(self._config.is_networked),
-                is_replay=bool(self._config.is_replay),
+                dt_seconds=dt_seconds,
+                tick_dt_seconds=self._clock.dt_tick,
+                frame_index=self._frame_index,
+                candidate_ticks=candidate_ticks,
+                is_networked=self._config.is_networked,
+                is_replay=self._config.is_replay,
             ),
         )
         if candidate_ticks <= 0:
@@ -142,13 +128,10 @@ class TickRunner(Generic[TimingT, TickT]):
                 tick_index = self._next_tick_index
                 inputs = self._input_provider.pull_tick_input(tick_index)
                 tick_inputs: list[PlayerInput] | None = inputs
-                tick_dt_seconds = float(self._clock.dt_tick)
-                resolve_tick_dt = getattr(self._input_provider, "resolve_tick_dt", None)
-                if callable(resolve_tick_dt):
-                    tick_dt_seconds = float(resolve_tick_dt(int(tick_index), float(tick_dt_seconds)))
+                tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, self._clock.dt_tick)
                 tick_ctx = TickContext(
                     tick_index=tick_index,
-                    dt_seconds=float(tick_dt_seconds),
+                    dt_seconds=tick_dt_seconds,
                     inputs_present=tick_inputs is not None,
                     is_networked=self._config.is_networked,
                     is_replay=self._config.is_replay,
@@ -162,27 +145,19 @@ class TickRunner(Generic[TimingT, TickT]):
 
                 self._hook_bus.on_pre_sim(tick_ctx)
 
-                timing = self._session.timing_for_dt(float(tick_dt_seconds))
-                if self._step_accepts_trace_rng:
-                    session_with_trace = cast(TickSessionWithTraceRng[TimingT, TickT], self._session)
-                    tick = session_with_trace.step_tick(
-                        timing=timing,
-                        inputs=tick_inputs,
-                        trace_rng=bool(self._config.trace_rng),
-                    )
-                else:
-                    tick = self._session.step_tick(
-                        timing=timing,
-                        inputs=tick_inputs,
-                    )
-                step = tick.step
-                command_hash = step.command_hash
-                dt_sim = step.dt_sim
+                timing = self._session.timing_for_dt(tick_dt_seconds)
+                tick = self._session.step_tick(
+                    timing=timing,
+                    inputs=tick_inputs,
+                    trace_rng=self._config.trace_rng,
+                )
+                command_hash = tick.command_hash
+                dt_sim = tick.dt_sim
                 result = TickResult(
                     tick_index=tick_index,
                     command_hash=command_hash,
                     dt_sim=dt_sim,
-                    presentation_plan_ms=step.presentation_plan_ms,
+                    presentation_plan_ms=tick.presentation_plan_ms,
                     payload=tick,
                 )
                 self._hook_bus.on_world_step_done(tick_ctx, result)
@@ -195,7 +170,7 @@ class TickRunner(Generic[TimingT, TickT]):
                     ),
                 )
                 self._hook_bus.on_post_presentation(tick_ctx, result)
-                should_stop = bool(self._hook_bus.on_tick_end(tick_ctx, result))
+                should_stop = self._hook_bus.on_tick_end(tick_ctx, result)
                 completed_results.append(result)
                 ticks_completed += 1
                 self._next_tick_index += 1
@@ -215,8 +190,8 @@ class TickRunner(Generic[TimingT, TickT]):
             raise ReplayAdvanceEndOfStream(
                 str(replay_eos),
                 completed_results=list(completed_results),
-                ticks_completed=int(ticks_completed),
-                remaining_debt_ticks=int(remaining_debt_ticks),
+                ticks_completed=ticks_completed,
+                remaining_debt_ticks=remaining_debt_ticks,
             ) from replay_eos
         return TickBatchResult(
             ticks_completed=ticks_completed,

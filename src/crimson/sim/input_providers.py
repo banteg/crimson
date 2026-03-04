@@ -37,6 +37,8 @@ class InputProvider(Protocol):
 
     def push_command(self, command: InputCommand) -> None: ...
 
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float: ...
+
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
@@ -100,6 +102,9 @@ class LocalInputProvider:
 
     def push_command(self, command: InputCommand) -> None:
         self._pending_commands.append(command)
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        return default_dt
 
 
 class ReplayInputProvider:
@@ -204,6 +209,9 @@ class NetworkInputProvider:
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
         return self._commands_by_tick.pop(int(tick_index), [])
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        return default_dt
 
     def _queue_tick_commands(self, tick_index: int, commands: list[InputCommand]) -> None:
         self._commands_by_tick.setdefault(int(tick_index), []).extend(commands)

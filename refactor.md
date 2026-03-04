@@ -66,11 +66,11 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 
 ### Tasks
 
-- [ ] Replace `TickSession[TimingT, TickT]` with concrete types (`FrameTiming`, `DeterministicSessionStepTick`)
-- [ ] Remove `TickSessionWithTraceRng` protocol — add `trace_rng` to the single `TickSession` contract
-- [ ] Remove `inspect.signature()` introspection in `TickRunner.__init__`
-- [ ] Move `resolve_tick_dt` into the `InputProvider` protocol or a named optional protocol, remove `getattr` call
-- [ ] Remove redundant type coercions (`float(dt_seconds)` when already float, `int(self._frame_index)` when already int, etc.)
+- [x] Replace `TickSession[TimingT, TickT]` with concrete types (`FrameTiming`, `DeterministicSessionStepTick`)
+- [x] Remove `TickSessionWithTraceRng` protocol — add `trace_rng` to the single `TickSession` contract
+- [x] Remove `inspect.signature()` introspection in `TickRunner.__init__`
+- [x] Move `resolve_tick_dt` into the `InputProvider` protocol or a named optional protocol, remove `getattr` call
+- [x] Remove redundant type coercions (`float(dt_seconds)` when already float, `int(self._frame_index)` when already int, etc.)
 
 ### Remaining findings
 
@@ -79,11 +79,11 @@ Same outcomes (state update, game-over detection, replay checkpoint, perk applic
 
 ### Acceptance
 
-- [ ] Zero `inspect.signature()` calls in tick_runner.py
-- [ ] Zero `getattr(self._input_provider, ...)` calls in tick_runner.py
-- [ ] Zero redundant `float()` / `int()` / `bool()` coercions on already-typed values
-- [ ] No generic type parameters on `TickRunner` or `TickSession`
-- [ ] All tick runner tests pass
+- [x] Zero `inspect.signature()` calls in tick_runner.py
+- [x] Zero `getattr(self._input_provider, ...)` calls in tick_runner.py
+- [x] Zero redundant `float()` / `int()` / `bool()` coercions on already-typed values
+- [x] No generic type parameters on `TickRunner` or `TickSession`
+- [x] All tick runner tests pass
 
 ---
 

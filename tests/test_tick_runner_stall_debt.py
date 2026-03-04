@@ -6,25 +6,25 @@ import pytest
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import FrameContext, InputProvider, ReplayEndOfStream
 from crimson.sim.tick_runner import TickRunner
-
-
-class _FakeStep(msgspec.Struct):
-    command_hash: str = "abc123"
-    dt_sim: float = 1.0 / 60.0
-    presentation: object = "plan"
-    presentation_plan_ms: float = 0.0
+from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    step: _FakeStep = msgspec.field(default_factory=_FakeStep)
+    command_hash: str = "abc123"
+    dt_sim: float = 1.0 / 60.0
+    presentation_plan_ms: float = 0.0
+
+
+def _timing(dt: float) -> FrameTiming:
+    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
 
 
 class _FakeSession:
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        return _timing(dt)
 
-    def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _FakeTick:
-        _ = timing, inputs
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
+        _ = timing, inputs, trace_rng
         return _FakeTick()
 
 
@@ -41,6 +41,9 @@ class _RowsInputProvider(InputProvider):
 
     def push_command(self, command) -> None:
         _ = command
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        return default_dt
 
 
 def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
@@ -87,6 +90,9 @@ def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
 
         def push_command(self, command) -> None:
             _ = command
+
+        def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+            return default_dt
 
     runner = TickRunner(
         session=_FakeSession(),

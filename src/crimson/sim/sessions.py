@@ -34,6 +34,18 @@ class DeterministicSessionTick(msgspec.Struct):
     rng_marks: dict[str, int]
     creature_count_world_step: int
 
+    @property
+    def command_hash(self) -> str:
+        return self.step.command_hash
+
+    @property
+    def dt_sim(self) -> float:
+        return self.step.dt_sim
+
+    @property
+    def presentation_plan_ms(self) -> float:
+        return self.step.presentation_plan_ms
+
 
 class QuestDeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
@@ -46,6 +58,18 @@ class QuestDeterministicSessionTick(msgspec.Struct):
     completed: bool
     play_hit_sfx: bool
     play_completion_music: bool
+
+    @property
+    def command_hash(self) -> str:
+        return self.step.command_hash
+
+    @property
+    def dt_sim(self) -> float:
+        return self.step.dt_sim
+
+    @property
+    def presentation_plan_ms(self) -> float:
+        return self.step.presentation_plan_ms
 
 
 DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterministicSessionTick

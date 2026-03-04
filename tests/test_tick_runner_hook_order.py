@@ -7,41 +7,31 @@ from crimson.sim.hooks import TickHashes, TickHookBus, TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import FrameContext, InputProvider
 from crimson.sim.tick_runner import TickRunner
-
-
-class _FakeStep(msgspec.Struct):
-    command_hash: str = "abc123"
-    dt_sim: float = 1.0 / 60.0
-    presentation: object = "presentation-plan"
-    presentation_plan_ms: float = 0.0
+from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    step: _FakeStep = msgspec.field(default_factory=_FakeStep)
+    command_hash: str = "abc123"
+    dt_sim: float = 1.0 / 60.0
+    presentation_plan_ms: float = 0.0
+
+
+def _timing(dt: float) -> FrameTiming:
+    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
 
 
 class _FakeSession:
-    def timing_for_dt(self, dt: float) -> float:
-        return float(dt)
+    def timing_for_dt(self, dt: float) -> FrameTiming:
+        return _timing(dt)
 
-    def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _FakeTick:
-        _ = timing, inputs
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
+        _ = timing, inputs, trace_rng
         return _FakeTick()
 
 
-class _MissingStepTick(msgspec.Struct):
+class _MissingPresentationPlanMsTick(msgspec.Struct):
     command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
-    presentation: object = "presentation-plan"
-
-
-class _MissingPresentationStep(msgspec.Struct):
-    command_hash: str = "abc123"
-    dt_sim: float = 1.0 / 60.0
-
-
-class _TickWithMissingPresentationStep(msgspec.Struct):
-    step: _MissingPresentationStep = msgspec.field(default_factory=_MissingPresentationStep)
 
 
 class _FixedInputProvider(InputProvider):
@@ -57,6 +47,9 @@ class _FixedInputProvider(InputProvider):
 
     def push_command(self, command) -> None:
         _ = command
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        return default_dt
 
 
 class _RecorderHook:
@@ -138,37 +131,19 @@ def test_tick_runner_stall_invokes_stall_hook_only() -> None:
     ]
 
 
-def test_tick_runner_fails_fast_when_step_payload_missing() -> None:
-    class _SessionMissingStep:
-        def timing_for_dt(self, dt: float) -> float:
-            return float(dt)
+def test_tick_runner_fails_fast_when_tick_payload_attribute_missing() -> None:
+    class _SessionMissingAttr:
+        def timing_for_dt(self, dt: float) -> FrameTiming:
+            return _timing(dt)
 
-        def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _MissingStepTick:
-            _ = timing, inputs
-            return _MissingStepTick()
+        def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _MissingPresentationPlanMsTick:
+            _ = timing, inputs, trace_rng
+            return _MissingPresentationPlanMsTick()
 
     runner = TickRunner(
-        session=_SessionMissingStep(),
+        session=_SessionMissingAttr(),  # type: ignore[arg-type]  # intentionally malformed
         input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
     )
 
-    with pytest.raises(AttributeError, match="step"):
-        runner.advance_frame(1.0 / 60.0)
-
-
-def test_tick_runner_fails_fast_when_step_presentation_missing() -> None:
-    class _SessionMissingPresentation:
-        def timing_for_dt(self, dt: float) -> float:
-            return float(dt)
-
-        def step_tick(self, *, timing: float, inputs: list[PlayerInput] | None) -> _TickWithMissingPresentationStep:
-            _ = timing, inputs
-            return _TickWithMissingPresentationStep()
-
-    runner = TickRunner(
-        session=_SessionMissingPresentation(),
-        input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
-    )
-
-    with pytest.raises(AttributeError, match="presentation"):
+    with pytest.raises(AttributeError, match="presentation_plan_ms"):
         runner.advance_frame(1.0 / 60.0)
