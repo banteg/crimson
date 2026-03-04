@@ -582,26 +582,12 @@ class ReplayPlaybackMode:
     def _apply_tick_outcome(
         self,
         *,
-        outcome: object,
+        outcome: PlaybackTickOutcome,
         dt: float,
-        presentation_output: PresentationTickOutput,
     ) -> None:
         runtime = self._runtime
         if runtime is None:
             return
-
-        audio_bridge = getattr(runtime, "audio_bridge", None)
-        if audio_bridge is not None and hasattr(audio_bridge, "apply_plan"):
-            apply_presentation_outputs(
-                outputs=[presentation_output],
-                sync_audio_bridge_state=runtime.sync_audio_bridge_state,
-                apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
-                    plan=plan,
-                    apply_audio=bool(should_apply_audio),
-                ),
-                update_camera=None,
-                apply_audio=True,
-            )
         spawn_timeline_ms = getattr(outcome, "spawn_timeline_ms", None)
         if spawn_timeline_ms is not None:
             self._quest_spawn_timeline_ms = float(spawn_timeline_ms)
@@ -620,9 +606,6 @@ class ReplayPlaybackMode:
                         rl.set_music_volume(playback.music, 0.0)
                     except RuntimeError:
                         playback.volume = 0.0
-
-        if hasattr(runtime, "update_camera"):
-            runtime.update_camera(float(presentation_output.dt_sim))
 
     def _tick_limit(self) -> int:
         replay = self._replay
@@ -695,11 +678,16 @@ class ReplayPlaybackMode:
             ),
         )
 
-        def _apply_completed(batch_results: list[object]) -> None:
+        def _apply_completed(completed_results: list[TickResult]) -> None:
             outputs: list[PresentationTickOutput] = []
-            outcomes: list[object] = []
-            completed_results = cast(list[TickResult], batch_results)
-            can_apply_shared = bool(hasattr(runtime, "sim_world"))
+            outcomes: list[PlaybackTickOutcome] = []
+            can_apply_shared = bool(
+                hasattr(runtime, "sim_world")
+                and hasattr(runtime, "audio_bridge")
+                and hasattr(runtime.audio_bridge, "apply_plan")
+                and hasattr(runtime, "sync_audio_bridge_state")
+                and hasattr(runtime, "update_camera"),
+            )
 
             for tick_result in completed_results:
                 payload = tick_result.payload
@@ -707,7 +695,8 @@ class ReplayPlaybackMode:
                     continue
                 if not hasattr(payload, "step"):
                     can_apply_shared = False
-                outcomes.append(payload)
+                    continue
+                outcomes.append(cast(PlaybackTickOutcome, payload))
 
             if not can_apply_shared:
                 for tick_result in completed_results:
@@ -735,7 +724,6 @@ class ReplayPlaybackMode:
                 self._apply_tick_outcome(
                     outcome=outcome,
                     dt=float(self._dt),
-                    presentation_output=output,
                 )
                 self._on_runner_tick_complete(int(output.tick_index), outcome)
                 if bake_fx_per_tick:
@@ -746,6 +734,17 @@ class ReplayPlaybackMode:
                     else:
                         render_resources.fx_queue.clear()
                         render_resources.fx_queue_rotated.clear()
+
+            apply_presentation_outputs(
+                outputs=outputs,
+                sync_audio_bridge_state=runtime.sync_audio_bridge_state,
+                apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
+                    plan=plan,
+                    apply_audio=bool(should_apply_audio),
+                ),
+                update_camera=runtime.update_camera,
+                apply_audio=True,
+            )
 
         batch = runner.advance_ticks(
             start_tick=int(self._tick_index),

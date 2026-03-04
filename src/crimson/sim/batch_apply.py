@@ -35,6 +35,21 @@ class PresentationTickOutput:
     presentation: PresentationStepCommands | None
 
 
+def apply_tick_to_sim(
+    *,
+    sim_world: SimMetadataSink,
+    step: DeterministicStepPayload,
+    game_tune_started: bool,
+) -> None:
+    sim_world.apply_step_metadata(
+        events=step.events,
+        presentation=step.presentation,
+        command_hash=str(step.command_hash),
+        dt_sim=float(step.dt_sim),
+        game_tune_started=bool(game_tune_started),
+    )
+
+
 def apply_sim_metadata_batch(
     *,
     sim_world: SimMetadataSink,
@@ -51,11 +66,9 @@ def apply_sim_metadata_batch(
         if step is None:
             continue
 
-        sim_world.apply_step_metadata(
-            events=step.events,
-            presentation=step.presentation,
-            command_hash=str(step.command_hash),
-            dt_sim=float(step.dt_sim),
+        apply_tick_to_sim(
+            sim_world=sim_world,
+            step=step,
             game_tune_started=bool(game_tune_started),
         )
         outputs.append(
@@ -76,10 +89,13 @@ def apply_presentation_outputs(
     update_camera: Callable[[float], None] | None,
     apply_audio: bool,
 ) -> None:
+    if not outputs:
+        return
+
+    sync_audio_bridge_state()
     for output in outputs:
         if output.presentation is None:
             continue
-        sync_audio_bridge_state()
         apply_audio_plan(output.presentation, bool(apply_audio))
-        if update_camera is not None:
-            update_camera(float(output.dt_sim))
+    if update_camera is not None:
+        update_camera(float(outputs[-1].dt_sim))

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 
 from builders import make_tick_payload
 
 import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
+import crimson.sim.batch_apply as batch_apply_module
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
@@ -476,3 +478,13 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
         "sfx_explosion",
         "sfx_ui_levelup",
     ]
+
+
+def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases() -> None:
+    deterministic_source = inspect.getsource(batch_apply_module.apply_sim_metadata_batch)
+    output_source = inspect.getsource(batch_apply_module.apply_presentation_outputs)
+
+    assert "apply_audio_plan" not in deterministic_source
+    assert "update_camera" not in deterministic_source
+    assert "apply_step_metadata" not in output_source
+    assert output_source.count("sync_audio_bridge_state()") == 1

@@ -1,0 +1,8 @@
+id: no-single-output-presentation-apply
+language: python
+severity: error
+message: Replay output apply should run once per frame with the whole output batch, not per tick.
+files:
+  - src/crimson/modes/replay_playback_mode.py
+rule:
+  pattern: apply_presentation_outputs(outputs=[$$$OUTPUTS], $$$ARGS)

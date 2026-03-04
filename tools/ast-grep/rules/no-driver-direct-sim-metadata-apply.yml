@@ -1,0 +1,10 @@
+id: no-driver-direct-sim-metadata-apply
+language: python
+severity: error
+message: Frame-driver code must apply deterministic sim metadata through shared batch-apply helpers.
+files:
+  - src/crimson/modes/base_gameplay_mode.py
+  - src/crimson/modes/replay_playback_mode.py
+  - src/crimson/world/runtime.py
+rule:
+  pattern: $SIM_WORLD.apply_step_metadata($$$ARGS)

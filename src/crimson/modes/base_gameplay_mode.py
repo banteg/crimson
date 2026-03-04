@@ -68,6 +68,7 @@ from ..sim.batch_apply import (
     SimMetadataSink,
     apply_presentation_outputs,
     apply_sim_metadata_batch,
+    apply_tick_to_sim,
 )
 from ..sim.clock import FixedStepClock
 from ..sim.hooks import (
@@ -86,7 +87,6 @@ from ..sim.input_providers import (
     LocalInputProvider,
     NetworkInputProvider,
 )
-from ..sim.presentation_step import PresentationStepCommands
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -2070,26 +2070,12 @@ class BaseGameplayMode:
         apply_audio: bool,
         update_camera: bool,
     ) -> None:
-        deterministic_step = cast(DeterministicStepPayload, step)
-        presentation = (
-            deterministic_step.presentation
-            if deterministic_step.presentation is not None
-            else PresentationStepCommands()
-        )
-        self.sim_world.apply_step_metadata(
-            events=deterministic_step.events,
-            presentation=presentation,
-            command_hash=str(deterministic_step.command_hash),
-            dt_sim=float(deterministic_step.dt_sim),
+        _ = apply_audio, update_camera
+        apply_tick_to_sim(
+            sim_world=cast(SimMetadataSink, self.sim_world),
+            step=cast(DeterministicStepPayload, step),
             game_tune_started=bool(game_tune_started),
         )
-        self.sync_audio_bridge_state()
-        self.audio_bridge.apply_plan(
-            plan=presentation,
-            apply_audio=bool(apply_audio),
-        )
-        if update_camera:
-            self.update_camera(float(deterministic_step.dt_sim))
 
     def _apply_batch_presentation_outputs(
         self,

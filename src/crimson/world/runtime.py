@@ -19,7 +19,7 @@ from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
-from ..sim.tick_runner import TickRunner, TickRunnerConfig
+from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
 from .presentation import PresentationLayer
 from .render_resources import RenderResources
@@ -297,12 +297,9 @@ class WorldRuntime:
     def _apply_tick_batch(
         self,
         *,
-        batch: object,
+        batch: TickBatchResult,
         session: DeterministicSession,
     ) -> int:
-        from ..sim.tick_runner import TickBatchResult
-
-        batch = cast(TickBatchResult, batch)
         outputs = apply_sim_metadata_batch(
             sim_world=cast(SimMetadataSink, self.sim_world),
             completed_results=batch.completed_results,
