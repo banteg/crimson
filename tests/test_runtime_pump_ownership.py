@@ -7,6 +7,7 @@ from typing import Any, cast
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import CheckpointHook, LanTickSync, NetworkSyncHook, ReplayRecorderHook, TickResult
 from crimson.sim.tick_runner import TickBatchResult
@@ -87,23 +88,6 @@ class _FakeLanRunner:
         return TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)
 
 
-class _FakeLanProvider:
-    def __init__(self) -> None:
-        self.runtime = None
-        self.before_pop = None
-        self.pop_blocked = False
-        self.samples_by_tick: dict[int, object] = {}
-
-    def bind_runtime(self, runtime) -> None:
-        self.runtime = runtime
-
-    def set_before_pop(self, callback) -> None:
-        self.before_pop = callback
-
-    def take_frame_sample(self, runner_tick_index: int):
-        return self.samples_by_tick.pop(int(runner_tick_index), None)
-
-
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
     tick_payload = SimpleNamespace(
@@ -141,12 +125,9 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
             ),
         ],
     )
-    provider = _FakeLanProvider()
-    provider.samples_by_tick[0] = SimpleNamespace(
-        frame_tick_index=0,
-        frame_inputs=([],),
-        remote_command_hash="",
-        remote_state_hash="",
+    provider = _LanRuntimeInputProvider(
+        player_count=1,
+        tick_rate=60,
     )
     replay_hook = ReplayRecorderHook(None)
     checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
@@ -175,10 +156,13 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
 
 def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    provider = _FakeLanProvider()
+    provider = _LanRuntimeInputProvider(
+        player_count=1,
+        tick_rate=60,
+    )
     runner = _FakeLanRunner(
         [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)],
-        on_advance=lambda: setattr(provider, "pop_blocked", True),
+        on_advance=lambda: setattr(provider, "_pop_blocked", True),
     )
     replay_hook = ReplayRecorderHook(None)
     checkpoint_hook = CheckpointHook(replay_recorder_hook=replay_hook)
