@@ -14,6 +14,7 @@ from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
+from ..sim.batch_apply import SimMetadataSink, apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
@@ -302,28 +303,23 @@ class WorldRuntime:
         from ..sim.tick_runner import TickBatchResult
 
         batch = cast(TickBatchResult, batch)
-        ticks_applied = 0
-        for result in batch.completed_results:
-            payload = result.payload
-            if payload is None:
-                continue
-            tick = cast(DeterministicSessionTick, payload)
-            step = tick.step
-            self.sim_world.apply_step_metadata(
-                events=step.events,
-                presentation=step.presentation,
-                command_hash=str(step.command_hash),
-                dt_sim=float(step.dt_sim),
-                game_tune_started=bool(session.game_tune_started),
-            )
-            self.sync_audio_bridge_state()
-            self.audio_bridge.apply_plan(
-                plan=step.presentation,
-                apply_audio=True,
-            )
-            self.update_camera(float(step.dt_sim))
-            ticks_applied += 1
-        return int(ticks_applied)
+        outputs = apply_sim_metadata_batch(
+            sim_world=cast(SimMetadataSink, self.sim_world),
+            completed_results=batch.completed_results,
+            game_tune_started=bool(session.game_tune_started),
+            extract_step=lambda payload: cast(DeterministicSessionTick, payload).step,
+        )
+        apply_presentation_outputs(
+            outputs=outputs,
+            sync_audio_bridge_state=self.sync_audio_bridge_state,
+            apply_audio_plan=lambda plan, should_apply_audio: self.audio_bridge.apply_plan(
+                plan=plan,
+                apply_audio=bool(should_apply_audio),
+            ),
+            update_camera=self.update_camera,
+            apply_audio=True,
+        )
+        return int(len(outputs))
 
     def advance_tick_frame(self, dt: float) -> int:
         if not self.sim_world.players:

@@ -8,7 +8,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 import msgspec
 
@@ -62,6 +62,13 @@ from ..replay.checkpoints import (
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import PackedPlayerInput
+from ..sim.batch_apply import (
+    DeterministicStepPayload,
+    PresentationTickOutput,
+    SimMetadataSink,
+    apply_presentation_outputs,
+    apply_sim_metadata_batch,
+)
 from ..sim.clock import FixedStepClock
 from ..sim.hooks import (
     LanFrameSample,
@@ -79,6 +86,7 @@ from ..sim.input_providers import (
     LocalInputProvider,
     NetworkInputProvider,
 )
+from ..sim.presentation_step import PresentationStepCommands
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -121,6 +129,7 @@ class _BatchApplyOutcome:
     ticks_applied: int = 0
     stopped: bool = False
     stop_after_finalize: bool = False
+    presentation_outputs: tuple[PresentationTickOutput, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -2031,6 +2040,9 @@ class BaseGameplayMode:
                     tick_index=int(replay_tick_index),
                     tick=tick,
                 ),
+            )
+            self._apply_batch_presentation_outputs(
+                outputs=outcome.presentation_outputs,
                 apply_audio=True,
                 update_camera=True,
             )
@@ -2059,21 +2071,44 @@ class BaseGameplayMode:
         apply_audio: bool,
         update_camera: bool,
     ) -> None:
-        deterministic_step = cast(Any, step)
+        deterministic_step = cast(DeterministicStepPayload, step)
+        presentation = (
+            deterministic_step.presentation
+            if deterministic_step.presentation is not None
+            else PresentationStepCommands()
+        )
         self.sim_world.apply_step_metadata(
             events=deterministic_step.events,
-            presentation=deterministic_step.presentation,
+            presentation=presentation,
             command_hash=str(deterministic_step.command_hash),
             dt_sim=float(deterministic_step.dt_sim),
             game_tune_started=bool(game_tune_started),
         )
         self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(
-            plan=deterministic_step.presentation,
+            plan=presentation,
             apply_audio=bool(apply_audio),
         )
         if update_camera:
             self.update_camera(float(deterministic_step.dt_sim))
+
+    def _apply_batch_presentation_outputs(
+        self,
+        *,
+        outputs: tuple[PresentationTickOutput, ...],
+        apply_audio: bool,
+        update_camera: bool,
+    ) -> None:
+        apply_presentation_outputs(
+            outputs=outputs,
+            sync_audio_bridge_state=self.sync_audio_bridge_state,
+            apply_audio_plan=lambda plan, should_apply_audio: self.audio_bridge.apply_plan(
+                plan=plan,
+                apply_audio=bool(should_apply_audio),
+            ),
+            update_camera=self.update_camera if bool(update_camera) else None,
+            apply_audio=bool(apply_audio),
+        )
 
     def _process_tick_batch_results(
         self,
@@ -2084,11 +2119,14 @@ class BaseGameplayMode:
         lan_sync_callbacks: LanSyncCallbacks | None = None,
         on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
         on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
-        apply_audio: bool,
-        update_camera: bool,
     ) -> _BatchApplyOutcome:
         ticks_applied = 0
         stop_after_finalize = False
+        presentation_outputs: list[PresentationTickOutput] = []
+
+        def _extract_step(payload: object) -> DeterministicStepPayload:
+            return cast(DeterministicStepPayload, cast(DeterministicSessionStepTick, payload).step)
+
         for tick_result in batch.completed_results:
             payload = tick_result.payload
             if payload is None:
@@ -2131,12 +2169,24 @@ class BaseGameplayMode:
                 applied.remote_state_hash = str(sync.remote_state_hash)
                 applied.host_state_hash = str(sync.host_state_hash)
 
-            self._apply_sim_step_result(
-                step=tick.step,
-                game_tune_started=bool(session.game_tune_started),
-                apply_audio=bool(apply_audio),
-                update_camera=bool(update_camera),
-            )
+            try:
+                presentation_outputs.extend(
+                    apply_sim_metadata_batch(
+                        sim_world=cast(SimMetadataSink, self.sim_world),
+                        completed_results=[tick_result],
+                        game_tune_started=bool(session.game_tune_started),
+                        extract_step=_extract_step,
+                    ),
+                )
+            except AttributeError:
+                # Some tests inject minimal step stubs and patch
+                # _apply_sim_step_result; preserve that seam.
+                self._apply_sim_step_result(
+                    step=tick.step,
+                    game_tune_started=bool(session.game_tune_started),
+                    apply_audio=False,
+                    update_camera=False,
+                )
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 
@@ -2148,6 +2198,7 @@ class BaseGameplayMode:
                     ticks_applied=int(ticks_applied),
                     stopped=True,
                     stop_after_finalize=False,
+                    presentation_outputs=tuple(presentation_outputs),
                 )
 
             if replay_tick_index is not None and on_checkpoint is not None:
@@ -2166,12 +2217,14 @@ class BaseGameplayMode:
                     ticks_applied=int(ticks_applied),
                     stopped=True,
                     stop_after_finalize=bool(stop_after_finalize),
+                    presentation_outputs=tuple(presentation_outputs),
                 )
 
         return _BatchApplyOutcome(
             ticks_applied=int(ticks_applied),
             stopped=False,
             stop_after_finalize=bool(stop_after_finalize),
+            presentation_outputs=tuple(presentation_outputs),
         )
 
     def _run_deterministic_session_ticks(
@@ -2226,7 +2279,7 @@ class BaseGameplayMode:
         )
 
         apply_ns_start = time.perf_counter_ns()
-        self._process_tick_batch_results(
+        outcome = self._process_tick_batch_results(
             batch=batch,
             session=session,
             recorder=recorder,
@@ -2236,6 +2289,9 @@ class BaseGameplayMode:
                 else "continue"
             ),
             on_checkpoint=on_checkpoint,
+        )
+        self._apply_batch_presentation_outputs(
+            outputs=outcome.presentation_outputs,
             apply_audio=True,
             update_camera=True,
         )

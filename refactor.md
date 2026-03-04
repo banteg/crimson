@@ -258,14 +258,15 @@ across gameplay mode, replay mode, and harness paths.
 - [x] Demote `TerrainRuntime` from peer component to bootstrap/helper utility. Remove it from `world/__init__.py` exports.
 - [x] Remove `WorldTickRunnerHarness` — tick-stepping logic absorbed into `WorldRuntime`.
 - [x] Migrate `ReplayPlaybackMode` world lifecycle to `WorldRuntime` — eliminates duplicated component fields and lifecycle methods.
-- [ ] Add shared deterministic batch apply helper that separates sim metadata from audio/camera side effects.
-- [ ] Refactor `BaseGameplayMode` stepping path to use shared batch apply; remove duplicated per-context apply loops.
-- [ ] Move presentation/audio apply and camera updates to frame-driver output boundary for each context (interactive gameplay, replay playback, headless verify).
+- [x] Add shared deterministic batch apply helper that separates sim metadata from audio/camera side effects.
+- [x] Refactor `BaseGameplayMode` stepping path to use shared batch apply; remove duplicated per-context apply loops.
+- [x] Move presentation/audio apply and camera updates to frame-driver output boundary for each context (interactive gameplay, replay playback, headless verify).
 
 ### Evidence
 
 - `src/crimson/world/__init__.py` — exports `SimWorldState` + `PresentationLayer` + `WorldRuntime`
 - `src/crimson/world/runtime.py` — shared `WorldRuntime` composition container with tick-stepping
+- `src/crimson/sim/batch_apply.py` — shared deterministic batch metadata helper + presentation output apply helper
 - `src/crimson/world/presentation.py` — `PresentationLayer` composing render + audio + terrain
 - `src/crimson/demo.py` — delegates to `WorldRuntime`
 - `src/crimson/views/arsenal_debug.py` — delegates to `WorldRuntime`
@@ -279,9 +280,9 @@ across gameplay mode, replay mode, and harness paths.
 
 - [x] World composition end-state is `SimWorldState` + `PresentationLayer`.
 - [x] `TerrainRuntime` not exported as a peer in `world/__init__.py`.
-- [ ] Shared deterministic batch apply path is used across gameplay/replay/debug stepping contexts.
-- [ ] Deterministic batch apply performs no per-tick audio/camera side effects.
-- [ ] Frame drivers own output-phase presentation apply in strict tick order.
+- [x] Shared deterministic batch apply path is used across gameplay/replay/debug stepping contexts.
+- [x] Deterministic batch apply performs no per-tick audio/camera side effects.
+- [x] Frame drivers own output-phase presentation apply in strict tick order.
 - [x] Host lifecycle exists in one shared implementation, not four copies.
 - [x] `WorldTickRunnerHarness` removed or fully subsumed with no unique orchestration behavior.
 - [x] Replay stepping path in `ReplayPlaybackMode` uses `WorldRuntime` for lifecycle; tick-stepping remains PlaybackDriver-specific by design.
