@@ -232,6 +232,13 @@ Requirements:
 - Avoid architectural facades that only proxy calls.
 - Prefer explicit orchestration calls over implicit hook fan-out.
 
+4. Test Realism
+- Prefer runtime types and production wiring in tests for deterministic/runtime paths.
+- Avoid internal shim/stub-heavy tests for core runtime orchestration (`TickRunner`, frame drivers, providers, journal, sync dispatch).
+- Limit doubles to hard external boundaries (for example: OS process, filesystem transport, network socket transport, video encoder transport).
+- Do not add test-only runtime fallbacks/default branches that mask missing wiring or invalid states.
+- If runtime code is hard to test with real types, treat that as a design signal and simplify composition boundaries instead of adding special test accommodations.
+
 ## Concrete End Shape
 
 ### Final Runtime Shape
@@ -472,6 +479,13 @@ uv run crimson replay diff-checkpoints <expected> <actual>
 3. For determinism/presentation/replay-hash phases (`Phase 4`, `Phase 5`, `Phase 6`): run `G2`.
 4. Do not stack new implementation commits on a failing suite; fix forward immediately.
 
+### Runtime-First Test Policy
+
+1. Tests for runtime orchestration should instantiate real runtime types and composition wiring by default.
+2. Avoid stubs/shims for internal runtime contracts unless isolating an external boundary.
+3. New runtime behavior must not depend on fallback/default code paths introduced only to satisfy tests.
+4. When a scenario is difficult to test without stubs, prefer refactoring runtime composition for explicit dependency seams that are also valid in production.
+
 ### Required Invariant-Focused Tests
 
 - `tests/test_runtime_pump_ownership.py`
@@ -502,6 +516,7 @@ uv run crimson replay diff-checkpoints <expected> <actual>
 ## Scope Guardrails
 
 Do not refactor deterministic gameplay math unless parity tests prove a bug.
+Do not introduce test-only fallback/default behavior in runtime code; simplify runtime composition instead.
 
 Treat these as stable unless failing tests demand change:
 - `run_deterministic_step` core semantics
