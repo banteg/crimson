@@ -16,7 +16,8 @@ if TYPE_CHECKING:
 
     from grim.config import CrimsonConfig
 
-    from ...world import RenderResources, SimWorldState
+    from ...world.render_resources import RenderResources
+    from ...world.sim_world_state import SimWorldState
     from ..rtx.mode import RtxRenderMode
 
 

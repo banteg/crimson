@@ -5,7 +5,9 @@ from typing import Protocol
 from grim.config import CrimsonConfig
 
 from ..game_modes import GameMode
-from ..world import AudioBridge, RenderResources, SimWorldState
+from ..world.audio_bridge import AudioBridge
+from ..world.render_resources import RenderResources
+from ..world.sim_world_state import SimWorldState
 from ..world.terrain_runtime import TerrainRuntime
 from .input import PlayerInput
 from .step_pipeline import StepPipelineOptions, run_deterministic_step, time_scale_reflex_boost_factor

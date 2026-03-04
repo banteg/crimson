@@ -23,7 +23,8 @@ from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from crimson.sim.timing import FrameTiming
-from crimson.world import AudioBridge, SimWorldState
+from crimson.world.audio_bridge import AudioBridge
+from crimson.world.sim_world_state import SimWorldState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
