@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
+from typing import cast
 
 from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
+from crimson.render.world.renderer import WorldRenderHost
+from crimson.sim.sandbox_step import SandboxWorldHost
 from crimson.sim.world_state import WorldState
+from crimson.sim.world_tick_runner_harness import WorldTickRunnerHost
 from crimson.world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
@@ -15,7 +19,7 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
 
-class WorldRuntimeHost:
+class WorldRuntimeHost(SandboxWorldHost, WorldTickRunnerHost, WorldRenderHost):
     def __init__(
         self,
         *,
@@ -71,7 +75,7 @@ class WorldRuntimeHost:
         self.lan_local_player_slot_index = 0
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self)
+        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
         player_count = 1
         if self.config is not None:
             player_count = int(self.config.player_count)
@@ -200,7 +204,8 @@ class WorldRuntimeHost:
             rtx_mode=self.rtx_mode,
         )
 
-    def update_camera(self, _dt: float) -> None:
+    def update_camera(self, dt: float) -> None:
+        _ = dt
         if not self.sim_world.players:
             return
 
@@ -224,4 +229,3 @@ class WorldRuntimeHost:
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
         return self.renderer.screen_to_world(pos)
-
