@@ -8,7 +8,7 @@ import msgspec
 from .clock import FixedStepClock
 from .hooks import TickContext, TickHashes, TickHookBus, TickResult
 from .input import PlayerInput
-from .input_providers import FrameContext, InputProvider
+from .input_providers import FrameContext, InputProvider, ReplayEndOfStream
 
 
 class TickStepPayload(Protocol):
@@ -54,6 +54,23 @@ class TickBatchResult(msgspec.Struct):
     stalled: bool = False
     remaining_debt_ticks: int = 0
     completed_results: list[TickResult] = msgspec.field(default_factory=list)
+
+
+class ReplayAdvanceEndOfStream(ReplayEndOfStream):
+    """Replay input ended during `advance_frame` after completing prior ticks."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        completed_results: list[TickResult],
+        ticks_completed: int,
+        remaining_debt_ticks: int,
+    ) -> None:
+        super().__init__(message)
+        self.completed_results = list(completed_results)
+        self.ticks_completed = int(ticks_completed)
+        self.remaining_debt_ticks = int(remaining_debt_ticks)
 
 
 class TickRunner(Generic[TimingT, TickT]):
@@ -118,77 +135,89 @@ class TickRunner(Generic[TimingT, TickT]):
         stalled = False
         stopped_early = False
         completed_results: list[TickResult] = []
+        replay_eos: ReplayEndOfStream | None = None
 
         for _ in range(candidate_ticks):
-            tick_index = self._next_tick_index
-            inputs = self._input_provider.pull_tick_input(tick_index)
-            tick_inputs: list[PlayerInput] | None = inputs
-            tick_dt_seconds = float(self._clock.dt_tick)
-            resolve_tick_dt = getattr(self._input_provider, "resolve_tick_dt", None)
-            if callable(resolve_tick_dt):
-                tick_dt_seconds = float(resolve_tick_dt(int(tick_index), float(tick_dt_seconds)))
-            tick_ctx = TickContext(
-                tick_index=tick_index,
-                dt_seconds=float(tick_dt_seconds),
-                inputs_present=tick_inputs is not None,
-                is_networked=self._config.is_networked,
-                is_replay=self._config.is_replay,
-                inputs=tick_inputs,
-            )
-            self._hook_bus.on_tick_begin(tick_ctx)
-            if tick_inputs is None:
-                stalled = True
-                self._hook_bus.on_tick_stall(tick_ctx)
-                break
-
-            self._hook_bus.on_pre_sim(tick_ctx)
-
-            timing = self._session.timing_for_dt(float(tick_dt_seconds))
-            if self._step_accepts_trace_rng:
-                session_with_trace = cast(TickSessionWithTraceRng[TimingT, TickT], self._session)
-                tick = session_with_trace.step_tick(
-                    timing=timing,
-                    inputs=tick_inputs,
-                    trace_rng=bool(self._config.trace_rng),
-                )
-            else:
-                tick = self._session.step_tick(
-                    timing=timing,
+            try:
+                tick_index = self._next_tick_index
+                inputs = self._input_provider.pull_tick_input(tick_index)
+                tick_inputs: list[PlayerInput] | None = inputs
+                tick_dt_seconds = float(self._clock.dt_tick)
+                resolve_tick_dt = getattr(self._input_provider, "resolve_tick_dt", None)
+                if callable(resolve_tick_dt):
+                    tick_dt_seconds = float(resolve_tick_dt(int(tick_index), float(tick_dt_seconds)))
+                tick_ctx = TickContext(
+                    tick_index=tick_index,
+                    dt_seconds=float(tick_dt_seconds),
+                    inputs_present=tick_inputs is not None,
+                    is_networked=self._config.is_networked,
+                    is_replay=self._config.is_replay,
                     inputs=tick_inputs,
                 )
-            step = tick.step
-            command_hash = step.command_hash
-            dt_sim = step.dt_sim
-            result = TickResult(
-                tick_index=tick_index,
-                command_hash=command_hash,
-                dt_sim=dt_sim,
-                presentation_plan_ms=step.presentation_plan_ms,
-                payload=tick,
-            )
-            self._hook_bus.on_world_step_done(tick_ctx, result)
-            self._hook_bus.on_pre_hash(tick_ctx, result)
-            self._hook_bus.on_post_hash(
-                tick_ctx,
-                TickHashes(
+                self._hook_bus.on_tick_begin(tick_ctx)
+                if tick_inputs is None:
+                    stalled = True
+                    self._hook_bus.on_tick_stall(tick_ctx)
+                    break
+
+                self._hook_bus.on_pre_sim(tick_ctx)
+
+                timing = self._session.timing_for_dt(float(tick_dt_seconds))
+                if self._step_accepts_trace_rng:
+                    session_with_trace = cast(TickSessionWithTraceRng[TimingT, TickT], self._session)
+                    tick = session_with_trace.step_tick(
+                        timing=timing,
+                        inputs=tick_inputs,
+                        trace_rng=bool(self._config.trace_rng),
+                    )
+                else:
+                    tick = self._session.step_tick(
+                        timing=timing,
+                        inputs=tick_inputs,
+                    )
+                step = tick.step
+                command_hash = step.command_hash
+                dt_sim = step.dt_sim
+                result = TickResult(
+                    tick_index=tick_index,
                     command_hash=command_hash,
-                    state_hash=None,
-                ),
-            )
-            self._hook_bus.on_post_presentation(tick_ctx, result)
-            should_stop = bool(self._hook_bus.on_tick_end(tick_ctx, result))
-            completed_results.append(result)
-            ticks_completed += 1
-            self._next_tick_index += 1
-            if should_stop:
-                stopped_early = True
+                    dt_sim=dt_sim,
+                    presentation_plan_ms=step.presentation_plan_ms,
+                    payload=tick,
+                )
+                self._hook_bus.on_world_step_done(tick_ctx, result)
+                self._hook_bus.on_pre_hash(tick_ctx, result)
+                self._hook_bus.on_post_hash(
+                    tick_ctx,
+                    TickHashes(
+                        command_hash=command_hash,
+                        state_hash=None,
+                    ),
+                )
+                self._hook_bus.on_post_presentation(tick_ctx, result)
+                should_stop = bool(self._hook_bus.on_tick_end(tick_ctx, result))
+                completed_results.append(result)
+                ticks_completed += 1
+                self._next_tick_index += 1
+                if should_stop:
+                    stopped_early = True
+                    break
+            except ReplayEndOfStream as exc:
+                replay_eos = exc
                 break
 
         unconsumed_ticks = candidate_ticks - ticks_completed
-        if (stalled or stopped_early) and unconsumed_ticks > 0:
+        if (stalled or stopped_early or replay_eos is not None) and unconsumed_ticks > 0:
             self._clock.accum += unconsumed_ticks * self._clock.dt_tick
 
         remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
+        if replay_eos is not None:
+            raise ReplayAdvanceEndOfStream(
+                str(replay_eos),
+                completed_results=list(completed_results),
+                ticks_completed=int(ticks_completed),
+                remaining_debt_ticks=int(remaining_debt_ticks),
+            ) from replay_eos
         return TickBatchResult(
             ticks_completed=ticks_completed,
             stalled=stalled,

@@ -312,7 +312,7 @@ class _PlaybackTickHook:
             rng_before_events=int(rng_before_events),
             rng_after_events=int(rng_after_events),
             trace_ctx=trace_ctx,
-            tick_rng_rows=list(tick_rng_rows),
+            tick_rng_rows=tick_rng_rows,
         )
 
     def on_tick_end(self, ctx: TickContext, result: TickResult) -> None:

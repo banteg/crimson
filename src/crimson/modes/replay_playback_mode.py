@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from grim import music as grim_music
 from grim.assets import PaqTextureCache, TextureLoader
@@ -849,16 +849,14 @@ class ReplayPlaybackMode:
         if int(self._tick_index) >= int(self._tick_limit()):
             self._mark_finished_if_complete()
             return
-        try:
-            batch = runner.advance_frame(
-                float(dt_seconds),
-                max_ticks=max_ticks,
-            )
-            for tick_result in batch.completed_results:
-                payload = tick_result.payload
+
+        def _apply_completed(batch_results: list[object]) -> None:
+            for tick_result in batch_results:
+                result = cast(Any, tick_result)
+                payload = result.payload
                 if payload is None:
                     continue
-                self._on_runner_tick_complete(int(tick_result.tick_index), payload)
+                self._on_runner_tick_complete(int(result.tick_index), payload)
                 if bake_fx_per_tick:
                     # Fast-seek runs many ticks without rendering; drain/clear
                     # per tick to mirror gameplay-side FX queue lifetime.
@@ -867,7 +865,17 @@ class ReplayPlaybackMode:
                     else:
                         render_resources.fx_queue.clear()
                         render_resources.fx_queue_rotated.clear()
-        except ReplayEndOfStream:
+
+        try:
+            batch = runner.advance_frame(
+                float(dt_seconds),
+                max_ticks=max_ticks,
+            )
+            _apply_completed(list(batch.completed_results))
+        except ReplayEndOfStream as exc:
+            completed_results = cast(list[object], getattr(exc, "completed_results", []))
+            if completed_results:
+                _apply_completed(completed_results)
             self._tick_index = int(runner.next_tick_index)
             self._mark_finished_if_complete()
             clock = getattr(runner, "clock", None)

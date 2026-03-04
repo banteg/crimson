@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from typing import Any, cast
 
 import pytest
@@ -187,6 +188,33 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
             expected_after = (int(state_before_u32) * 214013 + 2531011) & 0xFFFFFFFF
             assert int(state_after_u32) == int(expected_after)
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
+
+
+def test_survival_runner_tick_rng_trace_rows_include_draws_before_trace_exit(mocker) -> None:
+    import crimson.sim.driver.playback_driver as playback_driver_module
+
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    replay = rec.finish()
+    rows_by_tick: dict[int, list[tuple[int, int, int]]] = {}
+
+    @contextmanager
+    def _fake_tick_rng_trace(_rng: object, *, enabled: bool):
+        draws: list[tuple[int, int, int]] = []
+        try:
+            yield draws
+        finally:
+            if enabled:
+                draws.append((1, 2, 3))
+
+    mocker.patch.object(playback_driver_module, "_tick_rng_trace", side_effect=_fake_tick_rng_trace)
+
+    run_replay(
+        replay,
+        trace_rng=True,
+        tick_rng_trace_observer=lambda tick_index, draws: rows_by_tick.setdefault(int(tick_index), list(draws)),
+    )
+
+    assert rows_by_tick == {0: [(1, 2, 3)]}
 
 
 def test_survival_runner_applies_terminal_tick_events() -> None:

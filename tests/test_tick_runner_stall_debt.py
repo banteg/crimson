@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import msgspec
+import pytest
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider
+from crimson.sim.input_providers import FrameContext, InputProvider, ReplayEndOfStream
 from crimson.sim.tick_runner import TickRunner
 
 
@@ -71,3 +72,33 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     assert second.remaining_debt_ticks == 0
     assert [result.command_hash for result in second.completed_results] == ["abc123"]
     assert runner.next_tick_index == 2
+
+
+def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
+    class _ReplayRowsInputProvider(InputProvider):
+        def begin_frame(self, frame_ctx: FrameContext) -> None:
+            _ = frame_ctx
+            return
+
+        def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+            if int(tick_index) == 0:
+                return [PlayerInput()]
+            raise ReplayEndOfStream(f"replay input exhausted at tick {tick_index}")
+
+        def push_command(self, command) -> None:
+            _ = command
+
+    runner = TickRunner(
+        session=_FakeSession(),
+        input_provider=_ReplayRowsInputProvider(),
+    )
+
+    with pytest.raises(ReplayEndOfStream) as exc_info:
+        runner.advance_frame(2.0 / 60.0)
+
+    exc = exc_info.value
+    completed_results = getattr(exc, "completed_results")
+    assert [result.command_hash for result in completed_results] == ["abc123"]
+    assert int(getattr(exc, "ticks_completed")) == 1
+    assert int(getattr(exc, "remaining_debt_ticks")) >= 1
+    assert runner.next_tick_index == 1

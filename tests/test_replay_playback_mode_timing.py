@@ -8,6 +8,7 @@ import pytest
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
+from crimson.sim.input_providers import ReplayEndOfStream
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -116,6 +117,52 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
 
     assert view._tick_index == 1
     assert not view._finished
+
+
+def test_replay_runner_eos_applies_partial_completed_results(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+
+    view._replay = _replay_with_ticks(2)
+    view._render_resources = SimpleNamespace(
+        ground=None,
+        fx_textures=None,
+        fx_queue=[],
+        fx_queue_rotated=[],
+    )
+    view._max_ticks = None
+    view._tick_index = 0
+    view._finished = False
+    applied_ticks: list[int] = []
+    view._on_runner_tick_complete = lambda tick_index, _tick: applied_ticks.append(int(tick_index)) or False
+
+    class _ReplayEos(ReplayEndOfStream):
+        def __init__(self, completed_results: list[object]) -> None:
+            super().__init__("eos")
+            self.completed_results = list(completed_results)
+
+    @dataclass
+    class _FakeRunner:
+        next_tick_index: int = 2
+        clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
+
+        def advance_frame(self, *_args, **_kwargs) -> object:
+            raise _ReplayEos(
+                completed_results=[
+                    SimpleNamespace(tick_index=0, payload=object()),
+                    SimpleNamespace(tick_index=1, payload=object()),
+                ],
+            )
+
+    view._tick_runner = _FakeRunner()
+
+    view._advance_runner(
+        dt_seconds=float(view._dt),
+        max_ticks=2,
+    )
+
+    assert applied_ticks == [0, 1]
+    assert view._tick_index == 2
+    assert view._finished is True
 
 
 def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_view) -> None:
