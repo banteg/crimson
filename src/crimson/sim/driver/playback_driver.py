@@ -23,7 +23,6 @@ from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickContext, TickHookBus, TickResult
-from ..input import PlayerInput
 from ..input_providers import ReplayInputProvider
 from ..sessions import (
     DeterministicSession,
@@ -703,103 +702,6 @@ class PlaybackDriver:
         if not math.isfinite(dt_tick) or dt_tick < 0.0:
             raise ReplayRunnerError(f"invalid replay dt row at tick {int(tick_index)}: {dt_tick!r}")
         return float(dt_tick)
-
-    def run_tick(
-        self,
-        tick_index: int,
-        *,
-        defer_menu_open: bool | None = None,
-        player_inputs: list[PlayerInput],
-    ) -> PlaybackTickOutcome:
-        if tick_index < 0 or tick_index >= int(self.tick_limit):
-            raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
-
-        state = self.world.state
-        state.game_mode = self.mode_id
-        state.demo_mode_active = False
-
-        timing = self.config.timing
-        if timing.inter_tick_rand_draws_by_tick is not None:
-            draws = timing.inter_tick_rand_draws_by_tick.get(int(tick_index))
-            if draws is None:
-                draws = int(timing.inter_tick_rand_draws)
-            for _ in range(max(0, int(draws))):
-                state.rng.rand()
-
-        dt_tick = self._resolve_replay_dt_row(int(tick_index))
-        dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(dt_tick))))
-
-        tick_events = self.events_by_tick.get(int(tick_index), [])
-        defer_menu_open_value = (
-            bool(defer_menu_open)
-            if defer_menu_open is not None
-            else bool(self.config.events.defer_menu_open)
-        )
-        pre_step_events, post_step_events = self._mode_runtime.partition_tick_events(
-            tick_events,
-            defer_menu_open=bool(defer_menu_open_value),
-        )
-
-        rng_before_events = int(state.rng.state)
-        with _tick_rng_trace(state.rng, enabled=bool(self.options.trace_rng)) as tick_rng_rows:
-            apply_replay_tick_events(
-                pre_step_events,
-                tick_index=int(tick_index),
-                dt=float(dt_tick),
-                world=self.world,
-                game_mode_id=self.mode_id,
-            )
-            rng_after_events = int(state.rng.state)
-            step_timing = self.session.timing_for_dt(float(dt_tick))
-
-            inputs_for_tick = list(player_inputs)
-            tick = self.session.step_tick(
-                timing=step_timing,
-                inputs=inputs_for_tick,
-                trace_rng=bool(self.options.trace_rng),
-            )
-
-            step = tick.step
-            events = step.events
-            rng_before_post_events = int(state.rng.state)
-            if post_step_events:
-                apply_replay_tick_events(
-                    post_step_events,
-                    tick_index=int(tick_index),
-                    dt=float(dt_tick),
-                    world=self.world,
-                    game_mode_id=self.mode_id,
-                )
-            rng_after_post_events = int(state.rng.state)
-
-        if timing.inter_tick_rand_draws_by_tick is None:
-            draws = max(0, int(timing.inter_tick_rand_draws))
-            for _ in range(draws):
-                state.rng.rand()
-
-        outcome = PlaybackTickOutcome(
-            tick_index=int(tick_index),
-            dt_tick=float(dt_tick),
-            dt_tick_ms_i32=int(dt_tick_ms_i32),
-            tick_events=list(tick_events),
-            pre_step_events=list(pre_step_events),
-            post_step_events=list(post_step_events),
-            world=self.world,
-            step=step,
-            step_events=events,
-            command_hash=str(step.command_hash),
-            elapsed_ms=float(tick.elapsed_ms),
-            dt_sim=float(step.dt_sim),
-            rng_marks=dict(tick.rng_marks),
-            creature_count_world_step=int(tick.creature_count_world_step),
-            rng_before_events=int(rng_before_events),
-            rng_after_events=int(rng_after_events),
-            rng_before_post_events=(int(rng_before_post_events) if post_step_events else None),
-            rng_after_post_events=(int(rng_after_post_events) if post_step_events else None),
-            tick_rng_rows=list(tick_rng_rows),
-        )
-        self._mode_runtime.enrich_tick_outcome(outcome, tick=tick)
-        return outcome
 
     def apply_terminal_events(self, tick_index: int) -> PlaybackTerminalOutcome | None:
         events_config = self.config.events

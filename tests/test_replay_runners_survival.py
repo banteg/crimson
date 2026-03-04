@@ -219,16 +219,6 @@ def test_survival_runner_can_capture_terminal_tick_checkpoint() -> None:
     assert checkpoints[0].rng_marks == {}
 
 
-def test_playback_driver_run_tick_requires_player_inputs() -> None:
-    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
-    replay = rec.finish()
-    driver = PlaybackDriver(replay, PlaybackDriverOptions())
-
-    run_tick = cast(Any, driver.run_tick)
-    with pytest.raises(TypeError):
-        run_tick(0)
-
-
 def test_playback_driver_run_to_completion_uses_tick_runner_orchestration() -> None:
     import crimson.sim.driver.playback_driver as playback_driver_module
 
