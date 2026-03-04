@@ -26,7 +26,13 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.sessions import DeterministicSession, RushSpawnState, rush_input_transform, rush_mid_step
+from ..sim.sessions import (
+    DeterministicSession,
+    QuestDeterministicSession,
+    RushSpawnState,
+    rush_input_transform,
+    rush_mid_step,
+)
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import load_perk_menu_assets
@@ -34,7 +40,6 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    DeterministicSessionLike,
     LanStepAction,
     _AppliedBatchTick,
 )
@@ -270,7 +275,7 @@ class RushMode(BaseGameplayMode):
         dt: float,
         dt_ui_ms: float,
         lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
+        session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> bool:
         _ = role, dt, dt_ui_ms, lockstep_runtime, dt_tick
@@ -283,7 +288,7 @@ class RushMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
+        session: DeterministicSession | QuestDeterministicSession,
         step: _AppliedBatchTick,
         dt_tick: float,
     ) -> LanStepAction:

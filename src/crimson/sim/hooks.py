@@ -104,8 +104,8 @@ class ReplayRecorder(Protocol):
     def record_tick(self, inputs: list[PlayerInput]) -> int: ...
 
 
-@runtime_checkable
-class LanFrameSampleLike(Protocol):
+@dataclass(frozen=True, slots=True)
+class LanFrameSample:
     frame_tick_index: int
     frame_inputs: tuple[list[float], ...]
     remote_command_hash: str
@@ -124,7 +124,7 @@ class LanTickSync:
 @dataclass(slots=True)
 class LanSyncCallbacks:
     role: str
-    take_frame_sample: Callable[[int], LanFrameSampleLike | None]
+    take_frame_sample: Callable[[int], LanFrameSample | None]
     state_hash_for_tick: Callable[[int, TickResult], str]
     should_emit_state_hash: Callable[[int], bool]
     note_desync: Callable[[str, int, str, str], None]

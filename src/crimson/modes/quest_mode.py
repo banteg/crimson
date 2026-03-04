@@ -40,7 +40,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import InputCommand
-from ..sim.sessions import QuestDeterministicSession, QuestDeterministicSessionTick
+from ..sim.sessions import DeterministicSession, QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -54,7 +54,6 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    DeterministicSessionLike,
     LanStepAction,
     _AppliedBatchTick,
 )
@@ -266,7 +265,7 @@ class QuestMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
+        session: DeterministicSession | QuestDeterministicSession,
         dt_tick: float,
     ) -> None:
         _ = role, lockstep_runtime, dt_tick
@@ -283,7 +282,7 @@ class QuestMode(BaseGameplayMode):
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSessionLike,
+        session: DeterministicSession | QuestDeterministicSession,
         step: _AppliedBatchTick,
         dt_tick: float,
     ) -> LanStepAction:
