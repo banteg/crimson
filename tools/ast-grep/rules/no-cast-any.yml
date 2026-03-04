@@ -1,0 +1,11 @@
+id: no-cast-any
+language: python
+severity: warning
+message: Avoid `cast(Any, ...)`; prefer concrete protocol or precise type.
+files:
+  - src/**/*.py
+  - tests/**/*.py
+rule:
+  any:
+    - pattern: cast(Any, $EXPR)
+    - pattern: typing.cast(Any, $EXPR)

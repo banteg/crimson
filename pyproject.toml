@@ -58,10 +58,7 @@ extend-select = ["B007", "B017", "B023", "B904", "COM812", "I001", "PGH003", "PT
 extend-ignore = ["E402"]
 
 [tool.pytest.ini_options]
-addopts = [
-    "--cov=crimson",
-    "--cov-report=term-missing",
-]
+addopts = []
 
 [tool.coverage.run]
 branch = true

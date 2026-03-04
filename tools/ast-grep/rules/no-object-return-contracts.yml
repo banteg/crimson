@@ -1,0 +1,18 @@
+id: no-object-return-contracts
+language: python
+severity: warning
+message: Avoid `-> object` return contracts; use concrete protocol/union types.
+files:
+  - src/**/*.py
+  - tests/**/*.py
+rule:
+  any:
+    - pattern: |
+        def $FUNC($$$ARGS) -> object:
+          $$$BODY
+    - pattern: |
+        def $FUNC($$$ARGS) -> object | None:
+          $$$BODY
+    - pattern: |
+        def $FUNC($$$ARGS) -> None | object:
+          $$$BODY

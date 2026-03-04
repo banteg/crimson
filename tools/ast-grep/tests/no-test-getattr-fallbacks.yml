@@ -1,0 +1,11 @@
+id: no-test-getattr-fallbacks
+valid:
+  - |
+    player_name = state.player_name
+  - |
+    value = getattr(obj, "name")
+invalid:
+  - |
+    close_requested = getattr(view, "close_requested", False)
+  - |
+    score = getattr(result, "score", 0)

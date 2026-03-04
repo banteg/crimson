@@ -1,0 +1,35 @@
+id: no-test-any-contract-gaps
+snapshots:
+  ? |
+    from typing import Any
+
+    payload: Any
+  : labels:
+    - source: 'payload: Any'
+      style: primary
+      start: 24
+      end: 36
+  ? |
+    from typing import Any
+
+    def decode(value: Any) -> int:
+      return int(value)
+  : labels:
+    - source: |-
+        def decode(value: Any) -> int:
+          return int(value)
+      style: primary
+      start: 24
+      end: 74
+  ? |
+    from typing import Any
+
+    def snapshot() -> Any:
+      return {"ok": True}
+  : labels:
+    - source: |-
+        def snapshot() -> Any:
+          return {"ok": True}
+      style: primary
+      start: 24
+      end: 68

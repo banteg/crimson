@@ -1,0 +1,32 @@
+id: no-object-container-contracts
+snapshots:
+  ? |
+    payload: dict[str, object]
+  : labels:
+    - source: 'payload: dict[str, object]'
+      style: primary
+      start: 0
+      end: 26
+  ? |
+    rows: list[object]
+  : labels:
+    - source: 'rows: list[object]'
+      style: primary
+      start: 0
+      end: 18
+  ? |
+    item: tuple[object]
+  : labels:
+    - source: 'item: tuple[object]'
+      style: primary
+      start: 0
+      end: 19
+  ? |
+    from typing import Mapping
+
+    meta: Mapping[str, object]
+  : labels:
+    - source: 'meta: Mapping[str, object]'
+      style: primary
+      start: 28
+      end: 54

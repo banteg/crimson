@@ -31,7 +31,7 @@ jobs:
           - task: ast-grep
             use_uv: false
             do_sync: false
-            command: sg scan && sg test
+            command: sg scan && sg test && bash tools/ast-grep/scripts/build-zig-parser.sh tools/ast-grep/parsers/zig.so && sg scan -c sgconfig.ci.yml && sg test -c sgconfig.ci.yml
             sync_args: ""
           - task: ty
             use_uv: true
@@ -46,7 +46,7 @@ jobs:
           - task: pytest
             use_uv: true
             do_sync: true
-            command: uv run --no-sync pytest
+            command: uv run --no-sync pytest --no-cov
             sync_args: --group dev
           - task: build
             use_uv: true
@@ -74,11 +74,13 @@ jobs:
           fi
 
       - name: Setup Node
+        if: ${{ matrix.task == 'ast-grep' }}
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Install ast-grep
+        if: ${{ matrix.task == 'ast-grep' }}
         run: npm install --global @ast-grep/cli
 
       - name: Install dependencies
@@ -87,12 +89,3 @@ jobs:
 
       - name: Run check
         run: ${{ matrix.command }}
-
-      - name: Add coverage to summary
-        if: ${{ always() && matrix.task == 'pytest' }}
-        run: |
-          {
-            echo "## Coverage"
-            echo ""
-            uv run --no-sync python -m coverage report || true
-          } >> "$GITHUB_STEP_SUMMARY"

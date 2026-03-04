@@ -1,0 +1,18 @@
+id: no-object-container-contracts
+language: python
+severity: info
+message: Avoid `dict/list/tuple/Mapping[..., object]` contracts; use precise value types.
+files:
+  - src/**/*.py
+  - tests/**/*.py
+rule:
+  any:
+    - pattern: "$NAME: dict[str, object]"
+    - pattern: "$NAME: dict[$KEY, object]"
+    - pattern: "$NAME: list[object]"
+    - pattern: "$NAME: tuple[object]"
+    - pattern: "$NAME: Mapping[str, object]"
+    - pattern: "$NAME: Mapping[$KEY, object]"
+    - pattern: "$NAME: MutableMapping[str, object]"
+    - pattern: "$NAME: MutableMapping[$KEY, object]"
+    - pattern: "$NAME: Sequence[object]"

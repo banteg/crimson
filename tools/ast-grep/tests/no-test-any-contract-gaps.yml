@@ -1,0 +1,29 @@
+id: no-test-any-contract-gaps
+valid:
+  - |
+    from typing import Protocol
+
+    class EventLike(Protocol):
+      frame: int
+
+    def expect_frame(event: EventLike) -> int:
+      return event.frame
+  - |
+    from typing import cast
+
+    value = cast(int, 42)
+invalid:
+  - |
+    from typing import Any
+
+    payload: Any
+  - |
+    from typing import Any
+
+    def decode(value: Any) -> int:
+      return int(value)
+  - |
+    from typing import Any
+
+    def snapshot() -> Any:
+      return {"ok": True}

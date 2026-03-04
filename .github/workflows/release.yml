@@ -22,7 +22,7 @@ jobs:
           enable-cache: true
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run pytest --no-cov
 
       - name: Build (wheel + sdist)
         run: uv build

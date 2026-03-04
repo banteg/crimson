@@ -1,0 +1,14 @@
+id: no-object-return-contracts
+valid:
+  - |
+    def normalize(value: int) -> int:
+      return value
+  - |
+    sentinel = object()
+invalid:
+  - |
+    def pick(value: int) -> object:
+      return value
+  - |
+    def maybe_pick(value: int) -> object | None:
+      return value

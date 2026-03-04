@@ -1,0 +1,9 @@
+id: no-type-ignore-comments
+valid:
+  - |
+    value = int(raw)
+invalid:
+  - |
+    value = int(raw)  # type: ignore[arg-type]
+  - |
+    result = decode(payload)  # type: ignore

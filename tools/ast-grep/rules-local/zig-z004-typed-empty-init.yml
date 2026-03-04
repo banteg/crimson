@@ -1,7 +1,7 @@
 id: zig-z004-typed-empty-init
 language: zig
 severity: warning
-message: Prefer typed empty initializers (`name: Type = .{}`) over `name = Type{}`.
+message: "Prefer typed empty initializers (`name: Type = .{}`) over `name = Type{}`."
 files:
   - crimson-zig/src/**/*.zig
 rule:

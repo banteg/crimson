@@ -1,0 +1,20 @@
+id: no-object-container-contracts
+valid:
+  - |
+    from typing import Mapping
+
+    payload: dict[str, int]
+    meta: Mapping[str, int]
+  - |
+    sentinel = object()
+invalid:
+  - |
+    payload: dict[str, object]
+  - |
+    rows: list[object]
+  - |
+    item: tuple[object]
+  - |
+    from typing import Mapping
+
+    meta: Mapping[str, object]

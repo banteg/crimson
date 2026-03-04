@@ -1,0 +1,11 @@
+ruleDirs:
+  - tools/ast-grep/rules-local
+testConfigs:
+  - testDir: tools/ast-grep/tests-local
+utilDirs:
+  - tools/ast-grep/utils
+customLanguages:
+  zig:
+    libraryPath: tools/ast-grep/parsers/zig.so
+    extensions: [zig]
+    expandoChar: _
