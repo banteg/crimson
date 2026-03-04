@@ -80,14 +80,14 @@ class NetworkSessionPanelView(PanelMenuView):
             self._quest_level = str(cfg.quest_level or "1.1")
             netcode_raw = str(cfg.netcode_mode).strip().lower()
             self._netcode_mode = "lockstep" if netcode_raw == "lockstep" else "rollback"
-            if cfg.netcode_mode == "lockstep":
-                endpoint = cfg.endpoint
+            if isinstance(cfg, LockstepSessionConfig):
+                endpoint: LockstepEndpoint = cfg.endpoint
                 self._bind_host = str(endpoint.bind_host or "0.0.0.0")
                 self._host = str(endpoint.host or "127.0.0.1")
                 self._room_code = ""
                 self._port_text = str(max(1, int(endpoint.port)))
             else:
-                endpoint = cfg.endpoint
+                endpoint: RollbackEndpoint = cfg.endpoint
                 self._bind_host = str(endpoint.relay_host or "127.0.0.1")
                 self._host = str(endpoint.relay_host or "127.0.0.1")
                 self._room_code = "".join(ch for ch in str(endpoint.room_code).upper() if ch.isalnum())[
