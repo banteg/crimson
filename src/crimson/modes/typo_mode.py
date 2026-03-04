@@ -94,14 +94,14 @@ class TypoShooterMode(BaseGameplayMode):
 
     def _new_sim_session(self) -> TypoDeterministicSession:
         return self._session_factory(
-            world=self.world.sim_world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.render_resources.fx_queue,
-            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
-            game_tune_started=bool(self.world.sim_world.game_tune_started),
+            game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
         )
 
@@ -169,8 +169,8 @@ class TypoShooterMode(BaseGameplayMode):
                 return self._names.find_by_name(name, active_mask=active)
 
             result = self._typing.enter(find_target=_find_target)
-            if had_text and self.world.audio_bridge.router is not None:
-                self.world.audio_bridge.router.play_sfx_resolved("sfx_ui_typeenter")
+            if had_text and self.audio_bridge.router is not None:
+                self.audio_bridge.router.play_sfx_resolved("sfx_ui_typeenter")
             if result.fire_requested and result.target_creature_idx is not None:
                 target_idx = int(result.target_creature_idx)
                 if 0 <= target_idx < len(self.creatures.entries):
@@ -191,8 +191,8 @@ class TypoShooterMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE) or rl.is_key_pressed_repeat(rl.KeyboardKey.KEY_BACKSPACE):
             self._typing.backspace()
             key = _typeclick_key()
-            if self.world.audio_bridge.router is not None:
-                self.world.audio_bridge.router.play_sfx_resolved(key)
+            if self.audio_bridge.router is not None:
+                self.audio_bridge.router.play_sfx_resolved(key)
         else:
             codepoint = int(rl.get_char_pressed())
             if codepoint not in (13, 8) and 0x20 <= codepoint <= 0xFF:
@@ -203,8 +203,8 @@ class TypoShooterMode(BaseGameplayMode):
                 if ch:
                     self._typing.push_char(ch)
                     key = _typeclick_key()
-                    if self.world.audio_bridge.router is not None:
-                        self.world.audio_bridge.router.play_sfx_resolved(key)
+                    if self.audio_bridge.router is not None:
+                        self.audio_bridge.router.play_sfx_resolved(key)
 
         return fire_pressed, reload_pressed
 
@@ -321,8 +321,8 @@ class TypoShooterMode(BaseGameplayMode):
             spawn_cooldown_ms=int(self._typo.spawn_cooldown_ms),
             frame_dt_ms=int(dt_world * 1000.0),
             player_count=1,
-            world_width=float(self.world.world_size),
-            world_height=float(self.world.world_size),
+            world_width=float(self.world_size),
+            world_height=float(self.world_size),
         )
         self._typo.spawn_cooldown_ms = int(cooldown)
         for call in spawns:
@@ -347,7 +347,7 @@ class TypoShooterMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self.world.render_resources.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -374,7 +374,7 @@ class TypoShooterMode(BaseGameplayMode):
             if label_alpha <= 1e-3:
                 continue
 
-            screen_pos = self.world.world_to_screen(creature.pos)
+            screen_pos = self.world_to_screen(creature.pos)
             y = screen_pos.y - 50.0
             text_w = float(self._ui_text_width(text, scale=NAME_LABEL_SCALE))
             text_h = 15.0
@@ -434,7 +434,7 @@ class TypoShooterMode(BaseGameplayMode):
         alive = self.player.health > 0.0
         show_gameplay_ui = alive and (not self._game_over_active)
 
-        self.world.draw(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
+        self._draw_world(draw_aim_indicators=show_gameplay_ui, entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()
 
         if show_gameplay_ui:
@@ -456,7 +456,7 @@ class TypoShooterMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.sim_world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._typo.elapsed_ms),
                 frame_dt_ms=self._last_dt_ms,

@@ -96,15 +96,15 @@ class TutorialMode(BaseGameplayMode):
 
     def _new_sim_session(self) -> TutorialDeterministicSession:
         return self._session_factory(
-            world=self.world.sim_world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.render_resources.fx_queue,
-            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
-            game_tune_started=bool(self.world.sim_world.game_tune_started),
-            demo_mode_active=bool(self.world.demo_mode_active),
+            game_tune_started=bool(self.sim_world.game_tune_started),
+            demo_mode_active=bool(self.demo_mode_active),
             auto_pick_perks=False,
             perk_progression_enabled=True,
             clear_fx_queues_each_tick=False,
@@ -129,7 +129,7 @@ class TutorialMode(BaseGameplayMode):
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
-        self.player.pos = Vec2(float(self.world.world_size) * 0.5, float(self.world.world_size) * 0.5)
+        self.player.pos = Vec2(float(self.world_size) * 0.5, float(self.world_size) * 0.5)
         weapon_assign_player(self.player, WeaponId.PISTOL, state=self.state)
 
     def close(self) -> None:
@@ -181,7 +181,7 @@ class TutorialMode(BaseGameplayMode):
         )
 
         mouse = self._ui_mouse_pos()
-        aim = self.world.screen_to_world(Vec2.from_xy(mouse))
+        aim = self.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = input_code_is_down(fire_key)
         fire_pressed = input_code_is_pressed(fire_key)
@@ -349,8 +349,8 @@ class TutorialMode(BaseGameplayMode):
             survival_check_level_up(self.player, self.state.perk_selection)
 
         detail_preset = 5
-        if self.world.config is not None:
-            detail_preset = self.world.config.detail_preset
+        if self.config is not None:
+            detail_preset = self.config.detail_preset
 
         for call in actions.spawn_bonuses:
             spawned = self.state.bonus_pool.spawn_at(
@@ -358,8 +358,8 @@ class TutorialMode(BaseGameplayMode):
                 bonus_id=call.bonus_id,
                 duration_override=int(call.amount),
                 state=self.state,
-                world_width=float(self.world.world_size),
-                world_height=float(self.world.world_size),
+                world_width=float(self.world_size),
+                world_height=float(self.world_size),
             )
             if spawned is not None:
                 self.state.effects.spawn_burst(
@@ -396,7 +396,7 @@ class TutorialMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self.world.draw(
+        self._draw_world(
             draw_aim_indicators=not perk_menu_active,
             entity_alpha=self._world_entity_alpha(),
         )
@@ -420,7 +420,7 @@ class TutorialMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.sim_world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._tutorial.stage_timer_ms),
                 score=int(self.player.experience),
@@ -513,7 +513,7 @@ class TutorialMode(BaseGameplayMode):
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            self.world.render_resources.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

@@ -17,9 +17,9 @@ def test_survival_mode_applies_queued_perk_pick_commands_during_tick_consumption
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
     fake_ctx = SimpleNamespace(
         state=mode.state,
-        players=mode.world.sim_world.players,
+        players=mode.sim_world.players,
         perk_state=mode.state.perk_selection,
-        player_count=len(mode.world.sim_world.players),
+        player_count=len(mode.sim_world.players),
         creatures=mode.creatures.entries,
     )
     mocker.patch.object(mode, "_perk_menu_context", return_value=fake_ctx)
@@ -36,9 +36,9 @@ def test_quest_mode_applies_queued_perk_pick_commands_during_tick_consumption(mo
     mode = QuestMode(ViewContext(assets_dir=_assets_dir()))
     fake_ctx = SimpleNamespace(
         state=mode.state,
-        players=mode.world.sim_world.players,
+        players=mode.sim_world.players,
         perk_state=mode.state.perk_selection,
-        player_count=len(mode.world.sim_world.players),
+        player_count=len(mode.sim_world.players),
         creatures=mode.creatures.entries,
     )
     mocker.patch.object(mode, "_perk_menu_context", return_value=fake_ctx)

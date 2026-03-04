@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 import msgspec
 
@@ -35,13 +35,6 @@ from .base_gameplay_mode import (
     BaseGameplayMode,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
-from .components.lan_policy import (
-    BaseLanModePolicy,
-    LanFramePhase,
-    LanModePolicy,
-    LanStepAction,
-    LanTickAppliedPhase,
-)
 
 WORLD_SIZE = 1024.0
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -58,40 +51,6 @@ RushSessionFactory = Callable[..., RushDeterministicSession]
 class _RushState(msgspec.Struct):
     elapsed_ms: float = 0.0
     spawn_cooldown_ms: float = 0.0
-
-
-class _RushLanModePolicy(BaseLanModePolicy):
-    def __init__(self, mode: "RushMode") -> None:
-        self._mode = mode
-
-    def prepare_frame(self, phase: LanFramePhase) -> bool:
-        mode = self._mode
-        rush_session = cast(RushDeterministicSession, phase.session)
-        rush_session.detail_preset = int(mode._deterministic_detail_preset())
-        rush_session.gore_disabled = int(mode._deterministic_gore_disabled())
-        return True
-
-    def on_tick_applied(self, phase: LanTickAppliedPhase) -> LanStepAction:
-        mode = self._mode
-        step = phase.step
-        rush_session = cast(RushDeterministicSession, phase.session)
-        mode._rush.elapsed_ms = float(step.tick.elapsed_ms)
-        mode._rush.spawn_cooldown_ms = float(rush_session.spawn_cooldown_ms)
-        mode._store_net_runtime_snapshot(
-            snapshot=RushStateSnapshotV2(
-                tick_index=int(step.frame_tick_index),
-                replay_state=mode._net_replay_snapshot_state(),
-                runtime_state=RushRuntimeSnapshotV2(
-                    elapsed_ms=float(step.tick.elapsed_ms),
-                    spawn_cooldown_ms=float(rush_session.spawn_cooldown_ms),
-                    kill_count=int(mode.creatures.kill_count),
-                ),
-            ),
-        )
-        if not any(player.health > 0.0 for player in mode.world.sim_world.players):
-            mode._enter_game_over()
-            return "stop_after_finalize"
-        return "continue"
 
 
 class RushMode(BaseGameplayMode):
@@ -127,7 +86,7 @@ class RushMode(BaseGameplayMode):
         self._sim_session: RushDeterministicSession | None = self._new_sim_session()
 
     def _enforce_rush_loadout(self) -> None:
-        for player in self.world.sim_world.players:
+        for player in self.sim_world.players:
             if player.weapon.weapon_id != RUSH_WEAPON_ID:
                 weapon_assign_player(player, RUSH_WEAPON_ID, state=self.state)
             # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
@@ -135,14 +94,14 @@ class RushMode(BaseGameplayMode):
 
     def _new_sim_session(self) -> RushDeterministicSession:
         return self._session_factory(
-            world=self.world.sim_world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.render_resources.fx_queue,
-            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
-            game_tune_started=bool(self.world.sim_world.game_tune_started),
+            game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             enforce_loadout=self._enforce_rush_loadout,
         )
@@ -168,8 +127,8 @@ class RushMode(BaseGameplayMode):
         bootstrap = run_terrain_bootstrap(
             self.state.rng,
             quest_unlock_index=int(quest_unlock_index),
-            width=int(self.world.world_size),
-            height=int(self.world.world_size),
+            width=int(self.world_size),
+            height=int(self.world_size),
             layers=3,
         )
         lan_debug_log(
@@ -191,7 +150,7 @@ class RushMode(BaseGameplayMode):
             terrain_detail=int(bootstrap.terrain_ids[2]),
             terrain_seed=int(bootstrap.terrain_seed),
         )
-        self.world.apply_bootstrap_terrain(
+        self.apply_bootstrap_terrain(
             terrain_ids=bootstrap.terrain_ids,
             seed=bootstrap.terrain_seed,
             layers=3,
@@ -217,13 +176,13 @@ class RushMode(BaseGameplayMode):
                     bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
                     tick_rate=int(self._gameplay_tick_rate()),
-                    difficulty_level=int(self.world.difficulty_level),
-                    hardcore=bool(self.world.hardcore),
+                    difficulty_level=int(self.difficulty_level),
+                    hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
                     gore_disabled=int(self._deterministic_gore_disabled()),
-                    world_size=float(self.world.world_size),
-                    player_count=len(self.world.sim_world.players),
+                    world_size=float(self.world_size),
+                    player_count=len(self.sim_world.players),
                     status=status_snapshot,
                 ),
             )
@@ -292,72 +251,114 @@ class RushMode(BaseGameplayMode):
     def _lan_match_session(self) -> RushDeterministicSession | None:
         return self._sim_session
 
-    def _create_lan_mode_policy(self) -> LanModePolicy:
-        return _RushLanModePolicy(self)
+    def _prepare_lan_frame(
+        self,
+        *,
+        role: str,
+        dt: float,
+        dt_ui_ms: float,
+        lockstep_runtime: object | None,
+        session: RushDeterministicSession,
+        dt_tick: float,
+    ) -> bool:
+        _ = role, dt, dt_ui_ms, lockstep_runtime, dt_tick
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
+        return True
+
+    def _on_lan_tick_applied(
+        self,
+        *,
+        role: str,
+        lockstep_runtime: object | None,
+        session: RushDeterministicSession,
+        step: object,
+        dt_tick: float,
+    ) -> str:
+        _ = role, lockstep_runtime, dt_tick
+        applied = cast(Any, step)
+        self._rush.elapsed_ms = float(applied.tick.elapsed_ms)
+        self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+        self._store_net_runtime_snapshot(
+            snapshot=RushStateSnapshotV2(
+                tick_index=int(applied.frame_tick_index),
+                replay_state=self._net_replay_snapshot_state(),
+                runtime_state=RushRuntimeSnapshotV2(
+                    elapsed_ms=float(applied.tick.elapsed_ms),
+                    spawn_cooldown_ms=float(session.spawn_cooldown_ms),
+                    kill_count=int(self.creatures.kill_count),
+                ),
+            ),
+        )
+        if not any(player.health > 0.0 for player in self.sim_world.players):
+            self._enter_game_over()
+            return "stop_after_finalize"
+        return "continue"
 
     def update(self, dt: float) -> None:
-        def _after_input(frame) -> bool:
-            if not self._game_over_active:
-                return False
+        frame = self._begin_mode_update(float(dt))
+        if frame is None:
+            return
+
+        if self._game_over_active:
             self._update_game_over_ui(float(frame.dt))
-            return True
+            return
 
-        def _run_non_lan(frame) -> None:
-            any_alive = self._any_player_alive()
-            sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
-            session = self._sim_session
+        if bool(self._lan_enabled) and self._lan_runtime is not None:
+            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=0.0)
+            return
 
-            def _on_sim_inactive(_frame, _sim_dt: float) -> None:
-                if any_alive:
-                    return
+        any_alive = self._any_player_alive()
+        sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
+        session = self._sim_session
+
+        if self._lan_wait_gate_active():
+            self._reset_gameplay_tick_runner_clock()
+            return
+        if sim_dt <= 0.0:
+            self._reset_gameplay_tick_runner_clock()
+            if not any_alive:
                 self._enter_game_over()
+            return
+        if session is None:
+            return
 
-            def _on_tick(tick, tick_index: int | None) -> bool:
-                self._rush.elapsed_ms = float(tick.elapsed_ms)
-                if session is not None:
-                    self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
-                _ = tick_index
+        def _on_tick(tick, tick_index: int | None) -> bool:
+            self._rush.elapsed_ms = float(tick.elapsed_ms)
+            self._rush.spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+            _ = tick_index
 
-                if not self._any_player_alive():
-                    self._enter_game_over()
-                    return True
-                return False
+            if not self._any_player_alive():
+                self._enter_game_over()
+                return True
+            return False
 
-            def _on_checkpoint(tick_index: int, tick) -> None:
-                self._record_replay_checkpoint_from_tick(
-                    tick_index=int(tick_index),
-                    tick=tick,
-                )
-
-            self._run_mode_deterministic_simulation(
-                frame=frame,
-                sim_dt=sim_dt,
-                session=session,
-                recorder=self._replay_recorder,
-                on_tick=_on_tick,
-                on_checkpoint=_on_checkpoint,
-                on_sim_inactive=_on_sim_inactive,
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            self._record_replay_checkpoint_from_tick(
+                tick_index=int(tick_index),
+                tick=tick,
             )
 
-        self._run_mode_update_frame(
-            dt=float(dt),
-            on_after_input=_after_input,
-            on_non_lan=_run_non_lan,
-            lan_dt_ui_ms=0.0,
+        self._run_deterministic_session_ticks(
+            dt_frame=float(sim_dt),
+            session=session,
+            recorder=self._replay_recorder,
+            on_tick=_on_tick,
+            on_checkpoint=_on_checkpoint,
         )
 
     def _draw_game_cursor(self) -> None:
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self.world.render_resources.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
         )
 
     def draw(self) -> None:
-        self.world.draw(
+        self._draw_world(
             draw_aim_indicators=(not self._game_over_active),
             entity_alpha=self._world_entity_alpha(),
         )
@@ -380,7 +381,7 @@ class RushMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.sim_world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._rush.elapsed_ms,
                 frame_dt_ms=self._last_dt_ms,

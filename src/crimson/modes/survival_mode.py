@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 import msgspec
 
@@ -27,13 +27,11 @@ from ..input_codes import (
     input_primary_just_pressed,
 )
 from ..net.debug_log import lan_debug_log
-from ..net.lockstep_protocol import PerkMenuClose, PerkMenuOpen, PerkPick
 from ..net.lockstep_runtime import LockstepRuntime
 from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
-from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
@@ -50,14 +48,6 @@ from .base_gameplay_mode import (
     BaseGameplayMode,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
-from .components.lan_policy import (
-    BaseLanModePolicy,
-    LanFramePhase,
-    LanModePolicy,
-    LanStepAction,
-    LanTickAppliedPhase,
-    LanTickPhase,
-)
 from .components.perk_menu_controller import PerkMenuContext, PerkMenuController
 from .components.perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
@@ -78,139 +68,6 @@ class _SurvivalState(msgspec.Struct):
     elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown: float = 0.0
-
-
-class _SurvivalLanModePolicy(BaseLanModePolicy):
-    def __init__(self, mode: "SurvivalMode") -> None:
-        self._mode = mode
-
-    def prepare_frame(self, phase: LanFramePhase) -> bool:
-        mode = self._mode
-        survival_session = cast(SurvivalDeterministicSession, phase.session)
-        survival_session.detail_preset = int(mode._deterministic_detail_preset())
-        survival_session.gore_disabled = int(mode._deterministic_gore_disabled())
-
-        mode._drain_join_perk_events(role=str(phase.role), lockstep_runtime=phase.lockstep_runtime)
-        mode._apply_due_lan_perk_events(role=str(phase.role), dt_tick=float(phase.dt_tick))
-
-        any_alive = mode._any_player_alive()
-        perk_pending = int(mode.state.perk_selection.pending_count) > 0 and any_alive
-
-        mode._perk_prompt_hover = False
-        if mode._perk_menu.open and phase.role == "host":
-            # Keep perk application dt consistent across peers.
-            mode._perk_menu.handle_input(
-                mode._perk_menu_context(),
-                dt=float(phase.dt_tick),
-                dt_ui_ms=float(phase.dt_ui_ms),
-            )
-
-        perk_menu_active = mode._perk_menu.active
-        if phase.role == "host" and (not perk_menu_active) and perk_pending and (not mode._paused):
-            label = PerkPromptUi.label(mode.config, pending_count=int(mode.state.perk_selection.pending_count))
-            if label:
-                rect = PerkPromptUi.rect(
-                    label,
-                    ui_text_width=mode._ui_text_width,
-                    ui_line_height=mode._ui_line_height,
-                    assets=mode._perk_menu_assets,
-                    scale=UI_TEXT_SCALE,
-                )
-                mode._perk_prompt_hover = rect.contains(mode._ui_mouse_pos())
-
-            player0_binds = config_keybinds_for_player(mode.config, player_index=0)
-            fire_key = 0x100
-            if len(player0_binds) >= 5:
-                fire_key = int(player0_binds[4])
-
-            pick_key = mode.config.keybind_pick_perk
-            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
-                not input_code_is_down_for_player(fire_key, player_index=0)
-            ):
-                mode._try_open_lan_host_perk_menu(lockstep_runtime=phase.lockstep_runtime)
-            elif mode._perk_prompt_hover and input_primary_just_pressed(
-                mode.config,
-                player_count=len(mode.world.sim_world.players),
-            ):
-                mode._try_open_lan_host_perk_menu(lockstep_runtime=phase.lockstep_runtime)
-
-        if not mode._paused and not mode._game_over_active:
-            pulse_delta = float(phase.dt_ui_ms) * (6.0 if mode._perk_prompt_hover else -2.0)
-            mode._perk_prompt_pulse = clamp(mode._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
-
-        perk_menu_active = mode._perk_menu.active
-        prompt_active = perk_pending and (not perk_menu_active) and (not mode._paused)
-        if prompt_active:
-            mode._perk_prompt_timer_ms = clamp(
-                mode._perk_prompt_timer_ms + float(phase.dt_ui_ms),
-                0.0,
-                PERK_PROMPT_MAX_TIMER_MS,
-            )
-        else:
-            mode._perk_prompt_timer_ms = clamp(
-                mode._perk_prompt_timer_ms - float(phase.dt_ui_ms),
-                0.0,
-                PERK_PROMPT_MAX_TIMER_MS,
-            )
-
-        mode._perk_menu.tick_timeline(float(phase.dt_ui_ms))
-        if mode._perk_menu.active:
-            mode._hud_fade_ms = 0.0
-        else:
-            mode._hud_fade_ms = clamp(mode._hud_fade_ms + float(phase.dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
-
-        if mode._perk_menu.active:
-            mode._reset_lan_capture_clock()
-            if mode._death_transition_ready():
-                mode._enter_game_over()
-            return False
-        return True
-
-    def allow_frame_pop(self, phase: LanTickPhase) -> bool:
-        _ = phase
-        return not self._mode._perk_menu.active
-
-    def after_join_consume(self, phase: LanTickPhase) -> bool:
-        mode = self._mode
-        mode._drain_join_perk_events(role="join", lockstep_runtime=phase.lockstep_runtime)
-        mode._apply_due_lan_perk_events(role="join", dt_tick=float(phase.dt_tick))
-        if mode._perk_menu.active:
-            mode._reset_lan_capture_clock()
-            return True
-        return False
-
-    def on_tick_applied(self, phase: LanTickAppliedPhase) -> LanStepAction:
-        mode = self._mode
-        step = phase.step
-        survival_session = cast(SurvivalDeterministicSession, phase.session)
-        session_elapsed_ms = float(survival_session.elapsed_ms)
-        session_stage = int(survival_session.stage)
-        session_spawn_cooldown_ms = float(survival_session.spawn_cooldown_ms)
-        mode._survival.elapsed_ms = session_elapsed_ms
-        mode._survival.stage = session_stage
-        mode._survival.spawn_cooldown = session_spawn_cooldown_ms
-
-        mode._lan_last_tick_index = int(step.frame_tick_index)
-        mode._store_net_runtime_snapshot(
-            snapshot=SurvivalStateSnapshotV2(
-                tick_index=int(step.frame_tick_index),
-                replay_state=mode._net_replay_snapshot_state(),
-                runtime_state=SurvivalRuntimeSnapshotV2(
-                    elapsed_ms=float(session_elapsed_ms),
-                    stage=int(session_stage),
-                    spawn_cooldown_ms=float(session_spawn_cooldown_ms),
-                    perk_pending_count=int(mode.state.perk_selection.pending_count),
-                ),
-            ),
-        )
-        mode._apply_due_lan_perk_events(role="join", dt_tick=float(phase.dt_tick))
-        if mode._perk_menu.active:
-            return "stop_before_finalize"
-
-        if mode._death_transition_ready():
-            mode._enter_game_over()
-            return "stop_after_finalize"
-        return "continue"
 
 
 class SurvivalMode(BaseGameplayMode):
@@ -255,31 +112,21 @@ class SurvivalMode(BaseGameplayMode):
         self._session_factory = session_factory
         self._sim_session: SurvivalDeterministicSession | None = self._new_sim_session()
         self._lan_last_tick_index: int = -1
-        self._lan_perk_events: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
-        self._lan_perk_close_suppress: bool = False
 
     def _new_sim_session(self) -> SurvivalDeterministicSession:
         return self._session_factory(
-            world=self.world.sim_world.world_state,
-            world_size=float(self.world.world_size),
-            damage_scale_by_type=self.world.sim_world.damage_scale_by_type,
-            fx_queue=self.world.render_resources.fx_queue,
-            fx_queue_rotated=self.world.render_resources.fx_queue_rotated,
+            world=self.sim_world.world_state,
+            world_size=float(self.world_size),
+            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            fx_queue=self.render_resources.fx_queue,
+            fx_queue_rotated=self.render_resources.fx_queue_rotated,
             detail_preset=5,
             gore_disabled=0,
-            game_tune_started=bool(self.world.sim_world.game_tune_started),
+            game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
         )
 
     def _reset_perk_prompt(self) -> None:
-        if bool(self._lan_enabled) and str(self._lan_role) == "host":
-            lockstep_runtime = self._lockstep_runtime()
-            tick_index = max(0, int(self._lan_last_tick_index))
-            if bool(self._lan_perk_close_suppress):
-                self._lan_perk_close_suppress = False
-            elif lockstep_runtime is not None:
-                lockstep_runtime.broadcast_perk_menu_close(tick_index=int(tick_index), player_index=0)
-
         if int(self.state.perk_selection.pending_count) > 0:
             # Reset the prompt swing so each pending perk replays the intro.
             self._perk_prompt_timer_ms = 0.0
@@ -287,17 +134,6 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _record_perk_pick(self, choice_index: int) -> bool:
-        if bool(self._lan_enabled) and str(self._lan_role) == "host":
-            lockstep_runtime = self._lockstep_runtime()
-            if lockstep_runtime is not None:
-                tick_index = max(0, int(self._lan_last_tick_index))
-                self._lan_perk_close_suppress = True
-                lockstep_runtime.broadcast_perk_pick(
-                    tick_index=int(tick_index),
-                    player_index=0,
-                    choice_index=int(choice_index),
-                )
-
         self._record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
@@ -329,7 +165,7 @@ class SurvivalMode(BaseGameplayMode):
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)
-        players = self.world.sim_world.players
+        players = self.sim_world.players
         return PerkMenuContext(
             state=self.state,
             perk_state=self.state.perk_selection,
@@ -343,7 +179,7 @@ class SurvivalMode(BaseGameplayMode):
             font=self._small,
             assets=self._perk_menu_assets,
             mouse=self._ui_mouse_pos(),
-            play_sfx=self.world.audio_bridge.router.play_sfx,
+            play_sfx=self.audio_bridge.router.play_sfx,
         )
 
     def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
@@ -366,10 +202,10 @@ class SurvivalMode(BaseGameplayMode):
         return lines
 
     def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.world.world_to_screen(pos)
+        return self.world_to_screen(pos)
 
     def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.world.screen_to_world(pos)
+        return self.screen_to_world(pos)
 
     def open(self) -> None:
         super().open()
@@ -382,8 +218,6 @@ class SurvivalMode(BaseGameplayMode):
         self._reset_lan_capture_clock()
         self._survival = _SurvivalState()
         self._lan_last_tick_index = -1
-        self._lan_perk_events.clear()
-        self._lan_perk_close_suppress = False
 
         status = self.state.status
         base_status = self.save_status
@@ -399,8 +233,8 @@ class SurvivalMode(BaseGameplayMode):
         bootstrap = run_terrain_bootstrap(
             self.state.rng,
             quest_unlock_index=int(quest_unlock_index),
-            width=int(self.world.world_size),
-            height=int(self.world.world_size),
+            width=int(self.world_size),
+            height=int(self.world_size),
             layers=3,
         )
         lan_debug_log(
@@ -422,7 +256,7 @@ class SurvivalMode(BaseGameplayMode):
             terrain_detail=int(bootstrap.terrain_ids[2]),
             terrain_seed=int(bootstrap.terrain_seed),
         )
-        self.world.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
+        self.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
 
         self._sim_session = self._new_sim_session()
 
@@ -449,13 +283,13 @@ class SurvivalMode(BaseGameplayMode):
                     bootstrap_kind=BOOTSTRAP_KIND_TERRAIN_V1,
                     bootstrap_seed=int(self._bootstrap_seed),
                     tick_rate=int(self._gameplay_tick_rate()),
-                    difficulty_level=int(self.world.difficulty_level),
-                    hardcore=bool(self.world.hardcore),
+                    difficulty_level=int(self.difficulty_level),
+                    hardcore=bool(self.hardcore),
                     preserve_bugs=bool(self.state.preserve_bugs),
                     detail_preset=int(self._deterministic_detail_preset()),
                     gore_disabled=int(self._deterministic_gore_disabled()),
-                    world_size=float(self.world.world_size),
-                    player_count=len(self.world.sim_world.players),
+                    world_size=float(self.world_size),
+                    player_count=len(self.sim_world.players),
                     status=status_snapshot,
                 ),
             )
@@ -471,8 +305,6 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_menu_assets = None
         self._sim_session = None
         self._lan_last_tick_index = -1
-        self._lan_perk_events.clear()
-        self._lan_perk_close_suppress = False
         super().close()
 
     def _handle_input(self) -> None:
@@ -484,7 +316,7 @@ class SurvivalMode(BaseGameplayMode):
         if self._perk_menu.open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             if bool(self._lan_enabled) and str(self._lan_role) == "join":
                 return
-            self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
+            self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             self._perk_menu.close()
             return
 
@@ -494,11 +326,11 @@ class SurvivalMode(BaseGameplayMode):
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self.state.debug_god_mode = not bool(self.state.debug_god_mode)
-                self.world.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
+                self.audio_bridge.router.play_sfx("sfx_ui_buttonclick")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
                 self.state.perk_selection.pending_count += 1
                 self.state.perk_selection.choices_dirty = True
-                self.world.audio_bridge.router.play_sfx("sfx_ui_levelup")
+                self.audio_bridge.router.play_sfx("sfx_ui_levelup")
             if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
                 self._debug_cycle_weapon(-1)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
@@ -525,7 +357,7 @@ class SurvivalMode(BaseGameplayMode):
 
     def _death_transition_ready(self) -> bool:
         dead_players = 0
-        for player in self.world.sim_world.players:
+        for player in self.sim_world.players:
             if float(player.health) > 0.0:
                 return False
             dead_players += 1
@@ -556,98 +388,176 @@ class SurvivalMode(BaseGameplayMode):
     def _lan_match_session(self) -> SurvivalDeterministicSession | None:
         return self._sim_session
 
-    def _create_lan_mode_policy(self) -> LanModePolicy:
-        return _SurvivalLanModePolicy(self)
-
     def _on_lan_paused(self, *, dt: float) -> None:
         _ = dt
         if self._death_transition_ready():
             self._enter_game_over()
 
-    def _drain_join_perk_events(
+    def _prepare_lan_frame(
+        self,
+        *,
+        role: str,
+        dt: float,
+        dt_ui_ms: float,
+        lockstep_runtime: LockstepRuntime | None,
+        session: SurvivalDeterministicSession,
+        dt_tick: float,
+    ) -> bool:
+        _ = dt
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
+
+        any_alive = self._any_player_alive()
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
+
+        self._perk_prompt_hover = False
+        if self._perk_menu.open and role == "host":
+            # Keep perk application dt consistent across peers.
+            self._perk_menu.handle_input(
+                self._perk_menu_context(),
+                dt=float(dt_tick),
+                dt_ui_ms=float(dt_ui_ms),
+            )
+
+        perk_menu_active = self._perk_menu.active
+        if role == "host" and (not perk_menu_active) and perk_pending and (not self._paused):
+            label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
+            if label:
+                rect = PerkPromptUi.rect(
+                    label,
+                    ui_text_width=self._ui_text_width,
+                    ui_line_height=self._ui_line_height,
+                    assets=self._perk_menu_assets,
+                    scale=UI_TEXT_SCALE,
+                )
+                self._perk_prompt_hover = rect.contains(self._ui_mouse_pos())
+
+            player0_binds = config_keybinds_for_player(self.config, player_index=0)
+            fire_key = 0x100
+            if len(player0_binds) >= 5:
+                fire_key = int(player0_binds[4])
+
+            pick_key = self.config.keybind_pick_perk
+            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
+                not input_code_is_down_for_player(fire_key, player_index=0)
+            ):
+                self._try_open_lan_host_perk_menu()
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self.config,
+                player_count=len(self.sim_world.players),
+            ):
+                self._try_open_lan_host_perk_menu()
+
+        if not self._paused and not self._game_over_active:
+            pulse_delta = float(dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)
+            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
+
+        perk_menu_active = self._perk_menu.active
+        prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
+        if prompt_active:
+            self._perk_prompt_timer_ms = clamp(
+                self._perk_prompt_timer_ms + float(dt_ui_ms),
+                0.0,
+                PERK_PROMPT_MAX_TIMER_MS,
+            )
+        else:
+            self._perk_prompt_timer_ms = clamp(
+                self._perk_prompt_timer_ms - float(dt_ui_ms),
+                0.0,
+                PERK_PROMPT_MAX_TIMER_MS,
+            )
+
+        self._perk_menu.tick_timeline(float(dt_ui_ms))
+        if self._perk_menu.active:
+            self._hud_fade_ms = 0.0
+        else:
+            self._hud_fade_ms = clamp(self._hud_fade_ms + float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+
+        if self._perk_menu.active:
+            self._reset_lan_capture_clock()
+            if self._death_transition_ready():
+                self._enter_game_over()
+            return False
+        return True
+
+    def _before_lan_tick_step(
         self,
         *,
         role: str,
         lockstep_runtime: LockstepRuntime | None,
+        session: SurvivalDeterministicSession,
+        dt_tick: float,
     ) -> None:
-        if role != "join" or lockstep_runtime is None:
-            return
-        while True:
-            perk_event = lockstep_runtime.pop_perk_event()
-            if perk_event is None:
-                break
-            self._lan_perk_events.append(perk_event)
+        _ = role, lockstep_runtime, dt_tick
+        session.detail_preset = int(self._deterministic_detail_preset())
+        session.gore_disabled = int(self._deterministic_gore_disabled())
 
-    @staticmethod
-    def _perk_event_sort_key(ev: PerkMenuOpen | PerkMenuClose | PerkPick) -> tuple[int, int]:
-        tick_index = int(ev.tick_index)
-        match ev:
-            case PerkMenuOpen():
-                order = 0
-            case PerkMenuClose():
-                order = 1
-            case _:
-                order = 2
-        return (tick_index, order)
+    def _allow_lan_frame_pop(
+        self,
+        *,
+        role: str,
+        lockstep_runtime: LockstepRuntime | None,
+        session: SurvivalDeterministicSession,
+        dt_tick: float,
+    ) -> bool:
+        _ = role, lockstep_runtime, session, dt_tick
+        return not self._perk_menu.active
 
-    def _apply_due_lan_perk_events(self, *, role: str, dt_tick: float) -> None:
-        if role != "join" or not self._lan_perk_events:
-            return
-        perk_ctx = self._perk_menu_context()
-        self._lan_perk_events.sort(key=self._perk_event_sort_key)
-        remaining: list[PerkMenuOpen | PerkMenuClose | PerkPick] = []
-        for event in self._lan_perk_events:
-            event_tick = int(event.tick_index)
-            if event_tick < 0:
-                continue
-            if event_tick > int(self._lan_last_tick_index):
-                remaining.append(event)
-                continue
-            player_index = int(event.player_index)
-            if int(player_index) != 0:
-                continue
-            match event:
-                case PerkMenuOpen():
-                    opened = self._perk_menu.open_if_available(perk_ctx)
-                    if not opened:
-                        lan_debug_log(
-                            "lan_sanity_mismatch",
-                            role="join",
-                            kind="perk_menu_open",
-                            tick_index=int(event_tick),
-                            pending_count=int(self.state.perk_selection.pending_count),
-                        )
-                case PerkMenuClose():
-                    self._perk_menu.close()
-                case PerkPick():
-                    choice_index = int(event.choice_index)
-                    picked = perk_selection_pick(
-                        perk_ctx.state,
-                        perk_ctx.players,
-                        perk_ctx.perk_state,
-                        int(choice_index),
-                        game_mode=GameMode.SURVIVAL,
-                        player_count=int(perk_ctx.player_count),
-                        dt=float(dt_tick),
-                        creatures=perk_ctx.creatures,
-                    )
-                    if picked is None:
-                        lan_debug_log(
-                            "lan_sanity_mismatch",
-                            role="join",
-                            kind="perk_pick",
-                            tick_index=int(event_tick),
-                            pending_count=int(self.state.perk_selection.pending_count),
-                            choice_index=int(choice_index),
-                        )
-                    elif self.world.audio_bridge.router is not None:
-                        self.world.audio_bridge.router.play_sfx("sfx_ui_bonus")
-                    self._perk_menu.close()
-                case _:
-                    continue
-        self._lan_perk_events = remaining
+    def _after_join_lan_consume(
+        self,
+        *,
+        role: str,
+        lockstep_runtime: LockstepRuntime | None,
+        session: SurvivalDeterministicSession,
+        dt_tick: float,
+    ) -> bool:
+        _ = role, lockstep_runtime, session, dt_tick
+        if self._perk_menu.active:
+            self._reset_lan_capture_clock()
+            return True
+        return False
 
-    def _try_open_lan_host_perk_menu(self, *, lockstep_runtime: LockstepRuntime | None) -> None:
+    def _on_lan_tick_applied(
+        self,
+        *,
+        role: str,
+        lockstep_runtime: LockstepRuntime | None,
+        session: SurvivalDeterministicSession,
+        step: object,
+        dt_tick: float,
+    ) -> str:
+        _ = role, lockstep_runtime, dt_tick
+        step_tick = cast(Any, step)
+        frame_tick_index = int(step_tick.frame_tick_index)
+        session_elapsed_ms = float(session.elapsed_ms)
+        session_stage = int(session.stage)
+        session_spawn_cooldown_ms = float(session.spawn_cooldown_ms)
+        self._survival.elapsed_ms = session_elapsed_ms
+        self._survival.stage = session_stage
+        self._survival.spawn_cooldown = session_spawn_cooldown_ms
+
+        self._lan_last_tick_index = int(frame_tick_index)
+        self._store_net_runtime_snapshot(
+            snapshot=SurvivalStateSnapshotV2(
+                tick_index=int(frame_tick_index),
+                replay_state=self._net_replay_snapshot_state(),
+                runtime_state=SurvivalRuntimeSnapshotV2(
+                    elapsed_ms=float(session_elapsed_ms),
+                    stage=int(session_stage),
+                    spawn_cooldown_ms=float(session_spawn_cooldown_ms),
+                    perk_pending_count=int(self.state.perk_selection.pending_count),
+                ),
+            ),
+        )
+        if self._perk_menu.active:
+            return "stop_before_finalize"
+
+        if self._death_transition_ready():
+            self._enter_game_over()
+            return "stop_after_finalize"
+        return "continue"
+
+    def _try_open_lan_host_perk_menu(self) -> None:
         perk_ctx = self._perk_menu_context()
         self._perk_prompt_pulse = 1000.0
         recorder = self._replay_recorder
@@ -656,135 +566,134 @@ class SurvivalMode(BaseGameplayMode):
         opened = self._perk_menu.open_if_available(perk_ctx)
         if not opened:
             return
-        tick_index = max(0, int(self._lan_last_tick_index))
-        if lockstep_runtime is not None:
-            lockstep_runtime.broadcast_perk_menu_open(tick_index=int(tick_index), player_index=0)
         if recorder is not None:
             recorder.record_perk_menu_open(player_index=0)
 
     def update(self, dt: float) -> None:
-        def _after_input(frame) -> bool:
-            self._cursor_time += float(frame.dt)
-            if not self._game_over_active:
-                return False
+        frame = self._begin_mode_update(float(dt))
+        if frame is None:
+            return
+
+        self._cursor_time += float(frame.dt)
+        if self._game_over_active:
             self._update_game_over_ui(float(frame.dt))
-            return True
+            return
 
-        def _run_non_lan(frame) -> None:
-            any_alive = self._any_player_alive()
-            perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
+        if bool(self._lan_enabled) and self._lan_runtime is not None:
+            self._update_lan_match(dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
+            return
 
-            self._perk_prompt_hover = False
-            perk_ctx = self._perk_menu_context()
-            if self._perk_menu.open:
-                self._perk_menu.handle_input(perk_ctx, dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
+        any_alive = self._any_player_alive()
+        perk_pending = int(self.state.perk_selection.pending_count) > 0 and any_alive
 
-            perk_menu_active = self._perk_menu.active
-            any_alive = self._any_player_alive()
+        self._perk_prompt_hover = False
+        perk_ctx = self._perk_menu_context()
+        if self._perk_menu.open:
+            self._perk_menu.handle_input(perk_ctx, dt=float(frame.dt), dt_ui_ms=float(frame.dt_ui_ms))
 
-            if (not perk_menu_active) and perk_pending and (not self._paused):
-                label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
-                if label:
-                    rect = PerkPromptUi.rect(
-                        label,
-                        ui_text_width=self._ui_text_width,
-                        ui_line_height=self._ui_line_height,
-                        assets=self._perk_menu_assets,
-                        scale=UI_TEXT_SCALE,
-                    )
-                    mouse = self._ui_mouse_pos()
-                    self._perk_prompt_hover = rect.contains(mouse)
+        perk_menu_active = self._perk_menu.active
+        any_alive = self._any_player_alive()
 
-                player0_binds = config_keybinds_for_player(self.config, player_index=0)
-                fire_key = 0x100
-                if len(player0_binds) >= 5:
-                    fire_key = int(player0_binds[4])
-
-                pick_key = self.config.keybind_pick_perk
-
-                if input_code_is_pressed_for_player(pick_key, player_index=0) and (
-                    not input_code_is_down_for_player(fire_key, player_index=0)
-                ):
-                    self._perk_prompt_pulse = 1000.0
-                    if self._replay_recorder is not None:
-                        self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                    opened = self._perk_menu.open_if_available(perk_ctx)
-                    if opened and self._replay_recorder is not None:
-                        self._replay_recorder.record_perk_menu_open(player_index=0)
-                elif self._perk_prompt_hover and input_primary_just_pressed(
-                    self.config,
-                    player_count=len(self.world.sim_world.players),
-                ):
-                    self._perk_prompt_pulse = 1000.0
-                    if self._replay_recorder is not None:
-                        self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
-                    opened = self._perk_menu.open_if_available(perk_ctx)
-                    if opened and self._replay_recorder is not None:
-                        self._replay_recorder.record_perk_menu_open(player_index=0)
-
-            if not self._paused and not self._game_over_active:
-                pulse_delta = float(frame.dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)
-                self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
-
-            prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
-            if prompt_active:
-                self._perk_prompt_timer_ms = clamp(
-                    self._perk_prompt_timer_ms + float(frame.dt_ui_ms),
-                    0.0,
-                    PERK_PROMPT_MAX_TIMER_MS,
+        if (not perk_menu_active) and perk_pending and (not self._paused):
+            label = PerkPromptUi.label(self.config, pending_count=int(self.state.perk_selection.pending_count))
+            if label:
+                rect = PerkPromptUi.rect(
+                    label,
+                    ui_text_width=self._ui_text_width,
+                    ui_line_height=self._ui_line_height,
+                    assets=self._perk_menu_assets,
+                    scale=UI_TEXT_SCALE,
                 )
-            else:
-                self._perk_prompt_timer_ms = clamp(
-                    self._perk_prompt_timer_ms - float(frame.dt_ui_ms),
-                    0.0,
-                    PERK_PROMPT_MAX_TIMER_MS,
-                )
+                mouse = self._ui_mouse_pos()
+                self._perk_prompt_hover = rect.contains(mouse)
 
-            self._perk_menu.tick_timeline(float(frame.dt_ui_ms))
-            if self._perk_menu.active:
-                self._hud_fade_ms = 0.0
-            else:
-                self._hud_fade_ms = clamp(self._hud_fade_ms + float(frame.dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+            player0_binds = config_keybinds_for_player(self.config, player_index=0)
+            fire_key = 0x100
+            if len(player0_binds) >= 5:
+                fire_key = int(player0_binds[4])
 
-            sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
-            session = self._sim_session
+            pick_key = self.config.keybind_pick_perk
 
-            def _on_sim_inactive(_frame, _sim_dt: float) -> None:
-                if self._death_transition_ready():
-                    self._enter_game_over()
+            if input_code_is_pressed_for_player(pick_key, player_index=0) and (
+                not input_code_is_down_for_player(fire_key, player_index=0)
+            ):
+                self._perk_prompt_pulse = 1000.0
+                if self._replay_recorder is not None:
+                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened and self._replay_recorder is not None:
+                    self._replay_recorder.record_perk_menu_open(player_index=0)
+            elif self._perk_prompt_hover and input_primary_just_pressed(
+                self.config,
+                player_count=len(self.sim_world.players),
+            ):
+                self._perk_prompt_pulse = 1000.0
+                if self._replay_recorder is not None:
+                    self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
+                opened = self._perk_menu.open_if_available(perk_ctx)
+                if opened and self._replay_recorder is not None:
+                    self._replay_recorder.record_perk_menu_open(player_index=0)
 
-            def _on_tick(tick, tick_index: int | None) -> bool:
-                if session is not None:
-                    self._survival.elapsed_ms = float(session.elapsed_ms)
-                    self._survival.stage = int(session.stage)
-                    self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
-                _ = tick_index
+        if not self._paused and not self._game_over_active:
+            pulse_delta = float(frame.dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)
+            self._perk_prompt_pulse = clamp(self._perk_prompt_pulse + pulse_delta, 0.0, 1000.0)
 
-                if self._death_transition_ready():
-                    self._enter_game_over()
-                    return True
-                return False
-
-            def _on_checkpoint(tick_index: int, tick) -> None:
-                self._record_replay_checkpoint_from_tick(
-                    tick_index=int(tick_index),
-                    tick=tick,
-                )
-
-            self._run_mode_deterministic_simulation(
-                frame=frame,
-                sim_dt=sim_dt,
-                session=session,
-                recorder=self._replay_recorder,
-                on_tick=_on_tick,
-                on_checkpoint=_on_checkpoint,
-                on_sim_inactive=_on_sim_inactive,
+        prompt_active = perk_pending and (not perk_menu_active) and (not self._paused)
+        if prompt_active:
+            self._perk_prompt_timer_ms = clamp(
+                self._perk_prompt_timer_ms + float(frame.dt_ui_ms),
+                0.0,
+                PERK_PROMPT_MAX_TIMER_MS,
+            )
+        else:
+            self._perk_prompt_timer_ms = clamp(
+                self._perk_prompt_timer_ms - float(frame.dt_ui_ms),
+                0.0,
+                PERK_PROMPT_MAX_TIMER_MS,
             )
 
-        self._run_mode_update_frame(
-            dt=float(dt),
-            on_after_input=_after_input,
-            on_non_lan=_run_non_lan,
+        self._perk_menu.tick_timeline(float(frame.dt_ui_ms))
+        if self._perk_menu.active:
+            self._hud_fade_ms = 0.0
+        else:
+            self._hud_fade_ms = clamp(self._hud_fade_ms + float(frame.dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+
+        sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
+        session = self._sim_session
+        if self._lan_wait_gate_active():
+            self._reset_gameplay_tick_runner_clock()
+            return
+        if sim_dt <= 0.0:
+            self._reset_gameplay_tick_runner_clock()
+            if self._death_transition_ready():
+                self._enter_game_over()
+            return
+        if session is None:
+            return
+
+        def _on_tick(tick, tick_index: int | None) -> bool:
+            self._survival.elapsed_ms = float(session.elapsed_ms)
+            self._survival.stage = int(session.stage)
+            self._survival.spawn_cooldown = float(session.spawn_cooldown_ms)
+            _ = tick_index
+
+            if self._death_transition_ready():
+                self._enter_game_over()
+                return True
+            return False
+
+        def _on_checkpoint(tick_index: int, tick) -> None:
+            self._record_replay_checkpoint_from_tick(
+                tick_index=int(tick_index),
+                tick=tick,
+            )
+
+        self._run_deterministic_session_ticks(
+            dt_frame=float(sim_dt),
+            session=session,
+            recorder=self._replay_recorder,
+            on_tick=_on_tick,
+            on_checkpoint=_on_checkpoint,
         )
 
     def _draw_perk_prompt(self) -> None:
@@ -792,7 +701,7 @@ class SurvivalMode(BaseGameplayMode):
             return
         if self._perk_menu.active:
             return
-        if not any(player.health > 0.0 for player in self.world.sim_world.players):
+        if not any(player.health > 0.0 for player in self.sim_world.players):
             return
         pending_count = int(self.state.perk_selection.pending_count)
         if pending_count <= 0:
@@ -815,7 +724,7 @@ class SurvivalMode(BaseGameplayMode):
         mouse_pos = self._ui_mouse
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         draw_menu_cursor(
-            self.world.render_resources.particles_texture,
+            self.render_resources.particles_texture,
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
@@ -823,7 +732,7 @@ class SurvivalMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self.world.draw(
+        self._draw_world(
             draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active),
             entity_alpha=self._world_entity_alpha(),
         )
@@ -848,7 +757,7 @@ class SurvivalMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.world.sim_world.players,
+                players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._survival.elapsed_ms,
                 score=self.player.experience,

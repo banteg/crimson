@@ -132,8 +132,14 @@ class LanSyncCallbacks:
 
 
 class ReplayRecorderHook:
-    def __init__(self, recorder: ReplayRecorder | None) -> None:
+    def __init__(
+        self,
+        recorder: ReplayRecorder | None,
+        *,
+        resolve_recorder: Callable[[], ReplayRecorder | None] | None = None,
+    ) -> None:
         self._recorder = recorder
+        self._resolve_recorder = resolve_recorder
         self._recorded_tick_by_runner_tick: dict[int, int] = {}
 
     def set_recorder(self, recorder: ReplayRecorder | None) -> None:
@@ -149,7 +155,8 @@ class ReplayRecorderHook:
         return self._recorded_tick_by_runner_tick.pop(int(runner_tick_index), None)
 
     def on_pre_sim(self, ctx: TickContext) -> None:
-        recorder = self._recorder
+        resolve_recorder = self._resolve_recorder
+        recorder = resolve_recorder() if resolve_recorder is not None else self._recorder
         if recorder is None:
             return
         if not ctx.inputs_present or ctx.inputs is None:

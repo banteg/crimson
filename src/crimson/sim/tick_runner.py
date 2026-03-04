@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from typing import Generic, Protocol, TypeVar
 
 import msgspec
@@ -35,6 +36,7 @@ class TickRunnerConfig(msgspec.Struct, frozen=True):
     tick_rate: int = 60
     is_networked: bool = False
     is_replay: bool = False
+    trace_rng: bool = False
 
 
 class TickBatchResult(msgspec.Struct):
@@ -60,6 +62,7 @@ class TickRunner(Generic[TimingT, TickT]):
         self._clock = FixedStepClock(tick_rate=self._config.tick_rate)
         self._next_tick_index = 0
         self._frame_index = 0
+        self._step_accepts_trace_rng = "trace_rng" in inspect.signature(self._session.step_tick).parameters
 
     @property
     def clock(self) -> FixedStepClock:
@@ -110,9 +113,13 @@ class TickRunner(Generic[TimingT, TickT]):
             tick_index = self._next_tick_index
             inputs = self._input_provider.pull_tick_input(tick_index)
             tick_inputs: list[PlayerInput] | None = inputs
+            tick_dt_seconds = float(self._clock.dt_tick)
+            resolve_tick_dt = getattr(self._input_provider, "resolve_tick_dt", None)
+            if callable(resolve_tick_dt):
+                tick_dt_seconds = float(resolve_tick_dt(int(tick_index), float(tick_dt_seconds)))
             tick_ctx = TickContext(
                 tick_index=tick_index,
-                dt_seconds=self._clock.dt_tick,
+                dt_seconds=float(tick_dt_seconds),
                 inputs_present=tick_inputs is not None,
                 is_networked=self._config.is_networked,
                 is_replay=self._config.is_replay,
@@ -126,11 +133,18 @@ class TickRunner(Generic[TimingT, TickT]):
 
             self._hook_bus.on_pre_sim(tick_ctx)
 
-            timing = self._session.timing_for_dt(self._clock.dt_tick)
-            tick = self._session.step_tick(
-                timing=timing,
-                inputs=tick_inputs,
-            )
+            timing = self._session.timing_for_dt(float(tick_dt_seconds))
+            if self._step_accepts_trace_rng:
+                tick = self._session.step_tick(
+                    timing=timing,
+                    inputs=tick_inputs,
+                    trace_rng=bool(self._config.trace_rng),
+                )
+            else:
+                tick = self._session.step_tick(
+                    timing=timing,
+                    inputs=tick_inputs,
+                )
             step = tick.step
             command_hash = step.command_hash
             dt_sim = step.dt_sim

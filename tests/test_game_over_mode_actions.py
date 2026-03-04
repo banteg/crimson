@@ -4,7 +4,6 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
-from crimson.game_world import GameWorld
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi
@@ -70,7 +69,7 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker) -> None:
 
 def test_open_stops_music_before_run_restart(mocker) -> None:
     mode = _make_mode()
-    mode.world.audio = AudioState(
+    mode.audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
         sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
@@ -83,13 +82,13 @@ def test_open_stops_music_before_run_restart(mocker) -> None:
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_height", return_value=768)
-    mocker.patch.object(GameWorld, "reset", side_effect=lambda **_kwargs: None)
-    mocker.patch.object(GameWorld, "open", side_effect=lambda: None)
+    mocker.patch.object(mode, "_reset_world_runtime", side_effect=lambda **_kwargs: None)
+    mocker.patch.object(mode, "_open_world_runtime", side_effect=lambda: None)
     mocker.patch.object(mode._local_input, "reset", side_effect=lambda **_kwargs: None)
 
     base_gameplay_mode.BaseGameplayMode.open(mode)
 
-    stop_music.assert_called_once_with(mode.world.audio)
+    stop_music.assert_called_once_with(mode.audio)
 
 
 def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> None:
@@ -97,7 +96,7 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker) -> 
     mode._game_over_ui._closing = True
     mode._game_over_ui._intro_ms = PANEL_SLIDE_DURATION_MS * 0.5
 
-    world_draw = mocker.patch.object(GameWorld, "draw")
+    world_draw = mocker.patch.object(mode, "_draw_world")
 
     mode.draw_pause_background()
 

@@ -33,11 +33,15 @@ class InputProvider(Protocol):
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None: ...
 
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]: ...
+
     def push_command(self, command: InputCommand) -> None: ...
 
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
+ReplayTickDtResolver: TypeAlias = Callable[[int], float]
+TickCommandResolver: TypeAlias = Callable[[int], Sequence[InputCommand] | None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
@@ -58,12 +62,11 @@ class LocalInputProvider:
         *,
         player_count: int,
         build_inputs: LocalInputBuilder,
-        command_consumer: Callable[[InputCommand, float], None] | None = None,
     ) -> None:
         self._player_count = max(0, player_count)
         self._build_inputs = build_inputs
-        self._command_consumer = command_consumer
         self._pending_commands: list[InputCommand] = []
+        self._commands_for_next_tick: list[InputCommand] = []
         self._frame_inputs: list[PlayerInput] = []
         self._edge_inputs: list[PlayerInput] = []
         self._first_tick_pending = False
@@ -73,12 +76,9 @@ class LocalInputProvider:
         self._frame_inputs = normalize_provider_tick_inputs(inputs=frame_inputs, player_count=self._player_count)
         self._edge_inputs = clear_input_edges(self._frame_inputs)
         self._first_tick_pending = True
-        command_consumer = self._command_consumer
-        if command_consumer is not None:
-            dt_tick = float(frame_ctx.tick_dt_seconds)
-            for command in self._pending_commands:
-                command_consumer(command, float(dt_tick))
-        self._pending_commands.clear()
+        if self._pending_commands:
+            self._commands_for_next_tick.extend(self._pending_commands)
+            self._pending_commands.clear()
 
     def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
         _ = tick_index
@@ -88,6 +88,14 @@ class LocalInputProvider:
             self._first_tick_pending = False
             return list(self._frame_inputs)
         return list(self._edge_inputs)
+
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        _ = tick_index
+        if not self._commands_for_next_tick:
+            return []
+        commands = list(self._commands_for_next_tick)
+        self._commands_for_next_tick.clear()
+        return commands
 
     def push_command(self, command: InputCommand) -> None:
         self._pending_commands.append(command)
@@ -102,9 +110,11 @@ class ReplayInputProvider:
         player_count: int,
         resolve_tick_input: ReplayTickInputResolver,
         tick_count: int | None = None,
+        resolve_tick_dt: ReplayTickDtResolver | None = None,
     ) -> None:
         self._player_count = max(0, player_count)
         self._resolve_tick_input = resolve_tick_input
+        self._resolve_tick_dt = resolve_tick_dt
         if tick_count is not None:
             self._tick_count = max(0, tick_count)
         else:
@@ -130,13 +140,32 @@ class ReplayInputProvider:
     def push_command(self, command: InputCommand) -> None:
         raise RuntimeError(f"replay input provider does not accept commands: {command.name}")
 
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        _ = tick_index
+        return []
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        resolver = self._resolve_tick_dt
+        if resolver is None:
+            return float(default_dt)
+        return float(resolver(int(tick_index)))
+
 
 class NetworkInputProvider:
     """Runtime-backed input source; may stall when a tick is not ready yet."""
 
-    def __init__(self, *, player_count: int, resolve_tick_input: TickInputResolver | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        player_count: int,
+        resolve_tick_input: TickInputResolver | None = None,
+        resolve_tick_commands: TickCommandResolver | None = None,
+    ) -> None:
         self._player_count = max(0, player_count)
         self._resolve_tick_input = resolve_tick_input
+        self._resolve_tick_commands = resolve_tick_commands
+        self._pending_commands: list[InputCommand] = []
+        self._commands_by_tick: dict[int, list[InputCommand]] = {}
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         _ = frame_ctx
@@ -149,7 +178,24 @@ class NetworkInputProvider:
         inputs = resolver(tick_index)
         if inputs is None:
             return None
+        commands: list[InputCommand] = []
+        if self._pending_commands:
+            commands.extend(self._pending_commands)
+            self._pending_commands.clear()
+        resolve_commands = self._resolve_tick_commands
+        if resolve_commands is not None:
+            resolved_commands = resolve_commands(int(tick_index))
+            if resolved_commands is not None:
+                commands.extend(list(resolved_commands))
+        if commands:
+            self._queue_tick_commands(int(tick_index), commands)
         return normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count)
 
     def push_command(self, command: InputCommand) -> None:
-        _ = command
+        self._pending_commands.append(command)
+
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        return self._commands_by_tick.pop(int(tick_index), [])
+
+    def _queue_tick_commands(self, tick_index: int, commands: list[InputCommand]) -> None:
+        self._commands_by_tick.setdefault(int(tick_index), []).extend(commands)
