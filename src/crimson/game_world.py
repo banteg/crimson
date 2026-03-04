@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -17,8 +16,7 @@ from .creatures.anim import creature_corpse_frame_for_type
 from .render.frame import RenderFrame
 from .render.rtx.mode import RtxRenderMode
 from .render.world import WorldRenderer
-from .sim.presentation_step import queue_projectile_decals
-from .sim.world_state import ProjectileHit, WorldState
+from .sim.world_state import WorldState
 from .world import AudioBridge, RenderResources, SimWorldState, TerrainRuntime
 
 
@@ -176,22 +174,6 @@ class GameWorld(msgspec.Struct):
     def close(self) -> None:
         self.render_resources.close()
         self.sim_world.close_session()
-
-    def _queue_projectile_decals(self, hits: list[ProjectileHit], *, rand: Callable[[], int]) -> None:
-        gore_disabled = 0
-        detail_preset = 5
-        if self.config is not None:
-            gore_disabled = self.config.gore_disabled
-            detail_preset = self.config.detail_preset
-        queue_projectile_decals(
-            state=self.sim_world.state,
-            players=self.sim_world.players,
-            fx_queue=self.render_resources.fx_queue,
-            hits=hits,
-            rand=rand,
-            detail_preset=detail_preset,
-            gore_disabled=gore_disabled,
-        )
 
     def _bake_fx_queues(self) -> None:
         self.render_resources.bake_fx_queues(corpse_frame_for_type=self._corpse_frame_for_type)

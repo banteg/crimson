@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.game_world import GameWorld
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
+from crimson.sim.presentation_step import queue_projectile_decals
 from grim.geom import Vec2
 
 
@@ -21,7 +22,15 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
         hit=player.pos,
         target=player.pos,
     )
-    world._queue_projectile_decals([hit], rand=world.sim_world.state.rng.rand)
+    queue_projectile_decals(
+        state=world.sim_world.state,
+        players=world.sim_world.players,
+        fx_queue=world.render_resources.fx_queue,
+        hits=[hit],
+        rand=world.sim_world.state.rng.rand,
+        detail_preset=5,
+        gore_disabled=0,
+    )
 
     assert int(world.sim_world.state.rng.state) != sim_before
     assert world.render_resources.fx_queue.count > 0

@@ -751,9 +751,9 @@ class ReplayPlaybackMode:
         if self._audio is not None:
             update_audio(self._audio, float(dt))
 
-        # `GameWorld.open()` schedules terrain generation, but our playback loop
-        # steps `WorldState` directly (bypassing `GameWorld.update()`), so we
-        # must process pending ground work explicitly.
+        # `GameWorld.open()` schedules terrain generation, but replay advances
+        # deterministic world ticks directly, so we must process pending ground
+        # work explicitly.
         world = self._world
         if world is not None and world.render_resources.ground is not None:
             world.render_resources.ground.process_pending()

@@ -115,7 +115,7 @@ def player0_most_used_weapon_id(state: GameplayState, players: list[PlayerState]
 
 
 def time_scale_reflex_boost_bonus(state: GameplayState, dt: float) -> float:
-    """Time scale (Reflex Boost bonus), mirroring `GameWorld.update`."""
+    """Time scale (Reflex Boost bonus), mirroring deterministic world-step timing."""
     return _time_scale_reflex_boost_bonus(
         reflex_boost_timer=float(state.bonuses.reflex_boost),
         time_scale_active=bool(state.time_scale_active),
