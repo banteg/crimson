@@ -5,7 +5,8 @@ from types import SimpleNamespace
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader
-from crimson.sim.input_providers import ReplayEndOfStream
+from crimson.sim.input_providers import InputStatus
+from crimson.sim.tick_runner import TickBatchResult
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -142,8 +143,13 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
         def reset_clock(self) -> None:
             self.reset_calls += 1
 
-        def advance_frame(self, *_args, **_kwargs) -> None:
-            raise ReplayEndOfStream("eos")
+        def advance_frame(self, *_args, **_kwargs) -> TickBatchResult:
+            return TickBatchResult(
+                ticks_completed=0,
+                batch_status=InputStatus.EOS,
+                remaining_debt_ticks=0,
+                completed_results=[],
+            )
 
     runner = _EosRunner()
     _set_private(view, "_tick_runner", runner)

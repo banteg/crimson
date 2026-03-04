@@ -71,7 +71,14 @@ from ..sim.hooks import (
     TickResult,
 )
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputCommand, InputProvider, LocalInputProvider, NetworkInputProvider
+from ..sim.input_providers import (
+    FrameContext,
+    InputCommand,
+    InputProvider,
+    InputStatus,
+    LocalInputProvider,
+    NetworkInputProvider,
+)
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -764,6 +771,9 @@ class BaseGameplayMode:
         if provider is None:
             self._queued_input_commands.append(command)
             return
+        if not provider.supports_commands():
+            self._queued_input_commands.append(command)
+            return
         provider.push_command(command)
 
     def _flush_queued_input_commands(
@@ -772,6 +782,8 @@ class BaseGameplayMode:
         provider: LocalInputProvider | _LanRuntimeInputProvider,
     ) -> None:
         if not self._queued_input_commands:
+            return
+        if not provider.supports_commands():
             return
         for command in self._queued_input_commands:
             provider.push_command(command)
@@ -2208,5 +2220,5 @@ class BaseGameplayMode:
             update_camera=True,
         )
         self._presentation_apply_ms = float((time.perf_counter_ns() - apply_ns_start) / 1_000_000.0)
-        if bool(batch.stalled) and int(batch.ticks_completed) <= 0:
+        if batch.batch_status is InputStatus.STALLED and int(batch.ticks_completed) <= 0:
             self._input_stall_count += 1

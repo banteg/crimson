@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import msgspec
-import pytest
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider, ReplayEndOfStream
+from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickRunner
 from crimson.sim.timing import FrameTiming
 
@@ -36,8 +35,18 @@ class _RowsInputProvider(InputProvider):
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
-        return self.rows.get(int(tick_index))
+    def pull_tick_input(self, tick_index: int) -> TickInput:
+        row = self.rows.get(int(tick_index))
+        if row is None:
+            return TickInput(status=InputStatus.STALLED, inputs=[])
+        return TickInput(status=InputStatus.READY, inputs=list(row))
+
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        _ = tick_index
+        return []
+
+    def supports_commands(self) -> bool:
+        return False
 
     def push_command(self, command) -> None:
         _ = command
@@ -61,7 +70,7 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     first = runner.advance_frame(2.0 / 60.0)
 
     assert first.ticks_completed == 1
-    assert first.stalled is True
+    assert first.batch_status is InputStatus.STALLED
     assert first.remaining_debt_ticks >= 1
     assert [result.command_hash for result in first.completed_results] == ["abc123"]
     assert runner.next_tick_index == 1
@@ -71,7 +80,7 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     second = runner.advance_frame(1e-6)
 
     assert second.ticks_completed == 1
-    assert second.stalled is False
+    assert second.batch_status is InputStatus.READY
     assert second.remaining_debt_ticks == 0
     assert [result.command_hash for result in second.completed_results] == ["abc123"]
     assert runner.next_tick_index == 2
@@ -83,10 +92,17 @@ def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
             _ = frame_ctx
             return
 
-        def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+        def pull_tick_input(self, tick_index: int) -> TickInput:
             if int(tick_index) == 0:
-                return [PlayerInput()]
-            raise ReplayEndOfStream(f"replay input exhausted at tick {tick_index}")
+                return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
+            return TickInput(status=InputStatus.EOS, inputs=[])
+
+        def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+            _ = tick_index
+            return []
+
+        def supports_commands(self) -> bool:
+            return False
 
         def push_command(self, command) -> None:
             _ = command
@@ -99,12 +115,10 @@ def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
         input_provider=_ReplayRowsInputProvider(),
     )
 
-    with pytest.raises(ReplayEndOfStream) as exc_info:
-        runner.advance_frame(2.0 / 60.0)
+    batch = runner.advance_frame(2.0 / 60.0)
 
-    exc = exc_info.value
-    completed_results = getattr(exc, "completed_results")
-    assert [result.command_hash for result in completed_results] == ["abc123"]
-    assert int(getattr(exc, "ticks_completed")) == 1
-    assert int(getattr(exc, "remaining_debt_ticks")) >= 1
+    assert batch.batch_status is InputStatus.EOS
+    assert [result.command_hash for result in batch.completed_results] == ["abc123"]
+    assert int(batch.ticks_completed) == 1
+    assert int(batch.remaining_debt_ticks) >= 1
     assert runner.next_tick_index == 1

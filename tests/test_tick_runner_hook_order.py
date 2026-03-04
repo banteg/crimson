@@ -4,7 +4,7 @@ import msgspec
 import pytest
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider
+from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickRunner
 from crimson.sim.timing import FrameTiming
 
@@ -32,12 +32,18 @@ class _FixedInputProvider(InputProvider):
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
-        return self._rows.get(int(tick_index), [PlayerInput()])
+    def pull_tick_input(self, tick_index: int) -> TickInput:
+        row = self._rows.get(int(tick_index), [PlayerInput()])
+        if row is None:
+            return TickInput(status=InputStatus.STALLED, inputs=[])
+        return TickInput(status=InputStatus.READY, inputs=list(row))
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
         _ = tick_index
         return []
+
+    def supports_commands(self) -> bool:
+        return False
 
     def push_command(self, command: InputCommand) -> None:
         _ = command
@@ -65,7 +71,7 @@ def test_tick_runner_completed_tick_result_shape() -> None:
     result = runner.advance_frame(1.0 / 60.0)
 
     assert result.ticks_completed == 1
-    assert result.stalled is False
+    assert result.batch_status is InputStatus.READY
     assert len(result.completed_results) == 1
     tick = result.completed_results[0]
     assert tick.tick_index == 0
@@ -82,7 +88,7 @@ def test_tick_runner_stall_sets_stalled_and_preserves_debt() -> None:
     result = runner.advance_frame(1.0 / 60.0)
 
     assert result.ticks_completed == 0
-    assert result.stalled is True
+    assert result.batch_status is InputStatus.STALLED
     assert result.remaining_debt_ticks >= 1
 
 

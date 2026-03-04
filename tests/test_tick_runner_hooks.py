@@ -4,7 +4,7 @@ import msgspec
 import pytest
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider
+from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickRunner
 from crimson.sim.timing import FrameTiming
 
@@ -33,13 +33,16 @@ class _FixedInputProvider(InputProvider):
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def pull_tick_input(self, tick_index: int) -> TickInput:
         _ = tick_index
-        return [PlayerInput()]
+        return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
         _ = tick_index
         return []
+
+    def supports_commands(self) -> bool:
+        return False
 
     def push_command(self, command: InputCommand) -> None:
         _ = command

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from enum import Enum
 from typing import Protocol, TypeAlias
 
 import msgspec
@@ -8,10 +9,6 @@ import msgspec
 from ..local_input import clear_input_edges
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
-
-
-class ReplayEndOfStream(RuntimeError):
-    """Raised when replay input requests pass the last recorded tick."""
 
 
 class InputCommand(msgspec.Struct, frozen=True):
@@ -28,12 +25,25 @@ class FrameContext(msgspec.Struct, frozen=True):
     is_replay: bool = False
 
 
+class InputStatus(str, Enum):
+    READY = "ready"
+    STALLED = "stalled"
+    EOS = "eos"
+
+
+class TickInput(msgspec.Struct, frozen=True):
+    status: InputStatus
+    inputs: list[PlayerInput] = msgspec.field(default_factory=list)
+
+
 class InputProvider(Protocol):
     def begin_frame(self, frame_ctx: FrameContext) -> None: ...
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None: ...
+    def pull_tick_input(self, tick_index: int) -> TickInput: ...
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]: ...
+
+    def supports_commands(self) -> bool: ...
 
     def push_command(self, command: InputCommand) -> None: ...
 
@@ -58,7 +68,7 @@ def normalize_provider_tick_inputs(*, inputs: Sequence[PlayerInput], player_coun
 
 
 class LocalInputProvider:
-    """Adapter over local input polling; never returns stall (`None`)."""
+    """Adapter over local input polling."""
 
     def __init__(
         self,
@@ -83,14 +93,14 @@ class LocalInputProvider:
             self._commands_for_next_tick.extend(self._pending_commands)
             self._pending_commands.clear()
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def pull_tick_input(self, tick_index: int) -> TickInput:
         _ = tick_index
         if self._player_count <= 0:
-            return []
+            return TickInput(status=InputStatus.READY, inputs=[])
         if self._first_tick_pending:
             self._first_tick_pending = False
-            return list(self._frame_inputs)
-        return list(self._edge_inputs)
+            return TickInput(status=InputStatus.READY, inputs=list(self._frame_inputs))
+        return TickInput(status=InputStatus.READY, inputs=list(self._edge_inputs))
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
         _ = tick_index
@@ -99,6 +109,9 @@ class LocalInputProvider:
         commands = list(self._commands_for_next_tick)
         self._commands_for_next_tick.clear()
         return commands
+
+    def supports_commands(self) -> bool:
+        return True
 
     def push_command(self, command: InputCommand) -> None:
         self._pending_commands.append(command)
@@ -130,21 +143,28 @@ class ReplayInputProvider:
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def pull_tick_input(self, tick_index: int) -> TickInput:
         idx = tick_index
         if idx < 0:
-            raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
+            return TickInput(status=InputStatus.EOS, inputs=[])
         tick_count = self._tick_count
         if tick_count is not None and idx >= tick_count:
-            raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
+            return TickInput(status=InputStatus.EOS, inputs=[])
         resolved = self._resolve_tick_input(idx)
         if resolved is None:
-            raise ReplayEndOfStream(f"replay input exhausted at tick {idx}")
+            return TickInput(status=InputStatus.EOS, inputs=[])
         row = list(resolved)
-        return normalize_provider_tick_inputs(inputs=row, player_count=self._player_count)
+        return TickInput(
+            status=InputStatus.READY,
+            inputs=normalize_provider_tick_inputs(inputs=row, player_count=self._player_count),
+        )
+
+    def supports_commands(self) -> bool:
+        return False
 
     def push_command(self, command: InputCommand) -> None:
-        raise RuntimeError(f"replay input provider does not accept commands: {command.name}")
+        _ = command
+        return
 
     def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
         _ = tick_index
@@ -179,13 +199,13 @@ class NetworkInputProvider:
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def pull_tick_input(self, tick_index: int) -> TickInput:
         resolver = self._resolve_tick_input
         if resolver is None:
-            return None
+            return TickInput(status=InputStatus.STALLED, inputs=[])
         inputs = resolver(tick_index)
         if inputs is None:
-            return None
+            return TickInput(status=InputStatus.STALLED, inputs=[])
         commands: list[InputCommand] = []
         if self._pending_commands:
             pending_commands = list(self._pending_commands)
@@ -202,7 +222,13 @@ class NetworkInputProvider:
                 commands.extend(list(resolved_commands))
         if commands:
             self._queue_tick_commands(int(tick_index), commands)
-        return normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count)
+        return TickInput(
+            status=InputStatus.READY,
+            inputs=normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count),
+        )
+
+    def supports_commands(self) -> bool:
+        return True
 
     def push_command(self, command: InputCommand) -> None:
         self._pending_commands.append(command)

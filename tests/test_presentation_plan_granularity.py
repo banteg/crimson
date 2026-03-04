@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputProvider
+from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickRunner
 from crimson.sim.timing import FrameTiming
 
@@ -41,9 +41,16 @@ class _ReadyInputProvider(InputProvider):
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def pull_tick_input(self, tick_index: int) -> TickInput:
         _ = tick_index
-        return [PlayerInput()]
+        return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
+
+    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        _ = tick_index
+        return []
+
+    def supports_commands(self) -> bool:
+        return False
 
     def push_command(self, command) -> None:
         _ = command
@@ -61,7 +68,7 @@ def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:
     result = runner.advance_frame(2.0 / 60.0)
 
     assert result.ticks_completed == 2
-    assert result.stalled is False
+    assert result.batch_status is InputStatus.READY
     assert [row.command_hash for row in result.completed_results] == ["h0", "h1"]
 
 

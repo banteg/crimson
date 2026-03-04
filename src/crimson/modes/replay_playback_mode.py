@@ -42,8 +42,8 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.input_providers import ReplayEndOfStream
-from ..sim.tick_runner import ReplayAdvanceEndOfStream, TickRunner
+from ..sim.input_providers import InputStatus
+from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -866,25 +866,21 @@ class ReplayPlaybackMode:
                         render_resources.fx_queue.clear()
                         render_resources.fx_queue_rotated.clear()
 
-        try:
-            batch = runner.advance_frame(
-                float(dt_seconds),
-                max_ticks=max_ticks,
-            )
-            _apply_completed(list(batch.completed_results))
-        except ReplayAdvanceEndOfStream as exc:
-            _apply_completed(list(exc.completed_results))
-            self._tick_index = int(runner.next_tick_index)
-            self._mark_finished_if_complete()
-            self._dt_accum = float(runner.clock.accum)
-            return
-        except ReplayEndOfStream:
-            self._tick_index = int(runner.next_tick_index)
-            self._mark_finished_if_complete()
-            self._dt_accum = float(runner.clock.accum)
-            return
+        batch = runner.advance_frame(
+            float(dt_seconds),
+            max_ticks=max_ticks,
+        )
+        _apply_completed(list(batch.completed_results))
 
         self._tick_index = int(runner.next_tick_index)
+        if batch.batch_status is InputStatus.STALLED:
+            raise RuntimeError(
+                f"replay tick runner stalled before completion at tick {int(self._tick_index)}",
+            )
+        if batch.batch_status is InputStatus.EOS and int(self._tick_index) < int(self._tick_limit()):
+            raise RuntimeError(
+                f"replay tick runner hit eos before completion at tick {int(self._tick_index)}",
+            )
         self._mark_finished_if_complete()
         self._dt_accum = float(runner.clock.accum)
 

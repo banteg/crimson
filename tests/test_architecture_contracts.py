@@ -17,6 +17,7 @@ from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     InputCommand,
+    InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
 )
@@ -48,7 +49,7 @@ class _TickRunnerStackSpy:
         self._sink.append(tuple(frame.function for frame in frames))
         return TickBatchResult(
             ticks_completed=0,
-            stalled=False,
+            batch_status=InputStatus.READY,
             remaining_debt_ticks=0,
             completed_results=[],
         )

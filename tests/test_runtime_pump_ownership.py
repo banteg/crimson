@@ -10,6 +10,7 @@ from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingN
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
+from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -85,7 +86,7 @@ class _FakeLanRunner:
             self._on_advance()
         if self._results:
             return self._results.pop(0)
-        return TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)
+        return TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, remaining_debt_ticks=0)
 
 
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
@@ -105,7 +106,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
         [
             TickBatchResult(
                 ticks_completed=1,
-                stalled=False,
+                batch_status=InputStatus.READY,
                 remaining_debt_ticks=0,
                 completed_results=[
                     TickResult(
@@ -158,7 +159,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         tick_rate=60,
     )
     runner = _FakeLanRunner(
-        [TickBatchResult(ticks_completed=0, stalled=True, remaining_debt_ticks=0)],
+        [TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, remaining_debt_ticks=0)],
         on_advance=lambda: setattr(provider, "_pop_blocked", True),
     )
     mocker.patch.object(
@@ -224,7 +225,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         [
             TickBatchResult(
                 ticks_completed=2,
-                stalled=False,
+                batch_status=InputStatus.READY,
                 remaining_debt_ticks=0,
                 completed_results=ticks,
             ),

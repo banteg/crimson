@@ -23,7 +23,7 @@ from ...replay.types import ReplayEvent
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickResult
-from ..input_providers import ReplayInputProvider
+from ..input_providers import InputStatus, ReplayInputProvider
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
@@ -866,11 +866,23 @@ class PlaybackDriver:
                 float(tick_runner.clock.dt_tick),
                 max_ticks=1,
             )
-            if int(batch.ticks_completed) <= 0:
+            if batch.batch_status is InputStatus.STALLED:
                 trace_ctx = cast(Any, tick_meta.trace_ctx)
                 trace_ctx.__exit__(None, None, None)
                 raise ReplayRunnerError(
                     f"playback tick runner stalled before completion at tick {int(completed_ticks)}",
+                )
+            if batch.batch_status is InputStatus.EOS:
+                trace_ctx = cast(Any, tick_meta.trace_ctx)
+                trace_ctx.__exit__(None, None, None)
+                raise ReplayRunnerError(
+                    f"playback tick runner hit eos before completion at tick {int(completed_ticks)}",
+                )
+            if int(batch.ticks_completed) <= 0:
+                trace_ctx = cast(Any, tick_meta.trace_ctx)
+                trace_ctx.__exit__(None, None, None)
+                raise ReplayRunnerError(
+                    f"playback tick runner produced no ticks before completion at tick {int(completed_ticks)}",
                 )
             for tick_result in batch.completed_results:
                 outcome = self._finalize_tick_outcome(

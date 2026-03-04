@@ -9,6 +9,9 @@ import pytest
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader
+from crimson.sim.hooks import TickResult
+from crimson.sim.input_providers import InputStatus
+from crimson.sim.tick_runner import TickBatchResult
 from grim.console import ConsoleState
 
 
@@ -110,14 +113,21 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
         def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
             ticks = int(max_ticks or 0)
             rows = [
-                SimpleNamespace(
+                TickResult(
                     tick_index=int(self.next_tick_index + i),
+                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
             self.next_tick_index += int(ticks)
-            return SimpleNamespace(completed_results=rows)
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
+                completed_results=rows,
+            )
 
         def reset_clock(self) -> None:
             self.clock.accum = 0.0
@@ -169,14 +179,21 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
         def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
             ticks = int(max_ticks or 0)
             rows = [
-                SimpleNamespace(
+                TickResult(
                     tick_index=int(self.next_tick_index + i),
+                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
             self.next_tick_index += int(ticks)
-            return SimpleNamespace(completed_results=rows)
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
+                completed_results=rows,
+            )
 
         def reset_clock(self) -> None:
             self.clock.accum = 0.0
@@ -238,14 +255,21 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
         def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
             ticks = int(max_ticks or 0)
             rows = [
-                SimpleNamespace(
+                TickResult(
                     tick_index=int(self.next_tick_index + i),
+                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
             self.next_tick_index += int(ticks)
-            return SimpleNamespace(completed_results=rows)
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
+                completed_results=rows,
+            )
 
         def reset_clock(self) -> None:
             self.clock.accum = 0.0
@@ -298,14 +322,21 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
         def advance_frame(self, _dt_seconds: float, *, max_ticks: int | None = None) -> object:
             ticks = int(max_ticks or 0)
             rows = [
-                SimpleNamespace(
+                TickResult(
                     tick_index=int(self.next_tick_index + i),
+                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
             self.next_tick_index += int(ticks)
-            return SimpleNamespace(completed_results=rows)
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
+                completed_results=rows,
+            )
 
         def reset_clock(self) -> None:
             self.clock.accum = 0.0

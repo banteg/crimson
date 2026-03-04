@@ -7,7 +7,7 @@ import msgspec
 from .clock import FixedStepClock
 from .hooks import TickResult
 from .input import PlayerInput
-from .input_providers import FrameContext, InputProvider, ReplayEndOfStream
+from .input_providers import FrameContext, InputProvider, InputStatus
 from .timing import FrameTiming
 
 
@@ -38,26 +38,9 @@ class TickRunnerConfig(msgspec.Struct, frozen=True):
 
 class TickBatchResult(msgspec.Struct):
     ticks_completed: int = 0
-    stalled: bool = False
+    batch_status: InputStatus = InputStatus.READY
     remaining_debt_ticks: int = 0
     completed_results: list[TickResult] = msgspec.field(default_factory=list)
-
-
-class ReplayAdvanceEndOfStream(ReplayEndOfStream):
-    """Replay input ended during `advance_frame` after completing prior ticks."""
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        completed_results: list[TickResult],
-        ticks_completed: int,
-        remaining_debt_ticks: int,
-    ) -> None:
-        super().__init__(message)
-        self.completed_results = list(completed_results)
-        self.ticks_completed = ticks_completed
-        self.remaining_debt_ticks = remaining_debt_ticks
 
 
 class TickRunner:
@@ -110,68 +93,61 @@ class TickRunner:
         if candidate_ticks <= 0:
             return TickBatchResult(
                 ticks_completed=0,
-                stalled=False,
+                batch_status=InputStatus.READY,
                 remaining_debt_ticks=int((self._clock.accum + 1e-9) / self._clock.dt_tick),
                 completed_results=[],
             )
 
         ticks_completed = 0
-        stalled = False
+        batch_status = InputStatus.READY
         completed_results: list[TickResult] = []
-        replay_eos: ReplayEndOfStream | None = None
 
         for _ in range(candidate_ticks):
-            try:
-                tick_index = self._next_tick_index
-                inputs = self._input_provider.pull_tick_input(tick_index)
-                tick_inputs: list[PlayerInput] | None = inputs
-                tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, self._clock.dt_tick)
-                if tick_inputs is None:
-                    stalled = True
-                    break
-
-                # Snapshot list identity before stepping so replay recording can
-                # happen later in frame-driver code with pre-step inputs.
-                result_inputs: list[PlayerInput] | None = list(tick_inputs)
-
-                timing = self._session.timing_for_dt(tick_dt_seconds)
-                tick = self._session.step_tick(
-                    timing=timing,
-                    inputs=tick_inputs,
-                    trace_rng=self._config.trace_rng,
-                )
-                command_hash = tick.command_hash
-                dt_sim = tick.dt_sim
-                result = TickResult(
-                    tick_index=tick_index,
-                    command_hash=command_hash,
-                    dt_sim=dt_sim,
-                    presentation_plan_ms=tick.presentation_plan_ms,
-                    payload=tick,
-                    inputs=result_inputs,
-                )
-                completed_results.append(result)
-                ticks_completed += 1
-                self._next_tick_index += 1
-            except ReplayEndOfStream as exc:
-                replay_eos = exc
+            tick_index = self._next_tick_index
+            tick_input = self._input_provider.pull_tick_input(tick_index)
+            status = tick_input.status
+            if status is InputStatus.STALLED:
+                batch_status = InputStatus.STALLED
+                break
+            if status is InputStatus.EOS:
+                batch_status = InputStatus.EOS
                 break
 
+            tick_inputs = list(tick_input.inputs)
+            tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, self._clock.dt_tick)
+
+            # Snapshot list identity before stepping so replay recording can
+            # happen later in frame-driver code with pre-step inputs.
+            result_inputs: list[PlayerInput] | None = list(tick_inputs)
+
+            timing = self._session.timing_for_dt(tick_dt_seconds)
+            tick = self._session.step_tick(
+                timing=timing,
+                inputs=tick_inputs,
+                trace_rng=self._config.trace_rng,
+            )
+            command_hash = tick.command_hash
+            dt_sim = tick.dt_sim
+            result = TickResult(
+                tick_index=tick_index,
+                command_hash=command_hash,
+                dt_sim=dt_sim,
+                presentation_plan_ms=tick.presentation_plan_ms,
+                payload=tick,
+                inputs=result_inputs,
+            )
+            completed_results.append(result)
+            ticks_completed += 1
+            self._next_tick_index += 1
+
         unconsumed_ticks = candidate_ticks - ticks_completed
-        if (stalled or replay_eos is not None) and unconsumed_ticks > 0:
+        if batch_status in (InputStatus.STALLED, InputStatus.EOS) and unconsumed_ticks > 0:
             self._clock.accum += unconsumed_ticks * self._clock.dt_tick
 
         remaining_debt_ticks = int((self._clock.accum + 1e-9) / self._clock.dt_tick)
-        if replay_eos is not None:
-            raise ReplayAdvanceEndOfStream(
-                str(replay_eos),
-                completed_results=list(completed_results),
-                ticks_completed=ticks_completed,
-                remaining_debt_ticks=remaining_debt_ticks,
-            ) from replay_eos
         return TickBatchResult(
             ticks_completed=ticks_completed,
-            stalled=stalled,
+            batch_status=batch_status,
             remaining_debt_ticks=remaining_debt_ticks,
             completed_results=list(completed_results),
         )

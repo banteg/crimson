@@ -9,7 +9,8 @@ import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
 from crimson.sim.hooks import TickResult
-from crimson.sim.tick_runner import ReplayAdvanceEndOfStream
+from crimson.sim.input_providers import InputStatus
+from crimson.sim.tick_runner import TickBatchResult
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -59,14 +60,21 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
                 ticks = min(int(ticks), int(max_ticks))
             self.clock.accum -= float(ticks) * float(self.clock.dt_tick)
             rows = [
-                SimpleNamespace(
+                TickResult(
                     tick_index=int(self.next_tick_index + i),
+                    command_hash=f"h{int(self.next_tick_index + i)}",
+                    dt_sim=1.0 / 60.0,
                     payload=object(),
                 )
                 for i in range(int(ticks))
             ]
             self.next_tick_index += int(ticks)
-            return SimpleNamespace(completed_results=rows)
+            return TickBatchResult(
+                ticks_completed=int(ticks),
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
+                completed_results=rows,
+            )
 
     view._tick_runner = _FakeRunner()
 
@@ -98,16 +106,21 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
         clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
         def advance_frame(self, *_args, **_kwargs) -> object:
-            batch = SimpleNamespace(
+            tick_index = int(self.next_tick_index)
+            self.next_tick_index += 1
+            return TickBatchResult(
+                ticks_completed=1,
+                batch_status=InputStatus.READY,
+                remaining_debt_ticks=0,
                 completed_results=[
-                    SimpleNamespace(
-                        tick_index=int(self.next_tick_index),
+                    TickResult(
+                        tick_index=tick_index,
+                        command_hash=f"h{tick_index}",
+                        dt_sim=1.0 / 60.0,
                         payload=object(),
                     ),
                 ],
             )
-            self.next_tick_index += 1
-            return batch
 
     view._tick_runner = _FakeRunner()
 
@@ -142,8 +155,10 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
         clock: SimpleNamespace = field(default_factory=lambda: SimpleNamespace(accum=0.0))
 
         def advance_frame(self, *_args, **_kwargs) -> object:
-            raise ReplayAdvanceEndOfStream(
-                "eos",
+            return TickBatchResult(
+                ticks_completed=2,
+                batch_status=InputStatus.EOS,
+                remaining_debt_ticks=0,
                 completed_results=[
                     TickResult(
                         tick_index=0,
@@ -158,8 +173,6 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
                         payload=object(),
                     ),
                 ],
-                ticks_completed=2,
-                remaining_debt_ticks=0,
             )
 
     view._tick_runner = _FakeRunner()
