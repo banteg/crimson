@@ -594,7 +594,7 @@ def _build_replay_list_row(
     header = replay.header
     game_mode_id = header.game_mode_id
     tick_rate = int(header.tick_rate)
-    ticks = int(len(replay.inputs))
+    ticks = int(len(replay.ticks))
     game_version = str(header.game_version).strip() or "-"
     player_count = int(header.player_count)
     quest_level = str(header.quest_level)
@@ -834,7 +834,7 @@ def cmd_replay_verify(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    full_replay_simulated = max_ticks is None or int(max_ticks) >= int(len(replay.inputs))
+    full_replay_simulated = max_ticks is None or int(max_ticks) >= int(len(replay.ticks))
     header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
@@ -1462,7 +1462,7 @@ def cmd_replay_render(
     progress_close: ReplayRenderProgressClose | None = None
     try:
         replay = load_replay(replay_bytes)
-        total_ticks = int(len(replay.inputs))
+        total_ticks = int(len(replay.ticks))
         if max_ticks is not None:
             total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
         progress_callback, progress_close = _replay_render_progress_callback(

@@ -35,7 +35,6 @@ from ..sim.driver.playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackEventConfig,
     PlaybackSessionConfigs,
     PlaybackSessionDefaults,
     PlaybackTickOutcome,
@@ -186,7 +185,7 @@ class ReplayPlaybackMode:
         replay = self._replay
         if replay is None:
             return 0.0
-        total_ticks = len(replay.inputs)
+        total_ticks = len(replay.ticks)
         if total_ticks <= 0:
             return 1.0
         ratio = float(self._tick_index) / float(total_ticks)
@@ -282,7 +281,7 @@ class ReplayPlaybackMode:
                 rl.Color(255, 255, 255, 220),
             )
 
-        total_ticks = len(replay.inputs)
+        total_ticks = len(replay.ticks)
         total_seconds = float(total_ticks) / float(self._tick_rate)
         progress_ratio = self._replay_progress_ratio()
 
@@ -492,11 +491,6 @@ class ReplayPlaybackMode:
                         fx_queue_rotated=render_resources.fx_queue_rotated,
                         use_existing_world_state=True,
                     ),
-                    events=PlaybackEventConfig(
-                        defer_menu_open=False,
-                        apply_terminal_tick_events=True,
-                        terminal_events_use_resolved_dt=False,
-                    ),
                     session_defaults=PlaybackSessionDefaults(
                         clear_fx_queues_each_tick=False,
                         game_tune_started=bool(sim_world.game_tune_started),
@@ -525,9 +519,7 @@ class ReplayPlaybackMode:
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
         self._quest = self._driver.quest_session
-        self._tick_runner = self._driver.build_tick_runner(
-            defer_menu_open=(bool(self._defer_menu_open) if self._survival is not None else False),
-        )
+        self._tick_runner = self._driver.build_tick_runner()
 
     def close(self) -> None:
         if self._small is not None:
@@ -611,7 +603,7 @@ class ReplayPlaybackMode:
         replay = self._replay
         if replay is None:
             return 0
-        total_ticks = len(replay.inputs)
+        total_ticks = len(replay.ticks)
         if self._max_ticks is None:
             return int(total_ticks)
         return min(int(total_ticks), max(0, int(self._max_ticks)))
@@ -632,16 +624,6 @@ class ReplayPlaybackMode:
         tick_limit = int(self._tick_limit())
         if int(self._tick_index) < int(tick_limit):
             return
-        replay = self._replay
-        driver = self._driver
-        if (
-            replay is not None
-            and driver is not None
-            and (not self._terminal_events_applied)
-            and int(self._tick_index) == len(replay.inputs)
-        ):
-            self._terminal_events_applied = True
-            driver.apply_terminal_events(int(self._tick_index))
         self._finished = True
 
     def _advance_runner(

@@ -8,17 +8,16 @@ import msgspec
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
-from ...replay import PerkMenuOpenEvent, Replay, ReplayEvent
+from ...replay import Replay
 from ...weapons import WeaponId, weapon_display_name
+from ..input_providers import PerkMenuOpenCommand
 from ..state_types import BonusPickupEvent, PlayerState
 from .playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackEventConfig,
     PlaybackSessionConfigs,
     PlaybackSessionDefaults,
-    PlaybackTerminalOutcome,
     PlaybackTickOutcome,
     PlaybackTimingConfig,
     QuestSessionConfig,
@@ -125,9 +124,9 @@ def _append_event(
     )
 
 
-def _append_extra_replay_events(
+def _append_extra_replay_commands(
     *,
-    tick_events: list[ReplayEvent],
+    commands: tuple[object, ...],
     tick_index: int,
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],
@@ -136,9 +135,9 @@ def _append_extra_replay_events(
 ) -> None:
     if not bool(include_extra_events):
         return
-    for event in tick_events:
-        if isinstance(event, PerkMenuOpenEvent):
-            player_idx = int(event.player_index)
+    for cmd in commands:
+        if isinstance(cmd, PerkMenuOpenCommand):
+            player_idx = int(cmd.player_index)
             _append_event(
                 timeline,
                 tick_index=int(tick_index),
@@ -369,11 +368,6 @@ def _run_replay_info(
     )
     config = PlaybackDriverConfig(
         timing=PlaybackTimingConfig(),
-        events=PlaybackEventConfig(
-            defer_menu_open=False,
-            apply_terminal_tick_events=True,
-            terminal_events_use_resolved_dt=(mode != GameMode.RUSH),
-        ),
         session_defaults=PlaybackSessionDefaults(
             clear_fx_queues_each_tick=True,
             game_tune_started=False,
@@ -400,11 +394,8 @@ def _run_replay_info(
         tick_index: int,
         world,
         dt_tick: float,
-        tick_events: list[ReplayEvent],
-        pre_step_events: list[ReplayEvent],
-        post_step_events: list[ReplayEvent],
     ) -> None:
-        _ = tick_index, dt_tick, tick_events, pre_step_events, post_step_events
+        _ = tick_index, dt_tick
         nonlocal before_snapshots
         before_snapshots = _capture_snapshots(world.players)
 
@@ -416,8 +407,8 @@ def _run_replay_info(
 
         elapsed_ms = int(outcome.elapsed_ms)
         if mode != GameMode.RUSH:
-            _append_extra_replay_events(
-                tick_events=outcome.pre_step_events,
+            _append_extra_replay_commands(
+                commands=outcome.commands,
                 tick_index=int(outcome.tick_index),
                 elapsed_ms=int(elapsed_ms),
                 timeline=timeline,
@@ -448,16 +439,6 @@ def _run_replay_info(
                 include_extra_events=include_extra_events,
             )
 
-        if mode != GameMode.RUSH:
-            _append_extra_replay_events(
-                tick_events=outcome.post_step_events,
-                tick_index=int(outcome.tick_index),
-                elapsed_ms=int(elapsed_ms),
-                timeline=timeline,
-                player_filter=player_filter,
-                include_extra_events=include_extra_events,
-            )
-
         _append_snapshot_diff_events(
             tick_index=int(outcome.tick_index),
             elapsed_ms=int(elapsed_ms),
@@ -470,23 +451,9 @@ def _run_replay_info(
             include_extra_events=include_extra_events,
         )
 
-    def _on_terminal(terminal: PlaybackTerminalOutcome) -> None:
-        if mode == GameMode.RUSH:
-            return
-        session_elapsed = int(float(driver.session.elapsed_ms))
-        _append_extra_replay_events(
-            tick_events=terminal.terminal_events,
-            tick_index=int(terminal.tick_index),
-            elapsed_ms=int(session_elapsed),
-            timeline=timeline,
-            player_filter=player_filter,
-            include_extra_events=include_extra_events,
-        )
-
     run_result = driver.run_to_completion(
         tick_begin_observer=_on_tick_begin,
         tick_end_observer=_on_tick_end,
-        terminal_observer=_on_terminal,
     )
 
     return ReplayInfoResult(

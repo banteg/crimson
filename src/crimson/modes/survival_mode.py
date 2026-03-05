@@ -37,6 +37,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
+from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, SurvivalSpawnState, survival_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -161,7 +162,8 @@ class SurvivalMode(BaseGameplayMode):
         return f"survival_{stamp}_score{score}"
 
     def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        return any(int(event.tick_index) == int(terminal_tick) for event in replay.events)
+        _ = replay, terminal_tick
+        return False
 
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
@@ -545,7 +547,7 @@ class SurvivalMode(BaseGameplayMode):
         if not opened:
             return
         if recorder is not None:
-            recorder.record_perk_menu_open(player_index=0)
+            self._pending_menu_open_commands.append(PerkMenuOpenCommand(player_index=0))
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -600,7 +602,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
+                    self._pending_menu_open_commands.append(PerkMenuOpenCommand(player_index=0))
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
                 player_count=len(self.sim_world.players),
@@ -610,7 +612,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
+                    self._pending_menu_open_commands.append(PerkMenuOpenCommand(player_index=0))
 
         if not self._paused and not self._game_over_active:
             pulse_delta = float(frame.dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)

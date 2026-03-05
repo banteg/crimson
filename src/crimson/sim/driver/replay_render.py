@@ -191,7 +191,7 @@ def run_replay_render_video(
     render_pipeline: RenderPipeline | None = None
     capture_width = 0
     capture_height = 0
-    total_ticks = len(replay.inputs)
+    total_ticks = len(replay.ticks)
     if max_ticks is not None:
         total_ticks = min(total_ticks, max(0, max_ticks))
     config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN

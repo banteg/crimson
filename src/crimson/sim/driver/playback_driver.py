@@ -16,14 +16,20 @@ from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
-from ...replay import Replay, ReplayJournal, apply_replay_bootstrap, warn_on_game_version_mismatch
+from ...replay import Replay, apply_replay_bootstrap, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
-from ...replay.types import ReplayEvent
+from ...replay.input_codec import unpack_tick_inputs
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickResult
-from ..input_providers import FrameContext, InputStatus, ReplayInputProvider
+from ..input_providers import (
+    FrameContext,
+    GameCommand,
+    InputStatus,
+    TickInput,
+    normalize_provider_tick_inputs,
+)
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
@@ -39,7 +45,6 @@ from ..step_pipeline import DeterministicStepResult
 from ..tick_runner import TickRunner, TickRunnerConfig
 from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
-from .replay_events import apply_replay_tick_events, partition_tick_events
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
@@ -61,7 +66,7 @@ TickObserver: TypeAlias = Callable[[int, WorldState], None]
 TickTraceObserver: TypeAlias = Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[
-    [int, WorldState, float, list[ReplayEvent], list[ReplayEvent], list[ReplayEvent]],
+    [int, WorldState, float],
     None,
 ]
 
@@ -137,6 +142,48 @@ def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw
         rng.set_trace_sink(previous_sink)
 
 
+class _ReplayTickProvider:
+    """Lightweight input provider that reads directly from replay ticks."""
+
+    def __init__(self, replay: Replay) -> None:
+        self._replay = replay
+        self._player_count = max(0, int(replay.header.player_count))
+
+    def begin_frame(self, frame_ctx: FrameContext) -> None:
+        _ = frame_ctx
+
+    def pull_tick_input(self, tick_index: int) -> TickInput:
+        idx = int(tick_index)
+        if idx < 0 or idx >= len(self._replay.ticks):
+            return TickInput(status=InputStatus.EOS, inputs=[])
+        inputs = unpack_tick_inputs(self._replay.ticks[idx].inputs)
+        return TickInput(
+            status=InputStatus.READY,
+            inputs=normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count),
+        )
+
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
+        idx = int(tick_index)
+        if idx < 0 or idx >= len(self._replay.ticks):
+            return []
+        return list(self._replay.ticks[idx].commands)
+
+    def supports_commands(self) -> bool:
+        return True
+
+    def push_command(self, command: GameCommand) -> None:
+        _ = command
+
+    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
+        idx = int(tick_index)
+        if idx < 0 or idx >= len(self._replay.ticks):
+            return float(default_dt)
+        dt = self._replay.ticks[idx].dt
+        if dt is None:
+            return float(default_dt)
+        return float(dt)
+
+
 class PlaybackDriverOptions(msgspec.Struct, frozen=True):
     max_ticks: int | None = None
     trace_rng: bool = False
@@ -156,13 +203,6 @@ class PlaybackWorldConfig:
     fx_queue: FxQueue | None = None
     fx_queue_rotated: FxQueueRotated | None = None
     use_existing_world_state: bool = False
-
-
-@dataclass(slots=True, frozen=True)
-class PlaybackEventConfig:
-    defer_menu_open: bool = False
-    apply_terminal_tick_events: bool = True
-    terminal_events_use_resolved_dt: bool = True
 
 
 @dataclass(slots=True, frozen=True)
@@ -204,7 +244,6 @@ class PlaybackSessionConfigs:
 class PlaybackDriverConfig:
     timing: PlaybackTimingConfig = field(default_factory=PlaybackTimingConfig)
     world: PlaybackWorldConfig = field(default_factory=PlaybackWorldConfig)
-    events: PlaybackEventConfig = field(default_factory=PlaybackEventConfig)
     session_defaults: PlaybackSessionDefaults = field(default_factory=PlaybackSessionDefaults)
     sessions: PlaybackSessionConfigs = field(default_factory=PlaybackSessionConfigs)
 
@@ -214,9 +253,7 @@ class PlaybackTickOutcome:
     tick_index: int
     dt_tick: float
     dt_tick_ms_i32: int | None
-    tick_events: list[ReplayEvent]
-    pre_step_events: list[ReplayEvent]
-    post_step_events: list[ReplayEvent]
+    commands: tuple[GameCommand, ...]
     world: WorldState
     step: DeterministicStepResult
     step_events: WorldEvents
@@ -224,10 +261,6 @@ class PlaybackTickOutcome:
     dt_sim: float
     rng_marks: dict[str, int]
     creature_count_world_step: int
-    rng_before_events: int
-    rng_after_events: int
-    rng_before_post_events: int | None
-    rng_after_post_events: int | None
     tick_rng_rows: list[RngTraceDraw]
     spawn_timeline_ms: float | None = None
     completion_transition_ms: float | None = None
@@ -236,24 +269,9 @@ class PlaybackTickOutcome:
 
 
 @dataclass(slots=True)
-class PlaybackTerminalOutcome:
-    tick_index: int
-    dt_tick: float
-    terminal_events: list[ReplayEvent]
-    world: WorldState
-    rng_before_events: int
-    rng_after_events: int
-
-
-@dataclass(slots=True)
 class _PlaybackTickMeta:
     tick_index: int
     dt_tick: float
-    tick_events: list[ReplayEvent]
-    pre_step_events: list[ReplayEvent]
-    post_step_events: list[ReplayEvent]
-    rng_before_events: int
-    rng_after_events: int
     trace_ctx: object
     tick_rng_rows: list[RngTraceDraw]
 
@@ -261,30 +279,12 @@ class _PlaybackTickMeta:
 @dataclass(slots=True)
 class SurvivalPlaybackRuntime:
     session: DeterministicSession
-    partition_events: bool
-
-    def partition_tick_events(
-        self,
-        tick_events: list[ReplayEvent],
-        *,
-        defer_menu_open: bool,
-    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
-        if not bool(self.partition_events):
-            return list(tick_events), []
-        return partition_tick_events(tick_events, defer_menu_open=bool(defer_menu_open))
 
     def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
         _ = outcome, tick
 
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
         return float(outcome.elapsed_ms)
-
-    def terminal_checkpoint_rng_marks(self, terminal: PlaybackTerminalOutcome) -> dict[str, int]:
-        _ = terminal
-        return {}
-
-    def terminal_checkpoint_elapsed_ms(self) -> float:
-        return float(self.session.elapsed_ms)
 
     def run_result_elapsed_ms(self) -> int:
         return int(self.session.elapsed_ms)
@@ -294,29 +294,11 @@ class SurvivalPlaybackRuntime:
 class RushPlaybackRuntime:
     session: DeterministicSession
 
-    def partition_tick_events(
-        self,
-        tick_events: list[ReplayEvent],
-        *,
-        defer_menu_open: bool,
-    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
-        _ = defer_menu_open
-        return list(tick_events), []
-
     def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
         _ = outcome, tick
 
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
         return float(outcome.elapsed_ms)
-
-    def terminal_checkpoint_rng_marks(self, terminal: PlaybackTerminalOutcome) -> dict[str, int]:
-        return {
-            "before_events": int(terminal.rng_before_events),
-            "after_events": int(terminal.rng_after_events),
-        }
-
-    def terminal_checkpoint_elapsed_ms(self) -> float:
-        return float(self.session.elapsed_ms)
 
     def run_result_elapsed_ms(self) -> int:
         return int(self.session.elapsed_ms)
@@ -326,18 +308,7 @@ class RushPlaybackRuntime:
 class QuestPlaybackRuntime:
     session: DeterministicSession
     quest_state: QuestSpawnState
-    partition_events: bool
     result_uses_spawn_timeline_ms: bool
-
-    def partition_tick_events(
-        self,
-        tick_events: list[ReplayEvent],
-        *,
-        defer_menu_open: bool,
-    ) -> tuple[list[ReplayEvent], list[ReplayEvent]]:
-        if not bool(self.partition_events):
-            return list(tick_events), []
-        return partition_tick_events(tick_events, defer_menu_open=bool(defer_menu_open))
 
     def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
         _ = tick
@@ -350,13 +321,6 @@ class QuestPlaybackRuntime:
         if outcome.spawn_timeline_ms is not None:
             return float(outcome.spawn_timeline_ms)
         return float(outcome.elapsed_ms)
-
-    def terminal_checkpoint_rng_marks(self, terminal: PlaybackTerminalOutcome) -> dict[str, int]:
-        _ = terminal
-        return {}
-
-    def terminal_checkpoint_elapsed_ms(self) -> float:
-        return float(self.quest_state.spawn_timeline_ms)
 
     def run_result_elapsed_ms(self) -> int:
         if bool(self.result_uses_spawn_timeline_ms):
@@ -398,7 +362,6 @@ class PlaybackDriver:
 
         self.world_size = self._resolve_world_size()
         self.world = self._prepare_world()
-        self.events_by_tick = self._build_events_by_tick()
         self.fx_queue, self.fx_queue_rotated = self._resolve_fx_queues()
 
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
@@ -407,11 +370,10 @@ class PlaybackDriver:
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
         self.session: DeterministicSession = self._mode_runtime.session
 
-        inputs = replay.inputs
         self.tick_limit = (
-            len(inputs)
+            len(replay.ticks)
             if self.options.max_ticks is None
-            else min(len(inputs), max(0, int(self.options.max_ticks)))
+            else min(len(replay.ticks), max(0, int(self.options.max_ticks)))
         )
 
     def _resolve_world_size(self) -> float:
@@ -459,12 +421,6 @@ class PlaybackDriver:
             world.state.rng.srand(int(self.replay.header.seed))
 
         return world
-
-    def _build_events_by_tick(self) -> dict[int, list[ReplayEvent]]:
-        events_by_tick: dict[int, list[ReplayEvent]] = {}
-        for event in self.replay.events:
-            events_by_tick.setdefault(int(event.tick_index), []).append(event)
-        return events_by_tick
 
     def _resolve_fx_queues(self) -> tuple[FxQueue, FxQueueRotated]:
         world_config = self.config.world
@@ -522,7 +478,6 @@ class PlaybackDriver:
                 )
                 return SurvivalPlaybackRuntime(
                     session=session,
-                    partition_events=bool(sessions.survival.partition_events),
                 )
             case GameMode.RUSH:
                 rush_config = sessions.rush
@@ -592,29 +547,27 @@ class PlaybackDriver:
                 return QuestPlaybackRuntime(
                     session=session,
                     quest_state=quest_state,
-                    partition_events=bool(quest_config.partition_events),
                     result_uses_spawn_timeline_ms=bool(quest_config.result_uses_spawn_timeline_ms),
                 )
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
-    def _resolve_replay_dt_row(self, tick_index: int) -> float:
-        dt_tick = float(self.replay.dt[int(tick_index)])
-        if not math.isfinite(dt_tick) or dt_tick < 0.0:
-            raise ReplayRunnerError(f"invalid replay dt row at tick {int(tick_index)}: {dt_tick!r}")
-        return float(dt_tick)
-
-    def _defer_menu_open_value(self, *, defer_menu_open: bool | None) -> bool:
-        if defer_menu_open is not None:
-            return bool(defer_menu_open)
-        return bool(self.config.events.defer_menu_open)
+    def _resolve_replay_dt(self, tick_index: int) -> float:
+        idx = int(tick_index)
+        if idx < 0 or idx >= len(self.replay.ticks):
+            return float(self.dt)
+        dt_value = self.replay.ticks[idx].dt
+        if dt_value is None:
+            return float(self.dt)
+        if not math.isfinite(dt_value) or dt_value < 0.0:
+            raise ReplayRunnerError(f"invalid replay dt at tick {idx}: {dt_value!r}")
+        return float(dt_value)
 
     def _prepare_tick_meta(
         self,
         *,
         tick_index: int,
         dt_tick: float,
-        defer_menu_open: bool | None,
     ) -> _PlaybackTickMeta:
         if int(tick_index) < 0 or int(tick_index) >= int(self.tick_limit):
             raise ReplayRunnerError(f"tick_index out of range: {tick_index} (tick_limit={self.tick_limit})")
@@ -631,31 +584,11 @@ class PlaybackDriver:
             for _ in range(max(0, int(draws))):
                 state.rng.rand()
 
-        tick_events = list(self.events_by_tick.get(int(tick_index), []))
-        pre_step_events, post_step_events = self._mode_runtime.partition_tick_events(
-            tick_events,
-            defer_menu_open=self._defer_menu_open_value(defer_menu_open=defer_menu_open),
-        )
-
-        rng_before_events = int(state.rng.state)
         trace_ctx = _tick_rng_trace(state.rng, enabled=bool(self.options.trace_rng))
         tick_rng_rows = trace_ctx.__enter__()
-        apply_replay_tick_events(
-            pre_step_events,
-            tick_index=int(tick_index),
-            dt=float(dt_tick),
-            world=self.world,
-            game_mode_id=self.mode_id,
-        )
-        rng_after_events = int(state.rng.state)
         return _PlaybackTickMeta(
             tick_index=int(tick_index),
             dt_tick=float(dt_tick),
-            tick_events=list(tick_events),
-            pre_step_events=list(pre_step_events),
-            post_step_events=list(post_step_events),
-            rng_before_events=int(rng_before_events),
-            rng_after_events=int(rng_after_events),
             trace_ctx=trace_ctx,
             tick_rng_rows=tick_rng_rows,
         )
@@ -682,17 +615,6 @@ class PlaybackDriver:
             tick = cast(DeterministicSessionStepTick, payload)
             step = tick.step
 
-            rng_before_post_events = int(state.rng.state)
-            if meta.post_step_events:
-                apply_replay_tick_events(
-                    meta.post_step_events,
-                    tick_index=int(tick_index),
-                    dt=float(meta.dt_tick),
-                    world=self.world,
-                    game_mode_id=self.mode_id,
-                )
-            rng_after_post_events = int(state.rng.state)
-
             # Close the trace context before snapshotting rows so any
             # `finally`-recorded draws are included in this tick.
             trace_ctx.__exit__(None, None, None)
@@ -709,9 +631,7 @@ class PlaybackDriver:
                 tick_index=int(tick_index),
                 dt_tick=float(meta.dt_tick),
                 dt_tick_ms_i32=int(dt_tick_ms_i32),
-                tick_events=list(meta.tick_events),
-                pre_step_events=list(meta.pre_step_events),
-                post_step_events=list(meta.post_step_events),
+                commands=cast("tuple[GameCommand, ...]", tick_result.commands),
                 world=self.world,
                 step=step,
                 step_events=step.events,
@@ -719,10 +639,6 @@ class PlaybackDriver:
                 dt_sim=float(step.dt_sim),
                 rng_marks=dict(tick.rng_marks),
                 creature_count_world_step=int(tick.creature_count_world_step),
-                rng_before_events=int(meta.rng_before_events),
-                rng_after_events=int(meta.rng_after_events),
-                rng_before_post_events=(int(rng_before_post_events) if meta.post_step_events else None),
-                rng_after_post_events=(int(rng_after_post_events) if meta.post_step_events else None),
                 tick_rng_rows=list(meta.tick_rng_rows),
             )
             self._mode_runtime.enrich_tick_outcome(outcome, tick=tick)
@@ -730,39 +646,6 @@ class PlaybackDriver:
         finally:
             if not trace_closed:
                 trace_ctx.__exit__(None, None, None)
-
-    def apply_terminal_events(self, tick_index: int) -> PlaybackTerminalOutcome | None:
-        events_config = self.config.events
-        if not bool(events_config.apply_terminal_tick_events):
-            return None
-        if int(tick_index) != int(len(self.replay.inputs)):
-            return None
-
-        if bool(events_config.terminal_events_use_resolved_dt) and self.replay.dt:
-            dt_tick = float(self.replay.dt[-1])
-        else:
-            dt_tick = float(self.dt)
-
-        terminal_events = self.events_by_tick.get(int(tick_index), [])
-
-        rng_before_events = int(self.world.state.rng.state)
-        apply_replay_tick_events(
-            terminal_events,
-            tick_index=int(tick_index),
-            dt=float(dt_tick),
-            world=self.world,
-            game_mode_id=self.mode_id,
-        )
-        rng_after_events = int(self.world.state.rng.state)
-
-        return PlaybackTerminalOutcome(
-            tick_index=int(tick_index),
-            dt_tick=float(dt_tick),
-            terminal_events=list(terminal_events),
-            world=self.world,
-            rng_before_events=int(rng_before_events),
-            rng_after_events=int(rng_after_events),
-        )
 
     def _append_checkpoint_for_tick(
         self,
@@ -772,14 +655,6 @@ class PlaybackDriver:
         checkpoint_use_world_step_creature_count: bool,
     ) -> None:
         checkpoint_rng_marks = dict(outcome.rng_marks)
-        checkpoint_rng_marks["before_events"] = int(outcome.rng_before_events)
-        after_events_rng = int(outcome.rng_after_events)
-        if outcome.post_step_events and outcome.rng_after_post_events is not None:
-            after_events_rng = int(outcome.rng_after_post_events)
-        checkpoint_rng_marks["after_events"] = int(after_events_rng)
-        if outcome.post_step_events and outcome.rng_before_post_events is not None and outcome.rng_after_post_events is not None:
-            checkpoint_rng_marks["before_post_events"] = int(outcome.rng_before_post_events)
-            checkpoint_rng_marks["after_post_events"] = int(outcome.rng_after_post_events)
 
         checkpoints_out.append(
             build_checkpoint(
@@ -797,37 +672,8 @@ class PlaybackDriver:
             ),
         )
 
-    def _append_terminal_checkpoint(
-        self,
-        *,
-        terminal: PlaybackTerminalOutcome,
-        checkpoints_out: list[ReplayCheckpoint],
-    ) -> None:
-        checkpoints_out.append(
-            build_checkpoint(
-                tick_index=int(terminal.tick_index),
-                world=self.world,
-                elapsed_ms=float(self._mode_runtime.terminal_checkpoint_elapsed_ms()),
-                rng_marks=self._mode_runtime.terminal_checkpoint_rng_marks(terminal),
-                deaths=[],
-                events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
-            ),
-        )
-
-    def build_tick_runner(
-        self,
-        *,
-        defer_menu_open: bool | None = None,
-    ) -> TickRunner:
-        _ = defer_menu_open
-        journal = ReplayJournal(
-            replay=self.replay,
-            resolve_tick_dt=lambda tick_index: self._resolve_replay_dt_row(int(tick_index)),
-        )
-        provider = ReplayInputProvider(
-            player_count=max(0, int(self.replay.header.player_count)),
-            journal=journal,
-        )
+    def build_tick_runner(self) -> TickRunner:
+        provider = _ReplayTickProvider(self.replay)
         return TickRunner(
             session=self.session,
             input_provider=provider,
@@ -846,21 +692,18 @@ class PlaybackDriver:
         tick_rng_trace_observer: TickRngTraceObserver | None = None,
         tick_begin_observer: TickBeginObserver | None = None,
         tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
-        terminal_observer: Callable[[PlaybackTerminalOutcome], None] | None = None,
-        defer_menu_open: bool | None = None,
         ) -> RunResult:
-        tick_runner = self.build_tick_runner(defer_menu_open=defer_menu_open)
+        tick_runner = self.build_tick_runner()
         completed_ticks = 0
         frame_index = 0
 
         tick_limit = int(self.tick_limit)
         while int(completed_ticks) < int(tick_limit):
             tick_index = int(completed_ticks)
-            dt_tick = self._resolve_replay_dt_row(int(tick_index))
+            dt_tick = self._resolve_replay_dt(int(tick_index))
             tick_meta = self._prepare_tick_meta(
                 tick_index=int(tick_index),
                 dt_tick=float(dt_tick),
-                defer_menu_open=defer_menu_open,
             )
             frame_index += 1
             tick_runner.begin_frame(
@@ -908,9 +751,6 @@ class PlaybackDriver:
                         int(outcome.tick_index),
                         outcome.world,
                         float(outcome.dt_tick),
-                        list(outcome.tick_events),
-                        list(outcome.pre_step_events),
-                        list(outcome.post_step_events),
                     )
 
                 if tick_rng_trace_observer is not None:
@@ -940,16 +780,6 @@ class PlaybackDriver:
 
                 if tick_progress_callback is not None:
                     tick_progress_callback(int(outcome.tick_index) + 1)
-
-        terminal = self.apply_terminal_events(int(tick_limit))
-        if terminal is not None:
-            if checkpoints_out is not None and checkpoint_ticks is not None and int(terminal.tick_index) in checkpoint_ticks:
-                self._append_terminal_checkpoint(
-                    terminal=terminal,
-                    checkpoints_out=checkpoints_out,
-                )
-            if terminal_observer is not None:
-                terminal_observer(terminal)
 
         return self.build_run_result(ticks=int(tick_limit))
 

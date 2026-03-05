@@ -308,6 +308,15 @@ class DeterministicSession(msgspec.Struct):
                         dt=float(timing.dt_sim),
                         creatures=self.world.creatures.entries,
                     )
+                    # Eagerly regenerate choices so the RNG sequence matches
+                    # the recording path (pick sets choices_dirty=True).
+                    perk_selection_current_choices(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                    )
                 case PerkMenuOpenCommand():
                     perk_selection_current_choices(
                         self.world.state,

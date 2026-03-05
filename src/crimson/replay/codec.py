@@ -14,12 +14,10 @@ from .types import (
     WEAPON_USAGE_COUNT,
     PackedPlayerInput,
     PackedTickInputs,
-    PerkMenuOpenEvent,
-    PerkPickEvent,
     Replay,
     ReplayClaimedStatsSnapshot,
-    ReplayEvent,
     ReplayHeader,
+    ReplayTick,
 )
 
 _GZIP_MAGIC = b"\x1f\x8b"
@@ -27,10 +25,6 @@ _DEFAULT_MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
 _MAX_REPLAY_PAYLOAD_ENV = "CRIMSON_REPLAY_MAX_DECOMPRESSED_BYTES"
 
 _REPLAY_DECODER = msgspec.msgpack.Decoder(type=Replay)
-_REPLAY_EVENT_TYPES = (
-    PerkPickEvent,
-    PerkMenuOpenEvent,
-)
 
 
 class ReplayCodecError(ValueError):
@@ -151,14 +145,15 @@ def _normalize_packed_input(
     ]
 
 
-def _validate_event(event: ReplayEvent) -> None:
-    if not isinstance(event, _REPLAY_EVENT_TYPES):
-        raise ReplayCodecError(f"unsupported event type: {type(event).__name__}")
-    if isinstance(event, PerkPickEvent):
-        if int(event.player_index) < 0 or int(event.choice_index) < 0:
-            raise ReplayCodecError("perk_pick must have non-negative player/choice indexes")
-    if isinstance(event, PerkMenuOpenEvent) and int(event.player_index) < 0:
-        raise ReplayCodecError(f"perk_menu_open must have non-negative player index: {event.player_index}")
+def _validate_tick_dt(dt: float | None, *, tick_idx: int) -> float | None:
+    if dt is None:
+        return None
+    if isinstance(dt, bool) or not isinstance(dt, (int, float)):
+        raise ReplayCodecError(f"replay tick {tick_idx} dt must be numeric")
+    dt_value = float(dt)
+    if not math.isfinite(dt_value) or dt_value < 0.0:
+        raise ReplayCodecError(f"replay tick {tick_idx} dt must be finite and >= 0, got {dt_value!r}")
+    return _quantize_f32(dt_value)
 
 
 def dump_replay(replay: Replay) -> bytes:
@@ -170,40 +165,24 @@ def dump_replay(replay: Replay) -> bytes:
     _validate_header(replay.header, from_load=False)
 
     expected_players = int(replay.header.player_count)
-    inputs: list[PackedTickInputs] = []
-    for tick_idx, tick in enumerate(replay.inputs):
-        if len(tick) != expected_players:
+    normalized_ticks: list[ReplayTick] = []
+    for tick_idx, tick in enumerate(replay.ticks):
+        inputs = tick.inputs
+        if len(inputs) != expected_players:
             raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}",
+                f"replay tick {tick_idx} has {len(inputs)} players, expected {expected_players}",
             )
-        normalized_tick = [
+        normalized_inputs = [
             _normalize_packed_input(packed, tick_idx=int(tick_idx), player_idx=int(player_idx))
-            for player_idx, packed in enumerate(tick)
+            for player_idx, packed in enumerate(inputs)
         ]
-        inputs.append(normalized_tick)
-
-    dt_rows: list[float] = []
-    if len(replay.dt) != len(inputs):
-        raise ReplayCodecError(
-            f"replay dt length {len(replay.dt)} must match input ticks {len(inputs)}",
-        )
-    for tick_idx, dt_row in enumerate(replay.dt):
-        if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
-            raise ReplayCodecError(f"replay dt[{tick_idx}] must be numeric")
-        dt_value = float(dt_row)
-        if not math.isfinite(dt_value) or dt_value < 0.0:
-            raise ReplayCodecError(f"replay dt[{tick_idx}] must be finite and >= 0, got {dt_value!r}")
-        dt_rows.append(_quantize_f32(dt_value))
-
-    for event in replay.events:
-        _validate_event(event)
+        dt = _validate_tick_dt(tick.dt, tick_idx=int(tick_idx))
+        normalized_ticks.append(ReplayTick(inputs=normalized_inputs, commands=tick.commands, dt=dt))
 
     raw = msgspec.msgpack.encode(
         Replay(
             header=replay.header,
-            inputs=inputs,
-            dt=dt_rows,
-            events=list(replay.events),
+            ticks=normalized_ticks,
         ),
     )
     return gzip.compress(raw, compresslevel=9, mtime=0)
@@ -228,20 +207,21 @@ def load_replay(data: bytes) -> Replay:
     _validate_header(replay.header, from_load=True)
 
     expected_players = int(replay.header.player_count)
-    inputs: list[PackedTickInputs] = []
-    for tick_idx, tick in enumerate(replay.inputs):
-        if len(tick) != expected_players:
+    normalized_ticks: list[ReplayTick] = []
+    for tick_idx, tick in enumerate(replay.ticks):
+        inputs = tick.inputs
+        if len(inputs) != expected_players:
             raise ReplayCodecError(
-                f"replay tick {tick_idx} has {len(tick)} players, expected {expected_players}",
+                f"replay tick {tick_idx} has {len(inputs)} players, expected {expected_players}",
             )
-        normalized_tick: PackedTickInputs = []
-        for player_idx, packed in enumerate(tick):
+        normalized_inputs: PackedTickInputs = []
+        for player_idx, packed in enumerate(inputs):
             normalized = _normalize_packed_input(
                 packed,
                 tick_idx=int(tick_idx),
                 player_idx=int(player_idx),
             )
-            normalized_tick.append(
+            normalized_inputs.append(
                 [
                     _quantize_f32(float(normalized[0])),
                     _quantize_f32(float(normalized[1])),
@@ -250,32 +230,10 @@ def load_replay(data: bytes) -> Replay:
                     int(normalized[4]),
                 ],
             )
-        inputs.append(normalized_tick)
+        dt = _validate_tick_dt(tick.dt, tick_idx=int(tick_idx))
+        normalized_ticks.append(ReplayTick(inputs=normalized_inputs, commands=tick.commands, dt=dt))
 
-    if len(replay.dt) != len(inputs):
-        raise ReplayCodecError(
-            f"replay dt length {len(replay.dt)} must match input ticks {len(inputs)}",
-        )
-    dt_rows: list[float] = []
-    for tick_idx, dt_row in enumerate(replay.dt):
-        if isinstance(dt_row, bool) or not isinstance(dt_row, (int, float)):
-            raise ReplayCodecError(f"replay dt[{tick_idx}] must be numeric")
-        dt_value = float(dt_row)
-        if not math.isfinite(dt_value) or dt_value < 0.0:
-            raise ReplayCodecError(f"replay dt[{tick_idx}] must be finite and >= 0, got {dt_value!r}")
-        dt_rows.append(_quantize_f32(dt_value))
-
-    events = list(replay.events)
-    input_len = len(inputs)
-    for event in events:
-        _validate_event(event)
-        tick_index = int(event.tick_index)
-        if tick_index < 0:
-            raise ReplayCodecError(f"replay event tick_index must be non-negative, got {tick_index}")
-        if tick_index > input_len:
-            raise ReplayCodecError(f"replay event tick_index out of bounds: {tick_index} > {input_len}")
-
-    return Replay(header=replay.header, inputs=inputs, dt=dt_rows, events=events)
+    return Replay(header=replay.header, ticks=normalized_ticks)
 
 
 def dump_replay_file(path: Path, replay: Replay) -> None:

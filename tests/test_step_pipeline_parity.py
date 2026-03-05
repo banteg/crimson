@@ -57,7 +57,7 @@ def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
 
 
 def _inputs_for_tick(replay: Replay, tick_index: int) -> list[PlayerInput]:
-    packed_tick = replay.inputs[int(tick_index)]
+    packed_tick = replay.ticks[int(tick_index)].inputs
     inputs: list[PlayerInput] = []
     for packed in packed_tick:
         mx, my, ax, ay, flags = unpack_packed_player_input(packed)
@@ -98,7 +98,7 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
     stage = 0
     spawn_cooldown_ms = 0.0
 
-    for tick_index in range(len(replay.inputs)):
+    for tick_index in range(len(replay.ticks)):
         elapsed_before_ms = float(elapsed_ms)
         rng_before_world_step = int(world.sim_world.state.rng.state)
         world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
@@ -193,7 +193,7 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
 
     checkpoints: list[ReplayCheckpoint] = []
     dt = 1.0 / float(replay.header.tick_rate)
-    for tick_index in range(len(replay.inputs)):
+    for tick_index in range(len(replay.ticks)):
         tick_inputs = _inputs_for_tick(replay, tick_index)
         timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
@@ -276,7 +276,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     checkpoints: list[ReplayCheckpoint] = []
     dt = 1.0 / float(replay.header.tick_rate)
 
-    for tick_index in range(len(replay.inputs)):
+    for tick_index in range(len(replay.ticks)):
         timing = session.timing_for_dt(float(dt))
         tick = session.step_tick(
             timing=timing,
@@ -316,7 +316,7 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
     run_replay(
         replay,
         checkpoints_out=headless,
-        checkpoint_ticks=set(range(len(replay.inputs))),
+        checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
@@ -331,7 +331,7 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
     run_replay(
         replay,
         checkpoints_out=headless,
-        checkpoint_ticks=set(range(len(replay.inputs))),
+        checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
@@ -352,7 +352,7 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
         replay,
         spawn_entries=spawn_entries,
         checkpoints_out=headless,
-        checkpoint_ticks=set(range(len(replay.inputs))),
+        checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]

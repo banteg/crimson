@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from ...game_modes import GameMode
 from ...replay import Replay
 from ...replay.checkpoints import ReplayCheckpoint
 from ...weapons import WeaponId
@@ -11,7 +10,6 @@ from .playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackEventConfig,
     PlaybackSessionConfigs,
     PlaybackSessionDefaults,
     PlaybackTimingConfig,
@@ -50,13 +48,6 @@ def run_replay(
     tick_trace_observer: Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None] | None = None,
     tick_rng_trace_observer: TickRngTraceObserver | None = None,
 ) -> RunResult:
-    mode_id = replay.header.game_mode_id
-    match mode_id:
-        case GameMode.RUSH:
-            terminal_events_use_resolved_dt = False
-        case _:
-            terminal_events_use_resolved_dt = True
-
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
         trace_rng=bool(trace_rng),
@@ -66,11 +57,6 @@ def run_replay(
         timing=PlaybackTimingConfig(
             inter_tick_rand_draws=int(inter_tick_rand_draws),
             inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
-        ),
-        events=PlaybackEventConfig(
-            defer_menu_open=False,
-            apply_terminal_tick_events=True,
-            terminal_events_use_resolved_dt=terminal_events_use_resolved_dt,
         ),
         session_defaults=PlaybackSessionDefaults(
             clear_fx_queues_each_tick=True,

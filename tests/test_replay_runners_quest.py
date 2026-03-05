@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import pytest
+import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
-from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
 from tests.replay_runner_helpers import _blank_quest_replay, _quest_spawn_entries
 
@@ -30,7 +30,7 @@ def test_quest_runner_is_deterministic() -> None:
 def test_quest_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()
-    replay.dt[0] = 0.5
+    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
     spawn_entries = tuple(
         _quest_spawn_entries("1.1", player_count=int(replay.header.player_count), seed=int(replay.header.seed)),
     )
@@ -78,19 +78,22 @@ def test_quest_runner_replays_start_weapon_reload_sfx_at_tick_zero() -> None:
     assert tick0.events.sfx_head == [expected_reload_sfx]
 
 
-def test_quest_runner_rejects_invalid_perk_pick_event() -> None:
+def test_quest_runner_ignores_stale_perk_pick_command() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
-    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
     replay = rec.finish()
+    replay.ticks[0] = msgspec.structs.replace(
+        replay.ticks[0],
+        commands=(PerkPickCommand(player_index=0, choice_index=0),),
+    )
 
-    with pytest.raises(ReplayRunnerError, match="perk_pick failed"):
-        run_replay(replay, spawn_entries=())
+    result = run_replay(replay, spawn_entries=())
+    assert result.ticks == 1
 
 
 def test_quest_replay_info_elapsed_matches_run_replay() -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()
-    replay.dt[0] = 0.5
+    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
 
     run_result = run_replay(replay)
     info = run_replay_info(replay)

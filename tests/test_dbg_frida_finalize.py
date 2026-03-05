@@ -263,7 +263,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert replay.header.bootstrap_kind == "terrain_v1"
     assert replay.header.bootstrap_seed == 777
     assert replay.header.player_count == 1
-    assert len(replay.inputs) == 2
+    assert len(replay.ticks) == 2
 
     meta, ticks, footer = load_trace(out_trace.out_path)
     assert footer.tick_count == 2

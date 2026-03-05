@@ -43,14 +43,6 @@ class TickInput(msgspec.Struct, frozen=True):
     inputs: list[PlayerInput] = msgspec.field(default_factory=list)
 
 
-class ReplayJournal(Protocol):
-    def read_tick_inputs(self, tick_index: int) -> Sequence[PlayerInput] | None: ...
-
-    def read_tick_dt(self, tick_index: int, default_dt: float) -> float: ...
-
-    def tick_count(self) -> int | None: ...
-
-
 class InputProvider(Protocol):
     def begin_frame(self, frame_ctx: FrameContext) -> None: ...
 
@@ -66,8 +58,6 @@ class InputProvider(Protocol):
 
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
-ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
-ReplayTickDtResolver: TypeAlias = Callable[[int], float]
 TickCommandResolver: TypeAlias = Callable[[int], Sequence[GameCommand] | None]
 TickCommandEmitter: TypeAlias = Callable[[int, GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
@@ -133,79 +123,6 @@ class LocalInputProvider:
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
         return default_dt
-
-
-class ReplayInputProvider:
-    """Deterministic adapter over recorded replay input rows."""
-
-    def __init__(
-        self,
-        *,
-        player_count: int,
-        resolve_tick_input: ReplayTickInputResolver | None = None,
-        tick_count: int | None = None,
-        resolve_tick_dt: ReplayTickDtResolver | None = None,
-        journal: ReplayJournal | None = None,
-    ) -> None:
-        if journal is not None and resolve_tick_input is not None:
-            raise ValueError("ReplayInputProvider accepts either journal or resolve_tick_input, not both")
-        if journal is None and resolve_tick_input is None:
-            raise ValueError("ReplayInputProvider requires journal or resolve_tick_input")
-
-        self._player_count = max(0, player_count)
-        self._journal = journal
-        self._resolve_tick_input = resolve_tick_input
-        self._resolve_tick_dt = resolve_tick_dt
-        journal_tick_count = journal.tick_count() if journal is not None else None
-        resolved_tick_count = journal_tick_count if tick_count is None else tick_count
-        self._tick_count = max(0, int(resolved_tick_count)) if resolved_tick_count is not None else None
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-        return
-
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        idx = tick_index
-        if idx < 0:
-            return TickInput(status=InputStatus.EOS, inputs=[])
-        tick_count = self._tick_count
-        if tick_count is not None and idx >= tick_count:
-            return TickInput(status=InputStatus.EOS, inputs=[])
-        journal = self._journal
-        if journal is not None:
-            resolved = journal.read_tick_inputs(idx)
-        else:
-            resolver = self._resolve_tick_input
-            if resolver is None:
-                return TickInput(status=InputStatus.EOS, inputs=[])
-            resolved = resolver(idx)
-        if resolved is None:
-            return TickInput(status=InputStatus.EOS, inputs=[])
-        row = list(resolved)
-        return TickInput(
-            status=InputStatus.READY,
-            inputs=normalize_provider_tick_inputs(inputs=row, player_count=self._player_count),
-        )
-
-    def supports_commands(self) -> bool:
-        return False
-
-    def push_command(self, command: GameCommand) -> None:
-        _ = command
-        return
-
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        _ = tick_index
-        return []
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        journal = self._journal
-        if journal is not None:
-            return float(journal.read_tick_dt(int(tick_index), float(default_dt)))
-        resolver = self._resolve_tick_dt
-        if resolver is None:
-            return float(default_dt)
-        return float(resolver(int(tick_index)))
 
 
 class NetworkInputProvider:

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
-from crimson.replay import Replay, ReplayHeader
+from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 
@@ -12,7 +12,7 @@ from crimson.sim.tick_runner import TickBatchResult
 def _replay_with_ticks(tick_count: int) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=replay_playback_mode.GameMode.DEMO, seed=0),
-        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]] for _ in range(max(0, int(tick_count)))],
+        ticks=[ReplayTick(inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
     )
 
 
@@ -118,12 +118,7 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
     view._step_once_pending = True
     view._tick_index = 1
 
-    apply_terminal_calls: list[int] = []
-    _set_private(
-        view,
-        "_driver",
-        SimpleNamespace(apply_terminal_events=lambda tick_index: apply_terminal_calls.append(int(tick_index))),
-    )
+    _set_private(view, "_driver", SimpleNamespace())
     _set_private(view, "_survival", object())
 
     @dataclass
@@ -153,4 +148,3 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
     assert view._tick_index == 2
     assert view._step_once_pending is False
     assert view._dt_accum == 0.0
-    assert apply_terminal_calls == [2]
