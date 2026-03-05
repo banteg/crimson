@@ -86,11 +86,11 @@ def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
     for player in players:
         snapshots.append(
             _PlayerSnapshot(
-                health=float(player.health),
-                level=int(player.level),
-                experience=int(player.experience),
+                health=player.health,
+                level=player.level,
+                experience=player.experience,
                 weapon_id=player.weapon.weapon_id,
-                perk_counts=tuple(int(value) for value in player.perk_counts),
+                perk_counts=tuple(player.perk_counts),
             ),
         )
     return snapshots
@@ -108,18 +108,18 @@ def _append_event(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> None:
-    if kind not in _CORE_EVENT_KINDS and not bool(include_extra_events):
+    if kind not in _CORE_EVENT_KINDS and not include_extra_events:
         return
-    if player_filter is not None and player_index is not None and int(player_index) != int(player_filter):
+    if player_filter is not None and player_index is not None and player_index != player_filter:
         return
     timeline.append(
         ReplayInfoTimelineEvent(
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
+            tick_index=tick_index,
+            elapsed_ms=elapsed_ms,
             kind=kind,
-            player_index=(None if player_index is None else int(player_index)),
-            detail=str(detail),
-            data=dict(data),
+            player_index=player_index,
+            detail=detail,
+            data=data,
         ),
     )
 
@@ -133,19 +133,18 @@ def _append_extra_replay_commands(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> None:
-    if not bool(include_extra_events):
+    if not include_extra_events:
         return
     for cmd in commands:
         if isinstance(cmd, PerkMenuOpenCommand):
-            player_idx = int(cmd.player_index)
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="perk_menu_open",
-                player_index=int(player_idx),
-                detail=f"p{int(player_idx)} perk menu opened",
-                data={"player_index": int(player_idx)},
+                player_index=cmd.player_index,
+                detail=f"p{cmd.player_index} perk menu opened",
+                data={"player_index": cmd.player_index},
                 player_filter=player_filter,
                 include_extra_events=True,
             )
@@ -162,28 +161,26 @@ def _append_bonus_pickup_events(
     include_extra_events: bool,
 ) -> None:
     for pickup in pickups:
-        player_idx = int(pickup.player_index)
         bonus_id = pickup.bonus_id
-        amount = int(pickup.amount)
-        bonus_name = bonus_display_name(bonus_id, preserve_bugs=bool(preserve_bugs))
-        detail = f"p{int(player_idx)} picked {str(bonus_name)} ({int(bonus_id)}) amount={int(amount)}"
+        bonus_name = bonus_display_name(bonus_id, preserve_bugs=preserve_bugs)
+        detail = f"p{pickup.player_index} picked {bonus_name} ({bonus_id}) amount={pickup.amount}"
         data: dict[str, object] = {
-            "bonus_id": int(bonus_id),
-            "bonus_name": str(bonus_name),
-            "amount": int(amount),
+            "bonus_id": bonus_id,
+            "bonus_name": bonus_name,
+            "amount": pickup.amount,
         }
         if bonus_id == BonusId.WEAPON:
-            weapon_id = WeaponId(amount)
-            weapon_name = weapon_display_name(weapon_id, preserve_bugs=bool(preserve_bugs))
-            detail += f" -> {str(weapon_name)}"
+            weapon_id = WeaponId(pickup.amount)
+            weapon_name = weapon_display_name(weapon_id, preserve_bugs=preserve_bugs)
+            detail += f" -> {weapon_name}"
             data["weapon_id"] = weapon_id
-            data["weapon_name"] = str(weapon_name)
+            data["weapon_name"] = weapon_name
         _append_event(
             timeline,
-            tick_index=int(tick_index),
-            elapsed_ms=int(elapsed_ms),
+            tick_index=tick_index,
+            elapsed_ms=elapsed_ms,
             kind="bonus_pickup",
-            player_index=int(player_idx),
+            player_index=pickup.player_index,
             detail=detail,
             data=data,
             player_filter=player_filter,
@@ -207,40 +204,39 @@ def _append_snapshot_diff_events(
     for idx in range(players_len):
         pre = before[idx]
         post = after[idx]
-        player_idx = int(idx)
 
         if pre.weapon_id != post.weapon_id:
-            weapon_before_name = weapon_display_name(pre.weapon_id, preserve_bugs=bool(preserve_bugs))
-            weapon_after_name = weapon_display_name(post.weapon_id, preserve_bugs=bool(preserve_bugs))
+            weapon_before_name = weapon_display_name(pre.weapon_id, preserve_bugs=preserve_bugs)
+            weapon_after_name = weapon_display_name(post.weapon_id, preserve_bugs=preserve_bugs)
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="weapon_change",
-                player_index=int(player_idx),
-                detail=f"p{int(player_idx)} weapon {weapon_before_name} -> {weapon_after_name}",
+                player_index=idx,
+                detail=f"p{idx} weapon {weapon_before_name} -> {weapon_after_name}",
                 data={
                     "weapon_id_before": pre.weapon_id,
-                    "weapon_name_before": str(weapon_before_name),
+                    "weapon_name_before": weapon_before_name,
                     "weapon_id_after": post.weapon_id,
-                    "weapon_name_after": str(weapon_after_name),
+                    "weapon_name_after": weapon_after_name,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
 
-        if int(post.level) > int(pre.level):
+        if post.level > pre.level:
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="level_up",
-                player_index=int(player_idx),
-                detail=f"p{int(player_idx)} level {int(pre.level)} -> {int(post.level)} (xp={int(post.experience)})",
+                player_index=idx,
+                detail=f"p{idx} level {pre.level} -> {post.level} (xp={post.experience})",
                 data={
-                    "level_before": int(pre.level),
-                    "level_after": int(post.level),
-                    "xp": int(post.experience),
+                    "level_before": pre.level,
+                    "level_after": post.level,
+                    "xp": post.experience,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
@@ -248,86 +244,80 @@ def _append_snapshot_diff_events(
 
         perk_len = min(len(pre.perk_counts), len(post.perk_counts))
         for perk_id in range(perk_len):
-            before_count = int(pre.perk_counts[perk_id])
-            after_count = int(post.perk_counts[perk_id])
-            if int(after_count) <= int(before_count):
+            before_count = pre.perk_counts[perk_id]
+            after_count = post.perk_counts[perk_id]
+            if after_count <= before_count:
                 continue
             perk_name = perk_display_name(
                 PerkId(perk_id),
-                gore_disabled=int(gore_disabled),
-                preserve_bugs=bool(preserve_bugs),
+                gore_disabled=gore_disabled,
+                preserve_bugs=preserve_bugs,
             )
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="perk_pick",
-                player_index=int(player_idx),
-                detail=f"p{int(player_idx)} perk {str(perk_name)} ({int(perk_id)}) x{int(after_count)}",
+                player_index=idx,
+                detail=f"p{idx} perk {perk_name} ({perk_id}) x{after_count}",
                 data={
-                    "perk_id": int(perk_id),
-                    "perk_name": str(perk_name),
-                    "count_before": int(before_count),
-                    "count_after": int(after_count),
+                    "perk_id": perk_id,
+                    "perk_name": perk_name,
+                    "count_before": before_count,
+                    "count_after": after_count,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
 
-        health_before = float(pre.health)
-        health_after = float(post.health)
-        if float(health_after) < float(health_before) - float(_EPSILON):
-            amount = float(health_before) - float(health_after)
+        health_before = pre.health
+        health_after = post.health
+        if health_after < health_before - _EPSILON:
+            amount = health_before - health_after
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="health_damage",
-                player_index=int(player_idx),
-                detail=(
-                    f"p{int(player_idx)} damage {float(amount):.6f} "
-                    f"(health {float(health_before):.6f}->{float(health_after):.6f})"
-                ),
+                player_index=idx,
+                detail=f"p{idx} damage {amount:.6f} (health {health_before:.6f}->{health_after:.6f})",
                 data={
-                    "amount": float(amount),
-                    "health_before": float(health_before),
-                    "health_after": float(health_after),
+                    "amount": amount,
+                    "health_before": health_before,
+                    "health_after": health_after,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
-        elif float(health_after) > float(health_before) + float(_EPSILON):
-            amount = float(health_after) - float(health_before)
+        elif health_after > health_before + _EPSILON:
+            amount = health_after - health_before
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="health_heal",
-                player_index=int(player_idx),
-                detail=(
-                    f"p{int(player_idx)} heal {float(amount):.6f} "
-                    f"(health {float(health_before):.6f}->{float(health_after):.6f})"
-                ),
+                player_index=idx,
+                detail=f"p{idx} heal {amount:.6f} (health {health_before:.6f}->{health_after:.6f})",
                 data={
-                    "amount": float(amount),
-                    "health_before": float(health_before),
-                    "health_after": float(health_after),
+                    "amount": amount,
+                    "health_before": health_before,
+                    "health_after": health_after,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
 
-        if float(health_before) > 0.0 and float(health_after) <= 0.0:
+        if health_before > 0.0 and health_after <= 0.0:
             _append_event(
                 timeline,
-                tick_index=int(tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="player_death",
-                player_index=int(player_idx),
-                detail=f"p{int(player_idx)} died (health {float(health_before):.6f}->{float(health_after):.6f})",
+                player_index=idx,
+                detail=f"p{idx} died (health {health_before:.6f}->{health_after:.6f})",
                 data={
-                    "health_before": float(health_before),
-                    "health_after": float(health_after),
+                    "health_before": health_before,
+                    "health_after": health_after,
                 },
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
@@ -337,15 +327,13 @@ def _append_snapshot_diff_events(
 def _validate_player_filter(*, replay: Replay, player_index: int | None) -> int | None:
     if player_index is None:
         return None
-    idx = int(player_index)
-    if int(idx) < 0:
+    if player_index < 0:
         raise ReplayRunnerError(f"invalid player_index filter: {player_index}")
-    player_count = int(replay.header.player_count)
-    if int(player_count) > 0 and int(idx) >= int(player_count):
+    if replay.header.player_count > 0 and player_index >= replay.header.player_count:
         raise ReplayRunnerError(
-            f"player_index filter out of range: {player_index} (player_count={int(player_count)})",
+            f"player_index filter out of range: {player_index} (player_count={replay.header.player_count})",
         )
-    return int(idx)
+    return player_index
 
 
 def _run_replay_info(
@@ -355,11 +343,10 @@ def _run_replay_info(
     player_filter: int | None,
     include_extra_events: bool,
 ) -> ReplayInfoResult:
-    mode_raw = int(replay.header.game_mode_id)
     try:
-        mode = GameMode(mode_raw)
+        mode = GameMode(replay.header.game_mode_id)
     except ValueError as exc:
-        raise ReplayRunnerError(f"unsupported replay game_mode_id={mode_raw}") from exc
+        raise ReplayRunnerError(f"unsupported replay game_mode_id={replay.header.game_mode_id}") from exc
 
     options = PlaybackDriverOptions(
         max_ticks=max_ticks,
@@ -408,28 +395,28 @@ def _run_replay_info(
         if mode != GameMode.RUSH:
             _append_extra_replay_commands(
                 commands=outcome.commands,
-                tick_index=int(outcome.tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=outcome.tick_index,
+                elapsed_ms=elapsed_ms,
                 timeline=timeline,
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
 
         _append_bonus_pickup_events(
-            tick_index=int(outcome.tick_index),
-            elapsed_ms=int(elapsed_ms),
+            tick_index=outcome.tick_index,
+            elapsed_ms=elapsed_ms,
             timeline=timeline,
             pickups=outcome.step_events.pickups,
-            preserve_bugs=bool(replay.header.preserve_bugs),
+            preserve_bugs=replay.header.preserve_bugs,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
 
-        if len(outcome.step_events.deaths) > 0:
+        if outcome.step_events.deaths:
             _append_event(
                 timeline,
-                tick_index=int(outcome.tick_index),
-                elapsed_ms=int(elapsed_ms),
+                tick_index=outcome.tick_index,
+                elapsed_ms=elapsed_ms,
                 kind="creature_deaths",
                 player_index=None,
                 detail=f"creature deaths={len(outcome.step_events.deaths)}",
@@ -439,13 +426,13 @@ def _run_replay_info(
             )
 
         _append_snapshot_diff_events(
-            tick_index=int(outcome.tick_index),
-            elapsed_ms=int(elapsed_ms),
+            tick_index=outcome.tick_index,
+            elapsed_ms=elapsed_ms,
             before=before,
             after=after,
             timeline=timeline,
-            preserve_bugs=bool(replay.header.preserve_bugs),
-            gore_disabled=int(replay.header.gore_disabled),
+            preserve_bugs=replay.header.preserve_bugs,
+            gore_disabled=replay.header.gore_disabled,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
@@ -457,8 +444,8 @@ def _run_replay_info(
 
     return ReplayInfoResult(
         game_mode_id=mode,
-        tick_rate=int(replay.header.tick_rate),
-        ticks_simulated=int(driver.tick_limit),
+        tick_rate=replay.header.tick_rate,
+        ticks_simulated=driver.tick_limit,
         elapsed_ms=int(run_result.elapsed_ms),
         player_count=len(driver.world.players),
         timeline=timeline,
@@ -477,7 +464,7 @@ def run_replay_info(
         replay,
         max_ticks=max_ticks,
         player_filter=player_filter,
-        include_extra_events=bool(include_extra_events),
+        include_extra_events=include_extra_events,
     )
 
 

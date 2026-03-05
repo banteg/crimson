@@ -16,7 +16,7 @@ from .types import (
 
 class ReplayRecorder:
     def __init__(self, header: ReplayHeader) -> None:
-        if int(header.replay_format_version) != int(REPLAY_FORMAT_VERSION):
+        if header.replay_format_version != REPLAY_FORMAT_VERSION:
             raise ValueError(f"unsupported replay format version: {header.replay_format_version}")
         self._header = header
         self._tick_index = 0
@@ -28,7 +28,7 @@ class ReplayRecorder:
 
     @property
     def tick_index(self) -> int:
-        return int(self._tick_index)
+        return self._tick_index
 
     @property
     def recorded_tick_count(self) -> int:
@@ -46,15 +46,14 @@ class ReplayRecorder:
         Returns the tick index that was recorded.
         """
 
-        player_count = int(self._header.player_count)
-        if len(inputs) != player_count:
-            raise ValueError(f"expected {player_count} player inputs, got {len(inputs)}")
+        if len(inputs) != self._header.player_count:
+            raise ValueError(f"expected {self._header.player_count} player inputs, got {len(inputs)}")
 
         packed = pack_tick_inputs(inputs, quant=self._header.input_quantization)
         if dt is not None and (not math.isfinite(dt) or dt < 0.0):
             raise ValueError(f"dt must be finite and >= 0, got {dt!r}")
 
-        tick_index = int(self._tick_index)
+        tick_index = self._tick_index
         self._ticks.append(ReplayTick(inputs=packed, commands=list(commands) if commands else [], dt=dt))
         self._tick_index += 1
         return tick_index
