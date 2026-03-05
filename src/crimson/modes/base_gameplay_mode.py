@@ -2024,7 +2024,7 @@ class BaseGameplayMode:
             if replay_tick_index is None and recorder is not None:
                 inputs = tick_result.inputs
                 if inputs is not None:
-                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=cast("tuple[GameCommand, ...]", tick_result.commands)))
+                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=tick_result.commands))
                     tick_result.replay_tick_index = replay_tick_index
             hashes = tick_result.hashes
             applied = _AppliedBatchTick(

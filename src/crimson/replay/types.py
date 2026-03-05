@@ -278,7 +278,7 @@ class ReplayHeader(msgspec.Struct, frozen=True):
 
 class ReplayTick(msgspec.Struct, frozen=True):
     inputs: PackedTickInputs
-    commands: tuple[GameCommand, ...] = ()
+    commands: list[GameCommand] = []
     dt: float | None = None
 
 

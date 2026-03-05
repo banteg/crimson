@@ -86,9 +86,9 @@ def _build_replay(
     )
 
 
-def _inject_tick_commands(replay: Replay, tick_index: int, commands: tuple[object, ...]) -> None:
+def _inject_tick_commands(replay: Replay, tick_index: int, commands: list[object]) -> None:
     old_tick = replay.ticks[tick_index]
-    existing = tuple(old_tick.commands) + commands
+    existing = list(old_tick.commands) + commands
     replay.ticks[tick_index] = msgspec.structs.replace(old_tick, commands=existing)
 
 
@@ -415,7 +415,7 @@ def test_replay_verify_rejects_removed_submitted_score_option(tmp_path: Path) ->
 
 def test_replay_verify_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    _inject_tick_commands(replay, 0, (PerkPickCommand(player_index=0, choice_index=0),))
+    _inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -557,7 +557,7 @@ def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
 
 def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    _inject_tick_commands(replay, 0, (PerkPickCommand(player_index=0, choice_index=0),))
+    _inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -602,7 +602,7 @@ def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
 
 def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1, player_count=2)
-    _inject_tick_commands(replay, 0, (PerkMenuOpenCommand(player_index=0), PerkMenuOpenCommand(player_index=1)))
+    _inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0), PerkMenuOpenCommand(player_index=1)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival-2p.crd")
     runner = CliRunner()
 
@@ -629,7 +629,7 @@ def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:
 
 def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    _inject_tick_commands(replay, 0, (PerkMenuOpenCommand(player_index=0),))
+    _inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 
@@ -1469,7 +1469,7 @@ def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) ->
 
 def test_replay_benchmark_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    _inject_tick_commands(replay, 0, (PerkPickCommand(player_index=0, choice_index=0),))
+    _inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
 

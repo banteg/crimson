@@ -286,7 +286,7 @@ class DeterministicSession(msgspec.Struct):
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-        commands: tuple[GameCommand, ...] = (),
+        commands: list[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
         if self.before_step_hook is not None:
             self.before_step_hook()
@@ -295,7 +295,7 @@ class DeterministicSession(msgspec.Struct):
         if tick_inputs is not None and self.input_transform is not None:
             tick_inputs = self.input_transform(tick_inputs)
 
-        for cmd in commands:
+        for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
                     perk_selection_pick(

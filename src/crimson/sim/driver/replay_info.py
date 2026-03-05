@@ -10,7 +10,7 @@ from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
 from ...weapons import WeaponId, weapon_display_name
-from ..input_providers import PerkMenuOpenCommand
+from ..input_providers import GameCommand, PerkMenuOpenCommand
 from ..state_types import BonusPickupEvent, PlayerState
 from .playback_driver import (
     PlaybackDriver,
@@ -126,7 +126,7 @@ def _append_event(
 
 def _append_extra_replay_commands(
     *,
-    commands: tuple[object, ...],
+    commands: list[GameCommand],
     tick_index: int,
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],

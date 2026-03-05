@@ -45,7 +45,7 @@ class ReplayRecorder:
         self,
         inputs: Sequence[PlayerInput],
         *,
-        commands: tuple[GameCommand, ...] = (),
+        commands: list[GameCommand] | None = None,
         dt: float | None = None,
     ) -> int:
         """Record a single simulation tick worth of inputs.
@@ -65,7 +65,7 @@ class ReplayRecorder:
                 raise ValueError(f"dt must be finite and >= 0, got {tick_dt!r}")
 
         tick_index = int(self._tick_index)
-        self._ticks.append(ReplayTick(inputs=packed, commands=commands, dt=tick_dt))
+        self._ticks.append(ReplayTick(inputs=packed, commands=list(commands) if commands else [], dt=tick_dt))
         self._tick_index += 1
         return tick_index
 

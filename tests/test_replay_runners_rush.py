@@ -54,7 +54,7 @@ def test_rush_runner_ignores_stale_perk_pick_command() -> None:
     replay = rec.finish()
     replay.ticks[0] = msgspec.structs.replace(
         replay.ticks[0],
-        commands=(PerkPickCommand(player_index=0, choice_index=0),),
+        commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
     result = run_replay(replay)

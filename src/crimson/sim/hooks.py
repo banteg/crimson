@@ -8,6 +8,7 @@ import msgspec
 
 if TYPE_CHECKING:
     from .input import PlayerInput
+    from .input_providers import GameCommand
 
 class TickHashes(msgspec.Struct, frozen=True):
     state_hash: str | None = None
@@ -19,7 +20,7 @@ class TickResult(msgspec.Struct):
     presentation_plan_ms: float = 0.0
     payload: object | None = None
     inputs: list[PlayerInput] | None = None
-    commands: tuple[object, ...] = ()
+    commands: list[GameCommand] = []
     hashes: TickHashes | None = None
     replay_tick_index: int | None = None
     lan_sync: LanTickSync | None = None

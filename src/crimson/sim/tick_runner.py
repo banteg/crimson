@@ -78,7 +78,7 @@ class TickRunner:
 
             tick_inputs = list(tick_input.inputs)
             tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, tick_dt)
-            commands = tuple(self._input_provider.pull_tick_commands(tick_index))
+            commands = self._input_provider.pull_tick_commands(tick_index)
 
             # Snapshot list identity before stepping so replay recording can
             # happen later in frame-driver code with pre-step inputs.

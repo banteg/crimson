@@ -253,7 +253,7 @@ class PlaybackTickOutcome:
     tick_index: int
     dt_tick: float
     dt_tick_ms_i32: int | None
-    commands: tuple[GameCommand, ...]
+    commands: list[GameCommand]
     world: WorldState
     step: DeterministicStepResult
     step_events: WorldEvents
@@ -631,7 +631,7 @@ class PlaybackDriver:
                 tick_index=int(tick_index),
                 dt_tick=float(meta.dt_tick),
                 dt_tick_ms_i32=int(dt_tick_ms_i32),
-                commands=cast("tuple[GameCommand, ...]", tick_result.commands),
+                commands=tick_result.commands,
                 world=self.world,
                 step=step,
                 step_events=step.events,

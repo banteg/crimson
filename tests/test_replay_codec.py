@@ -79,7 +79,7 @@ def test_replay_codec_roundtrip() -> None:
             PlayerInput(move=Vec2(), aim=Vec2(11.0, 21.0), fire_pressed=True),
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(100.0, 43.0)),
         ],
-        commands=(PerkPickCommand(player_index=0, choice_index=2),),
+        commands=[PerkPickCommand(player_index=0, choice_index=2)],
     )
     replay = rec.finish()
 
@@ -91,7 +91,7 @@ def test_replay_codec_roundtrip() -> None:
     assert len(decoded.ticks) == 2
     assert decoded.ticks[0].inputs == replay.ticks[0].inputs
     assert decoded.ticks[1].inputs == replay.ticks[1].inputs
-    assert decoded.ticks[1].commands == (PerkPickCommand(player_index=0, choice_index=2),)
+    assert decoded.ticks[1].commands == [PerkPickCommand(player_index=0, choice_index=2)]
 
 
 def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
@@ -100,12 +100,12 @@ def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
     rec.record_tick([PlayerInput()])
     rec.record_tick(
         [PlayerInput()],
-        commands=(PerkMenuOpenCommand(player_index=0),),
+        commands=[PerkMenuOpenCommand(player_index=0)],
     )
     replay = rec.finish()
 
     decoded = load_replay(dump_replay(replay))
-    assert decoded.ticks[1].commands == (PerkMenuOpenCommand(player_index=0),)
+    assert decoded.ticks[1].commands == [PerkMenuOpenCommand(player_index=0)]
 
 
 def test_replay_codec_roundtrip_claimed_stats() -> None:
