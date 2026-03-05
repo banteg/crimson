@@ -18,7 +18,7 @@ Hard decisions for simplicity:
 - Replay playback reads replay ticks directly (no replay `InputProvider`/`Journal` layer).
 - LAN deterministic commands travel on host-authored canonical tick frames (not out-of-band net messages).
 - Command model is intentionally closed: only perk menu open + perk pick command variants.
-- No `command_hash`: compare typed command tuples directly.
+- No hash/checksum fields in deterministic runtime or replay sidecars.
 - One tick orchestration path for live, replay verify, replay play, replay render, replay benchmark, and LAN.
 
 Core change:
@@ -104,7 +104,7 @@ For each tick:
 1. Runtime resolves inputs + commands for the tick.
 2. Session applies typed commands in deterministic command phase.
 3. Session runs deterministic world step.
-4. Session returns `DeterministicSessionStepTick` + applied-command metadata (state hash remains optional for deep parity/debug).
+4. Session returns `DeterministicSessionStepTick` + applied-command metadata.
 
 No separate replay event pre/post phase exists.
 
@@ -178,14 +178,14 @@ Changes:
 Update:
 
 - `src/crimson/sim/sessions.py`
-- `src/crimson/sim/step_pipeline.py` (hash input if needed)
+- `src/crimson/sim/step_pipeline.py`
 - `src/crimson/sim/input_providers.py` (or existing command contract module)
 
 Changes:
 
 1. Extend `DeterministicSession.step_tick(..., commands: tuple[GameCommand, ...])`.
 2. Apply commands via typed `match` dispatch.
-3. Remove command-hash generation/propagation; expose applied commands directly where parity checks need them.
+3. Remove all hash generation/propagation from deterministic tick outputs.
 4. Remove command application from mode post-processing hooks.
 
 ### 7.4 Gameplay Modes (Live/LAN)
@@ -222,10 +222,10 @@ Changes:
 3. Make `run_to_completion` iterate via `step_tick` (no duplicate orchestration loop).
 4. Make `ReplayPlaybackMode` advance simulation via `PlaybackDriver.step_tick`.
 5. Delete replay event partition/apply code paths and terminal-event phase machinery completely.
-6. Collapse `PlaybackTickOutcome` to core deterministic data (`tick_index`, `dt`, session step payload, rng marks, command stream metadata, optional state hash metadata).
+6. Collapse `PlaybackTickOutcome` to core deterministic data (`tick_index`, `dt`, session step payload, rng marks, command stream metadata).
 7. Remove `PlaybackTickOutcome` fields that only exist for event split (`tick_events`, `pre_step_events`, `post_step_events`, `rng_before_events`, `rng_after_events`, `rng_before_post_events`, `rng_after_post_events`).
 8. Keep playback mode focused on presentation only.
-9. Tick observers receive applied commands (+ optional state hash) only (no replay event lists).
+9. Tick observers receive applied commands only (no replay event lists).
 
 ### 7.6 LAN Typed Command Parity
 
@@ -240,7 +240,7 @@ Changes:
 2. Remove `PerkMenuOpen`/`PerkMenuClose`/`PerkPick` out-of-band `NetMessage` variants and pending perk-event queues.
 3. Do not attach commands to `InputSample`; keep host-authoritative command stream in canonical frame path.
 4. Remove string command generation.
-5. Compare command streams directly (`tuple[GameCommand, ...]` equality), and keep state-hash parity checks for deeper desync diagnosis.
+5. Compare command streams directly (`tuple[GameCommand, ...]` equality) and compare canonical state snapshots structurally.
 
 ## 8. Planned Deletions
 
@@ -249,7 +249,10 @@ Delete completely:
 - `Replay.events` and related types/codec validation.
 - Replay event helpers (`sim/driver/replay_events.py`) and callers.
 - `InputCommand(name, payload)` string dictionary path.
-- `command_hash` fields/computation/plumbing in replay, tick runner, net lockstep, and desync notices.
+- Hash/checksum fields and plumbing in this stack:
+- `command_hash`, `state_hash`, `status_hash` fields/computation/plumbing.
+- replay/checkpoint digest links (`replay_sha256`) and related validation.
+- trace/resync payload checksums and digests used only for replay/debug artifacts.
 - `ReplayInputProvider` and replay `ReplayJournal` protocol/adapter layers.
 - `ReplayRecorder.record_tick_at`, `ReplayRecorder.record_perk_pick`, `ReplayRecorder.record_perk_menu_open`.
 - Event-partitioning-only outcome/config surface (`PlaybackTickOutcome` event split fields, `PlaybackEventConfig`, runtime `partition_tick_events` hooks).
@@ -268,13 +271,13 @@ Scope:
 - Add closed typed command unions.
 - Migrate providers, runner, and session signatures to typed command flow.
 - Remove stringly command usage from deterministic runtime paths.
-- Remove `command_hash` plumbing in favor of direct typed-command comparison.
+- Remove hash/checksum plumbing in favor of direct typed-struct comparison.
 
 Exit checks:
 
 - All callsites compile with new typed contracts.
 - Command application happens only in `DeterministicSession.step_tick`.
-- No command-hash fields remain in deterministic contracts.
+- No hash/checksum fields remain in deterministic contracts.
 
 ### PR-B: Replay v2 Schema + Recorder Simplification
 
@@ -307,7 +310,7 @@ Exit checks:
 
 - Replay play and verify share the same replay-tick execution method.
 - No replay-event/terminal-event branches remain in runtime code paths.
-- Tick observers operate on commands/hashes, not replay events.
+- Tick observers operate on commands, not replay events.
 
 ### PR-D: LAN + Guardrails
 
@@ -319,11 +322,11 @@ Scope:
 
 Exit checks:
 
-- LAN hash contract tests pass.
+- LAN deterministic parity tests pass using typed-command and structural state comparisons.
 - Verify-vs-playback fixture parity test is CI-gated and passing.
 - New architecture docs merged.
 - No out-of-band perk net messages remain.
-- No command-hash protocol fields remain; LAN command parity uses direct tuple equality.
+- No hash/checksum protocol fields remain; LAN command parity uses direct tuple equality.
 
 ## 10. PRD Checks (Pass/Fail Gates)
 
@@ -332,7 +335,7 @@ Exit checks:
 - [ ] Deterministic command APIs accept only `GameCommand` union.
 - [ ] Replay schema is `ticks[]` only (no `events`).
 - [ ] Recorder API is append-only.
-- [ ] Deterministic contracts contain no `command_hash` fields.
+- [ ] Deterministic contracts contain no hash/checksum fields.
 
 Validation:
 
@@ -353,7 +356,7 @@ Validation:
 ### Check Group C: Verify-vs-Playback Fixture Parity
 
 - [ ] `verify` vs playback run result parity on all replay fixtures.
-- [ ] `verify` vs playback checkpoint/state-hash parity on sampled fixture ticks.
+- [ ] `verify` vs playback checkpoint structural parity on sampled fixture ticks.
 
 Validation:
 
@@ -361,9 +364,9 @@ Validation:
 
 ### Check Group D: LAN Deterministic Parity
 
-- [ ] LAN host/join state hash parity unchanged.
+- [ ] LAN host/join structural state parity unchanged.
 - [ ] LAN command path uses canonical tick-frame commands; no out-of-band perk messages.
-- [ ] LAN command parity uses direct typed-command tuple equality (no command-hash fallback).
+- [ ] LAN command parity uses direct typed-command tuple equality (no hash fallback).
 
 Validation:
 
