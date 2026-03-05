@@ -41,7 +41,7 @@ from crimson.sim.driver.replay_render import ReplayRenderResult
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -86,7 +86,7 @@ def _build_replay(
     )
 
 
-def _inject_tick_commands(replay: Replay, tick_index: int, commands: list[object]) -> None:
+def _inject_tick_commands(replay: Replay, tick_index: int, commands: list[GameCommand]) -> None:
     old_tick = replay.ticks[tick_index]
     existing = list(old_tick.commands) + commands
     replay.ticks[tick_index] = msgspec.structs.replace(old_tick, commands=existing)

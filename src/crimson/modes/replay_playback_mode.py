@@ -132,7 +132,6 @@ class ReplayPlaybackMode:
         self._rtx_mode = mode_from_rtx_flag(self._rtx)
         self._texture_cache: PaqTextureCache | None = None
         self._runtime: WorldRuntime | None = None
-        self._defer_menu_open = False
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
@@ -357,7 +356,6 @@ class ReplayPlaybackMode:
         self._paused = False
         self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
-        self._defer_menu_open = False
         self._driver = None
         self._tick_runner = None
 
