@@ -21,8 +21,9 @@ from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
-    QuestDeterministicSession,
+    QuestSpawnState,
     RushSpawnState,
+    quest_post_step,
     rush_input_transform,
     rush_mid_step,
 )
@@ -259,16 +260,20 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
     for player in world.sim_world.players:
         weapon_assign_player(player, weapon_id, state=world.sim_world.state)
 
-    session = QuestDeterministicSession(
+    quest_spawn_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
+    session = DeterministicSession(
         world=world.sim_world.world_state,
         world_size=float(world.world_size),
         damage_scale_by_type=world.sim_world.damage_scale_by_type,
         fx_queue=world.render_resources.fx_queue,
         fx_queue_rotated=world.render_resources.fx_queue_rotated,
-        spawn_entries=tuple(spawn_entries),
+        game_mode=GameMode.QUESTS,
+        perk_progression_enabled=True,
         detail_preset=5,
         gore_disabled=0,
         clear_fx_queues_each_tick=True,
+        finalize_post_render_lifecycle=True,
+        post_step_hook=lambda ctx: quest_post_step(ctx, quest_spawn_state),
     )
 
     checkpoints: list[ReplayCheckpoint] = []
@@ -297,7 +302,7 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
-                elapsed_ms=float(tick.spawn_timeline_ms),
+                elapsed_ms=float(quest_spawn_state.spawn_timeline_ms),
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
                 events=step.events,

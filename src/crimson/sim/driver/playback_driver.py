@@ -27,10 +27,10 @@ from ..input_providers import FrameContext, InputStatus, ReplayInputProvider
 from ..sessions import (
     DeterministicSession,
     DeterministicSessionStepTick,
-    QuestDeterministicSession,
-    QuestDeterministicSessionTick,
+    QuestSpawnState,
     RushSpawnState,
     SurvivalSpawnState,
+    quest_post_step,
     rush_input_transform,
     rush_mid_step,
     survival_mid_step,
@@ -325,7 +325,8 @@ class RushPlaybackRuntime:
 
 @dataclass(slots=True)
 class QuestPlaybackRuntime:
-    session: QuestDeterministicSession
+    session: DeterministicSession
+    quest_state: QuestSpawnState
     partition_events: bool
     result_uses_spawn_timeline_ms: bool
 
@@ -340,12 +341,11 @@ class QuestPlaybackRuntime:
         return partition_tick_events(tick_events, defer_menu_open=bool(defer_menu_open))
 
     def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
-        if not isinstance(tick, QuestDeterministicSessionTick):
-            raise ReplayRunnerError("quest playback session returned non-quest tick payload")
-        outcome.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-        outcome.completion_transition_ms = float(tick.completion_transition_ms)
-        outcome.play_hit_sfx = bool(tick.play_hit_sfx)
-        outcome.play_completion_music = bool(tick.play_completion_music)
+        _ = tick
+        outcome.spawn_timeline_ms = float(self.quest_state.spawn_timeline_ms)
+        outcome.completion_transition_ms = float(self.quest_state.completion_transition_ms)
+        outcome.play_hit_sfx = bool(self.quest_state.play_hit_sfx)
+        outcome.play_completion_music = bool(self.quest_state.play_completion_music)
 
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
         if outcome.spawn_timeline_ms is not None:
@@ -357,11 +357,11 @@ class QuestPlaybackRuntime:
         return {}
 
     def terminal_checkpoint_elapsed_ms(self) -> float:
-        return float(self.session.spawn_timeline_ms)
+        return float(self.quest_state.spawn_timeline_ms)
 
     def run_result_elapsed_ms(self) -> int:
         if bool(self.result_uses_spawn_timeline_ms):
-            return int(self.session.spawn_timeline_ms)
+            return int(self.quest_state.spawn_timeline_ms)
         return int(self.session.elapsed_ms)
 
 
@@ -406,7 +406,7 @@ class PlaybackDriver:
             original_capture_replay=False,
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
-        self.session: DeterministicSession | QuestDeterministicSession = self._mode_runtime.session
+        self.session: DeterministicSession = self._mode_runtime.session
 
         inputs = replay.inputs
         self.tick_limit = (
@@ -571,22 +571,28 @@ class PlaybackDriver:
                 if bool(quest_config.disable_capture_spawn_events_authoritative):
                     self.world.creatures.capture_spawn_events_authoritative = False
 
-                session = QuestDeterministicSession(
+                quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
+
+                session = DeterministicSession(
                     world=self.world,
                     world_size=float(self.world_size),
                     damage_scale_by_type=damage_scale_by_type,
                     fx_queue=self.fx_queue,
                     fx_queue_rotated=self.fx_queue_rotated,
-                    spawn_entries=tuple(spawn_entries),
+                    game_mode=GameMode.QUESTS,
+                    perk_progression_enabled=True,
                     detail_preset=int(self.replay.header.detail_preset),
                     gore_disabled=int(self.replay.header.gore_disabled),
                     game_tune_started=bool(defaults.game_tune_started),
+                    demo_mode_active=bool(self.world.state.demo_mode_active),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
                     clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-                    finalize_post_render_lifecycle_each_tick=bool(quest_config.finalize_post_render_lifecycle_each_tick),
+                    finalize_post_render_lifecycle=bool(quest_config.finalize_post_render_lifecycle_each_tick),
+                    post_step_hook=lambda ctx: quest_post_step(ctx, quest_state),
                 )
                 return QuestPlaybackRuntime(
                     session=session,
+                    quest_state=quest_state,
                     partition_events=bool(quest_config.partition_events),
                     result_uses_spawn_timeline_ms=bool(quest_config.result_uses_spawn_timeline_ms),
                 )
@@ -982,5 +988,7 @@ class PlaybackDriver:
         return None
 
     @property
-    def quest_session(self) -> QuestDeterministicSession | None:
-        return self.session if isinstance(self.session, QuestDeterministicSession) else None
+    def quest_session(self) -> DeterministicSession | None:
+        if self.mode_id == GameMode.QUESTS and isinstance(self.session, DeterministicSession):
+            return self.session
+        return None

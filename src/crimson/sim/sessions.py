@@ -27,12 +27,17 @@ from .world_state import WorldState
 # Tick result types
 # ---------------------------------------------------------------------------
 
-
 class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
     rng_marks: dict[str, int]
     creature_count_world_step: int
+    spawn_timeline_ms: float | None = None
+    no_creatures_timer_ms: float | None = None
+    completion_transition_ms: float | None = None
+    completed: bool = False
+    play_hit_sfx: bool = False
+    play_completion_music: bool = False
 
     @property
     def command_hash(self) -> str:
@@ -46,39 +51,11 @@ class DeterministicSessionTick(msgspec.Struct):
     def presentation_plan_ms(self) -> float:
         return self.step.presentation_plan_ms
 
-
-class QuestDeterministicSessionTick(msgspec.Struct):
-    step: DeterministicStepResult
-    elapsed_ms: float
-    rng_marks: dict[str, int]
-    creature_count_world_step: int
-    spawn_timeline_ms: float
-    no_creatures_timer_ms: float
-    completion_transition_ms: float
-    completed: bool
-    play_hit_sfx: bool
-    play_completion_music: bool
-
-    @property
-    def command_hash(self) -> str:
-        return self.step.command_hash
-
-    @property
-    def dt_sim(self) -> float:
-        return self.step.dt_sim
-
-    @property
-    def presentation_plan_ms(self) -> float:
-        return self.step.presentation_plan_ms
-
-
-DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick | QuestDeterministicSessionTick
-
+DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick
 
 # ---------------------------------------------------------------------------
-# Mid-step hook system (spawn strategies)
+# Mid-/post-step hook system (spawn strategies)
 # ---------------------------------------------------------------------------
-
 
 class MidStepContext(msgspec.Struct, frozen=True):
     """Context passed to mid-step spawn hooks during deterministic stepping."""
@@ -90,20 +67,45 @@ class MidStepContext(msgspec.Struct, frozen=True):
     dt_raw_ms: float
     world_size: float
 
-
 MidStepHook: TypeAlias = Callable[[MidStepContext], None]
 
+class PostStepContext(msgspec.Struct, frozen=True):
+    """Context passed to post-step hooks during deterministic stepping."""
+
+    world: WorldState
+    rng_marks: dict[str, int]
+    step_result: DeterministicStepResult
+    tick_metadata: PostStepTickMetadata
+
+PostStepHook: TypeAlias = Callable[[PostStepContext], None]
+
+@dataclass
+class PostStepTickMetadata:
+    spawn_timeline_ms: float | None = None
+    no_creatures_timer_ms: float | None = None
+    completion_transition_ms: float | None = None
+    completed: bool = False
+    play_hit_sfx: bool = False
+    play_completion_music: bool = False
 
 @dataclass
 class SurvivalSpawnState:
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
 
-
 @dataclass
 class RushSpawnState:
     spawn_cooldown_ms: float = 0.0
 
+@dataclass
+class QuestSpawnState:
+    spawn_entries: tuple[SpawnEntry, ...] = ()
+    spawn_timeline_ms: float = 0.0
+    no_creatures_timer_ms: float = 0.0
+    completion_transition_ms: float = -1.0
+    completed: bool = False
+    play_hit_sfx: bool = False
+    play_completion_music: bool = False
 
 def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     state = ctx.world.state
@@ -141,7 +143,6 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     ctx.world.creatures.spawn_inits(wave_spawns)
     ctx.rng_marks["after_wave_spawns"] = int(state.rng.state)
 
-
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     state = ctx.world.state
     cooldown, spawns = tick_rush_mode_spawns(
@@ -157,6 +158,65 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     ctx.world.creatures.spawn_inits(spawns)
     ctx.rng_marks["after_rush_spawns"] = int(state.rng.state)
 
+def quest_post_step(ctx: PostStepContext, spawn: QuestSpawnState) -> None:
+    state = ctx.world.state
+    dt_ms = float(ctx.step_result.timing.dt_ms_i32)
+    creatures_none_active = not any(c.active for c in ctx.world.creatures.entries)
+
+    entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
+        spawn.spawn_entries,
+        quest_spawn_timeline_ms=spawn.spawn_timeline_ms,
+        frame_dt_ms=dt_ms,
+        terrain_width=ctx.world.spawn_env.terrain_width,
+        creatures_none_active=creatures_none_active,
+        no_creatures_timer_ms=spawn.no_creatures_timer_ms,
+    )
+    spawn.spawn_entries = entries
+    spawn.spawn_timeline_ms = float(timeline_ms)
+    spawn.no_creatures_timer_ms = float(no_creatures_timer_ms)
+    ctx.tick_metadata.spawn_timeline_ms = float(spawn.spawn_timeline_ms)
+    ctx.tick_metadata.no_creatures_timer_ms = float(spawn.no_creatures_timer_ms)
+    spawn_table_empty_now = quest_spawn_table_empty(spawn.spawn_entries)
+
+    if not bool(state.demo_mode_active) and creatures_none_active and spawn_table_empty_now:
+        state.bonuses.reflex_boost = 0.0
+        state.time_scale_active = False
+
+    for call in spawns:
+        ctx.world.creatures.spawn_template(
+            call.template_id,
+            call.pos,
+            float(call.heading),
+            state.rng,
+            rand=state.rng.rand,
+        )
+    ctx.rng_marks["after_quest_spawns"] = int(state.rng.state)
+
+    any_alive_after = any(player.health > 0.0 for player in ctx.world.players)
+    if any_alive_after:
+        completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
+            spawn.completion_transition_ms,
+            frame_dt_ms=dt_ms,
+            creatures_none_active=creatures_none_active,
+            spawn_table_empty=spawn_table_empty_now,
+        )
+        spawn.completion_transition_ms = float(completion_ms)
+        spawn.completed = bool(completed)
+        spawn.play_hit_sfx = bool(play_hit_sfx)
+        spawn.play_completion_music = bool(play_completion_music)
+        ctx.tick_metadata.completion_transition_ms = float(spawn.completion_transition_ms)
+        ctx.tick_metadata.completed = bool(spawn.completed)
+        ctx.tick_metadata.play_hit_sfx = bool(spawn.play_hit_sfx)
+        ctx.tick_metadata.play_completion_music = bool(spawn.play_completion_music)
+    else:
+        spawn.completion_transition_ms = -1.0
+        spawn.completed = False
+        spawn.play_hit_sfx = False
+        spawn.play_completion_music = False
+        ctx.tick_metadata.completion_transition_ms = float(spawn.completion_transition_ms)
+        ctx.tick_metadata.completed = False
+        ctx.tick_metadata.play_hit_sfx = False
+        ctx.tick_metadata.play_completion_music = False
 
 def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
     return [
@@ -164,11 +224,9 @@ def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
         for inp in inputs
     ]
 
-
 # ---------------------------------------------------------------------------
 # Shared timing helper
 # ---------------------------------------------------------------------------
-
 
 def _session_timing(state: object, dt: float) -> FrameTiming:
     """Compute frame timing from world state. Used by all session types."""
@@ -184,11 +242,9 @@ def _session_timing(state: object, dt: float) -> FrameTiming:
         ),
     )
 
-
 # ---------------------------------------------------------------------------
 # Unified deterministic session (replaces Survival/Rush/Tutorial/Typo/WorldTick)
 # ---------------------------------------------------------------------------
-
 
 class DeterministicSession(msgspec.Struct):
     # Core state
@@ -219,6 +275,7 @@ class DeterministicSession(msgspec.Struct):
 
     # Optional hooks (provided by modes / callers)
     mid_step_hook: MidStepHook | None = None
+    post_step_hook: PostStepHook | None = None
     before_step_hook: Callable[[], None] | None = None
     input_transform: Callable[[list[PlayerInput]], list[PlayerInput]] | None = None
 
@@ -285,6 +342,17 @@ class DeterministicSession(msgspec.Struct):
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 
+        tick_metadata = PostStepTickMetadata()
+        if self.post_step_hook is not None:
+            self.post_step_hook(
+                PostStepContext(
+                    world=self.world,
+                    rng_marks=rng_marks,
+                    step_result=step,
+                    tick_metadata=tick_metadata,
+                ),
+            )
+
         if self.clear_fx_queues_each_tick:
             self.fx_queue.clear()
             self.fx_queue_rotated.clear()
@@ -304,134 +372,10 @@ class DeterministicSession(msgspec.Struct):
             elapsed_ms=self.elapsed_ms,
             rng_marks=rng_marks,
             creature_count_world_step=creature_count_world_step,
-        )
-
-
-# ---------------------------------------------------------------------------
-# Quest session (kept separate: different return type, post-step spawn logic)
-# ---------------------------------------------------------------------------
-
-
-class QuestDeterministicSession(msgspec.Struct):
-    world: WorldState
-    world_size: float
-    damage_scale_by_type: dict[int, float]
-    fx_queue: FxQueue
-    fx_queue_rotated: FxQueueRotated
-    spawn_entries: tuple[SpawnEntry, ...] = ()
-    detail_preset: int = 5
-    gore_disabled: int = 0
-    game_tune_started: bool = False
-    apply_world_dt_steps: bool = True
-    clear_fx_queues_each_tick: bool = False
-    finalize_post_render_lifecycle_each_tick: bool = True
-    elapsed_ms: float = 0.0
-    spawn_timeline_ms: float = 0.0
-    no_creatures_timer_ms: float = 0.0
-    completion_transition_ms: float = -1.0
-
-    def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _session_timing(self.world.state, dt)
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-    ) -> QuestDeterministicSessionTick:
-        dt_ms = float(timing.dt_ms_i32)
-        self.elapsed_ms += dt_ms
-
-        state = self.world.state
-        rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
-
-        step = run_deterministic_step(
-            world=self.world,
-            timing=timing,
-            options=StepPipelineOptions(
-                world_size=self.world_size,
-                damage_scale_by_type=self.damage_scale_by_type,
-                detail_preset=self.detail_preset,
-                gore_disabled=self.gore_disabled,
-                auto_pick_perks=False,
-                game_mode=GameMode.QUESTS,
-                demo_mode_active=bool(state.demo_mode_active),
-                perk_progression_enabled=True,
-                game_tune_started=self.game_tune_started,
-            ),
-            apply_world_dt_steps=self.apply_world_dt_steps,
-            inputs=inputs,
-            fx_queue=self.fx_queue,
-            fx_queue_rotated=self.fx_queue_rotated,
-            defer_camera_shake_update=False,
-            rng_marks_out=rng_marks,
-            trace_presentation_rng=trace_rng,
-        )
-        if step.presentation.trigger_game_tune:
-            self.game_tune_started = True
-
-        creatures_none_active = not any(c.active for c in self.world.creatures.entries)
-        entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
-            self.spawn_entries,
-            quest_spawn_timeline_ms=self.spawn_timeline_ms,
-            frame_dt_ms=dt_ms,
-            terrain_width=self.world_size,
-            creatures_none_active=creatures_none_active,
-            no_creatures_timer_ms=self.no_creatures_timer_ms,
-        )
-        self.spawn_entries = entries
-        self.spawn_timeline_ms = float(timeline_ms)
-        self.no_creatures_timer_ms = float(no_creatures_timer_ms)
-        spawn_table_empty_now = quest_spawn_table_empty(self.spawn_entries)
-
-        if not bool(state.demo_mode_active) and creatures_none_active and spawn_table_empty_now:
-            state.bonuses.reflex_boost = 0.0
-            state.time_scale_active = False
-        for call in spawns:
-            self.world.creatures.spawn_template(
-                call.template_id,
-                call.pos,
-                float(call.heading),
-                state.rng,
-                rand=state.rng.rand,
-            )
-        rng_marks["after_quest_spawns"] = int(state.rng.state)
-
-        any_alive_after = any(player.health > 0.0 for player in self.world.players)
-        completed = False
-        play_hit_sfx = False
-        play_completion_music = False
-        if any_alive_after:
-            completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-                self.completion_transition_ms,
-                frame_dt_ms=dt_ms,
-                creatures_none_active=creatures_none_active,
-                spawn_table_empty=spawn_table_empty_now,
-            )
-            self.completion_transition_ms = float(completion_ms)
-        else:
-            self.completion_transition_ms = -1.0
-
-        if self.clear_fx_queues_each_tick:
-            self.fx_queue.clear()
-            self.fx_queue_rotated.clear()
-
-        creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
-        rng_marks["after_world_step"] = int(state.rng.state)
-        rng_marks["after_camera_update"] = int(rng_marks.get("ws_after_camera_update", state.rng.state))
-        if self.finalize_post_render_lifecycle_each_tick:
-            self.world.creatures.finalize_post_render_lifecycle()
-
-        return QuestDeterministicSessionTick(
-            step=step,
-            elapsed_ms=self.elapsed_ms,
-            rng_marks=rng_marks,
-            creature_count_world_step=creature_count_world_step,
-            spawn_timeline_ms=self.spawn_timeline_ms,
-            no_creatures_timer_ms=self.no_creatures_timer_ms,
-            completion_transition_ms=self.completion_transition_ms,
-            completed=completed,
-            play_hit_sfx=play_hit_sfx,
-            play_completion_music=play_completion_music,
+            spawn_timeline_ms=tick_metadata.spawn_timeline_ms,
+            no_creatures_timer_ms=tick_metadata.no_creatures_timer_ms,
+            completion_transition_ms=tick_metadata.completion_transition_ms,
+            completed=tick_metadata.completed,
+            play_hit_sfx=tick_metadata.play_hit_sfx,
+            play_completion_music=tick_metadata.play_completion_music,
         )
