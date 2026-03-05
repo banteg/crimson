@@ -10,6 +10,7 @@ from ..world_state import WorldState
 from .setup import ReplayRunnerError
 
 
+# TODO(PR-B): delete — replay v2 carries commands in tick frames, not as side-channel events
 def apply_replay_tick_events(
     events: list[ReplayEvent],
     *,

@@ -29,7 +29,7 @@ class TickResult(msgspec.Struct):
 class LanFrameSample:
     frame_tick_index: int
     frame_inputs: tuple[list[float], ...]
-    remote_command_hash: str
+    remote_command_hash: str  # TODO(PR-D): remove — always empty after PR-A
     remote_state_hash: str
 
 
@@ -37,7 +37,7 @@ class LanFrameSample:
 class LanTickSync:
     frame_tick_index: int
     frame_inputs: tuple[list[float], ...]
-    remote_command_hash: str
+    remote_command_hash: str  # TODO(PR-D): remove — always empty after PR-A
     remote_state_hash: str
     host_state_hash: str = ""
 
