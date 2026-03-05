@@ -39,6 +39,7 @@ from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
+from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
@@ -222,7 +223,7 @@ class QuestMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _record_perk_pick(self, choice_index: int) -> bool:
-        self._record_perk_pick_command(int(choice_index), player_index=0)
+        self.record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
@@ -239,9 +240,6 @@ class QuestMode(BaseGameplayMode):
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
-
-    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        return any(int(event.tick_index) == int(terminal_tick) for event in replay.events)
 
     def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
         # Avoid emitting empty replays/checkpoint sidecars (usually indicates a
@@ -684,8 +682,8 @@ class QuestMode(BaseGameplayMode):
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
+                if opened:
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
                 player_count=len(self.sim_world.players),
@@ -694,8 +692,8 @@ class QuestMode(BaseGameplayMode):
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._replay_recorder.record_perk_menu_open(player_index=0)
+                if opened:
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
         perk_menu_active = self._perk_menu.active
 

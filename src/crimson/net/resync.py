@@ -47,10 +47,10 @@ def build_resync_messages(
 
     begin = ResyncBegin(
         stream_id=resolved_stream_id,
-        total_chunks=int(len(chunks_raw)),
-        compressed_size=int(len(compressed)),
-        replay_size=int(len(replay_blob)),
-        checkpoints_size=int(len(checkpoints_blob)),
+        total_chunks=len(chunks_raw),
+        compressed_size=len(compressed),
+        replay_size=len(replay_blob),
+        checkpoints_size=len(checkpoints_blob),
     )
     chunks = [
         ResyncChunk(

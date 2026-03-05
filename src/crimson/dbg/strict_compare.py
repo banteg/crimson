@@ -130,4 +130,4 @@ def strict_mismatches(expected: object, actual: object, *, root_path: str = "") 
 def strict_mismatch_payload(expected: object, actual: object, *, root_path: str = "") -> tuple[list[dict[str, object]], int, str]:
     mismatches = strict_mismatches(expected, actual, root_path=root_path)
     payload = cast("list[dict[str, object]]", msgspec.to_builtins(mismatches))
-    return payload, int(len(payload)), json.dumps(payload, sort_keys=True, indent=2, default=repr)
+    return payload, len(payload), json.dumps(payload, sort_keys=True, indent=2, default=repr)

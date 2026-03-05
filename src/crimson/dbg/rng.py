@@ -11,7 +11,7 @@ def canonical_rng_marks(
     rng_stream: list[RngStreamRow],
 ) -> dict[str, int]:
     rows = list(rng_stream)
-    call_count = int(len(rows))
+    call_count = len(rows)
 
     first_value = _RNG_MARKS_EMPTY_VALUE
     last_value = _RNG_MARKS_EMPTY_VALUE

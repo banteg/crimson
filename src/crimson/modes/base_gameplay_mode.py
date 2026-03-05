@@ -83,6 +83,7 @@ from ..sim.input_providers import (
     InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
+    PerkMenuOpenCommand,
     PerkPickCommand,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick
@@ -177,8 +178,8 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         super().__init__(
             player_count=player_count,
             resolve_tick_input=self._resolve_tick_input,
-            resolve_tick_commands=self._resolve_tick_commands,
-            emit_tick_command=self._emit_tick_command,
+            resolve_tick_commands=self.resolve_tick_commands,
+            emit_tick_command=self.emit_tick_command,
         )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
@@ -239,7 +240,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         )
         return player_inputs
 
-    def _resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
+    def resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
         runtime = self._runtime
         if isinstance(runtime, LockstepRuntime):
             while True:
@@ -271,7 +272,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._pending_perk_events = future_events
         return commands
 
-    def _emit_tick_command(self, tick_index: int, command: GameCommand) -> None:
+    def emit_tick_command(self, tick_index: int, command: GameCommand) -> None:
         if str(self._role) != "host":
             return
         runtime = self._runtime
@@ -281,13 +282,17 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         if sample is None:
             return
         frame_tick_index = int(sample.frame_tick_index)
-        if not isinstance(command, PerkPickCommand):
-            return
-        runtime.broadcast_perk_pick(
-            tick_index=int(frame_tick_index),
-            player_index=int(command.player_index),
-            choice_index=int(command.choice_index),
-        )
+        match command:
+            case PerkPickCommand(player_index=pi, choice_index=ci):
+                runtime.broadcast_perk_pick(
+                    tick_index=int(frame_tick_index),
+                    player_index=int(pi),
+                    choice_index=int(ci),
+                )
+            case PerkMenuOpenCommand():
+                pass  # local-only, no network broadcast needed
+            case _:
+                raise RuntimeError(f"unhandled command type: {type(command).__name__}")
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -758,7 +763,7 @@ class BaseGameplayMode:
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._runtime_updates_per_frame = max(0, int(value))
 
-    def _enqueue_input_command(self, command: GameCommand) -> None:
+    def enqueue_input_command(self, command: GameCommand) -> None:
         provider = self._tick_input_provider
         if provider is None:
             self._queued_input_commands.append(command)
@@ -781,11 +786,8 @@ class BaseGameplayMode:
             provider.push_command(command)
         self._queued_input_commands.clear()
 
-    def _record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
-        recorder = self._replay_recorder
-        if recorder is not None:
-            recorder.record_perk_pick(player_index=int(player_index), choice_index=int(choice_index))
-        self._enqueue_input_command(
+    def record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
+        self.enqueue_input_command(
             PerkPickCommand(
                 player_index=int(player_index),
                 choice_index=int(choice_index),
@@ -805,10 +807,6 @@ class BaseGameplayMode:
         _ = replay
         mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
         return f"{mode_name}_{stamp}"
-
-    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        _ = replay, terminal_tick
-        return False
 
     def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
         _ = recorder
@@ -880,10 +878,6 @@ class BaseGameplayMode:
                 claimed_stats=claimed_stats,
             ),
         )
-
-        terminal_tick = int(recorder.tick_index)
-        if self._replay_emit_terminal_event_checkpoint(replay, terminal_tick=terminal_tick):
-            self._record_replay_checkpoint(terminal_tick, force=True)
 
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()
@@ -1052,7 +1046,7 @@ class BaseGameplayMode:
             connected_players=int(self._lan_connected_players),
             waiting_for_players=self._lan_waiting_for_players,
             wait_gate_active=self._lan_wait_gate_active(),
-            local_players=int(len(self.sim_world.players)),
+            local_players=len(self.sim_world.players),
         )
 
     def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
@@ -1299,7 +1293,7 @@ class BaseGameplayMode:
             seed_source=str(seed_source),
             rng_state=int(self.sim_world.state.rng.state),
             world_size=float(self.world_size),
-            player_count=int(len(self.sim_world.players)),
+            player_count=len(self.sim_world.players),
             lan_enabled=self._lan_enabled,
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),
@@ -2027,7 +2021,7 @@ class BaseGameplayMode:
             if replay_tick_index is None and recorder is not None:
                 inputs = tick_result.inputs
                 if inputs is not None:
-                    replay_tick_index = int(recorder.record_tick(list(inputs)))
+                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=tick_result.commands))
                     tick_result.replay_tick_index = replay_tick_index
             hashes = tick_result.hashes
             applied = _AppliedBatchTick(

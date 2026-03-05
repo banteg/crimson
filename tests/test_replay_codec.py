@@ -10,8 +10,6 @@ import crimson
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.replay import (
-    PerkMenuOpenEvent,
-    PerkPickEvent,
     ReplayClaimedStatsSnapshot,
     ReplayCodecError,
     ReplayGameVersionError,
@@ -26,6 +24,7 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
 from crimson.sim.input import PlayerInput
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -51,9 +50,7 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
                 "shots_hit": 0,
             },
         },
-        "inputs": [[[0.0, 0.0, 0.0, 0.0, 0]]],
-        "dt": [1.0 / 60.0],
-        "events": [],
+        "ticks": [{"dt": 1 / 60, "inputs": [[0.0, 0.0, 0.0, 0.0, 0]]}],
     }
 
 
@@ -77,12 +74,12 @@ def test_replay_codec_roundtrip() -> None:
             PlayerInput(move=Vec2(0.0, -1.0), aim=Vec2(99.0, 42.75), reload_pressed=True),
         ],
     )
-    rec.record_perk_pick(player_index=0, choice_index=2, tick_index=1)
     rec.record_tick(
         [
             PlayerInput(move=Vec2(), aim=Vec2(11.0, 21.0), fire_pressed=True),
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(100.0, 43.0)),
         ],
+        commands=[PerkPickCommand(player_index=0, choice_index=2)],
     )
     replay = rec.finish()
 
@@ -91,20 +88,24 @@ def test_replay_codec_roundtrip() -> None:
 
     assert decoded.header.replay_format_version == int(REPLAY_FORMAT_VERSION)
     assert decoded.header == header
-    assert decoded.inputs == replay.inputs
-    assert decoded.events == [PerkPickEvent(tick_index=1, player_index=0, choice_index=2)]
+    assert len(decoded.ticks) == 2
+    assert decoded.ticks[0].inputs == replay.ticks[0].inputs
+    assert decoded.ticks[1].inputs == replay.ticks[1].inputs
+    assert decoded.ticks[1].commands == [PerkPickCommand(player_index=0, choice_index=2)]
 
 
-def test_replay_codec_roundtrip_perk_menu_open_event() -> None:
+def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
     header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0x1234, tick_rate=60, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput()])
-    rec.record_perk_menu_open(player_index=0, tick_index=1)
-    rec.record_tick([PlayerInput()])
+    rec.record_tick(
+        [PlayerInput()],
+        commands=[PerkMenuOpenCommand(player_index=0)],
+    )
     replay = rec.finish()
 
     decoded = load_replay(dump_replay(replay))
-    assert decoded.events == [PerkMenuOpenEvent(tick_index=1, player_index=0)]
+    assert decoded.ticks[1].commands == [PerkMenuOpenCommand(player_index=0)]
 
 
 def test_replay_codec_roundtrip_claimed_stats() -> None:
@@ -149,24 +150,10 @@ def test_replay_codec_rejects_invalid_claimed_stats() -> None:
         load_replay(msgspec.msgpack.encode(replay_obj))
 
 
-def test_replay_codec_validates_event_tick_index_bounds() -> None:
-    replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [{"type": "perk_menu_open", "tick_index": 2, "player_index": 0}]
-    with pytest.raises(ReplayCodecError, match="out of bounds"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
-
-
-def test_replay_codec_rejects_negative_event_tick_index() -> None:
-    replay_obj = _minimal_wire_replay_obj()
-    replay_obj["events"] = [{"type": "perk_menu_open", "tick_index": -1, "player_index": 0}]
-    with pytest.raises(ReplayCodecError, match="non-negative"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
-
-
 @pytest.mark.parametrize("bad_dt", [-1.0, float("inf"), float("nan")])
 def test_replay_codec_rejects_invalid_dt_rows(bad_dt: float) -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["dt"] = [bad_dt]
+    replay_obj["ticks"] = [{"inputs": [[0.0, 0.0, 0.0, 0.0, 0]], "dt": bad_dt}]
     with pytest.raises(ReplayCodecError, match="must be finite and >= 0"):
         load_replay(msgspec.msgpack.encode(replay_obj))
 
@@ -236,14 +223,12 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
                 "shots_hit": 0,
             },
         },
-        "inputs": [[[move_x, move_y, aim_x, aim_y, 0]]],
-        "dt": [1.0 / 60.0],
-        "events": [],
+        "ticks": [{"dt": 1 / 60, "inputs": [[move_x, move_y, aim_x, aim_y, 0]]}],
     }
 
     replay = load_replay(msgspec.msgpack.encode(replay_obj))
 
-    packed = replay.inputs[0][0]
+    packed = replay.ticks[0].inputs[0]
     move_x_loaded = packed[0]
     move_y_loaded = packed[1]
     aim_x_loaded = packed[2]

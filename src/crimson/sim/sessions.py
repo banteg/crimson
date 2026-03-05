@@ -286,7 +286,7 @@ class DeterministicSession(msgspec.Struct):
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-        commands: tuple[GameCommand, ...] = (),
+        commands: list[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
         if self.before_step_hook is not None:
             self.before_step_hook()
@@ -295,10 +295,10 @@ class DeterministicSession(msgspec.Struct):
         if tick_inputs is not None and self.input_transform is not None:
             tick_inputs = self.input_transform(tick_inputs)
 
-        for cmd in commands:
+        for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
-                    perk_selection_pick(
+                    picked = perk_selection_pick(
                         self.world.state,
                         self.world.players,
                         self.world.state.perk_selection,
@@ -308,6 +308,16 @@ class DeterministicSession(msgspec.Struct):
                         dt=float(timing.dt_sim),
                         creatures=self.world.creatures.entries,
                     )
+                    if picked is not None:
+                        # Eagerly regenerate choices so the RNG sequence matches
+                        # the recording path (pick sets choices_dirty=True).
+                        perk_selection_current_choices(
+                            self.world.state,
+                            self.world.players,
+                            self.world.state.perk_selection,
+                            game_mode=self.game_mode,
+                            player_count=len(self.world.players),
+                        )
                 case PerkMenuOpenCommand():
                     perk_selection_current_choices(
                         self.world.state,
@@ -316,6 +326,8 @@ class DeterministicSession(msgspec.Struct):
                         game_mode=self.game_mode,
                         player_count=len(self.world.players),
                     )
+                case _:
+                    raise RuntimeError(f"unhandled command type: {type(cmd).__name__}")
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)

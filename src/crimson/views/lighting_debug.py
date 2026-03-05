@@ -780,7 +780,7 @@ def _screen_distance_sq(a: Vec2, b: Vec2) -> float:
 
 
 def _shadow_frame_metrics(alpha_values: list[int], sample_w: int, sample_h: int) -> _ShadowFrameMetrics | None:
-    count = int(len(alpha_values))
+    count = len(alpha_values)
     if count <= 0:
         return None
     if int(sample_w) <= 0 or int(sample_h) <= 0:
@@ -1422,13 +1422,13 @@ class LightingDebugView:
             self._invalidate_shadow_history()
 
     def _dump_all_total_frames(self) -> int:
-        mode_count = max(1, int(len(self._dump_mode_sequence)))
+        mode_count = max(1, len(self._dump_mode_sequence))
         if self._autodiag_enabled:
             return max(mode_count, int(self._autodiag_total_frames))
         return mode_count * int(DUMP_ALL_SETTLE_FRAMES)
 
     def _next_dump_mode_target_frames(self) -> int:
-        modes_left = max(1, int(len(self._dump_mode_sequence)) - int(self._dump_mode_index))
+        modes_left = max(1, len(self._dump_mode_sequence) - int(self._dump_mode_index))
         frames_left = max(modes_left, int(self._dump_total_frames) - int(self._dump_total_frame))
         return max(1, frames_left // modes_left)
 

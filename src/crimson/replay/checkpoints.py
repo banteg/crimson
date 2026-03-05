@@ -226,9 +226,9 @@ def build_checkpoint(
     pickups = list(events_view.pickups) if events_view is not None else []
     sfx = list(events_view.sfx) if events_view is not None else []
     event_summary = ReplayEventSummary(
-        hit_count=int(len(hits)),
-        pickup_count=int(len(pickups)),
-        sfx_count=int(len(sfx)),
+        hit_count=len(hits),
+        pickup_count=len(pickups),
+        sfx_count=len(sfx),
         sfx_head=[str(key) for key in sfx[:4]],
     )
 

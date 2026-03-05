@@ -1009,7 +1009,7 @@ class LockstepRuntime(msgspec.Struct):
                     kind="input_batch",
                     addr=f"{addr[0]}:{addr[1]}",
                     slot_index=int(batch.slot_index),
-                    sample_count=int(len(batch.samples)),
+                    sample_count=len(batch.samples),
                     tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
                     tick_max=int(max_tick),
                 )
@@ -1407,7 +1407,7 @@ class LockstepRuntime(msgspec.Struct):
             if int(tick) < 0:
                 lan_debug_log("net_sanity_error", role="join", kind="tick_frame", reason="negative_tick", tick_index=int(tick))
                 return
-            inputs_len = int(len(message.frame_inputs))
+            inputs_len = len(message.frame_inputs)
             if int(inputs_len) != int(self.cfg.player_count):
                 lan_debug_log(
                     "net_sanity_error",
@@ -1487,7 +1487,7 @@ class LockstepRuntime(msgspec.Struct):
                     kind="input_batch",
                     reliable=bool(reliable),
                     slot_index=int(message.slot_index),
-                    sample_count=int(len(message.samples)),
+                    sample_count=len(message.samples),
                     tick_min=int(min_tick) if min_tick != 2**31 - 1 else 0,
                     tick_max=int(max_tick),
                 )
@@ -1537,7 +1537,7 @@ class LockstepRuntime(msgspec.Struct):
 
             capture_tick = int(self.host_capture_tick)
             emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
-            ready_frames = int(len(self.host_ready_frames))
+            ready_frames = len(self.host_ready_frames)
             buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
             target_lead_ticks = int(capture_tick) + int(delay_ticks) - int(emit_tick)
 

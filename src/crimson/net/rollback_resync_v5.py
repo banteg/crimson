@@ -238,8 +238,8 @@ def build_rb_resync_messages(
         snapshot_tick=int(snapshot_tick),
         codec=SNAPSHOT_CODEC,
         total_chunks=int(total_chunks),
-        compressed_size=int(len(compressed)),
-        uncompressed_size=int(len(payload)),
+        compressed_size=len(compressed),
+        uncompressed_size=len(payload),
         payload_sha256=str(digest),
     )
 

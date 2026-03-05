@@ -258,7 +258,7 @@ class RelayServer:
             addr=self._addr_text(addr),
             build_id=str(message.build_id or ""),
             peer_name=str(message.peer_name or ""),
-            peer_count=int(len(self._peers_by_id)),
+            peer_count=len(self._peers_by_id),
         )
 
         self._send_peer(
@@ -338,7 +338,7 @@ class RelayServer:
                 "relay_room_create_rejected",
                 reason="room_capacity",
                 peer_id=str(peer.peer_id),
-                room_count=int(len(self._rooms)),
+                room_count=len(self._rooms),
                 max_rooms=int(self.cfg.max_rooms),
             )
             self._send_peer(peer, RelayError(reason="room_capacity"), reliable=True, now_ms=int(now_ms))

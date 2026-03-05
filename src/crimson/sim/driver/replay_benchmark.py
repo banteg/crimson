@@ -207,7 +207,7 @@ def run_replay_render_benchmark(
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
-    tick_total = len(replay.inputs)
+    tick_total = len(replay.ticks)
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
@@ -440,7 +440,7 @@ def run_replay_benchmark(
 ) -> ReplayBenchmarkResult:
     _validate_args(runs=runs, warmup_runs=warmup_runs, top=top)
 
-    tick_total = len(replay.inputs)
+    tick_total = len(replay.ticks)
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 

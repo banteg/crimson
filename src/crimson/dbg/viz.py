@@ -278,7 +278,7 @@ def write_viz_html(
         "focus_tick": int(focus_tick),
         "tick_start": int(left),
         "tick_end": int(right),
-        "row_count": int(len(rows)),
+        "row_count": len(rows),
         "rows": rows,
     }
     html_text = _render_html(payload=payload)

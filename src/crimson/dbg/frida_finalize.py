@@ -17,7 +17,7 @@ from ..net.session_settings import session_settings_for_lockstep
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStatusSnapshot
+from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStatusSnapshot, ReplayTick
 from ..sim.bootstrap import run_terrain_bootstrap
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
@@ -467,14 +467,16 @@ def _write_run_trace(
         bootstrap_seed=int(run.replay_bootstrap_seed),
         status=run.replay_status,
     )
+    replay_ticks = [
+        ReplayTick(
+            inputs=run.replay_inputs[i],
+            dt=run.replay_dt[i],
+        )
+        for i in range(run.tick_count)
+    ]
     dump_replay_file(
         replay_path,
-        Replay(
-            header=replay_header,
-            inputs=list(run.replay_inputs),
-            dt=list(run.replay_dt),
-            events=[],
-        ),
+        Replay(header=replay_header, ticks=replay_ticks),
     )
     return FinalizedTrace(
         run_id=int(run.run_id),

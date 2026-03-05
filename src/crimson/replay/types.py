@@ -13,12 +13,12 @@ from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
-from ..sim.timing import ftol_ms_i32
+from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 8
-ReplayFormatVersion: TypeAlias = Literal[8]
+REPLAY_FORMAT_VERSION = 9
+ReplayFormatVersion: TypeAlias = Literal[9]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -276,26 +276,12 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     input_quantization: InputQuantization = "f32"
 
 
-class PerkPickEvent(msgspec.Struct, tag="perk_pick", frozen=True):
-    tick_index: int
-    player_index: int
-    choice_index: int
-
-
-class PerkMenuOpenEvent(msgspec.Struct, tag="perk_menu_open", frozen=True):
-    tick_index: int
-    player_index: int
-
-
-ReplayEvent: TypeAlias = PerkPickEvent | PerkMenuOpenEvent
+class ReplayTick(msgspec.Struct, frozen=True):
+    dt: float
+    inputs: PackedTickInputs
+    commands: list[GameCommand] = []
 
 
 class Replay(msgspec.Struct):
     header: ReplayHeader
-    inputs: list[PackedTickInputs]
-    dt: list[float] = msgspec.field(default_factory=list)
-    events: list[ReplayEvent] = msgspec.field(default_factory=list)
-
-    @property
-    def dt_ms_i32(self) -> list[int]:
-        return [int(ftol_ms_i32(float(value))) for value in self.dt]
+    ticks: list[ReplayTick]

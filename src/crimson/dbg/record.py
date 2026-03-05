@@ -13,6 +13,7 @@ from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
+from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status
 from .canonical_channels import (
@@ -317,7 +318,7 @@ def _record_replay_to_trace_python(
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
 
-    replay_tick_count = len(replay.inputs)
+    replay_tick_count = len(replay.ticks)
     checkpoint_ticks = set(range(replay_tick_count))
     checkpoints: list[ReplayCheckpoint] = []
 
@@ -354,7 +355,7 @@ def _record_replay_to_trace_python(
 
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
-    replay_dt_rows = list(replay.dt_ms_i32)
+    replay_dt_rows = [ftol_ms_i32(tick.dt) for tick in replay.ticks]
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = int(checkpoint.tick_index)
         if tick_index not in rng_stream_by_tick:

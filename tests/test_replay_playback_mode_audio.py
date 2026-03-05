@@ -10,14 +10,14 @@ import pytest
 from builders import FakeRunner
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
-from crimson.replay import Replay, ReplayHeader
+from crimson.replay import Replay, ReplayHeader, ReplayTick
 from grim.console import ConsoleState
 
 
 def _replay_with_ticks(tick_count: int, *, game_mode_id: int = 0) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=replay_playback_mode.GameMode(int(game_mode_id)), seed=0),
-        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]] for _ in range(max(0, int(tick_count)))],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
     )
 
 

@@ -195,8 +195,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     # Commands propagated through runner to both host and client
-    assert host_batch.completed_results[0].commands == (command,)
-    assert client_batch.completed_results[0].commands == (command,)
+    assert host_batch.completed_results[0].commands == [command]
+    assert client_batch.completed_results[0].commands == [command]
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(

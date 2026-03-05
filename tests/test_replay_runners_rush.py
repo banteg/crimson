@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pytest
+import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.sim.driver.replay_runner import run_replay
-from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.sim.input_providers import PerkPickCommand
 from tests.replay_runner_helpers import _blank_rush_replay
 
 
@@ -29,7 +29,7 @@ def test_rush_runner_is_deterministic() -> None:
 def test_rush_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
-    replay.dt[0] = 0.5
+    replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
 
     result = run_replay(replay)
 
@@ -49,13 +49,16 @@ def test_rush_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     assert shifted.rng_state != baseline.rng_state
 
 
-def test_rush_runner_rejects_events() -> None:
+def test_rush_runner_ignores_stale_perk_pick_command() -> None:
     _header, rec = _blank_rush_replay(ticks=1, seed=0x1234)
-    rec.record_perk_pick(player_index=0, choice_index=0, tick_index=0)
     replay = rec.finish()
+    replay.ticks[0] = msgspec.structs.replace(
+        replay.ticks[0],
+        commands=[PerkPickCommand(player_index=0, choice_index=0)],
+    )
 
-    with pytest.raises(ReplayRunnerError, match="unsupported perk_pick"):
-        run_replay(replay)
+    result = run_replay(replay)
+    assert result.ticks == 1
 
 
 def test_rush_runner_checkpoints_capture_rng_marks() -> None:

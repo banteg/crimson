@@ -826,7 +826,7 @@ class CrimsonConfig(msgspec.Struct):
             i -= 1
 
         self.data["player_name"] = bytes(buf)
-        self.data["player_name_len"] = int(len(encoded))
+        self.data["player_name_len"] = len(encoded)
 
     def save(self) -> None:
         self.path.write_bytes(CRIMSON_CFG_STRUCT.build(self.data))

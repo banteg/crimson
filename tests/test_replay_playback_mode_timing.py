@@ -9,7 +9,7 @@ from builders import FakeRunner
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
-from crimson.replay import Replay, ReplayHeader
+from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import InputStatus
 from crimson.sim.presentation_step import PresentationStepCommands
@@ -36,7 +36,7 @@ class _StubReplayRuntime:
 def _replay_with_ticks(tick_count: int) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=GameMode.DEMO, seed=0),
-        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]] for _ in range(max(0, int(tick_count)))],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
     )
 
 
@@ -213,7 +213,7 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     view, _console = replay_playback_view
     replay = Replay(
         header=ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0),
-        inputs=[[[0.0, 0.0, 0.0, 0.0, 0]]],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]])],
     )
     captured: dict[str, object] = {}
 
@@ -229,8 +229,8 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
         def open(self) -> None:
             return
 
-        def build_tick_runner(self, *, defer_menu_open: bool | None = None) -> object:
-            captured["defer_menu_open"] = defer_menu_open
+        def build_tick_runner(self) -> object:
+            captured["called"] = True
             raise _StopOpen()
 
     mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
@@ -264,4 +264,4 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     with pytest.raises(_StopOpen):
         view.open()
 
-    assert captured["defer_menu_open"] is False
+    assert captured.get("called") is True

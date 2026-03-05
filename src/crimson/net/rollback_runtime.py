@@ -614,7 +614,7 @@ class RollbackRuntime(msgspec.Struct):
             role=str(self.cfg.role),
             room_code=str(self.cfg.room_code or ""),
             from_tick=int(tick),
-            rebuilt_frames=int(len(rebuilt)),
+            rebuilt_frames=len(rebuilt),
         )
 
     def _send_resync_request(self, *, from_tick: int, reason: str, now_ms: int) -> None:

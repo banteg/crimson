@@ -68,8 +68,8 @@ def focus_tick(
         if diverged:
             entity_diverged = True
         entity_presence[kind] = {
-            "expected_count": int(len(expected_uids)),
-            "candidate_count": int(len(candidate_uids)),
+            "expected_count": len(expected_uids),
+            "candidate_count": len(candidate_uids),
             "missing_uids": missing,
             "extra_uids": extra,
         }
