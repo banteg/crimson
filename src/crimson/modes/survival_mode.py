@@ -137,20 +137,14 @@ class SurvivalMode(BaseGameplayMode):
         self.record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
-    def _authoritative_elapsed_ms(self) -> float:
-        session = self._sim_session
-        if session is None:
-            return 0.0
-        return float(session.elapsed_ms)
-
     def _replay_checkpoint_elapsed_ms(self) -> float:
-        return self._authoritative_elapsed_ms()
+        return self._session_elapsed_ms()
 
     def _replay_claimed_stats_complete(self) -> bool:
         return bool(self._game_over_active)
 
     def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._authoritative_elapsed_ms())
+        return int(self._session_elapsed_ms())
 
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
@@ -359,7 +353,7 @@ class SurvivalMode(BaseGameplayMode):
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,
-            survival_elapsed_ms=int(self._authoritative_elapsed_ms()),
+            survival_elapsed_ms=int(self._session_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
         )
@@ -481,7 +475,7 @@ class SurvivalMode(BaseGameplayMode):
         dt_tick: float,
     ) -> LanStepAction:
         _ = tick, dt_tick
-        session_elapsed_ms = self._authoritative_elapsed_ms()
+        session_elapsed_ms = self._session_elapsed_ms()
         session_stage = int(self._spawn_state.stage)
         session_spawn_cooldown_ms = float(self._spawn_state.spawn_cooldown_ms)
 
@@ -714,7 +708,7 @@ class SurvivalMode(BaseGameplayMode):
                 player=self.player,
                 players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
-                elapsed_ms=self._authoritative_elapsed_ms(),
+                elapsed_ms=self._session_elapsed_ms(),
                 score=self.player.experience,
                 frame_dt_ms=self._last_dt_ms,
             )
@@ -724,7 +718,7 @@ class SurvivalMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
-            elapsed_ms = self._authoritative_elapsed_ms()
+            elapsed_ms = self._session_elapsed_ms()
             self._draw_ui_text(
                 f"survival: t={elapsed_ms / 1000.0:6.1f}s  stage={int(self._spawn_state.stage)}",
                 Vec2(x, y),

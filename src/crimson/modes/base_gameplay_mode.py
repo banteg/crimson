@@ -368,6 +368,7 @@ class BaseGameplayMode:
             player_count=max(0, len(self.sim_world.players)),
             tick_rate=int(self._deterministic_tick_rate()),
         )
+        self._sim_session: DeterministicSession | None = None
         self._tick_input_provider: LocalInputProvider | _LanRuntimeInputProvider | None = None
         self._tick_runner: TickRunner | None = None
         self._tick_runner_session: DeterministicSession | None = None
@@ -734,6 +735,11 @@ class BaseGameplayMode:
                 choice_index=int(choice_index),
             ),
         )
+
+    def _session_elapsed_ms(self) -> float:
+        session = self._sim_session
+        assert session is not None, "session elapsed requested without an active deterministic session"
+        return float(session.elapsed_ms)
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self.sim_world.elapsed_ms)
