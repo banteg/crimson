@@ -36,7 +36,7 @@ class HostLockstepState(msgspec.Struct):
 
     @property
     def buffered_tick_count(self) -> int:
-        return int(len(self._inputs_by_tick))
+        return len(self._inputs_by_tick)
 
     @property
     def paused(self) -> bool:
@@ -50,7 +50,7 @@ class HostLockstepState(msgspec.Struct):
         if tick_index is None:
             tick_index = int(self._next_emit_tick)
         tick_inputs = self._inputs_by_tick.get(int(tick_index), {})
-        return max(0, int(self.player_count) - int(len(tick_inputs)))
+        return max(0, int(self.player_count) - len(tick_inputs))
 
     def submit_input_sample(self, *, slot_index: int, tick_index: int, packed_input: PackedPlayerInput) -> None:
         if int(slot_index) < 0 or int(slot_index) >= int(self.player_count):
@@ -144,7 +144,7 @@ class ClientLockstepState(msgspec.Struct):
 
     @property
     def buffered_frame_count(self) -> int:
-        return int(len(self._canonical_by_tick))
+        return len(self._canonical_by_tick)
 
     @property
     def paused(self) -> bool:

@@ -594,7 +594,7 @@ def _build_replay_list_row(
     header = replay.header
     game_mode_id = header.game_mode_id
     tick_rate = int(header.tick_rate)
-    ticks = int(len(replay.ticks))
+    ticks = len(replay.ticks)
     game_version = str(header.game_version).strip() or "-"
     player_count = int(header.player_count)
     quest_level = str(header.quest_level)
@@ -834,7 +834,7 @@ def cmd_replay_verify(
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    full_replay_simulated = max_ticks is None or int(max_ticks) >= int(len(replay.ticks))
+    full_replay_simulated = max_ticks is None or int(max_ticks) >= len(replay.ticks)
     header_claim_payload: _ReplayVerifyHeaderClaimPayload | None = None
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
@@ -1008,7 +1008,7 @@ def cmd_replay_info(
         ticks_simulated=int(result.ticks_simulated),
         elapsed_ms=int(result.elapsed_ms),
         player_count=int(result.player_count),
-        event_count=int(len(timeline_payload)),
+        event_count=len(timeline_payload),
         event_counts_by_kind=event_counts_by_kind(result.timeline),
     )
     payload = _ReplayInfoPayload(
@@ -1282,7 +1282,7 @@ def cmd_replay_benchmark(
         ),
         run_result=_run_result_payload(benchmark.run_result),
         benchmark=_ReplayBenchmarkSummaryPayload(
-            sample_count=int(len(benchmark.samples)),
+            sample_count=len(benchmark.samples),
             samples=[
                 _ReplayBenchmarkSamplePayload(
                     wall_ms=float(sample.wall_ms),
@@ -1462,7 +1462,7 @@ def cmd_replay_render(
     progress_close: ReplayRenderProgressClose | None = None
     try:
         replay = load_replay(replay_bytes)
-        total_ticks = int(len(replay.ticks))
+        total_ticks = len(replay.ticks)
         if max_ticks is not None:
             total_ticks = min(int(total_ticks), max(0, int(max_ticks)))
         progress_callback, progress_close = _replay_render_progress_callback(

@@ -316,7 +316,7 @@ class WorldRuntime:
             update_camera=self.update_camera,
             apply_audio=True,
         )
-        return int(len(outputs))
+        return len(outputs)
 
     def advance_tick_frame(self, dt: float) -> int:
         if not self.sim_world.players:

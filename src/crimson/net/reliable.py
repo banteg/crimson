@@ -31,7 +31,7 @@ class ReliableLink(msgspec.Struct):
 
     @property
     def pending_count(self) -> int:
-        return int(len(self._pending))
+        return len(self._pending)
 
     @property
     def rtt_last_ms(self) -> int:

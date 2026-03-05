@@ -33,7 +33,7 @@ class ReplayRecorder:
 
     @property
     def recorded_tick_count(self) -> int:
-        return int(len(self._ticks))
+        return len(self._ticks)
 
     def _default_tick_dt(self) -> float:
         tick_rate = int(self._header.tick_rate)

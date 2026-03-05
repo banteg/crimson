@@ -1041,7 +1041,7 @@ class BaseGameplayMode:
             connected_players=int(self._lan_connected_players),
             waiting_for_players=self._lan_waiting_for_players,
             wait_gate_active=self._lan_wait_gate_active(),
-            local_players=int(len(self.sim_world.players)),
+            local_players=len(self.sim_world.players),
         )
 
     def _draw_lan_debug_info(self, *, x: float, y: float, line_h: float) -> float:
@@ -1288,7 +1288,7 @@ class BaseGameplayMode:
             seed_source=str(seed_source),
             rng_state=int(self.sim_world.state.rng.state),
             world_size=float(self.world_size),
-            player_count=int(len(self.sim_world.players)),
+            player_count=len(self.sim_world.players),
             lan_enabled=self._lan_enabled,
             lan_role=str(self._lan_role),
             lan_slot=int(self._lan_local_slot_index),

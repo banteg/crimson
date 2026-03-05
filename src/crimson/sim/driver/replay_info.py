@@ -433,7 +433,7 @@ def _run_replay_info(
                 kind="creature_deaths",
                 player_index=None,
                 detail=f"creature deaths={len(outcome.step_events.deaths)}",
-                data={"count": int(len(outcome.step_events.deaths))},
+                data={"count": len(outcome.step_events.deaths)},
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
@@ -460,7 +460,7 @@ def _run_replay_info(
         tick_rate=int(replay.header.tick_rate),
         ticks_simulated=int(driver.tick_limit),
         elapsed_ms=int(run_result.elapsed_ms),
-        player_count=int(len(driver.world.players)),
+        player_count=len(driver.world.players),
         timeline=timeline,
     )
 
