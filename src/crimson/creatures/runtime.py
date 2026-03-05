@@ -794,7 +794,7 @@ class CreaturePool:
 
     def spawn_template(
         self,
-        template_id: int,
+        template_id: SpawnId,
         pos: Vec2,
         heading: float,
         rng: CrandLike,
@@ -809,12 +809,7 @@ class CreaturePool:
         spawn_env = env or self.env
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
-        template_raw = int(template_id)
-        try:
-            template = SpawnId(template_raw)
-        except ValueError as exc:
-            raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_raw:x}") from exc
-        plan = build_spawn_plan(template, pos, heading, rng, spawn_env)
+        plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
         return self.spawn_plan(
             plan,
             rand=rng.rand if rand is None else rand,

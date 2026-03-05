@@ -15,6 +15,7 @@ from ..creatures.spawn import (
     CreatureTypeId,
     SpawnEnv,
     SpawnSlotInit,
+    UnsupportedSpawnTemplateError,
     build_spawn_plan,
     spawn_id_label,
     tick_spawn_slot,
@@ -117,7 +118,7 @@ class SpawnPlanView:
             )
             self._reset_sim()
             self._error = None
-        except NotImplementedError as exc:
+        except UnsupportedSpawnTemplateError as exc:
             self._plan = None
             self._plan_summary = None
             self._error = str(exc)

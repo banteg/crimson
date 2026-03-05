@@ -159,7 +159,7 @@ class EmissiveProfile(msgspec.Struct, frozen=True):
 
 class SpawnPreset(msgspec.Struct, frozen=True):
     name: str
-    spawn_id: int
+    spawn_id: SpawnId
     ring_count: int = 10
 
 
@@ -349,14 +349,14 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
 
 
 SPAWN_PRESETS: tuple[SpawnPreset, ...] = (
-    SpawnPreset(name="Zombie", spawn_id=int(SpawnId.ZOMBIE_CONST_GREY_42), ring_count=12),
-    SpawnPreset(name="Zombie Brute", spawn_id=int(SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43), ring_count=10),
-    SpawnPreset(name="Lizard", spawn_id=int(SpawnId.LIZARD_CONST_GREY_2F), ring_count=10),
-    SpawnPreset(name="Lizard Boss", spawn_id=int(SpawnId.LIZARD_CONST_YELLOW_BOSS_30), ring_count=8),
-    SpawnPreset(name="Alien", spawn_id=int(SpawnId.ALIEN_CONST_GREEN_24), ring_count=10),
-    SpawnPreset(name="Alien Brute", spawn_id=int(SpawnId.ALIEN_CONST_GREY_BRUTE_29), ring_count=9),
-    SpawnPreset(name="Spider SP1", spawn_id=int(SpawnId.SPIDER_SP1_CONST_BLUE_40), ring_count=11),
-    SpawnPreset(name="Spider SP2", spawn_id=int(SpawnId.SPIDER_SP2_RANDOM_35), ring_count=11),
+    SpawnPreset(name="Zombie", spawn_id=SpawnId.ZOMBIE_CONST_GREY_42, ring_count=12),
+    SpawnPreset(name="Zombie Brute", spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43, ring_count=10),
+    SpawnPreset(name="Lizard", spawn_id=SpawnId.LIZARD_CONST_GREY_2F, ring_count=10),
+    SpawnPreset(name="Lizard Boss", spawn_id=SpawnId.LIZARD_CONST_YELLOW_BOSS_30, ring_count=8),
+    SpawnPreset(name="Alien", spawn_id=SpawnId.ALIEN_CONST_GREEN_24, ring_count=10),
+    SpawnPreset(name="Alien Brute", spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29, ring_count=9),
+    SpawnPreset(name="Spider SP1", spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, ring_count=11),
+    SpawnPreset(name="Spider SP2", spawn_id=SpawnId.SPIDER_SP2_RANDOM_35, ring_count=11),
 )
 
 STATIC_OCCLUDER_LAYOUT: tuple[tuple[float, float, float], ...] = (
@@ -2195,7 +2195,7 @@ class LightingDebugView:
             )
             heading = angle + math.pi
             self._runtime.sim_world.creatures.spawn_template(
-                int(preset.spawn_id),
+                preset.spawn_id,
                 pos,
                 heading,
                 self._runtime.sim_world.state.rng,

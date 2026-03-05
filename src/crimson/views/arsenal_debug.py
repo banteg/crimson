@@ -114,7 +114,7 @@ class ArsenalDebugView:
 
         self._weapon_ids = sorted({int(entry.weapon_id) for entry in WEAPON_TABLE})
         self._weapon_index = 0
-        self._spawn_ids = [int(spawn_id) for spawn_id in DEFAULT_SPAWN_IDS]
+        self._spawn_ids = list(DEFAULT_SPAWN_IDS)
         self._spawn_ring_radius = 280.0
 
         self.close_requested = False
@@ -185,7 +185,7 @@ class ArsenalDebugView:
         count = max(1, len(self._spawn_ids))
         player_pos = player.pos
         for idx in range(count):
-            spawn_id = int(self._spawn_ids[idx % len(self._spawn_ids)])
+            spawn_id = self._spawn_ids[idx % len(self._spawn_ids)]
             angle = float(idx) / float(count) * math.tau
             spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
                 48.0, 48.0, WORLD_SIZE - 48.0, WORLD_SIZE - 48.0,
