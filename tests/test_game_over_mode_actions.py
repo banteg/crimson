@@ -82,8 +82,8 @@ def test_open_stops_music_before_run_restart(mocker) -> None:
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_height", return_value=768)
-    mocker.patch.object(mode, "_reset_world_runtime", side_effect=lambda **_kwargs: None)
-    mocker.patch.object(mode, "_open_world_runtime", side_effect=lambda: None)
+    mocker.patch.object(mode.world_runtime, "reset", side_effect=lambda **_kwargs: None)
+    mocker.patch.object(mode.world_runtime, "open_runtime", side_effect=lambda: None)
     mocker.patch.object(mode._local_input, "reset", side_effect=lambda **_kwargs: None)
 
     base_gameplay_mode.BaseGameplayMode.open(mode)

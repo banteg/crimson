@@ -13,6 +13,7 @@ from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRunt
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import QuestDeterministicSession
 from crimson.sim.timing import FrameTiming
+from crimson.sim.world_state import WorldEvents
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
@@ -69,6 +70,12 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
                 dt_sim=1.0 / 60.0,
                 presentation=None,
                 presentation_plan_ms=0.0,
+                events=WorldEvents(
+                    hits=[],
+                    deaths=(),
+                    pickups=[],
+                    sfx=[],
+                ),
             ),
             command_hash="0",
             dt_sim=1.0 / 60.0,
@@ -115,8 +122,6 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mocker.patch.object(mode, "_handle_input", side_effect=lambda: None)
     mocker.patch.object(mode, "_build_local_inputs", side_effect=lambda *, dt: inputs)
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
-    mocker.patch.object(mode, "_apply_sim_step_result", side_effect=lambda *_args, **_kwargs: None)
-
     mode.update(0.02)
 
     step_tick.assert_called_once()

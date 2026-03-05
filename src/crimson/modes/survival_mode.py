@@ -39,7 +39,7 @@ from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.input_providers import InputCommand
-from ..sim.sessions import DeterministicSession, QuestDeterministicSession, SurvivalSpawnState, survival_mid_step
+from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, SurvivalSpawnState, survival_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -47,6 +47,8 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    LanFramePolicy,
+    LanSession,
     LanStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -411,17 +413,24 @@ class SurvivalMode(BaseGameplayMode):
     def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
-    def _on_lan_paused(self, *, dt: float) -> None:
+    def _lan_frame_policy(self) -> LanFramePolicy:
+        return LanFramePolicy(
+            prepare_frame=self._survival_prepare_lan_frame,
+            allow_frame_pop=self._survival_allow_frame_pop,
+            on_tick_applied=self._survival_on_tick_applied,
+            on_paused=self._survival_on_lan_paused,
+        )
+
+    def _survival_on_lan_paused(self, dt: float) -> None:
         _ = dt
         if self._death_transition_ready():
             self._enter_game_over()
 
-    def _prepare_lan_frame(
+    def _survival_prepare_lan_frame(
         self,
-        *,
         role: str,
         dt_ui_ms: float,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: LanSession,
         dt_tick: float,
     ) -> bool:
         session.detail_preset = int(self._deterministic_detail_preset())
@@ -500,13 +509,12 @@ class SurvivalMode(BaseGameplayMode):
             return False
         return True
 
-    def _allow_lan_frame_pop(self) -> bool:
+    def _survival_allow_frame_pop(self) -> bool:
         return not self._perk_menu.active
 
-    def _on_tick_applied(
+    def _survival_on_tick_applied(
         self,
-        tick,
-        *,
+        tick: DeterministicSessionStepTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
@@ -669,7 +677,7 @@ class SurvivalMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._on_tick_applied(tick, frame_tick_index=None, dt_tick=tick_dt)
+            action = self._survival_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:

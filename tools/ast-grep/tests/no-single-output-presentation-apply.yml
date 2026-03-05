@@ -1,0 +1,25 @@
+id: no-single-output-presentation-apply
+valid:
+  - |
+    apply_presentation_outputs(
+        outputs=outputs,
+        sync_audio_bridge_state=runtime.sync_audio_bridge_state,
+        apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
+            plan=plan,
+            apply_audio=bool(should_apply_audio),
+        ),
+        update_camera=runtime.update_camera,
+        apply_audio=True,
+    )
+invalid:
+  - |
+    apply_presentation_outputs(
+        outputs=[presentation_output],
+        sync_audio_bridge_state=runtime.sync_audio_bridge_state,
+        apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
+            plan=plan,
+            apply_audio=bool(should_apply_audio),
+        ),
+        update_camera=None,
+        apply_audio=True,
+    )

@@ -14,12 +14,12 @@ from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
-from ..sim.batch_apply import SimMetadataSink, apply_presentation_outputs, apply_sim_metadata_batch
+from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
-from ..sim.tick_runner import TickRunner, TickRunnerConfig
+from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
 from .presentation import PresentationLayer
 from .render_resources import RenderResources
@@ -297,14 +297,11 @@ class WorldRuntime:
     def _apply_tick_batch(
         self,
         *,
-        batch: object,
+        batch: TickBatchResult,
         session: DeterministicSession,
     ) -> int:
-        from ..sim.tick_runner import TickBatchResult
-
-        batch = cast(TickBatchResult, batch)
         outputs = apply_sim_metadata_batch(
-            sim_world=cast(SimMetadataSink, self.sim_world),
+            sim_world=self.sim_world,
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
             extract_step=lambda payload: cast(DeterministicSessionTick, payload).step,
@@ -324,7 +321,6 @@ class WorldRuntime:
     def advance_tick_frame(self, dt: float) -> int:
         if not self.sim_world.players:
             return 0
-        self.sync_audio_bridge_state()
         self.terrain_runtime.process_pending()
         runner, session = self._ensure_runner()
         session.demo_mode_active = bool(self.demo_mode_active)

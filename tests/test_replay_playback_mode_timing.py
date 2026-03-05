@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from builders import FakeRunner
@@ -11,7 +12,9 @@ from crimson.game_modes import GameMode
 from crimson.replay import Replay, ReplayHeader
 from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import InputStatus
+from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.tick_runner import TickBatchResult
+from crimson.sim.world_state import WorldEvents
 from crimson.world.render_resources import RenderResources
 from crimson.world.sim_world_state import SimWorldState
 from crimson.world.terrain_runtime import TerrainRuntime
@@ -129,6 +132,84 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
     assert applied_ticks == [0, 1]
     assert view._tick_index == 2
     assert view._finished is True
+
+
+def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(replay_playback_view) -> None:
+    view, _console = replay_playback_view
+
+    view._replay = _replay_with_ticks(2)
+    view._runtime = SimpleNamespace(
+        sim_world=SimpleNamespace(apply_step_metadata=lambda **_kwargs: None),
+        audio_bridge=SimpleNamespace(
+            apply_plan=lambda **_kwargs: None,
+            router=None,
+        ),
+        sync_audio_bridge_state=lambda: None,
+        update_camera=lambda _dt: None,
+        render_resources=SimpleNamespace(
+            ground=None,
+            fx_textures=None,
+            fx_queue=[],
+            fx_queue_rotated=[],
+        ),
+    )
+    view._max_ticks = None
+    view._tick_index = 0
+    view._finished = False
+    callback_order: list[int] = []
+    view._on_runner_tick_complete = lambda tick_index, _tick: callback_order.append(int(tick_index)) or False
+
+    step_payload = SimpleNamespace(
+        step=SimpleNamespace(
+            events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+            presentation=PresentationStepCommands(),
+            command_hash="h0",
+            dt_sim=1.0 / 60.0,
+        ),
+        spawn_timeline_ms=0.0,
+        completion_transition_ms=-1.0,
+        play_hit_sfx=False,
+        play_completion_music=False,
+    )
+
+    @dataclass
+    class _FakeRunner:
+        frame_count: int = 0
+
+        def begin_frame(self, frame_ctx) -> None:
+            _ = frame_ctx
+            self.frame_count += 1
+
+        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> object:
+            _ = ticks_requested, tick_dt
+            return TickBatchResult(
+                ticks_completed=2,
+                batch_status=InputStatus.READY,
+                next_tick_index=int(start_tick) + 2,
+                completed_results=[
+                    TickResult(
+                        tick_index=int(start_tick),
+                        command_hash="h0",
+                        dt_sim=1.0 / 60.0,
+                        payload=step_payload,
+                    ),
+                    TickResult(
+                        tick_index=int(start_tick) + 1,
+                        command_hash="h1",
+                        dt_sim=1.0 / 60.0,
+                        payload=SimpleNamespace(command_hash="h1"),
+                    ),
+                ],
+            )
+
+    view._tick_runner = _FakeRunner()
+
+    view._advance_runner(
+        dt_seconds=float(view._dt),
+        max_ticks=2,
+    )
+
+    assert callback_order == [0, 1]
 
 
 def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_view) -> None:

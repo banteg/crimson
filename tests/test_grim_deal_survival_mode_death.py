@@ -12,6 +12,7 @@ from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.timing import FrameTiming
+from crimson.sim.world_state import WorldEvents
 from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -56,7 +57,7 @@ def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
                 if float(player.health) <= 0.0:
                     player.death_timer -= float(dt) * 20.0
             step = SimpleNamespace(
-                events=SimpleNamespace(deaths=()),
+                events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
                 command_hash="0",
                 dt_sim=float(dt),
                 presentation=None,
@@ -72,11 +73,6 @@ def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
                 creature_count_world_step=0,
             )
 
-    mocker.patch.object(
-        base_gameplay_mode_module.BaseGameplayMode,
-        "_apply_sim_step_result",
-        side_effect=lambda *_args, **_kwargs: None,
-    )
     return lambda *, world, **_kwargs: cast(DeterministicSession, _FakeSession(world=world))
 
 

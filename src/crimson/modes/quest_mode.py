@@ -41,7 +41,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import InputCommand
-from ..sim.sessions import DeterministicSession, QuestDeterministicSession
+from ..sim.sessions import DeterministicSessionStepTick, QuestDeterministicSession, QuestDeterministicSessionTick
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -55,6 +55,8 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    LanFramePolicy,
+    LanSession,
     LanStepAction,
 )
 from .components.highscore_record_builder import shots_from_state
@@ -269,17 +271,23 @@ class QuestMode(BaseGameplayMode):
     def _lan_match_session(self) -> QuestDeterministicSession | None:
         return self._sim_session
 
-    def _on_lan_paused(self, *, dt: float) -> None:
+    def _lan_frame_policy(self) -> LanFramePolicy:
+        return LanFramePolicy(
+            prepare_frame=self._quest_prepare_lan_frame,
+            on_tick_applied=self._quest_on_tick_applied,
+            on_paused=self._quest_on_lan_paused,
+        )
+
+    def _quest_on_lan_paused(self, dt: float) -> None:
         self._tick_death_timers(dt, rate=1.0)
         if self._death_transition_ready():
             self._close_failed_run()
 
-    def _prepare_lan_frame(
+    def _quest_prepare_lan_frame(
         self,
-        *,
         role: str,
         dt_ui_ms: float,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: LanSession,
         dt_tick: float,
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
@@ -292,13 +300,13 @@ class QuestMode(BaseGameplayMode):
         session_quest.completion_transition_ms = float(self._quest.completion_transition_ms)
         return True
 
-    def _on_tick_applied(
+    def _quest_on_tick_applied(
         self,
-        tick,
-        *,
+        tick: DeterministicSessionStepTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
+        tick = cast(QuestDeterministicSessionTick, tick)
         session = self._sim_session
         if session is not None:
             self._quest.spawn_entries = tuple(session.spawn_entries)
@@ -425,7 +433,8 @@ class QuestMode(BaseGameplayMode):
         seed = int(self.state.rng.state) & 0xFFFFFFFF
 
         player_count = self.config.player_count
-        self._reset_world_runtime(seed=seed, player_count=max(1, min(4, player_count)))
+        self._sync_world_runtime_config()
+        self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.bind_status(status)
@@ -765,7 +774,7 @@ class QuestMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._on_tick_applied(tick, frame_tick_index=None, dt_tick=tick_dt)
+            action = self._quest_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:

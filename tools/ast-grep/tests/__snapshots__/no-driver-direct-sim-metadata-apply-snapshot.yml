@@ -1,0 +1,22 @@
+id: no-driver-direct-sim-metadata-apply
+snapshots:
+  ? |
+    self.sim_world.apply_step_metadata(
+        events=step.events,
+        presentation=step.presentation,
+        command_hash=str(step.command_hash),
+        dt_sim=float(step.dt_sim),
+        game_tune_started=False,
+    )
+  : labels:
+    - source: |-
+        self.sim_world.apply_step_metadata(
+            events=step.events,
+            presentation=step.presentation,
+            command_hash=str(step.command_hash),
+            dt_sim=float(step.dt_sim),
+            game_tune_started=False,
+        )
+      style: primary
+      start: 0
+      end: 198

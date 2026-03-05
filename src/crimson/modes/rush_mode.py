@@ -28,7 +28,7 @@ from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.sessions import (
     DeterministicSession,
-    QuestDeterministicSession,
+    DeterministicSessionStepTick,
     RushSpawnState,
     rush_input_transform,
     rush_mid_step,
@@ -40,6 +40,8 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
+    LanFramePolicy,
+    LanSession,
     LanStepAction,
 )
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -268,12 +270,17 @@ class RushMode(BaseGameplayMode):
     def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
-    def _prepare_lan_frame(
+    def _lan_frame_policy(self) -> LanFramePolicy:
+        return LanFramePolicy(
+            prepare_frame=self._rush_prepare_lan_frame,
+            on_tick_applied=self._rush_on_tick_applied,
+        )
+
+    def _rush_prepare_lan_frame(
         self,
-        *,
         role: str,
         dt_ui_ms: float,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: LanSession,
         dt_tick: float,
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
@@ -281,10 +288,9 @@ class RushMode(BaseGameplayMode):
         session.gore_disabled = int(self._deterministic_gore_disabled())
         return True
 
-    def _on_tick_applied(
+    def _rush_on_tick_applied(
         self,
-        tick,
-        *,
+        tick: DeterministicSessionStepTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
@@ -349,7 +355,7 @@ class RushMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._on_tick_applied(tick, frame_tick_index=None, dt_tick=tick_dt)
+            action = self._rush_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:
