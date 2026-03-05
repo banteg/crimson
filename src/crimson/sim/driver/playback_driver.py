@@ -270,21 +270,9 @@ class _PlaybackTickMeta:
 
 
 @dataclass(slots=True)
-class SurvivalPlaybackRuntime:
-    session: DeterministicSession
+class SimplePlaybackRuntime:
+    """Playback runtime for game modes without extra per-tick enrichment (survival, rush)."""
 
-    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
-        _ = outcome, tick
-
-    def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
-        return float(outcome.elapsed_ms)
-
-    def run_result_elapsed_ms(self) -> int:
-        return int(self.session.elapsed_ms)
-
-
-@dataclass(slots=True)
-class RushPlaybackRuntime:
     session: DeterministicSession
 
     def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
@@ -321,7 +309,7 @@ class QuestPlaybackRuntime:
         return int(self.session.elapsed_ms)
 
 
-PlaybackModeRuntime: TypeAlias = SurvivalPlaybackRuntime | RushPlaybackRuntime | QuestPlaybackRuntime
+PlaybackModeRuntime: TypeAlias = SimplePlaybackRuntime | QuestPlaybackRuntime
 
 
 class PlaybackDriver:
@@ -469,7 +457,7 @@ class PlaybackDriver:
                     finalize_post_render_lifecycle=True,
                     mid_step_hook=lambda ctx: survival_mid_step(ctx, survival_spawn),
                 )
-                return SurvivalPlaybackRuntime(
+                return SimplePlaybackRuntime(
                     session=session,
                 )
             case GameMode.RUSH:
@@ -497,7 +485,7 @@ class PlaybackDriver:
                     else None,
                     input_transform=rush_input_transform,
                 )
-                return RushPlaybackRuntime(
+                return SimplePlaybackRuntime(
                     session=session,
                 )
             case GameMode.QUESTS:
