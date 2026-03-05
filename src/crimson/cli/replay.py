@@ -150,19 +150,6 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
         typer.echo(f"checkpoint missing at tick={int(failure.tick_index)}", err=True)
         raise typer.Exit(code=1)
 
-    if failure.kind == "command_mismatch":
-        assert act is not None
-        typer.echo(f"checkpoint command mismatch at tick={int(failure.tick_index)}", err=True)
-        typer.echo(f"  command_hash expected={exp.command_hash} actual={act.command_hash}", err=True)
-        if int(exp.events.hit_count) >= 0:
-            typer.echo(
-                "  events "
-                f"expected=(hits={exp.events.hit_count}, pickups={exp.events.pickup_count}, sfx={exp.events.sfx_count}, head={exp.events.sfx_head}) "
-                f"actual=(hits={act.events.hit_count}, pickups={act.events.pickup_count}, sfx={act.events.sfx_count}, head={act.events.sfx_head})",
-                err=True,
-            )
-        raise typer.Exit(code=1)
-
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
     typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)

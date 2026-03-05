@@ -75,7 +75,6 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         rng_marks={"before_world_step": 111, "after_world_step": 222},
         deaths=[_Death(index=33, type_id=18, reward_value=75.0, xp_awarded=10, owner=OwnerRef.from_player(0))],
         events=_Events(hits=2, pickups=1, sfx=["sfx_a", "sfx_b", "sfx_c", "sfx_d", "sfx_e"]),
-        command_hash="0123456789abcdef",
     )
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, replay_sha256="f" * 64, sample_rate=1, checkpoints=[ckpt])
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
@@ -107,7 +106,6 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     assert loaded.checkpoints[0].perk.pending_count == 0
     assert loaded.checkpoints[0].perk.choices == []
     assert loaded.checkpoints[0].rng_marks == {}
-    assert loaded.checkpoints[0].command_hash == ""
     assert loaded.checkpoints[0].deaths == []
     assert loaded.checkpoints[0].events.hit_count == 0
     assert loaded.checkpoints[0].events.pickup_count == 0

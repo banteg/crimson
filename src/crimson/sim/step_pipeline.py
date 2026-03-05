@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import hashlib
-import json
 import time
 from collections.abc import Callable
 
@@ -30,7 +28,6 @@ class DeterministicStepResult(msgspec.Struct):
     events: WorldEvents
     presentation: PresentationStepCommands
     presentation_plan_ms: float
-    command_hash: str
     presentation_rng_trace: PresentationRngTrace
 
 
@@ -82,16 +79,6 @@ def time_scale_reflex_boost_factor(
     if float(reflex_f32) < 1.0:
         time_scale_factor = f32((1.0 - float(reflex_f32)) * 0.7 + 0.3)
     return float(time_scale_factor)
-
-
-def presentation_commands_hash(commands: PresentationStepCommands) -> str:
-    payload = {
-        "trigger_game_tune": commands.trigger_game_tune,
-        "sfx_keys": [str(key) for key in commands.sfx_keys],
-    }
-    return hashlib.sha256(
-        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8"),
-    ).hexdigest()[:16]
 
 
 def run_deterministic_step(
@@ -192,8 +179,6 @@ def run_deterministic_step(
     )
     presentation_plan_ms = (time.perf_counter_ns() - plan_ns_start) / 1_000_000.0
 
-    command_hash = presentation_commands_hash(presentation)
-
     if rng_marks_out is not None and trace_presentation_rng:
         rng_marks_out["ps_draws_total"] = int(trace.draws_total)
         for key, value in sorted(trace.draws_by_consumer.items()):
@@ -205,6 +190,5 @@ def run_deterministic_step(
         events=events,
         presentation=presentation,
         presentation_plan_ms=float(presentation_plan_ms),
-        command_hash=str(command_hash),
         presentation_rng_trace=trace,
     )

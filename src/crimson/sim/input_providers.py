@@ -11,9 +11,16 @@ from .input import PlayerInput
 from .input_frame import normalize_input_frame
 
 
-class InputCommand(msgspec.Struct, frozen=True):
-    name: str
-    payload: dict[str, object] = msgspec.field(default_factory=dict)
+class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True):
+    player_index: int
+
+
+class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True):
+    player_index: int
+    choice_index: int
+
+
+GameCommand: TypeAlias = PerkMenuOpenCommand | PerkPickCommand
 
 
 class FrameContext(msgspec.Struct, frozen=True):
@@ -49,11 +56,11 @@ class InputProvider(Protocol):
 
     def pull_tick_input(self, tick_index: int) -> TickInput: ...
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]: ...
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]: ...
 
     def supports_commands(self) -> bool: ...
 
-    def push_command(self, command: InputCommand) -> None: ...
+    def push_command(self, command: GameCommand) -> None: ...
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float: ...
 
@@ -61,8 +68,8 @@ class InputProvider(Protocol):
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 ReplayTickDtResolver: TypeAlias = Callable[[int], float]
-TickCommandResolver: TypeAlias = Callable[[int], Sequence[InputCommand] | None]
-TickCommandEmitter: TypeAlias = Callable[[int, InputCommand], None]
+TickCommandResolver: TypeAlias = Callable[[int], Sequence[GameCommand] | None]
+TickCommandEmitter: TypeAlias = Callable[[int, GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
@@ -86,8 +93,8 @@ class LocalInputProvider:
     ) -> None:
         self._player_count = max(0, player_count)
         self._build_inputs = build_inputs
-        self._pending_commands: list[InputCommand] = []
-        self._commands_for_next_tick: list[InputCommand] = []
+        self._pending_commands: list[GameCommand] = []
+        self._commands_for_next_tick: list[GameCommand] = []
         self._frame_inputs: list[PlayerInput] = []
         self._edge_inputs: list[PlayerInput] = []
         self._first_tick_pending = False
@@ -110,7 +117,7 @@ class LocalInputProvider:
             return TickInput(status=InputStatus.READY, inputs=list(self._frame_inputs))
         return TickInput(status=InputStatus.READY, inputs=list(self._edge_inputs))
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         _ = tick_index
         if not self._commands_for_next_tick:
             return []
@@ -121,7 +128,7 @@ class LocalInputProvider:
     def supports_commands(self) -> bool:
         return True
 
-    def push_command(self, command: InputCommand) -> None:
+    def push_command(self, command: GameCommand) -> None:
         self._pending_commands.append(command)
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
@@ -183,11 +190,11 @@ class ReplayInputProvider:
     def supports_commands(self) -> bool:
         return False
 
-    def push_command(self, command: InputCommand) -> None:
+    def push_command(self, command: GameCommand) -> None:
         _ = command
         return
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         _ = tick_index
         return []
 
@@ -216,8 +223,8 @@ class NetworkInputProvider:
         self._resolve_tick_input = resolve_tick_input
         self._resolve_tick_commands = resolve_tick_commands
         self._emit_tick_command = emit_tick_command
-        self._pending_commands: list[InputCommand] = []
-        self._commands_by_tick: dict[int, list[InputCommand]] = {}
+        self._pending_commands: list[GameCommand] = []
+        self._commands_by_tick: dict[int, list[GameCommand]] = {}
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         _ = frame_ctx
@@ -230,7 +237,7 @@ class NetworkInputProvider:
         inputs = resolver(tick_index)
         if inputs is None:
             return TickInput(status=InputStatus.STALLED, inputs=[])
-        commands: list[InputCommand] = []
+        commands: list[GameCommand] = []
         if self._pending_commands:
             pending_commands = list(self._pending_commands)
             self._pending_commands.clear()
@@ -254,14 +261,14 @@ class NetworkInputProvider:
     def supports_commands(self) -> bool:
         return True
 
-    def push_command(self, command: InputCommand) -> None:
+    def push_command(self, command: GameCommand) -> None:
         self._pending_commands.append(command)
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         return self._commands_by_tick.pop(int(tick_index), [])
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
         return default_dt
 
-    def _queue_tick_commands(self, tick_index: int, commands: list[InputCommand]) -> None:
+    def _queue_tick_commands(self, tick_index: int, commands: list[GameCommand]) -> None:
         self._commands_by_tick.setdefault(int(tick_index), []).extend(commands)

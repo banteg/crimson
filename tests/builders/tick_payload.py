@@ -9,7 +9,6 @@ from crimson.sim.world_state import WorldEvents
 
 def make_tick_payload(
     *,
-    command_hash: str = "cmd-hash",
     dt_sim: float = 1.0 / 60.0,
     elapsed_ms: float = 16.67,
     creature_count: int = 0,
@@ -27,7 +26,6 @@ def make_tick_payload(
         events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
         presentation=PresentationStepCommands(),
         presentation_plan_ms=0.0,
-        command_hash=command_hash,
         presentation_rng_trace=PresentationRngTrace(),
     )
     return DeterministicSessionTick(

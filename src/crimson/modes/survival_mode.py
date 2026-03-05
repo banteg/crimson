@@ -32,13 +32,11 @@ from ..net.rollback_resync_v5 import (
     SurvivalRuntimeSnapshotV2,
     SurvivalStateSnapshotV2,
 )
-from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
-from ..sim.input_providers import InputCommand
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, SurvivalSpawnState, survival_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -147,28 +145,6 @@ class SurvivalMode(BaseGameplayMode):
     def _record_perk_pick(self, choice_index: int) -> bool:
         self._record_perk_pick_command(int(choice_index), player_index=0)
         return True
-
-    def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
-        if str(command.name) != "perk_pick":
-            return
-        raw_choice_index = command.payload.get("choice_index")
-        if raw_choice_index is None:
-            raw_choice_index = command.payload.get("index")
-        if not isinstance(raw_choice_index, int):
-            raise TypeError("perk_pick command requires integer payload['choice_index']")
-        ctx = self._perk_menu_context()
-        picked = perk_selection_pick(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            int(raw_choice_index),
-            game_mode=GameMode.SURVIVAL,
-            player_count=int(ctx.player_count),
-            dt=float(dt_tick),
-            creatures=ctx.creatures,
-        )
-        if picked is not None and self.audio_bridge.router is not None:
-            self.audio_bridge.router.play_sfx("sfx_ui_bonus")
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._survival.elapsed_ms)

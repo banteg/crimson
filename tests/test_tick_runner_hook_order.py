@@ -5,13 +5,12 @@ import pytest
 
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickBatchResult, TickRunner
 from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
     presentation_plan_ms: float = 0.0
 
@@ -21,7 +20,6 @@ def _timing(dt: float) -> FrameTiming:
 
 
 class _MissingPresentationPlanMsTick(msgspec.Struct):
-    command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
 
 
@@ -39,14 +37,14 @@ class _FixedInputProvider(InputProvider):
             return TickInput(status=InputStatus.STALLED, inputs=[])
         return TickInput(status=InputStatus.READY, inputs=list(row))
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         _ = tick_index
         return []
 
     def supports_commands(self) -> bool:
         return False
 
-    def push_command(self, command: InputCommand) -> None:
+    def push_command(self, command: GameCommand) -> None:
         _ = command
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
@@ -58,8 +56,8 @@ class _FakeSession:
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _timing(dt)
 
-    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
-        _ = timing, inputs, trace_rng
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
+        _ = timing, inputs, trace_rng, commands
         return _FakeTick()
 
 
@@ -120,7 +118,7 @@ def test_tick_runner_completed_tick_result_shape() -> None:
     assert len(result.completed_results) == 1
     tick = result.completed_results[0]
     assert tick.tick_index == 0
-    assert tick.command_hash == "abc123"
+    assert tick.tick_index == 0
     assert tick.inputs is not None
 
 
@@ -151,8 +149,8 @@ def test_tick_runner_fails_fast_when_tick_payload_attribute_missing() -> None:
         def timing_for_dt(self, dt: float) -> FrameTiming:
             return _timing(dt)
 
-        def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _MissingPresentationPlanMsTick:
-            _ = timing, inputs, trace_rng
+        def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _MissingPresentationPlanMsTick:
+            _ = timing, inputs, trace_rng, commands
             return _MissingPresentationPlanMsTick()
 
     runner = TickRunner(

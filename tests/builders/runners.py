@@ -38,7 +38,6 @@ class FakeRunner:
         rows = [
             TickResult(
                 tick_index=int(start_tick + i),
-                command_hash=f"h{int(start_tick + i)}",
                 dt_sim=1.0 / 60.0,
                 payload=object(),
             )

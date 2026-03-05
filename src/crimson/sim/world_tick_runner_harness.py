@@ -85,7 +85,6 @@ def step_world_once(
     world.sim_world.apply_step_metadata(
         events=step.events,
         presentation=step.presentation,
-        command_hash=str(step.command_hash),
         dt_sim=float(step.dt_sim),
         game_tune_started=bool(world.sim_world.game_tune_started) or step.presentation.trigger_game_tune,
     )

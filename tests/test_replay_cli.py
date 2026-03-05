@@ -98,14 +98,16 @@ def _write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,
     *,
-    mutate_command_hash: bool = False,
+    mutate_state_hash: bool = False,
     mutate_replay_sha256: bool = False,
 ) -> Path:
     checkpoint_ticks = {0}
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
-    if mutate_command_hash:
-        checkpoints[0] = msgspec.structs.replace(checkpoints[0], command_hash="deadbeef")
+    if mutate_state_hash:
+        checkpoints[0] = msgspec.structs.replace(
+            checkpoints[0], state_hash="deadbeefdeadbeef", score_xp=999999,
+        )
     replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
     payload = ReplayCheckpoints(
         version=int(FORMAT_VERSION),
@@ -1576,13 +1578,12 @@ def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    _write_checkpoint_sidecar(replay_path, replay, mutate_command_hash=True)
+    _write_checkpoint_sidecar(replay_path, replay, mutate_state_hash=True)
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
 
     assert result.exit_code == 1
-    assert "checkpoint command mismatch at tick=0" in result.output
 
 
 def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Path) -> None:

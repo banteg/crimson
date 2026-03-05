@@ -66,7 +66,6 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     step_tick = mocker.Mock(
         return_value=SimpleNamespace(
             step=SimpleNamespace(
-                command_hash="0",
                 dt_sim=1.0 / 60.0,
                 presentation=None,
                 presentation_plan_ms=0.0,
@@ -77,7 +76,6 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
                     sfx=[],
                 ),
             ),
-            command_hash="0",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
         ),
@@ -97,7 +95,8 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
                 zero_gate_active=False,
             )
 
-        def step_tick(self, *, timing, inputs, trace_rng=False):
+        def step_tick(self, *, timing, inputs, trace_rng=False, commands=()):
+            _ = commands
             return step_tick(timing=timing, inputs=inputs, trace_rng=trace_rng)
 
     fake_session = _FakeSession()

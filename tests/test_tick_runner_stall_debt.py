@@ -4,13 +4,12 @@ import msgspec
 
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickBatchResult, TickRunner
 from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    command_hash: str = "abc123"
     dt_sim: float = 1.0 / 60.0
     presentation_plan_ms: float = 0.0
 
@@ -23,8 +22,8 @@ class _FakeSession:
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _timing(dt)
 
-    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
-        _ = timing, inputs, trace_rng
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
+        _ = timing, inputs, trace_rng, commands
         return _FakeTick()
 
 
@@ -42,7 +41,7 @@ class _RowsInputProvider(InputProvider):
             return TickInput(status=InputStatus.STALLED, inputs=[])
         return TickInput(status=InputStatus.READY, inputs=list(row))
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         _ = tick_index
         return []
 
@@ -117,7 +116,7 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     assert first.ticks_completed == 1
     assert first.batch_status is InputStatus.STALLED
     assert int((clock.accum + 1e-9) / float(clock.dt_tick)) >= 1
-    assert [result.command_hash for result in first.completed_results] == ["abc123"]
+    assert len(first.completed_results) == 1
     assert next_tick_index == 1
 
     provider.rows[1] = [PlayerInput()]
@@ -133,7 +132,7 @@ def test_tick_runner_stall_commits_completed_ticks_and_preserves_debt() -> None:
     assert second.ticks_completed == 1
     assert second.batch_status is InputStatus.READY
     assert int((clock.accum + 1e-9) / float(clock.dt_tick)) == 0
-    assert [result.command_hash for result in second.completed_results] == ["abc123"]
+    assert len(second.completed_results) == 1
     assert next_tick_index == 2
 
 
@@ -148,7 +147,7 @@ def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
                 return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
             return TickInput(status=InputStatus.EOS, inputs=[])
 
-        def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+        def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
             _ = tick_index
             return []
 
@@ -178,7 +177,7 @@ def test_tick_runner_replay_eos_preserves_completed_results_and_debt() -> None:
     )
 
     assert batch.batch_status is InputStatus.EOS
-    assert [result.command_hash for result in batch.completed_results] == ["abc123"]
+    assert len(batch.completed_results) == 1
     assert int(batch.ticks_completed) == 1
     assert int((clock.accum + 1e-9) / float(clock.dt_tick)) >= 1
     assert next_tick_index == 1

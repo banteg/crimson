@@ -48,9 +48,9 @@ def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
                 zero_gate_active=False,
             )
 
-        def step_tick(self, *, timing: FrameTiming, inputs, trace_rng: bool = False):
+        def step_tick(self, *, timing: FrameTiming, inputs, trace_rng: bool = False, commands=()):
             _ = inputs
-            _ = trace_rng
+            _ = trace_rng, commands
             dt = float(timing.dt)
             self.elapsed_ms += float(dt) * 1000.0
             for player in self._world.players:
@@ -58,14 +58,12 @@ def _install_minimal_sim_session(mocker) -> Callable[..., DeterministicSession]:
                     player.death_timer -= float(dt) * 20.0
             step = SimpleNamespace(
                 events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
-                command_hash="0",
                 dt_sim=float(dt),
                 presentation=None,
                 presentation_plan_ms=0.0,
             )
             return SimpleNamespace(
                 step=step,
-                command_hash="0",
                 dt_sim=float(dt),
                 presentation_plan_ms=0.0,
                 rng_marks={},

@@ -6,12 +6,11 @@ import msgspec
 
 from .hooks import TickResult
 from .input import PlayerInput
-from .input_providers import FrameContext, InputProvider, InputStatus
+from .input_providers import FrameContext, GameCommand, InputProvider, InputStatus
 from .timing import FrameTiming
 
 
 class TickPayload(Protocol):
-    command_hash: str
     dt_sim: float
     presentation_plan_ms: float
 
@@ -25,6 +24,7 @@ class TickSession(Protocol):
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
+        commands: tuple[GameCommand, ...] = (),
     ) -> TickPayload: ...
 
 
@@ -98,6 +98,7 @@ class TickRunner:
 
             tick_inputs = list(tick_input.inputs)
             tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, tick_dt)
+            commands = tuple(self._input_provider.pull_tick_commands(tick_index))
 
             # Snapshot list identity before stepping so replay recording can
             # happen later in frame-driver code with pre-step inputs.
@@ -108,16 +109,16 @@ class TickRunner:
                 timing=timing,
                 inputs=tick_inputs,
                 trace_rng=self._config.trace_rng,
+                commands=commands,
             )
-            command_hash = tick.command_hash
             dt_sim = tick.dt_sim
             result = TickResult(
                 tick_index=tick_index,
-                command_hash=command_hash,
                 dt_sim=dt_sim,
                 presentation_plan_ms=tick.presentation_plan_ms,
                 payload=tick,
                 inputs=result_inputs,
+                commands=commands,
             )
             completed_results.append(result)
             ticks_completed += 1

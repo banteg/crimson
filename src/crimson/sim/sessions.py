@@ -10,10 +10,12 @@ from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawn
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
+from ..perks.selection import perk_selection_current_choices, perk_selection_pick
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
 from .input import PlayerInput
+from .input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from .step_pipeline import (
     DeterministicStepResult,
     StepPipelineOptions,
@@ -38,10 +40,6 @@ class DeterministicSessionTick(msgspec.Struct):
     completed: bool = False
     play_hit_sfx: bool = False
     play_completion_music: bool = False
-
-    @property
-    def command_hash(self) -> str:
-        return self.step.command_hash
 
     @property
     def dt_sim(self) -> float:
@@ -288,6 +286,7 @@ class DeterministicSession(msgspec.Struct):
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
+        commands: tuple[GameCommand, ...] = (),
     ) -> DeterministicSessionTick:
         if self.before_step_hook is not None:
             self.before_step_hook()
@@ -296,12 +295,37 @@ class DeterministicSession(msgspec.Struct):
         if tick_inputs is not None and self.input_transform is not None:
             tick_inputs = self.input_transform(tick_inputs)
 
+        for cmd in commands:
+            match cmd:
+                case PerkPickCommand(choice_index=ci):
+                    perk_selection_pick(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        ci,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                        dt=float(timing.dt_sim),
+                        creatures=self.world.creatures.entries,
+                    )
+                case PerkMenuOpenCommand():
+                    perk_selection_current_choices(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                    )
+
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
-        rng_marks: dict[str, int] = {"before_world_step": int(state.rng.state)}
+        rng_marks: dict[str, int] = {}
+        if commands:
+            rng_marks["after_commands"] = int(state.rng.state)
+        rng_marks["before_world_step"] = int(state.rng.state)
 
         hook: Callable[[], None] | None = None
         if self.mid_step_hook is not None:

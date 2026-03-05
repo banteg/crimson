@@ -59,7 +59,6 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
     state_hash: str = ""
-    command_hash: str = ""
     rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
@@ -157,7 +156,6 @@ def build_checkpoint(
     rng_marks: dict[str, int] | None = None,
     deaths: Sequence[object] | None = None,
     events: object | None = None,
-    command_hash: str | None = None,
 ) -> ReplayCheckpoint:
     state = world.state
     players: list[PlayerState] = list(world.players)
@@ -288,7 +286,6 @@ def build_checkpoint(
         players=player_ckpts,
         bonus_timers=bonus_timers,
         state_hash=str(state_hash),
-        command_hash=str(command_hash or ""),
         rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,

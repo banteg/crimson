@@ -4,13 +4,12 @@ import msgspec
 
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, InputCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
 from crimson.sim.tick_runner import TickBatchResult, TickRunner
 from crimson.sim.timing import FrameTiming
 
 
 class _FakeTick(msgspec.Struct):
-    command_hash: str
     dt_sim: float
     presentation_plan_ms: float
 
@@ -26,12 +25,11 @@ class _SequencedSession:
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _timing(dt)
 
-    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False) -> _FakeTick:
-        _ = timing, inputs, trace_rng
-        tick_index = int(self._tick_index)
+    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
+        _ = timing, inputs, trace_rng, commands
+        int(self._tick_index)
         self._tick_index += 1
         return _FakeTick(
-            command_hash=f"h{tick_index}",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
         )
@@ -46,7 +44,7 @@ class _ReadyInputProvider(InputProvider):
         _ = tick_index
         return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
 
-    def pull_tick_commands(self, tick_index: int) -> list[InputCommand]:
+    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         _ = tick_index
         return []
 
@@ -114,7 +112,7 @@ def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:
 
     assert result.ticks_completed == 2
     assert result.batch_status is InputStatus.READY
-    assert [row.command_hash for row in result.completed_results] == ["h0", "h1"]
+    assert [row.tick_index for row in result.completed_results] == [0, 1]
 
 
 def test_tick_runner_returns_empty_plans_when_no_ticks_advanced() -> None:

@@ -31,7 +31,6 @@ from ..net.rollback_resync_v5 import (
     QuestsRuntimeSnapshotV2,
     QuestsStateSnapshotV2,
 )
-from ..perks.selection import perk_selection_pick
 from ..perks.state import CreatureForPerks
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
@@ -40,7 +39,6 @@ from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
-from ..sim.input_providers import InputCommand
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
@@ -226,28 +224,6 @@ class QuestMode(BaseGameplayMode):
     def _record_perk_pick(self, choice_index: int) -> bool:
         self._record_perk_pick_command(int(choice_index), player_index=0)
         return True
-
-    def _apply_input_command(self, command: InputCommand, *, dt_tick: float) -> None:
-        if str(command.name) != "perk_pick":
-            return
-        raw_choice_index = command.payload.get("choice_index")
-        if raw_choice_index is None:
-            raw_choice_index = command.payload.get("index")
-        if not isinstance(raw_choice_index, int):
-            raise TypeError("perk_pick command requires integer payload['choice_index']")
-        ctx = self._perk_menu_context()
-        picked = perk_selection_pick(
-            ctx.state,
-            ctx.players,
-            ctx.perk_state,
-            int(raw_choice_index),
-            game_mode=GameMode.QUESTS,
-            player_count=int(ctx.player_count),
-            dt=float(dt_tick),
-            creatures=ctx.creatures,
-        )
-        if picked is not None and self.audio_bridge.router is not None:
-            self.audio_bridge.router.play_sfx("sfx_ui_bonus")
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest.spawn_timeline_ms)

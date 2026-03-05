@@ -16,10 +16,11 @@ from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     FrameContext,
-    InputCommand,
+    GameCommand,
     InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
+    PerkPickCommand,
 )
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -58,15 +59,15 @@ class _PlanIsolationSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
+        commands: tuple = (),
     ) -> DeterministicSessionTick:
-        _ = timing, inputs, trace_rng
+        _ = timing, inputs, trace_rng, commands
         player = self._sim_world.players[0]
         player.health = max(0.0, float(player.health) - 10.0)
         player.experience = int(player.experience) + 250
-        tick_index = int(self._tick)
+        int(self._tick)
         self._tick += 1
         payload = make_tick_payload(
-            command_hash=f"plan-{tick_index}",
             dt_sim=1.0 / 60.0,
         )
         payload.step.presentation.sfx_keys.extend(["sfx_explosion", "sfx_ui_levelup"])
@@ -78,19 +79,17 @@ class _CommandFlowSession:
         self.name = str(name)
         self._tick = 0
         self.perk_pick_index: int | None = None
-        self.commands_by_tick: dict[int, list[InputCommand]] = {}
+        self.commands_by_tick: dict[int, list[GameCommand]] = {}
 
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _timing(dt)
 
-    def apply_commands(self, *, tick_index: int, commands: list[InputCommand]) -> None:
+    def apply_commands(self, *, tick_index: int, commands: list[GameCommand]) -> None:
         self.commands_by_tick[int(tick_index)] = list(commands)
         for command in commands:
-            if str(command.name) != "perk_pick":
+            if not isinstance(command, PerkPickCommand):
                 continue
-            value = command.payload.get("index")
-            if isinstance(value, int):
-                self.perk_pick_index = int(value)
+            self.perk_pick_index = int(command.choice_index)
 
     def step_tick(
         self,
@@ -98,28 +97,29 @@ class _CommandFlowSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
+        commands: tuple[GameCommand, ...] = (),
     ) -> DeterministicSessionTick:
         _ = timing, inputs, trace_rng
         tick_index = int(self._tick)
         self._tick += 1
-        perk_index = -1 if self.perk_pick_index is None else int(self.perk_pick_index)
+        if commands:
+            self.apply_commands(tick_index=tick_index, commands=list(commands))
         return make_tick_payload(
-            command_hash=f"{self.name}:{tick_index}:{perk_index}",
             dt_sim=1.0 / 60.0,
         )
 
 
 class _MockLockstepRuntime:
     def __init__(self) -> None:
-        self._commands_by_peer_and_tick: dict[str, dict[int, list[InputCommand]]] = {
+        self._commands_by_peer_and_tick: dict[str, dict[int, list[GameCommand]]] = {
             "host": {},
             "client": {},
         }
 
-    def broadcast_command(self, *, tick_index: int, command: InputCommand) -> None:
+    def broadcast_command(self, *, tick_index: int, command: GameCommand) -> None:
         self._commands_by_peer_and_tick["client"].setdefault(int(tick_index), []).append(command)
 
-    def pull_commands(self, *, peer: str, tick_index: int) -> list[InputCommand]:
+    def pull_commands(self, *, peer: str, tick_index: int) -> list[GameCommand]:
         return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
 
 
@@ -215,7 +215,7 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
         payload = result.payload
         assert isinstance(payload, DeterministicSessionTick)
         assert isinstance(payload.step.presentation, PresentationStepCommands)
-        assert str(payload.command_hash)
+        assert payload.step is not None
 
 
 def test_contract_3_lockstep_command_propagation_over_network_provider() -> None:
@@ -249,7 +249,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         config=TickRunnerConfig(),
     )
 
-    command = InputCommand("perk_pick", {"index": 1})
+    command = PerkPickCommand(player_index=0, choice_index=1)
     host_provider.push_command(command)
 
     host_clock = FixedStepClock(tick_rate=60)
@@ -264,8 +264,6 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         max_ticks=1,
         is_networked=True,
     )
-    host_commands = host_provider.pull_tick_commands(0)
-    host_session.apply_commands(tick_index=0, commands=list(host_commands))
 
     client_clock = FixedStepClock(tick_rate=60)
     client_frame_index = 0
@@ -279,8 +277,6 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         max_ticks=1,
         is_networked=True,
     )
-    client_commands = client_provider.pull_tick_commands(0)
-    client_session.apply_commands(tick_index=0, commands=list(client_commands))
 
     assert host_session.commands_by_tick.get(0, []) == [command]
     assert client_session.commands_by_tick.get(0, []) == [command]
@@ -288,7 +284,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     assert client_session.perk_pick_index == 1
 
 
-def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_hashes(
+def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     mocker,
     tmp_path: Path,
 ) -> None:
@@ -333,7 +329,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     live_frame_index = 0
     live_next_tick_index = 0
 
-    live_hashes: list[str] = []
+    live_tick_indices: list[int] = []
     for _ in range(int(tick_count)):
         recorder.record_tick(list(input_row))
         batch, live_next_tick_index, live_frame_index = _advance_with_clock(
@@ -345,7 +341,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
             max_ticks=1,
         )
         assert batch.ticks_completed == 1
-        live_hashes.append(str(batch.completed_results[0].command_hash))
+        live_tick_indices.append(int(batch.completed_results[0].tick_index))
 
     replay = recorder.finish()
     replay_path = tmp_path / "contract_live_to_replay.crd"
@@ -410,11 +406,11 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     mode.open()
     assert isinstance(mode._survival, DeterministicSession)
 
-    replay_hashes: list[str] = []
+    replay_tick_indices: list[int] = []
 
     def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
         assert isinstance(tick, DeterministicSessionTick)
-        replay_hashes.append(str(tick.command_hash))
+        replay_tick_indices.append(int(_tick_index))
         return False
 
     mocker.patch.object(mode, "_on_runner_tick_complete", side_effect=_capture_runner_tick)
@@ -424,7 +420,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
             max_ticks=1,
         )
 
-    assert replay_hashes == live_hashes
+    assert replay_tick_indices == live_tick_indices
     mode.close()
 
 

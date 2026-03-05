@@ -47,8 +47,6 @@ class SimWorldState(msgspec.Struct):
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
     last_presentation: PresentationStepCommands = msgspec.field(default_factory=PresentationStepCommands)
-    last_command_hash: str = ""
-
     def __post_init__(self) -> None:
         self.reset(seed=0xBEEF, player_count=1)
 
@@ -74,7 +72,7 @@ class SimWorldState(msgspec.Struct):
 
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
+
         self.elapsed_ms = 0.0
         self.bonus_anim_phase = 0.0
         self.game_tune_started = False
@@ -106,20 +104,18 @@ class SimWorldState(msgspec.Struct):
         self.creatures = self.world_state.creatures
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
+
 
     def apply_step_metadata(
         self,
         *,
         events: WorldEvents,
         presentation: PresentationStepCommands,
-        command_hash: str,
         dt_sim: float,
         game_tune_started: bool,
     ) -> None:
         self.last_events = events
         self.last_presentation = presentation
-        self.last_command_hash = str(command_hash)
 
         if float(dt_sim) > 0.0:
             self.elapsed_ms += float(dt_sim) * 1000.0
@@ -130,5 +126,5 @@ class SimWorldState(msgspec.Struct):
     def close_session(self) -> None:
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
-        self.last_command_hash = ""
+
         self.game_tune_started = False

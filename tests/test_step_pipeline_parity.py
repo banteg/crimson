@@ -156,7 +156,6 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 },
                 deaths=world_events.deaths,
                 events=world_events,
-                command_hash=str(world.sim_world.last_command_hash),
             ),
         )
 
@@ -206,7 +205,6 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
-            command_hash=str(step.command_hash),
             dt_sim=float(step.dt_sim),
             game_tune_started=bool(session.game_tune_started),
         )
@@ -220,7 +218,6 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
                 events=step.events,
-                command_hash=str(step.command_hash),
             ),
         )
 
@@ -291,7 +288,6 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
-            command_hash=str(step.command_hash),
             dt_sim=float(step.dt_sim),
             game_tune_started=False,
         )
@@ -306,7 +302,6 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
                 rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
                 events=step.events,
-                command_hash=str(step.command_hash),
             ),
         )
 
@@ -325,7 +320,6 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
-    assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
 
 
@@ -341,7 +335,6 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
-    assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
 
 
@@ -363,5 +356,4 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
     )
 
     assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
-    assert [ck.command_hash for ck in live] == [ck.command_hash for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
