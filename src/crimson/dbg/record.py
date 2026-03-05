@@ -13,6 +13,7 @@ from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import Replay
 from ..sim.driver.replay_runner import run_replay
+from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status
 from .canonical_channels import (
@@ -355,7 +356,7 @@ def _record_replay_to_trace_python(
     tick_rows: list[TickRecord] = []
     channels_seen: set[str] = set()
     default_dt = 1.0 / float(replay.header.tick_rate) if int(replay.header.tick_rate) > 0 else 1.0 / 60.0
-    replay_dt_rows = [int((tick.dt if tick.dt is not None else default_dt) * 1000.0) for tick in replay.ticks]
+    replay_dt_rows = [ftol_ms_i32(tick.dt if tick.dt is not None else default_dt) for tick in replay.ticks]
     for checkpoint in sorted(checkpoints, key=lambda row: row.tick_index):
         tick_index = int(checkpoint.tick_index)
         if tick_index not in rng_stream_by_tick:
