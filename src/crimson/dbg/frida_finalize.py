@@ -469,10 +469,10 @@ def _write_run_trace(
     )
     replay_ticks = [
         ReplayTick(
-            inputs=list(run.replay_inputs[i]),
-            dt=float(run.replay_dt[i]),
+            inputs=run.replay_inputs[i],
+            dt=run.replay_dt[i],
         )
-        for i in range(int(run.tick_count))
+        for i in range(run.tick_count)
     ]
     dump_replay_file(
         replay_path,
