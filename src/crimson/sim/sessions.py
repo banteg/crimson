@@ -326,6 +326,8 @@ class DeterministicSession(msgspec.Struct):
                         game_mode=self.game_mode,
                         player_count=len(self.world.players),
                     )
+                case _:
+                    raise RuntimeError(f"unhandled command type: {type(cmd).__name__}")
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)

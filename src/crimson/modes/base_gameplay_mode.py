@@ -83,6 +83,7 @@ from ..sim.input_providers import (
     InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
+    PerkMenuOpenCommand,
     PerkPickCommand,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick
@@ -281,13 +282,17 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         if sample is None:
             return
         frame_tick_index = int(sample.frame_tick_index)
-        if not isinstance(command, PerkPickCommand):
-            return
-        runtime.broadcast_perk_pick(
-            tick_index=int(frame_tick_index),
-            player_index=int(command.player_index),
-            choice_index=int(command.choice_index),
-        )
+        match command:
+            case PerkPickCommand(player_index=pi, choice_index=ci):
+                runtime.broadcast_perk_pick(
+                    tick_index=int(frame_tick_index),
+                    player_index=int(pi),
+                    choice_index=int(ci),
+                )
+            case PerkMenuOpenCommand():
+                pass  # local-only, no network broadcast needed
+            case _:
+                raise RuntimeError(f"unhandled command type: {type(command).__name__}")
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
