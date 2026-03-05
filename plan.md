@@ -1,5 +1,7 @@
 I studied the Python rewrite in `src/` and the test contracts in `tests/`.
 
+Update (March 6, 2026): the canonical tick contract described here has since landed via `ResolvedTick` / `TickSupply`. The sections about split input/command pulling are now historical; the next highest-value target is authoritative mode-state ownership.
+
 The important headline is that the core deterministic work is in better shape than the repo’s older docs imply. Two of the biggest architectural problems already appear to be fixed:
 
 * Replay V2 is mostly real now: `ReplayTick` already carries `dt`, `inputs`, and `commands` in `src/crimson/replay/types.py`, and `ReplayRecorder.record_tick(..., commands=...)` writes them inline in `src/crimson/replay/recorder.py`.

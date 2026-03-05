@@ -63,7 +63,7 @@ def test_tick_runner_returns_per_tick_plans_in_frame_order() -> None:
 
     assert result.ticks_completed == 2
     assert result.batch_status is InputStatus.READY
-    assert [row.tick_index for row in result.completed_results] == [0, 1]
+    assert [row.source_tick.tick_index for row in result.completed_results] == [0, 1]
 
 
 def test_tick_runner_returns_empty_plans_when_no_ticks_advanced() -> None:

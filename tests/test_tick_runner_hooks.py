@@ -63,8 +63,8 @@ def test_tick_runner_exposes_tick_inputs_for_explicit_replay_recording() -> None
 
     assert result.ticks_completed == 1
     assert len(result.completed_results) == 1
-    assert result.completed_results[0].inputs is not None
-    assert len(result.completed_results[0].inputs or []) == 1
+    assert result.completed_results[0].source_tick.inputs is not None
+    assert len(result.completed_results[0].source_tick.inputs or []) == 1
 
 
 def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() -> None:
@@ -86,4 +86,4 @@ def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() 
     )
 
     assert result.ticks_completed == 2
-    assert [row.tick_index for row in result.completed_results] == [0, 1]
+    assert [row.source_tick.tick_index for row in result.completed_results] == [0, 1]

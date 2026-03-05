@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from crimson.sim.hooks import TickResult
-from crimson.sim.input_providers import InputStatus
+from crimson.sim.input_providers import InputStatus, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
 
 from .tick_payload import make_tick_payload
@@ -39,10 +39,13 @@ class FakeRunner:
         ticks = max(0, int(ticks_requested))
         rows = [
             TickResult(
-                tick_index=int(start_tick + i),
+                source_tick=ResolvedTick(
+                    tick_index=int(start_tick + i),
+                    dt_seconds=float(tick_dt),
+                    inputs=[],
+                    commands=[],
+                ),
                 payload=make_tick_payload(),
-                inputs=[],
-                commands=[],
             )
             for i in range(int(ticks))
         ]

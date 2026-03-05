@@ -42,7 +42,7 @@ def apply_sim_metadata_tick_result(
         game_tune_started=bool(game_tune_started),
     )
     return PresentationTickOutput(
-        tick_index=int(tick_result.tick_index),
+        tick_index=int(tick_result.source_tick.tick_index),
         dt_sim=float(step.dt_sim),
         presentation=step.presentation,
     )

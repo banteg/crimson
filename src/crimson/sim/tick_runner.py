@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from .hooks import TickResult
-from .input_providers import FrameContext, InputProvider, InputStatus
+from .input_providers import FrameContext, InputProvider, InputStatus, ResolvedTick
 from .sessions import DeterministicSession
 
 
@@ -66,24 +66,24 @@ class TickRunner:
 
         for tick_offset in range(ticks_requested):
             tick_index = int(start_tick + tick_offset)
-            tick_input = self._input_provider.pull_tick_input(tick_index)
-            status = tick_input.status
+            tick_supply = self._input_provider.pull_tick(tick_index, tick_dt)
+            status = tick_supply.status
             if status is InputStatus.STALLED:
+                if tick_supply.tick is not None:
+                    raise RuntimeError("stalled tick supply must not carry a resolved tick")
                 batch_status = InputStatus.STALLED
                 break
             if status is InputStatus.EOS:
+                if tick_supply.tick is not None:
+                    raise RuntimeError("eos tick supply must not carry a resolved tick")
                 batch_status = InputStatus.EOS
                 break
 
-            tick_inputs = list(tick_input.inputs)
-            tick_dt_seconds = self._input_provider.resolve_tick_dt(tick_index, tick_dt)
-            commands = self._input_provider.pull_tick_commands(tick_index)
+            source_tick = self._validated_source_tick(tick_supply=tick_supply, expected_tick_index=tick_index)
+            tick_inputs = list(source_tick.inputs)
+            commands = list(source_tick.commands)
 
-            # Snapshot list identity before stepping so replay recording can
-            # happen later in frame-driver code with pre-step inputs.
-            result_inputs = list(tick_inputs)
-
-            timing = self._session.timing_for_dt(tick_dt_seconds)
+            timing = self._session.timing_for_dt(float(source_tick.dt_seconds))
             tick = self._session.step_tick(
                 timing=timing,
                 inputs=tick_inputs,
@@ -91,10 +91,8 @@ class TickRunner:
                 commands=commands,
             )
             result = TickResult(
-                tick_index=tick_index,
+                source_tick=source_tick,
                 payload=tick,
-                inputs=result_inputs,
-                commands=commands,
             )
             completed_results.append(result)
             ticks_completed += 1
@@ -104,4 +102,23 @@ class TickRunner:
             batch_status=batch_status,
             next_tick_index=int(start_tick) + int(ticks_completed),
             completed_results=list(completed_results),
+        )
+
+    @staticmethod
+    def _validated_source_tick(*, tick_supply, expected_tick_index: int) -> ResolvedTick:
+        source_tick = tick_supply.tick
+        if source_tick is None:
+            raise RuntimeError("ready tick supply must carry a resolved tick")
+        if int(source_tick.tick_index) != int(expected_tick_index):
+            raise RuntimeError(
+                f"resolved tick index mismatch: expected={int(expected_tick_index)} got={int(source_tick.tick_index)}",
+            )
+        dt_seconds = float(source_tick.dt_seconds)
+        if dt_seconds <= 0.0:
+            raise RuntimeError("resolved tick dt_seconds must be positive")
+        return ResolvedTick(
+            tick_index=int(source_tick.tick_index),
+            dt_seconds=dt_seconds,
+            inputs=list(source_tick.inputs),
+            commands=list(source_tick.commands),
         )

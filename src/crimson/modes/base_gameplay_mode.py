@@ -75,6 +75,7 @@ from ..sim.input_providers import (
     LocalInputProvider,
     NetworkInputProvider,
     PerkPickCommand,
+    ResolvedTick,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
@@ -160,8 +161,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
         super().__init__(
             player_count=player_count,
-            resolve_tick_input=self._resolve_tick_input,
-            resolve_tick_commands=self.resolve_tick_commands,
+            resolve_tick=self._resolve_tick,
             submit_command=self._submit_runtime_command,
         )
 
@@ -199,7 +199,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
     def take_frame_sample(self, runner_tick_index: int) -> LanFrameSample | None:
         return self._samples_by_runner_tick.pop(int(runner_tick_index), None)
 
-    def _resolve_tick_input(self, tick_index: int) -> list[PlayerInput] | None:
+    def _resolve_tick(self, tick_index: int, default_dt_seconds: float) -> ResolvedTick | None:
         self._pop_blocked = False
         before_pop = self._before_pop
         if before_pop is not None and (not bool(before_pop())):
@@ -219,13 +219,12 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
             frame_inputs=tuple(frame_inputs),
             commands=tuple(frame.commands),
         )
-        return player_inputs
-
-    def resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        sample = self._samples_by_runner_tick.get(int(tick_index))
-        if sample is None:
-            return []
-        return list(sample.commands)
+        return ResolvedTick(
+            tick_index=int(tick_index),
+            dt_seconds=float(default_dt_seconds),
+            inputs=player_inputs,
+            commands=list(frame.commands),
+        )
 
     def _submit_runtime_command(self, command: GameCommand) -> None:
         runtime = self._runtime
@@ -710,10 +709,10 @@ class BaseGameplayMode:
         if provider is None:
             self._queued_input_commands.append(command)
             return
-        if not provider.supports_commands():
+        if not provider.supports_command_submission():
             self._queued_input_commands.append(command)
             return
-        provider.push_command(command)
+        provider.submit_command(command)
 
     def _flush_queued_input_commands(
         self,
@@ -722,10 +721,10 @@ class BaseGameplayMode:
     ) -> None:
         if not self._queued_input_commands:
             return
-        if not provider.supports_commands():
+        if not provider.supports_command_submission():
             return
         for command in self._queued_input_commands:
-            provider.push_command(command)
+            provider.submit_command(command)
         self._queued_input_commands.clear()
 
     def record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
@@ -1583,10 +1582,11 @@ class BaseGameplayMode:
         tick_result: TickResult,
         callbacks: LanSyncCallbacks,
     ) -> None:
-        sample = callbacks.take_frame_sample(int(tick_result.tick_index))
+        source_tick = tick_result.source_tick
+        sample = callbacks.take_frame_sample(int(source_tick.tick_index))
         if sample is None:
             raise RuntimeError("lan tick runner completed without runtime frame metadata")
-        if tuple(tick_result.commands) != tuple(sample.commands):
+        if tuple(source_tick.commands) != tuple(sample.commands):
             raise RuntimeError("lan tick result commands diverged from canonical frame")
         tick_result.lan_sync = LanTickSync(
             frame_tick_index=int(sample.frame_tick_index),
@@ -1610,7 +1610,7 @@ class BaseGameplayMode:
             broadcast(
                 int(frame_tick_index),
                 tuple(sync.frame_inputs),
-                tuple(tick_result.commands),
+                tuple(tick_result.source_tick.commands),
             )
 
     def _record_replay_checkpoint_from_tick(
@@ -1862,7 +1862,12 @@ class BaseGameplayMode:
             tick = tick_result.payload
             replay_tick_index = tick_result.replay_tick_index
             if replay_tick_index is None and recorder is not None:
-                replay_tick_index = int(recorder.record_tick(list(tick_result.inputs), commands=tick_result.commands))
+                replay_tick_index = int(
+                    recorder.record_tick(
+                        list(tick_result.source_tick.inputs),
+                        commands=tick_result.source_tick.commands,
+                    ),
+                )
                 tick_result.replay_tick_index = replay_tick_index
             applied = _AppliedBatchTick(
                 tick=tick,
@@ -1881,7 +1886,7 @@ class BaseGameplayMode:
                 tick_result=tick_result,
                 game_tune_started=bool(session.game_tune_started),
             ))
-            for cmd in tick_result.commands:
+            for cmd in tick_result.source_tick.commands:
                 if isinstance(cmd, PerkPickCommand) and self.audio_bridge.router is not None:
                     self.audio_bridge.router.play_sfx("sfx_ui_bonus")
             self._ticks_advanced_per_frame += 1

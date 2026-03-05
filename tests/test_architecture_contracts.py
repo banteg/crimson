@@ -21,6 +21,7 @@ from crimson.sim.input_providers import (
     LocalInputProvider,
     NetworkInputProvider,
     PerkPickCommand,
+    ResolvedTick,
 )
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -147,14 +148,22 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     tick_input = [PlayerInput()]
     host_provider = NetworkInputProvider(
         player_count=1,
-        resolve_tick_input=lambda _tick: list(tick_input),
-        resolve_tick_commands=lambda tick: runtime.pull_commands(peer="host", tick_index=int(tick)),
+        resolve_tick=lambda tick, dt: ResolvedTick(
+            tick_index=int(tick),
+            dt_seconds=float(dt),
+            inputs=list(tick_input),
+            commands=runtime.pull_commands(peer="host", tick_index=int(tick)),
+        ),
         submit_command=runtime.submit_local_command,
     )
     client_provider = NetworkInputProvider(
         player_count=1,
-        resolve_tick_input=lambda _tick: list(tick_input),
-        resolve_tick_commands=lambda tick: runtime.pull_commands(peer="client", tick_index=int(tick)),
+        resolve_tick=lambda tick, dt: ResolvedTick(
+            tick_index=int(tick),
+            dt_seconds=float(dt),
+            inputs=list(tick_input),
+            commands=runtime.pull_commands(peer="client", tick_index=int(tick)),
+        ),
     )
     host_session, _ = make_session(seed=42)
     client_session, _ = make_session(seed=42)
@@ -171,7 +180,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     command = PerkPickCommand(player_index=0, choice_index=1)
-    host_provider.push_command(command)
+    host_provider.submit_command(command)
 
     host_clock = FixedStepClock(tick_rate=60)
     host_frame_index = 0
@@ -200,8 +209,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     )
 
     # Commands propagated through runner to both host and client
-    assert host_batch.completed_results[0].commands == [command]
-    assert client_batch.completed_results[0].commands == [command]
+    assert host_batch.completed_results[0].source_tick.commands == [command]
+    assert client_batch.completed_results[0].source_tick.commands == [command]
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
@@ -247,7 +256,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
             max_ticks=1,
         )
         assert batch.ticks_completed == 1
-        live_tick_indices.append(int(batch.completed_results[0].tick_index))
+        live_tick_indices.append(int(batch.completed_results[0].source_tick.tick_index))
 
     replay = recorder.finish()
     replay_path = tmp_path / "contract_live_to_replay.crd"

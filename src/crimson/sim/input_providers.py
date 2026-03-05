@@ -37,27 +37,29 @@ class InputStatus(str, Enum):
     EOS = "eos"
 
 
-class TickInput(msgspec.Struct, frozen=True):
-    status: InputStatus
+class ResolvedTick(msgspec.Struct, frozen=True):
+    tick_index: int
+    dt_seconds: float
     inputs: list[PlayerInput] = msgspec.field(default_factory=list)
+    commands: list[GameCommand] = msgspec.field(default_factory=list)
+
+
+class TickSupply(msgspec.Struct, frozen=True):
+    status: InputStatus
+    tick: ResolvedTick | None = None
 
 
 class InputProvider(Protocol):
     def begin_frame(self, frame_ctx: FrameContext) -> None: ...
 
-    def pull_tick_input(self, tick_index: int) -> TickInput: ...
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply: ...
 
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]: ...
+    def supports_command_submission(self) -> bool: ...
 
-    def supports_commands(self) -> bool: ...
-
-    def push_command(self, command: GameCommand) -> None: ...
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float: ...
+    def submit_command(self, command: GameCommand) -> None: ...
 
 
-TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
-TickCommandResolver: TypeAlias = Callable[[int], Sequence[GameCommand] | None]
+ResolvedTickResolver: TypeAlias = Callable[[int, float], ResolvedTick | None]
 TickCommandSubmitter: TypeAlias = Callable[[GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
@@ -88,31 +90,39 @@ class LocalInputProvider:
             self._commands_for_next_tick.extend(self._pending_commands)
             self._pending_commands.clear()
 
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        _ = tick_index
-        if self._player_count <= 0:
-            return TickInput(status=InputStatus.READY, inputs=[])
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
+        tick_index = int(tick_index)
+        dt_seconds = float(default_dt_seconds)
         if self._first_tick_pending:
             self._first_tick_pending = False
-            return TickInput(status=InputStatus.READY, inputs=list(self._frame_inputs))
-        return TickInput(status=InputStatus.READY, inputs=list(self._edge_inputs))
+            inputs = [] if self._player_count <= 0 else list(self._frame_inputs)
+            commands = list(self._commands_for_next_tick)
+            self._commands_for_next_tick.clear()
+            return TickSupply(
+                status=InputStatus.READY,
+                tick=ResolvedTick(
+                    tick_index=tick_index,
+                    dt_seconds=dt_seconds,
+                    inputs=inputs,
+                    commands=commands,
+                ),
+            )
+        inputs = [] if self._player_count <= 0 else list(self._edge_inputs)
+        return TickSupply(
+            status=InputStatus.READY,
+            tick=ResolvedTick(
+                tick_index=tick_index,
+                dt_seconds=dt_seconds,
+                inputs=inputs,
+                commands=[],
+            ),
+        )
 
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        _ = tick_index
-        if not self._commands_for_next_tick:
-            return []
-        commands = list(self._commands_for_next_tick)
-        self._commands_for_next_tick.clear()
-        return commands
-
-    def supports_commands(self) -> bool:
+    def supports_command_submission(self) -> bool:
         return True
 
-    def push_command(self, command: GameCommand) -> None:
+    def submit_command(self, command: GameCommand) -> None:
         self._pending_commands.append(command)
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        return default_dt
 
 
 class NetworkInputProvider:
@@ -122,53 +132,33 @@ class NetworkInputProvider:
         self,
         *,
         player_count: int,
-        resolve_tick_input: TickInputResolver | None = None,
-        resolve_tick_commands: TickCommandResolver | None = None,
+        resolve_tick: ResolvedTickResolver | None = None,
         submit_command: TickCommandSubmitter | None = None,
     ) -> None:
         self._player_count = max(0, player_count)
-        self._resolve_tick_input = resolve_tick_input
-        self._resolve_tick_commands = resolve_tick_commands
+        self._resolve_tick = resolve_tick
         self._submit_command = submit_command
-        self._commands_by_tick: dict[int, list[GameCommand]] = {}
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         _ = frame_ctx
         return
 
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        resolver = self._resolve_tick_input
+    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
+        resolver = self._resolve_tick
         if resolver is None:
-            return TickInput(status=InputStatus.STALLED, inputs=[])
-        inputs = resolver(tick_index)
-        if inputs is None:
-            return TickInput(status=InputStatus.STALLED, inputs=[])
-        commands: list[GameCommand] = []
-        resolve_commands = self._resolve_tick_commands
-        if resolve_commands is not None:
-            resolved_commands = resolve_commands(int(tick_index))
-            if resolved_commands is not None:
-                commands.extend(list(resolved_commands))
-        if commands:
-            self._queue_tick_commands(int(tick_index), commands)
-        return TickInput(
+            return TickSupply(status=InputStatus.STALLED, tick=None)
+        resolved_tick = resolver(int(tick_index), float(default_dt_seconds))
+        if resolved_tick is None:
+            return TickSupply(status=InputStatus.STALLED, tick=None)
+        return TickSupply(
             status=InputStatus.READY,
-            inputs=list(inputs),
+            tick=resolved_tick,
         )
 
-    def supports_commands(self) -> bool:
-        return self._submit_command is not None or self._resolve_tick_commands is not None
+    def supports_command_submission(self) -> bool:
+        return self._submit_command is not None
 
-    def push_command(self, command: GameCommand) -> None:
+    def submit_command(self, command: GameCommand) -> None:
         submit_command = self._submit_command
         if submit_command is not None:
             submit_command(command)
-
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        return self._commands_by_tick.pop(int(tick_index), [])
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        return default_dt
-
-    def _queue_tick_commands(self, tick_index: int, commands: list[GameCommand]) -> None:
-        self._commands_by_tick.setdefault(int(tick_index), []).extend(commands)

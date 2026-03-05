@@ -9,8 +9,10 @@ Its purpose is narrower: describe the current architectural split-brain in the r
 Not everything is split-brained anymore.
 
 - `DeterministicSession` is already the center of the deterministic step.
+- The provider/runner contract now uses one canonical pre-step tick object: `ResolvedTick`.
 - Replay ticks already carry `dt + inputs + commands`.
 - Lockstep `TickFrame` already carries deterministic `commands`.
+- `TickResult` now carries the source `ResolvedTick`, so replay/live/LAN share the same in-memory pre-step tick shape.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched ownership and orchestration layers still wrapped around it.
@@ -19,16 +21,7 @@ That matters because the remaining work is no longer "invent a deterministic run
 
 Today the runtime still has several competing representations of the same truth.
 
-### 1) One tick is still fetched as two things
-
-The provider/runner contract still treats a deterministic tick as:
-
-- `pull_tick_input(tick_index)`
-- `pull_tick_commands(tick_index)`
-
-That means replay and lockstep already think in canonical ticks, while the runtime API still reconstructs the same tick from separate calls.
-
-### 2) Mode runtime state has multiple owners
+### 1) Mode runtime state has multiple owners
 
 The same gameplay truth is often mirrored across:
 
@@ -38,7 +31,7 @@ The same gameplay truth is often mirrored across:
 
 Quest is the clearest example: state is copied into `QuestSpawnState`, stepped deterministically, then copied back into `_QuestRunState`, while some of the same data is also carried through generic tick/result types.
 
-### 3) The frame pump exists in several places
+### 2) The frame pump exists in several places
 
 Variants of the same loop exist in:
 
@@ -48,6 +41,15 @@ Variants of the same loop exist in:
 - `src/crimson/sim/driver/playback_driver.py`
 
 They all decide how many ticks to run, step the session, apply metadata, apply presentation outputs, and optionally record/checkpoint/sync.
+
+### 3) Generic tick results still carry mode-specific state
+
+The provider/runner contract is unified now, but some generic runtime types still re-express quest state:
+
+- `DeterministicSessionTick`
+- `PlaybackTickOutcome`
+
+That is a weaker split-brain than the old provider split, but it is still duplicated ownership pressure.
 
 ### 4) Presentation reactions are not yet fully single-sourced
 
@@ -70,10 +72,12 @@ flowchart TD
         Replay["ReplayTick {dt, inputs, commands}"]
     end
 
-    subgraph ProviderLayer["Provider / Runner Contract"]
-        Provider["InputProvider<br/>pull_tick_input()<br/>pull_tick_commands()"]
+    subgraph TickContract["Canonical Tick Contract"]
+        Provider["InputProvider<br/>pull_tick()"]
+        Tick["ResolvedTick"]
         Runner["TickRunner"]
         Session["DeterministicSession"]
+        Result["TickResult<br/>source_tick + payload"]
     end
 
     subgraph StateOwners["Competing State Owners"]
@@ -91,8 +95,8 @@ flowchart TD
 
     Local --> Provider
     Lan --> Provider
-    Provider --> Runner --> Session
-    Replay --> Playback --> Session
+    Provider --> Tick --> Runner --> Session --> Result
+    Replay --> Playback --> Tick
 
     Session --> SpawnState
     Session --> GenericTick
@@ -202,13 +206,13 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is to unify the provider contract so one tick is returned in one call.
+The best next refactor is to make mode runtime state authoritative, starting with quest.
 
-That is the highest-leverage remaining split-brain because:
+That is now the highest-leverage remaining split-brain because:
 
-- replay already has canonical ticks
-- lockstep already has canonical frames
-- `TickRunner` is still reconstructing a tick from split provider calls
-- deleting that split will simplify tests, live/replay parity, and future mode-state cleanup
+- the canonical tick contract already landed
+- quest still copies dynamic state between `_QuestRunState` and `QuestSpawnState`
+- generic tick/result objects still carry quest-specific runtime fields
+- deleting that mirrored ownership will simplify LAN resync, replay extraction, and the later shared-loop cleanup
 
-If that contract is cleaned up first, the later state-ownership and orchestration refactors become smaller and easier to reason about.
+If state ownership is cleaned up next, the later orchestration refactors become much smaller and less risky.

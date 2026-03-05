@@ -24,6 +24,7 @@ from ...weapons import WeaponId
 from ..hooks import TickResult
 from ..input_providers import (
     GameCommand,
+    ResolvedTick,
 )
 from ..sessions import (
     DeterministicSession,
@@ -503,7 +504,8 @@ class PlaybackDriver:
         trace_ctx = cast(Any, meta.trace_ctx)
         trace_closed = False
         try:
-            tick_index = int(tick_result.tick_index)
+            source_tick = tick_result.source_tick
+            tick_index = int(source_tick.tick_index)
             if int(meta.tick_index) != int(tick_index):
                 raise ReplayRunnerError(
                     f"playback tick mismatch: meta={int(meta.tick_index)} runner={int(tick_index)}",
@@ -526,8 +528,8 @@ class PlaybackDriver:
 
             outcome = PlaybackTickOutcome(
                 tick_index=int(tick_index),
-                dt_tick=float(meta.dt_tick),
-                commands=tick_result.commands,
+                dt_tick=float(source_tick.dt_seconds),
+                commands=list(source_tick.commands),
                 world=self.world,
                 step=step,
                 elapsed_ms=float(tick.elapsed_ms),
@@ -574,6 +576,12 @@ class PlaybackDriver:
 
         inputs = unpack_tick_inputs(replay_tick.inputs)
         commands = list(replay_tick.commands)
+        source_tick = ResolvedTick(
+            tick_index=int(tick_index),
+            dt_seconds=float(dt_tick),
+            inputs=list(inputs),
+            commands=list(commands),
+        )
 
         timing = self.session.timing_for_dt(dt_tick)
         session_tick = self.session.step_tick(
@@ -581,8 +589,8 @@ class PlaybackDriver:
             trace_rng=self.options.trace_rng, commands=commands,
         )
         tick_result = TickResult(
-            tick_index=tick_index,
-            payload=session_tick, inputs=inputs, commands=commands,
+            source_tick=source_tick,
+            payload=session_tick,
         )
         return self._finalize_tick_outcome(tick_result=tick_result, meta=meta)
 

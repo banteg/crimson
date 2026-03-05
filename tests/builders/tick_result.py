@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.sim.hooks import TickResult
+from crimson.sim.input_providers import ResolvedTick
 from crimson.sim.sessions import DeterministicSessionTick
 
 from .tick_payload import make_tick_payload
@@ -15,8 +16,11 @@ def make_tick_result(
     if payload is None:
         payload = make_tick_payload(dt_sim=dt_sim)
     return TickResult(
-        tick_index=tick_index,
+        source_tick=ResolvedTick(
+            tick_index=int(tick_index),
+            dt_seconds=float(dt_sim),
+            inputs=[],
+            commands=[],
+        ),
         payload=payload,
-        inputs=[],
-        commands=[],
     )
