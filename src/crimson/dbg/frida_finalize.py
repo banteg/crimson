@@ -471,7 +471,7 @@ def _write_run_trace(
     replay_ticks = [
         ReplayTick(
             inputs=list(run.replay_inputs[i]),
-            dt=float(run.replay_dt[i]) if abs(float(run.replay_dt[i]) - default_dt) > 1e-9 else None,
+            dt=float(run.replay_dt[i]) if float(run.replay_dt[i]) != default_dt else None,
         )
         for i in range(int(run.tick_count))
     ]

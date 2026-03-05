@@ -106,7 +106,7 @@ def _migrate(v8_bytes: bytes) -> bytes:
         tick_inputs = v8.inputs[i]
         tick_dt_raw = v8.dt[i] if i < len(v8.dt) else default_dt_val
         # Store dt as None if it matches default
-        tick_dt: float | None = float(tick_dt_raw) if abs(float(tick_dt_raw) - default_dt_val) > 1e-9 else None
+        tick_dt: float | None = float(tick_dt_raw) if float(tick_dt_raw) != default_dt_val else None
         commands = tuple(events_by_tick.get(i, []))
         ticks.append(ReplayTick(inputs=tick_inputs, commands=commands, dt=tick_dt))
 
