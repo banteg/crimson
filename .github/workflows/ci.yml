@@ -48,6 +48,11 @@ jobs:
             do_sync: true
             command: uv run --no-sync pytest --no-cov
             sync_args: --group dev
+          - task: pytest-replay-fixture-parity
+            use_uv: true
+            do_sync: true
+            command: uv run --no-sync pytest --no-cov tests/test_replay_fixture_integrations.py --run-replay-fixtures -k verify_vs_playback_parity
+            sync_args: --group dev
           - task: build
             use_uv: true
             do_sync: false

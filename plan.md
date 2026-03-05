@@ -323,7 +323,7 @@ Scope:
 Exit checks:
 
 - LAN deterministic parity tests pass using typed-command and structural state comparisons.
-- Verify-vs-playback fixture parity test is available as a slow opt-in validation and passes when run explicitly.
+- Verify-vs-playback fixture parity test is CI-gated and passing (`pytest-replay-fixture-parity`).
 - New architecture docs merged.
 - No out-of-band perk net messages remain.
 - No hash/checksum protocol fields remain; LAN command parity uses direct tuple equality.
@@ -361,6 +361,7 @@ Validation:
 Validation:
 
 - `uv run pytest tests/test_replay_fixture_integrations.py --run-replay-fixtures -k verify_vs_playback_parity`
+- CI: `pytest-replay-fixture-parity`
 
 ### Check Group D: LAN Deterministic Parity
 
