@@ -95,9 +95,9 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                 completed_results=[
                     TickResult(
                         tick_index=0,
-                        dt_sim=1.0 / 60.0,
-                        presentation_plan_ms=0.0,
                         payload=tick_payload,
+                        inputs=[],
+                        commands=[],
                         lan_sync=LanTickSync(
                             frame_tick_index=0,
                             frame_inputs=([],),
@@ -173,15 +173,15 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     ticks = [
         TickResult(
             tick_index=0,
-            dt_sim=1.0 / 60.0,
-            presentation_plan_ms=0.0,
             payload=make_tick_payload(elapsed_ms=16.67),
+            inputs=[],
+            commands=[],
         ),
         TickResult(
             tick_index=1,
-            dt_sim=1.0 / 60.0,
-            presentation_plan_ms=0.0,
             payload=make_tick_payload(elapsed_ms=33.33),
+            inputs=[],
+            commands=[],
         ),
     ]
     runner = FakeRunner(results=

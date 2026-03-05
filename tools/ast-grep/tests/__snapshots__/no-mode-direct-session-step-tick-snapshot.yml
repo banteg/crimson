@@ -8,6 +8,20 @@ snapshots:
       start: 7
       end: 74
   ? |
+    tick = self._session.step_tick(timing=timing, inputs=inputs)
+  : labels:
+    - source: self._session.step_tick(timing=timing, inputs=inputs)
+      style: primary
+      start: 7
+      end: 60
+  ? |
+    tick = self.session.step_tick(timing=timing, inputs=inputs)
+  : labels:
+    - source: self.session.step_tick(timing=timing, inputs=inputs)
+      style: primary
+      start: 7
+      end: 59
+  ? |
     tick = session.step_tick(timing=timing, inputs=inputs)
   : labels:
     - source: session.step_tick(timing=timing, inputs=inputs)

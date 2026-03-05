@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import FrameContext, InputStatus, LocalInputProvider
-from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from tests.world_runtime import WorldRuntimeHost
 
@@ -58,11 +57,7 @@ def _apply_batch(
 ) -> list[int]:
     applied_ticks: list[int] = []
     for result in batch.completed_results:
-        payload = result.payload
-        if payload is None:
-            continue
-        tick = cast(DeterministicSessionTick, payload)
-        step = tick.step
+        step = result.payload.step
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,

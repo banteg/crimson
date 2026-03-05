@@ -41,15 +41,7 @@ class DeterministicSessionTick(msgspec.Struct):
     play_hit_sfx: bool = False
     play_completion_music: bool = False
 
-    @property
-    def dt_sim(self) -> float:
-        return self.step.dt_sim
 
-    @property
-    def presentation_plan_ms(self) -> float:
-        return self.step.presentation_plan_ms
-
-DeterministicSessionStepTick: TypeAlias = DeterministicSessionTick
 
 # ---------------------------------------------------------------------------
 # Mid-/post-step hook system (spawn strategies)

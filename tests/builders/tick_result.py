@@ -16,7 +16,7 @@ def make_tick_result(
         payload = make_tick_payload(dt_sim=dt_sim)
     return TickResult(
         tick_index=tick_index,
-        dt_sim=dt_sim,
-        presentation_plan_ms=0.0,
         payload=payload,
+        inputs=[],
+        commands=[],
     )

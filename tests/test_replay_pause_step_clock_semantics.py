@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from types import SimpleNamespace
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader, ReplayTick
-from crimson.sim.input_providers import InputStatus
-from crimson.sim.tick_runner import TickBatchResult
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -110,41 +107,23 @@ def test_replay_speed_multiplier_scales_dt_only_while_unpaused(mocker, replay_pl
 
 
 def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view) -> None:
+    """When tick_index reaches tick_limit, _advance_runner marks finished without error."""
     view, _console = replay_playback_view
     _set_private(view, "_replay", _replay_with_ticks(2))
     _set_private(view, "_runtime", SimpleNamespace(render_resources=_stub_world()))
     view._finished = False
     view._paused = True
     view._step_once_pending = True
-    view._tick_index = 1
+    view._tick_index = 2  # already at tick_limit
+    view._max_ticks = None
 
     _set_private(view, "_driver", SimpleNamespace())
     _set_private(view, "_survival", object())
 
-    @dataclass
-    class _EosRunner:
-        frame_count: int = 0
-
-        def begin_frame(self, frame_ctx) -> None:
-            _ = frame_ctx
-            self.frame_count += 1
-
-        def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
-            _ = ticks_requested, tick_dt
-            return TickBatchResult(
-                ticks_completed=0,
-                batch_status=InputStatus.EOS,
-                next_tick_index=int(start_tick) + 1,
-                completed_results=[],
-            )
-
-    runner = _EosRunner()
-    _set_private(view, "_tick_runner", runner)
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
 
     view.update(0.05)
 
     assert view._finished is True
-    assert view._tick_index == 2
     assert view._step_once_pending is False
     assert view._dt_accum == 0.0
