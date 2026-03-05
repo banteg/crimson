@@ -52,6 +52,7 @@ __all__ = [
     "SpawnSlotInit",
     "SpawnTemplate",
     "SpawnTemplateCall",
+    "UnsupportedSpawnTemplateError",
     "TYPE_ID_TO_NAME",
     "advance_survival_spawn_stage",
     "build_rush_mode_spawn_creature",
@@ -67,6 +68,10 @@ __all__ = [
     "tick_spawn_slot",
     "tick_survival_wave_spawns",
 ]
+
+
+class UnsupportedSpawnTemplateError(ValueError):
+    """Raised when a spawn template id is outside the supported rewrite coverage."""
 
 
 class AlienSpawnerSpec(msgspec.Struct, frozen=True):
@@ -2261,6 +2266,6 @@ def build_spawn_plan(
     elif spec := CONSTANT_SPAWN_TEMPLATES.get(template_id):
         apply_constant_spawn(ctx, spec)
     else:
-        raise NotImplementedError(f"spawn plan not implemented for template_id=0x{int(template_id):x}")
+        raise UnsupportedSpawnTemplateError(f"unsupported spawn template id: 0x{int(template_id):x}")
 
     return ctx.finish(final_heading)

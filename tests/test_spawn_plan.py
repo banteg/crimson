@@ -3,7 +3,13 @@ from __future__ import annotations
 import pytest
 from syrupy import SnapshotAssertion
 
-from crimson.creatures.spawn import SPAWN_TEMPLATES, SpawnEnv, SpawnId, build_spawn_plan
+from crimson.creatures.spawn import (
+    SPAWN_TEMPLATES,
+    SpawnEnv,
+    SpawnId,
+    UnsupportedSpawnTemplateError,
+    build_spawn_plan,
+)
 from grim.geom import Vec2
 from grim.rand import Crand
 
@@ -170,3 +176,8 @@ def test_spawn_plan_seed_stability(default_spawn_env: SpawnEnv) -> None:
 
     assert baseline == repeat
     assert baseline != changed_seed
+
+
+def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: SpawnEnv) -> None:
+    with pytest.raises(UnsupportedSpawnTemplateError, match=r"unsupported spawn template id: 0x2"):
+        build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)

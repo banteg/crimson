@@ -12,7 +12,7 @@ from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rd, rl
 
-from .creatures.spawn import RANDOM_HEADING_SENTINEL
+from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
 from .sim.input import PlayerInput
@@ -561,9 +561,9 @@ class DemoView:
             return 0
         return int(self._crand.rand() % mod)
 
-    def _spawn(self, spawn_id: int, pos: Vec2, *, heading: float = 0.0) -> None:
+    def _spawn(self, spawn_id: SpawnId, pos: Vec2, *, heading: float = 0.0) -> None:
         self._runtime.sim_world.creatures.spawn_template(
-            int(spawn_id),
+            spawn_id,
             pos,
             float(heading),
             self._spawn_rng,
@@ -584,8 +584,8 @@ class DemoView:
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(0x38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(float(col * 64 + 798), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 80
             i += 1
 
@@ -603,10 +603,10 @@ class DemoView:
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.SPIDER_SP1_RANDOM_GREEN_34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
                 spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
-                self._spawn(0x35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
+                self._spawn(SpawnId.SPIDER_SP2_RANDOM_35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
@@ -617,10 +617,10 @@ class DemoView:
         i = 0
         while y < 848:
             col = i % 2
-            self._spawn(0x41, Vec2(float(col * 64 + 32), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, Vec2(float(col * 64 - 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
-            self._spawn(0x41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float(col * 64 + 32), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 2) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float(col * 64 - 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
+            self._spawn(SpawnId.ZOMBIE_RANDOM_41, Vec2(float((col + 12) * 64), float(y)), heading=RANDOM_HEADING_SENTINEL)
             y += 60
             i += 1
 
@@ -632,10 +632,10 @@ class DemoView:
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
-            self._spawn(0x24, Vec2(x, y), heading=0.0)
+            self._spawn(SpawnId.ALIEN_CONST_GREEN_24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
                 spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
-                self._spawn(0x25, spawn_pos, heading=0.0)
+                self._spawn(SpawnId.ALIEN_CONST_GREEN_SMALL_25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
         if self.state.demo_enabled:
