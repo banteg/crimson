@@ -4,8 +4,6 @@ import random
 from collections.abc import Callable
 from typing import Literal
 
-import msgspec
-
 from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -58,11 +56,6 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 RushSessionFactory = Callable[..., DeterministicSession]
 
 
-class _RushState(msgspec.Struct):
-    elapsed_ms: float = 0.0
-    spawn_cooldown_ms: float = 0.0
-
-
 class RushMode(BaseGameplayMode):
     def __init__(
         self,
@@ -88,13 +81,17 @@ class RushMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._rush = _RushState()
-
         self._ui_assets = None
         self._replay_recorder: ReplayRecorder | None = None
         self._session_factory = session_factory
         self._spawn_state = RushSpawnState()
         self._sim_session: DeterministicSession | None = self._new_sim_session()
+
+    def _authoritative_elapsed_ms(self) -> float:
+        session = self._sim_session
+        if session is None:
+            return 0.0
+        return float(session.elapsed_ms)
 
     def _enforce_rush_loadout(self) -> None:
         for player in self.sim_world.players:
@@ -128,7 +125,6 @@ class RushMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._ui_assets = load_perk_menu_assets(self._assets_root)
-        self._rush = _RushState()
         self._reset_gameplay_frame_clock()
         self._reset_lan_capture_clock()
 
@@ -239,7 +235,7 @@ class RushMode(BaseGameplayMode):
         record = build_highscore_record_for_game_over(
             state=self.state,
             player=self.player,
-            survival_elapsed_ms=int(self._rush.elapsed_ms),
+            survival_elapsed_ms=int(self._authoritative_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
             game_mode_id=game_mode_id,
         )
@@ -250,13 +246,13 @@ class RushMode(BaseGameplayMode):
         self._save_replay()
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self._rush.elapsed_ms)
+        return self._authoritative_elapsed_ms()
 
     def _replay_claimed_stats_complete(self) -> bool:
         return bool(self._game_over_active)
 
     def _replay_claimed_stats_elapsed_ms(self) -> int:
-        return int(self._rush.elapsed_ms)
+        return int(self._authoritative_elapsed_ms())
 
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
@@ -293,17 +289,17 @@ class RushMode(BaseGameplayMode):
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
-        _ = dt_tick
-        self._rush.elapsed_ms = float(tick.elapsed_ms)
-        self._rush.spawn_cooldown_ms = self._spawn_state.spawn_cooldown_ms
+        _ = tick, dt_tick
+        elapsed_ms = self._authoritative_elapsed_ms()
+        spawn_cooldown_ms = float(self._spawn_state.spawn_cooldown_ms)
         if frame_tick_index is not None:
             self._store_net_runtime_snapshot(
                 snapshot=RushStateSnapshotV2(
                     tick_index=int(frame_tick_index),
                     replay_state=self._net_replay_snapshot_state(),
                     runtime_state=RushRuntimeSnapshotV2(
-                        elapsed_ms=float(tick.elapsed_ms),
-                        spawn_cooldown_ms=self._spawn_state.spawn_cooldown_ms,
+                        elapsed_ms=elapsed_ms,
+                        spawn_cooldown_ms=spawn_cooldown_ms,
                         kill_count=int(self.creatures.kill_count),
                     ),
                 ),
@@ -317,8 +313,8 @@ class RushMode(BaseGameplayMode):
         if not isinstance(snapshot, RushStateSnapshotV2):
             return
         rs = snapshot.runtime_state
-        self._rush.elapsed_ms = float(rs.elapsed_ms)
-        self._rush.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
+        if self._sim_session is not None:
+            self._sim_session.elapsed_ms = float(rs.elapsed_ms)
         self._spawn_state.spawn_cooldown_ms = float(rs.spawn_cooldown_ms)
         self.creatures.kill_count = int(rs.kill_count)
 
@@ -407,7 +403,7 @@ class RushMode(BaseGameplayMode):
                 player=self.player,
                 players=self.sim_world.players,
                 bonus_hud=self.state.bonus_hud,
-                elapsed_ms=self._rush.elapsed_ms,
+                elapsed_ms=self._authoritative_elapsed_ms(),
                 frame_dt_ms=self._last_dt_ms,
             )
 
@@ -415,7 +411,11 @@ class RushMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             line = float(self._ui_line_height())
-            self._draw_ui_text(f"rush: t={self._rush.elapsed_ms / 1000.0:6.1f}s", Vec2(x, y), UI_TEXT_COLOR)
+            self._draw_ui_text(
+                f"rush: t={self._authoritative_elapsed_ms() / 1000.0:6.1f}s",
+                Vec2(x, y),
+                UI_TEXT_COLOR,
+            )
             self._draw_ui_text(f"kills={self.creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
             y_extra = y + line * 2.0
             if self._paused:

@@ -52,9 +52,9 @@ class _RollbackRuntimeStub:
 
 def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    mode._survival.elapsed_ms = 0.0
-    mode._survival.stage = 0
-    mode._survival.spawn_cooldown = 0.0
+    session = mode._sim_session
+    assert isinstance(session, DeterministicSession)
+    session.elapsed_ms = 0.0
     mode._spawn_state.stage = 0
     mode._spawn_state.spawn_cooldown_ms = 0.0
 
@@ -69,17 +69,16 @@ def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
     )
     mode._apply_resync_snapshot(snapshot)
 
-    assert mode._survival.elapsed_ms == 5000.0
-    assert mode._survival.stage == 3
-    assert mode._survival.spawn_cooldown == 1200.0
+    assert session.elapsed_ms == 5000.0
     assert mode._spawn_state.stage == 3
     assert mode._spawn_state.spawn_cooldown_ms == 1200.0
 
 
 def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
     mode = RushMode(ViewContext(assets_dir=_assets_dir()))
-    mode._rush.elapsed_ms = 0.0
-    mode._rush.spawn_cooldown_ms = 0.0
+    session = mode._sim_session
+    assert isinstance(session, DeterministicSession)
+    session.elapsed_ms = 0.0
     mode._spawn_state.spawn_cooldown_ms = 0.0
     mode.creatures.kill_count = 0
 
@@ -93,8 +92,7 @@ def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
     )
     mode._apply_resync_snapshot(snapshot)
 
-    assert mode._rush.elapsed_ms == 8000.0
-    assert mode._rush.spawn_cooldown_ms == 500.0
+    assert session.elapsed_ms == 8000.0
     assert mode._spawn_state.spawn_cooldown_ms == 500.0
     assert mode.creatures.kill_count == 42
 
@@ -144,8 +142,6 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
 
 def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    mode._survival.elapsed_ms = 0.0
-    mode._survival.stage = 0
 
     snapshot = SurvivalStateSnapshotV2(
         tick_index=8,
@@ -160,6 +156,7 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
     mode._rollback_runtime = cast("RollbackRuntime", _RollbackRuntimeStub(tick_index=8, payload=payload))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
+    session.elapsed_ms = 0.0
     input_provider = LocalInputProvider(player_count=1, build_inputs=lambda _frame_ctx: [])
     mode._tick_input_provider = input_provider
     mode._tick_runner = TickRunner(
@@ -175,9 +172,9 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
     mode._tick_runner_local_clock = FixedStepClock(tick_rate=60)
     mode._consume_net_runtime_recovery(mode_name="survival")
 
-    assert mode._survival.elapsed_ms == 3000.0
-    assert mode._survival.stage == 2
-    assert mode._survival.spawn_cooldown == 600.0
+    assert session.elapsed_ms == 3000.0
+    assert mode._spawn_state.stage == 2
+    assert mode._spawn_state.spawn_cooldown_ms == 600.0
     runtime = mode._rollback_runtime
     assert isinstance(runtime, _RollbackRuntimeStub)
     assert runtime.marked_resync_ticks == [8]

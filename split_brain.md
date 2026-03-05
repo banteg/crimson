@@ -14,26 +14,17 @@ Not everything is split-brained anymore.
 - Lockstep `TickFrame` already carries deterministic `commands`.
 - `TickResult` now carries the source `ResolvedTick`, so replay/live/LAN share the same in-memory pre-step tick shape.
 - Quest dynamic runtime state now lives in `QuestSpawnState` plus `DeterministicSession.elapsed_ms`; generic tick/result types no longer re-express quest-only fields.
+- Survival and rush dynamic runtime now live in `DeterministicSession.elapsed_ms` plus `SurvivalSpawnState` / `RushSpawnState`; the live mode shadow structs are gone.
 - Quest rollback/resync snapshots now carry the authoritative quest runtime, including the remaining spawn table.
 - The sim plan/apply split is already shared in important paths.
 
-That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched ownership and orchestration layers still wrapped around it.
+That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
 
 ## Current Split-Brain
 
-Today the runtime still has several competing representations of the same truth.
+Today the runtime still has a couple of architectural seams where the same work is expressed in more than one place.
 
-### 1) Mode runtime state has multiple owners
-
-The same gameplay truth is often mirrored across:
-
-- mode-local shadow state such as `_SurvivalState` and `_RushState`
-- deterministic spawn/runtime state such as `SurvivalSpawnState` and `RushSpawnState`
-- session timing such as `DeterministicSession.elapsed_ms`
-
-Quest is mostly out of this category now. The remaining duplicated ownership pressure is concentrated in survival and rush, where mode-local shadow structs still mirror state that already exists in the deterministic session and spawn state.
-
-### 2) The frame pump exists in several places
+### 1) The frame pump exists in several places
 
 Variants of the same loop exist in:
 
@@ -44,7 +35,7 @@ Variants of the same loop exist in:
 
 They all decide how many ticks to run, step the session, apply metadata, apply presentation outputs, and optionally record/checkpoint/sync.
 
-### 3) Presentation reactions are not yet fully single-sourced
+### 2) Presentation reactions are not yet fully single-sourced
 
 The deterministic step can already plan presentation work, and quest now computes its runtime flags in one place, but some reactions still live in ad hoc runtime code:
 
@@ -73,10 +64,10 @@ flowchart TD
         Result["TickResult<br/>source_tick + payload"]
     end
 
-    subgraph StateOwners["Competing State Owners"]
-        ModeShadow["Mode shadow state<br/>_SurvivalState / _RushState"]
-        SpawnState["Spawn/runtime state<br/>SurvivalSpawnState / RushSpawnState"]
-        QuestState["Quest runtime now authoritative<br/>QuestSpawnState + session.elapsed_ms"]
+    subgraph StateOwners["Authoritative Runtime Owners"]
+        SurvivalState["Survival runtime<br/>session.elapsed_ms + SurvivalSpawnState"]
+        RushState["Rush runtime<br/>session.elapsed_ms + RushSpawnState"]
+        QuestState["Quest runtime<br/>QuestSpawnState + session.elapsed_ms"]
     end
 
     subgraph Drivers["Frame Drivers"]
@@ -91,9 +82,9 @@ flowchart TD
     Provider --> Tick --> Runner --> Session --> Result
     Replay --> Playback --> Tick
 
-    Session --> SpawnState
+    Session --> SurvivalState
+    Session --> RushState
     Session --> QuestState
-    SpawnState <-->|copy in/out| ModeShadow
 
     Base -->|step + apply + record + sync| Runner
     World -->|step + apply| Runner
@@ -105,7 +96,7 @@ flowchart TD
 
 The cost is not just conceptual neatness.
 
-- The same gameplay fact can drift between multiple owners.
+- The same stepping and apply responsibilities can drift between multiple call sites.
 - Tests have to know about implementation wiring instead of one contract.
 - Replay, live, LAN, and rollback stay harder to compare because they do not all enter the core through the same shape.
 - Refactors tend to add compatibility with both the old and new model instead of deleting the old one.
@@ -128,16 +119,6 @@ class ResolvedTick:
 ```
 
 This does not need to become a giant new subsystem. It just needs to replace the split provider contract decisively.
-
-### Authoritative Mode Runtime State
-
-Per mode, there should be one authoritative owner for dynamic deterministic state.
-
-- Survival: session timing + `SurvivalSpawnState`
-- Rush: session timing + `RushSpawnState`
-- Quest: quest metadata + `QuestSpawnState` plus session timing (already true)
-
-UI-facing caches or read models are fine, but they should not be separate sources of truth.
 
 ### Shared Frame-Step / Apply Path
 
@@ -199,14 +180,13 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is to finish mode runtime state ownership cleanup for survival and rush.
+The best next refactor is to consolidate the duplicated frame-step/apply orchestration.
 
 That is now the highest-leverage remaining split-brain because:
 
-- the canonical tick contract already landed
-- quest already established the target pattern
-- survival and rush still mirror dynamic runtime state in `_SurvivalState` and `_RushState`
-- their resync restore paths still patch shadow state directly instead of restoring only the authoritative session/spawn owners
-- deleting those mirrors will make the later shared-loop cleanup smaller and less risky
+- canonical ticks already landed
+- quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
+- the remaining runtime drift is mostly about orchestration duplication, not ownership duplication
+- live gameplay, replay playback, and world/runtime stepping still each express their own variation of the same frame-step/apply sequence
 
-After survival and rush are cleaned up, the next meaningful target is the duplicated frame-step/apply orchestration across gameplay, world runtime, and replay playback.
+After the shared frame-step/apply path is smaller and clearer, the next target is to finish centralizing presentation reactions so replay and live mode code stop carrying custom post-tick side effects.
