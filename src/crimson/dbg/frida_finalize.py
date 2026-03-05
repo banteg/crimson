@@ -467,11 +467,10 @@ def _write_run_trace(
         bootstrap_seed=int(run.replay_bootstrap_seed),
         status=run.replay_status,
     )
-    default_dt = 1.0 / 60.0
     replay_ticks = [
         ReplayTick(
             inputs=list(run.replay_inputs[i]),
-            dt=float(run.replay_dt[i]) if float(run.replay_dt[i]) != default_dt else None,
+            dt=float(run.replay_dt[i]),
         )
         for i in range(int(run.tick_count))
     ]
