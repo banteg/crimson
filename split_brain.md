@@ -20,13 +20,14 @@ Not everything is split-brained anymore.
 - Live `TickRunner` frame advancement is now shared between `BaseGameplayMode` and `WorldRuntime`, including `FrameContext` setup, tick-index bookkeeping, and stall/EOS debt refund.
 - Replay playback frame advancement is now also shared, including replay clock advancement, `step_tick()` iteration, immediate sim metadata apply, and replay tick-limit debt refund.
 - Post-apply presentation reactions are now shared too: perk-apply bonus SFX, quest hit SFX, quest completion music, and replay/live quest overlay timer updates all route through one small reaction layer.
+- Driver-side replay utilities now share one canonical multi-tick walk path through `PlaybackDriver.walk_ticks()`, and replay checkpoint construction is no longer hidden behind private driver helpers.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
 
 ## Current Split-Brain
 
-Today the runtime still has a couple of architectural seams where the same work is expressed in more than one place.
+Today the large split-brain targets are mostly gone. The remaining seams are smaller contract-shape issues rather than competing loop owners.
 
 Timer semantics are no longer one of the fuzzy parts:
 
@@ -34,23 +35,23 @@ Timer semantics are no longer one of the fuzzy parts:
 - quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
 - session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
 
-### 1) Replay stepping still has some higher-level duplication
+### 1) Replay wrappers still duplicate setup and reporting policy
 
-The lowest-level frame bookkeeping is now shared for both live and replay stepping, but some replay consumers still open-code their own `step_tick()` loops above that layer:
+The replay loop itself is now shared in `PlaybackDriver`, but wrapper helpers still duplicate configuration and summary policy around it:
 
-- `src/crimson/sim/driver/playback_driver.py`
+- `src/crimson/sim/driver/replay_runner.py`
 - `src/crimson/sim/driver/replay_info.py`
 
-That is a smaller problem than before. `ReplayPlaybackMode` no longer hand-rolls the replay clock/step/apply loop, so the remaining drift is concentrated in driver-level utilities and higher-level bookkeeping around stepped replay ticks.
+That is narrower than the old split brain. The drift is now mostly around how wrappers build configs, translate callbacks, and package results for different replay consumers.
 
-### 2) Driver-level replay utilities still duplicate loop ownership
+### 2) Live and replay still expose different top-level stepped result shapes
 
-Replay playback mode no longer owns its own step/apply loop or its own post-apply reaction layer, but some driver-side replay consumers still open-code `step_tick()` loops and post-step bookkeeping:
+Live/LAN stepping flows through `TickResult`, while replay stepping still exposes `PlaybackTickOutcome`:
 
+- `src/crimson/sim/hooks.py`
 - `src/crimson/sim/driver/playback_driver.py`
-- `src/crimson/sim/driver/replay_info.py`
 
-That is now the main orchestration split: the low-level stepping and reactions are shared, but the higher-level replay summary/checkpoint/inspection paths still have their own driver loops.
+That is not a correctness problem, but it keeps some replay-only bookkeeping and testing surfaces separate from the live contract.
 
 ## Current Architecture
 
@@ -81,7 +82,7 @@ flowchart TD
         World["WorldRuntime"]
         ReplayMode["ReplayPlaybackMode"]
         ReplayPump["Shared replay playback frame pump"]
-        Playback["PlaybackDriver"]
+        Playback["PlaybackDriver<br/>step_tick + walk_ticks + build_checkpoint"]
         PostApply["Shared post-apply reactions"]
     end
 
@@ -192,14 +193,14 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is now to carry the shared step/apply cleanup one layer higher into the remaining replay-driver loops.
+The best next refactor is no longer another loop-sharing extraction. The best next step is narrower replay contract polish.
 
-That is the highest-leverage remaining split-brain because:
+The highest-leverage targets now are:
 
 - canonical ticks already landed
 - quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
 - live and replay frame advancement now share their low-level bookkeeping
 - post-apply presentation reactions are now shared across gameplay, replay playback, world runtime, and the headless harness
-- the remaining runtime drift is concentrated in driver-side replay loops and in the higher-level apply/record/checkpoint/reporting wiring around stepped replay ticks
+- driver-side replay loops are now shared too, so the remaining drift is mostly wrapper policy and result-shape differences
 
-After those driver loops are pulled closer to the shared shape, the remaining cleanup is mostly narrower contract polish rather than architectural split-brain.
+The likely next cleanup is to narrow the replay-facing contract further: reduce wrapper/config duplication around `run_replay()` and `run_replay_info()`, and decide whether `PlaybackTickOutcome` should stay replay-specific or converge further with the live `TickResult` shape.

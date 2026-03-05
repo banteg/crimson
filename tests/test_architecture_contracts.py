@@ -9,7 +9,10 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
+import crimson.sim.driver.playback_driver as playback_driver_module
 import crimson.sim.driver.playback_pump as playback_pump_module
+import crimson.sim.driver.replay_info as replay_info_module
+import crimson.sim.driver.replay_runner as replay_runner_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.runtime as world_runtime_module
@@ -438,3 +441,18 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
     assert 'play_sfx("sfx_ui_bonus")' not in gameplay_source
     assert "apply_post_apply_reaction(" in replay_source
     assert "apply_post_apply_reaction(" in world_source
+
+
+def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
+    walk_source = inspect.getsource(playback_driver_module.PlaybackDriver.walk_ticks)
+    run_source = inspect.getsource(playback_driver_module.PlaybackDriver.run)
+    replay_info_source = inspect.getsource(replay_info_module._run_replay_info)
+    replay_runner_source = inspect.getsource(replay_runner_module.run_replay)
+
+    assert "self.step_tick(" in walk_source
+    assert "PlaybackWalkHooks(" in walk_source
+    assert "self.walk_ticks(" in run_source
+    assert "driver.walk_ticks(" in replay_info_source
+    assert "driver.step_tick(" not in replay_info_source
+    assert "driver.run(" in replay_runner_source
+    assert "run_to_completion(" not in replay_runner_source

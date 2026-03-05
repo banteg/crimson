@@ -16,7 +16,8 @@ from ...quests import quest_by_level
 from ...quests.runtime import build_quest_spawn_table
 from ...quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ...replay import Replay, apply_replay_bootstrap, warn_on_game_version_mismatch
-from ...replay.checkpoints import ReplayCheckpoint, build_checkpoint
+from ...replay.checkpoints import ReplayCheckpoint
+from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
 from ...weapon_runtime import weapon_assign_player
@@ -191,6 +192,23 @@ class PlaybackTickOutcome:
     rng_marks: dict[str, int]
     creature_count_world_step: int
     tick_rng_rows: list[RngTraceDraw]
+
+
+TickEndObserver: TypeAlias = Callable[[PlaybackTickOutcome], None]
+
+
+@dataclass(slots=True, frozen=True)
+class PlaybackWalkHooks:
+    before_tick: TickBeginObserver | None = None
+    after_tick: TickEndObserver | None = None
+    on_progress: TickProgressCallback | None = None
+
+
+@dataclass(slots=True, frozen=True)
+class PlaybackWalkResult:
+    start_tick: int
+    next_tick_index: int
+    ticks_completed: int
 
 
 @dataclass(slots=True)
@@ -526,29 +544,24 @@ class PlaybackDriver:
             if not trace_closed:
                 trace_ctx.__exit__(None, None, None)
 
-    def _append_checkpoint_for_tick(
+    def build_checkpoint(
         self,
         *,
         outcome: PlaybackTickOutcome,
-        checkpoints_out: list[ReplayCheckpoint],
-        checkpoint_use_world_step_creature_count: bool,
-    ) -> None:
-        checkpoint_rng_marks = dict(outcome.rng_marks)
-
-        checkpoints_out.append(
-            build_checkpoint(
-                tick_index=int(outcome.tick_index),
-                world=self.world,
-                elapsed_ms=float(self._mode_runtime.checkpoint_elapsed_ms(outcome)),
-                creature_count_override=(
-                    int(outcome.creature_count_world_step)
-                    if bool(checkpoint_use_world_step_creature_count)
-                    else None
-                ),
-                rng_marks=checkpoint_rng_marks,
-                deaths=outcome.step.events.deaths,
-                events=outcome.step.events,
+        use_world_step_creature_count: bool = False,
+    ) -> ReplayCheckpoint:
+        return build_replay_checkpoint(
+            tick_index=int(outcome.tick_index),
+            world=self.world,
+            elapsed_ms=float(self._mode_runtime.checkpoint_elapsed_ms(outcome)),
+            creature_count_override=(
+                int(outcome.creature_count_world_step)
+                if bool(use_world_step_creature_count)
+                else None
             ),
+            rng_marks=dict(outcome.rng_marks),
+            deaths=outcome.step.events.deaths,
+            events=outcome.step.events,
         )
 
     def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
@@ -577,58 +590,59 @@ class PlaybackDriver:
         )
         return self._finalize_tick_outcome(tick_result=tick_result, meta=meta)
 
-    def run_to_completion(
+    def walk_ticks(
         self,
         *,
-        checkpoint_use_world_step_creature_count: bool = False,
-        checkpoints_out: list[ReplayCheckpoint] | None = None,
-        checkpoint_ticks: set[int] | None = None,
-        tick_progress_callback: TickProgressCallback | None = None,
-        tick_observer: TickObserver | None = None,
-        tick_trace_observer: TickTraceObserver | None = None,
-        tick_rng_trace_observer: TickRngTraceObserver | None = None,
-        tick_begin_observer: TickBeginObserver | None = None,
-        tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
-    ) -> RunResult:
+        start_tick: int = 0,
+        stop_tick: int | None = None,
+        hooks: PlaybackWalkHooks | None = None,
+    ) -> PlaybackWalkResult:
+        requested_start_tick = int(start_tick)
+        if requested_start_tick < 0:
+            raise ReplayRunnerError(f"invalid start_tick: {requested_start_tick}")
+        requested_stop_tick = int(self.tick_limit) if stop_tick is None else int(stop_tick)
+        if requested_stop_tick < requested_start_tick:
+            raise ReplayRunnerError(
+                f"invalid tick range: start_tick={requested_start_tick} stop_tick={requested_stop_tick}",
+            )
+
         tick_limit = int(self.tick_limit)
-        for tick_index in range(tick_limit):
-            if tick_begin_observer is not None:
-                tick_begin_observer(
-                    int(tick_index),
+        next_tick_index = min(requested_start_tick, tick_limit)
+        stop_tick_index = min(requested_stop_tick, tick_limit)
+        active_hooks = hooks if hooks is not None else PlaybackWalkHooks()
+
+        while next_tick_index < stop_tick_index:
+            if active_hooks.before_tick is not None:
+                active_hooks.before_tick(
+                    int(next_tick_index),
                     self.world,
-                    float(self.replay.ticks[tick_index].dt),
+                    float(self.replay.ticks[next_tick_index].dt),
                 )
-            outcome = self.step_tick(tick_index)
+            outcome = self.step_tick(next_tick_index)
+            next_tick_index = int(outcome.tick_index) + 1
 
-            if tick_rng_trace_observer is not None:
-                tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
+            if active_hooks.after_tick is not None:
+                active_hooks.after_tick(outcome)
+            if active_hooks.on_progress is not None:
+                active_hooks.on_progress(int(next_tick_index))
 
-            if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
-                self._append_checkpoint_for_tick(
-                    outcome=outcome,
-                    checkpoints_out=checkpoints_out,
-                    checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
-                )
+        return PlaybackWalkResult(
+            start_tick=min(requested_start_tick, tick_limit),
+            next_tick_index=int(next_tick_index),
+            ticks_completed=int(next_tick_index - min(requested_start_tick, tick_limit)),
+        )
 
-            if tick_trace_observer is not None:
-                tick_trace_observer(
-                    int(outcome.tick_index),
-                    self.world,
-                    float(outcome.elapsed_ms),
-                    outcome.step.events,
-                    dict(outcome.rng_marks),
-                )
-
-            if tick_observer is not None:
-                tick_observer(int(outcome.tick_index), self.world)
-
-            if tick_end_observer is not None:
-                tick_end_observer(outcome)
-
-            if tick_progress_callback is not None:
-                tick_progress_callback(int(outcome.tick_index) + 1)
-
-        return self.build_run_result(ticks=int(tick_limit))
+    def run(
+        self,
+        *,
+        hooks: PlaybackWalkHooks | None = None,
+    ) -> RunResult:
+        self.walk_ticks(
+            start_tick=0,
+            stop_tick=int(self.tick_limit),
+            hooks=hooks,
+        )
+        return self.build_run_result(ticks=int(self.tick_limit))
 
     def build_run_result(self, *, ticks: int) -> RunResult:
         shots_fired, shots_hit = player0_shots(self.world.state)

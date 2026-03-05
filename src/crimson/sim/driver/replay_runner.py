@@ -11,7 +11,9 @@ from .playback_driver import (
     PlaybackDriverConfig,
     PlaybackDriverOptions,
     PlaybackSessionDefaults,
+    PlaybackTickOutcome,
     PlaybackTimingConfig,
+    PlaybackWalkHooks,
     QuestSessionConfig,
     TickRngTraceObserver,
 )
@@ -70,12 +72,42 @@ def run_replay(
     )
 
     driver = PlaybackDriver(replay, options, config=config)
-    return driver.run_to_completion(
-        checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
-        checkpoints_out=checkpoints_out,
-        checkpoint_ticks=checkpoint_ticks,
-        tick_progress_callback=tick_progress_callback,
-        tick_observer=tick_observer,
-        tick_trace_observer=tick_trace_observer,
-        tick_rng_trace_observer=tick_rng_trace_observer,
+    after_tick = None
+    if (
+        tick_rng_trace_observer is not None
+        or checkpoints_out is not None
+        or tick_trace_observer is not None
+        or tick_observer is not None
+    ):
+        def _after_tick(outcome: PlaybackTickOutcome) -> None:
+            if tick_rng_trace_observer is not None:
+                tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
+
+            if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
+                checkpoints_out.append(
+                    driver.build_checkpoint(
+                        outcome=outcome,
+                        use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
+                    ),
+                )
+
+            if tick_trace_observer is not None:
+                tick_trace_observer(
+                    int(outcome.tick_index),
+                    outcome.world,
+                    float(outcome.elapsed_ms),
+                    outcome.step.events,
+                    dict(outcome.rng_marks),
+                )
+
+            if tick_observer is not None:
+                tick_observer(int(outcome.tick_index), outcome.world)
+
+        after_tick = _after_tick
+
+    return driver.run(
+        hooks=PlaybackWalkHooks(
+            after_tick=after_tick,
+            on_progress=tick_progress_callback,
+        ),
     )

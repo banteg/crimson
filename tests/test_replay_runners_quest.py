@@ -4,7 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
-from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions
+from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions, PlaybackWalkHooks
 from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input_providers import PerkPickCommand
@@ -117,9 +117,11 @@ def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
 
     mocker.patch.object(driver, "step_tick", side_effect=_step_tick_with_mutation)
 
-    driver.run_to_completion(
-        tick_begin_observer=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
-        tick_end_observer=lambda outcome: observed_after.append(int(outcome.world.players[0].experience)),
+    driver.run(
+        hooks=PlaybackWalkHooks(
+            before_tick=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
+            after_tick=lambda outcome: observed_after.append(int(outcome.world.players[0].experience)),
+        ),
     )
 
     assert observed_before == [0]

@@ -153,12 +153,12 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
             assert int(value_15) == ((int(state_after_u32) >> 16) & 0x7FFF)
 
 
-def test_playback_driver_run_to_completion_matches_run_replay_wrapper() -> None:
+def test_playback_driver_run_matches_run_replay_wrapper() -> None:
     _header, rec = _blank_survival_replay(ticks=4, seed=0x1234)
     replay = rec.finish()
     driver = PlaybackDriver(replay, PlaybackDriverOptions())
 
-    driver_result = driver.run_to_completion()
+    driver_result = driver.run()
     wrapper_result = run_replay(replay)
 
     assert driver_result == wrapper_result

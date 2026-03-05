@@ -19,6 +19,7 @@ from .playback_driver import (
     PlaybackSessionDefaults,
     PlaybackTickOutcome,
     PlaybackTimingConfig,
+    PlaybackWalkHooks,
     QuestSessionConfig,
 )
 from .setup import ReplayRunnerError
@@ -364,6 +365,7 @@ def _run_replay_info(
     driver = PlaybackDriver(replay, options, config=config)
 
     timeline: list[ReplayInfoTimelineEvent] = []
+    before: list[_PlayerSnapshot] | None = None
 
     def _append_tick(outcome: PlaybackTickOutcome, *, before: list[_PlayerSnapshot]) -> None:
         after = _capture_snapshots(outcome.world.players)
@@ -414,18 +416,26 @@ def _run_replay_info(
             include_extra_events=include_extra_events,
         )
 
-    tick_limit = int(driver.tick_limit)
-    for tick_index in range(tick_limit):
-        before = _capture_snapshots(driver.world.players)
-        outcome = driver.step_tick(tick_index)
+    def _before_tick(_tick_index: int, world, _dt_tick: float) -> None:
+        nonlocal before
+        before = _capture_snapshots(world.players)
+
+    def _after_tick(outcome: PlaybackTickOutcome) -> None:
+        assert before is not None, "missing pre-step replay snapshot"
         _append_tick(outcome, before=before)
 
-    run_result = driver.build_run_result(ticks=tick_limit)
+    walk_result = driver.walk_ticks(
+        hooks=PlaybackWalkHooks(
+            before_tick=_before_tick,
+            after_tick=_after_tick,
+        ),
+    )
+    run_result = driver.build_run_result(ticks=int(walk_result.ticks_completed))
 
     return ReplayInfoResult(
         game_mode_id=mode,
         tick_rate=replay.header.tick_rate,
-        ticks_simulated=driver.tick_limit,
+        ticks_simulated=int(walk_result.ticks_completed),
         elapsed_ms=int(run_result.elapsed_ms),
         player_count=len(driver.world.players),
         timeline=timeline,
