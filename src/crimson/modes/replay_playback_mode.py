@@ -34,14 +34,11 @@ from ..sim.driver.playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackSessionConfigs,
     PlaybackSessionDefaults,
     PlaybackTickOutcome,
     PlaybackTimingConfig,
     PlaybackWorldConfig,
     QuestSessionConfig,
-    RushSessionConfig,
-    SurvivalSessionConfig,
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
@@ -475,33 +472,26 @@ class ReplayPlaybackMode:
                 config=PlaybackDriverConfig(
                     timing=PlaybackTimingConfig(),
                     world=PlaybackWorldConfig(
-                        world=sim_world.world_state,
                         world_size=float(self._world_size),
                         fx_queue=render_resources.fx_queue,
                         fx_queue_rotated=render_resources.fx_queue_rotated,
-                        use_existing_world_state=True,
+                        use_existing_world_state=False,
                     ),
                     session_defaults=PlaybackSessionDefaults(
-                        clear_fx_queues_each_tick=False,
-                        game_tune_started=bool(sim_world.game_tune_started),
+                        clear_fx_queues_each_tick=True,
+                        game_tune_started=False,
                     ),
-                    sessions=PlaybackSessionConfigs(
-                        survival=SurvivalSessionConfig(),
-                        rush=RushSessionConfig(
-                            enforce_loadout=True,
-                        ),
-                        quest=QuestSessionConfig(
-                            disable_capture_spawn_events_authoritative=False,
-                            finalize_post_render_lifecycle_each_tick=True,
-                            result_uses_spawn_timeline_ms=False,
-                            spawn_entries=spawn_entries,
-                            quest_stage_major=quest_stage_major,
-                            quest_stage_minor=quest_stage_minor,
-                            start_weapon_id=start_weapon_id,
-                        ),
+                    quest=QuestSessionConfig(
+                        disable_capture_spawn_events_authoritative=True,
+                        result_uses_spawn_timeline_ms=True,
+                        spawn_entries=spawn_entries,
+                        quest_stage_major=quest_stage_major,
+                        quest_stage_minor=quest_stage_minor,
+                        start_weapon_id=start_weapon_id,
                     ),
                 ),
             )
+            sim_world.load_world_state(self._driver.world)
         except ReplayRunnerError as exc:  # pragma: no cover
             raise ValueError(f"unsupported replay game_mode_id: {int(mode_id)}") from exc
 
@@ -673,6 +663,7 @@ class ReplayPlaybackMode:
             and hasattr(runtime.audio_bridge, "apply_plan"),
         )
         update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
+        outcome_by_tick = {int(outcome.tick_index): outcome for outcome in outcomes}
         if outputs and can_apply_output_phase:
             apply_presentation_outputs(
                 outputs=outputs,
@@ -683,7 +674,7 @@ class ReplayPlaybackMode:
                 ),
                 update_camera=update_camera,
                 on_output_applied=lambda output: _on_output_applied(
-                    output, outcomes[next(i for i, o in enumerate(outcomes) if o.tick_index == output.tick_index)],
+                    output, outcome_by_tick[int(output.tick_index)],
                 ),
                 apply_audio=True,
             )

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
+
 from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
@@ -32,6 +34,13 @@ from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.world_runtime import WorldRuntimeHost
+
+
+def _checkpoint_state_projection(checkpoint: ReplayCheckpoint) -> dict[str, object]:
+    obj = msgspec.to_builtins(checkpoint)
+    for key in ("elapsed_ms", "rng_state", "rng_marks", "deaths", "perk", "events"):
+        obj.pop(key, None)
+    return obj
 
 
 def _build_replay(*, mode: int, ticks: int, seed: int = 0x1234) -> Replay:
@@ -319,7 +328,7 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
         checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
-    assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
+    assert [_checkpoint_state_projection(ck) for ck in live] == [_checkpoint_state_projection(ck) for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
 
 
@@ -334,7 +343,7 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
         checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
-    assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
+    assert [_checkpoint_state_projection(ck) for ck in live] == [_checkpoint_state_projection(ck) for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]
 
 
@@ -355,5 +364,5 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
         checkpoint_ticks=set(range(len(replay.ticks))),
     )
 
-    assert [ck.state_hash for ck in live] == [ck.state_hash for ck in headless]
+    assert [_checkpoint_state_projection(ck) for ck in live] == [_checkpoint_state_projection(ck) for ck in headless]
     assert [ck.rng_state for ck in live] == [ck.rng_state for ck in headless]

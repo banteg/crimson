@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
@@ -103,28 +102,20 @@ def _write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,
     *,
-    mutate_state_hash: bool = False,
-    mutate_replay_sha256: bool = False,
+    mutate_checkpoint: bool = False,
 ) -> Path:
     checkpoint_ticks = {0}
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
-    if mutate_state_hash:
+    if mutate_checkpoint:
         checkpoints[0] = msgspec.structs.replace(
-            checkpoints[0], state_hash="deadbeefdeadbeef", score_xp=999999,
+            checkpoints[0], score_xp=999999,
         )
-    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
     payload = ReplayCheckpoints(
         version=int(FORMAT_VERSION),
-        replay_sha256=str(replay_sha256),
         sample_rate=1,
         checkpoints=list(checkpoints),
     )
-    if mutate_replay_sha256:
-        mismatch = "0" * 64
-        if mismatch == str(replay_sha256):
-            mismatch = "f" * 64
-        payload = msgspec.structs.replace(payload, replay_sha256=mismatch)
     sidecar_path = default_checkpoints_path(replay_path)
     dump_checkpoints_file(sidecar_path, payload)
     return sidecar_path
@@ -319,10 +310,9 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
-    assert isinstance(payload["replay_sha256"], str)
     assert payload["score_claim"] is None
     assert payload["run_result"]["ticks"] == 2
     assert payload["run_result"]["score_xp"] == 0
@@ -492,7 +482,7 @@ def test_replay_info_human_success_outputs_timeline_header(tmp_path: Path) -> No
     assert "events=" in result.output
 
 
-def test_replay_info_json_output_payload_ok_schema_v1(tmp_path: Path) -> None:
+def test_replay_info_json_output_payload_ok_schema_v2(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
@@ -501,10 +491,9 @@ def test_replay_info_json_output_payload_ok_schema_v1(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
-    assert isinstance(payload["replay_sha256"], str)
     assert payload["summary"]["game_mode_id"] == int(GameMode.SURVIVAL)
     assert payload["summary"]["tick_rate"] == 60
     assert payload["summary"]["ticks_simulated"] == 2
@@ -564,6 +553,32 @@ def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     result = runner.invoke(app, ["replay", "info", str(replay_path)])
 
     assert result.exit_code == 0
+
+
+def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_info as replay_info_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    real_step_tick = replay_info_mod.PlaybackDriver.step_tick
+
+    def _step_tick_with_weapon_change(self, tick_index: int):
+        self.world.players[0].weapon.weapon_id = WeaponId.ASSAULT_RIFLE
+        return real_step_tick(self, tick_index)
+
+    mocker.patch.object(
+        replay_info_mod.PlaybackDriver,
+        "step_tick",
+        autospec=True,
+        side_effect=_step_tick_with_weapon_change,
+    )
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert any(event["kind"] == "weapon_change" for event in payload["timeline"])
 
 
 def test_replay_info_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
@@ -712,10 +727,9 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
-    assert isinstance(payload["replay_sha256"], str)
     assert payload["settings"]["runs"] == 2
     assert payload["settings"]["warmup_runs"] == 0
     assert payload["settings"]["mode"] == "headless"
@@ -1141,7 +1155,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 2
+    assert payload["schema_version"] == 3
     assert payload["render_telemetry"] is not None
     assert payload["render_telemetry"]["summary"]["top_draw_ms_ticks"][0]["tick_index"] == 1
 
@@ -1554,12 +1568,10 @@ def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp
     checkpoint_ticks = {0}
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
-    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
     dump_checkpoints_file(
         tmp_path / "survival.checkpoints.json.gz",
         ReplayCheckpoints(
             version=int(FORMAT_VERSION),
-            replay_sha256=str(replay_sha256),
             sample_rate=1,
             checkpoints=list(checkpoints),
         ),
@@ -1575,30 +1587,18 @@ def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    _write_checkpoint_sidecar(replay_path, replay, mutate_state_hash=True)
+    _write_checkpoint_sidecar(replay_path, replay, mutate_checkpoint=True)
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
 
     assert result.exit_code == 1
-
-
-def test_replay_verify_checkpoints_fails_on_sha_mismatch_by_default(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
-    runner = CliRunner()
-
-    result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])
-
-    assert result.exit_code == 1
-    assert "replay_sha256 mismatch" in result.output
 
 
 def test_replay_verify_checkpoints_rejects_removed_lenient_integrity_flag(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    _write_checkpoint_sidecar(replay_path, replay, mutate_replay_sha256=True)
+    _write_checkpoint_sidecar(replay_path, replay)
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path), "--lenient-integrity"])

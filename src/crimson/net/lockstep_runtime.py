@@ -12,9 +12,9 @@ import msgspec
 from crimson.quest_level import normalize_quest_level_text
 
 from ..replay.types import PackedPlayerInput
+from ..sim.input_providers import GameCommand
 from ..sim.timing import ftol_ms_i32
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
-from .deterministic_status import hash_status_snapshot
 from .lockstep_lobby import ClientLobby, HostLobby
 from .lockstep_protocol import (
     INPUT_DELAY_TICKS,
@@ -22,7 +22,6 @@ from .lockstep_protocol import (
     PROTOCOL_VERSION,
     TICK_RATE,
     DebugLogBatch,
-    DesyncNotice,
     Disconnect,
     Hello,
     InputBatch,
@@ -31,16 +30,13 @@ from .lockstep_protocol import (
     MatchStart,
     NetMessage,
     PauseState,
-    PerkMenuClose,
-    PerkMenuOpen,
-    PerkPick,
     Ready,
     StatusSnapshot,
     TickFrame,
     Welcome,
     current_build_id,
 )
-from .lockstep_state import ClientLockstepState, HostLockstepState
+from .lockstep_state import ClientLockstepState, HostLockstepState, HostReadyTick
 from .reliable import ReliableLink
 from .session_settings import (
     hello_from_session_settings,
@@ -136,7 +132,8 @@ class LockstepRuntime(msgspec.Struct):
     host_last_broadcast_ms: int = 0
     host_lockstep: HostLockstepState | None = None
     host_capture_tick: int = 0
-    host_ready_frames: deque[TickFrame] = msgspec.field(default_factory=deque)
+    host_ready_ticks: deque[HostReadyTick] = msgspec.field(default_factory=deque)
+    _pending_host_commands: list[GameCommand] = msgspec.field(default_factory=list)
     _host_seen_input_slots: set[int] = msgspec.field(default_factory=set)
 
     client_lobby: ClientLobby | None = None
@@ -149,8 +146,6 @@ class LockstepRuntime(msgspec.Struct):
     client_pause_state: PauseState | None = None
     _client_seen_tick_frame: bool = False
     _last_send_ms: int = 0
-
-    _client_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = msgspec.field(default_factory=deque)
 
     # Instrumentation (debug overlay + lan debug logs).
     _metrics_last_log_ms: int = 0
@@ -169,7 +164,7 @@ class LockstepRuntime(msgspec.Struct):
     last_desync_kind: str = ""
     last_desync_expected: str = ""
     last_desync_actual: str = ""
-    _last_desync_notice_sent_tick: int = -10**9
+
 
     _client_log_forward_queue: deque[str] = msgspec.field(default_factory=deque)
     _client_log_forward_last_flush_ms: int = 0
@@ -204,14 +199,13 @@ class LockstepRuntime(msgspec.Struct):
         self.last_desync_kind = ""
         self.last_desync_expected = ""
         self.last_desync_actual = ""
-        self._last_desync_notice_sent_tick = -10**9
+
         self._client_log_forward_queue.clear()
         self._client_log_forward_last_flush_ms = 0
         self._client_log_forward_dropped = 0
         self._client_log_forward_enabled = False
         self._host_remote_log_paths.clear()
         self._client_seen_tick_frame = False
-        self._client_perk_events.clear()
         lan_debug_log(
             "net_open",
             role=str(self.cfg.role),
@@ -289,11 +283,11 @@ class LockstepRuntime(msgspec.Struct):
             self._client_last_send_ms = 0
             self.host_lockstep = None
             self.host_capture_tick = 0
-            self.host_ready_frames.clear()
+            self.host_ready_ticks.clear()
+            self._pending_host_commands.clear()
             self.client_lockstep = None
             self.client_pause_state = None
             self._last_send_ms = 0
-            self._client_perk_events.clear()
             self._metrics_last_log_ms = 0
             self._metrics_last_resends_total = 0
             self._host_input_queued_at_ms.clear()
@@ -308,7 +302,7 @@ class LockstepRuntime(msgspec.Struct):
             self.last_desync_kind = ""
             self.last_desync_expected = ""
             self.last_desync_actual = ""
-            self._last_desync_notice_sent_tick = -10**9
+    
             self._client_log_forward_queue.clear()
             self._client_log_forward_last_flush_ms = 0
             self._client_log_forward_dropped = 0
@@ -497,26 +491,6 @@ class LockstepRuntime(msgspec.Struct):
             actual=str(actual),
         )
 
-        # Best-effort: send a notice to the host so both logs can be correlated.
-        if str(self.cfg.role) != "join":
-            return
-        if str(kind) != "command_hash":
-            return
-        if (int(tick_index) - int(self._last_desync_notice_sent_tick)) < 60:
-            return
-        self._last_desync_notice_sent_tick = int(tick_index)
-        try:
-            self._client_send(
-                DesyncNotice(
-                    tick_index=int(tick_index),
-                    expected_command_hash=str(expected),
-                    actual_command_hash=str(actual),
-                ),
-                reliable=True,
-                now_ms=_now_ms(),
-            )
-        except OSError:
-            return
 
     def _set_client_error(self, reason: str) -> None:
         if self.error:
@@ -677,20 +651,27 @@ class LockstepRuntime(msgspec.Struct):
         self._client_input_queued_at_ms[int(target_tick)] = int(now_ms)
         self._client_send(batch, reliable=False, now_ms=int(now_ms))
 
-    def pop_perk_event(self) -> PerkMenuOpen | PerkMenuClose | PerkPick | None:
-        if not self._client_perk_events:
-            return None
-        return self._client_perk_events.popleft()
-
     def pop_tick_frame(self) -> TickFrame | None:
         if str(self.cfg.role) == "host":
-            if not self.host_ready_frames:
+            if not self.host_ready_ticks:
                 return None
-            return self.host_ready_frames.popleft()
+            ready = self.host_ready_ticks.popleft()
+            commands = list(self._pending_host_commands)
+            self._pending_host_commands.clear()
+            return TickFrame(
+                tick_index=int(ready.tick_index),
+                frame_inputs=[list(packed) for packed in ready.frame_inputs],
+                commands=commands,
+            )
         lockstep = self.client_lockstep
         if lockstep is None:
             return None
         return lockstep.pop_canonical_frame()
+
+    def submit_local_command(self, command: GameCommand) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        self._pending_host_commands.append(command)
 
     def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None:
         if str(self.cfg.role) != "host":
@@ -698,46 +679,6 @@ class LockstepRuntime(msgspec.Struct):
         if now_ms is None:
             now_ms = _now_ms()
         self._host_broadcast(frame, reliable=True, now_ms=int(now_ms))
-
-    def broadcast_perk_menu_open(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
-        if str(self.cfg.role) != "host":
-            return
-        if now_ms is None:
-            now_ms = _now_ms()
-        self._host_broadcast(
-            PerkMenuOpen(tick_index=int(tick_index), player_index=int(player_index)),
-            reliable=True,
-            now_ms=int(now_ms),
-        )
-
-    def broadcast_perk_menu_close(self, *, tick_index: int, player_index: int = 0, now_ms: int | None = None) -> None:
-        if str(self.cfg.role) != "host":
-            return
-        if now_ms is None:
-            now_ms = _now_ms()
-        self._host_broadcast(
-            PerkMenuClose(tick_index=int(tick_index), player_index=int(player_index)),
-            reliable=True,
-            now_ms=int(now_ms),
-        )
-
-    def broadcast_perk_pick(
-        self,
-        *,
-        tick_index: int,
-        player_index: int = 0,
-        choice_index: int,
-        now_ms: int | None = None,
-    ) -> None:
-        if str(self.cfg.role) != "host":
-            return
-        if now_ms is None:
-            now_ms = _now_ms()
-        self._host_broadcast(
-            PerkPick(tick_index=int(tick_index), player_index=int(player_index), choice_index=int(choice_index)),
-            reliable=True,
-            now_ms=int(now_ms),
-        )
 
     def update(self, *, now_ms: int | None = None) -> None:
         if now_ms is None:
@@ -816,12 +757,10 @@ class LockstepRuntime(msgspec.Struct):
                     reason=str(self.error),
                 )
                 return
-            status_hash = hash_status_snapshot(status_snapshot)
             self.host_seed = int((_now_ms() * 1103515245 + 12345) & 0xFFFFFFFF)
             event = lobby.start_match(
                 seed=int(self.host_seed),
                 status_snapshot=status_snapshot,
-                status_hash=str(status_hash),
             )
             self.started = True
             self.host_match_start = event
@@ -837,7 +776,6 @@ class LockstepRuntime(msgspec.Struct):
                 start_tick=int(event.start_tick),
                 quest_level=str(event.quest_level or ""),
                 preserve_bugs=bool(event.preserve_bugs),
-                status_hash=str(status_hash),
                 status_quest_unlock_index=int(status_snapshot.quest_unlock_index),
                 status_quest_unlock_index_full=int(status_snapshot.quest_unlock_index_full),
                 tick_rate=int(self.cfg.tick_rate),
@@ -862,7 +800,7 @@ class LockstepRuntime(msgspec.Struct):
                         self._host_local_input_latency_ewma_ms = float(
                             self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1,
                         )
-                self.host_ready_frames.append(frame)
+                self.host_ready_ticks.append(frame)
 
         # Resend reliable packets.
         for addr, peer in self.host_peers.items():
@@ -889,9 +827,6 @@ class LockstepRuntime(msgspec.Struct):
         if lobby is None:
             return
         if isinstance(message, KeepAlive):
-            return
-        if isinstance(message, PerkMenuOpen) or isinstance(message, PerkMenuClose) or isinstance(message, PerkPick):
-            # Host is authoritative for perk events; ignore unexpected client packets.
             return
         if isinstance(message, Hello):
             lan_debug_log(
@@ -957,23 +892,6 @@ class LockstepRuntime(msgspec.Struct):
             if bool(lobby.started):
                 self._abort_host_match(reason="peer_disconnect", now_ms=int(now_ms), addr=addr)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
-            return
-        if isinstance(message, DesyncNotice):
-            lan_debug_log(
-                "net_recv",
-                role="host",
-                kind="desync_notice",
-                addr=f"{addr[0]}:{addr[1]}",
-                tick_index=int(message.tick_index),
-                expected_command_hash=str(message.expected_command_hash or ""),
-                actual_command_hash=str(message.actual_command_hash or ""),
-            )
-            self.note_desync(
-                kind="command_hash",
-                tick_index=int(message.tick_index),
-                expected=str(message.expected_command_hash or ""),
-                actual=str(message.actual_command_hash or ""),
-            )
             return
         if isinstance(message, DebugLogBatch):
             mapped_slot = lobby.slot_for_addr(addr)
@@ -1051,8 +969,7 @@ class LockstepRuntime(msgspec.Struct):
                     addr=f"{addr[0]}:{addr[1]}",
                     reliable=bool(reliable),
                     tick_index=int(tick),
-                    command_hash=str(message.command_hash or ""),
-                    state_hash=str(message.state_hash or ""),
+                    command_count=len(message.commands),
                 )
             return
         if isinstance(message, PauseState):
@@ -1064,40 +981,6 @@ class LockstepRuntime(msgspec.Struct):
                 reliable=bool(reliable),
                 paused=bool(message.paused),
                 reason=str(message.reason or ""),
-            )
-            return
-        if isinstance(message, PerkMenuOpen):
-            lan_debug_log(
-                "net_send",
-                role="host",
-                kind="perk_menu_open",
-                addr=f"{addr[0]}:{addr[1]}",
-                reliable=bool(reliable),
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-            )
-            return
-        if isinstance(message, PerkMenuClose):
-            lan_debug_log(
-                "net_send",
-                role="host",
-                kind="perk_menu_close",
-                addr=f"{addr[0]}:{addr[1]}",
-                reliable=bool(reliable),
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-            )
-            return
-        if isinstance(message, PerkPick):
-            lan_debug_log(
-                "net_send",
-                role="host",
-                kind="perk_pick",
-                addr=f"{addr[0]}:{addr[1]}",
-                reliable=bool(reliable),
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-                choice_index=int(message.choice_index),
             )
             return
         kind = type(message).__name__
@@ -1203,37 +1086,6 @@ class LockstepRuntime(msgspec.Struct):
             return
         if isinstance(message, KeepAlive):
             return
-        if isinstance(message, PerkMenuOpen):
-            lan_debug_log(
-                "net_recv",
-                role="join",
-                kind="perk_menu_open",
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-            )
-            self._client_perk_events.append(message)
-            return
-        if isinstance(message, PerkMenuClose):
-            lan_debug_log(
-                "net_recv",
-                role="join",
-                kind="perk_menu_close",
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-            )
-            self._client_perk_events.append(message)
-            return
-        if isinstance(message, PerkPick):
-            lan_debug_log(
-                "net_recv",
-                role="join",
-                kind="perk_pick",
-                tick_index=int(message.tick_index),
-                player_index=int(message.player_index),
-                choice_index=int(message.choice_index),
-            )
-            self._client_perk_events.append(message)
-            return
         if isinstance(message, Welcome):
             lan_debug_log(
                 "net_recv",
@@ -1323,7 +1175,6 @@ class LockstepRuntime(msgspec.Struct):
                 start_tick=int(message.start_tick),
                 quest_level=str(message.quest_level or ""),
                 preserve_bugs=bool(message.preserve_bugs),
-                status_hash=str(message.status_hash or ""),
                 status_quest_unlock_index=int(status_unlock),
                 status_quest_unlock_index_full=int(status_unlock_full),
             )
@@ -1380,19 +1231,6 @@ class LockstepRuntime(msgspec.Struct):
                     reason=str(self.error),
                 )
                 return
-            expected_hash = str(message.status_hash or "")
-            if expected_hash:
-                actual_hash = hash_status_snapshot(status_snapshot)
-                if str(actual_hash) != str(expected_hash):
-                    self._set_client_error("match_start_status_hash_mismatch")
-                    lan_debug_log(
-                        "net_sanity_mismatch",
-                        role="join",
-                        kind="match_start_status_hash",
-                        expected=str(expected_hash),
-                        actual=str(actual_hash),
-                    )
-                    return
 
             lobby.ingest_match_start(message)
             self.started = True
@@ -1424,10 +1262,9 @@ class LockstepRuntime(msgspec.Struct):
                     role="join",
                     kind="tick_frame",
                     tick_index=int(tick),
-                    command_hash=str(message.command_hash or ""),
-                    state_hash=str(message.state_hash or ""),
+                    command_count=len(message.commands),
                 )
-            lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
+            lockstep.ingest_tick_frame(message, now_ms=int(now_ms))
             queued_at = self._client_input_queued_at_ms.pop(int(tick), None)
             if queued_at is not None:
                 latency_ms = max(0, int(now_ms) - int(queued_at))
@@ -1537,7 +1374,7 @@ class LockstepRuntime(msgspec.Struct):
 
             capture_tick = int(self.host_capture_tick)
             emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
-            ready_frames = len(self.host_ready_frames)
+            ready_frames = len(self.host_ready_ticks)
             buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
             target_lead_ticks = int(capture_tick) + int(delay_ticks) - int(emit_tick)
 
@@ -1610,7 +1447,8 @@ class LockstepRuntime(msgspec.Struct):
             input_delay_ticks=int(self.cfg.input_delay_ticks),
         )
         self.host_capture_tick = 0
-        self.host_ready_frames.clear()
+        self.host_ready_ticks.clear()
+        self._pending_host_commands.clear()
 
         # Prime initial ticks (0..delay-1) with neutral inputs so the match can start immediately.
         delay = max(0, int(self.cfg.input_delay_ticks))

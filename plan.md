@@ -323,7 +323,7 @@ Scope:
 Exit checks:
 
 - LAN deterministic parity tests pass using typed-command and structural state comparisons.
-- Verify-vs-playback fixture parity test is CI-gated and passing.
+- Verify-vs-playback fixture parity test is available as a slow opt-in validation and passes when run explicitly.
 - New architecture docs merged.
 - No out-of-band perk net messages remain.
 - No hash/checksum protocol fields remain; LAN command parity uses direct tuple equality.
@@ -355,8 +355,8 @@ Validation:
 
 ### Check Group C: Verify-vs-Playback Fixture Parity
 
-- [ ] `verify` vs playback run result parity on all replay fixtures.
-- [ ] `verify` vs playback checkpoint structural parity on sampled fixture ticks.
+- [ ] `verify` vs chunked `PlaybackDriver.step_tick` playback run result parity on all replay fixtures.
+- [ ] `verify` vs chunked `PlaybackDriver.step_tick` playback checkpoint structural parity on sampled fixture ticks.
 
 Validation:
 

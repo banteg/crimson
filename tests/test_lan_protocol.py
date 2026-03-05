@@ -9,12 +9,11 @@ from crimson.net.lockstep_protocol import (
     KeepAlive,
     LockstepPacket,
     PauseState,
-    PerkMenuClose,
-    PerkMenuOpen,
-    PerkPick,
+    TickFrame,
     decode_packet,
     encode_packet,
 )
+from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 
 
 def test_packet_msgpack_round_trip() -> None:
@@ -56,12 +55,17 @@ def test_debug_log_batch_msgpack_round_trip() -> None:
     assert decoded.message.lines == ["test line\n"]
 
 
-def test_lan_perk_and_keepalive_messages_round_trip() -> None:
+def test_lan_tick_frame_and_keepalive_messages_round_trip() -> None:
     messages = [
         KeepAlive(tick_index=42),
-        PerkMenuOpen(tick_index=123, player_index=0),
-        PerkMenuClose(tick_index=124, player_index=0),
-        PerkPick(tick_index=125, player_index=0, choice_index=2),
+        TickFrame(
+            tick_index=123,
+            frame_inputs=[[0.0, 0.0, 1.0, 2.0, 3]],
+            commands=[
+                PerkMenuOpenCommand(player_index=0),
+                PerkPickCommand(player_index=0, choice_index=2),
+            ],
+        ),
     ]
 
     for idx, message in enumerate(messages, start=1):
@@ -72,7 +76,7 @@ def test_lan_perk_and_keepalive_messages_round_trip() -> None:
 
 
 def test_protocol_constants_match_spec() -> None:
-    assert protocol.PROTOCOL_VERSION == 3
+    assert protocol.PROTOCOL_VERSION == 5
     assert protocol.DEFAULT_PORT == 31993
     assert protocol.TICK_RATE == 60
     assert protocol.INPUT_DELAY_TICKS == 1
@@ -80,7 +84,6 @@ def test_protocol_constants_match_spec() -> None:
     assert protocol.RELIABLE_RESEND_MS == 40
     assert protocol.LINK_TIMEOUT_MS == 1000
     assert protocol.INPUT_STALL_TIMEOUT_MS == 250
-    assert protocol.STATE_HASH_PERIOD_TICKS == 120
 
 
 def test_current_build_id_falls_back_to_package_version(mocker) -> None:

@@ -10,12 +10,9 @@ from .playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackSessionConfigs,
     PlaybackSessionDefaults,
     PlaybackTimingConfig,
     QuestSessionConfig,
-    RushSessionConfig,
-    SurvivalSessionConfig,
     TickRngTraceObserver,
 )
 from .setup import ReplayRunnerError, RunResult
@@ -62,20 +59,13 @@ def run_replay(
             clear_fx_queues_each_tick=True,
             game_tune_started=False,
         ),
-        sessions=PlaybackSessionConfigs(
-            survival=SurvivalSessionConfig(),
-            rush=RushSessionConfig(
-                enforce_loadout=True,
-            ),
-            quest=QuestSessionConfig(
-                disable_capture_spawn_events_authoritative=True,
-                finalize_post_render_lifecycle_each_tick=True,
-                result_uses_spawn_timeline_ms=True,
-                spawn_entries=spawn_entries,
-                quest_stage_major=quest_stage_major,
-                quest_stage_minor=quest_stage_minor,
-                start_weapon_id=start_weapon_id,
-            ),
+        quest=QuestSessionConfig(
+            disable_capture_spawn_events_authoritative=True,
+            result_uses_spawn_timeline_ms=True,
+            spawn_entries=spawn_entries,
+            quest_stage_major=quest_stage_major,
+            quest_stage_minor=quest_stage_minor,
+            start_weapon_id=start_weapon_id,
         ),
     )
 

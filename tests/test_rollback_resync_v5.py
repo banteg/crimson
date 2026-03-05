@@ -63,7 +63,7 @@ def test_resync_message_build_and_assembler_round_trip() -> None:
     assert rebuilt == payload
 
 
-def test_resync_assembler_rejects_checksum_mismatch() -> None:
+def test_resync_assembler_rejects_commit_tick_mismatch() -> None:
     payload = encode_mode_snapshot(
         snapshot=QuestsStateSnapshotV2(
             tick_index=12,
@@ -86,8 +86,7 @@ def test_resync_assembler_rejects_checksum_mismatch() -> None:
 
     broken_commit = type(stream.commit)(
         request_id=stream.commit.request_id,
-        snapshot_tick=stream.commit.snapshot_tick,
-        payload_sha256="0" * 64,
+        snapshot_tick=stream.commit.snapshot_tick + 1,
     )
     with pytest.raises(RollbackResyncV5Error):
         assembler.finalize(broken_commit)

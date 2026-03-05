@@ -9,7 +9,6 @@ from .lockstep_protocol import (
     INPUT_STALL_TIMEOUT_MS,
     MAX_PLAYERS,
     RELIABLE_RESEND_MS,
-    STATE_HASH_PERIOD_TICKS,
     TICK_RATE,
     StatusSnapshot,
     build_git_hash,
@@ -149,7 +148,6 @@ class RbResyncBegin(msgspec.Struct, tag="rb_resync_begin", forbid_unknown_fields
     total_chunks: int = 0
     compressed_size: int = 0
     uncompressed_size: int = 0
-    payload_sha256: str = ""
 
 
 class RbResyncChunk(msgspec.Struct, tag="rb_resync_chunk", forbid_unknown_fields=True):
@@ -161,7 +159,6 @@ class RbResyncChunk(msgspec.Struct, tag="rb_resync_chunk", forbid_unknown_fields
 class RbResyncCommit(msgspec.Struct, tag="rb_resync_commit", forbid_unknown_fields=True):
     request_id: str = ""
     snapshot_tick: int = 0
-    payload_sha256: str = ""
 
 
 class LockstepInputBatch(msgspec.Struct, tag="lockstep_state_input_batch", forbid_unknown_fields=True):
@@ -228,7 +225,6 @@ __all__ = [
     "RESYNC_MAX_SNAPSHOT_BYTES",
     "ROLLBACK_MAX_TICKS",
     "ROOM_CODE_LENGTH",
-    "STATE_HASH_PERIOD_TICKS",
     "TICK_RATE",
     "ClientHello",
     "ClientWelcome",

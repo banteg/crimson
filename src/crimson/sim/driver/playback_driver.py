@@ -37,7 +37,6 @@ from ..sessions import (
     survival_mid_step,
 )
 from ..step_pipeline import DeterministicStepResult
-from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
@@ -164,19 +163,8 @@ class PlaybackSessionDefaults:
 
 
 @dataclass(slots=True, frozen=True)
-class SurvivalSessionConfig:
-    pass
-
-
-@dataclass(slots=True, frozen=True)
-class RushSessionConfig:
-    enforce_loadout: bool = True
-
-
-@dataclass(slots=True, frozen=True)
 class QuestSessionConfig:
     disable_capture_spawn_events_authoritative: bool = True
-    finalize_post_render_lifecycle_each_tick: bool = True
     result_uses_spawn_timeline_ms: bool = True
     spawn_entries: tuple[SpawnEntry, ...] | None = None
     quest_stage_major: int | None = None
@@ -185,25 +173,17 @@ class QuestSessionConfig:
 
 
 @dataclass(slots=True, frozen=True)
-class PlaybackSessionConfigs:
-    survival: SurvivalSessionConfig = field(default_factory=SurvivalSessionConfig)
-    rush: RushSessionConfig = field(default_factory=RushSessionConfig)
-    quest: QuestSessionConfig = field(default_factory=QuestSessionConfig)
-
-
-@dataclass(slots=True, frozen=True)
 class PlaybackDriverConfig:
     timing: PlaybackTimingConfig = field(default_factory=PlaybackTimingConfig)
     world: PlaybackWorldConfig = field(default_factory=PlaybackWorldConfig)
     session_defaults: PlaybackSessionDefaults = field(default_factory=PlaybackSessionDefaults)
-    sessions: PlaybackSessionConfigs = field(default_factory=PlaybackSessionConfigs)
+    quest: QuestSessionConfig = field(default_factory=QuestSessionConfig)
 
 
 @dataclass(slots=True)
 class PlaybackTickOutcome:
     tick_index: int
     dt_tick: float
-    dt_tick_ms_i32: int | None
     commands: list[GameCommand]
     world: WorldState
     step: DeterministicStepResult
@@ -393,7 +373,6 @@ class PlaybackDriver:
     def _build_mode_runtime(self, *, apply_world_dt_steps: bool) -> PlaybackModeRuntime:
         damage_scale_by_type = build_damage_scale_by_type()
         defaults = self.config.session_defaults
-        sessions = self.config.sessions
         match self.mode_id:
             case GameMode.SURVIVAL:
                 survival_spawn = SurvivalSpawnState()
@@ -417,9 +396,7 @@ class PlaybackDriver:
                     session=session,
                 )
             case GameMode.RUSH:
-                rush_config = sessions.rush
-                if bool(rush_config.enforce_loadout):
-                    enforce_rush_loadout(self.world)
+                enforce_rush_loadout(self.world)
                 rush_spawn = RushSpawnState()
                 session = DeterministicSession(
                     world=self.world,
@@ -436,16 +413,14 @@ class PlaybackDriver:
                     finalize_post_render_lifecycle=True,
                     elapsed_uses_raw_dt=True,
                     mid_step_hook=lambda ctx: rush_mid_step(ctx, rush_spawn),
-                    before_step_hook=(lambda: enforce_rush_loadout(self.world))
-                    if bool(rush_config.enforce_loadout)
-                    else None,
+                    before_step_hook=lambda: enforce_rush_loadout(self.world),
                     input_transform=rush_input_transform,
                 )
                 return SimplePlaybackRuntime(
                     session=session,
                 )
             case GameMode.QUESTS:
-                quest_config = sessions.quest
+                quest_config = self.config.quest
                 spawn_entries, quest_stage_major, quest_stage_minor, start_weapon_id = self._resolve_quest_setup(
                     quest_config,
                 )
@@ -478,7 +453,7 @@ class PlaybackDriver:
                     demo_mode_active=bool(self.world.state.demo_mode_active),
                     apply_world_dt_steps=bool(apply_world_dt_steps),
                     clear_fx_queues_each_tick=bool(defaults.clear_fx_queues_each_tick),
-                    finalize_post_render_lifecycle=bool(quest_config.finalize_post_render_lifecycle_each_tick),
+                    finalize_post_render_lifecycle=True,
                     post_step_hook=lambda ctx: quest_post_step(ctx, quest_state),
                 )
                 return QuestPlaybackRuntime(
@@ -549,11 +524,9 @@ class PlaybackDriver:
                 for _ in range(draws):
                     state.rng.rand()
 
-            dt_tick_ms_i32 = max(0, int(ftol_ms_i32(float(meta.dt_tick))))
             outcome = PlaybackTickOutcome(
                 tick_index=int(tick_index),
                 dt_tick=float(meta.dt_tick),
-                dt_tick_ms_i32=int(dt_tick_ms_i32),
                 commands=tick_result.commands,
                 world=self.world,
                 step=step,
@@ -625,17 +598,16 @@ class PlaybackDriver:
         tick_rng_trace_observer: TickRngTraceObserver | None = None,
         tick_begin_observer: TickBeginObserver | None = None,
         tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
-        ) -> RunResult:
+    ) -> RunResult:
         tick_limit = int(self.tick_limit)
         for tick_index in range(tick_limit):
-            outcome = self.step_tick(tick_index)
-
             if tick_begin_observer is not None:
                 tick_begin_observer(
-                    int(outcome.tick_index),
-                    outcome.world,
-                    float(outcome.dt_tick),
+                    int(tick_index),
+                    self.world,
+                    float(self.replay.ticks[tick_index].dt),
                 )
+            outcome = self.step_tick(tick_index)
 
             if tick_rng_trace_observer is not None:
                 tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))

@@ -8,7 +8,6 @@ from .lockstep_protocol import (
     MAX_PLAYERS,
     PROTOCOL_VERSION,
     RELIABLE_RESEND_MS,
-    STATE_HASH_PERIOD_TICKS,
     TICK_RATE,
 )
 from .lockstep_runtime import LockstepRuntime, LockstepRuntimeConfig
@@ -41,7 +40,6 @@ __all__ = [
     "RelayServerConfig",
     "ResyncAssembler",
     "ResyncBuildError",
-    "STATE_HASH_PERIOD_TICKS",
     "TICK_RATE",
     "UdpTransport",
     "build_resync_messages",

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import gzip
 import io
 import math
-import os
 from pathlib import Path
 
 import msgspec
+import zstandard as zstd
 
 from ..math_parity import f32
 from .types import (
@@ -20,9 +19,9 @@ from .types import (
     ReplayTick,
 )
 
-_GZIP_MAGIC = b"\x1f\x8b"
-_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
-_MAX_REPLAY_PAYLOAD_ENV = "CRIMSON_REPLAY_MAX_DECOMPRESSED_BYTES"
+_ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES = 256 * 1024 * 1024
+_REPLAY_ZSTD_LEVEL = 19
 
 _REPLAY_DECODER = msgspec.msgpack.Decoder(type=Replay)
 
@@ -31,32 +30,19 @@ class ReplayCodecError(ValueError):
     pass
 
 
-def _is_gzip(data: bytes) -> bool:
-    return data.startswith(_GZIP_MAGIC)
+def _is_zstd(data: bytes) -> bool:
+    return data.startswith(_ZSTD_MAGIC)
 
 
-def _max_replay_payload_bytes() -> int:
-    raw = os.environ.get(_MAX_REPLAY_PAYLOAD_ENV)
-    if raw is None:
-        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
+def _decompress_zstd_replay(data: bytes, *, max_output_bytes: int) -> bytes:
     try:
-        parsed = int(raw)
-    except ValueError:
-        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
-    if parsed <= 0:
-        return int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
-    return int(parsed)
-
-
-def _decompress_gzip_replay(data: bytes, *, max_output_bytes: int) -> bytes:
-    try:
-        with gzip.GzipFile(fileobj=io.BytesIO(data), mode="rb") as stream:
+        with zstd.ZstdDecompressor().stream_reader(io.BytesIO(data)) as stream:
             payload = stream.read(int(max_output_bytes) + 1)
-    except OSError as exc:
-        raise ReplayCodecError("invalid replay gzip payload") from exc
+    except zstd.ZstdError as exc:
+        raise ReplayCodecError("invalid replay zstd payload") from exc
     if len(payload) > int(max_output_bytes):
         raise ReplayCodecError(
-            f"replay payload too large after gzip decompression (> {int(max_output_bytes)} bytes)",
+            f"replay payload too large after zstd decompression (> {int(max_output_bytes)} bytes)",
         )
     return payload
 
@@ -155,10 +141,7 @@ def _validate_tick_dt(dt: float, *, tick_idx: int) -> float:
 
 
 def dump_replay(replay: Replay) -> bytes:
-    """Serialize a replay as a gzipped msgpack blob.
-
-    The gzip header is written with mtime=0 for stable content hashing.
-    """
+    """Serialize a replay as a zstd-compressed msgpack blob."""
 
     _validate_header(replay.header, from_load=False)
 
@@ -183,13 +166,13 @@ def dump_replay(replay: Replay) -> bytes:
             ticks=normalized_ticks,
         ),
     )
-    return gzip.compress(raw, compresslevel=9, mtime=0)
+    return zstd.ZstdCompressor(level=_REPLAY_ZSTD_LEVEL).compress(raw)
 
 
 def load_replay(data: bytes) -> Replay:
-    max_payload_bytes = int(_max_replay_payload_bytes())
-    if _is_gzip(data):
-        data = _decompress_gzip_replay(data, max_output_bytes=max_payload_bytes)
+    max_payload_bytes = int(_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES)
+    if _is_zstd(data):
+        data = _decompress_zstd_replay(data, max_output_bytes=max_payload_bytes)
     if len(data) > int(max_payload_bytes):
         raise ReplayCodecError(f"replay payload too large (> {int(max_payload_bytes)} bytes)")
 

@@ -25,7 +25,6 @@ class FakePlaybackDriver:
         return PlaybackTickOutcome(
             tick_index=int(tick_index),
             dt_tick=1.0 / 60.0,
-            dt_tick_ms_i32=16,
             commands=[],
             world=WorldState.build(
                 world_size=1024.0,

@@ -173,7 +173,6 @@ class HostLobby(msgspec.Struct):
         seed: int,
         start_tick: int = 0,
         status_snapshot: StatusSnapshot | None = None,
-        status_hash: str = "",
     ) -> MatchStart:
         self.started = True
         return match_start_from_session_settings(
@@ -182,7 +181,6 @@ class HostLobby(msgspec.Struct):
             seed=int(seed),
             start_tick=int(start_tick),
             status_snapshot=status_snapshot,
-            status_hash=str(status_hash or ""),
         )
 
 

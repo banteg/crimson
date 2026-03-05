@@ -25,9 +25,9 @@ if TYPE_CHECKING:
     from ..sim.driver.replay_render import ReplayRenderPhase
     from ..sim.driver.setup import RunResult
 
-_REPLAY_VERIFY_SCHEMA_VERSION = 1
-_REPLAY_INFO_SCHEMA_VERSION = 1
-_REPLAY_BENCHMARK_SCHEMA_VERSION = 2
+_REPLAY_VERIFY_SCHEMA_VERSION = 2
+_REPLAY_INFO_SCHEMA_VERSION = 2
+_REPLAY_BENCHMARK_SCHEMA_VERSION = 3
 _REPLAY_VERIFY_SCORE_MISMATCH_EXIT_CODE = 3
 
 
@@ -152,7 +152,6 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
 
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
-    typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
     typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
     typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
@@ -238,7 +237,6 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     status: str
     replay: str
-    replay_sha256: str
     run_result: _RunResultPayload
     header_claim: _ReplayVerifyHeaderClaimPayload | None
     score_claim: _ReplayVerifyScoreClaimPayload | None
@@ -268,7 +266,6 @@ class _ReplayInfoPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     status: str
     replay: str
-    replay_sha256: str
     summary: _ReplayInfoSummaryPayload
     timeline: list[_ReplayInfoEventPayload]
 
@@ -377,7 +374,6 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
     schema_version: int
     status: str
     replay: str
-    replay_sha256: str
     settings: _ReplayBenchmarkSettingsPayload
     run_result: _RunResultPayload
     benchmark: _ReplayBenchmarkSummaryPayload
@@ -808,8 +804,6 @@ def cmd_replay_verify(
     ),
 ) -> None:
     """Headlessly simulate a replay and report resulting run stats."""
-    import hashlib
-
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_runner import ReplayRunnerError, run_replay
 
@@ -822,7 +816,6 @@ def cmd_replay_verify(
         raise typer.Exit(code=1)
 
     replay_bytes = Path(replay_path).read_bytes()
-    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
     try:
         replay = load_replay(replay_bytes)
         result = run_replay(
@@ -890,7 +883,6 @@ def cmd_replay_verify(
         schema_version=int(_REPLAY_VERIFY_SCHEMA_VERSION),
         status=str(status),
         replay=str(replay_path),
-        replay_sha256=str(replay_sha256),
         run_result=_run_result_payload(result),
         header_claim=header_claim_payload,
         score_claim=None,
@@ -962,8 +954,6 @@ def cmd_replay_info(
     ),
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
-    import hashlib
-
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_info import event_counts_by_kind, run_replay_info
     from ..sim.driver.replay_runner import ReplayRunnerError
@@ -977,7 +967,6 @@ def cmd_replay_info(
         raise typer.Exit(code=1)
 
     replay_bytes = Path(replay_path).read_bytes()
-    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
     try:
         replay = load_replay(replay_bytes)
         result = run_replay_info(
@@ -1015,7 +1004,6 @@ def cmd_replay_info(
         schema_version=int(_REPLAY_INFO_SCHEMA_VERSION),
         status="ok",
         replay=str(replay_path),
-        replay_sha256=str(replay_sha256),
         summary=summary_payload,
         timeline=timeline_payload,
     )
@@ -1128,8 +1116,6 @@ def cmd_replay_benchmark(
     ),
 ) -> None:
     """Benchmark replay throughput, with optional profiler hotspots."""
-    import hashlib
-
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_benchmark import (
         ReplayBenchmarkError,
@@ -1147,7 +1133,6 @@ def cmd_replay_benchmark(
         raise typer.Exit(code=1)
 
     replay_bytes = Path(replay_path).read_bytes()
-    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
     resolved_runs = int(runs) if runs is not None else (1 if str(mode) == "render" else 5)
     resolved_warmup_runs = int(warmup_runs) if warmup_runs is not None else (0 if str(mode) == "render" else 1)
     if str(mode) != "render":
@@ -1265,7 +1250,6 @@ def cmd_replay_benchmark(
         schema_version=int(_REPLAY_BENCHMARK_SCHEMA_VERSION),
         status="ok",
         replay=str(replay_path),
-        replay_sha256=str(replay_sha256),
         settings=_ReplayBenchmarkSettingsPayload(
             mode=str(mode),
             runs=int(resolved_runs),
@@ -1530,8 +1514,6 @@ def cmd_replay_verify_checkpoints(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    import hashlib
-
     from ..dbg.checkpoint_diff import compare_checkpoints
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..replay.checkpoints import (
@@ -1550,7 +1532,6 @@ def cmd_replay_verify_checkpoints(
         raise typer.Exit(code=1)
 
     replay_bytes = Path(replay_path).read_bytes()
-    replay_sha256 = hashlib.sha256(replay_bytes).hexdigest()
     try:
         replay = load_replay(replay_bytes)
     except ReplayCodecError as exc:
@@ -1570,12 +1551,6 @@ def cmd_replay_verify_checkpoints(
     except ReplayCheckpointsError as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
-    if expected.replay_sha256 and str(expected.replay_sha256) != str(replay_sha256):
-        mismatch = (
-            f"checkpoints replay_sha256 mismatch (checkpoints={expected.replay_sha256!r}, replay={replay_sha256!r})"
-        )
-        typer.echo(f"replay verification failed: {mismatch}", err=True)
-        raise typer.Exit(code=1)
 
     checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
     actual = []

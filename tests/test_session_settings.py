@@ -84,7 +84,6 @@ def test_lockstep_session_settings_roundtrip_with_welcome_and_match_start() -> N
         seed=12345,
         start_tick=7,
         status_snapshot=LockstepStatusSnapshot(quest_unlock_index=4, quest_unlock_index_full=9),
-        status_hash="hash123",
     )
     assert isinstance(start, MatchStart)
     assert start.mode_id == 2

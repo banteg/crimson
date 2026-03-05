@@ -60,13 +60,9 @@ class CheckpointDeepDiff(msgspec.Struct, frozen=True):
 def _checkpoint_to_obj(
     checkpoint: ReplayCheckpoint,
     *,
-    include_hash_fields: bool,
     include_rng_fields: bool,
 ) -> dict[str, object]:
     obj = msgspec.to_builtins(checkpoint)
-    if not include_hash_fields:
-        for key in ("state_hash",):
-            obj.pop(key, None)
     if not include_rng_fields:
         for key in ("rng_state", "rng_marks"):
             obj.pop(key, None)
@@ -116,11 +112,11 @@ def compare_checkpoints(
                 ),
             )
 
-        if str(exp.state_hash) == str(act.state_hash):
+        if exp == act:
             continue
 
-        exp_no_rng = _checkpoint_to_obj(exp, include_hash_fields=False, include_rng_fields=False)
-        act_no_rng = _checkpoint_to_obj(act, include_hash_fields=False, include_rng_fields=False)
+        exp_no_rng = _checkpoint_to_obj(exp, include_rng_fields=False)
+        act_no_rng = _checkpoint_to_obj(act, include_rng_fields=False)
         if exp_no_rng == act_no_rng:
             if first_rng_only_tick is None:
                 first_rng_only_tick = tick

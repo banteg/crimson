@@ -41,15 +41,22 @@ def _assets_dir() -> Path:
 
 class _MockLockstepRuntime:
     def __init__(self) -> None:
+        self._pending_commands: list[GameCommand] = []
         self._commands_by_peer_and_tick: dict[str, dict[int, list[GameCommand]]] = {
             "host": {},
             "client": {},
         }
 
-    def broadcast_command(self, *, tick_index: int, command: GameCommand) -> None:
-        self._commands_by_peer_and_tick["client"].setdefault(int(tick_index), []).append(command)
+    def submit_local_command(self, command: GameCommand) -> None:
+        self._pending_commands.append(command)
 
     def pull_commands(self, *, peer: str, tick_index: int) -> list[GameCommand]:
+        tick = int(tick_index)
+        if tick not in self._commands_by_peer_and_tick["host"] and self._pending_commands:
+            commands = list(self._pending_commands)
+            self._pending_commands.clear()
+            for target in self._commands_by_peer_and_tick:
+                self._commands_by_peer_and_tick[target][tick] = list(commands)
         return list(self._commands_by_peer_and_tick[str(peer)].pop(int(tick_index), []))
 
 
@@ -142,10 +149,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         player_count=1,
         resolve_tick_input=lambda _tick: list(tick_input),
         resolve_tick_commands=lambda tick: runtime.pull_commands(peer="host", tick_index=int(tick)),
-        emit_tick_command=lambda tick, command: runtime.broadcast_command(
-            tick_index=int(tick),
-            command=command,
-        ),
+        submit_command=runtime.submit_local_command,
     )
     client_provider = NetworkInputProvider(
         player_count=1,

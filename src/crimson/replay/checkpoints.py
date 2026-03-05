@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import hashlib
-import os
+import io
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol, cast
 
 import msgspec
+import zstandard as zstd
 
 from grim.geom import Vec2
 
@@ -31,9 +31,11 @@ class _EventsLike(Protocol):
     pickups: list[object]
     sfx: list[str]
 
-FORMAT_VERSION = 2
-_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 64 * 1024 * 1024
-_MAX_CHECKPOINTS_PAYLOAD_ENV = "CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES"
+FORMAT_VERSION = 3
+DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
+_ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
+_CHECKPOINTS_ZSTD_LEVEL = 19
 
 
 class ReplayCheckpointsError(ValueError):
@@ -58,7 +60,6 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     perk_pending: int
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
-    state_hash: str = ""
     rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
@@ -90,21 +91,8 @@ class ReplayEventSummary(msgspec.Struct, frozen=True):
 
 class ReplayCheckpoints(msgspec.Struct, frozen=True):
     version: int
-    replay_sha256: str
     sample_rate: int
     checkpoints: list[ReplayCheckpoint] = msgspec.field(default_factory=list)
-
-
-def _replay_player_checkpoint_to_obj(player: ReplayPlayerCheckpoint) -> dict[str, object]:
-    return {
-        "pos": {"x": float(player.pos.x), "y": float(player.pos.y)},
-        "health": float(player.health),
-        "weapon_id": int(player.weapon_id),
-        "ammo": float(player.ammo),
-        "experience": int(player.experience),
-        "level": int(player.level),
-    }
-
 
 _CHECKPOINTS_ENCODER = msgspec.msgpack.Encoder()
 _CHECKPOINTS_DECODER = msgspec.msgpack.Decoder(type=ReplayCheckpoints)
@@ -115,28 +103,21 @@ def default_checkpoints_path(replay_path: Path) -> Path:
     return replay_path.with_name(f"{replay_path.name}.chk")
 
 
-def resolve_checkpoint_sample_rate(default_rate: int) -> int:
-    rate = max(1, int(default_rate))
-    raw = os.environ.get("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE")
-    if raw is None:
-        return rate
-    try:
-        return max(1, int(raw))
-    except ValueError:
-        return rate
+def _is_zstd(data: bytes) -> bool:
+    return bytes(data).startswith(_ZSTD_MAGIC)
 
 
-def _max_checkpoints_payload_bytes() -> int:
-    raw = os.environ.get(_MAX_CHECKPOINTS_PAYLOAD_ENV)
-    if raw is None:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
+def _decompress_zstd_checkpoints(data: bytes, *, max_output_bytes: int) -> bytes:
     try:
-        parsed = int(raw)
-    except ValueError:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
-    if parsed <= 0:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
-    return int(parsed)
+        with zstd.ZstdDecompressor().stream_reader(io.BytesIO(data)) as stream:
+            payload = stream.read(int(max_output_bytes) + 1)
+    except zstd.ZstdError as exc:
+        raise ReplayCheckpointsError("invalid checkpoints zstd payload") from exc
+    if len(payload) > int(max_output_bytes):
+        raise ReplayCheckpointsError(
+            f"checkpoints payload too large after zstd decompression (> {int(max_output_bytes)} bytes)",
+        )
+    return payload
 
 
 def _bonus_timer_ms(value: float) -> int:
@@ -232,49 +213,6 @@ def build_checkpoint(
         sfx_head=[str(key) for key in sfx[:4]],
     )
 
-    # Hash a full-ish snapshot for faster comparisons than deep diffs.
-    hash_obj = {
-        "rng_state": int(state.rng.state),
-        "score_xp": int(score_xp),
-        "kills": int(kills),
-        "perk_pending": int(state.perk_selection.pending_count),
-        "players": [_replay_player_checkpoint_to_obj(player) for player in player_ckpts],
-        "creatures": [
-            {
-                "type_id": int(creature.type_id),
-                **creature.pos.to_dict(ndigits=4),
-                "hp": round(creature.hp, 4),
-                "active": bool(creature.active),
-            }
-            for creature in world.creatures.entries
-            if creature.active
-        ],
-        "bonuses": [
-            {
-                "bonus_id": int(bonus.bonus_id),
-                "pos": bonus.pos.to_dict(ndigits=4),
-                "time_left": round(bonus.time_left, 4),
-                "picked": bool(bonus.picked),
-                "amount": int(bonus.amount),
-            }
-            for bonus in state.bonus_pool.iter_active()
-        ],
-        "projectiles": [
-            {
-                "type_id": int(proj.type_id),
-                "x": round(proj.pos.x, 4),
-                "y": round(proj.pos.y, 4),
-                "active": bool(proj.active),
-            }
-            for proj in state.projectiles.entries
-            if proj.active
-        ],
-        "bonus_timers": dict(bonus_timers),
-    }
-    state_hash = hashlib.sha256(
-        msgspec.msgpack.encode(hash_obj),
-    ).hexdigest()[:16]
-
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
@@ -285,7 +223,6 @@ def build_checkpoint(
         perk_pending=int(state.perk_selection.pending_count),
         players=player_ckpts,
         bonus_timers=bonus_timers,
-        state_hash=str(state_hash),
         rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,
@@ -294,12 +231,15 @@ def build_checkpoint(
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    return _CHECKPOINTS_ENCODER.encode(checkpoints)
+    raw = _CHECKPOINTS_ENCODER.encode(checkpoints)
+    return zstd.ZstdCompressor(level=_CHECKPOINTS_ZSTD_LEVEL).compress(raw)
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:
-    max_payload_bytes = int(_max_checkpoints_payload_bytes())
+    max_payload_bytes = int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
     payload = bytes(data)
+    if _is_zstd(payload):
+        payload = _decompress_zstd_checkpoints(payload, max_output_bytes=max_payload_bytes)
     if len(payload) > int(max_payload_bytes):
         raise ReplayCheckpointsError(f"checkpoints payload too large (> {int(max_payload_bytes)} bytes)")
     try:

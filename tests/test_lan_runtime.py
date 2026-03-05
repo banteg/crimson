@@ -22,8 +22,10 @@ from crimson.net.lockstep_runtime import (
     JoinLockstepRuntimeConfig,
     LockstepRuntime,
 )
+from crimson.net.lockstep_state import HostReadyTick
 from crimson.net.reliable import ReliableLink
 from crimson.net.transport import UdpTransport
+from crimson.sim.input_providers import PerkPickCommand
 
 
 def test_join_hello_retries_keep_reliable_backlog_bounded() -> None:
@@ -76,6 +78,33 @@ def test_host_does_not_track_unknown_non_hello_packets(mocker) -> None:
     assert lobby is not None
     assert addr not in lobby.peers_by_addr
     runtime.close()
+
+
+def test_host_pop_tick_frame_attaches_pending_commands_to_first_canonical_frame() -> None:
+    runtime = LockstepRuntime(
+        HostLockstepRuntimeConfig(
+            mode_id=1,
+            player_count=2,
+            bind_host="127.0.0.1",
+            host_ip="",
+            port=0,
+            sim_status_snapshot=StatusSnapshot(),
+        ),
+    )
+    runtime.host_ready_ticks.append(HostReadyTick(tick_index=7, frame_inputs=[[0.0, 0.0, 0.0, 0.0, 0]]))
+    runtime.host_ready_ticks.append(HostReadyTick(tick_index=8, frame_inputs=[[1.0, 0.0, 0.0, 0.0, 0]]))
+    command = PerkPickCommand(player_index=0, choice_index=2)
+    runtime.submit_local_command(command)
+
+    frame0 = runtime.pop_tick_frame()
+    frame1 = runtime.pop_tick_frame()
+
+    assert frame0 is not None
+    assert frame0.tick_index == 7
+    assert frame0.commands == [command]
+    assert frame1 is not None
+    assert frame1.tick_index == 8
+    assert frame1.commands == []
 
 
 def test_host_timeout_aborts_started_match() -> None:
