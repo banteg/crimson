@@ -566,6 +566,32 @@ def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
     assert result.exit_code == 0
 
 
+def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
+    import crimson.sim.driver.replay_info as replay_info_mod
+
+    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
+    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
+    runner = CliRunner()
+    real_step_tick = replay_info_mod.PlaybackDriver.step_tick
+
+    def _step_tick_with_weapon_change(self, tick_index: int):
+        self.world.players[0].weapon.weapon_id = WeaponId.ASSAULT_RIFLE
+        return real_step_tick(self, tick_index)
+
+    mocker.patch.object(
+        replay_info_mod.PlaybackDriver,
+        "step_tick",
+        autospec=True,
+        side_effect=_step_tick_with_weapon_change,
+    )
+
+    result = runner.invoke(app, ["replay", "info", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert any(event["kind"] == "weapon_change" for event in payload["timeline"])
+
+
 def test_replay_info_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")

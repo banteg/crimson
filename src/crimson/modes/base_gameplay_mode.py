@@ -4,7 +4,6 @@ import datetime as dt
 import hashlib
 import random
 import time
-from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,10 +27,6 @@ from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
 from ..net.deterministic_status import build_lan_deterministic_status
 from ..net.lockstep_protocol import (
-    STATE_HASH_PERIOD_TICKS,
-    PerkMenuClose,
-    PerkMenuOpen,
-    PerkPick,
     TickFrame,
 )
 from ..net.lockstep_runtime import LockstepRuntime
@@ -80,7 +75,6 @@ from ..sim.input_providers import (
     InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
-    PerkMenuOpenCommand,
     PerkPickCommand,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -162,7 +156,6 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._runtime: LanRuntime | None = None
         self._role: str = ""
         self._samples_by_runner_tick: dict[int, LanFrameSample] = {}
-        self._pending_perk_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = deque()
         self._before_pop: Callable[[], bool] | None = None
         self._pop_blocked = False
         self._capture_clock = FixedStepClock(tick_rate=max(1, int(tick_rate)))
@@ -170,12 +163,10 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
             player_count=player_count,
             resolve_tick_input=self._resolve_tick_input,
             resolve_tick_commands=self.resolve_tick_commands,
-            emit_tick_command=self.emit_tick_command,
         )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
         self._runtime = runtime
-        self._pending_perk_events.clear()
         self._samples_by_runner_tick.clear()
         self._pop_blocked = False
 
@@ -226,63 +217,15 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._samples_by_runner_tick[int(tick_index)] = LanFrameSample(
             frame_tick_index=int(frame_tick_index),
             frame_inputs=tuple(frame_inputs),
-            remote_state_hash=str(frame.state_hash or ""),
+            commands=tuple(frame.commands),
         )
         return player_inputs
 
     def resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        runtime = self._runtime
-        if isinstance(runtime, LockstepRuntime):
-            while True:
-                event = runtime.pop_perk_event()
-                if event is None:
-                    break
-                self._pending_perk_events.append(event)
-
         sample = self._samples_by_runner_tick.get(int(tick_index))
         if sample is None:
             return []
-
-        frame_tick_index = int(sample.frame_tick_index)
-        commands: list[GameCommand] = []
-        future_events: deque[PerkMenuOpen | PerkMenuClose | PerkPick] = deque()
-        while self._pending_perk_events:
-            event = self._pending_perk_events.popleft()
-            event_tick_index = int(event.tick_index)
-            if event_tick_index > int(frame_tick_index):
-                future_events.append(event)
-                continue
-            if isinstance(event, PerkPick):
-                commands.append(
-                    PerkPickCommand(
-                        player_index=int(event.player_index),
-                        choice_index=int(event.choice_index),
-                    ),
-                )
-        self._pending_perk_events = future_events
-        return commands
-
-    def emit_tick_command(self, tick_index: int, command: GameCommand) -> None:
-        if str(self._role) != "host":
-            return
-        runtime = self._runtime
-        if not isinstance(runtime, LockstepRuntime):
-            return
-        sample = self._samples_by_runner_tick.get(int(tick_index))
-        if sample is None:
-            return
-        frame_tick_index = int(sample.frame_tick_index)
-        match command:
-            case PerkPickCommand(player_index=pi, choice_index=ci):
-                runtime.broadcast_perk_pick(
-                    tick_index=int(frame_tick_index),
-                    player_index=int(pi),
-                    choice_index=int(ci),
-                )
-            case PerkMenuOpenCommand():
-                pass  # local-only, no network broadcast needed
-            case _:
-                raise RuntimeError(f"unhandled command type: {type(command).__name__}")
+        return list(sample.commands)
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -1544,26 +1487,13 @@ class BaseGameplayMode:
         return LanSyncCallbacks(
             role=str(role),
             take_frame_sample=provider.take_frame_sample,
-            state_hash_for_tick=lambda frame_tick_index, tick_result: self._lan_state_hash_from_tick_result(
-                frame_tick_index=int(frame_tick_index),
-                result=tick_result,
-            ),
-            should_emit_state_hash=lambda frame_tick_index: self._lan_should_emit_state_hash(
-                tick_index=int(frame_tick_index),
-            ),
-            note_desync=lambda kind, tick_index, expected, actual: runtime.note_desync(
-                kind=str(kind),
-                tick_index=int(tick_index),
-                expected=str(expected),
-                actual=str(actual),
-            ),
             broadcast_tick_frame=(
                 (
-                    lambda frame_tick_index, frame_inputs, state_hash: lockstep_runtime.broadcast_tick_frame(
+                    lambda frame_tick_index, frame_inputs, commands: lockstep_runtime.broadcast_tick_frame(
                         TickFrame(
                             tick_index=int(frame_tick_index),
                             frame_inputs=[list(packed) for packed in frame_inputs],
-                            state_hash=str(state_hash),
+                            commands=list(commands),
                         ),
                     )
                 )
@@ -1652,8 +1582,6 @@ class BaseGameplayMode:
         tick_result.lan_sync = LanTickSync(
             frame_tick_index=int(sample.frame_tick_index),
             frame_inputs=tuple(sample.frame_inputs),
-            remote_state_hash=str(sample.remote_state_hash),
-            host_state_hash="",
         )
 
     @staticmethod
@@ -1666,31 +1594,14 @@ class BaseGameplayMode:
         if sync is None:
             raise RuntimeError("lan tick result missing frame metadata")
         frame_tick_index = int(sync.frame_tick_index)
-        remote_state_hash = str(sync.remote_state_hash)
-        host_state_hash = ""
         role = str(callbacks.role)
-
-        if role == "join":
-            if remote_state_hash:
-                local_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
-                if local_state_hash != remote_state_hash:
-                    callbacks.note_desync("state_hash", int(frame_tick_index), remote_state_hash, local_state_hash)
-        elif role == "host" and bool(callbacks.should_emit_state_hash(int(frame_tick_index))):
-            host_state_hash = str(callbacks.state_hash_for_tick(int(frame_tick_index), tick_result))
-
-        tick_result.lan_sync = LanTickSync(
-            frame_tick_index=int(frame_tick_index),
-            frame_inputs=tuple(sync.frame_inputs),
-            remote_state_hash=str(remote_state_hash),
-            host_state_hash=str(host_state_hash),
-        )
 
         broadcast = callbacks.broadcast_tick_frame
         if role == "host" and broadcast is not None:
             broadcast(
                 int(frame_tick_index),
                 tuple(sync.frame_inputs),
-                str(host_state_hash),
+                tuple(tick_result.commands),
             )
 
     def _record_replay_checkpoint_from_tick(
@@ -1789,34 +1700,6 @@ class BaseGameplayMode:
         if role == "host" and (not bool(runtime.host_remote_inputs_ready())):
             return None
         return role
-
-    def _lan_state_hash_for_tick(
-        self,
-        *,
-        tick_index: int,
-        elapsed_ms: float,
-        creature_count_world_step: int,
-    ) -> str:
-        return str(
-            build_checkpoint(
-                tick_index=int(tick_index),
-                world=self.sim_world.world_state,
-                elapsed_ms=float(elapsed_ms),
-                creature_count_override=int(creature_count_world_step),
-            ).state_hash,
-        )
-
-    @staticmethod
-    def _lan_should_emit_state_hash(*, tick_index: int) -> bool:
-        return int(tick_index) < 5 or (int(tick_index) % int(STATE_HASH_PERIOD_TICKS)) == 0
-
-    def _lan_state_hash_from_tick_result(self, *, frame_tick_index: int, result: TickResult) -> str:
-        tick = result.payload
-        return self._lan_state_hash_for_tick(
-            tick_index=int(frame_tick_index),
-            elapsed_ms=float(tick.elapsed_ms),
-            creature_count_world_step=int(tick.creature_count_world_step),
-        )
 
     def _queue_lan_local_inputs(
         self,

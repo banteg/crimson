@@ -6,7 +6,15 @@ import pytest
 
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.replay import load_replay_file
-from crimson.replay.checkpoints import load_checkpoints_file
+from crimson.replay.checkpoints import build_checkpoint, load_checkpoints_file
+from crimson.sim.driver.playback_driver import (
+    PlaybackDriver,
+    PlaybackDriverConfig,
+    PlaybackDriverOptions,
+    PlaybackSessionDefaults,
+    PlaybackTimingConfig,
+    QuestSessionConfig,
+)
 from crimson.sim.driver.replay_runner import run_replay
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "replays"
@@ -19,6 +27,73 @@ _REPLAY_CASES = (
     ("quest_1.5_20260303_211620_completed_t40512.crd", 2685, 23818, 19),
     ("quest_2.10_20260305_201829_completed_t51600.crd", 3378, 132062, 762),
 )
+_PLAYBACK_CHUNK_PATTERN = (1, 7, 31, 256)
+
+
+def _sample_tick_indexes(total_ticks: int) -> set[int]:
+    if total_ticks <= 0:
+        return set()
+    last_tick = int(total_ticks) - 1
+    return {
+        0,
+        int(last_tick // 3),
+        int((last_tick * 2) // 3),
+        int(last_tick),
+    }
+
+
+def _build_verify_driver(*, replay):
+    return PlaybackDriver(
+        replay,
+        PlaybackDriverOptions(
+            trace_rng=False,
+            version_mismatch_action="verification",
+        ),
+        config=PlaybackDriverConfig(
+            timing=PlaybackTimingConfig(),
+            session_defaults=PlaybackSessionDefaults(
+                clear_fx_queues_each_tick=True,
+                game_tune_started=False,
+            ),
+            quest=QuestSessionConfig(
+                disable_capture_spawn_events_authoritative=True,
+                result_uses_spawn_timeline_ms=True,
+            ),
+        ),
+    )
+
+
+def _run_step_tick_playback(
+    *,
+    replay,
+    checkpoint_ticks: set[int],
+):
+    driver = _build_verify_driver(replay=replay)
+    playback_checkpoints = []
+    tick_index = 0
+    chunk_index = 0
+    tick_limit = int(driver.tick_limit)
+
+    while tick_index < tick_limit:
+        chunk_size = int(_PLAYBACK_CHUNK_PATTERN[chunk_index % len(_PLAYBACK_CHUNK_PATTERN)])
+        chunk_end = min(tick_limit, tick_index + chunk_size)
+        while tick_index < chunk_end:
+            outcome = driver.step_tick(tick_index)
+            if int(outcome.tick_index) in checkpoint_ticks:
+                playback_checkpoints.append(
+                    build_checkpoint(
+                        tick_index=int(outcome.tick_index),
+                        world=outcome.world,
+                        elapsed_ms=float(driver._mode_runtime.checkpoint_elapsed_ms(outcome)),
+                        rng_marks=outcome.rng_marks,
+                        deaths=outcome.step.events.deaths,
+                        events=outcome.step.events,
+                    ),
+                )
+            tick_index += 1
+        chunk_index += 1
+
+    return driver.build_run_result(ticks=tick_index), playback_checkpoints
 
 
 @pytest.mark.parametrize(
@@ -53,3 +128,38 @@ def test_replay_fixture_run_stats_and_checkpoint_parity(
     assert run_result.score_xp == int(expected_score_xp)
     assert run_result.creature_kill_count == int(expected_kills)
     assert diff.ok
+
+
+@pytest.mark.parametrize(
+    ("replay_name", "expected_ticks", "expected_score_xp", "expected_kills"),
+    _REPLAY_CASES,
+)
+def test_verify_vs_playback_parity(
+    replay_name: str,
+    expected_ticks: int,
+    expected_score_xp: int,
+    expected_kills: int,
+) -> None:
+    replay_path = FIXTURE_DIR / replay_name
+    if not replay_path.is_file():
+        pytest.skip(f"missing replay fixture: {replay_name}")
+
+    replay = load_replay_file(replay_path)
+    checkpoint_ticks = _sample_tick_indexes(len(replay.ticks))
+    verify_checkpoints = []
+    verify_result = run_replay(
+        replay,
+        checkpoints_out=verify_checkpoints,
+        checkpoint_ticks=checkpoint_ticks,
+    )
+    playback_result, playback_checkpoints = _run_step_tick_playback(
+        replay=replay,
+        checkpoint_ticks=checkpoint_ticks,
+    )
+    checkpoint_diff = compare_checkpoints(verify_checkpoints, playback_checkpoints)
+
+    assert verify_result.ticks == int(expected_ticks)
+    assert verify_result.score_xp == int(expected_score_xp)
+    assert verify_result.creature_kill_count == int(expected_kills)
+    assert playback_result == verify_result
+    assert checkpoint_diff.ok

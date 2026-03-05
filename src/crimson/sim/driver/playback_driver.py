@@ -598,17 +598,16 @@ class PlaybackDriver:
         tick_rng_trace_observer: TickRngTraceObserver | None = None,
         tick_begin_observer: TickBeginObserver | None = None,
         tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
-        ) -> RunResult:
+    ) -> RunResult:
         tick_limit = int(self.tick_limit)
         for tick_index in range(tick_limit):
-            outcome = self.step_tick(tick_index)
-
             if tick_begin_observer is not None:
                 tick_begin_observer(
-                    int(outcome.tick_index),
-                    outcome.world,
-                    float(outcome.dt_tick),
+                    int(tick_index),
+                    self.world,
+                    float(self.replay.ticks[tick_index].dt),
                 )
+            outcome = self.step_tick(tick_index)
 
             if tick_rng_trace_observer is not None:
                 tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))

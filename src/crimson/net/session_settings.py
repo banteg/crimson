@@ -146,7 +146,6 @@ def match_start_from_session_settings(
     seed: int,
     start_tick: int = 0,
     status_snapshot: LockstepStatusSnapshot | None = None,
-    status_hash: str = "",
 ) -> MatchStart:
     return MatchStart(
         session_id=str(session_id),
@@ -157,7 +156,6 @@ def match_start_from_session_settings(
         quest_level=str(settings.quest_level),
         preserve_bugs=bool(settings.preserve_bugs),
         status_snapshot=status_snapshot,
-        status_hash=str(status_hash or ""),
     )
 
 

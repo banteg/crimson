@@ -6,7 +6,6 @@ from ..replay.types import PackedPlayerInput
 from .lockstep_protocol import (
     INPUT_DELAY_TICKS,
     INPUT_STALL_TIMEOUT_MS,
-    STATE_HASH_PERIOD_TICKS,
     InputBatch,
     InputSample,
     PauseState,
@@ -22,7 +21,6 @@ class HostLockstepState(msgspec.Struct):
     player_count: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = INPUT_STALL_TIMEOUT_MS
-    state_hash_period_ticks: int = STATE_HASH_PERIOD_TICKS
     _inputs_by_tick: dict[int, dict[int, PackedPlayerInput]] = msgspec.field(default_factory=dict)
     _next_emit_tick: int = 0
     _last_progress_ms: int = 0
@@ -79,21 +77,17 @@ class HostLockstepState(msgspec.Struct):
         self,
         *,
         now_ms: int,
-        state_hash_by_tick: dict[int, str] | None = None,
     ) -> list[TickFrame]:
         frames: list[TickFrame] = []
         while self._tick_complete(int(self._next_emit_tick)):
             tick = int(self._next_emit_tick)
             tick_inputs = self._inputs_by_tick.pop(tick, {})
             ordered_inputs = [list(tick_inputs[slot]) for slot in range(int(self.player_count))]
-            state_hash = ""
-            if state_hash_by_tick is not None and (int(tick) % int(self.state_hash_period_ticks)) == 0:
-                state_hash = str(state_hash_by_tick.get(int(tick), ""))
             frames.append(
                 TickFrame(
                     tick_index=int(tick),
                     frame_inputs=ordered_inputs,
-                    state_hash=str(state_hash),
+                    commands=[],
                 ),
             )
             self._next_emit_tick += 1
@@ -187,7 +181,11 @@ class ClientLockstepState(msgspec.Struct):
 
     def ingest_tick_frame(self, frame: TickFrame, *, now_ms: int) -> None:
         tick = int(frame.tick_index)
-        self._canonical_by_tick[int(tick)] = frame
+        self._canonical_by_tick[int(tick)] = TickFrame(
+            tick_index=int(frame.tick_index),
+            frame_inputs=[list(item) for item in frame.frame_inputs],
+            commands=list(frame.commands),
+        )
         self._last_progress_ms = int(now_ms)
 
     def pop_canonical_frame(self) -> TickFrame | None:

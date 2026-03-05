@@ -572,7 +572,7 @@ class RollbackRuntime(msgspec.Struct):
                 TickFrame(
                     tick_index=int(frame.tick_index),
                     frame_inputs=[list(item) for item in frame.frame_inputs],
-                    state_hash="",
+                    commands=[],
                 ),
             )
 
@@ -602,7 +602,7 @@ class RollbackRuntime(msgspec.Struct):
                     TickFrame(
                         tick_index=int(frame.tick_index),
                         frame_inputs=[list(item) for item in frame.frame_inputs],
-                        state_hash="",
+                        commands=[],
                     ),
                 )
             self._frame_queue = rebuilt_queue

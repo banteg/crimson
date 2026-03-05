@@ -25,7 +25,6 @@ class HostLanAdapter(msgspec.Struct):
     player_count: int
     input_delay_ticks: int = INPUT_DELAY_TICKS
     input_stall_timeout_ms: int = 250
-    state_hash_period_ticks: int = 120
     local_slot_index: int = 0
     lockstep: HostLockstepState = cast(HostLockstepState, None)
     resync_failures: ResyncFailureTracker = msgspec.field(default_factory=ResyncFailureTracker)
@@ -35,7 +34,6 @@ class HostLanAdapter(msgspec.Struct):
             player_count=int(self.player_count),
             input_delay_ticks=int(self.input_delay_ticks),
             input_stall_timeout_ms=int(self.input_stall_timeout_ms),
-            state_hash_period_ticks=int(self.state_hash_period_ticks),
         )
 
     def submit_local_input(self, *, tick_index: int, packed_input: PackedPlayerInput) -> None:
@@ -52,11 +50,9 @@ class HostLanAdapter(msgspec.Struct):
         self,
         *,
         now_ms: int,
-        state_hash_by_tick: dict[int, str] | None = None,
     ) -> list[TickFrame]:
         return self.lockstep.pop_ready_frames(
             now_ms=int(now_ms),
-            state_hash_by_tick=state_hash_by_tick,
         )
 
     def update_pause_state(self, *, now_ms: int) -> PauseState | None:

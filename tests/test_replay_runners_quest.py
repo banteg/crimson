@@ -4,6 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
+from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions
 from crimson.sim.driver.replay_info import run_replay_info
 from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input_providers import PerkPickCommand
@@ -99,3 +100,27 @@ def test_quest_replay_info_elapsed_matches_run_replay() -> None:
     info = run_replay_info(replay)
 
     assert int(info.elapsed_ms) == int(run_result.elapsed_ms)
+
+
+def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
+    _header, rec = _blank_quest_replay(ticks=1, seed=101)
+    replay = rec.finish()
+    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    observed_before: list[int] = []
+    observed_after: list[int] = []
+
+    real_step_tick = driver.step_tick
+
+    def _step_tick_with_mutation(tick_index: int):
+        driver.world.players[0].experience = 99
+        return real_step_tick(tick_index)
+
+    mocker.patch.object(driver, "step_tick", side_effect=_step_tick_with_mutation)
+
+    driver.run_to_completion(
+        tick_begin_observer=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
+        tick_end_observer=lambda outcome: observed_after.append(int(outcome.world.players[0].experience)),
+    )
+
+    assert observed_before == [0]
+    assert observed_after == [99]

@@ -364,22 +364,9 @@ def _run_replay_info(
     driver = PlaybackDriver(replay, options, config=config)
 
     timeline: list[ReplayInfoTimelineEvent] = []
-    before_snapshots: list[_PlayerSnapshot] | None = None
 
-    def _on_tick_begin(
-        tick_index: int,
-        world,
-        dt_tick: float,
-    ) -> None:
-        _ = tick_index, dt_tick
-        nonlocal before_snapshots
-        before_snapshots = _capture_snapshots(world.players)
-
-    def _on_tick_end(outcome: PlaybackTickOutcome) -> None:
-        nonlocal before_snapshots
-        before = before_snapshots if before_snapshots is not None else _capture_snapshots(outcome.world.players)
+    def _append_tick(outcome: PlaybackTickOutcome, *, before: list[_PlayerSnapshot]) -> None:
         after = _capture_snapshots(outcome.world.players)
-        before_snapshots = None
 
         elapsed_ms = int(outcome.elapsed_ms)
         if mode != GameMode.RUSH:
@@ -427,10 +414,13 @@ def _run_replay_info(
             include_extra_events=include_extra_events,
         )
 
-    run_result = driver.run_to_completion(
-        tick_begin_observer=_on_tick_begin,
-        tick_end_observer=_on_tick_end,
-    )
+    tick_limit = int(driver.tick_limit)
+    for tick_index in range(tick_limit):
+        before = _capture_snapshots(driver.world.players)
+        outcome = driver.step_tick(tick_index)
+        _append_tick(outcome, before=before)
+
+    run_result = driver.build_run_result(ticks=tick_limit)
 
     return ReplayInfoResult(
         game_mode_id=mode,

@@ -19,7 +19,7 @@ from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingN
 from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
-from crimson.sim.input_providers import InputStatus
+from crimson.sim.input_providers import InputStatus, PerkPickCommand
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
 
@@ -101,7 +101,6 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                         lan_sync=LanTickSync(
                             frame_tick_index=0,
                             frame_inputs=([],),
-                            remote_state_hash="",
                         ),
                     ),
                 ],
@@ -201,22 +200,19 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         0: LanFrameSample(
             frame_tick_index=10,
             frame_inputs=([],),
-            remote_state_hash="",
+            commands=(),
         ),
         1: LanFrameSample(
             frame_tick_index=11,
             frame_inputs=([],),
-            remote_state_hash="",
+            commands=(),
         ),
     }
     broadcast_calls: list[int] = []
     callbacks = LanSyncCallbacks(
         role="host",
         take_frame_sample=lambda tick: sync_samples.pop(int(tick), None),
-        state_hash_for_tick=lambda _frame_tick_index, _result: "state-hash",
-        should_emit_state_hash=lambda _frame_tick_index: True,
-        note_desync=lambda *_args: None,
-        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _state_hash: broadcast_calls.append(
+        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _commands: broadcast_calls.append(
             int(frame_tick_index),
         ),
     )
@@ -243,6 +239,62 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     assert broadcast_calls == []
     # Tick 1 was not finalized and its sample should remain untouched.
     assert 1 in sync_samples
+
+
+def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    command = PerkPickCommand(player_index=0, choice_index=2)
+    tick = TickResult(
+        tick_index=0,
+        payload=make_tick_payload(elapsed_ms=16.67),
+        inputs=[],
+        commands=[command],
+    )
+    runner = FakeRunner(results=[
+        TickBatchResult(
+            ticks_completed=1,
+            batch_status=InputStatus.READY,
+            next_tick_index=1,
+            completed_results=[tick],
+        ),
+    ])
+    provider = _LanRuntimeInputProvider(
+        player_count=1,
+        tick_rate=60,
+    )
+    sync_samples = {
+        0: LanFrameSample(
+            frame_tick_index=10,
+            frame_inputs=([],),
+            commands=(),
+        ),
+    }
+    broadcast_calls: list[tuple[int, tuple[object, ...]]] = []
+    callbacks = LanSyncCallbacks(
+        role="host",
+        take_frame_sample=lambda tick: sync_samples.pop(int(tick), None),
+        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, commands: broadcast_calls.append(
+            (int(frame_tick_index), tuple(commands)),
+        ),
+    )
+    mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
+    mocker.patch.object(
+        mode,
+        "_ensure_tick_runner",
+        return_value=(runner, provider),
+    )
+
+    stop = mode._consume_lan_tick_frames(
+        runtime=object(),  # type: ignore[arg-type]
+        lockstep_runtime=None,
+        session=make_session()[0],
+        role="host",
+        dt_tick=1.0 / 60.0,
+        policy=LanFramePolicy(),
+    )
+
+    assert stop is False
+    assert broadcast_calls == [(10, (command,))]
 
 
 def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, mocker) -> None:

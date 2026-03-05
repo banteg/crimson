@@ -9,15 +9,12 @@ def test_host_lockstep_emits_canonical_frames_in_tick_order() -> None:
     host.submit_input_sample(slot_index=1, tick_index=0, packed_input=[1.0, 0.0, 2.0, 3.0, 7])
     host.submit_input_sample(slot_index=0, tick_index=0, packed_input=[-1.0, 0.0, 4.0, 5.0, 3])
 
-    frames = host.pop_ready_frames(
-        now_ms=1,
-        state_hash_by_tick={0: "state0"},
-    )
+    frames = host.pop_ready_frames(now_ms=1)
 
     assert [frame.tick_index for frame in frames] == [0]
     assert frames[0].frame_inputs[0] == [-1.0, 0.0, 4.0, 5.0, 3]
     assert frames[0].frame_inputs[1] == [1.0, 0.0, 2.0, 3.0, 7]
-    assert frames[0].state_hash == "state0"
+    assert frames[0].commands == []
 
 
 def test_host_lockstep_pauses_and_resumes_on_missing_input() -> None:

@@ -11,9 +11,10 @@ import msgspec
 
 from .. import __version__
 from ..replay.types import PackedPlayerInput
+from ..sim.input_providers import GameCommand
 from .schema_shared import PacketHeader, SlotState
 
-PROTOCOL_VERSION = 4
+PROTOCOL_VERSION = 5
 DEFAULT_PORT = 31993
 TICK_RATE = 60
 # LAN runs on a good network and doesn't need a large buffer; keeping this low
@@ -23,9 +24,6 @@ MAX_PLAYERS = 4
 RELIABLE_RESEND_MS = 40
 LINK_TIMEOUT_MS = 1000
 INPUT_STALL_TIMEOUT_MS = 250
-STATE_HASH_PERIOD_TICKS = 120
-
-
 _BUILD_ID_VERSION_RE = re.compile(r"^[vV]?\d+(?:\.\d+)+[A-Za-z0-9.\-_]*$")
 _BUILD_ID_GIT_HASH_RE = re.compile(r"^[0-9a-f]{7,40}$")
 
@@ -194,7 +192,6 @@ class MatchStart(msgspec.Struct, tag="match_start", forbid_unknown_fields=True):
     quest_level: str = ""
     preserve_bugs: bool = False
     status_snapshot: StatusSnapshot | None = None
-    status_hash: str = ""
 
 
 class InputSample(msgspec.Struct, forbid_unknown_fields=True):
@@ -210,7 +207,7 @@ class InputBatch(msgspec.Struct, tag="input_batch", forbid_unknown_fields=True):
 class TickFrame(msgspec.Struct, tag="tick_frame", forbid_unknown_fields=True):
     tick_index: int = 0
     frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
-    state_hash: str = ""
+    commands: list[GameCommand] = msgspec.field(default_factory=list)
 
 
 class PauseState(msgspec.Struct, tag="pause_state", forbid_unknown_fields=True):
@@ -222,28 +219,6 @@ class KeepAlive(msgspec.Struct, tag="keep_alive", forbid_unknown_fields=True):
     """Best-effort keepalive packet to prevent timeouts during stalls/pauses."""
 
     tick_index: int = 0
-
-
-class PerkMenuOpen(msgspec.Struct, tag="perk_menu_open", forbid_unknown_fields=True):
-    """Host-authored perk menu open event (deterministic, tick-indexed)."""
-
-    tick_index: int = -1
-    player_index: int = 0
-
-
-class PerkMenuClose(msgspec.Struct, tag="perk_menu_close", forbid_unknown_fields=True):
-    """Host-authored perk menu close/cancel event (deterministic, tick-indexed)."""
-
-    tick_index: int = -1
-    player_index: int = 0
-
-
-class PerkPick(msgspec.Struct, tag="perk_pick", forbid_unknown_fields=True):
-    """Host-authored perk pick event (deterministic, tick-indexed)."""
-
-    tick_index: int = -1
-    player_index: int = 0
-    choice_index: int = 0
 
 
 class DebugLogBatch(msgspec.Struct, tag="debug_log_batch", forbid_unknown_fields=True):
@@ -285,9 +260,6 @@ NetMessage: TypeAlias = (
     | TickFrame
     | PauseState
     | KeepAlive
-    | PerkMenuOpen
-    | PerkMenuClose
-    | PerkPick
     | DebugLogBatch
     | ResyncBegin
     | ResyncChunk
