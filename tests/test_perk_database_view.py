@@ -69,16 +69,13 @@ def test_prewrapped_perk_desc_uses_cache(mocker, make_game_state) -> None:
         "measure_small_text_width",
         side_effect=lambda _font, text, _scale: float(len(text)),
     )
-    mocker.patch.object(
-        UnlockedPerksDatabaseView,
-        "_perk_desc",
-        staticmethod(lambda _perk_id, *, gore_disabled=0, preserve_bugs=False: "alpha beta gamma"),
-    )
 
     view = UnlockedPerksDatabaseView(make_game_state(config_updates={"gore_disabled": 0}))
     fake_font = cast(SmallFontData, object())
     first = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, gore_disabled=0)
     count_after_first = measure_mock.call_count
+    cache_key = (int(PerkId.LONG_DISTANCE_RUNNER), 0, 0)
+    assert cache_key in view._wrapped_desc_cache
     second = view._prewrapped_perk_desc(PerkId.LONG_DISTANCE_RUNNER, fake_font, gore_disabled=0)
 
     assert first == second

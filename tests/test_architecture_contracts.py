@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import msgspec
+from builders import make_tick_payload
 
 import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -38,13 +38,6 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
-class _PlanIsolationTick(msgspec.Struct):
-    command_hash: str
-    dt_sim: float
-    presentation: PresentationStepCommands
-    presentation_plan_ms: float
-
-
 def _timing(dt: float) -> FrameTiming:
     return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
 
@@ -63,28 +56,19 @@ class _PlanIsolationSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-    ) -> _PlanIsolationTick:
+    ) -> DeterministicSessionTick:
         _ = timing, inputs, trace_rng
         player = self._sim_world.players[0]
         player.health = max(0.0, float(player.health) - 10.0)
         player.experience = int(player.experience) + 250
         tick_index = int(self._tick)
         self._tick += 1
-        return _PlanIsolationTick(
+        payload = make_tick_payload(
             command_hash=f"plan-{tick_index}",
             dt_sim=1.0 / 60.0,
-            presentation=PresentationStepCommands(
-                sfx_keys=["sfx_explosion", "sfx_ui_levelup"],
-            ),
-            presentation_plan_ms=0.0,
         )
-
-
-class _CommandFlowTick(msgspec.Struct):
-    command_hash: str
-    dt_sim: float
-    presentation: PresentationStepCommands
-    presentation_plan_ms: float
+        payload.step.presentation.sfx_keys.extend(["sfx_explosion", "sfx_ui_levelup"])
+        return payload
 
 
 class _CommandFlowSession:
@@ -112,16 +96,14 @@ class _CommandFlowSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-    ) -> _CommandFlowTick:
+    ) -> DeterministicSessionTick:
         _ = timing, inputs, trace_rng
         tick_index = int(self._tick)
         self._tick += 1
         perk_index = -1 if self.perk_pick_index is None else int(self.perk_pick_index)
-        return _CommandFlowTick(
+        return make_tick_payload(
             command_hash=f"{self.name}:{tick_index}:{perk_index}",
             dt_sim=1.0 / 60.0,
-            presentation=PresentationStepCommands(),
-            presentation_plan_ms=0.0,
         )
 
 
@@ -486,8 +468,8 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     assert draw_text.call_count == 0
 
     payload = batch.completed_results[0].payload
-    assert isinstance(payload, _PlanIsolationTick)
-    plan = payload.presentation
+    assert isinstance(payload, DeterministicSessionTick)
+    plan = payload.step.presentation
     audio_bridge.apply_plan(plan=plan, apply_audio=True)
 
     assert [str(call.args[1]) for call in play_sfx.call_args_list] == [

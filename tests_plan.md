@@ -30,9 +30,9 @@ Out of scope:
 ## Current Risk Snapshot
 
 Baseline indicators from suite scan:
-- `inspect.stack` usage: 1 file (`tests/test_architecture_contracts.py`)
-- `SimpleNamespace` usage: 22 test files
-- mock-heavy patterns: 67 test files
+- `inspect.stack` usage: 0 files
+- `SimpleNamespace` usage: 18 test files
+- mock-heavy patterns: 66 test files
 
 High-priority files:
 - `tests/test_architecture_contracts.py`
@@ -81,8 +81,8 @@ High-priority files:
 | `SimpleNamespace` in 3 target files | 34 | 0 | -34 |
 | `cast(Any, ...)` in 3 target files | 10 | 0 | -10 |
 | `cast(LanTickSync, ...)` in production | 2 | 0 | -2 |
-| `test_architecture_contracts.py` timing | 2.40s | 0.29s | -88% |
-| `test_runtime_pump_ownership.py` timing | 0.33s | 0.23s | -30% |
+| `test_architecture_contracts.py` timing | 2.40s | 0.21s | -91% |
+| `test_runtime_pump_ownership.py` timing | 0.33s | 0.22s | -33% |
 | `test_replay_playback_mode_timing.py` timing | 0.22s | 0.19s | -14% |
 | Shared typed builders in `tests/builders/` | 0 | 4 modules | +4 |
 
@@ -284,15 +284,15 @@ Invalid mock targets (refactor):
 | test_relay_service.py | 3 | keep | network I/O boundary |
 | test_net_runtime_resync.py | 3 | keep | network I/O boundary |
 | test_net_reconnect.py | 3 | keep | network I/O boundary |
-| test_resync_snapshot_apply.py | 2 | refactor | internal method mocks |
+| test_resync_snapshot_apply.py | 2 | keep | internal method patch removed; asserts reset state directly |
 | test_quest_results_layout.py | 2 | keep | GPU boundary; internal draw methods borderline |
-| test_perk_database_view.py | 2 | refactor | internal utility mocks |
+| test_perk_database_view.py | 2 | keep | cache test now avoids `_perk_desc` patch; width metric mock only |
 | test_net_runtime_heartbeat.py | 2 | keep | network I/O boundary |
 | test_game_over_sfx.py | 2 | keep | GPU/input boundary |
-| test_console_command_generateterrain.py | 2 | refactor | internal state management mocks |
-| test_replay_playback_mode_audio.py | 1 | defer | test infrastructure |
-| test_replay_runners_survival.py | 1 | refactor | internal implementation ordering |
-| test_game_tune_trigger.py | 1 | refactor | internal audio method mocks |
+| test_console_command_generateterrain.py | 2 | keep | no `ensure_menu_ground` patch; request consumed via live path |
+| test_replay_playback_mode_audio.py | 1 | keep | typed stubs + shared `FakeRunner` replace local fake infrastructure |
+| test_replay_runners_survival.py | 1 | keep | implementation-ordering patch tests replaced by behavior assertions |
+| test_game_tune_trigger.py | 1 | keep | patches moved to boundary audio functions instead of router internals |
 
 ## Phase 6: Contract Tightening For Typed Runtime Results
 

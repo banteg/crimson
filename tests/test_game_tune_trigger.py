@@ -29,7 +29,7 @@ def _hits(count: int) -> list[ProjectileHit]:
 
 def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
-    play_sfx = mocker.patch.object(AudioRouter, "play_sfx", autospec=True)
+    play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub())
 
     def rand() -> int:
@@ -39,26 +39,32 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
 
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rand"] is rand
-    assert play_sfx.call_args_list == [call(router, "sfx_bullet_hit_01")]
+    assert play_sfx.call_args_list == [call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0)]
 
 
 def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
-    play_sfx = mocker.patch.object(AudioRouter, "play_sfx", autospec=True)
+    play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub())
 
     router.play_hit_sfx(_hits(2), game_mode=GameMode.RUSH, rand=lambda: 0, beam_types=frozenset())
 
     trigger_game_tune.assert_not_called()
-    assert play_sfx.call_args_list == [call(router, "sfx_bullet_hit_01"), call(router, "sfx_bullet_hit_01")]
+    assert play_sfx.call_args_list == [
+        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+    ]
 
 
 def test_game_tune_not_triggered_in_demo(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
-    play_sfx = mocker.patch.object(AudioRouter, "play_sfx", autospec=True)
+    play_sfx = mocker.patch.object(audio_router, "play_sfx")
     router = AudioRouter(audio=_audio_state_stub(), demo_mode_active=True)
 
     router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rand=lambda: 0, beam_types=frozenset())
 
     trigger_game_tune.assert_not_called()
-    assert play_sfx.call_args_list == [call(router, "sfx_bullet_hit_01"), call(router, "sfx_bullet_hit_01")]
+    assert play_sfx.call_args_list == [
+        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+    ]
