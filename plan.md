@@ -13,6 +13,7 @@ Hard decisions for simplicity:
 - No replay backward compatibility.
 - No legacy event side-channel (`Replay.events`).
 - No stringly command payloads (`InputCommand.name/payload`).
+- No terminal tick event phase.
 - One tick orchestration path for live, replay verify, replay play, replay render, replay benchmark, and LAN.
 
 Core change:
@@ -69,7 +70,6 @@ import msgspec
 class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True):
     player_index: int
     choice_index: int
-    expected_perk_id: int | None = None
 
 GameCommand: TypeAlias = PerkPickCommand
 ```
@@ -146,7 +146,8 @@ Changes:
 2. Replace `inputs + dt + events` with `ticks: list[ReplayTick]`.
 3. Delete `PerkPickEvent`, `PerkMenuOpenEvent`, `ReplayEvent`.
 4. Delete dt-row logic in codec and runner contracts.
-5. Recorder writes commands inline per tick.
+5. Recorder writes commands inline per tick via append-only `record_tick(inputs, commands=...)`.
+6. Delete recorder random-access/event helper APIs (`record_tick_at`, `record_perk_pick`, `record_perk_menu_open`).
 
 ### 7.2 Input Provider and Runner Contracts
 
@@ -206,11 +207,12 @@ Update:
 
 Changes:
 
-1. Delete replay event partition/apply code paths.
-2. Delete `PlaybackEventConfig` replay-event semantics.
-3. Remove `terminal_events_use_resolved_dt` and related behavior.
-4. Playback mode delegates simulation stepping to the same driver engine as verify/info.
-5. Keep playback mode focused on presentation only.
+1. Collapse `PlaybackDriverConfig` to a minimal surface and remove per-caller policy matrix construction.
+2. Add canonical `PlaybackDriver.step_tick(...) -> PlaybackTickOutcome | None`.
+3. Make `run_to_completion` iterate via `step_tick` (no duplicate orchestration loop).
+4. Make `ReplayPlaybackMode` advance simulation via `PlaybackDriver.step_tick`.
+5. Delete replay event partition/apply code paths and terminal-event phase machinery completely.
+6. Keep playback mode focused on presentation only.
 
 ### 7.6 LAN Typed Command Parity
 
@@ -232,138 +234,109 @@ Delete completely:
 - `Replay.events` and related types/codec validation.
 - Replay event helpers (`sim/driver/replay_events.py`) and callers.
 - `InputCommand(name, payload)` string dictionary path.
+- `ReplayRecorder.record_tick_at`, `ReplayRecorder.record_perk_pick`, `ReplayRecorder.record_perk_menu_open`.
+- `PlaybackEventConfig`, `apply_terminal_events`, `_terminal_events_applied`, and other terminal-event code paths.
+- Duplicated per-entrypoint `PlaybackDriverConfig` policy matrices.
 - Mode-level `_apply_input_command` pattern for deterministic commands.
 - Replay timing/event knobs that existed only for split paths.
 
 ## 9. PR Slicing
 
-### PR-A: Type Foundations
+### PR-A: Typed Command Contract
 
 Scope:
 
 - Add typed command unions and packet types.
-- Introduce runner/provider API changes behind compile break.
+- Migrate providers, runner, and session signatures to typed packet flow.
+- Remove stringly command usage from deterministic runtime paths.
 
 Exit checks:
 
 - All callsites compile with new typed contracts.
-- No `InputCommand.name` string dispatch remains in touched paths.
+- Command application happens only in `DeterministicSession.step_tick`.
 
-### PR-B: Deterministic Session Command Phase
-
-Scope:
-
-- Apply commands in `DeterministicSession.step_tick`.
-- Hash command stream.
-
-Exit checks:
-
-- Live mode command effects still function.
-- Command hash changes when command stream changes.
-
-### PR-C: Replay v2 Format
+### PR-B: Replay v2 Schema + Recorder Simplification
 
 Scope:
 
 - Replace replay schema with `ticks[]`.
-- Codec/recorder/journal rewrite.
+- Codec/recorder/journal rewrite to replay v2 only.
+- Make recorder append-only via `record_tick(inputs, commands=...)`.
+- Regenerate replay fixtures/checkpoints in replay v2.
 
 Exit checks:
 
 - Replay roundtrip encode/decode works for new fixtures.
 - Loading old replay versions fails fast with clear error.
+- Recorder has no random-access/event helper APIs.
 
-### PR-D: Replay Runtime Unification
+### PR-C: Playback Driver Unification + Deletion Pass
 
 Scope:
 
-- Remove replay event plumbing from playback driver.
-- Route replay play through same deterministic stepping semantics as verify/info.
+- Collapse `PlaybackDriverConfig` surface.
+- Add canonical `PlaybackDriver.step_tick`.
+- Route both `run_to_completion` and playback mode through `step_tick`.
+- Delete replay-event and terminal-event machinery.
 
 Exit checks:
 
-- `replay verify` and playback-derived run result parity for fixtures.
-- No custom replay semantic branches in playback mode.
+- Replay play and verify share the same replay-tick execution method.
+- No replay-event/terminal-event branches remain in runtime code paths.
 
-### PR-E: LAN and Cleanup
+### PR-D: LAN + Guardrails
 
 Scope:
 
 - Move LAN command path to typed unions.
-- Delete legacy command/replay event code.
+- Delete remaining dynamic command plumbing and stale split-path code.
+- Add/refresh deterministic parity guardrails and docs.
 
 Exit checks:
 
 - LAN hash contract tests pass.
-- Deleted modules not referenced.
-
-### PR-F: Docs + Guardrails
-
-Scope:
-
-- Update docs and architecture contracts.
-- Add regression tests that enforce single-path semantics.
-
-Exit checks:
-
+- Verify-vs-playback fixture parity test is CI-gated and passing.
 - New architecture docs merged.
-- CI guards block reintroduction of split paths.
 
 ## 10. PRD Checks (Pass/Fail Gates)
 
-### Check Group A: Type Safety
+### Check Group A: Replay v2 + Type Safety
 
-- [ ] No `InputCommand(name: str, payload: dict)` in deterministic flow.
 - [ ] Deterministic command APIs accept only `GameCommand` union.
-- [ ] Replay schema has no `events` field.
+- [ ] Replay schema is `ticks[]` only (no `events`, no `dt` rows).
+- [ ] Recorder API is append-only.
 
 Validation:
 
-- `rg "InputCommand\\(|name=\"perk_pick\"|payload=" src`
 - `uv run ty`
+- `uv run pytest tests/test_replay_codec.py tests/test_replay_cli.py`
 
-### Check Group B: Single Orchestration
+### Check Group B: Single Replay Tick Engine
 
-- [ ] Replay verify/info/play use one deterministic tick orchestration contract.
-- [ ] Playback mode contains no replay event timing logic.
+- [ ] `PlaybackDriver.step_tick` is the canonical replay tick executor.
+- [ ] `run_to_completion` and `ReplayPlaybackMode` both execute replay ticks via `step_tick`.
+- [ ] Terminal-event phase is deleted.
 
 Validation:
 
-- Contract tests in `tests/test_architecture_contracts.py`
-- grep check for deleted replay-event functions in live code paths.
+- `uv run pytest tests/test_architecture_contracts.py`
 
-### Check Group C: Deterministic Parity
+### Check Group C: Verify-vs-Playback Fixture Parity
 
 - [ ] `verify` vs playback run result parity on all replay fixtures.
-- [ ] `verify` vs playback checkpoint/state-hash parity on sampled ticks.
+- [ ] `verify` vs playback checkpoint/state-hash parity on sampled fixture ticks.
+
+Validation:
+
+- `uv run pytest tests/test_replay_fixture_integrations.py --run-replay-fixtures -k verify_vs_playback_parity`
+
+### Check Group D: LAN Deterministic Parity
+
 - [ ] LAN host/join state hash parity unchanged.
 
 Validation:
 
-- `uv run pytest tests/test_replay_fixture_integrations.py --run-replay-fixtures`
-- `uv run pytest tests/test_architecture_contracts.py`
 - `uv run pytest tests/test_lan_* tests/test_net_* tests/test_relay_*`
-
-### Check Group D: Replay v2 Behavior
-
-- [ ] Recorder emits replay v2 only.
-- [ ] Old replay versions fail load with explicit unsupported-version error.
-- [ ] Replay CLI commands operate only on replay v2.
-
-Validation:
-
-- replay codec tests + CLI tests:
-- `uv run pytest tests/test_replay_codec.py tests/test_replay_cli.py`
-
-### Check Group E: Deletion Completeness
-
-- [ ] `sim/driver/replay_events.py` deleted.
-- [ ] No references to `PerkMenuOpenEvent` or `PerkPickEvent` in runtime replay execution.
-- [ ] No references to `terminal_events_use_resolved_dt`.
-
-Validation:
-
-- `rg "PerkMenuOpenEvent|PerkPickEvent|terminal_events_use_resolved_dt|replay_events"`
 
 ## 11. Risks and Mitigations
 
