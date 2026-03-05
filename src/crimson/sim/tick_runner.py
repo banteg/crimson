@@ -1,31 +1,11 @@
 from __future__ import annotations
 
-from typing import Protocol
-
 import msgspec
 
 from .hooks import TickResult
 from .input import PlayerInput
-from .input_providers import FrameContext, GameCommand, InputProvider, InputStatus
-from .timing import FrameTiming
-
-
-class TickPayload(Protocol):
-    dt_sim: float
-    presentation_plan_ms: float
-
-
-class TickSession(Protocol):
-    def timing_for_dt(self, dt: float) -> FrameTiming: ...
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-        commands: tuple[GameCommand, ...] = (),
-    ) -> TickPayload: ...
+from .input_providers import FrameContext, InputProvider, InputStatus
+from .sessions import DeterministicSession
 
 
 class TickRunnerConfig(msgspec.Struct, frozen=True):
@@ -43,7 +23,7 @@ class TickRunner:
     def __init__(
         self,
         *,
-        session: TickSession,
+        session: DeterministicSession,
         input_provider: InputProvider,
         config: TickRunnerConfig | None = None,
     ) -> None:

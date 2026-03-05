@@ -1,64 +1,12 @@
 from __future__ import annotations
 
-import msgspec
-import pytest
+from builders.input_providers import StallableInputProvider
+from builders.session import make_session
 
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import FrameContext, InputStatus
 from crimson.sim.tick_runner import TickBatchResult, TickRunner
-from crimson.sim.timing import FrameTiming
-
-
-class _FakeTick(msgspec.Struct):
-    dt_sim: float = 1.0 / 60.0
-    presentation_plan_ms: float = 0.0
-
-
-def _timing(dt: float) -> FrameTiming:
-    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
-
-
-class _MissingPresentationPlanMsTick(msgspec.Struct):
-    dt_sim: float = 1.0 / 60.0
-
-
-class _FixedInputProvider(InputProvider):
-    def __init__(self, *, rows: dict[int, list[PlayerInput] | None]) -> None:
-        self._rows = rows
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-        return
-
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        row = self._rows.get(int(tick_index), [PlayerInput()])
-        if row is None:
-            return TickInput(status=InputStatus.STALLED, inputs=[])
-        return TickInput(status=InputStatus.READY, inputs=list(row))
-
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        _ = tick_index
-        return []
-
-    def supports_commands(self) -> bool:
-        return False
-
-    def push_command(self, command: GameCommand) -> None:
-        _ = command
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        _ = tick_index
-        return default_dt
-
-
-class _FakeSession:
-    def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _timing(dt)
-
-    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
-        _ = timing, inputs, trace_rng, commands
-        return _FakeTick()
 
 
 def _advance_with_clock(
@@ -97,9 +45,10 @@ def _advance_with_clock(
 
 
 def test_tick_runner_completed_tick_result_shape() -> None:
+    session, _ = make_session()
     runner = TickRunner(
-        session=_FakeSession(),
-        input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
+        session=session,
+        input_provider=StallableInputProvider(rows={0: [PlayerInput()]}),
     )
     clock = FixedStepClock(tick_rate=60)
     frame_index = 0
@@ -118,14 +67,14 @@ def test_tick_runner_completed_tick_result_shape() -> None:
     assert len(result.completed_results) == 1
     tick = result.completed_results[0]
     assert tick.tick_index == 0
-    assert tick.tick_index == 0
     assert tick.inputs is not None
 
 
 def test_tick_runner_stall_sets_stalled_and_preserves_debt() -> None:
+    session, _ = make_session()
     runner = TickRunner(
-        session=_FakeSession(),
-        input_provider=_FixedInputProvider(rows={0: None}),
+        session=session,
+        input_provider=StallableInputProvider(rows={0: None}),
     )
     clock = FixedStepClock(tick_rate=60)
     frame_index = 0
@@ -142,30 +91,3 @@ def test_tick_runner_stall_sets_stalled_and_preserves_debt() -> None:
     assert result.ticks_completed == 0
     assert result.batch_status is InputStatus.STALLED
     assert int((clock.accum + 1e-9) / float(clock.dt_tick)) >= 1
-
-
-def test_tick_runner_fails_fast_when_tick_payload_attribute_missing() -> None:
-    class _SessionMissingAttr:
-        def timing_for_dt(self, dt: float) -> FrameTiming:
-            return _timing(dt)
-
-        def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _MissingPresentationPlanMsTick:
-            _ = timing, inputs, trace_rng, commands
-            return _MissingPresentationPlanMsTick()
-
-    runner = TickRunner(
-        session=_SessionMissingAttr(),  # type: ignore[arg-type]  # intentionally malformed
-        input_provider=_FixedInputProvider(rows={0: [PlayerInput()]}),
-    )
-    clock = FixedStepClock(tick_rate=60)
-    frame_index = 0
-    next_tick_index = 0
-
-    with pytest.raises(AttributeError, match="presentation_plan_ms"):
-        _advance_with_clock(
-            runner=runner,
-            clock=clock,
-            start_tick=next_tick_index,
-            frame_index=frame_index,
-            dt_seconds=1.0 / 60.0,
-        )

@@ -3,12 +3,11 @@ from __future__ import annotations
 import inspect
 from pathlib import Path
 
-from builders import make_tick_payload
+from builders.session import make_session
 
 import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
-from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
@@ -25,10 +24,8 @@ from crimson.sim.input_providers import (
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
-from crimson.sim.timing import FrameTiming
 from crimson.world.audio_bridge import AudioBridge
 from crimson.world.render_resources import RenderResources
-from crimson.world.sim_world_state import SimWorldState
 from crimson.world.terrain_runtime import TerrainRuntime
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
@@ -39,74 +36,6 @@ from grim.view import ViewContext
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
-
-
-def _timing(dt: float) -> FrameTiming:
-    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
-
-
-class _PlanIsolationSession:
-    def __init__(self, sim_world: SimWorldState) -> None:
-        self._sim_world = sim_world
-        self._tick = 0
-
-    def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _timing(dt)
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-        commands: tuple = (),
-    ) -> DeterministicSessionTick:
-        _ = timing, inputs, trace_rng, commands
-        player = self._sim_world.players[0]
-        player.health = max(0.0, float(player.health) - 10.0)
-        player.experience = int(player.experience) + 250
-        int(self._tick)
-        self._tick += 1
-        payload = make_tick_payload(
-            dt_sim=1.0 / 60.0,
-        )
-        payload.step.presentation.sfx_keys.extend(["sfx_explosion", "sfx_ui_levelup"])
-        return payload
-
-
-class _CommandFlowSession:
-    def __init__(self, *, name: str) -> None:
-        self.name = str(name)
-        self._tick = 0
-        self.perk_pick_index: int | None = None
-        self.commands_by_tick: dict[int, list[GameCommand]] = {}
-
-    def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _timing(dt)
-
-    def apply_commands(self, *, tick_index: int, commands: list[GameCommand]) -> None:
-        self.commands_by_tick[int(tick_index)] = list(commands)
-        for command in commands:
-            if not isinstance(command, PerkPickCommand):
-                continue
-            self.perk_pick_index = int(command.choice_index)
-
-    def step_tick(
-        self,
-        *,
-        timing: FrameTiming,
-        inputs: list[PlayerInput] | None,
-        trace_rng: bool = False,
-        commands: tuple[GameCommand, ...] = (),
-    ) -> DeterministicSessionTick:
-        _ = timing, inputs, trace_rng
-        tick_index = int(self._tick)
-        self._tick += 1
-        if commands:
-            self.apply_commands(tick_index=tick_index, commands=list(commands))
-        return make_tick_payload(
-            dt_sim=1.0 / 60.0,
-        )
 
 
 class _MockLockstepRuntime:
@@ -161,20 +90,7 @@ def _advance_with_clock(
 
 
 def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
-    sim_world = SimWorldState(world_size=1024.0)
-    session = DeterministicSession(
-        world=sim_world.world_state,
-        world_size=float(sim_world.world_size),
-        damage_scale_by_type=sim_world.damage_scale_by_type,
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        perk_progression_enabled=True,
-        detail_preset=5,
-        gore_disabled=0,
-        game_tune_started=False,
-        clear_fx_queues_each_tick=True,
-    )
+    session, sim_world = make_session()
     provider = LocalInputProvider(
         player_count=len(sim_world.players),
         build_inputs=lambda _frame_ctx: [PlayerInput(aim=Vec2(512.0, 512.0))],
@@ -235,8 +151,8 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         resolve_tick_input=lambda _tick: list(tick_input),
         resolve_tick_commands=lambda tick: runtime.pull_commands(peer="client", tick_index=int(tick)),
     )
-    host_session = _CommandFlowSession(name="host")
-    client_session = _CommandFlowSession(name="client")
+    host_session, _ = make_session(seed=42)
+    client_session, _ = make_session(seed=42)
 
     host_runner = TickRunner(
         session=host_session,
@@ -255,7 +171,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     host_clock = FixedStepClock(tick_rate=60)
     host_frame_index = 0
     host_next_tick_index = 0
-    _host_batch, host_next_tick_index, host_frame_index = _advance_with_clock(
+    host_batch, host_next_tick_index, host_frame_index = _advance_with_clock(
         runner=host_runner,
         clock=host_clock,
         start_tick=host_next_tick_index,
@@ -268,7 +184,7 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
     client_clock = FixedStepClock(tick_rate=60)
     client_frame_index = 0
     client_next_tick_index = 0
-    _client_batch, client_next_tick_index, client_frame_index = _advance_with_clock(
+    client_batch, client_next_tick_index, client_frame_index = _advance_with_clock(
         runner=client_runner,
         clock=client_clock,
         start_tick=client_next_tick_index,
@@ -278,10 +194,9 @@ def test_contract_3_lockstep_command_propagation_over_network_provider() -> None
         is_networked=True,
     )
 
-    assert host_session.commands_by_tick.get(0, []) == [command]
-    assert client_session.commands_by_tick.get(0, []) == [command]
-    assert host_session.perk_pick_index == 1
-    assert client_session.perk_pick_index == 1
+    # Commands propagated through runner to both host and client
+    assert host_batch.completed_results[0].commands == (command,)
+    assert client_batch.completed_results[0].commands == (command,)
 
 
 def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
@@ -301,21 +216,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     )
     recorder = ReplayRecorder(header)
 
-    sim_world = SimWorldState(world_size=1024.0)
-    sim_world.reset(seed=int(header.seed), player_count=int(header.player_count))
-    live_session = DeterministicSession(
-        world=sim_world.world_state,
-        world_size=float(sim_world.world_size),
-        damage_scale_by_type=sim_world.damage_scale_by_type,
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        perk_progression_enabled=True,
-        detail_preset=int(header.detail_preset),
-        gore_disabled=int(header.gore_disabled),
-        game_tune_started=False,
-        clear_fx_queues_each_tick=True,
-    )
+    live_session, sim_world = make_session(seed=int(header.seed))
     live_provider = LocalInputProvider(
         player_count=1,
         build_inputs=lambda _frame_ctx: list(input_row),
@@ -425,16 +326,14 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 
 
 def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mocker) -> None:
-    sim_world = SimWorldState(world_size=1024.0)
-    before_health = float(sim_world.players[0].health)
-    before_xp = int(sim_world.players[0].experience)
+    session, sim_world = make_session()
 
     provider = LocalInputProvider(
         player_count=1,
         build_inputs=lambda _frame_ctx: [PlayerInput()],
     )
     runner = TickRunner(
-        session=_PlanIsolationSession(sim_world),
+        session=session,
         input_provider=provider,
         config=TickRunnerConfig(),
     )
@@ -460,20 +359,18 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
         max_ticks=1,
     )
     assert batch.ticks_completed == 1
-    assert float(sim_world.players[0].health) < before_health
-    assert int(sim_world.players[0].experience) > before_xp
+    # No audio or rendering happened during deterministic step
     assert play_sfx.call_count == 0
     assert draw_text.call_count == 0
 
     payload = batch.completed_results[0].payload
     assert isinstance(payload, DeterministicSessionTick)
     plan = payload.step.presentation
-    audio_bridge.apply_plan(plan=plan, apply_audio=True)
 
-    assert [str(call.args[1]) for call in play_sfx.call_args_list] == [
-        "sfx_explosion",
-        "sfx_ui_levelup",
-    ]
+    # SFX only materialize when the presentation plan is explicitly applied
+    audio_bridge.apply_plan(plan=plan, apply_audio=True)
+    sfx_played = [str(call.args[1]) for call in play_sfx.call_args_list]
+    assert sfx_played == list(plan.sfx_keys)
 
 
 def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases() -> None:

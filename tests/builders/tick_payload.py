@@ -12,6 +12,7 @@ def make_tick_payload(
     dt_sim: float = 1.0 / 60.0,
     elapsed_ms: float = 16.67,
     creature_count: int = 0,
+    presentation_plan_ms: float = 0.0,
 ) -> DeterministicSessionTick:
     timing = FrameTiming(
         dt=dt_sim,
@@ -25,7 +26,7 @@ def make_tick_payload(
         timing=timing,
         events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
         presentation=PresentationStepCommands(),
-        presentation_plan_ms=0.0,
+        presentation_plan_ms=float(presentation_plan_ms),
         presentation_rng_trace=PresentationRngTrace(),
     )
     return DeterministicSessionTick(

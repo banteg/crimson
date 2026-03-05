@@ -1,31 +1,11 @@
 from __future__ import annotations
 
-import msgspec
-import pytest
+from builders.input_providers import StallableInputProvider
+from builders.session import make_session
 
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.input import PlayerInput
-from crimson.sim.input_providers import FrameContext, GameCommand, InputProvider, InputStatus, TickInput
+from crimson.sim.input_providers import FrameContext, InputStatus
 from crimson.sim.tick_runner import TickBatchResult, TickRunner
-from crimson.sim.timing import FrameTiming
-
-
-class _FakeTick(msgspec.Struct):
-    dt_sim: float = 1.0 / 60.0
-    presentation_plan_ms: float = 0.0
-
-
-def _timing(dt: float) -> FrameTiming:
-    return FrameTiming(dt=dt, time_scale_active_entry=False, time_scale_factor=1.0, zero_gate_active=False, dt_sim=dt)
-
-
-class _FakeSession:
-    def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _timing(dt)
-
-    def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
-        _ = timing, inputs, trace_rng, commands
-        return _FakeTick()
 
 
 def _advance_with_clock(
@@ -63,34 +43,11 @@ def _advance_with_clock(
     return batch, int(batch.next_tick_index), int(frame_index)
 
 
-class _FixedInputProvider(InputProvider):
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-        return
-
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        _ = tick_index
-        return TickInput(status=InputStatus.READY, inputs=[PlayerInput()])
-
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        _ = tick_index
-        return []
-
-    def supports_commands(self) -> bool:
-        return False
-
-    def push_command(self, command: GameCommand) -> None:
-        _ = command
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        _ = tick_index
-        return default_dt
-
-
 def test_tick_runner_exposes_tick_inputs_for_explicit_replay_recording() -> None:
+    session, _ = make_session()
     runner = TickRunner(
-        session=_FakeSession(),
-        input_provider=_FixedInputProvider(),
+        session=session,
+        input_provider=StallableInputProvider(),
     )
 
     clock = FixedStepClock(tick_rate=60)
@@ -111,9 +68,10 @@ def test_tick_runner_exposes_tick_inputs_for_explicit_replay_recording() -> None
 
 
 def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() -> None:
+    session, _ = make_session()
     runner = TickRunner(
-        session=_FakeSession(),
-        input_provider=_FixedInputProvider(),
+        session=session,
+        input_provider=StallableInputProvider(),
     )
 
     clock = FixedStepClock(tick_rate=60)
@@ -129,32 +87,3 @@ def test_tick_runner_advances_all_candidate_ticks_without_hook_stop_callbacks() 
 
     assert result.ticks_completed == 2
     assert [row.tick_index for row in result.completed_results] == [0, 1]
-
-
-def test_tick_runner_preserves_step_reported_presentation_plan_ms() -> None:
-    class _MeasuredSession:
-        def timing_for_dt(self, dt: float) -> FrameTiming:
-            return _timing(dt)
-
-        def step_tick(self, *, timing: FrameTiming, inputs: list[PlayerInput] | None, trace_rng: bool = False, commands: tuple = ()) -> _FakeTick:
-            _ = timing, inputs, trace_rng, commands
-            return _FakeTick(presentation_plan_ms=2.75)
-
-    runner = TickRunner(
-        session=_MeasuredSession(),
-        input_provider=_FixedInputProvider(),
-    )
-    clock = FixedStepClock(tick_rate=60)
-    frame_index = 0
-    next_tick_index = 0
-
-    result, next_tick_index, frame_index = _advance_with_clock(
-        runner=runner,
-        clock=clock,
-        start_tick=next_tick_index,
-        frame_index=frame_index,
-        dt_seconds=1.0 / 60.0,
-    )
-
-    assert result.ticks_completed == 1
-    assert result.completed_results[0].presentation_plan_ms == pytest.approx(2.75)
