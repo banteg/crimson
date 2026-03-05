@@ -14,6 +14,7 @@ Hard decisions for simplicity:
 - No legacy event side-channel (`Replay.events`).
 - No stringly command payloads (`InputCommand.name/payload`).
 - No terminal tick event phase.
+- Perk menu opening remains explicit as a typed command to preserve deterministic RNG draw timing.
 - One tick orchestration path for live, replay verify, replay play, replay render, replay benchmark, and LAN.
 
 Core change:
@@ -67,11 +68,14 @@ from __future__ import annotations
 from typing import TypeAlias
 import msgspec
 
+class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True):
+    player_index: int
+
 class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True):
     player_index: int
     choice_index: int
 
-GameCommand: TypeAlias = PerkPickCommand
+GameCommand: TypeAlias = PerkMenuOpenCommand | PerkPickCommand
 ```
 
 Tick packet type:
@@ -127,6 +131,14 @@ Rationale:
 - It may own rendering/audio/UI only.
 - Tick progression must call the same engine that verify/info use.
 - No direct custom semantics around replay events.
+
+### 6.5 Perk Menu RNG Semantics (explicit decision)
+
+`PerkMenuOpenEvent` is removed only after replacing it with `PerkMenuOpenCommand`.
+
+- `PerkMenuOpenCommand` runs in the deterministic command phase at tick start.
+- Its handler must execute the same choice-generation path (`perk_selection_current_choices`) currently triggered by menu-open handling.
+- This preserves RNG consumption timing even when menu is opened and closed without picking.
 
 ## 7. File-Level Implementation Plan
 
@@ -191,8 +203,9 @@ Changes:
 
 1. Remove `InputCommand` dynamic usage.
 2. Replace `_record_perk_pick_command` with typed command enqueue.
-3. Remove `_apply_tick_commands` path and post-tick command mutation.
-4. Use one typed command queue consumed by provider into packet.
+3. Record perk-menu-open as `PerkMenuOpenCommand` at the same points where `record_perk_menu_open` is currently emitted.
+4. Remove `_apply_tick_commands` path and post-tick command mutation.
+5. Use one typed command queue consumed by provider into packet.
 
 ### 7.5 Replay Drivers
 
@@ -212,7 +225,9 @@ Changes:
 3. Make `run_to_completion` iterate via `step_tick` (no duplicate orchestration loop).
 4. Make `ReplayPlaybackMode` advance simulation via `PlaybackDriver.step_tick`.
 5. Delete replay event partition/apply code paths and terminal-event phase machinery completely.
-6. Keep playback mode focused on presentation only.
+6. Collapse `PlaybackTickOutcome` to core deterministic data (`tick_index`, `dt`, session step payload, hashes, rng marks, command stream metadata).
+7. Remove `PlaybackTickOutcome` fields that only exist for event split (`tick_events`, `pre_step_events`, `post_step_events`, `rng_before_events`, `rng_after_events`, `rng_before_post_events`, `rng_after_post_events`).
+8. Keep playback mode focused on presentation only.
 
 ### 7.6 LAN Typed Command Parity
 
@@ -235,6 +250,7 @@ Delete completely:
 - Replay event helpers (`sim/driver/replay_events.py`) and callers.
 - `InputCommand(name, payload)` string dictionary path.
 - `ReplayRecorder.record_tick_at`, `ReplayRecorder.record_perk_pick`, `ReplayRecorder.record_perk_menu_open`.
+- Event-partitioning-only outcome/config surface (`PlaybackTickOutcome` event split fields, `PlaybackEventConfig`, runtime `partition_tick_events` hooks).
 - `PlaybackEventConfig`, `apply_terminal_events`, `_terminal_events_applied`, and other terminal-event code paths.
 - Duplicated per-entrypoint `PlaybackDriverConfig` policy matrices.
 - Mode-level `_apply_input_command` pattern for deterministic commands.
