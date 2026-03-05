@@ -23,10 +23,7 @@ from ...replay.input_codec import unpack_tick_inputs
 from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickResult
-from ..input_providers import (
-    GameCommand,
-    ResolvedTick,
-)
+from ..input_providers import ResolvedTick
 from ..sessions import (
     DeterministicSession,
     QuestSpawnState,
@@ -37,8 +34,7 @@ from ..sessions import (
     rush_mid_step,
     survival_mid_step,
 )
-from ..step_pipeline import DeterministicStepResult
-from ..world_state import WorldEvents, WorldState
+from ..world_state import WorldState
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,
@@ -55,14 +51,13 @@ RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
 
 RngTraceDraw: TypeAlias = tuple[int, int, int]
-TickRngTraceObserver: TypeAlias = Callable[[int, list[RngTraceDraw]], None]
-TickObserver: TypeAlias = Callable[[int, WorldState], None]
-TickTraceObserver: TypeAlias = Callable[[int, WorldState, float, WorldEvents, dict[str, int]], None]
+TickRngTraceObserver: TypeAlias = Callable[[TickResult, tuple[RngTraceDraw, ...]], None]
 TickProgressCallback: TypeAlias = Callable[[int], None]
 TickBeginObserver: TypeAlias = Callable[
     [int, WorldState, float],
     None,
 ]
+TickEndObserver: TypeAlias = Callable[[TickResult, WorldState], None]
 
 
 def resolve_quest_level_from_replay(replay: Replay) -> str:
@@ -181,27 +176,12 @@ class PlaybackDriverConfig:
     quest: QuestSessionConfig = field(default_factory=QuestSessionConfig)
 
 
-@dataclass(slots=True)
-class PlaybackTickOutcome:
-    tick_index: int
-    dt_tick: float
-    commands: list[GameCommand]
-    world: WorldState
-    step: DeterministicStepResult
-    elapsed_ms: float
-    rng_marks: dict[str, int]
-    creature_count_world_step: int
-    tick_rng_rows: list[RngTraceDraw]
-
-
-TickEndObserver: TypeAlias = Callable[[PlaybackTickOutcome], None]
-
-
 @dataclass(slots=True, frozen=True)
 class PlaybackWalkHooks:
     before_tick: TickBeginObserver | None = None
     after_tick: TickEndObserver | None = None
     on_progress: TickProgressCallback | None = None
+    on_rng_trace: TickRngTraceObserver | None = None
 
 
 @dataclass(slots=True, frozen=True)
@@ -225,8 +205,8 @@ class SimplePlaybackRuntime:
 
     session: DeterministicSession
 
-    def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
-        return float(outcome.elapsed_ms)
+    def checkpoint_elapsed_ms(self, tick_result: TickResult) -> float:
+        return float(tick_result.payload.elapsed_ms)
 
     def run_result_elapsed_ms(self) -> int:
         return int(self.session.elapsed_ms)
@@ -238,8 +218,8 @@ class QuestPlaybackRuntime:
     quest_state: QuestSpawnState
     result_uses_spawn_timeline_ms: bool
 
-    def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
-        _ = outcome
+    def checkpoint_elapsed_ms(self, tick_result: TickResult) -> float:
+        _ = tick_result
         return float(self.quest_state.spawn_timeline_ms)
 
     def run_result_elapsed_ms(self) -> int:
@@ -289,6 +269,7 @@ class PlaybackDriver:
         )
         self._mode_runtime = self._build_mode_runtime(apply_world_dt_steps=bool(apply_world_dt_steps))
         self.session: DeterministicSession = self._mode_runtime.session
+        self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
 
         self.tick_limit = (
             len(replay.ticks)
@@ -497,12 +478,12 @@ class PlaybackDriver:
             tick_rng_rows=tick_rng_rows,
         )
 
-    def _finalize_tick_outcome(
+    def _finalize_tick_result(
         self,
         *,
         tick_result: TickResult,
         meta: _PlaybackTickMeta,
-    ) -> PlaybackTickOutcome:
+    ) -> TickResult:
         trace_ctx = cast(Any, meta.trace_ctx)
         trace_closed = False
         try:
@@ -514,8 +495,6 @@ class PlaybackDriver:
                 )
 
             state = self.world.state
-            tick = tick_result.payload
-            step = tick.step
 
             # Close the trace context before snapshotting rows so any
             # `finally`-recorded draws are included in this tick.
@@ -528,18 +507,8 @@ class PlaybackDriver:
                 for _ in range(draws):
                     state.rng.rand()
 
-            outcome = PlaybackTickOutcome(
-                tick_index=int(tick_index),
-                dt_tick=float(source_tick.dt_seconds),
-                commands=list(source_tick.commands),
-                world=self.world,
-                step=step,
-                elapsed_ms=float(tick.elapsed_ms),
-                rng_marks=dict(tick.rng_marks),
-                creature_count_world_step=int(tick.creature_count_world_step),
-                tick_rng_rows=list(meta.tick_rng_rows),
-            )
-            return outcome
+            self._last_tick_rng_rows = tuple(meta.tick_rng_rows)
+            return tick_result
         finally:
             if not trace_closed:
                 trace_ctx.__exit__(None, None, None)
@@ -547,28 +516,29 @@ class PlaybackDriver:
     def build_checkpoint(
         self,
         *,
-        outcome: PlaybackTickOutcome,
+        tick_result: TickResult,
         use_world_step_creature_count: bool = False,
     ) -> ReplayCheckpoint:
         return build_replay_checkpoint(
-            tick_index=int(outcome.tick_index),
+            tick_index=int(tick_result.source_tick.tick_index),
             world=self.world,
-            elapsed_ms=float(self._mode_runtime.checkpoint_elapsed_ms(outcome)),
+            elapsed_ms=float(self._mode_runtime.checkpoint_elapsed_ms(tick_result)),
             creature_count_override=(
-                int(outcome.creature_count_world_step)
+                int(tick_result.payload.creature_count_world_step)
                 if bool(use_world_step_creature_count)
                 else None
             ),
-            rng_marks=dict(outcome.rng_marks),
-            deaths=outcome.step.events.deaths,
-            events=outcome.step.events,
+            rng_marks=dict(tick_result.payload.rng_marks),
+            deaths=tick_result.payload.step.events.deaths,
+            events=tick_result.payload.step.events,
         )
 
-    def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
+    def step_tick(self, tick_index: int) -> TickResult:
         tick_index = int(tick_index)
         replay_tick = self.replay.ticks[tick_index]
         dt_tick = float(replay_tick.dt)
         meta = self._prepare_tick_meta(tick_index=tick_index, dt_tick=dt_tick)
+        self._last_tick_rng_rows = ()
 
         inputs = unpack_tick_inputs(replay_tick.inputs)
         commands = list(replay_tick.commands)
@@ -587,8 +557,9 @@ class PlaybackDriver:
         tick_result = TickResult(
             source_tick=source_tick,
             payload=session_tick,
+            replay_tick_index=int(tick_index),
         )
-        return self._finalize_tick_outcome(tick_result=tick_result, meta=meta)
+        return self._finalize_tick_result(tick_result=tick_result, meta=meta)
 
     def walk_ticks(
         self,
@@ -618,11 +589,13 @@ class PlaybackDriver:
                     self.world,
                     float(self.replay.ticks[next_tick_index].dt),
                 )
-            outcome = self.step_tick(next_tick_index)
-            next_tick_index = int(outcome.tick_index) + 1
+            tick_result = self.step_tick(next_tick_index)
+            next_tick_index = int(tick_result.source_tick.tick_index) + 1
 
             if active_hooks.after_tick is not None:
-                active_hooks.after_tick(outcome)
+                active_hooks.after_tick(tick_result, self.world)
+            if active_hooks.on_rng_trace is not None:
+                active_hooks.on_rng_trace(tick_result, self._last_tick_rng_rows)
             if active_hooks.on_progress is not None:
                 active_hooks.on_progress(int(next_tick_index))
 
@@ -685,3 +658,88 @@ class PlaybackDriver:
         if self.mode_id == GameMode.QUESTS and isinstance(self._mode_runtime, QuestPlaybackRuntime):
             return self._mode_runtime.quest_state
         return None
+
+
+def build_verify_playback_driver(
+    replay: Replay,
+    *,
+    max_ticks: int | None = None,
+    warn_on_version_mismatch: bool = True,
+    trace_rng: bool = False,
+    inter_tick_rand_draws: int = 0,
+    inter_tick_rand_draws_by_tick: dict[int, int] | None = None,
+    spawn_entries: tuple[SpawnEntry, ...] | None = None,
+    quest_stage_major: int | None = None,
+    quest_stage_minor: int | None = None,
+    start_weapon_id: WeaponId | None = None,
+) -> PlaybackDriver:
+    return PlaybackDriver(
+        replay,
+        PlaybackDriverOptions(
+            max_ticks=max_ticks,
+            trace_rng=bool(trace_rng),
+            version_mismatch_action=("verification" if bool(warn_on_version_mismatch) else None),
+        ),
+        config=PlaybackDriverConfig(
+            timing=PlaybackTimingConfig(
+                inter_tick_rand_draws=int(inter_tick_rand_draws),
+                inter_tick_rand_draws_by_tick=inter_tick_rand_draws_by_tick,
+            ),
+            session_defaults=PlaybackSessionDefaults(
+                clear_fx_queues_each_tick=True,
+                game_tune_started=False,
+            ),
+            quest=QuestSessionConfig(
+                disable_capture_spawn_events_authoritative=True,
+                result_uses_spawn_timeline_ms=True,
+                spawn_entries=spawn_entries,
+                quest_stage_major=quest_stage_major,
+                quest_stage_minor=quest_stage_minor,
+                start_weapon_id=start_weapon_id,
+            ),
+        ),
+    )
+
+
+def build_runtime_playback_driver(
+    replay: Replay,
+    *,
+    max_ticks: int | None,
+    trace_rng: bool,
+    world_size: float,
+    fx_queue: FxQueue,
+    fx_queue_rotated: FxQueueRotated,
+    spawn_entries: tuple[SpawnEntry, ...] | None = None,
+    quest_stage_major: int | None = None,
+    quest_stage_minor: int | None = None,
+    start_weapon_id: WeaponId | None = None,
+) -> PlaybackDriver:
+    return PlaybackDriver(
+        replay,
+        PlaybackDriverOptions(
+            max_ticks=max_ticks,
+            trace_rng=bool(trace_rng),
+            version_mismatch_action=None,
+        ),
+        config=PlaybackDriverConfig(
+            timing=PlaybackTimingConfig(),
+            world=PlaybackWorldConfig(
+                world_size=float(world_size),
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+                use_existing_world_state=False,
+            ),
+            session_defaults=PlaybackSessionDefaults(
+                clear_fx_queues_each_tick=True,
+                game_tune_started=False,
+            ),
+            quest=QuestSessionConfig(
+                disable_capture_spawn_events_authoritative=True,
+                result_uses_spawn_timeline_ms=True,
+                spawn_entries=spawn_entries,
+                quest_stage_major=quest_stage_major,
+                quest_stage_minor=quest_stage_minor,
+                start_weapon_id=start_weapon_id,
+            ),
+        ),
+    )

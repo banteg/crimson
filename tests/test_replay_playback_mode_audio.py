@@ -353,7 +353,7 @@ def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_play
     play_music = mocker.patch.object(replay_playback_mode, "play_music")
 
     reaction = view._build_post_apply_reaction(
-        outcome=FakePlaybackDriver(tick_limit=1).step_tick(0),
+        tick_result=FakePlaybackDriver(tick_limit=1).step_tick(0),
     )
     view._apply_post_apply_reaction(reaction)
 
@@ -383,7 +383,7 @@ def test_post_apply_reaction_plays_recorded_bonus_sfx(mocker, replay_playback_vi
     play_sfx = mocker.patch.object(audio_bridge.router, "play_sfx")
 
     reaction = view._build_post_apply_reaction(
-        outcome=FakePlaybackDriver(
+        tick_result=FakePlaybackDriver(
             tick_limit=1,
             post_apply_sfx_keys=("sfx_ui_bonus",),
         ).step_tick(0),

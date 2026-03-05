@@ -14,7 +14,7 @@ import msgspec
 from ...render.pipeline import RenderPipeline
 from ...render.sink import VideoSink
 from ...replay import Replay
-from .replay_runner import run_replay
+from .playback_driver import build_verify_playback_driver
 from .setup import RunResult
 
 X264Preset = Literal[
@@ -159,11 +159,11 @@ def run_replay_render_video(
         raise ReplayRenderError(f"output exists: {out_path} (pass --overwrite to replace)")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    baseline_result = run_replay(
+    baseline_result = build_verify_playback_driver(
         replay,
         max_ticks=max_ticks,
-        trace_rng=trace_rng,
-    )
+        trace_rng=bool(trace_rng),
+    ).run()
 
     runtime_base_dir = Path(base_dir)
     runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir

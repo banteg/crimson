@@ -37,12 +37,12 @@ from crimson.sim.driver.replay_benchmark import (
     ReplayRenderTelemetryTopTick,
 )
 from crimson.sim.driver.replay_render import ReplayRenderResult
-from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.replay_runner_helpers import _run_verify_playback
 
 
 def _build_replay(
@@ -66,7 +66,7 @@ def _build_replay(
             [PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))],
         )
     replay = recorder.finish()
-    result = run_replay(replay)
+    result = _run_verify_playback(replay)
     return msgspec.structs.replace(
         replay,
         header=msgspec.structs.replace(
@@ -106,7 +106,7 @@ def _write_checkpoint_sidecar(
 ) -> Path:
     checkpoint_ticks = {0}
     checkpoints = []
-    run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    _run_verify_playback(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
     if mutate_checkpoint:
         checkpoints[0] = msgspec.structs.replace(
             checkpoints[0], score_xp=999999,
@@ -320,7 +320,7 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 
 def test_replay_verify_checks_header_claimed_stats_match(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    expected = run_replay(replay)
+    expected = _run_verify_playback(replay)
     replay = msgspec.structs.replace(
         replay,
         header=msgspec.structs.replace(
@@ -1567,7 +1567,7 @@ def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
     checkpoint_ticks = {0}
     checkpoints = []
-    run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
+    _run_verify_playback(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
     dump_checkpoints_file(
         tmp_path / "survival.checkpoints.json.gz",
         ReplayCheckpoints(

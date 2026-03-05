@@ -10,18 +10,10 @@ from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
 from ...weapons import WeaponId, weapon_display_name
+from ..hooks import TickResult
 from ..input_providers import GameCommand, PerkMenuOpenCommand
 from ..state_types import BonusPickupEvent, PlayerState
-from .playback_driver import (
-    PlaybackDriver,
-    PlaybackDriverConfig,
-    PlaybackDriverOptions,
-    PlaybackSessionDefaults,
-    PlaybackTickOutcome,
-    PlaybackTimingConfig,
-    PlaybackWalkHooks,
-    QuestSessionConfig,
-)
+from .playback_driver import PlaybackDriver, PlaybackWalkHooks
 from .setup import ReplayRunnerError
 
 _EPSILON = 1e-6
@@ -334,47 +326,28 @@ def _validate_player_filter(*, replay: Replay, player_index: int | None) -> int 
     return player_index
 
 
-def _run_replay_info(
-    replay: Replay,
+def collect_replay_info(
+    driver: PlaybackDriver,
     *,
-    max_ticks: int | None,
-    player_filter: int | None,
-    include_extra_events: bool,
+    player_index: int | None = None,
+    include_extra_events: bool = True,
 ) -> ReplayInfoResult:
-    try:
-        mode = GameMode(replay.header.game_mode_id)
-    except ValueError as exc:
-        raise ReplayRunnerError(f"unsupported replay game_mode_id={replay.header.game_mode_id}") from exc
-
-    options = PlaybackDriverOptions(
-        max_ticks=max_ticks,
-        trace_rng=False,
-        version_mismatch_action="verification",
-    )
-    config = PlaybackDriverConfig(
-        timing=PlaybackTimingConfig(),
-        session_defaults=PlaybackSessionDefaults(
-            clear_fx_queues_each_tick=True,
-            game_tune_started=False,
-        ),
-        quest=QuestSessionConfig(
-            disable_capture_spawn_events_authoritative=True,
-            result_uses_spawn_timeline_ms=True,
-        ),
-    )
-    driver = PlaybackDriver(replay, options, config=config)
-
+    replay = driver.replay
+    mode = driver.mode_id
+    player_filter = _validate_player_filter(replay=replay, player_index=player_index)
     timeline: list[ReplayInfoTimelineEvent] = []
     before: list[_PlayerSnapshot] | None = None
 
-    def _append_tick(outcome: PlaybackTickOutcome, *, before: list[_PlayerSnapshot]) -> None:
-        after = _capture_snapshots(outcome.world.players)
+    def _append_tick(tick_result: TickResult, *, after_players: list[PlayerState], before: list[_PlayerSnapshot]) -> None:
+        source_tick = tick_result.source_tick
+        tick = tick_result.payload
+        after = _capture_snapshots(after_players)
 
-        elapsed_ms = int(outcome.elapsed_ms)
+        elapsed_ms = int(tick.elapsed_ms)
         if mode != GameMode.RUSH:
             _append_extra_replay_commands(
-                commands=outcome.commands,
-                tick_index=outcome.tick_index,
+                commands=source_tick.commands,
+                tick_index=int(source_tick.tick_index),
                 elapsed_ms=elapsed_ms,
                 timeline=timeline,
                 player_filter=player_filter,
@@ -382,30 +355,30 @@ def _run_replay_info(
             )
 
         _append_bonus_pickup_events(
-            tick_index=outcome.tick_index,
+            tick_index=int(source_tick.tick_index),
             elapsed_ms=elapsed_ms,
             timeline=timeline,
-            pickups=outcome.step.events.pickups,
+            pickups=tick.step.events.pickups,
             preserve_bugs=replay.header.preserve_bugs,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
 
-        if outcome.step.events.deaths:
+        if tick.step.events.deaths:
             _append_event(
                 timeline,
-                tick_index=outcome.tick_index,
+                tick_index=int(source_tick.tick_index),
                 elapsed_ms=elapsed_ms,
                 kind="creature_deaths",
                 player_index=None,
-                detail=f"creature deaths={len(outcome.step.events.deaths)}",
-                data={"count": len(outcome.step.events.deaths)},
+                detail=f"creature deaths={len(tick.step.events.deaths)}",
+                data={"count": len(tick.step.events.deaths)},
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )
 
         _append_snapshot_diff_events(
-            tick_index=outcome.tick_index,
+            tick_index=int(source_tick.tick_index),
             elapsed_ms=elapsed_ms,
             before=before,
             after=after,
@@ -420,9 +393,9 @@ def _run_replay_info(
         nonlocal before
         before = _capture_snapshots(world.players)
 
-    def _after_tick(outcome: PlaybackTickOutcome) -> None:
+    def _after_tick(tick_result: TickResult, world) -> None:
         assert before is not None, "missing pre-step replay snapshot"
-        _append_tick(outcome, before=before)
+        _append_tick(tick_result, after_players=world.players, before=before)
 
     walk_result = driver.walk_ticks(
         hooks=PlaybackWalkHooks(
@@ -439,22 +412,6 @@ def _run_replay_info(
         elapsed_ms=int(run_result.elapsed_ms),
         player_count=len(driver.world.players),
         timeline=timeline,
-    )
-
-
-def run_replay_info(
-    replay: Replay,
-    *,
-    max_ticks: int | None = None,
-    player_index: int | None = None,
-    include_extra_events: bool = True,
-) -> ReplayInfoResult:
-    player_filter = _validate_player_filter(replay=replay, player_index=player_index)
-    return _run_replay_info(
-        replay,
-        max_ticks=max_ticks,
-        player_filter=player_filter,
-        include_extra_events=include_extra_events,
     )
 
 

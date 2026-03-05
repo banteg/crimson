@@ -21,13 +21,15 @@ Not everything is split-brained anymore.
 - Replay playback frame advancement is now also shared, including replay clock advancement, `step_tick()` iteration, immediate sim metadata apply, and replay tick-limit debt refund.
 - Post-apply presentation reactions are now shared too: perk-apply bonus SFX, quest hit SFX, quest completion music, and replay/live quest overlay timer updates all route through one small reaction layer.
 - Driver-side replay utilities now share one canonical multi-tick walk path through `PlaybackDriver.walk_ticks()`, and replay checkpoint construction is no longer hidden behind private driver helpers.
+- Replay stepping itself now also converges on `TickResult`; `PlaybackTickOutcome`, `run_replay()`, and `run_replay_info()` are gone.
+- Most replay consumers now build drivers through `build_verify_playback_driver()` / `build_runtime_playback_driver()`, and replay info collection goes through `collect_replay_info(driver, ...)`.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
 
 ## Current Split-Brain
 
-Today the large split-brain targets are mostly gone. The remaining seams are smaller contract-shape issues rather than competing loop owners.
+Today the large split-brain targets are mostly gone. What remains is much smaller and is closer to API-shape polish than to competing runtime owners.
 
 Timer semantics are no longer one of the fuzzy parts:
 
@@ -35,23 +37,23 @@ Timer semantics are no longer one of the fuzzy parts:
 - quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
 - session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
 
-### 1) Replay wrappers still duplicate setup and reporting policy
+### 1) Replay still has a low-level constructor surface and a factory surface
 
-The replay loop itself is now shared in `PlaybackDriver`, but wrapper helpers still duplicate configuration and summary policy around it:
+Normal replay consumers now route through:
 
-- `src/crimson/sim/driver/replay_runner.py`
+- `src/crimson/sim/driver/playback_driver.py`
 - `src/crimson/sim/driver/replay_info.py`
 
-That is narrower than the old split brain. The drift is now mostly around how wrappers build configs, translate callbacks, and package results for different replay consumers.
+But `PlaybackDriver(...)` plus `PlaybackDriverConfig` is still available alongside the factory helpers. That is not a runtime split brain anymore, but it is still a wider-than-ideal API surface.
 
-### 2) Live and replay still expose different top-level stepped result shapes
+### 2) Live and replay still use separate shared frame-pump helpers
 
-Live/LAN stepping flows through `TickResult`, while replay stepping still exposes `PlaybackTickOutcome`:
+Both sides now share their own bookkeeping:
 
-- `src/crimson/sim/hooks.py`
-- `src/crimson/sim/driver/playback_driver.py`
+- `src/crimson/sim/frame_pump.py`
+- `src/crimson/sim/driver/playback_pump.py`
 
-That is not a correctness problem, but it keeps some replay-only bookkeeping and testing surfaces separate from the live contract.
+That is acceptable for now because live steps through `TickRunner` while replay steps through `PlaybackDriver.step_tick()`. The important point is that the duplication is now small, explicit, and local.
 
 ## Current Architecture
 
@@ -82,14 +84,16 @@ flowchart TD
         World["WorldRuntime"]
         ReplayMode["ReplayPlaybackMode"]
         ReplayPump["Shared replay playback frame pump"]
-        Playback["PlaybackDriver<br/>step_tick + walk_ticks + build_checkpoint"]
+        Playback["PlaybackDriver<br/>step_tick -> TickResult<br/>walk_ticks + run + build_checkpoint"]
+        ReplayFactories["Replay driver factories<br/>build_verify / build_runtime"]
+        ReplayInfo["collect_replay_info(driver, ...)"]
         PostApply["Shared post-apply reactions"]
     end
 
     Local --> Provider
     Lan --> Provider
     Provider --> Tick --> Runner --> Session --> Result
-    Replay --> Playback --> Tick
+    Replay --> ReplayFactories --> Playback --> Tick
 
     Session --> SurvivalState
     Session --> RushState
@@ -99,6 +103,7 @@ flowchart TD
     World -->|step + apply| Runner
     ReplayMode -->|presentation callbacks + finish logic| ReplayPump
     ReplayPump -->|shared replay step + apply| Playback
+    Playback --> ReplayInfo
     Base --> PostApply
     World --> PostApply
     ReplayMode --> PostApply
@@ -193,14 +198,12 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is no longer another loop-sharing extraction. The best next step is narrower replay contract polish.
+The big architectural goal is largely in place now.
 
-The highest-leverage targets now are:
+The highest-leverage next cleanup is probably not another major convergence refactor. It is smaller surface-area tightening:
 
-- canonical ticks already landed
-- quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
-- live and replay frame advancement now share their low-level bookkeeping
-- post-apply presentation reactions are now shared across gameplay, replay playback, world runtime, and the headless harness
-- driver-side replay loops are now shared too, so the remaining drift is mostly wrapper policy and result-shape differences
+- decide how much raw `PlaybackDriverConfig` construction should remain public versus steering normal call sites through the factory helpers
+- keep pruning tests and tools away from low-level replay setup where that setup is now policy, not mechanism
+- only revisit live-vs-replay pump unification if a smaller shared contract appears naturally; do not force a broad universal loop abstraction now
 
-The likely next cleanup is to narrow the replay-facing contract further: reduce wrapper/config duplication around `run_replay()` and `run_replay_info()`, and decide whether `PlaybackTickOutcome` should stay replay-specific or converge further with the live `TickResult` shape.
+At this point the architecture is much closer to "one core with a few explicit edges" than to a real split-brain system.

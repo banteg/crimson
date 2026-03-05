@@ -18,7 +18,6 @@ from crimson.replay import (
 )
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.sim.driver.playback_driver import resolve_quest_level_from_replay
-from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
@@ -33,6 +32,7 @@ from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.replay_runner_helpers import _run_verify_playback
 from tests.world_runtime import WorldRuntimeHost
 
 
@@ -322,7 +322,7 @@ def test_survival_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_survival_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
-    run_replay(
+    _run_verify_playback(
         replay,
         checkpoints_out=headless,
         checkpoint_ticks=set(range(len(replay.ticks))),
@@ -337,7 +337,7 @@ def test_rush_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_rush_checkpoints(replay)
     headless: list[ReplayCheckpoint] = []
-    run_replay(
+    _run_verify_playback(
         replay,
         checkpoints_out=headless,
         checkpoint_ticks=set(range(len(replay.ticks))),
@@ -357,7 +357,7 @@ def test_quest_live_vs_headless_tick_pipeline() -> None:
 
     live = _live_quest_checkpoints(replay, spawn_entries=spawn_entries)
     headless: list[ReplayCheckpoint] = []
-    run_replay(
+    _run_verify_playback(
         replay,
         spawn_entries=spawn_entries,
         checkpoints_out=headless,

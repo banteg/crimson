@@ -30,7 +30,7 @@ def test_playback_driver_walk_before_and_after_hooks_see_pre_and_post_step_world
     walk_result = driver.walk_ticks(
         hooks=PlaybackWalkHooks(
             before_tick=lambda _tick_index, world, _dt_tick: observed_before.append(int(world.players[0].experience)),
-            after_tick=lambda outcome: observed_after.append(int(outcome.world.players[0].experience)),
+            after_tick=lambda _tick_result, world: observed_after.append(int(world.players[0].experience)),
         ),
     )
 
@@ -64,7 +64,9 @@ def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
     walk_result = driver.walk_ticks(
         start_tick=2,
         stop_tick=10,
-        hooks=PlaybackWalkHooks(after_tick=lambda outcome: walked_ticks.append(int(outcome.tick_index))),
+        hooks=PlaybackWalkHooks(
+            after_tick=lambda tick_result, _world: walked_ticks.append(int(tick_result.source_tick.tick_index)),
+        ),
     )
 
     assert walk_result == PlaybackWalkResult(start_tick=2, next_tick_index=3, ticks_completed=1)

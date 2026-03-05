@@ -12,14 +12,12 @@ import crimson.sim.batch_apply as batch_apply_module
 import crimson.sim.driver.playback_driver as playback_driver_module
 import crimson.sim.driver.playback_pump as playback_pump_module
 import crimson.sim.driver.replay_info as replay_info_module
-import crimson.sim.driver.replay_runner as replay_runner_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.runtime as world_runtime_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.driver.playback_driver import PlaybackTickOutcome
 from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
@@ -322,7 +320,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     replay_tick_indices: list[int] = []
 
     def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
-        assert isinstance(tick, PlaybackTickOutcome)
+        assert isinstance(tick, TickResult)
         replay_tick_indices.append(int(_tick_index))
         return False
 
@@ -446,13 +444,13 @@ def test_contract_9_post_apply_reactions_are_shared() -> None:
 def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     walk_source = inspect.getsource(playback_driver_module.PlaybackDriver.walk_ticks)
     run_source = inspect.getsource(playback_driver_module.PlaybackDriver.run)
-    replay_info_source = inspect.getsource(replay_info_module._run_replay_info)
-    replay_runner_source = inspect.getsource(replay_runner_module.run_replay)
+    replay_info_source = inspect.getsource(replay_info_module.collect_replay_info)
+    factory_source = inspect.getsource(playback_driver_module.build_verify_playback_driver)
+    replay_pump_source = inspect.getsource(playback_pump_module.advance_playback_frame)
 
     assert "self.step_tick(" in walk_source
-    assert "PlaybackWalkHooks(" in walk_source
     assert "self.walk_ticks(" in run_source
     assert "driver.walk_ticks(" in replay_info_source
     assert "driver.step_tick(" not in replay_info_source
-    assert "driver.run(" in replay_runner_source
-    assert "run_to_completion(" not in replay_runner_source
+    assert "PlaybackDriver(" in factory_source
+    assert "PlaybackTickOutcome" not in replay_pump_source

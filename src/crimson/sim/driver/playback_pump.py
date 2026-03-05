@@ -5,17 +5,17 @@ from typing import Protocol
 
 from ..batch_apply import PresentationTickOutput, SimMetadataSink, apply_tick_to_sim
 from ..clock import FixedStepClock
-from .playback_driver import PlaybackTickOutcome
+from ..hooks import TickResult
 
 
 class PlaybackFrameDriver(Protocol):
-    def step_tick(self, tick_index: int) -> PlaybackTickOutcome: ...
+    def step_tick(self, tick_index: int) -> TickResult: ...
 
 
 @dataclass(frozen=True, slots=True)
 class PlaybackFrameAdvance:
     outputs: tuple[PresentationTickOutput, ...]
-    outcomes: tuple[PlaybackTickOutcome, ...]
+    tick_results: tuple[TickResult, ...]
     frame_index: int
     next_tick_index: int
     ticks_requested: int
@@ -42,30 +42,30 @@ def advance_playback_frame(
     next_tick_index = int(start_tick)
 
     outputs: list[PresentationTickOutput] = []
-    outcomes: list[PlaybackTickOutcome] = []
+    tick_results: list[TickResult] = []
 
-    while len(outcomes) < ticks_requested and next_tick_index < int(tick_limit):
-        outcome = driver.step_tick(int(next_tick_index))
+    while len(tick_results) < ticks_requested and next_tick_index < int(tick_limit):
+        tick_result = driver.step_tick(int(next_tick_index))
         apply_tick_to_sim(
             sim_world=sim_world,
-            step=outcome.step,
+            step=tick_result.payload.step,
             game_tune_started=bool(game_tune_started),
         )
         outputs.append(PresentationTickOutput(
-            tick_index=int(outcome.tick_index),
-            dt_sim=float(outcome.step.dt_sim),
-            presentation=outcome.step.presentation,
+            tick_index=int(tick_result.source_tick.tick_index),
+            dt_sim=float(tick_result.payload.step.dt_sim),
+            presentation=tick_result.payload.step.presentation,
         ))
-        outcomes.append(outcome)
+        tick_results.append(tick_result)
         next_tick_index += 1
 
-    ticks_completed = len(outcomes)
+    ticks_completed = len(tick_results)
     if ticks_completed < ticks_requested and next_tick_index >= int(tick_limit):
         clock.accum += float(ticks_requested - ticks_completed) * float(clock.dt_tick)
 
     return PlaybackFrameAdvance(
         outputs=tuple(outputs),
-        outcomes=tuple(outcomes),
+        tick_results=tuple(tick_results),
         frame_index=int(next_frame_index),
         next_tick_index=int(next_tick_index),
         ticks_requested=int(ticks_requested),

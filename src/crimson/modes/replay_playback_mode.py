@@ -31,17 +31,12 @@ from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
 from ..sim.driver.playback_driver import (
     PlaybackDriver,
-    PlaybackDriverConfig,
-    PlaybackDriverOptions,
-    PlaybackSessionDefaults,
-    PlaybackTickOutcome,
-    PlaybackTimingConfig,
-    PlaybackWorldConfig,
-    QuestSessionConfig,
+    build_runtime_playback_driver,
     resolve_replay_quest_setup,
 )
 from ..sim.driver.playback_pump import advance_playback_frame
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
+from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
     QuestPresentationReaction,
@@ -469,34 +464,17 @@ class ReplayPlaybackMode:
                 self._quest_spawn_timeline_ms = 0.0
 
         try:
-            self._driver = PlaybackDriver(
+            self._driver = build_runtime_playback_driver(
                 replay,
-                PlaybackDriverOptions(
-                    max_ticks=self._max_ticks,
-                    trace_rng=bool(self._trace_rng),
-                    version_mismatch_action=None,
-                ),
-                config=PlaybackDriverConfig(
-                    timing=PlaybackTimingConfig(),
-                    world=PlaybackWorldConfig(
-                        world_size=float(self._world_size),
-                        fx_queue=render_resources.fx_queue,
-                        fx_queue_rotated=render_resources.fx_queue_rotated,
-                        use_existing_world_state=False,
-                    ),
-                    session_defaults=PlaybackSessionDefaults(
-                        clear_fx_queues_each_tick=True,
-                        game_tune_started=False,
-                    ),
-                    quest=QuestSessionConfig(
-                        disable_capture_spawn_events_authoritative=True,
-                        result_uses_spawn_timeline_ms=True,
-                        spawn_entries=spawn_entries,
-                        quest_stage_major=quest_stage_major,
-                        quest_stage_minor=quest_stage_minor,
-                        start_weapon_id=start_weapon_id,
-                    ),
-                ),
+                max_ticks=self._max_ticks,
+                trace_rng=bool(self._trace_rng),
+                world_size=float(self._world_size),
+                fx_queue=render_resources.fx_queue,
+                fx_queue_rotated=render_resources.fx_queue_rotated,
+                spawn_entries=spawn_entries,
+                quest_stage_major=quest_stage_major,
+                quest_stage_minor=quest_stage_minor,
+                start_weapon_id=start_weapon_id,
             )
             sim_world.load_world_state(self._driver.world)
         except ReplayRunnerError as exc:  # pragma: no cover
@@ -554,16 +532,16 @@ class ReplayPlaybackMode:
             paq_rel="ui/ui_textLevComp.jaz",
         )
 
-    def _build_post_apply_reaction(self, *, outcome: PlaybackTickOutcome) -> PostApplyReaction:
+    def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         reaction = PostApplyReaction(
-            sfx_keys=tuple(str(key) for key in outcome.step.post_apply_sfx_keys),
+            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
         )
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
             return reaction
         quest_reaction = resolve_quest_presentation_reaction(
             driver.quest_spawn_state,
-            dt_seconds=float(outcome.dt_tick),
+            dt_seconds=float(tick_result.source_tick.dt_seconds),
             current_name_timer_ms=float(self._quest_name_timer_ms),
         )
         self._on_quest_post_apply_reaction(quest_reaction)
@@ -662,9 +640,9 @@ class ReplayPlaybackMode:
         self._frame_index = int(advance.frame_index)
         self._tick_index = int(advance.next_tick_index)
 
-        def _on_output_applied(output: PresentationTickOutput, outcome: PlaybackTickOutcome) -> None:
+        def _on_output_applied(output: PresentationTickOutput, tick_result: TickResult) -> None:
             self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
-            self._on_runner_tick_complete(int(output.tick_index), outcome)
+            self._on_runner_tick_complete(int(output.tick_index), tick_result)
             if not bake_fx_per_tick:
                 return
             if render_resources.ground is not None and render_resources.fx_textures is not None:
@@ -679,10 +657,13 @@ class ReplayPlaybackMode:
             and hasattr(runtime.audio_bridge, "apply_plan"),
         )
         update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
-        outcome_by_tick = {int(outcome.tick_index): outcome for outcome in advance.outcomes}
+        tick_result_by_tick = {
+            int(tick_result.source_tick.tick_index): tick_result
+            for tick_result in advance.tick_results
+        }
         reaction_by_tick = {
-            int(outcome.tick_index): self._build_post_apply_reaction(outcome=outcome)
-            for outcome in advance.outcomes
+            int(tick_result.source_tick.tick_index): self._build_post_apply_reaction(tick_result=tick_result)
+            for tick_result in advance.tick_results
         }
         if advance.outputs and can_apply_output_phase:
             apply_presentation_outputs(
@@ -694,13 +675,13 @@ class ReplayPlaybackMode:
                 ),
                 update_camera=update_camera,
                 on_output_applied=lambda output: _on_output_applied(
-                    output, outcome_by_tick[int(output.tick_index)],
+                    output, tick_result_by_tick[int(output.tick_index)],
                 ),
                 apply_audio=True,
             )
         else:
-            for output, outcome in zip(advance.outputs, advance.outcomes):
-                _on_output_applied(output, outcome)
+            for output, tick_result in zip(advance.outputs, advance.tick_results):
+                _on_output_applied(output, tick_result)
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)

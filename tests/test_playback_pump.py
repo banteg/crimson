@@ -88,7 +88,7 @@ def test_advance_playback_frame_keeps_output_and_outcome_order() -> None:
     )
 
     assert [int(output.tick_index) for output in advance.outputs] == [5, 6, 7]
-    assert [int(outcome.tick_index) for outcome in advance.outcomes] == [5, 6, 7]
+    assert [int(tick_result.source_tick.tick_index) for tick_result in advance.tick_results] == [5, 6, 7]
 
 
 def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncates() -> None:

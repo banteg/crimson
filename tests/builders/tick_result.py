@@ -12,6 +12,7 @@ def make_tick_result(
     tick_index: int = 0,
     dt_sim: float = 1.0 / 60.0,
     payload: DeterministicSessionTick | None = None,
+    replay_tick_index: int | None = None,
 ) -> TickResult:
     if payload is None:
         payload = make_tick_payload(dt_sim=dt_sim)
@@ -23,4 +24,5 @@ def make_tick_result(
             commands=[],
         ),
         payload=payload,
+        replay_tick_index=(int(tick_index) if replay_tick_index is None else int(replay_tick_index)),
     )

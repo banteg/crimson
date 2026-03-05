@@ -3,17 +3,16 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_modes import GameMode
-from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input_providers import PerkPickCommand
-from tests.replay_runner_helpers import _blank_rush_replay
+from tests.replay_runner_helpers import _blank_rush_replay, _run_verify_playback
 
 
 def test_rush_runner_is_deterministic() -> None:
     _header, rec = _blank_rush_replay(ticks=10, seed=0x1234)
     replay = rec.finish()
 
-    result0 = run_replay(replay)
-    result1 = run_replay(replay)
+    result0 = _run_verify_playback(replay)
+    result1 = _run_verify_playback(replay)
 
     assert result0 == result1
     assert result0.game_mode_id == int(GameMode.RUSH)
@@ -31,7 +30,7 @@ def test_rush_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     replay = rec.finish()
     replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], dt=0.5)
 
-    result = run_replay(replay)
+    result = _run_verify_playback(replay)
 
     assert result.elapsed_ms == 500
 
@@ -40,9 +39,9 @@ def test_rush_runner_inter_tick_rand_draws_shift_rng_state() -> None:
     _header, rec = _blank_rush_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
 
-    baseline = run_replay(replay)
-    shifted = run_replay(replay, inter_tick_rand_draws=1)
-    shifted_again = run_replay(replay, inter_tick_rand_draws=1)
+    baseline = _run_verify_playback(replay)
+    shifted = _run_verify_playback(replay, inter_tick_rand_draws=1)
+    shifted_again = _run_verify_playback(replay, inter_tick_rand_draws=1)
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -57,7 +56,7 @@ def test_rush_runner_ignores_stale_perk_pick_command() -> None:
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
-    result = run_replay(replay)
+    result = _run_verify_playback(replay)
     assert result.ticks == 1
 
 
@@ -66,7 +65,7 @@ def test_rush_runner_checkpoints_capture_rng_marks() -> None:
     replay = rec.finish()
     checkpoints = []
 
-    run_replay(
+    _run_verify_playback(
         replay,
         checkpoints_out=checkpoints,
         checkpoint_ticks={0, 2},
@@ -104,7 +103,7 @@ def test_rush_runner_trace_rng_captures_presentation_marks() -> None:
     replay = rec.finish()
     checkpoints = []
 
-    run_replay(
+    _run_verify_playback(
         replay,
         trace_rng=True,
         checkpoints_out=checkpoints,

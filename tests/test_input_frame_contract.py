@@ -5,13 +5,13 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.net.lockstep_state import HostLockstepState
 from crimson.replay import ReplayHeader, ReplayRecorder
-from crimson.sim.driver.replay_runner import run_replay
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.helpers import assert_float_close
+from tests.replay_runner_helpers import _run_verify_playback
 
 
 def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
@@ -96,12 +96,12 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     checkpoints0 = []
     checkpoints1 = []
 
-    result0 = run_replay(
+    result0 = _run_verify_playback(
         replay,
         checkpoints_out=checkpoints0,
         checkpoint_ticks=set(range(5)),
     )
-    result1 = run_replay(
+    result1 = _run_verify_playback(
         replay,
         checkpoints_out=checkpoints1,
         checkpoint_ticks=set(range(5)),

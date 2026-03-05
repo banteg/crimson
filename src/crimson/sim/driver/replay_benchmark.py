@@ -21,9 +21,9 @@ from grim.view import ViewContext
 from ...game_modes import GameMode
 from ...modes.replay_playback_mode import ReplayPlaybackMode
 from ...replay import Replay
+from .playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from .render_telemetry import RenderTelemetryFrameSnapshot, RenderTelemetrySession
 from .render_telemetry_charts import write_render_telemetry_charts
-from .replay_runner import run_replay
 from .setup import RunResult, player0_most_used_weapon_id, player0_shots
 
 ProfileSortKey = Literal["cumtime", "tottime"]
@@ -174,11 +174,11 @@ def run_replay_render_benchmark(
         or render_charts_out_dir is not None,
     )
 
-    baseline_result = run_replay(
+    baseline_result = build_verify_playback_driver(
         replay,
         max_ticks=max_ticks,
         trace_rng=bool(trace_rng),
-    )
+    ).run()
 
     runtime_base_dir = Path(base_dir)
     runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
@@ -486,11 +486,13 @@ def run_replay_benchmark(
                 tick_callback = _on_tick
 
             try:
-                result = run_replay(
+                driver = build_verify_playback_driver(
                     replay,
                     max_ticks=max_ticks,
                     trace_rng=bool(trace_rng),
-                    tick_progress_callback=tick_callback,
+                )
+                result = driver.run(
+                    hooks=PlaybackWalkHooks(on_progress=tick_callback),
                 )
                 completed_run = True
                 return result

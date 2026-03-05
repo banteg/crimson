@@ -805,7 +805,8 @@ def cmd_replay_verify(
 ) -> None:
     """Headlessly simulate a replay and report resulting run stats."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.replay_runner import ReplayRunnerError, run_replay
+    from ..sim.driver.playback_driver import build_verify_playback_driver
+    from ..sim.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -818,11 +819,11 @@ def cmd_replay_verify(
     replay_bytes = Path(replay_path).read_bytes()
     try:
         replay = load_replay(replay_bytes)
-        result = run_replay(
+        result = build_verify_playback_driver(
             replay,
             max_ticks=max_ticks,
             trace_rng=bool(trace_rng),
-        )
+        ).run()
     except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -955,8 +956,9 @@ def cmd_replay_info(
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.replay_info import event_counts_by_kind, run_replay_info
-    from ..sim.driver.replay_runner import ReplayRunnerError
+    from ..sim.driver.playback_driver import build_verify_playback_driver
+    from ..sim.driver.replay_info import collect_replay_info, event_counts_by_kind
+    from ..sim.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -969,9 +971,13 @@ def cmd_replay_info(
     replay_bytes = Path(replay_path).read_bytes()
     try:
         replay = load_replay(replay_bytes)
-        result = run_replay_info(
-            replay,
-            max_ticks=max_ticks,
+        result = collect_replay_info(
+            build_verify_playback_driver(
+                replay,
+                max_ticks=max_ticks,
+                warn_on_version_mismatch=True,
+                trace_rng=False,
+            ),
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
@@ -1122,7 +1128,7 @@ def cmd_replay_benchmark(
         run_replay_benchmark,
         run_replay_render_benchmark,
     )
-    from ..sim.driver.replay_runner import ReplayRunnerError
+    from ..sim.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1430,7 +1436,7 @@ def cmd_replay_render(
     """Render replay playback to video using ffmpeg."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
     from ..sim.driver.replay_render import ReplayRenderError, run_replay_render_video
-    from ..sim.driver.replay_runner import ReplayRunnerError
+    from ..sim.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1521,7 +1527,8 @@ def cmd_replay_verify_checkpoints(
         default_checkpoints_path,
         load_checkpoints_file,
     )
-    from ..sim.driver.replay_runner import ReplayRunnerError, run_replay
+    from ..sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+    from ..sim.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1556,12 +1563,19 @@ def cmd_replay_verify_checkpoints(
     actual = []
 
     try:
-        result = run_replay(
+        driver = build_verify_playback_driver(
             replay,
             max_ticks=max_ticks,
             trace_rng=bool(trace_rng),
-            checkpoints_out=actual,
-            checkpoint_ticks=checkpoint_ticks,
+        )
+
+        def _after_tick(tick_result, _world) -> None:
+            tick_index = int(tick_result.source_tick.tick_index)
+            if tick_index in checkpoint_ticks:
+                actual.append(driver.build_checkpoint(tick_result=tick_result))
+
+        result = driver.run(
+            hooks=PlaybackWalkHooks(after_tick=_after_tick),
         )
     except (ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
