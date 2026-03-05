@@ -13,6 +13,8 @@ Not everything is split-brained anymore.
 - Replay ticks already carry `dt + inputs + commands`.
 - Lockstep `TickFrame` already carries deterministic `commands`.
 - `TickResult` now carries the source `ResolvedTick`, so replay/live/LAN share the same in-memory pre-step tick shape.
+- Quest dynamic runtime state now lives in `QuestSpawnState` plus `DeterministicSession.elapsed_ms`; generic tick/result types no longer re-express quest-only fields.
+- Quest rollback/resync snapshots now carry the authoritative quest runtime, including the remaining spawn table.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched ownership and orchestration layers still wrapped around it.
@@ -25,11 +27,11 @@ Today the runtime still has several competing representations of the same truth.
 
 The same gameplay truth is often mirrored across:
 
-- mode-local shadow state such as `_SurvivalState`, `_RushState`, `_QuestRunState`
-- deterministic spawn/runtime state such as `SurvivalSpawnState`, `RushSpawnState`, `QuestSpawnState`
-- generic tick result objects such as `DeterministicSessionTick` and `PlaybackTickOutcome`
+- mode-local shadow state such as `_SurvivalState` and `_RushState`
+- deterministic spawn/runtime state such as `SurvivalSpawnState` and `RushSpawnState`
+- session timing such as `DeterministicSession.elapsed_ms`
 
-Quest is the clearest example: state is copied into `QuestSpawnState`, stepped deterministically, then copied back into `_QuestRunState`, while some of the same data is also carried through generic tick/result types.
+Quest is mostly out of this category now. The remaining duplicated ownership pressure is concentrated in survival and rush, where mode-local shadow structs still mirror state that already exists in the deterministic session and spawn state.
 
 ### 2) The frame pump exists in several places
 
@@ -42,18 +44,9 @@ Variants of the same loop exist in:
 
 They all decide how many ticks to run, step the session, apply metadata, apply presentation outputs, and optionally record/checkpoint/sync.
 
-### 3) Generic tick results still carry mode-specific state
+### 3) Presentation reactions are not yet fully single-sourced
 
-The provider/runner contract is unified now, but some generic runtime types still re-express quest state:
-
-- `DeterministicSessionTick`
-- `PlaybackTickOutcome`
-
-That is a weaker split-brain than the old provider split, but it is still duplicated ownership pressure.
-
-### 4) Presentation reactions are not yet fully single-sourced
-
-The deterministic step can already plan presentation work, but some reactions still live in ad hoc runtime code:
+The deterministic step can already plan presentation work, and quest now computes its runtime flags in one place, but some reactions still live in ad hoc runtime code:
 
 - perk-pick UI SFX
 - quest hit SFX
@@ -81,9 +74,9 @@ flowchart TD
     end
 
     subgraph StateOwners["Competing State Owners"]
-        ModeShadow["Mode shadow state<br/>_SurvivalState / _RushState / _QuestRunState"]
-        SpawnState["Spawn/runtime state<br/>SurvivalSpawnState / RushSpawnState / QuestSpawnState"]
-        GenericTick["Generic tick/result payloads<br/>DeterministicSessionTick / PlaybackTickOutcome"]
+        ModeShadow["Mode shadow state<br/>_SurvivalState / _RushState"]
+        SpawnState["Spawn/runtime state<br/>SurvivalSpawnState / RushSpawnState"]
+        QuestState["Quest runtime now authoritative<br/>QuestSpawnState + session.elapsed_ms"]
     end
 
     subgraph Drivers["Frame Drivers"]
@@ -99,13 +92,13 @@ flowchart TD
     Replay --> Playback --> Tick
 
     Session --> SpawnState
-    Session --> GenericTick
+    Session --> QuestState
     SpawnState <-->|copy in/out| ModeShadow
-    GenericTick -->|re-expresses mode state| ModeShadow
 
     Base -->|step + apply + record + sync| Runner
     World -->|step + apply| Runner
     ReplayMode -->|apply + special reactions| Playback
+    Playback --> QuestState
 ```
 
 ## Why This Hurts
@@ -142,7 +135,7 @@ Per mode, there should be one authoritative owner for dynamic deterministic stat
 
 - Survival: session timing + `SurvivalSpawnState`
 - Rush: session timing + `RushSpawnState`
-- Quest: quest metadata + `QuestSpawnState`
+- Quest: quest metadata + `QuestSpawnState` plus session timing (already true)
 
 UI-facing caches or read models are fine, but they should not be separate sources of truth.
 
@@ -206,13 +199,14 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is to make mode runtime state authoritative, starting with quest.
+The best next refactor is to finish mode runtime state ownership cleanup for survival and rush.
 
 That is now the highest-leverage remaining split-brain because:
 
 - the canonical tick contract already landed
-- quest still copies dynamic state between `_QuestRunState` and `QuestSpawnState`
-- generic tick/result objects still carry quest-specific runtime fields
-- deleting that mirrored ownership will simplify LAN resync, replay extraction, and the later shared-loop cleanup
+- quest already established the target pattern
+- survival and rush still mirror dynamic runtime state in `_SurvivalState` and `_RushState`
+- their resync restore paths still patch shadow state directly instead of restoring only the authoritative session/spawn owners
+- deleting those mirrors will make the later shared-loop cleanup smaller and less risky
 
-If state ownership is cleaned up next, the later orchestration refactors become much smaller and less risky.
+After survival and rush are cleaned up, the next meaningful target is the duplicated frame-step/apply orchestration across gameplay, world runtime, and replay playback.
