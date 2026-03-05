@@ -66,7 +66,6 @@ def _apply_batch(
         world.sim_world.apply_step_metadata(
             events=step.events,
             presentation=step.presentation,
-            command_hash=str(step.command_hash),
             dt_sim=float(step.dt_sim),
             game_tune_started=bool(session.game_tune_started),
         )
@@ -154,7 +153,7 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
 
 
 def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
-    def _advance_once() -> tuple[list[int], list[str]]:
+    def _advance_once() -> tuple[list[int], list[int]]:
         world = WorldRuntimeHost(assets_dir=_assets_dir())
         session, runner = _build_runner(
             world,
@@ -171,12 +170,12 @@ def test_runner_multi_tick_batch_apply_order_is_deterministic() -> None:
             dt_seconds=(3.0 / 60.0) + 1e-9,
         )
         order = _apply_batch(world, session=session, batch=batch)
-        command_hashes = [str(result.command_hash) for result in batch.completed_results]
-        return order, command_hashes
+        tick_indices = [int(result.tick_index) for result in batch.completed_results]
+        return order, tick_indices
 
-    order_a, hashes_a = _advance_once()
-    order_b, hashes_b = _advance_once()
+    order_a, indices_a = _advance_once()
+    order_b, indices_b = _advance_once()
 
     assert order_a == [0, 1, 2]
     assert order_b == [0, 1, 2]
-    assert hashes_a == hashes_b
+    assert indices_a == indices_b

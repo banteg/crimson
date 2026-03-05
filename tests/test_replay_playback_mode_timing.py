@@ -84,7 +84,7 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
                 batch_status=InputStatus.READY,
                 next_tick_index=1,
                 completed_results=[
-                    TickResult(tick_index=0, command_hash="h0", dt_sim=1.0 / 60.0, payload=object()),
+                    TickResult(tick_index=0, dt_sim=1.0 / 60.0, payload=object()),
                 ],
             ),
         ],
@@ -117,8 +117,8 @@ def test_replay_runner_eos_applies_partial_completed_results(replay_playback_vie
                 batch_status=InputStatus.EOS,
                 next_tick_index=2,
                 completed_results=[
-                    TickResult(tick_index=0, command_hash="h0", dt_sim=1.0 / 60.0, payload=object()),
-                    TickResult(tick_index=1, command_hash="h1", dt_sim=1.0 / 60.0, payload=object()),
+                    TickResult(tick_index=0, dt_sim=1.0 / 60.0, payload=object()),
+                    TickResult(tick_index=1, dt_sim=1.0 / 60.0, payload=object()),
                 ],
             ),
         ],
@@ -163,7 +163,6 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(r
         step=SimpleNamespace(
             events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
             presentation=PresentationStepCommands(),
-            command_hash="h0",
             dt_sim=1.0 / 60.0,
         ),
         spawn_timeline_ms=0.0,
@@ -189,15 +188,13 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(r
                 completed_results=[
                     TickResult(
                         tick_index=int(start_tick),
-                        command_hash="h0",
                         dt_sim=1.0 / 60.0,
                         payload=step_payload,
                     ),
                     TickResult(
                         tick_index=int(start_tick) + 1,
-                        command_hash="h1",
                         dt_sim=1.0 / 60.0,
-                        payload=SimpleNamespace(command_hash="h1"),
+                        payload=SimpleNamespace(),
                     ),
                 ],
             )

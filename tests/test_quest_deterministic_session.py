@@ -48,7 +48,7 @@ def test_quest_session_tick_exposes_required_fields() -> None:
         inputs=[PlayerInput(aim=Vec2(512.0, 512.0))],
     )
 
-    assert tick.step.command_hash
+    assert tick.step is not None
     assert isinstance(tick.elapsed_ms, float)
     assert isinstance(tick.rng_marks, dict)
     assert isinstance(tick.creature_count_world_step, int)
@@ -70,14 +70,14 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
     session1, spawn1 = _build_session(seed=101)
     inputs = [PlayerInput(aim=Vec2(512.0, 512.0))]
 
-    trace0: list[tuple[str, int, float, float, float]] = []
-    trace1: list[tuple[str, int, float, float, float]] = []
+    trace0: list[tuple[float, int, float, float, float]] = []
+    trace1: list[tuple[float, int, float, float, float]] = []
 
     for _ in range(8):
         tick0 = session0.step_tick(timing=session0.timing_for_dt(1.0 / 60.0), inputs=inputs)
         trace0.append(
             (
-                str(tick0.step.command_hash),
+                float(tick0.step.dt_sim),
                 int(tick0.rng_marks.get("after_world_step", -1)),
                 float(spawn0.spawn_timeline_ms),
                 float(spawn0.no_creatures_timer_ms),
@@ -88,7 +88,7 @@ def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
         tick1 = session1.step_tick(timing=session1.timing_for_dt(1.0 / 60.0), inputs=inputs)
         trace1.append(
             (
-                str(tick1.step.command_hash),
+                float(tick1.step.dt_sim),
                 int(tick1.rng_marks.get("after_world_step", -1)),
                 float(spawn1.spawn_timeline_ms),
                 float(spawn1.no_creatures_timer_ms),

@@ -25,7 +25,7 @@ class ReplayRecorder:
         self._tick_index = 0
         self._inputs: list[PackedTickInputs] = []
         self._dt: list[float] = []
-        self._events: list[ReplayEvent] = []
+        self._events: list[ReplayEvent] = []  # TODO(PR-B): remove event side-channel, use record_tick(inputs, commands=...)
 
     @property
     def header(self) -> ReplayHeader:

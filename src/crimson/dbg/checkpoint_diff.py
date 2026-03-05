@@ -65,7 +65,7 @@ def _checkpoint_to_obj(
 ) -> dict[str, object]:
     obj = msgspec.to_builtins(checkpoint)
     if not include_hash_fields:
-        for key in ("state_hash", "command_hash"):
+        for key in ("state_hash",):
             obj.pop(key, None)
     if not include_rng_fields:
         for key in ("rng_state", "rng_marks"):
@@ -113,19 +113,6 @@ def compare_checkpoints(
                     tick_index=tick,
                     expected=exp,
                     actual=None,
-                ),
-            )
-
-        if str(exp.command_hash) and str(exp.command_hash) != str(act.command_hash):
-            return ReplayDiffResult(
-                ok=False,
-                checked_count=checked_count,
-                first_rng_only_tick=first_rng_only_tick,
-                failure=ReplayDiffFailure(
-                    kind="command_mismatch",
-                    tick_index=tick,
-                    expected=exp,
-                    actual=act,
                 ),
             )
 

@@ -266,7 +266,6 @@ def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) 
     tick0 = next(row for row in ticks if int(row.tick_index) == 0)
     checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
     checkpoint["state_hash"] = "ffffffffffffffff"
-    checkpoint["command_hash"] = "eeeeeeeeeeeeeeee"
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(

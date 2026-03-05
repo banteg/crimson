@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
-from typing import cast
 
 import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.modes.quest_mode import QuestMode
@@ -12,8 +10,6 @@ from crimson.net.relay_protocol import RoomStart
 from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRuntime
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
-from crimson.sim.timing import FrameTiming
-from crimson.sim.world_state import WorldEvents
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
@@ -63,49 +59,17 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.data["player_count"] = 3
     ctx = ViewContext(assets_dir=assets_dir)
-    step_tick = mocker.Mock(
-        return_value=SimpleNamespace(
-            step=SimpleNamespace(
-                command_hash="0",
-                dt_sim=1.0 / 60.0,
-                presentation=None,
-                presentation_plan_ms=0.0,
-                events=WorldEvents(
-                    hits=[],
-                    deaths=(),
-                    pickups=[],
-                    sfx=[],
-                ),
-            ),
-            command_hash="0",
-            dt_sim=1.0 / 60.0,
-            presentation_plan_ms=0.0,
-        ),
-    )
+    mode = QuestMode(ctx, config=cfg)
 
-    class _FakeSession:
-        def __init__(self) -> None:
-            self.detail_preset = 5
-            self.gore_disabled = 0
-            self.game_tune_started = False
+    step_tick_calls: list[list[PlayerInput]] = []
+    original_step_tick = DeterministicSession.step_tick
 
-        def timing_for_dt(self, dt: float) -> FrameTiming:
-            return FrameTiming.compute(
-                float(dt),
-                time_scale_active_entry=False,
-                time_scale_factor=1.0,
-                zero_gate_active=False,
-            )
+    def _capture_step_tick(self, *, timing, inputs, trace_rng=False, commands=()):
+        step_tick_calls.append(list(inputs))
+        return original_step_tick(self, timing=timing, inputs=inputs, trace_rng=trace_rng, commands=commands)
 
-        def step_tick(self, *, timing, inputs, trace_rng=False):
-            return step_tick(timing=timing, inputs=inputs, trace_rng=trace_rng)
+    mocker.patch.object(DeterministicSession, "step_tick", _capture_step_tick)
 
-    fake_session = _FakeSession()
-    mode = QuestMode(
-        ctx,
-        config=cfg,
-        session_factory=lambda **_kwargs: cast(DeterministicSession, fake_session),
-    )
     inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.sim_world.players))]
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)
     mocker.patch.object(mode, "_tick_frame", side_effect=lambda _dt: (0.02, 20.0))
@@ -114,8 +78,8 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mocker.patch.object(mode, "_death_transition_ready", side_effect=lambda: False)
     mode.update(0.02)
 
-    step_tick.assert_called_once()
-    assert step_tick.call_args.kwargs["inputs"] == inputs
+    assert len(step_tick_calls) == 1
+    assert step_tick_calls[0] == inputs
     assert len(inputs) == 3
 
 

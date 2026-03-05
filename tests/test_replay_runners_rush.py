@@ -71,7 +71,6 @@ def test_rush_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
-        assert len(ckpt.command_hash) == 16
         assert {
             "before_world_step",
             "gw_begin",

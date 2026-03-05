@@ -220,7 +220,6 @@ class PlaybackTickOutcome:
     world: WorldState
     step: DeterministicStepResult
     step_events: WorldEvents
-    command_hash: str
     elapsed_ms: float
     dt_sim: float
     rng_marks: dict[str, int]
@@ -716,7 +715,6 @@ class PlaybackDriver:
                 world=self.world,
                 step=step,
                 step_events=step.events,
-                command_hash=str(step.command_hash),
                 elapsed_ms=float(tick.elapsed_ms),
                 dt_sim=float(step.dt_sim),
                 rng_marks=dict(tick.rng_marks),
@@ -796,7 +794,6 @@ class PlaybackDriver:
                 rng_marks=checkpoint_rng_marks,
                 deaths=outcome.step_events.deaths,
                 events=outcome.step_events,
-                command_hash=str(outcome.command_hash),
             ),
         )
 
@@ -814,7 +811,6 @@ class PlaybackDriver:
                 rng_marks=self._mode_runtime.terminal_checkpoint_rng_marks(terminal),
                 deaths=[],
                 events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
-                command_hash="",
             ),
         )
 

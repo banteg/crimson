@@ -210,7 +210,7 @@ class InputBatch(msgspec.Struct, tag="input_batch", forbid_unknown_fields=True):
 class TickFrame(msgspec.Struct, tag="tick_frame", forbid_unknown_fields=True):
     tick_index: int = 0
     frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
-    command_hash: str = ""
+    command_hash: str = ""  # TODO(PR-D): remove — command_hash is always empty after PR-A
     state_hash: str = ""
 
 

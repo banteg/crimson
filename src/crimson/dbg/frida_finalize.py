@@ -227,7 +227,6 @@ def _canonical_channels_payload(
         channels.checkpoint,
         tick_index=int(local_tick),
         state_hash="",
-        command_hash="",
     )
     expected_rng_marks = canonical_rng_marks(
         rng_state=int(checkpoint.rng_state),

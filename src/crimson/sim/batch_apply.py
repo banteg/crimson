@@ -15,7 +15,6 @@ class SimMetadataSink(Protocol):
         *,
         events: WorldEvents,
         presentation: PresentationStepCommands,
-        command_hash: str,
         dt_sim: float,
         game_tune_started: bool,
     ) -> None: ...
@@ -24,7 +23,6 @@ class SimMetadataSink(Protocol):
 class DeterministicStepPayload(Protocol):
     events: WorldEvents
     presentation: PresentationStepCommands | None
-    command_hash: str
     dt_sim: float
 
 
@@ -71,7 +69,6 @@ def apply_tick_to_sim(
     sim_world.apply_step_metadata(
         events=step.events,
         presentation=presentation,
-        command_hash=str(step.command_hash),
         dt_sim=float(step.dt_sim),
         game_tune_started=bool(game_tune_started),
     )

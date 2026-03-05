@@ -10,17 +10,16 @@ if TYPE_CHECKING:
     from .input import PlayerInput
 
 class TickHashes(msgspec.Struct, frozen=True):
-    command_hash: str
     state_hash: str | None = None
 
 
 class TickResult(msgspec.Struct):
     tick_index: int
-    command_hash: str
     dt_sim: float
     presentation_plan_ms: float = 0.0
     payload: object | None = None
     inputs: list[PlayerInput] | None = None
+    commands: tuple[object, ...] = ()
     hashes: TickHashes | None = None
     replay_tick_index: int | None = None
     lan_sync: LanTickSync | None = None
@@ -30,7 +29,7 @@ class TickResult(msgspec.Struct):
 class LanFrameSample:
     frame_tick_index: int
     frame_inputs: tuple[list[float], ...]
-    remote_command_hash: str
+    remote_command_hash: str  # TODO(PR-D): remove — always empty after PR-A
     remote_state_hash: str
 
 
@@ -38,7 +37,7 @@ class LanFrameSample:
 class LanTickSync:
     frame_tick_index: int
     frame_inputs: tuple[list[float], ...]
-    remote_command_hash: str
+    remote_command_hash: str  # TODO(PR-D): remove — always empty after PR-A
     remote_state_hash: str
     host_state_hash: str = ""
 
