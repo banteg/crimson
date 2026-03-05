@@ -8,10 +8,10 @@ behavioral contract of the frame-driver, not internal wiring.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 from builders import FakeRunner, make_tick_payload
+from builders.session import make_session
 
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
@@ -22,13 +22,6 @@ from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, Tic
 from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
-
-
-@dataclass
-class _StubSession:
-    """Minimal stub matching the ``game_tune_started`` attribute access."""
-
-    game_tune_started: bool = False
 
 
 class _DummyRuntime:
@@ -131,7 +124,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     stop = mode._consume_lan_tick_frames(
         runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=_StubSession(),  # type: ignore[arg-type]
+        session=make_session()[0],
         role="host",
         dt_tick=1.0 / 60.0,
         policy=policy,
@@ -164,7 +157,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
     stop = mode._consume_lan_tick_frames(
         runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=_StubSession(),  # type: ignore[arg-type]
+        session=make_session()[0],
         role="host",
         dt_tick=1.0 / 60.0,
         policy=policy,
@@ -242,7 +235,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     stop = mode._consume_lan_tick_frames(
         runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=_StubSession(),  # type: ignore[arg-type]
+        session=make_session()[0],
         role="host",
         dt_tick=1.0 / 60.0,
         policy=policy,
