@@ -686,8 +686,8 @@ class QuestMode(BaseGameplayMode):
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._pending_menu_open_commands.append(PerkMenuOpenCommand(player_index=0))
+                if opened:
+                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
                 player_count=len(self.sim_world.players),
@@ -696,8 +696,8 @@ class QuestMode(BaseGameplayMode):
                 if self._replay_recorder is not None:
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
-                if opened and self._replay_recorder is not None:
-                    self._pending_menu_open_commands.append(PerkMenuOpenCommand(player_index=0))
+                if opened:
+                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
         perk_menu_active = self._perk_menu.active
 

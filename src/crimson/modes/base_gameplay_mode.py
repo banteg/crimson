@@ -394,7 +394,6 @@ class BaseGameplayMode:
         self._terrain_regen_counter = 0
         self._bootstrap_seed = 0
         self._replay_recorder: ReplayRecorder | None = None
-        self._pending_menu_open_commands: list[GameCommand] = []
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         self._replay_checkpoints_sample_rate = 60
         self._replay_checkpoints_last_tick: int | None = None
@@ -2025,9 +2024,7 @@ class BaseGameplayMode:
             if replay_tick_index is None and recorder is not None:
                 inputs = tick_result.inputs
                 if inputs is not None:
-                    replay_commands = cast("tuple[GameCommand, ...]", tick_result.commands) + tuple(self._pending_menu_open_commands)
-                    self._pending_menu_open_commands.clear()
-                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=replay_commands))
+                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=cast("tuple[GameCommand, ...]", tick_result.commands)))
                     tick_result.replay_tick_index = replay_tick_index
             hashes = tick_result.hashes
             applied = _AppliedBatchTick(
