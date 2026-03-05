@@ -200,12 +200,6 @@ class SurvivalMode(BaseGameplayMode):
                 lines.append(current)
         return lines
 
-    def _camera_world_to_screen(self, pos: Vec2) -> Vec2:
-        return self.world_to_screen(pos)
-
-    def _camera_screen_to_world(self, pos: Vec2) -> Vec2:
-        return self.screen_to_world(pos)
-
     def open(self) -> None:
         super().open()
 
