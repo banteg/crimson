@@ -11,7 +11,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.net.relay_protocol import RoomStart
 from crimson.net.rollback_runtime import JoinRollbackRuntimeConfig, RollbackRuntime
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import QuestDeterministicSession
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.timing import FrameTiming
 from crimson.sim.world_state import WorldEvents
 from grim.config import ensure_crimson_cfg
@@ -80,12 +80,6 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
             command_hash="0",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
-            spawn_timeline_ms=0.0,
-            no_creatures_timer_ms=0.0,
-            completion_transition_ms=-1.0,
-            play_hit_sfx=False,
-            play_completion_music=False,
-            completed=False,
         ),
     )
 
@@ -93,10 +87,6 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
         def __init__(self) -> None:
             self.detail_preset = 5
             self.gore_disabled = 0
-            self.spawn_entries = ()
-            self.spawn_timeline_ms = 0.0
-            self.no_creatures_timer_ms = 0.0
-            self.completion_transition_ms = -1.0
             self.game_tune_started = False
 
         def timing_for_dt(self, dt: float) -> FrameTiming:
@@ -114,7 +104,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     mode = QuestMode(
         ctx,
         config=cfg,
-        session_factory=lambda **_kwargs: cast(QuestDeterministicSession, fake_session),
+        session_factory=lambda **_kwargs: cast(DeterministicSession, fake_session),
     )
     inputs = [PlayerInput(move=Vec2(float(idx), 0.0)) for idx in range(len(mode.sim_world.players))]
     mocker.patch.object(mode, "_update_audio", side_effect=lambda _dt: None)

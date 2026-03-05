@@ -41,7 +41,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import InputCommand
-from ..sim.sessions import DeterministicSessionStepTick, QuestDeterministicSession, QuestDeterministicSessionTick
+from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -72,7 +72,7 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
-QuestSessionFactory = Callable[..., QuestDeterministicSession]
+QuestSessionFactory = Callable[..., DeterministicSession]
 
 
 class _QuestRunState(msgspec.Struct):
@@ -123,7 +123,7 @@ class QuestMode(BaseGameplayMode):
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
-        session_factory: QuestSessionFactory = QuestDeterministicSession,
+        session_factory: QuestSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
             ctx,
@@ -154,7 +154,8 @@ class QuestMode(BaseGameplayMode):
             defer_pick_apply=True,
         )
         self._session_factory = session_factory
-        self._sim_session: QuestDeterministicSession | None = self._new_sim_session(spawn_entries=())
+        self._quest_spawn_state = QuestSpawnState()
+        self._sim_session: DeterministicSession | None = self._new_sim_session(spawn_entries=())
         self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:
@@ -196,17 +197,23 @@ class QuestMode(BaseGameplayMode):
         )
         return texture
 
-    def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> QuestDeterministicSession:
+    def _new_sim_session(self, *, spawn_entries: tuple[SpawnEntry, ...]) -> DeterministicSession:
+        quest_spawn_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
+        self._quest_spawn_state = quest_spawn_state
         return self._session_factory(
             world=self.sim_world.world_state,
             world_size=float(self.world_size),
             damage_scale_by_type=self.sim_world.damage_scale_by_type,
             fx_queue=self.render_resources.fx_queue,
             fx_queue_rotated=self.render_resources.fx_queue_rotated,
-            spawn_entries=spawn_entries,
+            game_mode=GameMode.QUESTS,
+            perk_progression_enabled=True,
             detail_preset=5,
             gore_disabled=0,
+            demo_mode_active=bool(self.demo_mode_active),
             clear_fx_queues_each_tick=False,
+            finalize_post_render_lifecycle=True,
+            post_step_hook=lambda ctx: quest_post_step(ctx, quest_spawn_state),
         )
 
     def _reset_perk_prompt(self) -> None:
@@ -268,7 +275,7 @@ class QuestMode(BaseGameplayMode):
     def _lan_mode_name(self) -> Literal["quests"]:
         return "quests"
 
-    def _lan_match_session(self) -> QuestDeterministicSession | None:
+    def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
     def _lan_frame_policy(self) -> LanFramePolicy:
@@ -291,13 +298,12 @@ class QuestMode(BaseGameplayMode):
         dt_tick: float,
     ) -> bool:
         _ = role, dt_ui_ms, dt_tick
-        session_quest = cast(QuestDeterministicSession, session)
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        session_quest.spawn_entries = tuple(self._quest.spawn_entries)
-        session_quest.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-        session_quest.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-        session_quest.completion_transition_ms = float(self._quest.completion_transition_ms)
+        self._quest_spawn_state.spawn_entries = tuple(self._quest.spawn_entries)
+        self._quest_spawn_state.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+        self._quest_spawn_state.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+        self._quest_spawn_state.completion_transition_ms = float(self._quest.completion_transition_ms)
         return True
 
     def _quest_on_tick_applied(
@@ -306,13 +312,14 @@ class QuestMode(BaseGameplayMode):
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:
-        tick = cast(QuestDeterministicSessionTick, tick)
         session = self._sim_session
+        _ = tick
+        spawn_state = self._quest_spawn_state
         if session is not None:
-            self._quest.spawn_entries = tuple(session.spawn_entries)
-        self._quest.spawn_timeline_ms = float(tick.spawn_timeline_ms)
-        self._quest.no_creatures_timer_ms = float(tick.no_creatures_timer_ms)
-        self._quest.completion_transition_ms = float(tick.completion_transition_ms)
+            self._quest.spawn_entries = tuple(spawn_state.spawn_entries)
+        self._quest.spawn_timeline_ms = float(spawn_state.spawn_timeline_ms)
+        self._quest.no_creatures_timer_ms = float(spawn_state.no_creatures_timer_ms)
+        self._quest.completion_transition_ms = float(spawn_state.completion_transition_ms)
         self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
         if frame_tick_index is not None:
             self._store_net_runtime_snapshot(
@@ -320,19 +327,19 @@ class QuestMode(BaseGameplayMode):
                     tick_index=int(frame_tick_index),
                     replay_state=self._net_replay_snapshot_state(),
                     runtime_state=QuestsRuntimeSnapshotV2(
-                        elapsed_ms=float(tick.elapsed_ms),
-                        spawn_timeline_ms=float(tick.spawn_timeline_ms),
-                        no_creatures_timer_ms=float(tick.no_creatures_timer_ms),
-                        completion_transition_ms=float(tick.completion_transition_ms),
+                        elapsed_ms=float(session.elapsed_ms if session is not None else 0.0),
+                        spawn_timeline_ms=float(spawn_state.spawn_timeline_ms),
+                        no_creatures_timer_ms=float(spawn_state.no_creatures_timer_ms),
+                        completion_transition_ms=float(spawn_state.completion_transition_ms),
                         quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
                         perk_pending_count=int(self.state.perk_selection.pending_count),
                     ),
                 ),
             )
 
-        if tick.play_hit_sfx:
+        if spawn_state.play_hit_sfx:
             self.audio_bridge.router.play_sfx("sfx_questhit")
-        if tick.play_completion_music and self.audio is not None:
+        if spawn_state.play_completion_music and self.audio is not None:
             play_music(self.audio, "crimsonquest")
             playback = self.audio.music.playbacks.get("crimsonquest")
             if playback is not None:
@@ -342,7 +349,7 @@ class QuestMode(BaseGameplayMode):
                 except RuntimeError:
                     playback.volume = 0.0
 
-        if tick.completed:
+        if spawn_state.completed:
             if self._outcome is None:
                 fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
                 most_used_weapon_id = most_used_weapon_id_for_player(
@@ -757,10 +764,10 @@ class QuestMode(BaseGameplayMode):
 
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
-        session.spawn_entries = tuple(self._quest.spawn_entries)
-        session.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
-        session.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
-        session.completion_transition_ms = float(self._quest.completion_transition_ms)
+        self._quest_spawn_state.spawn_entries = tuple(self._quest.spawn_entries)
+        self._quest_spawn_state.spawn_timeline_ms = float(self._quest.spawn_timeline_ms)
+        self._quest_spawn_state.no_creatures_timer_ms = float(self._quest.no_creatures_timer_ms)
+        self._quest_spawn_state.completion_transition_ms = float(self._quest.completion_transition_ms)
 
         if self.audio_bridge.router is not None:
             self.audio_bridge.router.audio = self.audio

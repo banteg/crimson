@@ -84,7 +84,7 @@ from ..sim.input_providers import (
     LocalInputProvider,
     NetworkInputProvider,
 )
-from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestDeterministicSession
+from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
@@ -134,7 +134,7 @@ class _ModeFrameState:
 
 LanStepAction = Literal["continue", "stop_before_finalize", "stop_after_finalize"]
 
-LanSession: TypeAlias = DeterministicSession | QuestDeterministicSession
+LanSession: TypeAlias = DeterministicSession
 
 
 def _lan_prepare_frame_default(_role: str, _dt_ui_ms: float, _session: LanSession, _dt_tick: float) -> bool:
@@ -429,7 +429,7 @@ class BaseGameplayMode:
         )
         self._tick_input_provider: LocalInputProvider | _LanRuntimeInputProvider | None = None
         self._tick_runner: TickRunner | None = None
-        self._tick_runner_session: DeterministicSession | QuestDeterministicSession | None = None
+        self._tick_runner_session: DeterministicSession | None = None
         self._tick_runner_is_networked = False
         self._tick_runner_network_role = ""
         self._tick_runner_frame_index = 0
@@ -1472,7 +1472,7 @@ class BaseGameplayMode:
     def _new_tick_runner(
         self,
         *,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: DeterministicSession,
         input_provider: InputProvider,
     ) -> TickRunner:
         return TickRunner(
@@ -1529,7 +1529,7 @@ class BaseGameplayMode:
     def _gameplay_tick_dt(
         self,
         *,
-        session: DeterministicSession | QuestDeterministicSession | None = None,
+        session: DeterministicSession | None = None,
     ) -> float:
         _ = session
         return 1.0 / float(self._gameplay_tick_rate())
@@ -1608,7 +1608,7 @@ class BaseGameplayMode:
     def _ensure_tick_runner(
         self,
         *,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: DeterministicSession,
         is_networked: bool,
         lan_runtime: LanRuntime | None = None,
         lockstep_runtime: LockstepRuntime | None = None,
@@ -1795,7 +1795,7 @@ class BaseGameplayMode:
     def _lan_mode_name(self) -> Literal["survival", "rush", "quests"]:
         raise NotImplementedError
 
-    def _lan_match_session(self) -> DeterministicSession | QuestDeterministicSession | None:
+    def _lan_match_session(self) -> DeterministicSession | None:
         raise NotImplementedError
 
     def _lan_frame_policy(self) -> LanFramePolicy:
@@ -1930,7 +1930,7 @@ class BaseGameplayMode:
         *,
         runtime: LanRuntime,
         lockstep_runtime: LockstepRuntime | None,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: DeterministicSession,
         role: str,
         dt_tick: float,
         policy: LanFramePolicy,
@@ -2049,7 +2049,7 @@ class BaseGameplayMode:
         self,
         *,
         batch: TickBatchResult,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: DeterministicSession,
         recorder: ReplayRecorder | None = None,
         lan_sync_callbacks: LanSyncCallbacks | None = None,
         on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
@@ -2154,7 +2154,7 @@ class BaseGameplayMode:
         self,
         *,
         dt_frame: float,
-        session: DeterministicSession | QuestDeterministicSession,
+        session: DeterministicSession,
         recorder: ReplayRecorder | None,
         on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
         on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
