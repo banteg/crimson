@@ -15,6 +15,9 @@ Hard decisions for simplicity:
 - No stringly command payloads (`InputCommand.name/payload`).
 - No terminal tick event phase.
 - Perk menu opening remains explicit as a typed command to preserve deterministic RNG draw timing.
+- Replay playback reads replay ticks directly (no replay `InputProvider`/`Journal` layer).
+- LAN deterministic commands travel on host-authored canonical tick frames (not out-of-band net messages).
+- Command model is intentionally closed: only perk menu open + perk pick command variants.
 - One tick orchestration path for live, replay verify, replay play, replay render, replay benchmark, and LAN.
 
 Core change:
@@ -54,14 +57,13 @@ This permits silent drift: a path can run valid ticks while forgetting replay ev
 2. Single source of truth: one engine step path for all modes.
 3. Tick locality: all deterministic inputs for tick `N` live in tick record `N`.
 4. Deletion over adaptation: remove legacy branches rather than maintain toggles.
+5. Closed command scope: do not build extension machinery for command kinds that do not exist in game scope.
 
 ## 6. Target Architecture
 
 ### 6.1 Domain Types (new)
 
-Introduce typed command unions:
-
-- `src/crimson/sim/commands.py`
+Introduce a closed typed command union (no extensibility hooks), colocated with existing sim input contracts (no standalone `sim/commands.py` file):
 
 ```python
 from __future__ import annotations
@@ -76,15 +78,6 @@ class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True):
     choice_index: int
 
 GameCommand: TypeAlias = PerkMenuOpenCommand | PerkPickCommand
-```
-
-Tick packet type:
-
-```python
-class TickPacket(msgspec.Struct, frozen=True):
-    status: InputStatus
-    inputs: list[PlayerInput]
-    commands: tuple[GameCommand, ...] = ()
 ```
 
 Replay v2 tick record type:
@@ -107,7 +100,7 @@ class Replay(msgspec.Struct):
 
 For each tick:
 
-1. Provider returns `TickPacket(status, inputs, commands)`.
+1. Runtime resolves inputs + commands for the tick.
 2. Session applies typed commands in deterministic command phase.
 3. Session runs deterministic world step.
 4. Session returns `DeterministicSessionStepTick` + command hash/state hash metadata.
@@ -131,6 +124,8 @@ Rationale:
 - It may own rendering/audio/UI only.
 - Tick progression must call the same engine that verify/info use.
 - No direct custom semantics around replay events.
+- `PlaybackDriver` iterates `Replay.ticks` directly.
+- `ReplayInputProvider` and `ReplayJournal` are removed instead of being retyped.
 
 ### 6.5 Perk Menu RNG Semantics (explicit decision)
 
@@ -149,7 +144,6 @@ Update:
 - `src/crimson/replay/types.py`
 - `src/crimson/replay/codec.py`
 - `src/crimson/replay/recorder.py`
-- `src/crimson/replay/journal.py`
 - `src/crimson/replay/__init__.py`
 
 Changes:
@@ -157,9 +151,10 @@ Changes:
 1. Bump replay format version (v9).
 2. Replace `inputs + dt + events` with `ticks: list[ReplayTick]`.
 3. Delete `PerkPickEvent`, `PerkMenuOpenEvent`, `ReplayEvent`.
-4. Delete dt-row logic in codec and runner contracts.
+4. Keep per-tick dt only if source capture requires it; do not assume fixed dt unless fixtures confirm it.
 5. Recorder writes commands inline per tick via append-only `record_tick(inputs, commands=...)`.
 6. Delete recorder random-access/event helper APIs (`record_tick_at`, `record_perk_pick`, `record_perk_menu_open`).
+7. Delete replay journal adapter (`src/crimson/replay/journal.py`) and replay journal exports.
 
 ### 7.2 Input Provider and Runner Contracts
 
@@ -171,10 +166,11 @@ Update:
 
 Changes:
 
-1. Replace `pull_tick_input + pull_tick_commands` with `pull_tick_packet`.
+1. Retype existing command hooks to typed command values (`pull_tick_commands -> tuple[GameCommand, ...]`).
 2. Remove command queue dictionary from providers.
-3. `TickRunner` consumes `TickPacket` and passes commands into session.
+3. `TickRunner` passes typed commands into session.
 4. Remove fallback string-command plumbing.
+5. Remove replay-specific provider paths entirely (`ReplayInputProvider`, `ReplayJournal` protocol usage).
 
 ### 7.3 Deterministic Session Command Application
 
@@ -182,7 +178,7 @@ Update:
 
 - `src/crimson/sim/sessions.py`
 - `src/crimson/sim/step_pipeline.py` (hash input if needed)
-- new `src/crimson/sim/commands.py`
+- `src/crimson/sim/input_providers.py` (or existing command contract module)
 
 Changes:
 
@@ -205,7 +201,7 @@ Changes:
 2. Replace `_record_perk_pick_command` with typed command enqueue.
 3. Record perk-menu-open as `PerkMenuOpenCommand` at the same points where `record_perk_menu_open` is currently emitted.
 4. Remove `_apply_tick_commands` path and post-tick command mutation.
-5. Use one typed command queue consumed by provider into packet.
+5. Use one typed command queue consumed deterministically at tick boundaries.
 
 ### 7.5 Replay Drivers
 
@@ -228,6 +224,7 @@ Changes:
 6. Collapse `PlaybackTickOutcome` to core deterministic data (`tick_index`, `dt`, session step payload, hashes, rng marks, command stream metadata).
 7. Remove `PlaybackTickOutcome` fields that only exist for event split (`tick_events`, `pre_step_events`, `post_step_events`, `rng_before_events`, `rng_after_events`, `rng_before_post_events`, `rng_after_post_events`).
 8. Keep playback mode focused on presentation only.
+9. Tick observers receive applied commands + hashes only (no replay event lists).
 
 ### 7.6 LAN Typed Command Parity
 
@@ -238,9 +235,11 @@ Update:
 
 Changes:
 
-1. Translate network perk events into `GameCommand` typed union.
-2. Remove string command generation.
-3. Preserve host/join deterministic hash parity with command stream included.
+1. Move perk commands into host-authored canonical tick frame payloads.
+2. Remove `PerkMenuOpen`/`PerkMenuClose`/`PerkPick` out-of-band `NetMessage` variants and pending perk-event queues.
+3. Do not attach commands to `InputSample`; keep host-authoritative command stream in canonical frame path.
+4. Remove string command generation.
+5. Preserve host/join deterministic hash parity with command stream included.
 
 ## 8. Planned Deletions
 
@@ -249,12 +248,14 @@ Delete completely:
 - `Replay.events` and related types/codec validation.
 - Replay event helpers (`sim/driver/replay_events.py`) and callers.
 - `InputCommand(name, payload)` string dictionary path.
+- `ReplayInputProvider` and replay `ReplayJournal` protocol/adapter layers.
 - `ReplayRecorder.record_tick_at`, `ReplayRecorder.record_perk_pick`, `ReplayRecorder.record_perk_menu_open`.
 - Event-partitioning-only outcome/config surface (`PlaybackTickOutcome` event split fields, `PlaybackEventConfig`, runtime `partition_tick_events` hooks).
 - `PlaybackEventConfig`, `apply_terminal_events`, `_terminal_events_applied`, and other terminal-event code paths.
 - Duplicated per-entrypoint `PlaybackDriverConfig` policy matrices.
 - Mode-level `_apply_input_command` pattern for deterministic commands.
 - Replay timing/event knobs that existed only for split paths.
+- Lockstep out-of-band perk net messages and `_pending_perk_events` alignment queues.
 
 ## 9. PR Slicing
 
@@ -262,8 +263,8 @@ Delete completely:
 
 Scope:
 
-- Add typed command unions and packet types.
-- Migrate providers, runner, and session signatures to typed packet flow.
+- Add closed typed command unions.
+- Migrate providers, runner, and session signatures to typed command flow.
 - Remove stringly command usage from deterministic runtime paths.
 
 Exit checks:
@@ -276,8 +277,9 @@ Exit checks:
 Scope:
 
 - Replace replay schema with `ticks[]`.
-- Codec/recorder/journal rewrite to replay v2 only.
+- Codec/recorder rewrite to replay v2 only.
 - Make recorder append-only via `record_tick(inputs, commands=...)`.
+- Delete replay journal adapter and replay-provider usage.
 - Regenerate replay fixtures/checkpoints in replay v2.
 
 Exit checks:
@@ -285,6 +287,7 @@ Exit checks:
 - Replay roundtrip encode/decode works for new fixtures.
 - Loading old replay versions fails fast with clear error.
 - Recorder has no random-access/event helper APIs.
+- Playback driver reads replay ticks directly without `ReplayInputProvider`.
 
 ### PR-C: Playback Driver Unification + Deletion Pass
 
@@ -294,17 +297,19 @@ Scope:
 - Add canonical `PlaybackDriver.step_tick`.
 - Route both `run_to_completion` and playback mode through `step_tick`.
 - Delete replay-event and terminal-event machinery.
+- Remove event-bearing tick observers/outcome fields.
 
 Exit checks:
 
 - Replay play and verify share the same replay-tick execution method.
 - No replay-event/terminal-event branches remain in runtime code paths.
+- Tick observers operate on commands/hashes, not replay events.
 
 ### PR-D: LAN + Guardrails
 
 Scope:
 
-- Move LAN command path to typed unions.
+- Move LAN command path to typed unions on canonical tick frames.
 - Delete remaining dynamic command plumbing and stale split-path code.
 - Add/refresh deterministic parity guardrails and docs.
 
@@ -313,13 +318,14 @@ Exit checks:
 - LAN hash contract tests pass.
 - Verify-vs-playback fixture parity test is CI-gated and passing.
 - New architecture docs merged.
+- No out-of-band perk net messages remain.
 
 ## 10. PRD Checks (Pass/Fail Gates)
 
 ### Check Group A: Replay v2 + Type Safety
 
 - [ ] Deterministic command APIs accept only `GameCommand` union.
-- [ ] Replay schema is `ticks[]` only (no `events`, no `dt` rows).
+- [ ] Replay schema is `ticks[]` only (no `events`).
 - [ ] Recorder API is append-only.
 
 Validation:
@@ -332,6 +338,7 @@ Validation:
 - [ ] `PlaybackDriver.step_tick` is the canonical replay tick executor.
 - [ ] `run_to_completion` and `ReplayPlaybackMode` both execute replay ticks via `step_tick`.
 - [ ] Terminal-event phase is deleted.
+- [ ] Replay tick execution does not instantiate replay-specific providers/journals.
 
 Validation:
 
@@ -349,6 +356,7 @@ Validation:
 ### Check Group D: LAN Deterministic Parity
 
 - [ ] LAN host/join state hash parity unchanged.
+- [ ] LAN command path uses canonical tick-frame commands; no out-of-band perk messages.
 
 Validation:
 
