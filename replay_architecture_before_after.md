@@ -169,18 +169,16 @@ Deterministic command timeline is reconstructed from two channels at runtime (ti
 
 ```mermaid
 flowchart LR
-    R[Replay file\ninputs + dt + events] --> J[ReplayJournal]
-    J --> P[ReplayInputProvider]
-    P --> TR[TickRunner]
-    TR --> S[DeterministicSession.step_tick(inputs)]
-
-    R --> E[events_by_tick]
-    E --> PT[partition_tick_events\npre/post]
-    PT --> AE[apply_replay_tick_events\npre-step]
-    S --> AP[apply_replay_tick_events\npost-step]
-
-    S --> O[PlaybackTickOutcome\ncontains tick/pre/post events]
-    O --> T[apply_terminal_events\n(extra phase)]
+    R["Replay file: inputs + dt + events"] --> J["ReplayJournal"]
+    J --> P["ReplayInputProvider"]
+    P --> TR["TickRunner"]
+    TR --> S["DeterministicSession step_tick with inputs"]
+    R --> E["events_by_tick"]
+    E --> PT["partition_tick_events pre/post"]
+    PT --> AE["apply_replay_tick_events pre-step"]
+    S --> AP["apply_replay_tick_events post-step"]
+    S --> O["PlaybackTickOutcome includes tick/pre/post events"]
+    O --> T["apply_terminal_events extra phase"]
 ```
 
 ## Before Diagram B: LAN Command Path (Current)
@@ -193,16 +191,16 @@ sequenceDiagram
     participant LIP as _LanRuntimeInputProvider
     participant Mode as BaseGameplayMode
 
-    Host->>Wire: TickFrame(frame_inputs, command_hash, state_hash)
-    Host->>Wire: PerkPick / PerkMenuOpen / PerkMenuClose (separate messages)
+    Host->>Wire: TickFrame with frame_inputs and hashes
+    Host->>Wire: PerkPick or PerkMenuOpen or PerkMenuClose as separate messages
 
-    Wire->>Join: TickFrame + Perk* messages
+    Wire->>Join: TickFrame plus Perk messages
     Join->>Join: enqueue _client_perk_events
 
-    Mode->>LIP: _resolve_tick_input() from pop_tick_frame()
-    Mode->>LIP: _resolve_tick_commands() from queued perk events
+    Mode->>LIP: resolve tick input from pop_tick_frame
+    Mode->>LIP: resolve tick commands from queued perk events
     LIP->>Mode: merged commands aligned by frame_tick_index
-    Mode->>Mode: _apply_tick_commands() after tick step
+    Mode->>Mode: apply tick commands after tick step
 ```
 
 ---
@@ -308,14 +306,13 @@ Parity surfaces become explicit value comparisons rather than hash proxies.
 
 ```mermaid
 flowchart LR
-    RT[Replay.ticks\ninputs + typed commands] --> PD[PlaybackDriver.step_tick]
-    PD --> DS[DeterministicSession.step_tick\n(inputs, commands)]
-    DS --> WO[World step + presentation plan]
-    WO --> PTO[PlaybackTickOutcome\n(core deterministic payload)]
-
-    PTO --> Verify[replay verify/info]
-    PTO --> Play[ReplayPlaybackMode UI/audio]
-    PTO --> Bench[benchmark/render]
+    RT["Replay ticks: inputs + typed commands"] --> PD["PlaybackDriver step_tick"]
+    PD --> DS["DeterministicSession step_tick with inputs and commands"]
+    DS --> WO["World step plus presentation plan"]
+    WO --> PTO["PlaybackTickOutcome core deterministic payload"]
+    PTO --> Verify["replay verify and info"]
+    PTO --> Play["ReplayPlaybackMode UI and audio"]
+    PTO --> Bench["benchmark and render"]
 ```
 
 ## After Diagram B: LAN Command Path (Target)
@@ -328,11 +325,11 @@ sequenceDiagram
     participant Driver as Tick Driver
     participant Session as DeterministicSession
 
-    Host->>Wire: Canonical TickFrame(frame_inputs, typed_commands)
-    Wire->>Join: Canonical TickFrame(frame_inputs, typed_commands)
+    Host->>Wire: Canonical TickFrame with frame_inputs and typed_commands
+    Wire->>Join: Canonical TickFrame with frame_inputs and typed_commands
 
     Join->>Driver: consume canonical tick payload
-    Driver->>Session: step_tick(inputs, commands)
+    Driver->>Session: step_tick with inputs and commands
 
     Note over Host,Join: No out-of-band perk deterministic messages
     Note over Join,Driver: No pending perk-event alignment queue
@@ -383,4 +380,3 @@ Use this as a review checklist while implementing the plan:
 - Session/runner contracts: `src/crimson/sim/input_providers.py`, `src/crimson/sim/tick_runner.py`, `src/crimson/sim/sessions.py`
 - Replay runtime surfaces: `src/crimson/sim/driver/playback_driver.py`, `src/crimson/modes/replay_playback_mode.py`, `src/crimson/sim/driver/replay_info.py`
 - LAN protocol/runtime: `src/crimson/net/lockstep_protocol.py`, `src/crimson/net/lockstep_runtime.py`, `src/crimson/modes/base_gameplay_mode.py`
-
