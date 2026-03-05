@@ -60,6 +60,7 @@ from ..sim.batch_apply import (
     apply_sim_metadata_tick_result,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.hooks import (
     LanFrameSample,
     LanSyncCallbacks,
@@ -1414,37 +1415,20 @@ class BaseGameplayMode:
         is_networked: bool,
         is_replay: bool = False,
     ) -> TickBatchResult:
-        frame_index = int(self._tick_runner_frame_index) + 1
-        self._tick_runner_frame_index = int(frame_index)
-        ticks_requested = max(0, int(candidate_ticks))
-        runner.begin_frame(
-            FrameContext(
-                dt_seconds=float(dt_seconds),
-                tick_dt_seconds=float(tick_dt_seconds),
-                frame_index=int(frame_index),
-                candidate_ticks=int(ticks_requested),
-                is_networked=bool(is_networked),
-                is_replay=bool(is_replay),
-            ),
-        )
-        batch = runner.advance_ticks(
+        advance = advance_tick_runner_frame(
+            runner=runner,
             start_tick=int(self._tick_runner_next_tick_index),
-            ticks_requested=int(ticks_requested),
-            tick_dt=float(tick_dt_seconds),
+            frame_index=int(self._tick_runner_frame_index),
+            ticks_requested=int(candidate_ticks),
+            dt_seconds=float(dt_seconds),
+            tick_dt_seconds=float(tick_dt_seconds),
+            is_networked=bool(is_networked),
+            is_replay=bool(is_replay),
+            refund_clock=None if bool(is_networked) else self._tick_runner_local_clock,
         )
-        self._tick_runner_next_tick_index = int(batch.next_tick_index)
-
-        if not bool(is_networked):
-            local_clock = self._tick_runner_local_clock
-            if (
-                local_clock is not None
-                and batch.batch_status in (InputStatus.STALLED, InputStatus.EOS)
-            ):
-                unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-                if unconsumed_ticks > 0:
-                    local_clock.accum += float(unconsumed_ticks) * float(tick_dt_seconds)
-
-        return batch
+        self._tick_runner_frame_index = int(advance.frame_index)
+        self._tick_runner_next_tick_index = int(advance.next_tick_index)
+        return advance.batch
 
     def _gameplay_tick_rate(self) -> int:
         return int(self._deterministic_tick_rate())

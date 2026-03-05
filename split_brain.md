@@ -15,7 +15,9 @@ Not everything is split-brained anymore.
 - `TickResult` now carries the source `ResolvedTick`, so replay/live/LAN share the same in-memory pre-step tick shape.
 - Quest dynamic runtime state now lives in `QuestSpawnState` plus `DeterministicSession.elapsed_ms`; generic tick/result types no longer re-express quest-only fields.
 - Survival and rush dynamic runtime now live in `DeterministicSession.elapsed_ms` plus `SurvivalSpawnState` / `RushSpawnState`; the live mode shadow structs are gone.
+- Survival and rush now also share one explicit session-timer access path in gameplay code, instead of each mode carrying its own mirror helper.
 - Quest rollback/resync snapshots now carry the authoritative quest runtime, including the remaining spawn table.
+- Live `TickRunner` frame advancement is now shared between `BaseGameplayMode` and `WorldRuntime`, including `FrameContext` setup, tick-index bookkeeping, and stall/EOS debt refund.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
@@ -24,16 +26,21 @@ That matters because the remaining work is no longer "invent a deterministic run
 
 Today the runtime still has a couple of architectural seams where the same work is expressed in more than one place.
 
+Timer semantics are no longer one of the fuzzy parts:
+
+- survival and rush use the deterministic session elapsed timer
+- quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
+- session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
+
 ### 1) The frame pump exists in several places
 
 Variants of the same loop exist in:
 
 - `src/crimson/modes/base_gameplay_mode.py`
-- `src/crimson/world/runtime.py`
 - `src/crimson/modes/replay_playback_mode.py`
 - `src/crimson/sim/driver/playback_driver.py`
 
-They all decide how many ticks to run, step the session, apply metadata, apply presentation outputs, and optionally record/checkpoint/sync.
+The highest-value live duplication is smaller than it was: gameplay and world runtime now share the low-level `TickRunner` frame-advance bookkeeping, but replay playback still owns its own pump around `PlaybackDriver.step_tick()`, and the apply/record/checkpoint layer is still split across multiple callers.
 
 ### 2) Presentation reactions are not yet fully single-sourced
 
@@ -65,9 +72,9 @@ flowchart TD
     end
 
     subgraph StateOwners["Authoritative Runtime Owners"]
-        SurvivalState["Survival runtime<br/>session.elapsed_ms + SurvivalSpawnState"]
-        RushState["Rush runtime<br/>session.elapsed_ms + RushSpawnState"]
-        QuestState["Quest runtime<br/>QuestSpawnState + session.elapsed_ms"]
+        SurvivalState["Survival runtime<br/>shared session.elapsed_ms + SurvivalSpawnState"]
+        RushState["Rush runtime<br/>shared session.elapsed_ms + RushSpawnState"]
+        QuestState["Quest runtime<br/>QuestSpawnState + session.elapsed_ms<br/>plus quest timeline for results/replay"]
     end
 
     subgraph Drivers["Frame Drivers"]
@@ -180,13 +187,13 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is to consolidate the duplicated frame-step/apply orchestration.
+The best next refactor is to carry the shared frame-step/apply cleanup one layer higher.
 
 That is now the highest-leverage remaining split-brain because:
 
 - canonical ticks already landed
 - quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
-- the remaining runtime drift is mostly about orchestration duplication, not ownership duplication
-- live gameplay, replay playback, and world/runtime stepping still each express their own variation of the same frame-step/apply sequence
+- live `TickRunner` frame advancement is already shared
+- the remaining runtime drift is now concentrated in replay playback’s custom pump and in the higher-level apply/record/checkpoint wiring around stepped ticks
 
-After the shared frame-step/apply path is smaller and clearer, the next target is to finish centralizing presentation reactions so replay and live mode code stop carrying custom post-tick side effects.
+After replay playback is pulled closer to the shared step/apply shape, the next target is to finish centralizing presentation reactions so replay and live mode code stop carrying custom post-tick side effects.

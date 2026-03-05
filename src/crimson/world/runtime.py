@@ -16,8 +16,9 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
+from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input import PlayerInput
-from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
+from ..sim.input_providers import FrameContext, LocalInputProvider
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
@@ -325,28 +326,20 @@ class WorldRuntime:
         session.demo_mode_active = bool(self.demo_mode_active)
         dt = float(dt)
         ticks_requested = int(self._clock.advance(dt))
-        self._frame_index = int(self._frame_index) + 1
-        runner.begin_frame(
-            FrameContext(
-                dt_seconds=float(dt),
-                tick_dt_seconds=float(self._clock.dt_tick),
-                frame_index=int(self._frame_index),
-                candidate_ticks=max(0, int(ticks_requested)),
-                is_networked=False,
-                is_replay=False,
-            ),
-        )
-        batch = runner.advance_ticks(
+        advance = advance_tick_runner_frame(
+            runner=runner,
             start_tick=int(self._next_tick_index),
-            ticks_requested=max(0, int(ticks_requested)),
-            tick_dt=float(self._clock.dt_tick),
+            frame_index=int(self._frame_index),
+            ticks_requested=int(ticks_requested),
+            dt_seconds=float(dt),
+            tick_dt_seconds=float(self._clock.dt_tick),
+            is_networked=False,
+            is_replay=False,
+            refund_clock=self._clock,
         )
-        self._next_tick_index = int(batch.next_tick_index)
-        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
-            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-            if unconsumed_ticks > 0:
-                self._clock.accum += float(unconsumed_ticks) * float(self._clock.dt_tick)
+        self._frame_index = int(advance.frame_index)
+        self._next_tick_index = int(advance.next_tick_index)
         return self._apply_tick_batch(
-            batch=batch,
+            batch=advance.batch,
             session=session,
         )

@@ -6,18 +6,20 @@ from pathlib import Path
 from builders.session import make_session
 
 import crimson.audio_router as audio_router_module
+import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
+import crimson.sim.frame_pump as frame_pump_module
+import crimson.world.runtime as world_runtime_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.driver.playback_driver import PlaybackTickOutcome
+from crimson.sim.frame_pump import advance_tick_runner_frame
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
-    FrameContext,
     GameCommand,
-    InputStatus,
     LocalInputProvider,
     NetworkInputProvider,
     PerkPickCommand,
@@ -75,27 +77,18 @@ def _advance_with_clock(
     ticks_requested = int(clock.advance(float(dt_seconds)))
     if max_ticks is not None:
         ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
-    frame_index = int(frame_index) + 1
-    runner.begin_frame(
-        FrameContext(
-            dt_seconds=float(dt_seconds),
-            tick_dt_seconds=float(clock.dt_tick),
-            frame_index=int(frame_index),
-            candidate_ticks=max(0, int(ticks_requested)),
-            is_networked=bool(is_networked),
-            is_replay=bool(is_replay),
-        ),
-    )
-    batch = runner.advance_ticks(
+    advance = advance_tick_runner_frame(
+        runner=runner,
         start_tick=int(start_tick),
-        ticks_requested=max(0, int(ticks_requested)),
-        tick_dt=float(clock.dt_tick),
+        frame_index=int(frame_index),
+        ticks_requested=int(ticks_requested),
+        dt_seconds=float(dt_seconds),
+        tick_dt_seconds=float(clock.dt_tick),
+        is_networked=bool(is_networked),
+        is_replay=bool(is_replay),
+        refund_clock=clock,
     )
-    if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
-        unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-        if unconsumed_ticks > 0:
-            clock.accum += float(unconsumed_ticks) * float(clock.dt_tick)
-    return batch, int(batch.next_tick_index), int(frame_index)
+    return advance.batch, int(advance.next_tick_index), int(advance.frame_index)
 
 
 def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
@@ -401,3 +394,19 @@ def test_contract_6_shared_batch_apply_separates_deterministic_and_output_phases
     assert "update_camera" not in deterministic_apply_source
     assert "apply_step_metadata" not in output_source
     assert output_source.count("sync_audio_bridge_state()") == 1
+
+
+def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
+    helper_source = inspect.getsource(frame_pump_module.advance_tick_runner_frame)
+    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._advance_tick_runner_batch)
+    world_source = inspect.getsource(world_runtime_module.WorldRuntime.advance_tick_frame)
+
+    assert "runner.begin_frame(" in helper_source
+    assert "runner.advance_ticks(" in helper_source
+    assert "refund_clock.accum +=" in helper_source
+    assert "advance_tick_runner_frame(" in gameplay_source
+    assert "runner.begin_frame(" not in gameplay_source
+    assert "runner.advance_ticks(" not in gameplay_source
+    assert "advance_tick_runner_frame(" in world_source
+    assert "runner.begin_frame(" not in world_source
+    assert "runner.advance_ticks(" not in world_source
