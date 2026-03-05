@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from builders.tick_payload import make_tick_payload
 
 from crimson.sim.driver.playback_driver import PlaybackTickOutcome
+from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.world_state import WorldState
 
 
@@ -17,6 +18,7 @@ class FakePlaybackDriver:
 
     tick_limit: int = 0
     on_step: object | None = None
+    quest_spawn_state: QuestSpawnState | None = None
 
     def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
         if self.on_step is not None:

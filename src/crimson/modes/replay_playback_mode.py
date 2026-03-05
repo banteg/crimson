@@ -551,28 +551,29 @@ class ReplayPlaybackMode:
         self,
         *,
         outcome: PlaybackTickOutcome,
-        dt: float,
     ) -> None:
         runtime = self._runtime
-        if runtime is None:
+        driver = self._driver
+        if runtime is None or driver is None:
             return
-        if outcome.spawn_timeline_ms is not None:
-            self._quest_spawn_timeline_ms = float(outcome.spawn_timeline_ms)
-            self._quest_name_timer_ms += float(dt) * 1000.0
-            if outcome.completion_transition_ms is not None:
-                self._quest_completion_transition_ms = float(outcome.completion_transition_ms)
-            router = runtime.audio_bridge.router
-            if outcome.play_hit_sfx and router is not None:
-                router.play_sfx("sfx_questhit")
-            if outcome.play_completion_music and self._audio is not None:
-                play_music(self._audio, "crimsonquest")
-                playback = self._audio.music.playbacks.get("crimsonquest")
-                if playback is not None:
+        quest_state = driver.quest_spawn_state
+        if quest_state is None:
+            return
+        self._quest_spawn_timeline_ms = float(quest_state.spawn_timeline_ms)
+        self._quest_name_timer_ms += float(outcome.dt_tick) * 1000.0
+        self._quest_completion_transition_ms = float(quest_state.completion_transition_ms)
+        router = runtime.audio_bridge.router
+        if quest_state.play_hit_sfx and router is not None:
+            router.play_sfx("sfx_questhit")
+        if quest_state.play_completion_music and self._audio is not None:
+            play_music(self._audio, "crimsonquest")
+            playback = self._audio.music.playbacks.get("crimsonquest")
+            if playback is not None:
+                playback.volume = 0.0
+                try:
+                    rl.set_music_volume(playback.music, 0.0)
+                except RuntimeError:
                     playback.volume = 0.0
-                    try:
-                        rl.set_music_volume(playback.music, 0.0)
-                    except RuntimeError:
-                        playback.volume = 0.0
 
     def _tick_limit(self) -> int:
         replay = self._replay
@@ -647,7 +648,7 @@ class ReplayPlaybackMode:
             ticks_completed += 1
 
         def _on_output_applied(output: PresentationTickOutput, outcome: PlaybackTickOutcome) -> None:
-            self._apply_tick_outcome(outcome=outcome, dt=float(self._dt))
+            self._apply_tick_outcome(outcome=outcome)
             self._on_runner_tick_complete(int(output.tick_index), outcome)
             if not bake_fx_per_tick:
                 return

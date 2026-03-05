@@ -28,7 +28,6 @@ from ..input_providers import (
 )
 from ..sessions import (
     DeterministicSession,
-    DeterministicSessionTick,
     QuestSpawnState,
     RushSpawnState,
     SurvivalSpawnState,
@@ -192,10 +191,6 @@ class PlaybackTickOutcome:
     rng_marks: dict[str, int]
     creature_count_world_step: int
     tick_rng_rows: list[RngTraceDraw]
-    spawn_timeline_ms: float | None = None
-    completion_transition_ms: float | None = None
-    play_hit_sfx: bool = False
-    play_completion_music: bool = False
 
 
 @dataclass(slots=True)
@@ -212,9 +207,6 @@ class SimplePlaybackRuntime:
 
     session: DeterministicSession
 
-    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionTick) -> None:
-        _ = outcome, tick
-
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
         return float(outcome.elapsed_ms)
 
@@ -228,17 +220,9 @@ class QuestPlaybackRuntime:
     quest_state: QuestSpawnState
     result_uses_spawn_timeline_ms: bool
 
-    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionTick) -> None:
-        _ = tick
-        outcome.spawn_timeline_ms = float(self.quest_state.spawn_timeline_ms)
-        outcome.completion_transition_ms = float(self.quest_state.completion_transition_ms)
-        outcome.play_hit_sfx = bool(self.quest_state.play_hit_sfx)
-        outcome.play_completion_music = bool(self.quest_state.play_completion_music)
-
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
-        if outcome.spawn_timeline_ms is not None:
-            return float(outcome.spawn_timeline_ms)
-        return float(outcome.elapsed_ms)
+        _ = outcome
+        return float(self.quest_state.spawn_timeline_ms)
 
     def run_result_elapsed_ms(self) -> int:
         if bool(self.result_uses_spawn_timeline_ms):
@@ -537,7 +521,6 @@ class PlaybackDriver:
                 creature_count_world_step=int(tick.creature_count_world_step),
                 tick_rng_rows=list(meta.tick_rng_rows),
             )
-            self._mode_runtime.enrich_tick_outcome(outcome, tick=tick)
             return outcome
         finally:
             if not trace_closed:
@@ -681,4 +664,10 @@ class PlaybackDriver:
     def quest_session(self) -> DeterministicSession | None:
         if self.mode_id == GameMode.QUESTS and isinstance(self.session, DeterministicSession):
             return self.session
+        return None
+
+    @property
+    def quest_spawn_state(self) -> QuestSpawnState | None:
+        if self.mode_id == GameMode.QUESTS and isinstance(self._mode_runtime, QuestPlaybackRuntime):
+            return self._mode_runtime.quest_state
         return None

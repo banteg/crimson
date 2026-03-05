@@ -11,6 +11,7 @@ from builders import FakePlaybackDriver
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader, ReplayTick
+from crimson.sim.sessions import QuestSpawnState
 from crimson.world.sim_world_state import SimWorldState
 from grim.console import ConsoleState
 
@@ -34,6 +35,9 @@ class _AudioStub:
 @dataclass
 class _RouterStub:
     sfx_enabled: bool = True
+
+    def play_sfx(self, _key: str) -> None:
+        return None
 
 
 @dataclass
@@ -316,3 +320,44 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
     view._draw_quest_complete_banner()
 
     draw_overlay.assert_called_once_with(texture, timer_ms=777.0)
+
+
+def test_apply_tick_outcome_reads_quest_runtime_from_driver(mocker, replay_playback_view) -> None:
+    view, _console = replay_playback_view
+    audio_bridge = _AudioBridgeStub()
+    runtime = _RuntimeStub(
+        audio_bridge=audio_bridge,
+        render_resources=_RenderResourcesStub(
+            ground=None,
+            fx_textures=None,
+            fx_queue=[],
+            fx_queue_rotated=[],
+        ),
+    )
+    _set_private(view, "_runtime", runtime)
+    _set_private(
+        view,
+        "_driver",
+        FakePlaybackDriver(
+            tick_limit=1,
+            quest_spawn_state=QuestSpawnState(
+                spawn_timeline_ms=444.0,
+                completion_transition_ms=222.0,
+                play_hit_sfx=True,
+                play_completion_music=True,
+            ),
+        ),
+    )
+    _set_private(view, "_audio", type("AudioStateStub", (), {"music": type("MusicStub", (), {"playbacks": {}})()})())
+    play_sfx = mocker.patch.object(audio_bridge.router, "play_sfx")
+    play_music = mocker.patch.object(replay_playback_mode, "play_music")
+
+    view._apply_tick_outcome(
+        outcome=FakePlaybackDriver(tick_limit=1).step_tick(0),
+    )
+
+    assert view._quest_spawn_timeline_ms == 444.0
+    assert view._quest_name_timer_ms == pytest.approx(1000.0 / 60.0)
+    assert view._quest_completion_transition_ms == 222.0
+    play_sfx.assert_called_once_with("sfx_questhit")
+    play_music.assert_called_once()
