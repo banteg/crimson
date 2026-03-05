@@ -52,12 +52,10 @@ class HostLanAdapter(msgspec.Struct):
         self,
         *,
         now_ms: int,
-        command_hash_by_tick: dict[int, str] | None = None,
         state_hash_by_tick: dict[int, str] | None = None,
     ) -> list[TickFrame]:
         return self.lockstep.pop_ready_frames(
             now_ms=int(now_ms),
-            command_hash_by_tick=command_hash_by_tick,
             state_hash_by_tick=state_hash_by_tick,
         )
 
@@ -82,18 +80,14 @@ class ClientLanAdapter(msgspec.Struct):
     def queue_local_input(self, packed_input: PackedPlayerInput) -> InputBatch:
         return self.lockstep.queue_local_input(list(packed_input))
 
-    def ingest_tick_frame(self, frame: TickFrame, *, now_ms: int, local_command_hash: str = "") -> None:
+    def ingest_tick_frame(self, frame: TickFrame, *, now_ms: int) -> None:
         self.lockstep.ingest_tick_frame(
             frame,
             now_ms=int(now_ms),
-            local_command_hash=str(local_command_hash),
         )
 
     def pop_tick_frame(self) -> TickFrame | None:
         return self.lockstep.pop_canonical_frame()
-
-    def pop_desync_notice(self) -> tuple[int, str, str] | None:
-        return self.lockstep.pop_desync_notice()
 
     def update_pause_state(self, *, now_ms: int) -> PauseState | None:
         return self.lockstep.update_pause_state(now_ms=int(now_ms))

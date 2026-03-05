@@ -11,14 +11,12 @@ def test_host_lockstep_emits_canonical_frames_in_tick_order() -> None:
 
     frames = host.pop_ready_frames(
         now_ms=1,
-        command_hash_by_tick={0: "cmd0"},
         state_hash_by_tick={0: "state0"},
     )
 
     assert [frame.tick_index for frame in frames] == [0]
     assert frames[0].frame_inputs[0] == [-1.0, 0.0, 4.0, 5.0, 3]
     assert frames[0].frame_inputs[1] == [1.0, 0.0, 2.0, 3.0, 7]
-    assert frames[0].command_hash == "cmd0"
     assert frames[0].state_hash == "state0"
 
 

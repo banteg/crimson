@@ -13,7 +13,7 @@ from .. import __version__
 from ..replay.types import PackedPlayerInput
 from .schema_shared import PacketHeader, SlotState
 
-PROTOCOL_VERSION = 3
+PROTOCOL_VERSION = 4
 DEFAULT_PORT = 31993
 TICK_RATE = 60
 # LAN runs on a good network and doesn't need a large buffer; keeping this low
@@ -210,7 +210,6 @@ class InputBatch(msgspec.Struct, tag="input_batch", forbid_unknown_fields=True):
 class TickFrame(msgspec.Struct, tag="tick_frame", forbid_unknown_fields=True):
     tick_index: int = 0
     frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
-    command_hash: str = ""  # TODO(PR-D): remove — command_hash is always empty after PR-A
     state_hash: str = ""
 
 
@@ -245,12 +244,6 @@ class PerkPick(msgspec.Struct, tag="perk_pick", forbid_unknown_fields=True):
     tick_index: int = -1
     player_index: int = 0
     choice_index: int = 0
-
-
-class DesyncNotice(msgspec.Struct, tag="desync_notice", forbid_unknown_fields=True):
-    tick_index: int = -1
-    expected_command_hash: str = ""
-    actual_command_hash: str = ""
 
 
 class DebugLogBatch(msgspec.Struct, tag="debug_log_batch", forbid_unknown_fields=True):
@@ -295,7 +288,6 @@ NetMessage: TypeAlias = (
     | PerkMenuOpen
     | PerkMenuClose
     | PerkPick
-    | DesyncNotice
     | DebugLogBatch
     | ResyncBegin
     | ResyncChunk

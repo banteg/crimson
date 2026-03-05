@@ -72,7 +72,7 @@ def test_lan_perk_and_keepalive_messages_round_trip() -> None:
 
 
 def test_protocol_constants_match_spec() -> None:
-    assert protocol.PROTOCOL_VERSION == 3
+    assert protocol.PROTOCOL_VERSION == 4
     assert protocol.DEFAULT_PORT == 31993
     assert protocol.TICK_RATE == 60
     assert protocol.INPUT_DELAY_TICKS == 1

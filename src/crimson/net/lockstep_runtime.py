@@ -22,7 +22,6 @@ from .lockstep_protocol import (
     PROTOCOL_VERSION,
     TICK_RATE,
     DebugLogBatch,
-    DesyncNotice,
     Disconnect,
     Hello,
     InputBatch,
@@ -169,7 +168,7 @@ class LockstepRuntime(msgspec.Struct):
     last_desync_kind: str = ""
     last_desync_expected: str = ""
     last_desync_actual: str = ""
-    _last_desync_notice_sent_tick: int = -10**9
+
 
     _client_log_forward_queue: deque[str] = msgspec.field(default_factory=deque)
     _client_log_forward_last_flush_ms: int = 0
@@ -204,7 +203,7 @@ class LockstepRuntime(msgspec.Struct):
         self.last_desync_kind = ""
         self.last_desync_expected = ""
         self.last_desync_actual = ""
-        self._last_desync_notice_sent_tick = -10**9
+
         self._client_log_forward_queue.clear()
         self._client_log_forward_last_flush_ms = 0
         self._client_log_forward_dropped = 0
@@ -308,7 +307,7 @@ class LockstepRuntime(msgspec.Struct):
             self.last_desync_kind = ""
             self.last_desync_expected = ""
             self.last_desync_actual = ""
-            self._last_desync_notice_sent_tick = -10**9
+    
             self._client_log_forward_queue.clear()
             self._client_log_forward_last_flush_ms = 0
             self._client_log_forward_dropped = 0
@@ -497,26 +496,6 @@ class LockstepRuntime(msgspec.Struct):
             actual=str(actual),
         )
 
-        # Best-effort: send a notice to the host so both logs can be correlated.
-        if str(self.cfg.role) != "join":
-            return
-        if str(kind) != "command_hash":
-            return
-        if (int(tick_index) - int(self._last_desync_notice_sent_tick)) < 60:
-            return
-        self._last_desync_notice_sent_tick = int(tick_index)
-        try:
-            self._client_send(
-                DesyncNotice(
-                    tick_index=int(tick_index),
-                    expected_command_hash=str(expected),
-                    actual_command_hash=str(actual),
-                ),
-                reliable=True,
-                now_ms=_now_ms(),
-            )
-        except OSError:
-            return
 
     def _set_client_error(self, reason: str) -> None:
         if self.error:
@@ -958,23 +937,6 @@ class LockstepRuntime(msgspec.Struct):
                 self._abort_host_match(reason="peer_disconnect", now_ms=int(now_ms), addr=addr)
             self._host_broadcast_lobby_state(now_ms=int(now_ms))
             return
-        if isinstance(message, DesyncNotice):
-            lan_debug_log(
-                "net_recv",
-                role="host",
-                kind="desync_notice",
-                addr=f"{addr[0]}:{addr[1]}",
-                tick_index=int(message.tick_index),
-                expected_command_hash=str(message.expected_command_hash or ""),
-                actual_command_hash=str(message.actual_command_hash or ""),
-            )
-            self.note_desync(
-                kind="command_hash",
-                tick_index=int(message.tick_index),
-                expected=str(message.expected_command_hash or ""),
-                actual=str(message.actual_command_hash or ""),
-            )
-            return
         if isinstance(message, DebugLogBatch):
             mapped_slot = lobby.slot_for_addr(addr)
             msg_slot = int(message.slot_index)
@@ -1051,7 +1013,6 @@ class LockstepRuntime(msgspec.Struct):
                     addr=f"{addr[0]}:{addr[1]}",
                     reliable=bool(reliable),
                     tick_index=int(tick),
-                    command_hash=str(message.command_hash or ""),
                     state_hash=str(message.state_hash or ""),
                 )
             return
@@ -1424,10 +1385,9 @@ class LockstepRuntime(msgspec.Struct):
                     role="join",
                     kind="tick_frame",
                     tick_index=int(tick),
-                    command_hash=str(message.command_hash or ""),
                     state_hash=str(message.state_hash or ""),
                 )
-            lockstep.ingest_tick_frame(message, now_ms=int(now_ms), local_command_hash="")
+            lockstep.ingest_tick_frame(message, now_ms=int(now_ms))
             queued_at = self._client_input_queued_at_ms.pop(int(tick), None)
             if queued_at is not None:
                 latency_ms = max(0, int(now_ms) - int(queued_at))

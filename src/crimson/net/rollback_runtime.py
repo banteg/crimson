@@ -572,7 +572,6 @@ class RollbackRuntime(msgspec.Struct):
                 TickFrame(
                     tick_index=int(frame.tick_index),
                     frame_inputs=[list(item) for item in frame.frame_inputs],
-                    command_hash="",
                     state_hash="",
                 ),
             )
@@ -603,7 +602,6 @@ class RollbackRuntime(msgspec.Struct):
                     TickFrame(
                         tick_index=int(frame.tick_index),
                         frame_inputs=[list(item) for item in frame.frame_inputs],
-                        command_hash="",
                         state_hash="",
                     ),
                 )

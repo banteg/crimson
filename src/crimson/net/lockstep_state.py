@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections import deque
-
 import msgspec
 
 from ..replay.types import PackedPlayerInput
@@ -81,7 +79,6 @@ class HostLockstepState(msgspec.Struct):
         self,
         *,
         now_ms: int,
-        command_hash_by_tick: dict[int, str] | None = None,
         state_hash_by_tick: dict[int, str] | None = None,
     ) -> list[TickFrame]:
         frames: list[TickFrame] = []
@@ -89,9 +86,6 @@ class HostLockstepState(msgspec.Struct):
             tick = int(self._next_emit_tick)
             tick_inputs = self._inputs_by_tick.pop(tick, {})
             ordered_inputs = [list(tick_inputs[slot]) for slot in range(int(self.player_count))]
-            command_hash = ""
-            if command_hash_by_tick is not None:
-                command_hash = str(command_hash_by_tick.get(int(tick), ""))
             state_hash = ""
             if state_hash_by_tick is not None and (int(tick) % int(self.state_hash_period_ticks)) == 0:
                 state_hash = str(state_hash_by_tick.get(int(tick), ""))
@@ -99,7 +93,6 @@ class HostLockstepState(msgspec.Struct):
                 TickFrame(
                     tick_index=int(tick),
                     frame_inputs=ordered_inputs,
-                    command_hash=str(command_hash),
                     state_hash=str(state_hash),
                 ),
             )
@@ -132,7 +125,7 @@ class ClientLockstepState(msgspec.Struct):
     _next_consume_tick: int = 0
     _last_progress_ms: int = 0
     _paused: bool = False
-    _pending_desync: deque[tuple[int, str, str]] = msgspec.field(default_factory=deque)
+
 
     @property
     def next_consume_tick(self) -> int:
@@ -192,13 +185,10 @@ class ClientLockstepState(msgspec.Struct):
         self._capture_tick += 1
         return InputBatch(slot_index=int(self.local_slot_index), samples=samples)
 
-    def ingest_tick_frame(self, frame: TickFrame, *, now_ms: int, local_command_hash: str = "") -> None:
+    def ingest_tick_frame(self, frame: TickFrame, *, now_ms: int) -> None:
         tick = int(frame.tick_index)
         self._canonical_by_tick[int(tick)] = frame
         self._last_progress_ms = int(now_ms)
-        remote_hash = str(frame.command_hash or "")
-        if remote_hash and str(local_command_hash or "") and str(local_command_hash) != str(remote_hash):
-            self._pending_desync.append((int(tick), str(remote_hash), str(local_command_hash)))
 
     def pop_canonical_frame(self) -> TickFrame | None:
         tick = int(self._next_consume_tick)
@@ -210,11 +200,6 @@ class ClientLockstepState(msgspec.Struct):
 
     def has_canonical_frame(self) -> bool:
         return int(self._next_consume_tick) in self._canonical_by_tick
-
-    def pop_desync_notice(self) -> tuple[int, str, str] | None:
-        if not self._pending_desync:
-            return None
-        return self._pending_desync.popleft()
 
     def update_pause_state(self, *, now_ms: int) -> PauseState | None:
         frame_ready = int(self._next_consume_tick) in self._canonical_by_tick

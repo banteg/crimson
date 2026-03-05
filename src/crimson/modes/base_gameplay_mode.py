@@ -60,7 +60,6 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
-from ..replay.types import PackedPlayerInput
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,
@@ -110,10 +109,6 @@ class _AppliedBatchTick:
     tick: DeterministicSessionTick
     replay_tick_index: int | None
     frame_tick_index: int | None = None
-    frame_inputs: tuple[PackedPlayerInput, ...] = ()
-    remote_command_hash: str = ""
-    remote_state_hash: str = ""
-    host_state_hash: str = ""
 
 
 @dataclass(frozen=True, slots=True)
@@ -232,7 +227,6 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._samples_by_runner_tick[int(tick_index)] = LanFrameSample(
             frame_tick_index=int(frame_tick_index),
             frame_inputs=tuple(frame_inputs),
-            remote_command_hash=str(frame.command_hash or ""),
             remote_state_hash=str(frame.state_hash or ""),
         )
         return player_inputs
@@ -1566,11 +1560,10 @@ class BaseGameplayMode:
             ),
             broadcast_tick_frame=(
                 (
-                    lambda frame_tick_index, frame_inputs, command_hash, state_hash: lockstep_runtime.broadcast_tick_frame(
+                    lambda frame_tick_index, frame_inputs, state_hash: lockstep_runtime.broadcast_tick_frame(
                         TickFrame(
                             tick_index=int(frame_tick_index),
                             frame_inputs=[list(packed) for packed in frame_inputs],
-                            command_hash=str(command_hash),
                             state_hash=str(state_hash),
                         ),
                     )
@@ -1660,7 +1653,6 @@ class BaseGameplayMode:
         sync = LanTickSync(
             frame_tick_index=int(sample.frame_tick_index),
             frame_inputs=tuple(sample.frame_inputs),
-            remote_command_hash=str(sample.remote_command_hash),
             remote_state_hash=str(sample.remote_state_hash),
             host_state_hash="",
         )
@@ -1692,7 +1684,6 @@ class BaseGameplayMode:
         finalized = LanTickSync(
             frame_tick_index=int(frame_tick_index),
             frame_inputs=tuple(sync.frame_inputs),
-            remote_command_hash="",
             remote_state_hash=str(remote_state_hash),
             host_state_hash=str(host_state_hash),
         )
@@ -1703,7 +1694,6 @@ class BaseGameplayMode:
             broadcast(
                 int(frame_tick_index),
                 tuple(sync.frame_inputs),
-                "",
                 str(host_state_hash),
             )
         return finalized
@@ -1999,16 +1989,8 @@ class BaseGameplayMode:
                     callbacks=lan_sync_callbacks,
                 )
                 applied.frame_tick_index = int(sync.frame_tick_index)
-                applied.frame_inputs = tuple(sync.frame_inputs)
-                applied.remote_command_hash = str(sync.remote_command_hash)
-                applied.remote_state_hash = str(sync.remote_state_hash)
-                applied.host_state_hash = str(sync.host_state_hash)
             if tick_result.lan_sync is not None:
                 applied.frame_tick_index = int(tick_result.lan_sync.frame_tick_index)
-                applied.frame_inputs = tuple(tick_result.lan_sync.frame_inputs)
-                applied.remote_command_hash = str(tick_result.lan_sync.remote_command_hash)
-                applied.remote_state_hash = str(tick_result.lan_sync.remote_state_hash)
-                applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
             presentation_outputs.append(apply_sim_metadata_tick_result(
                 sim_world=self.sim_world,
@@ -2036,11 +2018,10 @@ class BaseGameplayMode:
                 on_checkpoint(int(replay_tick_index), tick)
 
             if lan_sync_callbacks is not None:
-                finalized_sync = self._finalize_lan_tick_sync(
+                self._finalize_lan_tick_sync(
                     tick_result=tick_result,
                     callbacks=lan_sync_callbacks,
                 )
-                applied.host_state_hash = str(finalized_sync.host_state_hash)
 
             if action == "stop_after_finalize":
                 stop_after_finalize = True

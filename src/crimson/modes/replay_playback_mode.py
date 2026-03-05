@@ -34,14 +34,11 @@ from ..sim.driver.playback_driver import (
     PlaybackDriver,
     PlaybackDriverConfig,
     PlaybackDriverOptions,
-    PlaybackSessionConfigs,
     PlaybackSessionDefaults,
     PlaybackTickOutcome,
     PlaybackTimingConfig,
     PlaybackWorldConfig,
     QuestSessionConfig,
-    RushSessionConfig,
-    SurvivalSessionConfig,
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
@@ -485,20 +482,13 @@ class ReplayPlaybackMode:
                         clear_fx_queues_each_tick=False,
                         game_tune_started=bool(sim_world.game_tune_started),
                     ),
-                    sessions=PlaybackSessionConfigs(
-                        survival=SurvivalSessionConfig(),
-                        rush=RushSessionConfig(
-                            enforce_loadout=True,
-                        ),
-                        quest=QuestSessionConfig(
-                            disable_capture_spawn_events_authoritative=False,
-                            finalize_post_render_lifecycle_each_tick=True,
-                            result_uses_spawn_timeline_ms=False,
-                            spawn_entries=spawn_entries,
-                            quest_stage_major=quest_stage_major,
-                            quest_stage_minor=quest_stage_minor,
-                            start_weapon_id=start_weapon_id,
-                        ),
+                    quest=QuestSessionConfig(
+                        disable_capture_spawn_events_authoritative=False,
+                        result_uses_spawn_timeline_ms=False,
+                        spawn_entries=spawn_entries,
+                        quest_stage_major=quest_stage_major,
+                        quest_stage_minor=quest_stage_minor,
+                        start_weapon_id=start_weapon_id,
                     ),
                 ),
             )

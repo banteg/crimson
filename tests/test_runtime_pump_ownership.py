@@ -101,7 +101,6 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
                         lan_sync=LanTickSync(
                             frame_tick_index=0,
                             frame_inputs=([],),
-                            remote_command_hash="",
                             remote_state_hash="",
                         ),
                     ),
@@ -202,13 +201,11 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         0: LanFrameSample(
             frame_tick_index=10,
             frame_inputs=([],),
-            remote_command_hash="",
             remote_state_hash="",
         ),
         1: LanFrameSample(
             frame_tick_index=11,
             frame_inputs=([],),
-            remote_command_hash="",
             remote_state_hash="",
         ),
     }
@@ -219,7 +216,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         state_hash_for_tick=lambda _frame_tick_index, _result: "state-hash",
         should_emit_state_hash=lambda _frame_tick_index: True,
         note_desync=lambda *_args: None,
-        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _command_hash, _state_hash: broadcast_calls.append(
+        broadcast_tick_frame=lambda frame_tick_index, _frame_inputs, _state_hash: broadcast_calls.append(
             int(frame_tick_index),
         ),
     )
