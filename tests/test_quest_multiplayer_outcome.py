@@ -63,7 +63,7 @@ def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_p
     seed_before_run = 0xCAFE
     mode.state.rng.srand(seed_before_run)
 
-    reset_spy = mocker.spy(QuestMode, "_reset_world_runtime")
+    reset_spy = mocker.spy(mode.world_runtime, "reset")
     mode.prepare_new_run("1.1", status=None)
 
     assert reset_spy.call_args is not None

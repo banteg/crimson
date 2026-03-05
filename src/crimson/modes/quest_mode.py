@@ -433,7 +433,8 @@ class QuestMode(BaseGameplayMode):
         seed = int(self.state.rng.state) & 0xFFFFFFFF
 
         player_count = self.config.player_count
-        self._reset_world_runtime(seed=seed, player_count=max(1, min(4, player_count)))
+        self._sync_world_runtime_config()
+        self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
         self._local_input.reset(players=self.sim_world.players)
         self.bind_status(status)

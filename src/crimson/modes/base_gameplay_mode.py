@@ -48,7 +48,6 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer, WorldRenderHost
 from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -90,10 +89,7 @@ from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
-from ..world.audio_bridge import AudioBridge
-from ..world.render_resources import RenderResources
-from ..world.sim_world_state import SimWorldState
-from ..world.terrain_runtime import TerrainRuntime
+from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import shots_from_state
 
 if TYPE_CHECKING:
@@ -364,38 +360,32 @@ class BaseGameplayMode:
         self.audio = audio
         self.audio_rng = audio_rng
         self.rtx_mode = RtxRenderMode.CLASSIC
-        self.sim_world = SimWorldState(
-            world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
-            hardcore=bool(self.hardcore),
-            difficulty_level=int(self.difficulty_level),
-            preserve_bugs=bool(self.preserve_bugs),
-        )
-        self.render_resources = RenderResources(
+        self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
             world_size=float(self.world_size),
+            demo_mode_active=bool(self.demo_mode_active),
+            difficulty_level=int(self.difficulty_level),
+            hardcore=bool(self.hardcore),
+            preserve_bugs=bool(self.preserve_bugs),
             texture_cache=self.texture_cache,
             config=self.config,
-        )
-        self.audio_bridge = AudioBridge(
-            demo_mode_active=bool(self.demo_mode_active),
-            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
             audio=self.audio,
             audio_rng=self.audio_rng,
+            rtx_mode=self.rtx_mode,
         )
-        self.terrain_runtime = TerrainRuntime(
-            world_size=float(self.world_size),
-            render_resources=self.render_resources,
-        )
+        self.sim_world = self._world_runtime.sim_world
+        self.render_resources = self._world_runtime.render_resources
+        self.audio_bridge = self._world_runtime.audio_bridge
+        self.terrain_runtime = self._world_runtime.terrain_runtime
+        self.renderer = self._world_runtime.renderer
         self.camera = Vec2(-1.0, -1.0)
         self.lan_player_rings_enabled = False
         self.lan_local_aim_indicators_only = False
         self.lan_local_player_slot_index = 0
-        self._sync_world_size_ownership()
-        self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
+        self._sync_world_runtime_config()
         player_count = self.config.player_count
-        self._reset_world_runtime(player_count=max(1, min(4, int(player_count))))
+        self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
+        self.texture_cache = self._world_runtime.texture_cache
         self._bind_world()
 
         self._game_over_active = False
@@ -446,61 +436,58 @@ class BaseGameplayMode:
         self._tick_runner_next_tick_index = 0
         self._tick_runner_local_clock: FixedStepClock | None = None
 
-    def _sync_world_size_ownership(self) -> None:
-        world_size = float(self.world_size)
-        self.sim_world.world_size = world_size
-        self.render_resources.world_size = world_size
-        self.terrain_runtime.world_size = world_size
-        ground = self.render_resources.ground
-        if ground is not None:
-            side = max(0, int(world_size))
-            ground.width = side
-            ground.height = side
+    @property
+    def world_runtime(self) -> WorldRuntime:
+        return self._world_runtime
 
-    def _reset_world_runtime(
-        self,
-        *,
-        seed: int = 0xBEEF,
-        player_count: int = 1,
-        spawn_pos: Vec2 | None = None,
-    ) -> None:
-        self._sync_world_size_ownership()
-        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
-        self.sim_world.hardcore = bool(self.hardcore)
-        self.sim_world.difficulty_level = int(self.difficulty_level)
-        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
-        self.sim_world.reset(
-            seed=int(seed),
-            player_count=int(player_count),
-            spawn_pos=spawn_pos,
-        )
-        self.render_resources.fx_queue.clear()
-        self.render_resources.fx_queue_rotated.clear()
-        self.camera = Vec2(-1.0, -1.0)
-        if self.render_resources.ground is not None:
-            terrain_seed = int(self.sim_world.state.rng.state)
-            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
+    @property
+    def camera(self) -> Vec2:
+        return self._world_runtime.camera
 
-    def _open_world_runtime(self) -> None:
-        self.render_resources.texture_cache = self.texture_cache
-        self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
-        self.texture_cache = self.render_resources.texture_cache
+    @camera.setter
+    def camera(self, value: Vec2) -> None:
+        self._world_runtime.camera = value
 
-    def _close_world_runtime(self) -> None:
-        self.render_resources.close()
-        self.sim_world.close_session()
+    @property
+    def lan_player_rings_enabled(self) -> bool:
+        return bool(self._world_runtime.lan_player_rings_enabled)
+
+    @lan_player_rings_enabled.setter
+    def lan_player_rings_enabled(self, value: bool) -> None:
+        self._world_runtime.lan_player_rings_enabled = bool(value)
+
+    @property
+    def lan_local_aim_indicators_only(self) -> bool:
+        return bool(self._world_runtime.lan_local_aim_indicators_only)
+
+    @lan_local_aim_indicators_only.setter
+    def lan_local_aim_indicators_only(self, value: bool) -> None:
+        self._world_runtime.lan_local_aim_indicators_only = bool(value)
+
+    @property
+    def lan_local_player_slot_index(self) -> int:
+        return int(self._world_runtime.lan_local_player_slot_index)
+
+    @lan_local_player_slot_index.setter
+    def lan_local_player_slot_index(self, value: int) -> None:
+        self._world_runtime.lan_local_player_slot_index = int(value)
+
+    def _sync_world_runtime_config(self) -> None:
+        runtime = self._world_runtime
+        runtime.world_size = float(self.world_size)
+        runtime.demo_mode_active = bool(self.demo_mode_active)
+        runtime.difficulty_level = int(self.difficulty_level)
+        runtime.hardcore = bool(self.hardcore)
+        runtime.preserve_bugs = bool(self.preserve_bugs)
+        runtime.texture_cache = self.texture_cache
+        runtime.config = self.config
+        runtime.audio = self.audio
+        runtime.audio_rng = self.audio_rng
+        runtime.rtx_mode = self.rtx_mode
 
     def sync_ground_settings(self) -> None:
         self.render_resources.config = self.config
         self.render_resources.sync_ground_settings()
-
-    def sync_audio_bridge_state(self) -> None:
-        self.audio_bridge.sync(
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-            demo_mode_active=bool(self.demo_mode_active),
-        )
 
     def apply_bootstrap_terrain(
         self,
@@ -536,49 +523,13 @@ class BaseGameplayMode:
         terrain_seed = int(self.sim_world.state.rng.state)
         self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
-    def build_render_frame(self):
-        return self.render_resources.build_render_frame(
-            state=self.sim_world.state,
-            players=self.sim_world.players,
-            creatures=self.sim_world.creatures,
-            camera=self.camera,
-            demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self.sim_world.elapsed_ms),
-            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
-            lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
-            lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
-            lan_local_player_slot_index=int(self.lan_local_player_slot_index),
-            rtx_mode=self.rtx_mode,
-        )
-
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self.render_resources.bake_fx_queues()
         self.renderer.draw(
-            render_frame=self.build_render_frame(),
+            render_frame=self._world_runtime.build_render_frame(),
             draw_aim_indicators=draw_aim_indicators,
             entity_alpha=entity_alpha,
         )
-
-    def update_camera(self, _dt: float) -> None:
-        _ = _dt
-        if not self.sim_world.players:
-            return
-
-        screen_size = self.renderer._camera_screen_size()
-
-        alive = [player for player in self.sim_world.players if player.health > 0.0]
-        if alive:
-            inv_alive = 1.0 / float(len(alive))
-            focus = Vec2(
-                sum(player.pos.x for player in alive) * inv_alive,
-                sum(player.pos.y for player in alive) * inv_alive,
-            )
-            camera = screen_size * 0.5 - focus
-        else:
-            camera = self.camera
-
-        camera = camera + self.sim_world.state.camera_shake_offset
-        self.camera = self.renderer._clamp_camera(camera, screen_size)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self.renderer.world_to_screen(pos)
@@ -739,9 +690,12 @@ class BaseGameplayMode:
     def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
         self.audio = audio
         self.audio_rng = audio_rng
+        self._world_runtime.audio = audio
+        self._world_runtime.audio_rng = audio_rng
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
         self.rtx_mode = mode
+        self._world_runtime.rtx_mode = mode
 
     def _update_audio(self, dt: float) -> None:
         if self.audio is not None:
@@ -1348,8 +1302,10 @@ class BaseGameplayMode:
         # counts (weapon bias) start from a consistent baseline across peers.
         self._refresh_effective_status(reset_lan_status=True)
 
-        self._reset_world_runtime(seed=seed, player_count=max(1, min(4, player_count)))
-        self._open_world_runtime()
+        self._sync_world_runtime_config()
+        self._world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
+        self._world_runtime.open_runtime()
+        self.texture_cache = self._world_runtime.texture_cache
         self._bind_world()
         ground = self.render_resources.ground
         lan_debug_log(
@@ -1408,7 +1364,7 @@ class BaseGameplayMode:
         self._hud_assets = None
         self._reset_tick_runner_state()
         self._reset_replay_capture_state(clear_recorder=True)
-        self._close_world_runtime()
+        self._world_runtime.close_runtime()
 
     def take_action(self) -> str | None:
         action = self._action
@@ -2080,12 +2036,12 @@ class BaseGameplayMode:
     ) -> None:
         apply_presentation_outputs(
             outputs=outputs,
-            sync_audio_bridge_state=self.sync_audio_bridge_state,
-            apply_audio_plan=lambda plan, should_apply_audio: self.audio_bridge.apply_plan(
+            sync_audio_bridge_state=self._world_runtime.sync_audio_bridge_state,
+            apply_audio_plan=lambda plan, should_apply_audio: self._world_runtime.audio_bridge.apply_plan(
                 plan=plan,
                 apply_audio=bool(should_apply_audio),
             ),
-            update_camera=self.update_camera if bool(update_camera) else None,
+            update_camera=self._world_runtime.update_camera if bool(update_camera) else None,
             apply_audio=bool(apply_audio),
         )
 
