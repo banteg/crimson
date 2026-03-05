@@ -139,8 +139,7 @@ def test_resync_checksum_mismatch_sets_error(mocker) -> None:
 
     broken_commit = RbResyncCommit(
         request_id=commit.request_id,
-        snapshot_tick=commit.snapshot_tick,
-        payload_sha256="0" * 64,
+        snapshot_tick=commit.snapshot_tick + 1,
     )
     join._handle_message(message=broken_commit, now_ms=1303)
 

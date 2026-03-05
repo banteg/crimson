@@ -77,17 +77,16 @@ class HostLockstepState(msgspec.Struct):
         self,
         *,
         now_ms: int,
-    ) -> list[TickFrame]:
-        frames: list[TickFrame] = []
+    ) -> list["HostReadyTick"]:
+        frames: list[HostReadyTick] = []
         while self._tick_complete(int(self._next_emit_tick)):
             tick = int(self._next_emit_tick)
             tick_inputs = self._inputs_by_tick.pop(tick, {})
             ordered_inputs = [list(tick_inputs[slot]) for slot in range(int(self.player_count))]
             frames.append(
-                TickFrame(
+                HostReadyTick(
                     tick_index=int(tick),
                     frame_inputs=ordered_inputs,
-                    commands=[],
                 ),
             )
             self._next_emit_tick += 1
@@ -105,6 +104,11 @@ class HostLockstepState(msgspec.Struct):
         if should_pause:
             return PauseState(paused=True, reason="waiting_input")
         return PauseState(paused=False, reason="")
+
+
+class HostReadyTick(msgspec.Struct):
+    tick_index: int = 0
+    frame_inputs: list[PackedPlayerInput] = msgspec.field(default_factory=list)
 
 
 class ClientLockstepState(msgspec.Struct):

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import random
 import time
 from collections.abc import Callable
@@ -163,6 +162,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
             player_count=player_count,
             resolve_tick_input=self._resolve_tick_input,
             resolve_tick_commands=self.resolve_tick_commands,
+            submit_command=self._submit_runtime_command,
         )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
@@ -226,6 +226,15 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         if sample is None:
             return []
         return list(sample.commands)
+
+    def _submit_runtime_command(self, command: GameCommand) -> None:
+        runtime = self._runtime
+        if runtime is None:
+            return
+        if str(self._role) != "host":
+            return
+        if isinstance(runtime, LockstepRuntime):
+            runtime.submit_local_command(command)
 
 
 # LAN lockstep must keep presentation-step RNG consumption identical across peers.
@@ -813,7 +822,6 @@ class BaseGameplayMode:
         )
 
         data = dump_replay(replay)
-        digest = hashlib.sha256(data).hexdigest()
         stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
         replay_dir = self._base_dir / "replays"
         replay_dir.mkdir(parents=True, exist_ok=True)
@@ -830,7 +838,6 @@ class BaseGameplayMode:
             checkpoints_path,
             ReplayCheckpoints(
                 version=CHECKPOINTS_FORMAT_VERSION,
-                replay_sha256=digest,
                 sample_rate=int(self._replay_checkpoints_sample_rate or 0),
                 checkpoints=list(self._replay_checkpoints),
             ),
@@ -1579,6 +1586,8 @@ class BaseGameplayMode:
         sample = callbacks.take_frame_sample(int(tick_result.tick_index))
         if sample is None:
             raise RuntimeError("lan tick runner completed without runtime frame metadata")
+        if tuple(tick_result.commands) != tuple(sample.commands):
+            raise RuntimeError("lan tick result commands diverged from canonical frame")
         tick_result.lan_sync = LanTickSync(
             frame_tick_index=int(sample.frame_tick_index),
             frame_inputs=tuple(sample.frame_inputs),

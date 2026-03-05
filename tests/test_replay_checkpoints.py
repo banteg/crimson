@@ -49,7 +49,7 @@ def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
         PerkId.FASTLOADER,
     ]
     ckpt = build_checkpoint(tick_index=0, world=world, elapsed_ms=0.0)
-    checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, replay_sha256="0" * 64, sample_rate=60, checkpoints=[ckpt])
+    checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=60, checkpoints=[ckpt])
 
     data0 = dump_checkpoints(checkpoints)
     data1 = dump_checkpoints(checkpoints)
@@ -78,7 +78,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         deaths=[_Death(index=33, type_id=18, reward_value=75.0, xp_awarded=10, owner=OwnerRef.from_player(0))],
         events=_Events(hits=2, pickups=1, sfx=["sfx_a", "sfx_b", "sfx_c", "sfx_d", "sfx_e"]),
     )
-    checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, replay_sha256="f" * 64, sample_rate=1, checkpoints=[ckpt])
+    checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[ckpt])
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
     assert decoded == checkpoints
 
@@ -86,7 +86,6 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
 def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
     payload_obj = {
         "version": FORMAT_VERSION,
-        "replay_sha256": "0" * 64,
         "sample_rate": 60,
         "checkpoints": [
             {

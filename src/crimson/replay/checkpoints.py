@@ -31,7 +31,7 @@ class _EventsLike(Protocol):
     pickups: list[object]
     sfx: list[str]
 
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
@@ -91,7 +91,6 @@ class ReplayEventSummary(msgspec.Struct, frozen=True):
 
 class ReplayCheckpoints(msgspec.Struct, frozen=True):
     version: int
-    replay_sha256: str
     sample_rate: int
     checkpoints: list[ReplayCheckpoint] = msgspec.field(default_factory=list)
 

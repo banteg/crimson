@@ -12,6 +12,7 @@ import msgspec
 from crimson.quest_level import normalize_quest_level_text
 
 from ..replay.types import PackedPlayerInput
+from ..sim.input_providers import GameCommand
 from ..sim.timing import ftol_ms_i32
 from .debug_log import lan_debug_log, lan_debug_log_path, set_lan_debug_forwarder
 from .lockstep_lobby import ClientLobby, HostLobby
@@ -35,7 +36,7 @@ from .lockstep_protocol import (
     Welcome,
     current_build_id,
 )
-from .lockstep_state import ClientLockstepState, HostLockstepState
+from .lockstep_state import ClientLockstepState, HostLockstepState, HostReadyTick
 from .reliable import ReliableLink
 from .session_settings import (
     hello_from_session_settings,
@@ -131,7 +132,8 @@ class LockstepRuntime(msgspec.Struct):
     host_last_broadcast_ms: int = 0
     host_lockstep: HostLockstepState | None = None
     host_capture_tick: int = 0
-    host_ready_frames: deque[TickFrame] = msgspec.field(default_factory=deque)
+    host_ready_ticks: deque[HostReadyTick] = msgspec.field(default_factory=deque)
+    _pending_host_commands: list[GameCommand] = msgspec.field(default_factory=list)
     _host_seen_input_slots: set[int] = msgspec.field(default_factory=set)
 
     client_lobby: ClientLobby | None = None
@@ -281,7 +283,8 @@ class LockstepRuntime(msgspec.Struct):
             self._client_last_send_ms = 0
             self.host_lockstep = None
             self.host_capture_tick = 0
-            self.host_ready_frames.clear()
+            self.host_ready_ticks.clear()
+            self._pending_host_commands.clear()
             self.client_lockstep = None
             self.client_pause_state = None
             self._last_send_ms = 0
@@ -650,13 +653,25 @@ class LockstepRuntime(msgspec.Struct):
 
     def pop_tick_frame(self) -> TickFrame | None:
         if str(self.cfg.role) == "host":
-            if not self.host_ready_frames:
+            if not self.host_ready_ticks:
                 return None
-            return self.host_ready_frames.popleft()
+            ready = self.host_ready_ticks.popleft()
+            commands = list(self._pending_host_commands)
+            self._pending_host_commands.clear()
+            return TickFrame(
+                tick_index=int(ready.tick_index),
+                frame_inputs=[list(packed) for packed in ready.frame_inputs],
+                commands=commands,
+            )
         lockstep = self.client_lockstep
         if lockstep is None:
             return None
         return lockstep.pop_canonical_frame()
+
+    def submit_local_command(self, command: GameCommand) -> None:
+        if str(self.cfg.role) != "host":
+            return
+        self._pending_host_commands.append(command)
 
     def broadcast_tick_frame(self, frame: TickFrame, *, now_ms: int | None = None) -> None:
         if str(self.cfg.role) != "host":
@@ -785,7 +800,7 @@ class LockstepRuntime(msgspec.Struct):
                         self._host_local_input_latency_ewma_ms = float(
                             self._host_local_input_latency_ewma_ms * 0.9 + float(latency_ms) * 0.1,
                         )
-                self.host_ready_frames.append(frame)
+                self.host_ready_ticks.append(frame)
 
         # Resend reliable packets.
         for addr, peer in self.host_peers.items():
@@ -1359,7 +1374,7 @@ class LockstepRuntime(msgspec.Struct):
 
             capture_tick = int(self.host_capture_tick)
             emit_tick = int(lockstep.next_emit_tick) if lockstep is not None else 0
-            ready_frames = len(self.host_ready_frames)
+            ready_frames = len(self.host_ready_ticks)
             buffered_ticks = int(lockstep.buffered_tick_count) if lockstep is not None else 0
             target_lead_ticks = int(capture_tick) + int(delay_ticks) - int(emit_tick)
 
@@ -1432,7 +1447,8 @@ class LockstepRuntime(msgspec.Struct):
             input_delay_ticks=int(self.cfg.input_delay_ticks),
         )
         self.host_capture_tick = 0
-        self.host_ready_frames.clear()
+        self.host_ready_ticks.clear()
+        self._pending_host_commands.clear()
 
         # Prime initial ticks (0..delay-1) with neutral inputs so the match can start immediately.
         delay = max(0, int(self.cfg.input_delay_ticks))

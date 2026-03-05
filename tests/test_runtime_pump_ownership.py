@@ -266,7 +266,7 @@ def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
         0: LanFrameSample(
             frame_tick_index=10,
             frame_inputs=([],),
-            commands=(),
+            commands=(command,),
         ),
     }
     broadcast_calls: list[tuple[int, tuple[object, ...]]] = []

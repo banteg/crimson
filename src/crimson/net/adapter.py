@@ -6,7 +6,7 @@ import msgspec
 
 from ..replay.types import PackedPlayerInput
 from .lockstep_protocol import INPUT_DELAY_TICKS, InputBatch, PauseState, TickFrame
-from .lockstep_state import ClientLockstepState, HostLockstepState
+from .lockstep_state import ClientLockstepState, HostLockstepState, HostReadyTick
 
 
 class ResyncFailureTracker(msgspec.Struct):
@@ -50,7 +50,7 @@ class HostLanAdapter(msgspec.Struct):
         self,
         *,
         now_ms: int,
-    ) -> list[TickFrame]:
+    ) -> list[HostReadyTick]:
         return self.lockstep.pop_ready_frames(
             now_ms=int(now_ms),
         )

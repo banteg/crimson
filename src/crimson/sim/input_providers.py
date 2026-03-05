@@ -58,7 +58,7 @@ class InputProvider(Protocol):
 
 TickInputResolver: TypeAlias = Callable[[int], Sequence[PlayerInput] | None]
 TickCommandResolver: TypeAlias = Callable[[int], Sequence[GameCommand] | None]
-TickCommandEmitter: TypeAlias = Callable[[int, GameCommand], None]
+TickCommandSubmitter: TypeAlias = Callable[[GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
@@ -124,13 +124,12 @@ class NetworkInputProvider:
         player_count: int,
         resolve_tick_input: TickInputResolver | None = None,
         resolve_tick_commands: TickCommandResolver | None = None,
-        emit_tick_command: TickCommandEmitter | None = None,
+        submit_command: TickCommandSubmitter | None = None,
     ) -> None:
         self._player_count = max(0, player_count)
         self._resolve_tick_input = resolve_tick_input
         self._resolve_tick_commands = resolve_tick_commands
-        self._emit_tick_command = emit_tick_command
-        self._pending_commands: list[GameCommand] = []
+        self._submit_command = submit_command
         self._commands_by_tick: dict[int, list[GameCommand]] = {}
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
@@ -145,14 +144,6 @@ class NetworkInputProvider:
         if inputs is None:
             return TickInput(status=InputStatus.STALLED, inputs=[])
         commands: list[GameCommand] = []
-        if self._pending_commands:
-            pending_commands = list(self._pending_commands)
-            self._pending_commands.clear()
-            emit_tick_command = self._emit_tick_command
-            if emit_tick_command is not None:
-                for command in pending_commands:
-                    emit_tick_command(int(tick_index), command)
-            commands.extend(pending_commands)
         resolve_commands = self._resolve_tick_commands
         if resolve_commands is not None:
             resolved_commands = resolve_commands(int(tick_index))
@@ -166,10 +157,12 @@ class NetworkInputProvider:
         )
 
     def supports_commands(self) -> bool:
-        return True
+        return self._submit_command is not None or self._resolve_tick_commands is not None
 
     def push_command(self, command: GameCommand) -> None:
-        self._pending_commands.append(command)
+        submit_command = self._submit_command
+        if submit_command is not None:
+            submit_command(command)
 
     def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
         return self._commands_by_tick.pop(int(tick_index), [])

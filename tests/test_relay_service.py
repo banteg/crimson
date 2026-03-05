@@ -211,7 +211,6 @@ def test_resync_sender_role_validation(mocker) -> None:
             total_chunks=1,
             compressed_size=3,
             uncompressed_size=3,
-            payload_sha256="abc",
         ),
         now_ms=6006,
     )
@@ -247,7 +246,7 @@ def test_host_resync_stream_is_forwarded(mocker) -> None:
     )
     server._handle_message(
         peer=host_peer,
-        message=RbResyncCommit(request_id="rq3", snapshot_tick=20, payload_sha256="abc"),
+        message=RbResyncCommit(request_id="rq3", snapshot_tick=20),
         now_ms=7003,
     )
 

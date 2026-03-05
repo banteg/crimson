@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import math
 import zlib
 from typing import Literal
@@ -136,10 +135,6 @@ _SNAPSHOT_ENCODER = msgspec.msgpack.Encoder()
 _SNAPSHOT_DECODER = msgspec.msgpack.Decoder(type=ModeStateSnapshotV2)
 
 
-def _sha256_hex(blob: bytes) -> str:
-    return hashlib.sha256(blob).hexdigest()
-
-
 def encode_mode_snapshot(
     *,
     snapshot: ModeStateSnapshotV2,
@@ -231,7 +226,6 @@ def build_rb_resync_messages(
 
     chunk_size = max(1, int(RESYNC_CHUNK_PAYLOAD_BYTES))
     total_chunks = max(1, int(math.ceil(len(compressed) / float(chunk_size))))
-    digest = _sha256_hex(payload)
 
     begin = RbResyncBegin(
         request_id=str(request_id),
@@ -240,7 +234,6 @@ def build_rb_resync_messages(
         total_chunks=int(total_chunks),
         compressed_size=len(compressed),
         uncompressed_size=len(payload),
-        payload_sha256=str(digest),
     )
 
     chunks: list[RbResyncChunk] = []
@@ -258,7 +251,6 @@ def build_rb_resync_messages(
     commit = RbResyncCommit(
         request_id=str(request_id),
         snapshot_tick=int(snapshot_tick),
-        payload_sha256=str(digest),
     )
     return RbResyncMessageSet(begin=begin, chunks=chunks, commit=commit)
 
@@ -306,8 +298,6 @@ class RbResyncAssemblerV5(msgspec.Struct):
             raise RollbackResyncV5Error("resync_request_id_mismatch")
         if int(message.snapshot_tick) != int(begin.snapshot_tick):
             raise RollbackResyncV5Error("resync_tick_mismatch")
-        if str(message.payload_sha256 or "") != str(begin.payload_sha256 or ""):
-            raise RollbackResyncV5Error("resync_sha_mismatch")
 
         expected_chunks = int(begin.total_chunks)
         if len(self._chunks) != int(expected_chunks):
@@ -323,10 +313,6 @@ class RbResyncAssemblerV5(msgspec.Struct):
             raise RollbackResyncV5Error("resync_uncompressed_size_mismatch")
         if len(payload) > int(self.max_snapshot_bytes):
             raise RollbackResyncV5Error("snapshot_too_large")
-
-        digest = _sha256_hex(payload)
-        if digest != str(begin.payload_sha256 or ""):
-            raise RollbackResyncV5Error("resync_sha_mismatch")
 
         tick = int(begin.snapshot_tick)
         self._begin = None

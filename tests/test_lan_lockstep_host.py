@@ -14,7 +14,6 @@ def test_host_lockstep_emits_canonical_frames_in_tick_order() -> None:
     assert [frame.tick_index for frame in frames] == [0]
     assert frames[0].frame_inputs[0] == [-1.0, 0.0, 4.0, 5.0, 3]
     assert frames[0].frame_inputs[1] == [1.0, 0.0, 2.0, 3.0, 7]
-    assert frames[0].commands == []
 
 
 def test_host_lockstep_pauses_and_resumes_on_missing_input() -> None:
