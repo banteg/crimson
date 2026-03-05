@@ -7,10 +7,11 @@ from typing import Protocol
 from unittest.mock import call
 
 import pytest
-from builders import FakeRunner
+from builders import FakePlaybackDriver
 
 import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.replay import Replay, ReplayHeader, ReplayTick
+from crimson.world.sim_world_state import SimWorldState
 from grim.console import ConsoleState
 
 
@@ -65,6 +66,7 @@ class _RenderResourcesStub:
 class _RuntimeStub:
     audio_bridge: _AudioBridgeStub
     render_resources: _RenderResourcesStub
+    sim_world: SimWorldState = field(default_factory=SimWorldState)
 
 
 class _CountingQueue:
@@ -151,7 +153,8 @@ def test_skip_forward_temporarily_disables_sfx(replay_playback_view) -> None:
         "_on_runner_tick_complete",
         lambda *_args, **_kwargs: observed_sfx_enabled.append(bool(audio_bridge.router.sfx_enabled)) or False,
     )
-    _set_private(view, "_tick_runner", FakeRunner())
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=5))
+    view._max_ticks = None
 
     view._skip_forward_seconds(2.0 / 60.0)
 
@@ -189,7 +192,8 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(replay_playback_view) -
         raise RuntimeError("skip test boom")
 
     _set_private(view, "_on_runner_tick_complete", _on_runner_tick_complete)
-    _set_private(view, "_tick_runner", FakeRunner())
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=3))
+    view._max_ticks = None
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
@@ -233,7 +237,8 @@ def test_skip_forward_bakes_fx_queues_each_tick_when_render_ready(replay_playbac
     view._finished = False
     view._dt = 1.0 / 60.0
     _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
-    _set_private(view, "_tick_runner", FakeRunner())
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
+    view._max_ticks = None
 
     view._skip_forward_seconds(3.0 / 60.0)
 
@@ -267,7 +272,8 @@ def test_skip_forward_clears_fx_queues_each_tick_when_render_not_ready(replay_pl
     view._finished = False
     view._dt = 1.0 / 60.0
     _set_private(view, "_on_runner_tick_complete", lambda *_args, **_kwargs: False)
-    _set_private(view, "_tick_runner", FakeRunner())
+    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs)))
+    view._max_ticks = None
 
     view._skip_forward_seconds(3.0 / 60.0)
 

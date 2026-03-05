@@ -5,8 +5,16 @@ valid:
   - |
     timing = session.timing_for_dt(dt)
     on_tick = callback
+  - |
+    outcome = driver.step_tick(tick_index)
+  - |
+    outcome = self._driver.step_tick(int(self._tick_index))
 invalid:
   - |
     tick = session.step_tick(timing=timing, inputs=inputs)
+  - |
+    tick = self._session.step_tick(timing=timing, inputs=inputs)
+  - |
+    tick = self.session.step_tick(timing=timing, inputs=inputs)
   - |
     step = run_deterministic_step(world=world, timing=timing, options=options)

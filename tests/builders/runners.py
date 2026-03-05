@@ -7,6 +7,8 @@ from crimson.sim.hooks import TickResult
 from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 
+from .tick_payload import make_tick_payload
+
 
 @dataclass
 class FakeRunner:
@@ -38,8 +40,9 @@ class FakeRunner:
         rows = [
             TickResult(
                 tick_index=int(start_tick + i),
-                dt_sim=1.0 / 60.0,
-                payload=object(),
+                payload=make_tick_payload(),
+                inputs=[],
+                commands=[],
             )
             for i in range(int(ticks))
         ]

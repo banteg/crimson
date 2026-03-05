@@ -23,15 +23,11 @@ from ...weapon_runtime import weapon_assign_player
 from ...weapons import WeaponId
 from ..hooks import TickResult
 from ..input_providers import (
-    FrameContext,
     GameCommand,
-    InputStatus,
-    TickInput,
-    normalize_provider_tick_inputs,
 )
 from ..sessions import (
     DeterministicSession,
-    DeterministicSessionStepTick,
+    DeterministicSessionTick,
     QuestSpawnState,
     RushSpawnState,
     SurvivalSpawnState,
@@ -41,7 +37,6 @@ from ..sessions import (
     survival_mid_step,
 )
 from ..step_pipeline import DeterministicStepResult
-from ..tick_runner import TickRunner, TickRunnerConfig
 from ..timing import ftol_ms_i32
 from ..world_state import WorldEvents, WorldState
 from .replay_timing import should_apply_world_dt_steps_for_replay
@@ -141,39 +136,6 @@ def _tick_rng_trace(rng: object, *, enabled: bool) -> Iterator[list[RngTraceDraw
         rng.set_trace_sink(previous_sink)
 
 
-class _ReplayTickProvider:
-    """Lightweight input provider that reads directly from replay ticks."""
-
-    def __init__(self, replay: Replay) -> None:
-        self._replay = replay
-        self._player_count = max(0, int(replay.header.player_count))
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-
-    def pull_tick_input(self, tick_index: int) -> TickInput:
-        if tick_index < 0 or tick_index >= len(self._replay.ticks):
-            return TickInput(status=InputStatus.EOS, inputs=[])
-        inputs = unpack_tick_inputs(self._replay.ticks[tick_index].inputs)
-        return TickInput(
-            status=InputStatus.READY,
-            inputs=normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count),
-        )
-
-    def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        return list(self._replay.ticks[tick_index].commands)
-
-    def supports_commands(self) -> bool:
-        return True
-
-    def push_command(self, command: GameCommand) -> None:
-        _ = command
-
-    def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        _ = default_dt
-        return self._replay.ticks[tick_index].dt
-
-
 class PlaybackDriverOptions(msgspec.Struct, frozen=True):
     max_ticks: int | None = None
     trace_rng: bool = False
@@ -271,7 +233,7 @@ class SimplePlaybackRuntime:
 
     session: DeterministicSession
 
-    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
+    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionTick) -> None:
         _ = outcome, tick
 
     def checkpoint_elapsed_ms(self, outcome: PlaybackTickOutcome) -> float:
@@ -287,7 +249,7 @@ class QuestPlaybackRuntime:
     quest_state: QuestSpawnState
     result_uses_spawn_timeline_ms: bool
 
-    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionStepTick) -> None:
+    def enrich_tick_outcome(self, outcome: PlaybackTickOutcome, *, tick: DeterministicSessionTick) -> None:
         _ = tick
         outcome.spawn_timeline_ms = float(self.quest_state.spawn_timeline_ms)
         outcome.completion_transition_ms = float(self.quest_state.completion_transition_ms)
@@ -575,10 +537,7 @@ class PlaybackDriver:
                 )
 
             state = self.world.state
-            payload = tick_result.payload
-            if payload is None:
-                raise ReplayRunnerError("playback tick result missing payload")
-            tick = cast(DeterministicSessionStepTick, payload)
+            tick = tick_result.payload
             step = tick.step
 
             # Close the trace context before snapshotting rows so any
@@ -638,13 +597,25 @@ class PlaybackDriver:
             ),
         )
 
-    def build_tick_runner(self) -> TickRunner:
-        provider = _ReplayTickProvider(self.replay)
-        return TickRunner(
-            session=self.session,
-            input_provider=provider,
-            config=TickRunnerConfig(trace_rng=bool(self.options.trace_rng)),
+    def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
+        tick_index = int(tick_index)
+        replay_tick = self.replay.ticks[tick_index]
+        dt_tick = float(replay_tick.dt)
+        meta = self._prepare_tick_meta(tick_index=tick_index, dt_tick=dt_tick)
+
+        inputs = unpack_tick_inputs(replay_tick.inputs)
+        commands = list(replay_tick.commands)
+
+        timing = self.session.timing_for_dt(dt_tick)
+        session_tick = self.session.step_tick(
+            timing=timing, inputs=inputs,
+            trace_rng=self.options.trace_rng, commands=commands,
         )
+        tick_result = TickResult(
+            tick_index=tick_index,
+            payload=session_tick, inputs=inputs, commands=commands,
+        )
+        return self._finalize_tick_outcome(tick_result=tick_result, meta=meta)
 
     def run_to_completion(
         self,
@@ -659,93 +630,44 @@ class PlaybackDriver:
         tick_begin_observer: TickBeginObserver | None = None,
         tick_end_observer: Callable[[PlaybackTickOutcome], None] | None = None,
         ) -> RunResult:
-        tick_runner = self.build_tick_runner()
-        completed_ticks = 0
-        frame_index = 0
-
         tick_limit = int(self.tick_limit)
-        while int(completed_ticks) < int(tick_limit):
-            tick_index = int(completed_ticks)
-            dt_tick = self.replay.ticks[tick_index].dt
-            tick_meta = self._prepare_tick_meta(
-                tick_index=int(tick_index),
-                dt_tick=float(dt_tick),
-            )
-            frame_index += 1
-            tick_runner.begin_frame(
-                FrameContext(
-                    dt_seconds=float(dt_tick),
-                    tick_dt_seconds=float(dt_tick),
-                    frame_index=int(frame_index),
-                    candidate_ticks=1,
-                    is_networked=False,
-                    is_replay=True,
-                ),
-            )
-            batch = tick_runner.advance_ticks(
-                start_tick=int(tick_index),
-                ticks_requested=1,
-                tick_dt=float(dt_tick),
-            )
-            if batch.batch_status is InputStatus.STALLED:
-                trace_ctx = cast(Any, tick_meta.trace_ctx)
-                trace_ctx.__exit__(None, None, None)
-                raise ReplayRunnerError(
-                    f"playback tick runner stalled before completion at tick {int(completed_ticks)}",
+        for tick_index in range(tick_limit):
+            outcome = self.step_tick(tick_index)
+
+            if tick_begin_observer is not None:
+                tick_begin_observer(
+                    int(outcome.tick_index),
+                    outcome.world,
+                    float(outcome.dt_tick),
                 )
-            if batch.batch_status is InputStatus.EOS:
-                trace_ctx = cast(Any, tick_meta.trace_ctx)
-                trace_ctx.__exit__(None, None, None)
-                raise ReplayRunnerError(
-                    f"playback tick runner hit eos before completion at tick {int(completed_ticks)}",
+
+            if tick_rng_trace_observer is not None:
+                tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
+
+            if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
+                self._append_checkpoint_for_tick(
+                    outcome=outcome,
+                    checkpoints_out=checkpoints_out,
+                    checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
                 )
-            if int(batch.ticks_completed) <= 0:
-                trace_ctx = cast(Any, tick_meta.trace_ctx)
-                trace_ctx.__exit__(None, None, None)
-                raise ReplayRunnerError(
-                    f"playback tick runner produced no ticks before completion at tick {int(completed_ticks)}",
+
+            if tick_trace_observer is not None:
+                tick_trace_observer(
+                    int(outcome.tick_index),
+                    self.world,
+                    float(outcome.elapsed_ms),
+                    outcome.step_events,
+                    dict(outcome.rng_marks),
                 )
-            for tick_result in batch.completed_results:
-                outcome = self._finalize_tick_outcome(
-                    tick_result=tick_result,
-                    meta=tick_meta,
-                )
-                completed_ticks += 1
 
-                if tick_begin_observer is not None:
-                    tick_begin_observer(
-                        int(outcome.tick_index),
-                        outcome.world,
-                        float(outcome.dt_tick),
-                    )
+            if tick_observer is not None:
+                tick_observer(int(outcome.tick_index), self.world)
 
-                if tick_rng_trace_observer is not None:
-                    tick_rng_trace_observer(int(outcome.tick_index), list(outcome.tick_rng_rows))
+            if tick_end_observer is not None:
+                tick_end_observer(outcome)
 
-                if checkpoints_out is not None and checkpoint_ticks is not None and int(outcome.tick_index) in checkpoint_ticks:
-                    self._append_checkpoint_for_tick(
-                        outcome=outcome,
-                        checkpoints_out=checkpoints_out,
-                        checkpoint_use_world_step_creature_count=bool(checkpoint_use_world_step_creature_count),
-                    )
-
-                if tick_trace_observer is not None:
-                    tick_trace_observer(
-                        int(outcome.tick_index),
-                        self.world,
-                        float(outcome.elapsed_ms),
-                        outcome.step_events,
-                        dict(outcome.rng_marks),
-                    )
-
-                if tick_observer is not None:
-                    tick_observer(int(outcome.tick_index), self.world)
-
-                if tick_end_observer is not None:
-                    tick_end_observer(outcome)
-
-                if tick_progress_callback is not None:
-                    tick_progress_callback(int(outcome.tick_index) + 1)
+            if tick_progress_callback is not None:
+                tick_progress_callback(int(outcome.tick_index) + 1)
 
         return self.build_run_result(ticks=int(tick_limit))
 

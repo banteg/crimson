@@ -3,7 +3,6 @@ from __future__ import annotations
 import msgspec
 
 from .hooks import TickResult
-from .input import PlayerInput
 from .input_providers import FrameContext, InputProvider, InputStatus
 from .sessions import DeterministicSession
 
@@ -82,7 +81,7 @@ class TickRunner:
 
             # Snapshot list identity before stepping so replay recording can
             # happen later in frame-driver code with pre-step inputs.
-            result_inputs: list[PlayerInput] | None = list(tick_inputs)
+            result_inputs = list(tick_inputs)
 
             timing = self._session.timing_for_dt(tick_dt_seconds)
             tick = self._session.step_tick(
@@ -91,11 +90,8 @@ class TickRunner:
                 trace_rng=self._config.trace_rng,
                 commands=commands,
             )
-            dt_sim = tick.dt_sim
             result = TickResult(
                 tick_index=tick_index,
-                dt_sim=dt_sim,
-                presentation_plan_ms=tick.presentation_plan_ms,
                 payload=tick,
                 inputs=result_inputs,
                 commands=commands,

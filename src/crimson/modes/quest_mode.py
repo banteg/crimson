@@ -40,7 +40,7 @@ from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import PerkMenuOpenCommand
-from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, QuestSpawnState, quest_post_step
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
@@ -282,7 +282,7 @@ class QuestMode(BaseGameplayMode):
 
     def _quest_on_tick_applied(
         self,
-        tick: DeterministicSessionStepTick,
+        tick: DeterministicSessionTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:

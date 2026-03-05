@@ -38,7 +38,7 @@ from ..replay.checkpoints import resolve_checkpoint_sample_rate
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.input_providers import PerkMenuOpenCommand
-from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick, SurvivalSpawnState, survival_mid_step
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS, load_perk_menu_assets
@@ -482,7 +482,7 @@ class SurvivalMode(BaseGameplayMode):
 
     def _survival_on_tick_applied(
         self,
-        tick: DeterministicSessionStepTick,
+        tick: DeterministicSessionTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:

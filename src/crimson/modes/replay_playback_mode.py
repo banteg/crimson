@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
-from typing import cast
 
 from grim import music as grim_music
 from grim.assets import PaqTextureCache, TextureLoader
@@ -27,7 +26,7 @@ from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,
-    apply_sim_metadata_tick_result,
+    apply_tick_to_sim,
 )
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
@@ -46,9 +45,6 @@ from ..sim.driver.playback_driver import (
     resolve_replay_quest_setup,
 )
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
-from ..sim.hooks import TickResult
-from ..sim.input_providers import FrameContext, InputStatus
-from ..sim.tick_runner import TickRunner
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -154,7 +150,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._driver: PlaybackDriver | None = None
-        self._tick_runner: TickRunner | None = None
         self._survival = None
         self._rush = None
         self._quest = None
@@ -357,7 +352,6 @@ class ReplayPlaybackMode:
         self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
-        self._tick_runner = None
 
         world_size = float(replay.header.world_size)
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
@@ -514,7 +508,6 @@ class ReplayPlaybackMode:
         self._survival = self._driver.survival_session
         self._rush = self._driver.rush_session
         self._quest = self._driver.quest_session
-        self._tick_runner = self._driver.build_tick_runner()
 
     def close(self) -> None:
         if self._small is not None:
@@ -526,7 +519,6 @@ class ReplayPlaybackMode:
         self._quest_complete_texture = None
         self._hud_assets = None
         self._driver = None
-        self._tick_runner = None
         self._survival = None
         self._rush = None
         self._quest = None
@@ -630,12 +622,13 @@ class ReplayPlaybackMode:
     ) -> None:
         replay = self._replay
         runtime = self._runtime
-        runner = self._tick_runner
-        if replay is None or runtime is None or runner is None:
+        driver = self._driver
+        if replay is None or runtime is None or driver is None:
             self._finished = True
             return
         render_resources = runtime.render_resources
-        if int(self._tick_index) >= int(self._tick_limit()):
+        tick_limit = int(self._tick_limit())
+        if int(self._tick_index) >= tick_limit:
             self._mark_finished_if_complete()
             return
 
@@ -644,112 +637,65 @@ class ReplayPlaybackMode:
         if max_ticks is not None:
             ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
         self._frame_index = int(self._frame_index) + 1
-        runner.begin_frame(
-            FrameContext(
-                dt_seconds=float(frame_dt),
-                tick_dt_seconds=float(self._dt),
-                frame_index=int(self._frame_index),
-                candidate_ticks=max(0, int(ticks_requested)),
-                is_networked=False,
-                is_replay=True,
-            ),
-        )
 
-        def _apply_completed(completed_results: list[TickResult]) -> None:
-            outputs: list[PresentationTickOutput] = []
-            payloads_by_tick_index: dict[int, object] = {}
-            has_step_outputs = False
-            for tick_result in completed_results:
-                payload = tick_result.payload
-                if payload is None:
-                    continue
-                tick_index = int(tick_result.tick_index)
-                payloads_by_tick_index[tick_index] = payload
-                if hasattr(payload, "step"):
-                    has_step_outputs = True
-                    output = apply_sim_metadata_tick_result(
-                        sim_world=runtime.sim_world,
-                        tick_result=tick_result,
-                        game_tune_started=self._session_game_tune_started(),
-                        extract_step=lambda item: cast(PlaybackTickOutcome, item).step,
-                    )
-                    if output is not None:
-                        outputs.append(output)
-                    continue
-                outputs.append(
-                    PresentationTickOutput(
-                        tick_index=int(tick_result.tick_index),
-                        dt_sim=float(tick_result.dt_sim),
-                        presentation=None,
-                    ),
-                )
+        outputs: list[PresentationTickOutput] = []
+        outcomes: list[PlaybackTickOutcome] = []
+        ticks_completed = 0
 
-            def _on_output_applied(output: PresentationTickOutput) -> None:
-                payload = payloads_by_tick_index.get(int(output.tick_index))
-                if payload is None:
-                    raise RuntimeError(
-                        f"missing replay payload for applied output tick {int(output.tick_index)}",
-                    )
-                if hasattr(payload, "step"):
-                    outcome = cast(PlaybackTickOutcome, payload)
-                    self._apply_tick_outcome(
-                        outcome=outcome,
-                        dt=float(self._dt),
-                    )
-                    self._on_runner_tick_complete(int(output.tick_index), outcome)
-                else:
-                    self._on_runner_tick_complete(int(output.tick_index), payload)
-                if not bake_fx_per_tick:
-                    return
-                if render_resources.ground is not None and render_resources.fx_textures is not None:
-                    render_resources.bake_fx_queues()
-                else:
-                    render_resources.fx_queue.clear()
-                    render_resources.fx_queue_rotated.clear()
-
-            can_apply_output_phase = bool(
-                hasattr(runtime, "sync_audio_bridge_state")
-                and hasattr(runtime, "audio_bridge")
-                and hasattr(runtime.audio_bridge, "apply_plan"),
+        while ticks_completed < ticks_requested and int(self._tick_index) < tick_limit:
+            outcome = driver.step_tick(int(self._tick_index))
+            apply_tick_to_sim(
+                sim_world=runtime.sim_world,
+                step=outcome.step,
+                game_tune_started=self._session_game_tune_started(),
             )
-            update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
-            if outputs and has_step_outputs and can_apply_output_phase:
-                apply_presentation_outputs(
-                    outputs=outputs,
-                    sync_audio_bridge_state=runtime.sync_audio_bridge_state,
-                    apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
-                        plan=plan,
-                        apply_audio=bool(should_apply_audio),
-                    ),
-                    update_camera=update_camera,
-                    on_output_applied=_on_output_applied,
-                    apply_audio=True,
-                )
+            outputs.append(PresentationTickOutput(
+                tick_index=int(outcome.tick_index),
+                dt_sim=float(outcome.step.dt_sim),
+                presentation=outcome.step.presentation,
+            ))
+            outcomes.append(outcome)
+            self._tick_index = int(self._tick_index) + 1
+            ticks_completed += 1
+
+        def _on_output_applied(output: PresentationTickOutput, outcome: PlaybackTickOutcome) -> None:
+            self._apply_tick_outcome(outcome=outcome, dt=float(self._dt))
+            self._on_runner_tick_complete(int(output.tick_index), outcome)
+            if not bake_fx_per_tick:
                 return
+            if render_resources.ground is not None and render_resources.fx_textures is not None:
+                render_resources.bake_fx_queues()
+            else:
+                render_resources.fx_queue.clear()
+                render_resources.fx_queue_rotated.clear()
 
-            for output in outputs:
-                _on_output_applied(output)
-
-        batch = runner.advance_ticks(
-            start_tick=int(self._tick_index),
-            ticks_requested=max(0, int(ticks_requested)),
-            tick_dt=float(self._dt),
+        can_apply_output_phase = bool(
+            hasattr(runtime, "sync_audio_bridge_state")
+            and hasattr(runtime, "audio_bridge")
+            and hasattr(runtime.audio_bridge, "apply_plan"),
         )
-        _apply_completed(list(batch.completed_results))
+        update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
+        if outputs and can_apply_output_phase:
+            apply_presentation_outputs(
+                outputs=outputs,
+                sync_audio_bridge_state=runtime.sync_audio_bridge_state,
+                apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
+                    plan=plan,
+                    apply_audio=bool(should_apply_audio),
+                ),
+                update_camera=update_camera,
+                on_output_applied=lambda output: _on_output_applied(
+                    output, outcomes[next(i for i, o in enumerate(outcomes) if o.tick_index == output.tick_index)],
+                ),
+                apply_audio=True,
+            )
+        else:
+            for output, outcome in zip(outputs, outcomes):
+                _on_output_applied(output, outcome)
 
-        self._tick_index = int(batch.next_tick_index)
-        if batch.batch_status is InputStatus.STALLED:
-            raise RuntimeError(
-                f"replay tick runner stalled before completion at tick {int(self._tick_index)}",
-            )
-        if batch.batch_status is InputStatus.EOS and int(self._tick_index) < int(self._tick_limit()):
-            raise RuntimeError(
-                f"replay tick runner hit eos before completion at tick {int(self._tick_index)}",
-            )
-        if batch.batch_status in (InputStatus.STALLED, InputStatus.EOS):
-            unconsumed_ticks = max(0, int(ticks_requested) - int(batch.ticks_completed))
-            if unconsumed_ticks > 0:
-                self._clock.accum += float(unconsumed_ticks) * float(self._dt)
+        unconsumed_ticks = max(0, ticks_requested - ticks_completed)
+        if unconsumed_ticks > 0:
+            self._clock.accum += float(unconsumed_ticks) * float(self._dt)
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)
 

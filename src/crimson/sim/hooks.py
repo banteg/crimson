@@ -6,22 +6,17 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from .sessions import DeterministicSessionTick
+
 if TYPE_CHECKING:
     from .input import PlayerInput
     from .input_providers import GameCommand
 
-class TickHashes(msgspec.Struct, frozen=True):
-    state_hash: str | None = None
-
-
 class TickResult(msgspec.Struct):
     tick_index: int
-    dt_sim: float
-    presentation_plan_ms: float = 0.0
-    payload: object | None = None
-    inputs: list[PlayerInput] | None = None
-    commands: list[GameCommand] = []
-    hashes: TickHashes | None = None
+    payload: DeterministicSessionTick
+    inputs: list[PlayerInput]
+    commands: list[GameCommand]
     replay_tick_index: int | None = None
     lan_sync: LanTickSync | None = None
 

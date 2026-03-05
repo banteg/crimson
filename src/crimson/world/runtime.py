@@ -18,7 +18,7 @@ from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_bat
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, InputStatus, LocalInputProvider
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick
+from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
 from .presentation import PresentationLayer
@@ -304,7 +304,6 @@ class WorldRuntime:
             sim_world=self.sim_world,
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
-            extract_step=lambda payload: cast(DeterministicSessionTick, payload).step,
         )
         apply_presentation_outputs(
             outputs=outputs,

@@ -11,6 +11,7 @@ import crimson.sim.batch_apply as batch_apply_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
+from crimson.sim.driver.playback_driver import PlaybackTickOutcome
 from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
@@ -310,7 +311,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     replay_tick_indices: list[int] = []
 
     def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
-        assert isinstance(tick, DeterministicSessionTick)
+        assert isinstance(tick, PlaybackTickOutcome)
         replay_tick_indices.append(int(_tick_index))
         return False
 

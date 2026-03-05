@@ -28,7 +28,7 @@ from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.sessions import (
     DeterministicSession,
-    DeterministicSessionStepTick,
+    DeterministicSessionTick,
     RushSpawnState,
     rush_input_transform,
     rush_mid_step,
@@ -290,7 +290,7 @@ class RushMode(BaseGameplayMode):
 
     def _rush_on_tick_applied(
         self,
-        tick: DeterministicSessionStepTick,
+        tick: DeterministicSessionTick,
         frame_tick_index: int | None,
         dt_tick: float,
     ) -> LanStepAction:

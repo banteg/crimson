@@ -7,7 +7,6 @@ valid:
         sim_world=sim_world,
         completed_results=batch.completed_results,
         game_tune_started=session.game_tune_started,
-        extract_step=lambda payload: payload.step,
     )
 invalid:
   - |

@@ -8,7 +8,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, TypeAlias, cast
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
@@ -62,7 +62,6 @@ from ..replay.checkpoints import (
 from ..replay.input_codec import pack_player_input, unpack_player_input
 from ..replay.types import PackedPlayerInput
 from ..sim.batch_apply import (
-    DeterministicStepPayload,
     PresentationTickOutput,
     apply_presentation_outputs,
     apply_sim_metadata_tick_result,
@@ -72,7 +71,6 @@ from ..sim.hooks import (
     LanFrameSample,
     LanSyncCallbacks,
     LanTickSync,
-    TickHashes,
     TickResult,
 )
 from ..sim.input import PlayerInput
@@ -86,7 +84,7 @@ from ..sim.input_providers import (
     PerkMenuOpenCommand,
     PerkPickCommand,
 )
-from ..sim.sessions import DeterministicSession, DeterministicSessionStepTick
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
@@ -109,9 +107,8 @@ LanRuntime = LockstepRuntime | RollbackRuntime
 @dataclass(slots=True)
 class _AppliedBatchTick:
     runner_tick_index: int
-    tick: DeterministicSessionStepTick
+    tick: DeterministicSessionTick
     replay_tick_index: int | None
-    hashes: TickHashes | None
     frame_tick_index: int | None = None
     frame_inputs: tuple[PackedPlayerInput, ...] = ()
     remote_command_hash: str = ""
@@ -147,7 +144,7 @@ def _lan_allow_frame_pop_default() -> bool:
 
 
 def _lan_on_tick_applied_default(
-    _tick: DeterministicSessionStepTick, _frame_tick_index: int | None, _dt_tick: float,
+    _tick: DeterministicSessionTick, _frame_tick_index: int | None, _dt_tick: float,
 ) -> LanStepAction:
     return "continue"
 
@@ -160,7 +157,7 @@ def _lan_on_paused_default(_dt: float) -> None:
 class LanFramePolicy:
     prepare_frame: Callable[[str, float, LanSession, float], bool] = _lan_prepare_frame_default
     allow_frame_pop: Callable[[], bool] = _lan_allow_frame_pop_default
-    on_tick_applied: Callable[[DeterministicSessionStepTick, int | None, float], LanStepAction] = (
+    on_tick_applied: Callable[[DeterministicSessionTick, int | None, float], LanStepAction] = (
         _lan_on_tick_applied_default
     )
     on_paused: Callable[[float], None] = _lan_on_paused_default
@@ -1652,20 +1649,6 @@ class BaseGameplayMode:
         return (runner, provider)
 
     @staticmethod
-    def _annotate_tick_hashes(
-        *,
-        batch: TickBatchResult,
-        on_hash: Callable[[int, TickHashes], None] | None = None,
-    ) -> None:
-        for tick_result in batch.completed_results:
-            hashes = TickHashes(
-                state_hash=None,
-            )
-            tick_result.hashes = hashes
-            if on_hash is not None:
-                on_hash(int(tick_result.tick_index), hashes)
-
-    @staticmethod
     def _prepare_lan_tick_sync(
         *,
         tick_result: TickResult,
@@ -1690,11 +1673,6 @@ class BaseGameplayMode:
         tick_result: TickResult,
         callbacks: LanSyncCallbacks,
     ) -> LanTickSync:
-        hashes = tick_result.hashes
-        if hashes is None:
-            hashes = TickHashes(state_hash=None)
-            tick_result.hashes = hashes
-
         sync = tick_result.lan_sync
         if sync is None:
             raise RuntimeError("lan tick result missing frame metadata")
@@ -1734,7 +1712,7 @@ class BaseGameplayMode:
         self,
         *,
         tick_index: int | None,
-        tick: DeterministicSessionStepTick,
+        tick: DeterministicSessionTick,
     ) -> None:
         if tick_index is None:
             return
@@ -1848,10 +1826,7 @@ class BaseGameplayMode:
         return int(tick_index) < 5 or (int(tick_index) % int(STATE_HASH_PERIOD_TICKS)) == 0
 
     def _lan_state_hash_from_tick_result(self, *, frame_tick_index: int, result: TickResult) -> str:
-        payload = result.payload
-        if payload is None:
-            raise RuntimeError("lan tick result missing payload")
-        tick = cast(DeterministicSessionStepTick, payload)
+        tick = result.payload
         return self._lan_state_hash_for_tick(
             tick_index=int(frame_tick_index),
             elapsed_ms=float(tick.elapsed_ms),
@@ -1915,7 +1890,7 @@ class BaseGameplayMode:
         sim_ms = (time.perf_counter_ns() - sim_ns_start) / 1_000_000.0
         self._sim_ms += float(sim_ms)
         self._presentation_plan_ms += float(
-            sum(max(0.0, float(row.presentation_plan_ms)) for row in batch.completed_results),
+            sum(max(0.0, float(row.payload.step.presentation_plan_ms)) for row in batch.completed_results),
         )
 
         ticks_applied = 0
@@ -1930,8 +1905,6 @@ class BaseGameplayMode:
                 role=str(role),
                 provider=provider,
             )
-            self._annotate_tick_hashes(batch=batch, on_hash=None)
-
             def _on_tick_applied(applied: _AppliedBatchTick) -> LanStepAction:
                 frame_tick_index = applied.frame_tick_index
                 if frame_tick_index is None:
@@ -2002,33 +1975,23 @@ class BaseGameplayMode:
         recorder: ReplayRecorder | None = None,
         lan_sync_callbacks: LanSyncCallbacks | None = None,
         on_tick_applied: Callable[[_AppliedBatchTick], LanStepAction] | None = None,
-        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
+        on_checkpoint: Callable[[int, DeterministicSessionTick], None] | None = None,
     ) -> _BatchApplyOutcome:
         ticks_applied = 0
         stop_after_finalize = False
         presentation_outputs: list[PresentationTickOutput] = []
 
-        def _extract_step(payload: object) -> DeterministicStepPayload:
-            return cast(DeterministicStepPayload, cast(DeterministicSessionStepTick, payload).step)
-
         for tick_result in batch.completed_results:
-            payload = tick_result.payload
-            if payload is None:
-                continue
-            tick = cast(DeterministicSessionStepTick, payload)
+            tick = tick_result.payload
             runner_tick_index = int(tick_result.tick_index)
             replay_tick_index = tick_result.replay_tick_index
             if replay_tick_index is None and recorder is not None:
-                inputs = tick_result.inputs
-                if inputs is not None:
-                    replay_tick_index = int(recorder.record_tick(list(inputs), commands=tick_result.commands))
-                    tick_result.replay_tick_index = replay_tick_index
-            hashes = tick_result.hashes
+                replay_tick_index = int(recorder.record_tick(list(tick_result.inputs), commands=tick_result.commands))
+                tick_result.replay_tick_index = replay_tick_index
             applied = _AppliedBatchTick(
                 runner_tick_index=int(runner_tick_index),
                 tick=tick,
                 replay_tick_index=replay_tick_index,
-                hashes=hashes,
             )
             if lan_sync_callbacks is not None:
                 sync = self._prepare_lan_tick_sync(
@@ -2047,14 +2010,11 @@ class BaseGameplayMode:
                 applied.remote_state_hash = str(tick_result.lan_sync.remote_state_hash)
                 applied.host_state_hash = str(tick_result.lan_sync.host_state_hash)
 
-            output = apply_sim_metadata_tick_result(
+            presentation_outputs.append(apply_sim_metadata_tick_result(
                 sim_world=self.sim_world,
                 tick_result=tick_result,
                 game_tune_started=bool(session.game_tune_started),
-                extract_step=_extract_step,
-            )
-            if output is not None:
-                presentation_outputs.append(output)
+            ))
             for cmd in tick_result.commands:
                 if isinstance(cmd, PerkPickCommand) and self.audio_bridge.router is not None:
                     self.audio_bridge.router.play_sfx("sfx_ui_bonus")
@@ -2104,9 +2064,8 @@ class BaseGameplayMode:
         dt_frame: float,
         session: DeterministicSession,
         recorder: ReplayRecorder | None,
-        on_tick: Callable[[DeterministicSessionStepTick, int | None], bool],
-        on_checkpoint: Callable[[int, DeterministicSessionStepTick], None] | None = None,
-        on_hash: Callable[[int, TickHashes], None] | None = None,
+        on_tick: Callable[[DeterministicSessionTick, int | None], bool],
+        on_checkpoint: Callable[[int, DeterministicSessionTick], None] | None = None,
     ) -> None:
         if float(dt_frame) <= 0.0:
             return
@@ -2136,12 +2095,7 @@ class BaseGameplayMode:
         )
         self._sim_ms = float((time.perf_counter_ns() - sim_ns_start) / 1_000_000.0)
         self._presentation_plan_ms = float(
-            sum(max(0.0, float(row.presentation_plan_ms)) for row in batch.completed_results),
-        )
-
-        self._annotate_tick_hashes(
-            batch=batch,
-            on_hash=on_hash,
+            sum(max(0.0, float(row.payload.step.presentation_plan_ms)) for row in batch.completed_results),
         )
 
         apply_ns_start = time.perf_counter_ns()

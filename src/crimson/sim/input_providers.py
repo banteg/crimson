@@ -8,7 +8,6 @@ import msgspec
 
 from ..local_input import clear_input_edges
 from .input import PlayerInput
-from .input_frame import normalize_input_frame
 
 
 class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True):
@@ -63,15 +62,6 @@ TickCommandEmitter: TypeAlias = Callable[[int, GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
-def normalize_provider_tick_inputs(*, inputs: Sequence[PlayerInput], player_count: int) -> list[PlayerInput]:
-    """Normalize provider output to a fixed player-index order."""
-
-    count = max(0, player_count)
-    if count > 0 and len(inputs) == 0:
-        raise ValueError("empty input list is invalid when player_count > 0")
-    return normalize_input_frame(inputs, player_count=count).as_list()
-
-
 class LocalInputProvider:
     """Adapter over local input polling."""
 
@@ -91,7 +81,7 @@ class LocalInputProvider:
 
     def begin_frame(self, frame_ctx: FrameContext) -> None:
         frame_inputs = list(self._build_inputs(frame_ctx))
-        self._frame_inputs = normalize_provider_tick_inputs(inputs=frame_inputs, player_count=self._player_count)
+        self._frame_inputs = list(frame_inputs)
         self._edge_inputs = clear_input_edges(self._frame_inputs)
         self._first_tick_pending = True
         if self._pending_commands:
@@ -172,7 +162,7 @@ class NetworkInputProvider:
             self._queue_tick_commands(int(tick_index), commands)
         return TickInput(
             status=InputStatus.READY,
-            inputs=normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count),
+            inputs=list(inputs),
         )
 
     def supports_commands(self) -> bool:
