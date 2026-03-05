@@ -3,15 +3,6 @@ snapshots:
   ? |
     from typing import Any
 
-    payload: Any
-  : labels:
-    - source: 'payload: Any'
-      style: primary
-      start: 24
-      end: 36
-  ? |
-    from typing import Any
-
     def decode(value: Any) -> int:
       return int(value)
   : labels:
@@ -33,3 +24,12 @@ snapshots:
       style: primary
       start: 24
       end: 68
+  ? |
+    from typing import Any
+
+    payload: Any
+  : labels:
+    - source: 'payload: Any'
+      style: primary
+      start: 24
+      end: 36

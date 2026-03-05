@@ -23,7 +23,7 @@ class TickResult(msgspec.Struct):
     inputs: list[PlayerInput] | None = None
     hashes: TickHashes | None = None
     replay_tick_index: int | None = None
-    lan_sync: object | None = None
+    lan_sync: LanTickSync | None = None
 
 
 @dataclass(frozen=True, slots=True)

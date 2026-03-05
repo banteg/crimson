@@ -1,0 +1,11 @@
+id: no-test-inspect-stack
+snapshots:
+  ? |
+    import inspect
+
+    frames = inspect.stack()
+  : labels:
+    - source: inspect.stack()
+      style: primary
+      start: 25
+      end: 40

@@ -1,16 +1,16 @@
 id: no-type-ignore-comments
 snapshots:
   ? |
-    value = int(raw)  # type: ignore[arg-type]
-  : labels:
-    - source: '# type: ignore[arg-type]'
-      style: primary
-      start: 18
-      end: 42
-  ? |
     result = decode(payload)  # type: ignore
   : labels:
     - source: '# type: ignore'
       style: primary
       start: 26
       end: 40
+  ? |
+    value = int(raw)  # type: ignore[arg-type]
+  : labels:
+    - source: '# type: ignore[arg-type]'
+      style: primary
+      start: 18
+      end: 42

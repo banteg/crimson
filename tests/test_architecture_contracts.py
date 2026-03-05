@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, cast
 
-import msgspec
+from builders import make_tick_payload
 
 import crimson.audio_router as audio_router_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
@@ -12,6 +10,7 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
+from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     FrameContext,
@@ -21,11 +20,13 @@ from crimson.sim.input_providers import (
     NetworkInputProvider,
 )
 from crimson.sim.presentation_step import PresentationStepCommands
-from crimson.sim.sessions import DeterministicSession
+from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from crimson.sim.timing import FrameTiming
 from crimson.world.audio_bridge import AudioBridge
+from crimson.world.render_resources import RenderResources
 from crimson.world.sim_world_state import SimWorldState
+from crimson.world.terrain_runtime import TerrainRuntime
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
@@ -35,13 +36,6 @@ from grim.view import ViewContext
 
 def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
-
-
-class _PlanIsolationTick(msgspec.Struct):
-    command_hash: str
-    dt_sim: float
-    presentation: PresentationStepCommands
-    presentation_plan_ms: float
 
 
 def _timing(dt: float) -> FrameTiming:
@@ -62,28 +56,19 @@ class _PlanIsolationSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-    ) -> _PlanIsolationTick:
+    ) -> DeterministicSessionTick:
         _ = timing, inputs, trace_rng
         player = self._sim_world.players[0]
         player.health = max(0.0, float(player.health) - 10.0)
         player.experience = int(player.experience) + 250
         tick_index = int(self._tick)
         self._tick += 1
-        return _PlanIsolationTick(
+        payload = make_tick_payload(
             command_hash=f"plan-{tick_index}",
             dt_sim=1.0 / 60.0,
-            presentation=PresentationStepCommands(
-                sfx_keys=["sfx_explosion", "sfx_ui_levelup"],
-            ),
-            presentation_plan_ms=0.0,
         )
-
-
-class _CommandFlowTick(msgspec.Struct):
-    command_hash: str
-    dt_sim: float
-    presentation: PresentationStepCommands
-    presentation_plan_ms: float
+        payload.step.presentation.sfx_keys.extend(["sfx_explosion", "sfx_ui_levelup"])
+        return payload
 
 
 class _CommandFlowSession:
@@ -111,16 +96,14 @@ class _CommandFlowSession:
         timing: FrameTiming,
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
-    ) -> _CommandFlowTick:
+    ) -> DeterministicSessionTick:
         _ = timing, inputs, trace_rng
         tick_index = int(self._tick)
         self._tick += 1
         perk_index = -1 if self.perk_pick_index is None else int(self.perk_pick_index)
-        return _CommandFlowTick(
+        return make_tick_payload(
             command_hash=f"{self.name}:{tick_index}:{perk_index}",
             dt_sim=1.0 / 60.0,
-            presentation=PresentationStepCommands(),
-            presentation_plan_ms=0.0,
         )
 
 
@@ -225,8 +208,10 @@ def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mock
     assert len(completed) == 60
     assert play_sfx.call_count == 0
     for result in completed:
-        payload = cast(Any, result).payload
-        assert payload is not None
+        assert isinstance(result, TickResult)
+        assert result.payload is not None
+        payload = result.payload
+        assert isinstance(payload, DeterministicSessionTick)
         assert isinstance(payload.step.presentation, PresentationStepCommands)
         assert str(payload.command_hash)
 
@@ -398,15 +383,9 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
             )
             self.sim_world = sw
             self.texture_cache = kwargs.get("texture_cache")
-            self.render_resources = SimpleNamespace(
-                fx_queue=FxQueue(),
-                fx_queue_rotated=FxQueueRotated(),
-                texture_cache=None,
-            )
-            self.terrain_runtime = SimpleNamespace(
-                apply_bootstrap_terrain=lambda **_kw: None,
-            )
-            self.audio_bridge = SimpleNamespace(router=None)
+            self.render_resources = RenderResources(assets_dir=_assets_dir())
+            self.terrain_runtime = TerrainRuntime(render_resources=self.render_resources)
+            self.audio_bridge = AudioBridge()
             self.camera = Vec2(-1.0, -1.0)
 
         def reset(self, *, seed: int, player_count: int, **_kw: object) -> None:
@@ -432,7 +411,8 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_command_has
     replay_hashes: list[str] = []
 
     def _capture_runner_tick(_tick_index: int, tick: object) -> bool:
-        replay_hashes.append(str(cast(Any, tick).command_hash))
+        assert isinstance(tick, DeterministicSessionTick)
+        replay_hashes.append(str(tick.command_hash))
         return False
 
     mocker.patch.object(mode, "_on_runner_tick_complete", side_effect=_capture_runner_tick)
@@ -464,7 +444,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     audio_bridge = AudioBridge(
         demo_mode_active=False,
         reflex_boost_timer_source=lambda: 0.0,
-        audio=cast(Any, object()),
+        audio=object(),  # type: ignore[arg-type]  # sentinel; play_sfx is patched
         audio_rng=None,
     )
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
@@ -487,8 +467,9 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     assert play_sfx.call_count == 0
     assert draw_text.call_count == 0
 
-    payload = cast(Any, batch.completed_results[0].payload)
-    plan = cast(PresentationStepCommands, payload.presentation)
+    payload = batch.completed_results[0].payload
+    assert isinstance(payload, DeterministicSessionTick)
+    plan = payload.step.presentation
     audio_bridge.apply_plan(plan=plan, apply_audio=True)
 
     assert [str(call.args[1]) for call in play_sfx.call_args_list] == [

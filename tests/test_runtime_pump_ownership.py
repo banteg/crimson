@@ -8,9 +8,10 @@ behavioral contract of the frame-driver, not internal wiring.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Any, cast
+
+from builders import FakeRunner, make_tick_payload
 
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
@@ -18,9 +19,16 @@ from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingN
 from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
-from crimson.sim.input_providers import FrameContext, InputStatus
+from crimson.sim.input_providers import InputStatus
 from crimson.sim.tick_runner import TickBatchResult
 from grim.view import ViewContext
+
+
+@dataclass
+class _StubSession:
+    """Minimal stub matching the ``game_tune_started`` attribute access."""
+
+    game_tune_started: bool = False
 
 
 class _DummyRuntime:
@@ -82,46 +90,10 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
     assert state.runtime_updates_per_frame == 0
 
 
-class _FakeLanRunner:
-    def __init__(self, results: list[TickBatchResult], *, on_advance=None) -> None:
-        self._results = list(results)
-        self._on_advance = on_advance
-        self.calls = 0
-        self._last_frame_ctx: FrameContext | None = None
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        self._last_frame_ctx = frame_ctx
-
-    def advance_ticks(self, *, start_tick: int, ticks_requested: int, tick_dt: float) -> TickBatchResult:
-        _ = tick_dt
-        self.calls += 1
-        if callable(self._on_advance):
-            self._on_advance()
-        if self._results:
-            result = self._results.pop(0)
-            result.next_tick_index = int(start_tick) + int(result.ticks_completed)
-            return result
-        return TickBatchResult(
-            ticks_completed=0,
-            batch_status=InputStatus.STALLED,
-            next_tick_index=int(start_tick),
-        )
-
-
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
-    tick_payload = SimpleNamespace(
-        step=SimpleNamespace(
-            events=SimpleNamespace(),
-            command_hash="cmd-hash",
-            dt_sim=1.0 / 60.0,
-            presentation=None,
-            presentation_plan_ms=0.0,
-        ),
-        elapsed_ms=16.67,
-        creature_count_world_step=0,
-    )
-    runner = _FakeLanRunner(
+    tick_payload = make_tick_payload()
+    runner = FakeRunner(results=
         [
             TickBatchResult(
                 ticks_completed=1,
@@ -159,9 +131,9 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )
@@ -177,7 +149,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         player_count=1,
         tick_rate=60,
     )
-    runner = _FakeLanRunner(
+    runner = FakeRunner(results=
         [TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, next_tick_index=0)],
         on_advance=lambda: setattr(provider, "_pop_blocked", True),
     )
@@ -190,9 +162,9 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
 
     before_stall_count = int(mode._input_stall_count)
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )
@@ -210,37 +182,17 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
             command_hash="cmd-0",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
-            payload=SimpleNamespace(
-                step=SimpleNamespace(
-                    events=SimpleNamespace(),
-                    command_hash="cmd-0",
-                    dt_sim=1.0 / 60.0,
-                    presentation=None,
-                    presentation_plan_ms=0.0,
-                ),
-                elapsed_ms=16.67,
-                creature_count_world_step=0,
-            ),
+            payload=make_tick_payload(command_hash="cmd-0", elapsed_ms=16.67),
         ),
         TickResult(
             tick_index=1,
             command_hash="cmd-1",
             dt_sim=1.0 / 60.0,
             presentation_plan_ms=0.0,
-            payload=SimpleNamespace(
-                step=SimpleNamespace(
-                    events=SimpleNamespace(),
-                    command_hash="cmd-1",
-                    dt_sim=1.0 / 60.0,
-                    presentation=None,
-                    presentation_plan_ms=0.0,
-                ),
-                elapsed_ms=33.33,
-                creature_count_world_step=0,
-            ),
+            payload=make_tick_payload(command_hash="cmd-1", elapsed_ms=33.33),
         ),
     ]
-    runner = _FakeLanRunner(
+    runner = FakeRunner(results=
         [
             TickBatchResult(
                 ticks_completed=2,
@@ -290,9 +242,9 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
     )
 
     stop = mode._consume_lan_tick_frames(
-        runtime=cast(Any, SimpleNamespace()),
+        runtime=object(),  # type: ignore[arg-type]  # _ensure_tick_runner is patched
         lockstep_runtime=None,
-        session=cast(Any, SimpleNamespace(game_tune_started=False)),
+        session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
     )

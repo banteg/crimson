@@ -1,0 +1,10 @@
+id: no-test-simple-namespace-orchestration
+language: python
+severity: warning
+message: Use typed fixtures from `tests/builders/` instead of `SimpleNamespace` in orchestration tests.
+files:
+  - tests/test_architecture_contracts.py
+  - tests/test_runtime_pump_ownership.py
+  - tests/test_replay_playback_mode_timing.py
+rule:
+  pattern: SimpleNamespace($$$)

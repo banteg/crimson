@@ -1,0 +1,38 @@
+from __future__ import annotations
+
+from crimson.sim.presentation_step import PresentationStepCommands
+from crimson.sim.sessions import DeterministicSessionTick
+from crimson.sim.step_pipeline import DeterministicStepResult, PresentationRngTrace
+from crimson.sim.timing import FrameTiming
+from crimson.sim.world_state import WorldEvents
+
+
+def make_tick_payload(
+    *,
+    command_hash: str = "cmd-hash",
+    dt_sim: float = 1.0 / 60.0,
+    elapsed_ms: float = 16.67,
+    creature_count: int = 0,
+) -> DeterministicSessionTick:
+    timing = FrameTiming(
+        dt=dt_sim,
+        time_scale_active_entry=False,
+        time_scale_factor=1.0,
+        zero_gate_active=False,
+        dt_sim=dt_sim,
+    )
+    step = DeterministicStepResult(
+        dt_sim=dt_sim,
+        timing=timing,
+        events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
+        presentation=PresentationStepCommands(),
+        presentation_plan_ms=0.0,
+        command_hash=command_hash,
+        presentation_rng_trace=PresentationRngTrace(),
+    )
+    return DeterministicSessionTick(
+        step=step,
+        elapsed_ms=elapsed_ms,
+        rng_marks={},
+        creature_count_world_step=creature_count,
+    )
