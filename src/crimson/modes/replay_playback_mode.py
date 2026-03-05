@@ -42,6 +42,13 @@ from ..sim.driver.playback_driver import (
 )
 from ..sim.driver.playback_pump import advance_playback_frame
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
+from ..sim.presentation_reactions import (
+    PostApplyReaction,
+    QuestPresentationReaction,
+    apply_post_apply_reaction,
+    merge_post_apply_reactions,
+    resolve_quest_presentation_reaction,
+)
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
@@ -547,33 +554,52 @@ class ReplayPlaybackMode:
             paq_rel="ui/ui_textLevComp.jaz",
         )
 
-    def _apply_tick_outcome(
-        self,
-        *,
-        outcome: PlaybackTickOutcome,
-    ) -> None:
-        runtime = self._runtime
+    def _build_post_apply_reaction(self, *, outcome: PlaybackTickOutcome) -> PostApplyReaction:
+        reaction = PostApplyReaction(
+            sfx_keys=tuple(str(key) for key in outcome.step.post_apply_sfx_keys),
+        )
         driver = self._driver
-        if runtime is None or driver is None:
+        if driver is None or driver.quest_spawn_state is None:
+            return reaction
+        quest_reaction = resolve_quest_presentation_reaction(
+            driver.quest_spawn_state,
+            dt_seconds=float(outcome.dt_tick),
+            current_name_timer_ms=float(self._quest_name_timer_ms),
+        )
+        self._on_quest_post_apply_reaction(quest_reaction)
+        return merge_post_apply_reactions(
+            reaction,
+            PostApplyReaction(quest=quest_reaction),
+        )
+
+    def _apply_post_apply_reaction(self, reaction: PostApplyReaction) -> None:
+        runtime = self._runtime
+        if runtime is None:
             return
-        quest_state = driver.quest_spawn_state
-        if quest_state is None:
+        apply_post_apply_reaction(
+            reaction=reaction,
+            play_sfx=runtime.audio_bridge.router.play_sfx,
+            play_completion_music=self._play_quest_completion_music,
+            on_quest_reaction=self._on_quest_post_apply_reaction,
+        )
+
+    def _on_quest_post_apply_reaction(self, reaction: QuestPresentationReaction) -> None:
+        self._quest_spawn_timeline_ms = float(reaction.spawn_timeline_ms)
+        self._quest_name_timer_ms = float(reaction.name_timer_ms)
+        self._quest_completion_transition_ms = float(reaction.completion_transition_ms)
+
+    def _play_quest_completion_music(self) -> None:
+        if self._audio is None:
             return
-        self._quest_spawn_timeline_ms = float(quest_state.spawn_timeline_ms)
-        self._quest_name_timer_ms += float(outcome.dt_tick) * 1000.0
-        self._quest_completion_transition_ms = float(quest_state.completion_transition_ms)
-        router = runtime.audio_bridge.router
-        if quest_state.play_hit_sfx and router is not None:
-            router.play_sfx("sfx_questhit")
-        if quest_state.play_completion_music and self._audio is not None:
-            play_music(self._audio, "crimsonquest")
-            playback = self._audio.music.playbacks.get("crimsonquest")
-            if playback is not None:
-                playback.volume = 0.0
-                try:
-                    rl.set_music_volume(playback.music, 0.0)
-                except RuntimeError:
-                    playback.volume = 0.0
+        play_music(self._audio, "crimsonquest")
+        playback = self._audio.music.playbacks.get("crimsonquest")
+        if playback is None:
+            return
+        playback.volume = 0.0
+        try:
+            rl.set_music_volume(playback.music, 0.0)
+        except RuntimeError:
+            playback.volume = 0.0
 
     def _tick_limit(self) -> int:
         replay = self._replay
@@ -637,7 +663,7 @@ class ReplayPlaybackMode:
         self._tick_index = int(advance.next_tick_index)
 
         def _on_output_applied(output: PresentationTickOutput, outcome: PlaybackTickOutcome) -> None:
-            self._apply_tick_outcome(outcome=outcome)
+            self._apply_post_apply_reaction(reaction_by_tick[int(output.tick_index)])
             self._on_runner_tick_complete(int(output.tick_index), outcome)
             if not bake_fx_per_tick:
                 return
@@ -654,6 +680,10 @@ class ReplayPlaybackMode:
         )
         update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
         outcome_by_tick = {int(outcome.tick_index): outcome for outcome in advance.outcomes}
+        reaction_by_tick = {
+            int(outcome.tick_index): self._build_post_apply_reaction(outcome=outcome)
+            for outcome in advance.outcomes
+        }
         if advance.outputs and can_apply_output_phase:
             apply_presentation_outputs(
                 outputs=advance.outputs,

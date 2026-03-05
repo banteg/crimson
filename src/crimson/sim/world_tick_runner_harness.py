@@ -10,6 +10,7 @@ from ..world.render_resources import RenderResources
 from ..world.sim_world_state import SimWorldState
 from ..world.terrain_runtime import TerrainRuntime
 from .input import PlayerInput
+from .presentation_reactions import PostApplyReaction, apply_post_apply_reaction
 from .step_pipeline import StepPipelineOptions, run_deterministic_step, time_scale_reflex_boost_factor
 from .timing import FrameTiming, zero_gate_active_from_state
 from .world_state import ProjectileHit
@@ -94,4 +95,10 @@ def step_world_once(
         apply_audio=True,
     )
     world.update_camera(float(step.dt_sim))
+    apply_post_apply_reaction(
+        reaction=PostApplyReaction(
+            sfx_keys=tuple(str(key) for key in step.post_apply_sfx_keys),
+        ),
+        play_sfx=world.audio_bridge.router.play_sfx,
+    )
     return step.events.hits

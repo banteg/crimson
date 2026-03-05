@@ -78,6 +78,7 @@ from ..sim.input_providers import (
     PerkPickCommand,
     ResolvedTick,
 )
+from ..sim.presentation_reactions import PostApplyReaction, apply_post_apply_reaction
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -111,6 +112,7 @@ class _BatchApplyOutcome:
     stopped: bool = False
     stop_after_finalize: bool = False
     presentation_outputs: tuple[PresentationTickOutput, ...] = ()
+    post_apply_reactions: tuple[PostApplyReaction, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1796,6 +1798,7 @@ class BaseGameplayMode:
             )
             self._apply_batch_presentation_outputs(
                 outputs=outcome.presentation_outputs,
+                post_apply_reactions=outcome.post_apply_reactions,
                 apply_audio=True,
                 update_camera=True,
             )
@@ -1820,9 +1823,16 @@ class BaseGameplayMode:
         self,
         *,
         outputs: tuple[PresentationTickOutput, ...],
+        post_apply_reactions: tuple[PostApplyReaction, ...] = (),
         apply_audio: bool,
         update_camera: bool,
     ) -> None:
+        if post_apply_reactions and len(post_apply_reactions) != len(outputs):
+            raise RuntimeError("post-apply reactions must align with presentation outputs")
+        reaction_by_tick = {
+            int(output.tick_index): reaction
+            for output, reaction in zip(outputs, post_apply_reactions, strict=False)
+        }
         apply_presentation_outputs(
             outputs=outputs,
             sync_audio_bridge_state=self._world_runtime.sync_audio_bridge_state,
@@ -1831,7 +1841,35 @@ class BaseGameplayMode:
                 apply_audio=bool(should_apply_audio),
             ),
             update_camera=self._world_runtime.update_camera if bool(update_camera) else None,
+            on_output_applied=lambda output: self._apply_tick_post_apply_reaction(
+                reaction_by_tick.get(int(output.tick_index), PostApplyReaction()),
+                dt_seconds=float(output.dt_sim),
+            ),
             apply_audio=bool(apply_audio),
+        )
+
+    def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
+        return PostApplyReaction(
+            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+        )
+
+    def _augment_post_apply_reaction(
+        self,
+        *,
+        reaction: PostApplyReaction,
+        dt_seconds: float,
+    ) -> PostApplyReaction:
+        _ = dt_seconds
+        return reaction
+
+    def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:
+        reaction = self._augment_post_apply_reaction(
+            reaction=reaction,
+            dt_seconds=float(dt_seconds),
+        )
+        apply_post_apply_reaction(
+            reaction=reaction,
+            play_sfx=self.audio_bridge.router.play_sfx,
         )
 
     def _process_tick_batch_results(
@@ -1847,6 +1885,7 @@ class BaseGameplayMode:
         ticks_applied = 0
         stop_after_finalize = False
         presentation_outputs: list[PresentationTickOutput] = []
+        post_apply_reactions: list[PostApplyReaction] = []
 
         for tick_result in batch.completed_results:
             tick = tick_result.payload
@@ -1876,9 +1915,9 @@ class BaseGameplayMode:
                 tick_result=tick_result,
                 game_tune_started=bool(session.game_tune_started),
             ))
-            for cmd in tick_result.source_tick.commands:
-                if isinstance(cmd, PerkPickCommand) and self.audio_bridge.router is not None:
-                    self.audio_bridge.router.play_sfx("sfx_ui_bonus")
+            post_apply_reactions.append(self._build_tick_post_apply_reaction(
+                tick_result=tick_result,
+            ))
             self._ticks_advanced_per_frame += 1
             ticks_applied += 1
 
@@ -1891,6 +1930,7 @@ class BaseGameplayMode:
                     stopped=True,
                     stop_after_finalize=False,
                     presentation_outputs=tuple(presentation_outputs),
+                    post_apply_reactions=tuple(post_apply_reactions),
                 )
 
             if replay_tick_index is not None and on_checkpoint is not None:
@@ -1909,6 +1949,7 @@ class BaseGameplayMode:
                     stopped=True,
                     stop_after_finalize=bool(stop_after_finalize),
                     presentation_outputs=tuple(presentation_outputs),
+                    post_apply_reactions=tuple(post_apply_reactions),
                 )
 
         return _BatchApplyOutcome(
@@ -1916,6 +1957,7 @@ class BaseGameplayMode:
             stopped=False,
             stop_after_finalize=bool(stop_after_finalize),
             presentation_outputs=tuple(presentation_outputs),
+            post_apply_reactions=tuple(post_apply_reactions),
         )
 
     def _run_deterministic_session_ticks(
@@ -1972,6 +2014,7 @@ class BaseGameplayMode:
         )
         self._apply_batch_presentation_outputs(
             outputs=outcome.presentation_outputs,
+            post_apply_reactions=outcome.post_apply_reactions,
             apply_audio=True,
             update_camera=True,
         )

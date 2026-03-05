@@ -11,6 +11,7 @@ import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
 import crimson.sim.driver.playback_pump as playback_pump_module
 import crimson.sim.frame_pump as frame_pump_module
+import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.runtime as world_runtime_module
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
@@ -424,3 +425,16 @@ def test_contract_8_replay_frame_advancement_uses_shared_helper() -> None:
     assert "driver.step_tick(" not in replay_source
     assert "apply_tick_to_sim(" not in replay_source
     assert "clock.advance(" not in replay_source
+
+
+def test_contract_9_post_apply_reactions_are_shared() -> None:
+    helper_source = inspect.getsource(presentation_reactions_module.apply_post_apply_reaction)
+    gameplay_source = inspect.getsource(base_gameplay_mode_module.BaseGameplayMode._process_tick_batch_results)
+    replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._apply_post_apply_reaction)
+    world_source = inspect.getsource(world_runtime_module.WorldRuntime._apply_tick_batch)
+
+    assert 'play_sfx("sfx_questhit")' in helper_source
+    assert "PerkPickCommand" not in gameplay_source
+    assert 'play_sfx("sfx_ui_bonus")' not in gameplay_source
+    assert "apply_post_apply_reaction(" in replay_source
+    assert "apply_post_apply_reaction(" in world_source

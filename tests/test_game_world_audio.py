@@ -3,11 +3,18 @@ from __future__ import annotations
 import random
 from pathlib import Path
 
+from builders.session import make_session
+from builders.tick_payload import make_tick_payload
+
 import crimson.audio_router as audio_router_module
+import crimson.sim.world_tick_runner_harness as world_tick_runner_harness_module
 from crimson.bonuses import BonusId
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
+from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
+from crimson.sim.input_providers import InputStatus, ResolvedTick
+from crimson.sim.tick_runner import TickBatchResult
 from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
@@ -172,6 +179,55 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     assert entry.picked
     assert play_sfx.call_count == 2
     assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_ui_bonus", "sfx_explosion_medium"}
+
+
+def test_step_world_once_applies_post_apply_bonus_sfx(mocker) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
+    world.audio = _audio_state_stub()
+    world.audio_rng = random.Random(0)
+
+    step = make_tick_payload(post_apply_sfx_keys=("sfx_ui_bonus",)).step
+    mocker.patch.object(world_tick_runner_harness_module, "run_deterministic_step", return_value=step)
+
+    step_world_once(world, 1.0 / 60.0, perk_progression_enabled=False)
+
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
+
+
+def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
+    world.audio = _audio_state_stub()
+    world.audio_rng = random.Random(0)
+
+    batch = TickBatchResult(
+        ticks_completed=1,
+        batch_status=InputStatus.READY,
+        next_tick_index=1,
+        completed_results=[
+            TickResult(
+                source_tick=ResolvedTick(
+                    tick_index=0,
+                    dt_seconds=1.0 / 60.0,
+                    inputs=[],
+                    commands=[],
+                ),
+                payload=make_tick_payload(post_apply_sfx_keys=("sfx_ui_bonus",)),
+            ),
+        ],
+    )
+
+    world._runtime._apply_tick_batch(
+        batch=batch,
+        session=make_session()[0],
+    )
+
+    play_sfx.assert_called_once()
+    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
 
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:

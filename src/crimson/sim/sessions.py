@@ -261,6 +261,7 @@ class DeterministicSession(msgspec.Struct):
         if tick_inputs is not None and self.input_transform is not None:
             tick_inputs = self.input_transform(tick_inputs)
 
+        post_apply_sfx_keys: list[str] = []
         for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
@@ -284,6 +285,7 @@ class DeterministicSession(msgspec.Struct):
                             game_mode=self.game_mode,
                             player_count=len(self.world.players),
                         )
+                        post_apply_sfx_keys.append("sfx_ui_bonus")
                 case PerkMenuOpenCommand():
                     perk_selection_current_choices(
                         self.world.state,
@@ -341,6 +343,11 @@ class DeterministicSession(msgspec.Struct):
             rng_marks_out=rng_marks,
             trace_presentation_rng=trace_rng,
         )
+        if post_apply_sfx_keys:
+            step = msgspec.structs.replace(
+                step,
+                post_apply_sfx_keys=tuple(str(key) for key in post_apply_sfx_keys),
+            )
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 

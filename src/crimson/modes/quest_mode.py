@@ -39,7 +39,15 @@ from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
 from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
+from ..sim.hooks import TickResult
 from ..sim.input_providers import PerkMenuOpenCommand
+from ..sim.presentation_reactions import (
+    PostApplyReaction,
+    QuestPresentationReaction,
+    apply_post_apply_reaction,
+    merge_post_apply_reactions,
+    resolve_quest_presentation_reaction,
+)
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
@@ -281,7 +289,7 @@ class QuestMode(BaseGameplayMode):
         session = self._sim_session
         _ = tick
         spawn_state = self._quest_spawn_state
-        self._quest.quest_name_timer_ms += float(dt_tick) * 1000.0
+        _ = dt_tick
         if frame_tick_index is not None:
             self._store_net_runtime_snapshot(
                 snapshot=QuestsStateSnapshotV2(
@@ -298,18 +306,6 @@ class QuestMode(BaseGameplayMode):
                     ),
                 ),
             )
-
-        if spawn_state.play_hit_sfx:
-            self.audio_bridge.router.play_sfx("sfx_questhit")
-        if spawn_state.play_completion_music and self.audio is not None:
-            play_music(self.audio, "crimsonquest")
-            playback = self.audio.music.playbacks.get("crimsonquest")
-            if playback is not None:
-                playback.volume = 0.0
-                try:
-                    rl.set_music_volume(playback.music, 0.0)
-                except RuntimeError:
-                    playback.volume = 0.0
 
         if spawn_state.completed:
             if self._outcome is None:
@@ -346,6 +342,44 @@ class QuestMode(BaseGameplayMode):
             self._close_failed_run()
             return "stop_after_finalize"
         return "continue"
+
+    def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
+        reaction = super()._build_tick_post_apply_reaction(tick_result=tick_result)
+        quest_reaction = resolve_quest_presentation_reaction(
+            self._quest_spawn_state,
+            dt_seconds=float(tick_result.payload.step.dt_sim),
+            current_name_timer_ms=float(self._quest.quest_name_timer_ms),
+        )
+        self._on_quest_post_apply_reaction(quest_reaction)
+        return merge_post_apply_reactions(
+            reaction,
+            PostApplyReaction(quest=quest_reaction),
+        )
+
+    def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:
+        _ = dt_seconds
+        apply_post_apply_reaction(
+            reaction=reaction,
+            play_sfx=self.audio_bridge.router.play_sfx,
+            play_completion_music=self._play_quest_completion_music,
+            on_quest_reaction=self._on_quest_post_apply_reaction,
+        )
+
+    def _on_quest_post_apply_reaction(self, reaction: QuestPresentationReaction) -> None:
+        self._quest.quest_name_timer_ms = float(reaction.name_timer_ms)
+
+    def _play_quest_completion_music(self) -> None:
+        if self.audio is None:
+            return
+        play_music(self.audio, "crimsonquest")
+        playback = self.audio.music.playbacks.get("crimsonquest")
+        if playback is None:
+            return
+        playback.volume = 0.0
+        try:
+            rl.set_music_volume(playback.music, 0.0)
+        except RuntimeError:
+            playback.volume = 0.0
 
     def _apply_resync_snapshot(self, snapshot: ModeStateSnapshotV2) -> None:
         if not isinstance(snapshot, QuestsStateSnapshotV2):

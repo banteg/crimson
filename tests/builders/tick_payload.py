@@ -13,6 +13,7 @@ def make_tick_payload(
     elapsed_ms: float = 16.67,
     creature_count: int = 0,
     presentation_plan_ms: float = 0.0,
+    post_apply_sfx_keys: tuple[str, ...] = (),
 ) -> DeterministicSessionTick:
     timing = FrameTiming(
         dt=dt_sim,
@@ -28,6 +29,7 @@ def make_tick_payload(
         presentation=PresentationStepCommands(),
         presentation_plan_ms=float(presentation_plan_ms),
         presentation_rng_trace=PresentationRngTrace(),
+        post_apply_sfx_keys=tuple(str(key) for key in post_apply_sfx_keys),
     )
     return DeterministicSessionTick(
         step=step,

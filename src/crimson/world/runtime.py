@@ -19,6 +19,7 @@ from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, LocalInputProvider
+from ..sim.presentation_reactions import PostApplyReaction, apply_post_apply_reaction
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
@@ -306,6 +307,12 @@ class WorldRuntime:
             completed_results=batch.completed_results,
             game_tune_started=bool(session.game_tune_started),
         )
+        reactions = {
+            int(result.source_tick.tick_index): PostApplyReaction(
+                sfx_keys=tuple(str(key) for key in result.payload.step.post_apply_sfx_keys),
+            )
+            for result in batch.completed_results
+        }
         apply_presentation_outputs(
             outputs=outputs,
             sync_audio_bridge_state=self.sync_audio_bridge_state,
@@ -314,6 +321,10 @@ class WorldRuntime:
                 apply_audio=bool(should_apply_audio),
             ),
             update_camera=self.update_camera,
+            on_output_applied=lambda output: apply_post_apply_reaction(
+                reaction=reactions.get(int(output.tick_index), PostApplyReaction()),
+                play_sfx=self.audio_bridge.router.play_sfx,
+            ),
             apply_audio=True,
         )
         return len(outputs)

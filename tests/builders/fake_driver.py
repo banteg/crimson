@@ -19,11 +19,12 @@ class FakePlaybackDriver:
     tick_limit: int = 0
     on_step: object | None = None
     quest_spawn_state: QuestSpawnState | None = None
+    post_apply_sfx_keys: tuple[str, ...] = ()
 
     def step_tick(self, tick_index: int) -> PlaybackTickOutcome:
         if self.on_step is not None:
             self.on_step()
-        payload = make_tick_payload()
+        payload = make_tick_payload(post_apply_sfx_keys=tuple(self.post_apply_sfx_keys))
         return PlaybackTickOutcome(
             tick_index=int(tick_index),
             dt_tick=1.0 / 60.0,

@@ -19,6 +19,7 @@ Not everything is split-brained anymore.
 - Quest rollback/resync snapshots now carry the authoritative quest runtime, including the remaining spawn table.
 - Live `TickRunner` frame advancement is now shared between `BaseGameplayMode` and `WorldRuntime`, including `FrameContext` setup, tick-index bookkeeping, and stall/EOS debt refund.
 - Replay playback frame advancement is now also shared, including replay clock advancement, `step_tick()` iteration, immediate sim metadata apply, and replay tick-limit debt refund.
+- Post-apply presentation reactions are now shared too: perk-apply bonus SFX, quest hit SFX, quest completion music, and replay/live quest overlay timer updates all route through one small reaction layer.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
@@ -42,16 +43,14 @@ The lowest-level frame bookkeeping is now shared for both live and replay steppi
 
 That is a smaller problem than before. `ReplayPlaybackMode` no longer hand-rolls the replay clock/step/apply loop, so the remaining drift is concentrated in driver-level utilities and higher-level bookkeeping around stepped replay ticks.
 
-### 2) Presentation reactions are not yet fully single-sourced
+### 2) Driver-level replay utilities still duplicate loop ownership
 
-The deterministic step can already plan presentation work, and quest now computes its runtime flags in one place, but some reactions still live in ad hoc runtime code:
+Replay playback mode no longer owns its own step/apply loop or its own post-apply reaction layer, but some driver-side replay consumers still open-code `step_tick()` loops and post-step bookkeeping:
 
-- perk-pick UI SFX
-- quest hit SFX
-- quest completion music
-- mode-specific "after tick" presentation behavior
+- `src/crimson/sim/driver/playback_driver.py`
+- `src/crimson/sim/driver/replay_info.py`
 
-That creates live-vs-replay duplication pressure.
+That is now the main orchestration split: the low-level stepping and reactions are shared, but the higher-level replay summary/checkpoint/inspection paths still have their own driver loops.
 
 ## Current Architecture
 
@@ -83,6 +82,7 @@ flowchart TD
         ReplayMode["ReplayPlaybackMode"]
         ReplayPump["Shared replay playback frame pump"]
         Playback["PlaybackDriver"]
+        PostApply["Shared post-apply reactions"]
     end
 
     Local --> Provider
@@ -98,6 +98,9 @@ flowchart TD
     World -->|step + apply| Runner
     ReplayMode -->|presentation callbacks + finish logic| ReplayPump
     ReplayPump -->|shared replay step + apply| Playback
+    Base --> PostApply
+    World --> PostApply
+    ReplayMode --> PostApply
     Playback --> QuestState
 ```
 
@@ -189,13 +192,14 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is now to finish centralizing presentation reactions.
+The best next refactor is now to carry the shared step/apply cleanup one layer higher into the remaining replay-driver loops.
 
 That is the highest-leverage remaining split-brain because:
 
 - canonical ticks already landed
 - quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
 - live and replay frame advancement now share their low-level bookkeeping
-- replay and live mode code still carry custom post-tick side effects for perk picks, quest hit SFX, quest completion music, and similar reactions
+- post-apply presentation reactions are now shared across gameplay, replay playback, world runtime, and the headless harness
+- the remaining runtime drift is concentrated in driver-side replay loops and in the higher-level apply/record/checkpoint/reporting wiring around stepped replay ticks
 
-After presentation reactions are single-sourced, the remaining cleanup is mostly driver-level replay loop consolidation and other narrower orchestration tidy-ups.
+After those driver loops are pulled closer to the shared shape, the remaining cleanup is mostly narrower contract polish rather than architectural split-brain.

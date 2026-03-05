@@ -25,6 +25,18 @@ class _StubReplayRuntime:
     render_resources: RenderResources = field(
         default_factory=lambda: RenderResources(assets_dir=_assets_dir()),
     )
+    audio_bridge: object = field(
+        default_factory=lambda: SimpleNamespace(
+            apply_plan=lambda **_kwargs: None,
+            router=SimpleNamespace(play_sfx=lambda _key: None),
+        ),
+    )
+
+    def sync_audio_bridge_state(self) -> None:
+        return None
+
+    def update_camera(self, _dt: float) -> None:
+        return None
 
 
 def _replay_with_ticks(tick_count: int) -> Replay:
@@ -110,7 +122,7 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(r
         sim_world=SimpleNamespace(apply_step_metadata=lambda **_kwargs: None),
         audio_bridge=SimpleNamespace(
             apply_plan=lambda **_kwargs: None,
-            router=None,
+            router=SimpleNamespace(play_sfx=lambda _key: None),
         ),
         sync_audio_bridge_state=lambda: None,
         update_camera=lambda _dt: None,
