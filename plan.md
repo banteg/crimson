@@ -34,24 +34,7 @@ You already decided at the replay format level that a tick is one thing: `dt + i
 
 That is classic split brain.
 
-### 2) Lockstep still rebuilds the canonical timeline from two network channels
-
-The biggest remaining architectural smell is `_LanRuntimeInputProvider` in `src/crimson/modes/base_gameplay_mode.py`.
-
-It does this:
-
-* pops a `TickFrame` for inputs
-* separately drains `LockstepRuntime.pop_perk_event()`
-* re-aligns queued perk events to the frame tick index
-* converts those messages back into `PerkPickCommand`
-
-So even after replay was simplified, lockstep still reconstructs deterministic commands from an out-of-band message queue.
-
-That is almost certainly more complicated than the original game model ever was. It is rewrite complexity, not native complexity.
-
-It also explains why `TickFrame.command_hash` is still hanging around as a zombie field in `src/crimson/net/lockstep_protocol.py` with TODO comments saying it should go away.
-
-### 3) Mode state is mirrored in multiple places
+### 2) Mode state is mirrored in multiple places
 
 This is the second major split brain.
 
@@ -83,7 +66,7 @@ Quest is the clearest example. In `src/crimson/modes/quest_mode.py`:
 
 That is too many owners for the same truth.
 
-### 4) There are still multiple orchestration loops that do nearly the same thing
+### 3) There are still multiple orchestration loops that do nearly the same thing
 
 The deterministic “pump” is spread across:
 
@@ -105,7 +88,7 @@ They all do variants of:
 
 That duplication is a major reason the architecture still feels heavy.
 
-### 5) Quest-only data still leaks into supposedly generic result types
+### 4) Quest-only data still leaks into supposedly generic result types
 
 `DeterministicSessionTick` in `src/crimson/sim/sessions.py` still carries quest-specific fields like:
 
@@ -120,7 +103,7 @@ And `PlaybackTickOutcome` / `QuestPlaybackRuntime` continue the same pattern.
 
 That is better than having a whole separate quest session class, but it is still a sign that the generic layer is compensating for the mode layer not having a single authoritative runtime state object.
 
-### 6) Presentation-side reactions are still partly scattered
+### 5) Presentation-side reactions are still partly scattered
 
 Examples:
 
@@ -129,7 +112,7 @@ Examples:
 
 You already have a good deterministic plan/apply split. These last pieces should also be centralized so live and replay do not need separate “oh, and also do this extra side effect” logic.
 
-### 7) The docs are behind the code, which creates a human split brain
+### 6) The docs are behind the code, which creates a human split brain
 
 `docs/rewrite/deterministic-step-pipeline.md` still talks about:
 
@@ -152,7 +135,7 @@ The native game likely has one gameplay timeline per mode. Your rewrite sometime
 * session state
 * replay tick stream
 * network tick frames
-* side-band command or perk event queues
+* side-band command queues
 
 That extra indirection is useful for tooling, but it should live at the edges. Right now some of it leaked into the core representation of a tick and of mode state.
 
@@ -239,28 +222,7 @@ It will simplify:
 
 It also makes replay verification stronger, because live and replay can use the same in-memory tick shape.
 
-### 2) Collapse lockstep to a single canonical frame stream
-
-This is the second highest-leverage refactor.
-
-`TickFrame` in `src/crimson/net/lockstep_protocol.py` should carry deterministic commands directly, or you should introduce a `TickFrameV2`/`CanonicalTickFrame` that does.
-
-Then remove:
-
-* separate perk transport messages
-* `_pending_perk_events`
-* `pop_perk_event()`
-* `_LanRuntimeInputProvider.resolve_tick_commands()`
-* `emit_tick_command()` special cases
-* `command_hash` plumbing
-
-Host lockstep should author the canonical tick. Clients should consume the canonical tick. Full stop.
-
-That also aligns lockstep with replay V2 and with the general shape rollback wants.
-
-For compatibility, I would do this as a protocol bump and not try to preserve the old wire format for long.
-
-### 3) Make one object authoritative for mode runtime state
+### 2) Make one object authoritative for mode runtime state
 
 This is where a lot of accidental complexity disappears.
 
@@ -295,7 +257,7 @@ The dynamic truth should live in `QuestSpawnState`, not in both `_QuestRunState`
 
 This one change will make LAN resync, replay result extraction, and rollback snapshots much easier to reason about.
 
-### 4) Introduce a `ModeRuntimeAdapter` and move deterministic mode logic there
+### 3) Introduce a `ModeRuntimeAdapter` and move deterministic mode logic there
 
 Right now each mode class owns too much:
 
@@ -329,7 +291,7 @@ Then `SurvivalMode`, `RushMode`, and `QuestMode` mostly become:
 
 That is how you get `BaseGameplayMode` back under control.
 
-### 5) Extract a shared `SimulationLoop` and make everyone use it
+### 4) Extract a shared `SimulationLoop` and make everyone use it
 
 Right now the pump logic is duplicated in:
 
@@ -360,7 +322,7 @@ Then use that for:
 
 This does not mean the outer experiences have to look identical. It just means they should not each have their own near-duplicate stepping pipeline.
 
-### 6) Stop pushing quest-only data through generic tick result types
+### 5) Stop pushing quest-only data through generic tick result types
 
 Once mode state has one authoritative owner, shrink `DeterministicSessionTick` back to universal fields only:
 
@@ -375,7 +337,7 @@ Same story for playback outcomes.
 
 A good rule: generic tick results should describe the step, not re-express the mode state.
 
-### 7) Make presentation reactions single-sourced
+### 6) Make presentation reactions single-sourced
 
 You are already close here.
 
@@ -395,7 +357,7 @@ does not matter as much as making it single-sourced.
 
 The key is that `ReplayPlaybackMode` should not need a separate set of special-case reactions that duplicate live mode behavior.
 
-### 8) Treat rollback and lockstep as two `TickSource` strategies, not two architectures
+### 7) Treat rollback and lockstep as two `TickSource` strategies, not two architectures
 
 This is especially important for your rewrite-only features.
 
@@ -411,7 +373,7 @@ The shared model should be:
 
 Rollback needs extra machinery for rewind/resim, but that should wrap the same authoritative runtime state object. It should not create a second gameplay architecture.
 
-### 9) Update the docs to match the code you actually have
+### 8) Update the docs to match the code you actually have
 
 I would fix `docs/rewrite/deterministic-step-pipeline.md` immediately after the first refactor pass.
 
@@ -432,29 +394,23 @@ Introduce `ResolvedTick` / `TickSupply` and adapt:
 
 Do this with behavior unchanged.
 
-### Phase 2: collapse lockstep transport
-
-Make lockstep frames carry deterministic commands directly. Remove perk side-channel alignment and delete `command_hash` plumbing.
-
-This should dramatically simplify `_LanRuntimeInputProvider` and `LockstepRuntime`.
-
-### Phase 3: eliminate mirrored mode runtime state
+### Phase 2: eliminate mirrored mode runtime state
 
 Remove `_SurvivalState`, `_RushState`, and most dynamic ownership from `_QuestRunState`. Snapshot/restore only the authoritative runtime state objects.
 
-### Phase 4: extract `ModeRuntimeAdapter`
+### Phase 3: extract `ModeRuntimeAdapter`
 
 Move non-UI deterministic mode logic out of the UI mode classes.
 
-### Phase 5: extract `SimulationLoop`
+### Phase 4: extract `SimulationLoop`
 
 Use it from live gameplay and replay playback. Either delete the tick harness from `WorldRuntime` or reduce it to a thin wrapper around the same loop.
 
-### Phase 6: shrink generic tick/outcome types
+### Phase 5: shrink generic tick/outcome types
 
 Once the adapter owns mode-specific state, remove quest fields from universal tick structures.
 
-### Phase 7: rewrite the docs and tighten tests
+### Phase 6: rewrite the docs and tighten tests
 
 Update docs and add tests that enforce the new invariants.
 
@@ -493,7 +449,7 @@ Right now replay already believes that.
 The session API mostly believes that.
 Rollback mostly wants that.
 
-Lockstep and the input-provider layer are the last holdouts.
+The input-provider layer is the last major holdout.
 
 Once you unify that, most of the remaining complexity starts to look obviously removable:
 
