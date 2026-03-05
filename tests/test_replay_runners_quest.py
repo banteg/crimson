@@ -4,7 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
-from crimson.sim.driver.playback_driver import PlaybackDriver, PlaybackDriverOptions, PlaybackWalkHooks
+from crimson.sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
 from tests.replay_runner_helpers import (
@@ -108,7 +108,7 @@ def test_quest_replay_info_elapsed_matches_run_replay() -> None:
 def test_playback_driver_tick_begin_observer_runs_before_step(mocker) -> None:
     _header, rec = _blank_quest_replay(ticks=1, seed=101)
     replay = rec.finish()
-    driver = PlaybackDriver(replay, PlaybackDriverOptions())
+    driver = build_verify_playback_driver(replay)
     observed_before: list[int] = []
     observed_after: list[int] = []
 

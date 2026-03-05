@@ -170,6 +170,8 @@ class QuestSessionConfig:
 
 @dataclass(slots=True, frozen=True)
 class PlaybackDriverConfig:
+    """Low-level replay-driver constructor config; prefer the factory helpers for normal callers."""
+
     timing: PlaybackTimingConfig = field(default_factory=PlaybackTimingConfig)
     world: PlaybackWorldConfig = field(default_factory=PlaybackWorldConfig)
     session_defaults: PlaybackSessionDefaults = field(default_factory=PlaybackSessionDefaults)
@@ -232,6 +234,8 @@ PlaybackModeRuntime: TypeAlias = SimplePlaybackRuntime | QuestPlaybackRuntime
 
 
 class PlaybackDriver:
+    """Low-level replay driver; prefer the factory helpers for normal repo callers."""
+
     def __init__(
         self,
         replay: Replay,
@@ -673,6 +677,8 @@ def build_verify_playback_driver(
     quest_stage_minor: int | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
+    """Build the canonical headless/verification replay driver."""
+
     return PlaybackDriver(
         replay,
         PlaybackDriverOptions(
@@ -714,6 +720,8 @@ def build_runtime_playback_driver(
     quest_stage_minor: int | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
+    """Build the canonical live replay-playback driver."""
+
     return PlaybackDriver(
         replay,
         PlaybackDriverOptions(

@@ -23,6 +23,7 @@ Not everything is split-brained anymore.
 - Driver-side replay utilities now share one canonical multi-tick walk path through `PlaybackDriver.walk_ticks()`, and replay checkpoint construction is no longer hidden behind private driver helpers.
 - Replay stepping itself now also converges on `TickResult`; `PlaybackTickOutcome`, `run_replay()`, and `run_replay_info()` are gone.
 - Most replay consumers now build drivers through `build_verify_playback_driver()` / `build_runtime_playback_driver()`, and replay info collection goes through `collect_replay_info(driver, ...)`.
+- Ordinary repo call sites are now factory-first; raw `PlaybackDriver(...)` construction is kept only as a low-level/manual surface and a focused default-parity test.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
@@ -37,14 +38,14 @@ Timer semantics are no longer one of the fuzzy parts:
 - quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
 - session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
 
-### 1) Replay still has a low-level constructor surface and a factory surface
+### 1) Replay still exposes a low-level constructor surface, but normal usage is factory-first
 
 Normal replay consumers now route through:
 
 - `src/crimson/sim/driver/playback_driver.py`
 - `src/crimson/sim/driver/replay_info.py`
 
-But `PlaybackDriver(...)` plus `PlaybackDriverConfig` is still available alongside the factory helpers. That is not a runtime split brain anymore, but it is still a wider-than-ideal API surface.
+`PlaybackDriver(...)` plus `PlaybackDriverConfig` is still available alongside the factory helpers, but that is now an advanced/manual edge rather than the normal repo path. That is not a runtime split brain anymore; it is just a wider-than-ideal low-level API surface.
 
 ### 2) Live and replay still use separate shared frame-pump helpers
 
@@ -202,7 +203,7 @@ The big architectural goal is largely in place now.
 
 The highest-leverage next cleanup is probably not another major convergence refactor. It is smaller surface-area tightening:
 
-- decide how much raw `PlaybackDriverConfig` construction should remain public versus steering normal call sites through the factory helpers
+- decide whether the remaining low-level replay constructor/config surface should stay public or be more explicitly demoted
 - keep pruning tests and tools away from low-level replay setup where that setup is now policy, not mechanism
 - only revisit live-vs-replay pump unification if a smaller shared contract appears naturally; do not force a broad universal loop abstraction now
 

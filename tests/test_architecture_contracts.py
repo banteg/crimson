@@ -11,7 +11,9 @@ import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
 import crimson.sim.driver.playback_driver as playback_driver_module
 import crimson.sim.driver.playback_pump as playback_pump_module
+import crimson.sim.driver.replay_benchmark as replay_benchmark_module
 import crimson.sim.driver.replay_info as replay_info_module
+import crimson.sim.driver.replay_render as replay_render_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.runtime as world_runtime_module
@@ -447,6 +449,9 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     replay_info_source = inspect.getsource(replay_info_module.collect_replay_info)
     factory_source = inspect.getsource(playback_driver_module.build_verify_playback_driver)
     replay_pump_source = inspect.getsource(playback_pump_module.advance_playback_frame)
+    replay_mode_open_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode.open)
+    replay_render_source = inspect.getsource(replay_render_module.run_replay_render_video)
+    replay_benchmark_source = inspect.getsource(replay_benchmark_module.run_replay_benchmark)
 
     assert "self.step_tick(" in walk_source
     assert "self.walk_ticks(" in run_source
@@ -454,3 +459,9 @@ def test_contract_10_replay_driver_walk_is_canonical_loop_owner() -> None:
     assert "driver.step_tick(" not in replay_info_source
     assert "PlaybackDriver(" in factory_source
     assert "PlaybackTickOutcome" not in replay_pump_source
+    assert "build_runtime_playback_driver(" in replay_mode_open_source
+    assert "PlaybackDriver(" not in replay_mode_open_source
+    assert "build_verify_playback_driver(" in replay_render_source
+    assert "PlaybackDriver(" not in replay_render_source
+    assert "build_verify_playback_driver(" in replay_benchmark_source
+    assert "PlaybackDriver(" not in replay_benchmark_source
