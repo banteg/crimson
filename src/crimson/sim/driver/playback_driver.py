@@ -554,7 +554,7 @@ class PlaybackDriver:
     def _resolve_replay_dt(self, tick_index: int) -> float:
         idx = int(tick_index)
         if idx < 0 or idx >= len(self.replay.ticks):
-            return float(self.dt)
+            raise ReplayRunnerError(f"replay dt requested for non-existent tick {idx} (total={len(self.replay.ticks)})")
         dt_value = self.replay.ticks[idx].dt
         if dt_value is None:
             return float(self.dt)
