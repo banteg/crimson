@@ -152,20 +152,16 @@ class _ReplayTickProvider:
         _ = frame_ctx
 
     def pull_tick_input(self, tick_index: int) -> TickInput:
-        idx = int(tick_index)
-        if idx < 0 or idx >= len(self._replay.ticks):
+        if tick_index < 0 or tick_index >= len(self._replay.ticks):
             return TickInput(status=InputStatus.EOS, inputs=[])
-        inputs = unpack_tick_inputs(self._replay.ticks[idx].inputs)
+        inputs = unpack_tick_inputs(self._replay.ticks[tick_index].inputs)
         return TickInput(
             status=InputStatus.READY,
             inputs=normalize_provider_tick_inputs(inputs=inputs, player_count=self._player_count),
         )
 
     def pull_tick_commands(self, tick_index: int) -> list[GameCommand]:
-        idx = int(tick_index)
-        if idx < 0 or idx >= len(self._replay.ticks):
-            return []
-        return list(self._replay.ticks[idx].commands)
+        return list(self._replay.ticks[tick_index].commands)
 
     def supports_commands(self) -> bool:
         return True
@@ -533,12 +529,6 @@ class PlaybackDriver:
             case _:
                 raise ReplayRunnerError(f"unsupported replay game_mode_id={int(self.mode_id)}")
 
-    def _resolve_replay_dt(self, tick_index: int) -> float:
-        idx = int(tick_index)
-        if idx < 0 or idx >= len(self.replay.ticks):
-            raise ReplayRunnerError(f"replay dt requested for non-existent tick {idx} (total={len(self.replay.ticks)})")
-        return self.replay.ticks[idx].dt
-
     def _prepare_tick_meta(
         self,
         *,
@@ -676,7 +666,7 @@ class PlaybackDriver:
         tick_limit = int(self.tick_limit)
         while int(completed_ticks) < int(tick_limit):
             tick_index = int(completed_ticks)
-            dt_tick = self._resolve_replay_dt(int(tick_index))
+            dt_tick = self.replay.ticks[tick_index].dt
             tick_meta = self._prepare_tick_meta(
                 tick_index=int(tick_index),
                 dt_tick=float(dt_tick),
