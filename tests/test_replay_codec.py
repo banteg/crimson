@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import gzip
 from typing import cast
 
 import msgspec
 import pytest
+import zstandard as zstd
 
 import crimson
+import crimson.replay.codec as replay_codec_mod
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.replay import (
@@ -163,14 +164,14 @@ def test_replay_codec_rejects_legacy_json_payload() -> None:
         load_replay(b'{"header":{"game_mode_id":1,"seed":1}}')
 
 
-def test_replay_codec_rejects_invalid_gzip_payload() -> None:
-    with pytest.raises(ReplayCodecError, match="invalid replay gzip payload"):
-        load_replay(b"\x1f\x8bnot-a-gzip-stream")
+def test_replay_codec_rejects_invalid_zstd_payload() -> None:
+    with pytest.raises(ReplayCodecError, match="invalid replay zstd payload"):
+        load_replay(b"\x28\xb5\x2f\xfdnot-a-zstd-stream")
 
 
-def test_replay_codec_rejects_gzip_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CRIMSON_REPLAY_MAX_DECOMPRESSED_BYTES", "4")
-    payload = gzip.compress(b"12345", mtime=0)
+def test_replay_codec_rejects_zstd_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(replay_codec_mod, "_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES", 4)
+    payload = zstd.ZstdCompressor(level=19).compress(b"12345")
     with pytest.raises(ReplayCodecError, match="payload too large"):
         load_replay(payload)
 
@@ -191,7 +192,7 @@ def test_replay_load_accepts_plain_msgpack_bytes() -> None:
     replay = rec.finish()
 
     blob = dump_replay(replay)
-    plain = gzip.decompress(blob)
+    plain = zstd.ZstdDecompressor().decompress(blob)
     decoded = load_replay(plain)
     assert decoded.header == header
 

@@ -37,7 +37,7 @@ from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
-from ..replay.checkpoints import resolve_checkpoint_sample_rate
+from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
@@ -513,8 +513,7 @@ class QuestMode(BaseGameplayMode):
                     status=status_snapshot,
                 ),
             )
-            tick_rate = int(self._replay_recorder.header.tick_rate)
-            self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
+            self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
         else:
             self._replay_recorder = None
         self._replay_checkpoints.clear()

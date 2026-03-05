@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import hashlib
-import os
+import io
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol, cast
 
 import msgspec
+import zstandard as zstd
 
 from grim.geom import Vec2
 
@@ -32,8 +33,10 @@ class _EventsLike(Protocol):
     sfx: list[str]
 
 FORMAT_VERSION = 2
-_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 64 * 1024 * 1024
-_MAX_CHECKPOINTS_PAYLOAD_ENV = "CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES"
+DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
+_ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
+_CHECKPOINTS_ZSTD_LEVEL = 19
 
 
 class ReplayCheckpointsError(ValueError):
@@ -115,28 +118,21 @@ def default_checkpoints_path(replay_path: Path) -> Path:
     return replay_path.with_name(f"{replay_path.name}.chk")
 
 
-def resolve_checkpoint_sample_rate(default_rate: int) -> int:
-    rate = max(1, int(default_rate))
-    raw = os.environ.get("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE")
-    if raw is None:
-        return rate
-    try:
-        return max(1, int(raw))
-    except ValueError:
-        return rate
+def _is_zstd(data: bytes) -> bool:
+    return bytes(data).startswith(_ZSTD_MAGIC)
 
 
-def _max_checkpoints_payload_bytes() -> int:
-    raw = os.environ.get(_MAX_CHECKPOINTS_PAYLOAD_ENV)
-    if raw is None:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
+def _decompress_zstd_checkpoints(data: bytes, *, max_output_bytes: int) -> bytes:
     try:
-        parsed = int(raw)
-    except ValueError:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
-    if parsed <= 0:
-        return int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
-    return int(parsed)
+        with zstd.ZstdDecompressor().stream_reader(io.BytesIO(data)) as stream:
+            payload = stream.read(int(max_output_bytes) + 1)
+    except zstd.ZstdError as exc:
+        raise ReplayCheckpointsError("invalid checkpoints zstd payload") from exc
+    if len(payload) > int(max_output_bytes):
+        raise ReplayCheckpointsError(
+            f"checkpoints payload too large after zstd decompression (> {int(max_output_bytes)} bytes)",
+        )
+    return payload
 
 
 def _bonus_timer_ms(value: float) -> int:
@@ -294,12 +290,15 @@ def build_checkpoint(
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    return _CHECKPOINTS_ENCODER.encode(checkpoints)
+    raw = _CHECKPOINTS_ENCODER.encode(checkpoints)
+    return zstd.ZstdCompressor(level=_CHECKPOINTS_ZSTD_LEVEL).compress(raw)
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:
-    max_payload_bytes = int(_max_checkpoints_payload_bytes())
+    max_payload_bytes = int(_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES)
     payload = bytes(data)
+    if _is_zstd(payload):
+        payload = _decompress_zstd_checkpoints(payload, max_output_bytes=max_payload_bytes)
     if len(payload) > int(max_payload_bytes):
         raise ReplayCheckpointsError(f"checkpoints payload too large (> {int(max_payload_bytes)} bytes)")
     try:

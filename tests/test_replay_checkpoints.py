@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import msgspec
 import pytest
+import zstandard as zstd
 
+import crimson.replay.checkpoints as replay_checkpoints_mod
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.replay.checkpoints import (
+    DEFAULT_CHECKPOINT_SAMPLE_RATE,
     FORMAT_VERSION,
     ReplayCheckpoints,
     ReplayCheckpointsError,
     build_checkpoint,
     dump_checkpoints,
     load_checkpoints,
-    resolve_checkpoint_sample_rate,
 )
 from crimson.sim.world_state import WorldState
 
@@ -117,22 +119,24 @@ def test_load_checkpoints_rejects_invalid_msgpack_payload() -> None:
         load_checkpoints(b"\x81\xa7version\xc3")
 
 
+def test_load_checkpoints_rejects_invalid_zstd_payload() -> None:
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints zstd payload"):
+        load_checkpoints(b"\x28\xb5\x2f\xfdnot-a-zstd-stream")
+
+
 def test_load_checkpoints_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINTS_MAX_DECOMPRESSED_BYTES", "4")
+    monkeypatch.setattr(replay_checkpoints_mod, "_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES", 4)
     payload = b"12345"
     with pytest.raises(ReplayCheckpointsError, match="payload too large"):
         load_checkpoints(payload)
 
 
-def test_resolve_checkpoint_sample_rate_env_override(monkeypatch) -> None:
-    monkeypatch.delenv("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE", raising=False)
-    assert resolve_checkpoint_sample_rate(60) == 60
+def test_load_checkpoints_rejects_zstd_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(replay_checkpoints_mod, "_DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES", 4)
+    payload = zstd.ZstdCompressor(level=19).compress(b"12345")
+    with pytest.raises(ReplayCheckpointsError, match="payload too large"):
+        load_checkpoints(payload)
 
-    monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE", "1")
-    assert resolve_checkpoint_sample_rate(60) == 1
 
-    monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE", "0")
-    assert resolve_checkpoint_sample_rate(60) == 1
-
-    monkeypatch.setenv("CRIMSON_REPLAY_CHECKPOINT_SAMPLE_RATE", "not-a-number")
-    assert resolve_checkpoint_sample_rate(60) == 60
+def test_default_checkpoint_sample_rate_is_every_tick() -> None:
+    assert int(DEFAULT_CHECKPOINT_SAMPLE_RATE) == 1

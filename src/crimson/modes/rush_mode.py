@@ -23,7 +23,7 @@ from ..net.rollback_resync_v5 import (
     RushStateSnapshotV2,
 )
 from ..replay import Replay, ReplayHeader, ReplayRecorder, ReplayStatusSnapshot
-from ..replay.checkpoints import resolve_checkpoint_sample_rate
+from ..replay.checkpoints import DEFAULT_CHECKPOINT_SAMPLE_RATE
 from ..replay.types import normalize_weapon_usage_counts
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1, run_terrain_bootstrap
 from ..sim.sessions import (
@@ -205,8 +205,7 @@ class RushMode(BaseGameplayMode):
                     status=status_snapshot,
                 ),
             )
-            tick_rate = int(self._replay_recorder.header.tick_rate)
-            self._replay_checkpoints_sample_rate = resolve_checkpoint_sample_rate(tick_rate)
+            self._replay_checkpoints_sample_rate = int(DEFAULT_CHECKPOINT_SAMPLE_RATE)
         else:
             self._replay_recorder = None
         self._replay_checkpoints.clear()
