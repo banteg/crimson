@@ -12,7 +12,7 @@ from crimson.sim.tick_runner import TickBatchResult
 def _replay_with_ticks(tick_count: int) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=replay_playback_mode.GameMode.DEMO, seed=0),
-        ticks=[ReplayTick(inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
     )
 
 

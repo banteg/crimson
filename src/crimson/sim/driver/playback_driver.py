@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -175,13 +174,8 @@ class _ReplayTickProvider:
         _ = command
 
     def resolve_tick_dt(self, tick_index: int, default_dt: float) -> float:
-        idx = int(tick_index)
-        if idx < 0 or idx >= len(self._replay.ticks):
-            return float(default_dt)
-        dt = self._replay.ticks[idx].dt
-        if dt is None:
-            return float(default_dt)
-        return float(dt)
+        _ = default_dt
+        return self._replay.ticks[tick_index].dt
 
 
 class PlaybackDriverOptions(msgspec.Struct, frozen=True):
@@ -555,12 +549,7 @@ class PlaybackDriver:
         idx = int(tick_index)
         if idx < 0 or idx >= len(self.replay.ticks):
             raise ReplayRunnerError(f"replay dt requested for non-existent tick {idx} (total={len(self.replay.ticks)})")
-        dt_value = self.replay.ticks[idx].dt
-        if dt_value is None:
-            return float(self.dt)
-        if not math.isfinite(dt_value) or dt_value < 0.0:
-            raise ReplayRunnerError(f"invalid replay dt at tick {idx}: {dt_value!r}")
-        return float(dt_value)
+        return self.replay.ticks[idx].dt
 
     def _prepare_tick_meta(
         self,

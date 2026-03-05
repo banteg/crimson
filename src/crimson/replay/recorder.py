@@ -18,7 +18,11 @@ class ReplayRecorder:
     def __init__(self, header: ReplayHeader) -> None:
         if header.replay_format_version != REPLAY_FORMAT_VERSION:
             raise ValueError(f"unsupported replay format version: {header.replay_format_version}")
+        tick_rate = header.tick_rate
+        if tick_rate <= 0:
+            raise ValueError(f"invalid tick_rate: {tick_rate}")
         self._header = header
+        self._default_dt = 1.0 / float(tick_rate)
         self._tick_index = 0
         self._ticks: list[ReplayTick] = []
 
@@ -50,11 +54,12 @@ class ReplayRecorder:
             raise ValueError(f"expected {self._header.player_count} player inputs, got {len(inputs)}")
 
         packed = pack_tick_inputs(inputs, quant=self._header.input_quantization)
-        if dt is not None and (not math.isfinite(dt) or dt < 0.0):
-            raise ValueError(f"dt must be finite and >= 0, got {dt!r}")
+        tick_dt = dt if dt is not None else self._default_dt
+        if not math.isfinite(tick_dt) or tick_dt < 0.0:
+            raise ValueError(f"dt must be finite and >= 0, got {tick_dt!r}")
 
         tick_index = self._tick_index
-        self._ticks.append(ReplayTick(inputs=packed, commands=list(commands) if commands else [], dt=dt))
+        self._ticks.append(ReplayTick(dt=tick_dt, inputs=packed, commands=list(commands) if commands else []))
         self._tick_index += 1
         return tick_index
 

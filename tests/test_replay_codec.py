@@ -50,7 +50,7 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
                 "shots_hit": 0,
             },
         },
-        "ticks": [{"inputs": [[0.0, 0.0, 0.0, 0.0, 0]]}],
+        "ticks": [{"dt": 1 / 60, "inputs": [[0.0, 0.0, 0.0, 0.0, 0]]}],
     }
 
 
@@ -223,7 +223,7 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
                 "shots_hit": 0,
             },
         },
-        "ticks": [{"inputs": [[move_x, move_y, aim_x, aim_y, 0]]}],
+        "ticks": [{"dt": 1 / 60, "inputs": [[move_x, move_y, aim_x, aim_y, 0]]}],
     }
 
     replay = load_replay(msgspec.msgpack.encode(replay_obj))

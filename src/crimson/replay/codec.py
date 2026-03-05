@@ -145,9 +145,7 @@ def _normalize_packed_input(
     ]
 
 
-def _validate_tick_dt(dt: float | None, *, tick_idx: int) -> float | None:
-    if dt is None:
-        return None
+def _validate_tick_dt(dt: float, *, tick_idx: int) -> float:
     if isinstance(dt, bool) or not isinstance(dt, (int, float)):
         raise ReplayCodecError(f"replay tick {tick_idx} dt must be numeric")
     dt_value = float(dt)
@@ -176,8 +174,8 @@ def dump_replay(replay: Replay) -> bytes:
             _normalize_packed_input(packed, tick_idx=int(tick_idx), player_idx=int(player_idx))
             for player_idx, packed in enumerate(inputs)
         ]
-        dt = _validate_tick_dt(tick.dt, tick_idx=int(tick_idx))
-        normalized_ticks.append(ReplayTick(inputs=normalized_inputs, commands=tick.commands, dt=dt))
+        dt = _validate_tick_dt(tick.dt, tick_idx=tick_idx)
+        normalized_ticks.append(ReplayTick(dt=dt, inputs=normalized_inputs, commands=tick.commands))
 
     raw = msgspec.msgpack.encode(
         Replay(
@@ -230,8 +228,8 @@ def load_replay(data: bytes) -> Replay:
                     int(normalized[4]),
                 ],
             )
-        dt = _validate_tick_dt(tick.dt, tick_idx=int(tick_idx))
-        normalized_ticks.append(ReplayTick(inputs=normalized_inputs, commands=tick.commands, dt=dt))
+        dt = _validate_tick_dt(tick.dt, tick_idx=tick_idx)
+        normalized_ticks.append(ReplayTick(dt=dt, inputs=normalized_inputs, commands=tick.commands))
 
     return Replay(header=replay.header, ticks=normalized_ticks)
 

@@ -36,7 +36,7 @@ class _StubReplayRuntime:
 def _replay_with_ticks(tick_count: int) -> Replay:
     return Replay(
         header=ReplayHeader(game_mode_id=GameMode.DEMO, seed=0),
-        ticks=[ReplayTick(inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]]) for _ in range(max(0, int(tick_count)))],
     )
 
 
@@ -213,7 +213,7 @@ def test_replay_open_uses_driver_tick_runner_builder(mocker, replay_playback_vie
     view, _console = replay_playback_view
     replay = Replay(
         header=ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0),
-        ticks=[ReplayTick(inputs=[[0.0, 0.0, 0.0, 0.0, 0]])],
+        ticks=[ReplayTick(dt=1 / 60, inputs=[[0.0, 0.0, 0.0, 0.0, 0]])],
     )
     captured: dict[str, object] = {}
 
