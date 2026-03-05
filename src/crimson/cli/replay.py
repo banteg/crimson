@@ -152,7 +152,6 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
 
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
-    typer.echo(f"  state_hash expected={exp.state_hash} actual={act.state_hash}", err=True)
     typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
     typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)

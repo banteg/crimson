@@ -103,15 +103,15 @@ def _write_checkpoint_sidecar(
     replay_path: Path,
     replay: Replay,
     *,
-    mutate_state_hash: bool = False,
+    mutate_checkpoint: bool = False,
     mutate_replay_sha256: bool = False,
 ) -> Path:
     checkpoint_ticks = {0}
     checkpoints = []
     run_replay(replay, checkpoints_out=checkpoints, checkpoint_ticks=checkpoint_ticks)
-    if mutate_state_hash:
+    if mutate_checkpoint:
         checkpoints[0] = msgspec.structs.replace(
-            checkpoints[0], state_hash="deadbeefdeadbeef", score_xp=999999,
+            checkpoints[0], score_xp=999999,
         )
     replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
     payload = ReplayCheckpoints(
@@ -1601,7 +1601,7 @@ def test_replay_verify_checkpoints_does_not_fall_back_to_legacy_sidecar_name(tmp
 def test_replay_verify_checkpoints_reports_mismatch(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    _write_checkpoint_sidecar(replay_path, replay, mutate_state_hash=True)
+    _write_checkpoint_sidecar(replay_path, replay, mutate_checkpoint=True)
     runner = CliRunner()
 
     result = runner.invoke(app, ["replay", "verify-checkpoints", str(replay_path)])

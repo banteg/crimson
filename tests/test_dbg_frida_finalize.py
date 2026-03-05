@@ -434,7 +434,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
                         "perk_pending": 0,
                         "players": [],
                         "bonus_timers": {},
-                        "state_hash": "",
                         "rng_marks": {
                             "rand_calls": 3,
                             "rand_last": 99,

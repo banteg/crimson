@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.net.lockstep_state import HostLockstepState
@@ -108,7 +109,9 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
 
     assert result0 == result1
     assert [len(ck.players) for ck in checkpoints0] == [2, 2, 2, 2, 2]
-    assert [ck.state_hash for ck in checkpoints0] == [ck.state_hash for ck in checkpoints1]
+    diff = compare_checkpoints(checkpoints0, checkpoints1)
+    assert diff.ok
+    assert diff.first_rng_only_tick is None
 
 
 def test_host_lockstep_canonical_frame_is_one_input_per_peer_in_slot_order() -> None:

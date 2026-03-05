@@ -226,7 +226,6 @@ def _canonical_channels_payload(
     checkpoint = msgspec.structs.replace(
         channels.checkpoint,
         tick_index=int(local_tick),
-        state_hash="",
     )
     expected_rng_marks = canonical_rng_marks(
         rng_state=int(checkpoint.rng_state),

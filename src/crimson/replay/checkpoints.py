@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import io
 from collections.abc import Sequence
 from pathlib import Path
@@ -61,7 +60,6 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     perk_pending: int
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
-    state_hash: str = ""
     rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
@@ -96,18 +94,6 @@ class ReplayCheckpoints(msgspec.Struct, frozen=True):
     replay_sha256: str
     sample_rate: int
     checkpoints: list[ReplayCheckpoint] = msgspec.field(default_factory=list)
-
-
-def _replay_player_checkpoint_to_obj(player: ReplayPlayerCheckpoint) -> dict[str, object]:
-    return {
-        "pos": {"x": float(player.pos.x), "y": float(player.pos.y)},
-        "health": float(player.health),
-        "weapon_id": int(player.weapon_id),
-        "ammo": float(player.ammo),
-        "experience": int(player.experience),
-        "level": int(player.level),
-    }
-
 
 _CHECKPOINTS_ENCODER = msgspec.msgpack.Encoder()
 _CHECKPOINTS_DECODER = msgspec.msgpack.Decoder(type=ReplayCheckpoints)
@@ -228,49 +214,6 @@ def build_checkpoint(
         sfx_head=[str(key) for key in sfx[:4]],
     )
 
-    # Hash a full-ish snapshot for faster comparisons than deep diffs.
-    hash_obj = {
-        "rng_state": int(state.rng.state),
-        "score_xp": int(score_xp),
-        "kills": int(kills),
-        "perk_pending": int(state.perk_selection.pending_count),
-        "players": [_replay_player_checkpoint_to_obj(player) for player in player_ckpts],
-        "creatures": [
-            {
-                "type_id": int(creature.type_id),
-                **creature.pos.to_dict(ndigits=4),
-                "hp": round(creature.hp, 4),
-                "active": bool(creature.active),
-            }
-            for creature in world.creatures.entries
-            if creature.active
-        ],
-        "bonuses": [
-            {
-                "bonus_id": int(bonus.bonus_id),
-                "pos": bonus.pos.to_dict(ndigits=4),
-                "time_left": round(bonus.time_left, 4),
-                "picked": bool(bonus.picked),
-                "amount": int(bonus.amount),
-            }
-            for bonus in state.bonus_pool.iter_active()
-        ],
-        "projectiles": [
-            {
-                "type_id": int(proj.type_id),
-                "x": round(proj.pos.x, 4),
-                "y": round(proj.pos.y, 4),
-                "active": bool(proj.active),
-            }
-            for proj in state.projectiles.entries
-            if proj.active
-        ],
-        "bonus_timers": dict(bonus_timers),
-    }
-    state_hash = hashlib.sha256(
-        msgspec.msgpack.encode(hash_obj),
-    ).hexdigest()[:16]
-
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
@@ -281,7 +224,6 @@ def build_checkpoint(
         perk_pending=int(state.perk_selection.pending_count),
         players=player_ckpts,
         bonus_timers=bonus_timers,
-        state_hash=str(state_hash),
         rng_marks=marks,
         deaths=death_entries,
         perk=perk_snapshot,

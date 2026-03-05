@@ -250,7 +250,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert repro_trace.exists()
 
 
-def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) -> None:
+def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample_hashes.crd")
     golden_trace = tmp_path / "golden_hashes.cdt"
     candidate_trace = tmp_path / "candidate_hashes.cdt"
@@ -265,7 +265,7 @@ def test_dbg_diff_hash_field_changes_report_checkpoint_mismatch(tmp_path: Path) 
     meta, ticks, _footer = load_trace(golden_trace)
     tick0 = next(row for row in ticks if int(row.tick_index) == 0)
     checkpoint = cast(dict[str, object], tick0.channels["checkpoint"])
-    checkpoint["state_hash"] = "ffffffffffffffff"
+    checkpoint["score_xp"] = 999999
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(

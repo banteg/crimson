@@ -374,7 +374,6 @@ def _record_replay_to_trace_python(
         )
         trace_checkpoint = msgspec.structs.replace(
             checkpoint,
-            state_hash="",
             rng_marks=dict(trace_rng_marks),
         )
 

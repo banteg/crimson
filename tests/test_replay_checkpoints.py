@@ -99,7 +99,6 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
                 "perk_pending": 4,
                 "players": [],
                 "bonus_timers": {},
-                "state_hash": "deadbeefcafebabe",
             },
         ],
     }
