@@ -16,7 +16,7 @@ from builders import FakeRunner, make_tick_payload
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
-from crimson.modes.base_gameplay_mode import _LanRuntimeInputProvider
+from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
 from crimson.sim.input_providers import InputStatus
@@ -121,7 +121,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
         player_count=1,
         tick_rate=60,
     )
-    mocker.patch.object(mode, "_on_tick_applied", return_value="continue")
+    policy = LanFramePolicy(on_tick_applied=lambda _tick, _fti, _dt: "continue")
     mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=None)
     mocker.patch.object(
         mode,
@@ -135,6 +135,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
         session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
+        policy=policy,
     )
 
     assert stop is False
@@ -152,6 +153,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         [TickBatchResult(ticks_completed=0, batch_status=InputStatus.STALLED, next_tick_index=0)],
         on_advance=lambda: setattr(provider, "_pop_blocked", True),
     )
+    policy = LanFramePolicy()
     mocker.patch.object(
         mode,
         "_ensure_tick_runner",
@@ -166,6 +168,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
         session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
+        policy=policy,
     )
 
     assert stop is False
@@ -231,7 +234,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         ),
     )
 
-    mocker.patch.object(mode, "_on_tick_applied", return_value="stop_before_finalize")
+    policy = LanFramePolicy(on_tick_applied=lambda _tick, _fti, _dt: "stop_before_finalize")
     mocker.patch.object(mode, "_build_lan_sync_callbacks", return_value=callbacks)
     mocker.patch.object(
         mode,
@@ -245,6 +248,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
         session=_StubSession(),  # type: ignore[arg-type]
         role="host",
         dt_tick=1.0 / 60.0,
+        policy=policy,
     )
 
     assert stop is False
