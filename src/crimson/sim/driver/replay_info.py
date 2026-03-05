@@ -406,21 +406,21 @@ def _run_replay_info(
             tick_index=outcome.tick_index,
             elapsed_ms=elapsed_ms,
             timeline=timeline,
-            pickups=outcome.step_events.pickups,
+            pickups=outcome.step.events.pickups,
             preserve_bugs=replay.header.preserve_bugs,
             player_filter=player_filter,
             include_extra_events=include_extra_events,
         )
 
-        if outcome.step_events.deaths:
+        if outcome.step.events.deaths:
             _append_event(
                 timeline,
                 tick_index=outcome.tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="creature_deaths",
                 player_index=None,
-                detail=f"creature deaths={len(outcome.step_events.deaths)}",
-                data={"count": len(outcome.step_events.deaths)},
+                detail=f"creature deaths={len(outcome.step.events.deaths)}",
+                data={"count": len(outcome.step.events.deaths)},
                 player_filter=player_filter,
                 include_extra_events=include_extra_events,
             )

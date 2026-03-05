@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from builders.tick_payload import make_tick_payload
 
 from crimson.sim.driver.playback_driver import PlaybackTickOutcome
-from crimson.sim.world_state import WorldEvents, WorldState
+from crimson.sim.world_state import WorldState
 
 
 @dataclass
@@ -34,9 +34,7 @@ class FakePlaybackDriver:
                 difficulty_level=0,
             ),
             step=payload.step,
-            step_events=WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
             elapsed_ms=float(payload.elapsed_ms),
-            dt_sim=float(payload.step.dt_sim),
             rng_marks={},
             creature_count_world_step=0,
             tick_rng_rows=[],

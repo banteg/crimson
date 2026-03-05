@@ -566,17 +566,15 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         if runtime is None:
             return
-        spawn_timeline_ms = getattr(outcome, "spawn_timeline_ms", None)
-        if spawn_timeline_ms is not None:
-            self._quest_spawn_timeline_ms = float(spawn_timeline_ms)
+        if outcome.spawn_timeline_ms is not None:
+            self._quest_spawn_timeline_ms = float(outcome.spawn_timeline_ms)
             self._quest_name_timer_ms += float(dt) * 1000.0
-            completion_transition_ms = getattr(outcome, "completion_transition_ms", None)
-            if completion_transition_ms is not None:
-                self._quest_completion_transition_ms = float(completion_transition_ms)
+            if outcome.completion_transition_ms is not None:
+                self._quest_completion_transition_ms = float(outcome.completion_transition_ms)
             router = runtime.audio_bridge.router
-            if bool(getattr(outcome, "play_hit_sfx", False)) and router is not None:
+            if outcome.play_hit_sfx and router is not None:
                 router.play_sfx("sfx_questhit")
-            if bool(getattr(outcome, "play_completion_music", False)) and self._audio is not None:
+            if outcome.play_completion_music and self._audio is not None:
                 play_music(self._audio, "crimsonquest")
                 playback = self._audio.music.playbacks.get("crimsonquest")
                 if playback is not None:

@@ -207,9 +207,7 @@ class PlaybackTickOutcome:
     commands: list[GameCommand]
     world: WorldState
     step: DeterministicStepResult
-    step_events: WorldEvents
     elapsed_ms: float
-    dt_sim: float
     rng_marks: dict[str, int]
     creature_count_world_step: int
     tick_rng_rows: list[RngTraceDraw]
@@ -559,9 +557,7 @@ class PlaybackDriver:
                 commands=tick_result.commands,
                 world=self.world,
                 step=step,
-                step_events=step.events,
                 elapsed_ms=float(tick.elapsed_ms),
-                dt_sim=float(step.dt_sim),
                 rng_marks=dict(tick.rng_marks),
                 creature_count_world_step=int(tick.creature_count_world_step),
                 tick_rng_rows=list(meta.tick_rng_rows),
@@ -592,8 +588,8 @@ class PlaybackDriver:
                     else None
                 ),
                 rng_marks=checkpoint_rng_marks,
-                deaths=outcome.step_events.deaths,
-                events=outcome.step_events,
+                deaths=outcome.step.events.deaths,
+                events=outcome.step.events,
             ),
         )
 
@@ -656,7 +652,7 @@ class PlaybackDriver:
                     int(outcome.tick_index),
                     self.world,
                     float(outcome.elapsed_ms),
-                    outcome.step_events,
+                    outcome.step.events,
                     dict(outcome.rng_marks),
                 )
 
