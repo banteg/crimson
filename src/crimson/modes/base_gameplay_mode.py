@@ -803,10 +803,6 @@ class BaseGameplayMode:
         mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
         return f"{mode_name}_{stamp}"
 
-    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        _ = replay, terminal_tick
-        return False
-
     def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
         _ = recorder
         return False
@@ -877,10 +873,6 @@ class BaseGameplayMode:
                 claimed_stats=claimed_stats,
             ),
         )
-
-        terminal_tick = int(recorder.tick_index)
-        if self._replay_emit_terminal_event_checkpoint(replay, terminal_tick=terminal_tick):
-            self._record_replay_checkpoint(terminal_tick, force=True)
 
         data = dump_replay(replay)
         digest = hashlib.sha256(data).hexdigest()

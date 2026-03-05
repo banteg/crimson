@@ -150,7 +150,6 @@ class ReplayPlaybackMode:
         self._frame_index = 0
         self._tick_index = 0
         self._finished = False
-        self._terminal_events_applied = False
         self._paused = False
         self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
@@ -355,7 +354,6 @@ class ReplayPlaybackMode:
         self._frame_index = 0
         self._tick_index = 0
         self._finished = False
-        self._terminal_events_applied = False
         self._paused = False
         self._step_once_pending = False
         self._speed_index = _DEFAULT_SPEED_INDEX
@@ -496,12 +494,11 @@ class ReplayPlaybackMode:
                         game_tune_started=bool(sim_world.game_tune_started),
                     ),
                     sessions=PlaybackSessionConfigs(
-                        survival=SurvivalSessionConfig(partition_events=True),
+                        survival=SurvivalSessionConfig(),
                         rush=RushSessionConfig(
                             enforce_loadout=True,
                         ),
                         quest=QuestSessionConfig(
-                            partition_events=False,
                             disable_capture_spawn_events_authoritative=False,
                             finalize_post_render_lifecycle_each_tick=True,
                             result_uses_spawn_timeline_ms=False,

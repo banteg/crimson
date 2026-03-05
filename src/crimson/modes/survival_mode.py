@@ -161,10 +161,6 @@ class SurvivalMode(BaseGameplayMode):
         score = int(self.player.experience)
         return f"survival_{stamp}_score{score}"
 
-    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        _ = replay, terminal_tick
-        return False
-
     def _perk_menu_context(self) -> PerkMenuContext:
         gore_disabled = self.config.gore_disabled
         fx_detail = self.config.fx_detail(level=0, default=False)

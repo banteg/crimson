@@ -241,10 +241,6 @@ class QuestMode(BaseGameplayMode):
         base_time_ms = int(self._quest.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
 
-    def _replay_emit_terminal_event_checkpoint(self, replay: Replay, *, terminal_tick: int) -> bool:
-        _ = replay, terminal_tick
-        return False
-
     def _replay_skip_save_when_empty(self, *, recorder: ReplayRecorder) -> bool:
         # Avoid emitting empty replays/checkpoint sidecars (usually indicates a
         # test harness calling failure/complete helpers without ticking).

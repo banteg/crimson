@@ -213,7 +213,7 @@ class PlaybackSessionDefaults:
 
 @dataclass(slots=True, frozen=True)
 class SurvivalSessionConfig:
-    partition_events: bool = True
+    pass
 
 
 @dataclass(slots=True, frozen=True)
@@ -223,7 +223,6 @@ class RushSessionConfig:
 
 @dataclass(slots=True, frozen=True)
 class QuestSessionConfig:
-    partition_events: bool = True
     disable_capture_spawn_events_authoritative: bool = True
     finalize_post_render_lifecycle_each_tick: bool = True
     result_uses_spawn_timeline_ms: bool = True

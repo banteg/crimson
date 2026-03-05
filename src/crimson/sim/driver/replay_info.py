@@ -373,12 +373,11 @@ def _run_replay_info(
             game_tune_started=False,
         ),
         sessions=PlaybackSessionConfigs(
-            survival=SurvivalSessionConfig(partition_events=True),
+            survival=SurvivalSessionConfig(),
             rush=RushSessionConfig(
                 enforce_loadout=True,
             ),
             quest=QuestSessionConfig(
-                partition_events=True,
                 disable_capture_spawn_events_authoritative=True,
                 finalize_post_render_lifecycle_each_tick=True,
                 result_uses_spawn_timeline_ms=True,
