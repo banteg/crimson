@@ -26,7 +26,6 @@ from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,
-    apply_tick_to_sim,
 )
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
@@ -41,6 +40,7 @@ from ..sim.driver.playback_driver import (
     QuestSessionConfig,
     resolve_replay_quest_setup,
 )
+from ..sim.driver.playback_pump import advance_playback_frame
 from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
@@ -622,30 +622,19 @@ class ReplayPlaybackMode:
             return
 
         frame_dt = float(dt_seconds)
-        ticks_requested = int(self._clock.advance(frame_dt))
-        if max_ticks is not None:
-            ticks_requested = min(int(ticks_requested), max(0, int(max_ticks)))
-        self._frame_index = int(self._frame_index) + 1
-
-        outputs: list[PresentationTickOutput] = []
-        outcomes: list[PlaybackTickOutcome] = []
-        ticks_completed = 0
-
-        while ticks_completed < ticks_requested and int(self._tick_index) < tick_limit:
-            outcome = driver.step_tick(int(self._tick_index))
-            apply_tick_to_sim(
-                sim_world=runtime.sim_world,
-                step=outcome.step,
-                game_tune_started=self._session_game_tune_started(),
-            )
-            outputs.append(PresentationTickOutput(
-                tick_index=int(outcome.tick_index),
-                dt_sim=float(outcome.step.dt_sim),
-                presentation=outcome.step.presentation,
-            ))
-            outcomes.append(outcome)
-            self._tick_index = int(self._tick_index) + 1
-            ticks_completed += 1
+        advance = advance_playback_frame(
+            driver=driver,
+            sim_world=runtime.sim_world,
+            clock=self._clock,
+            start_tick=int(self._tick_index),
+            frame_index=int(self._frame_index),
+            dt_seconds=float(frame_dt),
+            max_ticks=max_ticks,
+            tick_limit=int(tick_limit),
+            game_tune_started=self._session_game_tune_started(),
+        )
+        self._frame_index = int(advance.frame_index)
+        self._tick_index = int(advance.next_tick_index)
 
         def _on_output_applied(output: PresentationTickOutput, outcome: PlaybackTickOutcome) -> None:
             self._apply_tick_outcome(outcome=outcome)
@@ -664,10 +653,10 @@ class ReplayPlaybackMode:
             and hasattr(runtime.audio_bridge, "apply_plan"),
         )
         update_camera = runtime.update_camera if hasattr(runtime, "update_camera") else None
-        outcome_by_tick = {int(outcome.tick_index): outcome for outcome in outcomes}
-        if outputs and can_apply_output_phase:
+        outcome_by_tick = {int(outcome.tick_index): outcome for outcome in advance.outcomes}
+        if advance.outputs and can_apply_output_phase:
             apply_presentation_outputs(
-                outputs=outputs,
+                outputs=advance.outputs,
                 sync_audio_bridge_state=runtime.sync_audio_bridge_state,
                 apply_audio_plan=lambda plan, should_apply_audio: runtime.audio_bridge.apply_plan(
                     plan=plan,
@@ -680,12 +669,9 @@ class ReplayPlaybackMode:
                 apply_audio=True,
             )
         else:
-            for output, outcome in zip(outputs, outcomes):
+            for output, outcome in zip(advance.outputs, advance.outcomes):
                 _on_output_applied(output, outcome)
 
-        unconsumed_ticks = max(0, ticks_requested - ticks_completed)
-        if unconsumed_ticks > 0:
-            self._clock.accum += float(unconsumed_ticks) * float(self._dt)
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)
 

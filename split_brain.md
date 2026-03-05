@@ -18,6 +18,7 @@ Not everything is split-brained anymore.
 - Survival and rush now also share one explicit session-timer access path in gameplay code, instead of each mode carrying its own mirror helper.
 - Quest rollback/resync snapshots now carry the authoritative quest runtime, including the remaining spawn table.
 - Live `TickRunner` frame advancement is now shared between `BaseGameplayMode` and `WorldRuntime`, including `FrameContext` setup, tick-index bookkeeping, and stall/EOS debt refund.
+- Replay playback frame advancement is now also shared, including replay clock advancement, `step_tick()` iteration, immediate sim metadata apply, and replay tick-limit debt refund.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
@@ -32,15 +33,14 @@ Timer semantics are no longer one of the fuzzy parts:
 - quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
 - session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
 
-### 1) The frame pump exists in several places
+### 1) Replay stepping still has some higher-level duplication
 
-Variants of the same loop exist in:
+The lowest-level frame bookkeeping is now shared for both live and replay stepping, but some replay consumers still open-code their own `step_tick()` loops above that layer:
 
-- `src/crimson/modes/base_gameplay_mode.py`
-- `src/crimson/modes/replay_playback_mode.py`
 - `src/crimson/sim/driver/playback_driver.py`
+- `src/crimson/sim/driver/replay_info.py`
 
-The highest-value live duplication is smaller than it was: gameplay and world runtime now share the low-level `TickRunner` frame-advance bookkeeping, but replay playback still owns its own pump around `PlaybackDriver.step_tick()`, and the apply/record/checkpoint layer is still split across multiple callers.
+That is a smaller problem than before. `ReplayPlaybackMode` no longer hand-rolls the replay clock/step/apply loop, so the remaining drift is concentrated in driver-level utilities and higher-level bookkeeping around stepped replay ticks.
 
 ### 2) Presentation reactions are not yet fully single-sourced
 
@@ -81,6 +81,7 @@ flowchart TD
         Base["BaseGameplayMode"]
         World["WorldRuntime"]
         ReplayMode["ReplayPlaybackMode"]
+        ReplayPump["Shared replay playback frame pump"]
         Playback["PlaybackDriver"]
     end
 
@@ -95,7 +96,8 @@ flowchart TD
 
     Base -->|step + apply + record + sync| Runner
     World -->|step + apply| Runner
-    ReplayMode -->|apply + special reactions| Playback
+    ReplayMode -->|presentation callbacks + finish logic| ReplayPump
+    ReplayPump -->|shared replay step + apply| Playback
     Playback --> QuestState
 ```
 
@@ -187,13 +189,13 @@ The target shape should reduce complexity, not relocate it.
 
 ## Highest-Value Next Step
 
-The best next refactor is to carry the shared frame-step/apply cleanup one layer higher.
+The best next refactor is now to finish centralizing presentation reactions.
 
-That is now the highest-leverage remaining split-brain because:
+That is the highest-leverage remaining split-brain because:
 
 - canonical ticks already landed
 - quest, survival, and rush now use authoritative runtime owners instead of mode-local mirrors
-- live `TickRunner` frame advancement is already shared
-- the remaining runtime drift is now concentrated in replay playback’s custom pump and in the higher-level apply/record/checkpoint wiring around stepped ticks
+- live and replay frame advancement now share their low-level bookkeeping
+- replay and live mode code still carry custom post-tick side effects for perk picks, quest hit SFX, quest completion music, and similar reactions
 
-After replay playback is pulled closer to the shared step/apply shape, the next target is to finish centralizing presentation reactions so replay and live mode code stop carrying custom post-tick side effects.
+After presentation reactions are single-sourced, the remaining cleanup is mostly driver-level replay loop consolidation and other narrower orchestration tidy-ups.

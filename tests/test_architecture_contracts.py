@@ -9,6 +9,7 @@ import crimson.audio_router as audio_router_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.sim.batch_apply as batch_apply_module
+import crimson.sim.driver.playback_pump as playback_pump_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.world.runtime as world_runtime_module
 from crimson.game_modes import GameMode
@@ -410,3 +411,16 @@ def test_contract_7_live_frame_advancement_uses_shared_helper() -> None:
     assert "advance_tick_runner_frame(" in world_source
     assert "runner.begin_frame(" not in world_source
     assert "runner.advance_ticks(" not in world_source
+
+
+def test_contract_8_replay_frame_advancement_uses_shared_helper() -> None:
+    helper_source = inspect.getsource(playback_pump_module.advance_playback_frame)
+    replay_source = inspect.getsource(replay_playback_mode.ReplayPlaybackMode._advance_runner)
+
+    assert "driver.step_tick(" in helper_source
+    assert "apply_tick_to_sim(" in helper_source
+    assert "clock.accum +=" in helper_source
+    assert "advance_playback_frame(" in replay_source
+    assert "driver.step_tick(" not in replay_source
+    assert "apply_tick_to_sim(" not in replay_source
+    assert "clock.advance(" not in replay_source
