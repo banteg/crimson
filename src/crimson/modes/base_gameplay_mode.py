@@ -178,8 +178,8 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         super().__init__(
             player_count=player_count,
             resolve_tick_input=self._resolve_tick_input,
-            resolve_tick_commands=self._resolve_tick_commands,
-            emit_tick_command=self._emit_tick_command,
+            resolve_tick_commands=self.resolve_tick_commands,
+            emit_tick_command=self.emit_tick_command,
         )
 
     def bind_runtime(self, runtime: LanRuntime | None) -> None:
@@ -240,7 +240,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         )
         return player_inputs
 
-    def _resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
+    def resolve_tick_commands(self, tick_index: int) -> list[GameCommand]:
         runtime = self._runtime
         if isinstance(runtime, LockstepRuntime):
             while True:
@@ -272,7 +272,7 @@ class _LanRuntimeInputProvider(NetworkInputProvider):
         self._pending_perk_events = future_events
         return commands
 
-    def _emit_tick_command(self, tick_index: int, command: GameCommand) -> None:
+    def emit_tick_command(self, tick_index: int, command: GameCommand) -> None:
         if str(self._role) != "host":
             return
         runtime = self._runtime
@@ -763,7 +763,7 @@ class BaseGameplayMode:
     def set_runtime_updates_per_frame(self, value: int) -> None:
         self._runtime_updates_per_frame = max(0, int(value))
 
-    def _enqueue_input_command(self, command: GameCommand) -> None:
+    def enqueue_input_command(self, command: GameCommand) -> None:
         provider = self._tick_input_provider
         if provider is None:
             self._queued_input_commands.append(command)
@@ -786,8 +786,8 @@ class BaseGameplayMode:
             provider.push_command(command)
         self._queued_input_commands.clear()
 
-    def _record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
-        self._enqueue_input_command(
+    def record_perk_pick_command(self, choice_index: int, *, player_index: int = 0) -> None:
+        self.enqueue_input_command(
             PerkPickCommand(
                 player_index=int(player_index),
                 choice_index=int(choice_index),

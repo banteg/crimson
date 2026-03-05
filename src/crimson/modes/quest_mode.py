@@ -223,7 +223,7 @@ class QuestMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _record_perk_pick(self, choice_index: int) -> bool:
-        self._record_perk_pick_command(int(choice_index), player_index=0)
+        self.record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
@@ -683,7 +683,7 @@ class QuestMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened:
-                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
                 player_count=len(self.sim_world.players),
@@ -693,7 +693,7 @@ class QuestMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened:
-                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
         perk_menu_active = self._perk_menu.active
 

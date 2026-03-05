@@ -144,7 +144,7 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_prompt_pulse = 0.0
 
     def _record_perk_pick(self, choice_index: int) -> bool:
-        self._record_perk_pick_command(int(choice_index), player_index=0)
+        self.record_perk_pick_command(int(choice_index), player_index=0)
         return True
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
@@ -542,7 +542,7 @@ class SurvivalMode(BaseGameplayMode):
         opened = self._perk_menu.open_if_available(perk_ctx)
         if not opened:
             return
-        self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+        self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -597,7 +597,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened:
-                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
             elif self._perk_prompt_hover and input_primary_just_pressed(
                 self.config,
                 player_count=len(self.sim_world.players),
@@ -607,7 +607,7 @@ class SurvivalMode(BaseGameplayMode):
                     self._record_replay_checkpoint(max(0, self._replay_recorder.tick_index - 1), force=True)
                 opened = self._perk_menu.open_if_available(perk_ctx)
                 if opened:
-                    self._enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+                    self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
         if not self._paused and not self._game_over_active:
             pulse_delta = float(frame.dt_ui_ms) * (6.0 if self._perk_prompt_hover else -2.0)
