@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
 from pathlib import Path
 from typing import cast
@@ -267,7 +266,7 @@ def stop_music(state: MusicState) -> None:
     state.game_tune_track = None
 
 
-def trigger_game_tune(state: MusicState, *, rand: Callable[[], int] | None = None) -> str | None:
+def trigger_game_tune(state: MusicState, *, rand: Callable[[], int]) -> str | None:
     """Start a random queued game tune, if it hasn't been triggered yet.
 
     Returns the track key if playback started, otherwise None.
@@ -279,11 +278,8 @@ def trigger_game_tune(state: MusicState, *, rand: Callable[[], int] | None = Non
     if not state.queue:
         return None
 
-    if rand is None:
-        track_key = random.choice(state.queue)
-    else:
-        idx = int(rand()) % len(state.queue)
-        track_key = state.queue[idx]
+    idx = int(rand()) % len(state.queue)
+    track_key = state.queue[idx]
 
     if track_key not in state.tracks:
         return None

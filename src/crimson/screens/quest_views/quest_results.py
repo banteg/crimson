@@ -181,7 +181,7 @@ class QuestResultsView:
                 return
             play_sfx(audio, name, rng=rng)
 
-        action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=lambda: rng.getrandbits(32))
+        action = ui.update(dt, play_sfx=_play if audio is not None else None, rand=rng.rand)
         if action == "play_again":
             self._set_pending_quest_level(self._quest_level)
             self._action = "start_quest"

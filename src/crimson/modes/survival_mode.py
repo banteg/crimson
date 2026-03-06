@@ -72,7 +72,7 @@ class SurvivalMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
         session_factory: SurvivalSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
@@ -236,6 +236,7 @@ class SurvivalMode(BaseGameplayMode):
             terrain_seed=int(bootstrap.terrain_seed),
         )
         self.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
+        self.sim_world.state.rng.srand(int(bootstrap.seed_after))
 
         self._sim_session = self._new_sim_session()
 

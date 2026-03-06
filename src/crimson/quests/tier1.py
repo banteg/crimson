@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import random
-
 from grim.geom import Vec2
+from grim.rand import Crand, CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
@@ -118,15 +117,15 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
     builder_address=0x00437A00,
 )
-def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
-    rng = rng or random.Random()
+def build_1_3_target_practice(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+    rng = rng or Crand()
     center = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
     trigger = 2000
     step = 2000
     while True:
         angle = random_angle(rng)
-        radius = (rng.randrange(8) + 2) * 0x20
+        radius = (int(rng.rand() % 8) + 2) * 0x20
         point = center + Vec2.from_angle(angle) * radius
         heading = heading_from_center(point, center)
         entries.append(
@@ -267,8 +266,8 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_weapon_id=WeaponId.SUBMACHINE_GUN,
     builder_address=0x00436350,
 )
-def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
-    rng = rng or random.Random()
+def build_1_6_the_random_factor(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+    rng = rng or Crand()
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
@@ -292,7 +291,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
                 count=6,
             ),
         )
-        if rng.randrange(5) == 3:
+        if int(rng.rand() % 5) == 3:
             entries.append(
                 spawn(
                     Vec2(center.x, edges.bottom.y),

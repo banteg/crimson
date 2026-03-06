@@ -9,6 +9,7 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
+from grim.rand import Crand
 from grim.sfx import init_sfx_state
 
 
@@ -30,7 +31,7 @@ def _hits(count: int) -> list[ProjectileHit]:
 def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
-    router = AudioRouter(audio=_audio_state_stub())
+    router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
 
     def rand() -> int:
         return 0
@@ -39,32 +40,34 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
 
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rand"] is rand
-    assert play_sfx.call_args_list == [call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0)]
+    assert play_sfx.call_args_list == [
+        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+    ]
 
 
 def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
-    router = AudioRouter(audio=_audio_state_stub())
+    router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF))
 
     router.play_hit_sfx(_hits(2), game_mode=GameMode.RUSH, rand=lambda: 0, beam_types=frozenset())
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
-        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
     ]
 
 
 def test_game_tune_not_triggered_in_demo(mocker) -> None:
     trigger_game_tune = mocker.patch.object(audio_router, "trigger_game_tune", return_value="gt1_ingame")
     play_sfx = mocker.patch.object(audio_router, "play_sfx")
-    router = AudioRouter(audio=_audio_state_stub(), demo_mode_active=True)
+    router = AudioRouter(audio=_audio_state_stub(), audio_rng=Crand(0xBEEF), demo_mode_active=True)
 
     router.play_hit_sfx(_hits(2), game_mode=GameMode.TYPO, rand=lambda: 0, beam_types=frozenset())
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
-        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
-        call(router.audio, "sfx_bullet_hit_01", rng=None, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
+        call(router.audio, "sfx_bullet_hit_01", rng=router.audio_rng, reflex_boost_timer=0.0),
     ]

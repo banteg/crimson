@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import random
-
 from grim.geom import Vec2
+from grim.rand import Crand, CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
@@ -183,14 +182,14 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.REGENERATION,
     builder_address=0x004384A0,
 )
-def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
-    rng = rng or random.Random()
+def build_3_3_the_killing(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+    rng = rng or Crand()
     edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
-        rng.randrange(0x8000)
-        rng.randrange(0x8000)
+        rng.rand()
+        rng.rand()
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
@@ -242,8 +241,8 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
             )
         else:
             for offset in (0, 1000, 2000):
-                x = rng.randrange(0x300) + 0x80
-                y = rng.randrange(0x300) + 0x80
+                x = int(rng.rand() % 0x300) + 0x80
+                y = int(rng.rand() % 0x300) + 0x80
                 entries.append(
                     spawn(
                         Vec2(float(x), float(y)),
@@ -501,8 +500,8 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.HIGHLANDER,
     builder_address=0x00437920,
 )
-def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
-    rng = rng or random.Random()
+def build_3_9_deja_vu(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+    rng = rng or Crand()
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000

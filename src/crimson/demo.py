@@ -9,12 +9,12 @@ from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mo
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.rand import Crand
 from grim.raylib_api import rd, rl
 
 from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
+from .sim.bootstrap import terrain_stamping_draws
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
@@ -83,7 +83,6 @@ class DemoView:
         )
         self._runtime.reset()
 
-        self._crand = Crand(0)
         self._demo_targets: list[int | None] = []
         self._variant_index = 0
         self._demo_variant_index = 0
@@ -98,7 +97,6 @@ class DemoView:
         self._purchase_url_opened = False
         self._purchase_button = UiButtonState("Purchase", force_wide=True)
         self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
-        self._spawn_rng = Crand(0)
         self._runtime.init_tick_runner(
             game_mode=GameMode.DEMO,
             build_inputs=self._build_runner_inputs,
@@ -120,10 +118,20 @@ class DemoView:
             base_texture_id=base_texture_id,
             overlay_texture_id=overlay_texture_id,
         )
+        rng = self._runtime.sim_world.state.rng
         self._runtime.terrain_runtime.schedule_from_rng_seed(
-            seed=int(self._runtime.sim_world.state.rng.state),
+            seed=int(rng.state),
             layers=3,
         )
+        for _ in range(terrain_stamping_draws(width=int(WORLD_SIZE), height=int(WORLD_SIZE), layers=3)):
+            rng.rand()
+        self._sync_live_rng_state()
+
+    def _sync_live_rng_state(self) -> None:
+        live_rng = self._runtime.sim_world.state.rng
+        self._runtime.audio_rng = live_rng
+        self._runtime.sync_audio_bridge_state()
+        self.state.rng.srand(int(live_rng.state))
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -145,9 +153,7 @@ class DemoView:
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
-        self._crand.srand(self.state.rng.getrandbits(32))
         self._open_world_runtime()
-        self._runtime.reset_tick_runner()
         self._demo_mode_start()
 
     def close(self) -> None:
@@ -192,6 +198,7 @@ class DemoView:
 
         self._quest_spawn_timeline_ms += frame_dt_ms
         self._update_world(frame_dt)
+        self._sync_live_rng_state()
         if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
             self._demo_mode_start()
 
@@ -452,22 +459,22 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._purchase_active = False
         self._purchase_url_opened = False
-        self._spawn_rng.srand(self.state.rng.randrange(0, 0x1_0000_0000))
+        player_count = 2 if index in (0, 1, 4) else 1
+        self._runtime.reset(seed=int(self.state.rng.state), player_count=player_count)
+        self._runtime.reset_tick_runner()
+        self._sync_live_rng_state()
         self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
-            self._apply_variant_ground(0)
             self._setup_variant_0()
         elif index == 1:
             self._apply_variant_ground(1)
             self._setup_variant_1()
         elif index == 2:
-            self._apply_variant_ground(2)
             self._setup_variant_2()
         elif index == 3:
             self._apply_variant_ground(3)
             self._setup_variant_3()
         elif index == 4:
-            self._apply_variant_ground(4)
             self._setup_variant_0()
         else:
             # demo_purchase_interstitial_begin
@@ -477,11 +484,9 @@ class DemoView:
         # timeline resets (quest_spawn_timeline == 0) and the purchase screen is inactive.
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
+        self._sync_live_rng_state()
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
-        seed = int(self.state.rng.getrandbits(32))
-        self._runtime.reset(seed=seed, player_count=len(specs))
-        self._runtime.reset_tick_runner()
         for idx, (pos, weapon_id) in enumerate(specs):
             if idx >= len(self._runtime.sim_world.players):
                 continue
@@ -529,18 +534,14 @@ class DemoView:
             overlay_texture_id=overlay_texture_id,
         )
 
-    def _crand_mod(self, mod: int) -> int:
-        if mod <= 0:
-            return 0
-        return int(self._crand.rand() % mod)
-
     def _spawn(self, spawn_id: SpawnId, pos: Vec2, *, heading: float = 0.0) -> None:
+        rng = self._runtime.sim_world.state.rng
         self._runtime.sim_world.creatures.spawn_template(
             spawn_id,
             pos,
             float(heading),
-            self._spawn_rng,
-            rand=self._spawn_rng.rand,
+            rng,
+            rand=rng.rand,
         )
 
     def _setup_variant_0(self) -> None:
@@ -566,6 +567,7 @@ class DemoView:
         self._demo_time_limit_ms = 5000
         # demo_setup_variant_1 uses weapon_id=0x05.
         weapon_id = 5
+        rng = self._runtime.sim_world.state.rng
         self._setup_world_players(
             [
                 (Vec2(490.0, 448.0), weapon_id),
@@ -574,11 +576,11 @@ class DemoView:
         )
         self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
-            x = float(self._crand_mod(200) + 32)
-            y = float(self._crand_mod(899) + 64)
+            x = float(int(rng.rand() % 200) + 32)
+            y = float(int(rng.rand() % 899) + 64)
             self._spawn(SpawnId.SPIDER_SP1_RANDOM_GREEN_34, Vec2(x, y), heading=RANDOM_HEADING_SENTINEL)
             if idx % 3 != 0:
-                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                spawn_pos = Vec2(float(int(rng.rand() % 30) + 32), float(int(rng.rand() % 899) + 64))
                 self._spawn(SpawnId.SPIDER_SP2_RANDOM_35, spawn_pos, heading=RANDOM_HEADING_SENTINEL)
 
     def _setup_variant_2(self) -> None:
@@ -601,13 +603,14 @@ class DemoView:
         self._demo_time_limit_ms = 4000
         # demo_setup_variant_3 uses weapon_id=0x12.
         weapon_id = 18
+        rng = self._runtime.sim_world.state.rng
         self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         for idx in range(20):
-            x = float(self._crand_mod(200) + 32)
-            y = float(self._crand_mod(899) + 64)
+            x = float(int(rng.rand() % 200) + 32)
+            y = float(int(rng.rand() % 899) + 64)
             self._spawn(SpawnId.ALIEN_CONST_GREEN_24, Vec2(x, y), heading=0.0)
             if idx % 3 != 0:
-                spawn_pos = Vec2(float(self._crand_mod(30) + 32), float(self._crand_mod(899) + 64))
+                spawn_pos = Vec2(float(int(rng.rand() % 30) + 32), float(int(rng.rand() % 899) + 64))
                 self._spawn(SpawnId.ALIEN_CONST_GREEN_SMALL_25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:

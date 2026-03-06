@@ -5,6 +5,7 @@ from pathlib import Path
 from crimson.gameplay import survival_level_threshold
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.input import PlayerInput
+from grim.rand import Crand
 from grim.view import ViewContext
 
 
@@ -13,7 +14,7 @@ def _assets_dir() -> Path:
 
 
 def test_survival_mode_session_has_progression_enabled_and_levels_up() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
     try:
         session = mode._sim_session
         assert session is not None

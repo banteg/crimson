@@ -114,7 +114,7 @@ class QuestMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
         session_factory: QuestSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(

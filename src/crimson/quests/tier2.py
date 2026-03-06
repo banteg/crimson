@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import random
-
 from grim.geom import Vec2
+from grim.rand import Crand, CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
@@ -317,8 +316,8 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_perk_id=PerkId.BARREL_GREASER,
     builder_address=0x00437810,
 )
-def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
-    rng = rng or random.Random()
+def build_2_5_sweep_stakes(ctx: QuestContext, rng: CrandLike | None = None) -> list[SpawnEntry]:
+    rng = rng or Crand()
     entries: list[SpawnEntry] = []
     center = center_point(ctx.width, ctx.height)
     trigger = 2000

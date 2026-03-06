@@ -4,7 +4,6 @@ import inspect
 import io
 import json
 import os
-import random
 import re
 from pathlib import Path
 
@@ -14,7 +13,7 @@ from PIL import Image
 
 from grim import jaz, paq
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 
 from ..creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan, spawn_id_label
 from ..paths import default_runtime_dir
@@ -104,7 +103,7 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
     typer.echo(f"extracted {total} files")
 
 
-def _call_builder(builder, ctx: QuestContext, rng: random.Random | None) -> list[SpawnEntry]:
+def _call_builder(builder, ctx: QuestContext, rng: CrandLike | None) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
     if "rng" in params:
         return builder(ctx, rng=rng)
@@ -171,7 +170,7 @@ def cmd_quests(
     builder = quest.builder
     title = quest.title
     ctx = QuestContext(width=width, height=height, player_count=player_count)
-    rng = random.Random(seed) if seed is not None else random.Random()
+    rng = Crand(seed) if seed is not None else Crand()
     entries = _call_builder(builder, ctx, rng)
     if sort:
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.x, e.y))

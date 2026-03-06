@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import math
-import random
 from collections.abc import Iterator
 
 import msgspec
 
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from .types import SpawnEntry
@@ -69,8 +69,8 @@ def ring_points(
         yield center + Vec2.from_angle(angle) * radius, angle
 
 
-def random_angle(rng: random.Random) -> float:
-    return float(rng.randrange(0x264)) * 0.01
+def random_angle(rng: CrandLike) -> float:
+    return float(rng.rand() % 0x264) * 0.01
 
 
 def radial_points(

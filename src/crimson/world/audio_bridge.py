@@ -38,6 +38,7 @@ class AudioBridge(msgspec.Struct):
         audio_rng: Crand | None,
         demo_mode_active: bool,
     ) -> None:
+        AudioRouter._validate_audio_binding(audio, audio_rng)
         self.audio = audio
         self.audio_rng = audio_rng
         self.demo_mode_active = bool(demo_mode_active)

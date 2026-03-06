@@ -57,7 +57,7 @@ class TypoShooterMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
         session_factory: TypoSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(

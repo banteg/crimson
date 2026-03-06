@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import inspect
-import random
 
 import msgspec
+
+from grim.rand import Crand, CrandLike
 
 from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
@@ -19,7 +20,7 @@ def _call_builder(
     builder,
     ctx: QuestContext,
     *,
-    rng: random.Random | None,
+    rng: CrandLike | None,
     full_version: bool,
 ) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
@@ -61,7 +62,7 @@ def build_quest_spawn_table(
 ) -> tuple[SpawnEntry, ...]:
     """Build the quest spawn script (with optional hardcore modifications)."""
 
-    rng = random.Random(seed) if seed is not None else random.Random()
+    rng = Crand(seed) if seed is not None else Crand()
     entries = _call_builder(quest.builder, ctx, rng=rng, full_version=full_version)
     if hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))

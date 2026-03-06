@@ -56,7 +56,7 @@ class TutorialMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
         session_factory: TutorialSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(

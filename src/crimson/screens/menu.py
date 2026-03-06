@@ -13,6 +13,7 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
+from ..sim.bootstrap import terrain_stamping_draws
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .assets import MenuAssets, load_menu_assets
@@ -96,7 +97,7 @@ def _menu_unlock_index(state: GameState) -> int:
 def _choose_menu_terrain_ids(state: GameState) -> tuple[TextureId, TextureId, TextureId]:
     unlock_index = _menu_unlock_index(state)
     for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
-        if unlock_index >= threshold and (state.rng.randrange(0, 8) & 7) == 3:
+        if unlock_index >= threshold and (int(state.rng.rand()) & 7) == 3:
             return ids
     return MENU_DEFAULT_TERRAIN_IDS
 
@@ -159,7 +160,9 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         if scale_changed:
             regenerate = True
     if regenerate:
-        ground.schedule_generate(seed=state.rng.randrange(0, 10_000), layers=3)
+        ground.schedule_generate(seed=int(state.rng.state), layers=3)
+        for _ in range(terrain_stamping_draws(width=int(ground.width), height=int(ground.height), layers=3)):
+            state.rng.rand()
         state.menu_ground_camera = None
     return ground
 

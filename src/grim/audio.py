@@ -68,7 +68,7 @@ def stop_music(state: AudioState | None) -> None:
     music.stop_music(state.music)
 
 
-def trigger_game_tune(state: AudioState, *, rand: Callable[[], int] | None = None) -> str | None:
+def trigger_game_tune(state: AudioState, *, rand: Callable[[], int]) -> str | None:
     return music.trigger_game_tune(state.music, rand=rand)
 
 
@@ -76,17 +76,25 @@ def play_sfx(
     state: AudioState | None,
     key: str | None,
     *,
-    rng: Crand | None = None,
-    allow_variants: bool = True,
+    rng: Crand,
     reflex_boost_timer: float = 0.0,
 ) -> None:
     if state is None:
         return
-    sfx.play_sfx(
+    sfx.play_sfx(state.sfx, key, rng=rng, reflex_boost_timer=float(reflex_boost_timer))
+
+
+def play_sfx_resolved(
+    state: AudioState | None,
+    key: str | None,
+    *,
+    reflex_boost_timer: float = 0.0,
+) -> None:
+    if state is None:
+        return
+    sfx.play_sfx_resolved(
         state.sfx,
         key,
-        rng=rng,
-        allow_variants=allow_variants,
         reflex_boost_timer=float(reflex_boost_timer),
     )
 

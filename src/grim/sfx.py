@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import struct
 from collections.abc import Iterable
 from pathlib import Path
@@ -230,31 +229,12 @@ def _load_sample(state: SfxState, key: str) -> SfxSample | None:
     return state.samples.get(resolved)
 
 
-def play_sfx(
-    state: SfxState | None,
-    key: str | None,
+def _play_resolved_sfx(
+    state: SfxState,
+    resolved: str,
     *,
-    rng: Crand | None = None,
-    allow_variants: bool = True,
     reflex_boost_timer: float = 0.0,
 ) -> None:
-    if state is None or not state.ready or not state.enabled:
-        return
-    if not key:
-        return
-
-    resolved = _normalize_sfx_key(state, key)
-    if resolved is None:
-        state.missing_keys.add(key)
-        return
-
-    if allow_variants:
-        base = _derive_sfx_base(resolved) or resolved
-        variants = state.variants.get(base)
-        if variants:
-            choice = rng.choice if rng is not None else random.choice
-            resolved = choice(variants)
-
     sample = _load_sample(state, resolved)
     if sample is None:
         state.missing_keys.add(resolved)
@@ -268,6 +248,49 @@ def play_sfx(
     rl.play_sound(voice)
 
 
+def play_sfx(
+    state: SfxState | None,
+    key: str | None,
+    *,
+    rng: Crand,
+    reflex_boost_timer: float = 0.0,
+) -> None:
+    if state is None or not state.ready or not state.enabled:
+        return
+    if not key:
+        return
+
+    resolved = _normalize_sfx_key(state, key)
+    if resolved is None:
+        state.missing_keys.add(key)
+        return
+
+    base = _derive_sfx_base(resolved) or resolved
+    variants = state.variants.get(base)
+    if variants:
+        resolved = variants[int(rng.rand()) % len(variants)]
+    _play_resolved_sfx(state, resolved, reflex_boost_timer=float(reflex_boost_timer))
+
+
+def play_sfx_resolved(
+    state: SfxState | None,
+    key: str | None,
+    *,
+    reflex_boost_timer: float = 0.0,
+) -> None:
+    if state is None or not state.ready or not state.enabled:
+        return
+    if not key:
+        return
+
+    resolved = _normalize_sfx_key(state, key)
+    if resolved is None:
+        state.missing_keys.add(key)
+        return
+
+    _play_resolved_sfx(state, resolved, reflex_boost_timer=float(reflex_boost_timer))
+
+
 def sfx_key_for_id(sfx_id: int) -> str | None:
     if sfx_id < 0:
         return None
@@ -276,11 +299,11 @@ def sfx_key_for_id(sfx_id: int) -> str | None:
     return sfx_map.SFX_KEY_BY_ID[sfx_id]
 
 
-def play_sfx_id(state: SfxState | None, sfx_id: int, *, rng: Crand | None = None) -> None:
+def play_sfx_id(state: SfxState | None, sfx_id: int) -> None:
     key = sfx_key_for_id(int(sfx_id))
     if key is None:
         return
-    play_sfx(state, key, rng=rng, allow_variants=False)
+    play_sfx_resolved(state, key)
 
 
 def set_sfx_volume(state: SfxState | None, volume: float) -> None:

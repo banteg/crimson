@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import random
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -263,7 +262,7 @@ class BaseGameplayMode:
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
@@ -626,7 +625,7 @@ class BaseGameplayMode:
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
 
-    def bind_audio(self, audio: AudioState | None, audio_rng: Crand | None) -> None:
+    def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
         self.audio = audio
         self.audio_rng = audio_rng
         self._world_runtime.audio = audio
@@ -1209,11 +1208,11 @@ class BaseGameplayMode:
         stop_music(self.audio)
 
         player_count = self.config.player_count
-        seed_source = "lan_override" if self._lan_seed_override is not None else "random"
+        seed_source = "lan_override" if self._lan_seed_override is not None else "session_state"
         if self._lan_seed_override is not None:
             seed = int(self._lan_seed_override)
         else:
-            seed = random.getrandbits(32)
+            seed = int(self.state.rng.state)
         self._bootstrap_seed = int(seed) & 0xFFFFFFFF
 
         # Reset LAN sim status at the start of each run so per-session usage

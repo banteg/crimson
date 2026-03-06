@@ -63,7 +63,7 @@ class RushMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
+        audio_rng: Crand,
         session_factory: RushSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
@@ -161,6 +161,7 @@ class RushMode(BaseGameplayMode):
             seed=bootstrap.terrain_seed,
             layers=3,
         )
+        self.sim_world.state.rng.srand(int(bootstrap.seed_after))
         self._sim_session = self._new_sim_session()
         self._enforce_rush_loadout()
         weapon_usage_counts = normalize_weapon_usage_counts(

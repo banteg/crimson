@@ -67,7 +67,7 @@ _STATS_EASTER_TEXT_Y = 5.0
 def _stats_menu_easter_roll(current_roll: int, *, rng: Crand) -> int:
     if int(current_roll) != _STATS_EASTER_ROLL_UNSET:
         return int(current_roll)
-    return int(rng.randrange(32))
+    return int(rng.rand() % 32)
 
 
 def _is_orbes_volantes_day(today: dt.date) -> bool:
@@ -363,7 +363,7 @@ class StatisticsMenuView:
 
         if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
-            x = float(self.state.rng.randrange(64) + 16)
+            x = float(self.state.rng.rand() % 64 + 16)
             draw_small_text(
                 font,
                 _STATS_EASTER_TEXT,

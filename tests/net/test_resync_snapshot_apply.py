@@ -22,6 +22,7 @@ from crimson.sim.input_providers import LocalInputProvider
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.tick_runner import TickRunner, TickRunnerConfig
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.view import ViewContext
 
 if TYPE_CHECKING:
@@ -51,7 +52,7 @@ class _RollbackRuntimeStub:
 
 
 def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 0.0
@@ -75,7 +76,7 @@ def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
 
 
 def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
-    mode = RushMode(ViewContext(assets_dir=_assets_dir()))
+    mode = RushMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 0.0
@@ -98,7 +99,7 @@ def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
 
 
 def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
-    mode = QuestMode(ViewContext(assets_dir=_assets_dir()))
+    mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     mode._quest_spawn_state.spawn_entries = ()
@@ -138,7 +139,7 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
 
 
 def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
 
     snapshot = SurvivalStateSnapshotV2(
         tick_index=8,
@@ -186,7 +187,7 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
 
 
 def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> None:
-    mode = QuestMode(ViewContext(assets_dir=_assets_dir()))
+    mode = QuestMode(ViewContext(assets_dir=_assets_dir()), audio_rng=Crand(0xBEEF))
     mode._quest_spawn_state.spawn_entries = ()
     mode._quest_spawn_state.spawn_timeline_ms = 0.0
     mode._quest_spawn_state.no_creatures_timer_ms = 0.0

@@ -23,25 +23,25 @@ def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
     set_sound_pitch = mocker.patch.object(grim_sfx.rl, "set_sound_pitch", create=True)
     mocker.patch.object(grim_sfx.rl, "play_sound")
 
-    grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.0)
+    grim_sfx.play_sfx_resolved(state, "sfx_test", reflex_boost_timer=0.0)
     assert state.rate_scale_hz == 44100
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)
 
-    grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=2.0)
+    grim_sfx.play_sfx_resolved(state, "sfx_test", reflex_boost_timer=2.0)
     assert state.rate_scale_hz == 22050
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 0.5)
 
-    grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=1.0)
+    grim_sfx.play_sfx_resolved(state, "sfx_test", reflex_boost_timer=1.0)
     assert state.rate_scale_hz == 22050
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 0.5)
 
-    grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=0.25)
+    grim_sfx.play_sfx_resolved(state, "sfx_test", reflex_boost_timer=0.25)
     assert state.rate_scale_hz == 38588
     assert_float_close(
         float(set_sound_pitch.call_args_list[-1].args[1]),
         grim_sfx._pitch_scale_from_rate_hz(38588),
     )
 
-    grim_sfx.play_sfx(state, "sfx_test", allow_variants=False, reflex_boost_timer=-0.1)
+    grim_sfx.play_sfx_resolved(state, "sfx_test", reflex_boost_timer=-0.1)
     assert state.rate_scale_hz == 44100
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)

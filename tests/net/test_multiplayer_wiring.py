@@ -13,6 +13,7 @@ from crimson.sim.sessions import DeterministicSession
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 from tests.support.world_runtime import WorldRuntimeHost
@@ -48,7 +49,7 @@ def test_survival_mode_uses_config_player_count(tmp_path: Path) -> None:
     cfg.data["player_count"] = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mode = SurvivalMode(ctx, config=cfg)
+    mode = SurvivalMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     assert len(mode.sim_world.players) == 2  # intentional: wiring smoke test
 
 
@@ -59,7 +60,7 @@ def test_quest_mode_update_uses_per_player_input_frame(mocker, tmp_path: Path) -
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.data["player_count"] = 3
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = QuestMode(ctx, config=cfg)
+    mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
 
     step_tick_calls: list[list[PlayerInput]] = []
     original_step_tick = DeterministicSession.step_tick
@@ -89,7 +90,7 @@ def test_base_gameplay_build_local_inputs_passes_creatures(mocker, tmp_path: Pat
 
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = SurvivalMode(ctx, config=cfg)
+    mode = SurvivalMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     build_frame_inputs = mocker.patch.object(
         mode._local_input,
         "build_frame_inputs",
@@ -110,7 +111,7 @@ def test_rush_mode_pauses_sim_while_lan_wait_gate_is_active(mocker, tmp_path: Pa
 
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = RushMode(ctx, config=cfg)
+    mode = RushMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.set_lan_runtime(
         enabled=True,
         role="host",
@@ -137,7 +138,7 @@ def test_rush_mode_debug_f10_does_not_bypass_lan_wait_gate(mocker, tmp_path: Pat
 
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = RushMode(ctx, config=cfg)
+    mode = RushMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.set_lan_runtime(
         enabled=True,
         role="host",
@@ -171,7 +172,7 @@ def test_lan_player_rings_follow_lan_state_and_cvar(tmp_path: Path) -> None:
     console = create_console(tmp_path, assets_dir=assets_dir)
     register_core_cvars(console, width=1024, height=768)
     ctx = ViewContext(assets_dir=assets_dir)
-    mode = RushMode(ctx, config=cfg, console=console)
+    mode = RushMode(ctx, config=cfg, console=console, audio_rng=Crand(0xBEEF))
     runtime = RollbackRuntime(
         JoinRollbackRuntimeConfig(
             mode_id=1,
