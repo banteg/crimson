@@ -43,7 +43,6 @@ from ..sim.hooks import TickResult
 from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.presentation_reactions import (
     PostApplyReaction,
-    QuestPresentationReaction,
     apply_post_apply_reaction,
     merge_post_apply_reactions,
     resolve_quest_presentation_reaction,
@@ -87,7 +86,6 @@ class _QuestRunState(msgspec.Struct):
     level: str = ""
     total_spawn_count: int = 0
     max_trigger_time_ms: int = 0
-    quest_name_timer_ms: float = 0.0
 
 
 class QuestRunOutcome(msgspec.Struct, frozen=True):
@@ -301,7 +299,6 @@ class QuestMode(BaseGameplayMode):
                         spawn_timeline_ms=float(spawn_state.spawn_timeline_ms),
                         no_creatures_timer_ms=float(spawn_state.no_creatures_timer_ms),
                         completion_transition_ms=float(spawn_state.completion_transition_ms),
-                        quest_name_timer_ms=float(self._quest.quest_name_timer_ms),
                         perk_pending_count=int(self.state.perk_selection.pending_count),
                     ),
                 ),
@@ -345,12 +342,7 @@ class QuestMode(BaseGameplayMode):
 
     def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         reaction = super()._build_tick_post_apply_reaction(tick_result=tick_result)
-        quest_reaction = resolve_quest_presentation_reaction(
-            self._quest_spawn_state,
-            dt_seconds=float(tick_result.payload.step.dt_sim),
-            current_name_timer_ms=float(self._quest.quest_name_timer_ms),
-        )
-        self._on_quest_post_apply_reaction(quest_reaction)
+        quest_reaction = resolve_quest_presentation_reaction(self._quest_spawn_state)
         return merge_post_apply_reactions(
             reaction,
             PostApplyReaction(quest=quest_reaction),
@@ -362,11 +354,7 @@ class QuestMode(BaseGameplayMode):
             reaction=reaction,
             play_sfx=self.audio_bridge.router.play_sfx,
             play_completion_music=self._play_quest_completion_music,
-            on_quest_reaction=self._on_quest_post_apply_reaction,
         )
-
-    def _on_quest_post_apply_reaction(self, reaction: QuestPresentationReaction) -> None:
-        self._quest.quest_name_timer_ms = float(reaction.name_timer_ms)
 
     def _play_quest_completion_music(self) -> None:
         if self.audio is None:
@@ -392,7 +380,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_spawn_state.completed = False
         self._quest_spawn_state.play_hit_sfx = False
         self._quest_spawn_state.play_completion_music = False
-        self._quest.quest_name_timer_ms = float(rs.quest_name_timer_ms)
         session = self._sim_session
         if session is not None:
             session.elapsed_ms = float(rs.elapsed_ms)
@@ -505,7 +492,6 @@ class QuestMode(BaseGameplayMode):
             level=quest.level,
             total_spawn_count=int(total_spawn_count),
             max_trigger_time_ms=int(max_trigger_ms),
-            quest_name_timer_ms=0.0,
         )
         self._reset_gameplay_frame_clock()
         self._sim_session = self._new_sim_session(spawn_entries=tuple(entries))
@@ -873,7 +859,7 @@ class QuestMode(BaseGameplayMode):
             font,
             quest.title,
             quest_level_label(quest.major, quest.minor),
-            timer_ms=float(self._quest.quest_name_timer_ms),
+            timer_ms=float(self._quest_spawn_state.spawn_timeline_ms),
         )
 
     def _draw_quest_complete_banner(self) -> None:

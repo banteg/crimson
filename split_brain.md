@@ -24,6 +24,7 @@ Not everything is split-brained anymore.
 - Replay stepping itself now also converges on `TickResult`; `PlaybackTickOutcome`, `run_replay()`, and `run_replay_info()` are gone.
 - Most replay consumers now build drivers through `build_verify_playback_driver()` / `build_runtime_playback_driver()`, and replay info collection goes through `collect_replay_info(driver, ...)`.
 - Ordinary repo call sites are now factory-first; raw `PlaybackDriver(...)` construction is kept only as a low-level/manual surface and a focused default-parity test.
+- Quest title and completion overlays now also read directly from authoritative quest runtime instead of keeping separate live/replay timer copies.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.

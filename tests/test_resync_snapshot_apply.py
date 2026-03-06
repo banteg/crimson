@@ -101,7 +101,6 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
     mode = QuestMode(ViewContext(assets_dir=_assets_dir()))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
-    mode._quest.quest_name_timer_ms = 0.0
     mode._quest_spawn_state.spawn_entries = ()
     mode._quest_spawn_state.spawn_timeline_ms = 0.0
     mode._quest_spawn_state.no_creatures_timer_ms = 0.0
@@ -125,14 +124,12 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
             spawn_timeline_ms=6500.0,
             no_creatures_timer_ms=250.0,
             completion_transition_ms=125.0,
-            quest_name_timer_ms=900.0,
             perk_pending_count=1,
         ),
     )
 
     mode._apply_resync_snapshot(snapshot)
 
-    assert mode._quest.quest_name_timer_ms == 900.0
     assert mode._quest_spawn_state.spawn_entries == spawn_entries
     assert mode._quest_spawn_state.spawn_timeline_ms == 6500.0
     assert mode._quest_spawn_state.no_creatures_timer_ms == 250.0
@@ -190,7 +187,6 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
 
 def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> None:
     mode = QuestMode(ViewContext(assets_dir=_assets_dir()))
-    mode._quest.quest_name_timer_ms = 0.0
     mode._quest_spawn_state.spawn_entries = ()
     mode._quest_spawn_state.spawn_timeline_ms = 0.0
     mode._quest_spawn_state.no_creatures_timer_ms = 0.0
@@ -213,7 +209,6 @@ def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> 
             spawn_timeline_ms=3333.0,
             no_creatures_timer_ms=1200.0,
             completion_transition_ms=640.0,
-            quest_name_timer_ms=500.0,
             perk_pending_count=0,
         ),
     )
@@ -237,7 +232,6 @@ def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> 
 
     mode._consume_net_runtime_recovery(mode_name="quests")
 
-    assert mode._quest.quest_name_timer_ms == 500.0
     assert mode._quest_spawn_state.spawn_entries == spawn_entries
     assert mode._quest_spawn_state.spawn_timeline_ms == 3333.0
     assert mode._quest_spawn_state.no_creatures_timer_ms == 1200.0

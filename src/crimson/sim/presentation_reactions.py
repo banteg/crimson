@@ -8,9 +8,6 @@ from .sessions import QuestSpawnState
 
 @dataclass(frozen=True, slots=True)
 class QuestPresentationReaction:
-    spawn_timeline_ms: float
-    completion_transition_ms: float
-    name_timer_ms: float
     play_hit_sfx: bool = False
     play_completion_music: bool = False
 
@@ -23,14 +20,8 @@ class PostApplyReaction:
 
 def resolve_quest_presentation_reaction(
     quest_state: QuestSpawnState,
-    *,
-    dt_seconds: float,
-    current_name_timer_ms: float,
 ) -> QuestPresentationReaction:
     return QuestPresentationReaction(
-        spawn_timeline_ms=float(quest_state.spawn_timeline_ms),
-        completion_transition_ms=float(quest_state.completion_transition_ms),
-        name_timer_ms=float(current_name_timer_ms) + float(dt_seconds) * 1000.0,
         play_hit_sfx=bool(quest_state.play_hit_sfx),
         play_completion_music=bool(quest_state.play_completion_music),
     )
@@ -56,12 +47,8 @@ def apply_post_apply_reaction(
     reaction: PostApplyReaction,
     play_sfx: Callable[[str], None] | None,
     play_completion_music: Callable[[], None] | None = None,
-    on_quest_reaction: Callable[[QuestPresentationReaction], None] | None = None,
 ) -> None:
     quest = reaction.quest
-    if quest is not None and on_quest_reaction is not None:
-        on_quest_reaction(quest)
-
     if play_sfx is not None:
         for key in reaction.sfx_keys:
             play_sfx(str(key))

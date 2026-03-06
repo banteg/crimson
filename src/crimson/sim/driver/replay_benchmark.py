@@ -678,7 +678,10 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
 
     match game_mode_id:
         case GameMode.QUESTS:
-            elapsed_ms = int(mode._quest_spawn_timeline_ms)
+            driver = mode._driver
+            if driver is None or driver.quest_spawn_state is None:
+                raise ReplayBenchmarkError("render benchmark failed: quest runtime state was not available")
+            elapsed_ms = int(driver.quest_spawn_state.spawn_timeline_ms)
         case _:
             elapsed_ms = int(sim_world.elapsed_ms)
 

@@ -16,8 +16,8 @@ from .relay_protocol import (
     RbResyncCommit,
 )
 
-SCHEMA_VERSION = 3
-SNAPSHOT_CODEC = "msgpack_state_v3_f32wire"
+SCHEMA_VERSION = 4
+SNAPSHOT_CODEC = "msgpack_state_v4_f32wire"
 
 
 class RollbackResyncV5Error(RuntimeError):
@@ -66,7 +66,6 @@ class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = 0.0
-    quest_name_timer_ms: float = 0.0
     perk_pending_count: int = 0
 
     def __post_init__(self) -> None:
@@ -81,7 +80,6 @@ class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
             float(self.completion_transition_ms),
             field="quests.runtime_state.completion_transition_ms",
         )
-        self.quest_name_timer_ms = wire_f32(float(self.quest_name_timer_ms), field="quests.runtime_state.quest_name_timer_ms")
         self.perk_pending_count = int(self.perk_pending_count)
 
 
@@ -201,10 +199,6 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
             runtime_state.completion_transition_ms = assert_wire_f32(
                 runtime_state.completion_transition_ms,
                 field="quests.runtime_state.completion_transition_ms",
-            )
-            runtime_state.quest_name_timer_ms = assert_wire_f32(
-                runtime_state.quest_name_timer_ms,
-                field="quests.runtime_state.quest_name_timer_ms",
             )
 
 

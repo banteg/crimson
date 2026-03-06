@@ -39,7 +39,6 @@ from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
-    QuestPresentationReaction,
     apply_post_apply_reaction,
     merge_post_apply_reactions,
     resolve_quest_presentation_reaction,
@@ -134,8 +133,6 @@ class ReplayPlaybackMode:
         self._quest_complete_texture: rl.Texture | None = None
         self._quest_title = ""
         self._quest_level = ""
-        self._quest_name_timer_ms = 0.0
-        self._quest_completion_transition_ms = -1.0
 
         self._tick_rate = 60
         self._dt = 1.0 / 60.0
@@ -153,7 +150,6 @@ class ReplayPlaybackMode:
         self._rush = None
         self._quest = None
         self._quest_total_spawn_count = 0
-        self._quest_spawn_timeline_ms = 0.0
 
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
@@ -326,12 +322,10 @@ class ReplayPlaybackMode:
         self._hud_state = HudState()
         if self._grim_mono is not None:
             rl.unload_texture(self._grim_mono.texture)
-            self._grim_mono = None
+        self._grim_mono = None
         self._quest_complete_texture = None
         self._quest_title = ""
         self._quest_level = ""
-        self._quest_name_timer_ms = 0.0
-        self._quest_completion_transition_ms = -1.0
 
         replay = load_replay_file(self._replay_path)
         self._replay = replay
@@ -458,10 +452,8 @@ class ReplayPlaybackMode:
                 for player in sim_world.players:
                     weapon_assign_player(player, start_weapon_id, state=sim_world.state)
                 self._quest_total_spawn_count = int(sum(int(entry.count) for entry in spawn_entries))
-                self._quest_spawn_timeline_ms = 0.0
             case _:
                 self._quest_total_spawn_count = 0
-                self._quest_spawn_timeline_ms = 0.0
 
         try:
             self._driver = build_runtime_playback_driver(
@@ -539,12 +531,7 @@ class ReplayPlaybackMode:
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
             return reaction
-        quest_reaction = resolve_quest_presentation_reaction(
-            driver.quest_spawn_state,
-            dt_seconds=float(tick_result.source_tick.dt_seconds),
-            current_name_timer_ms=float(self._quest_name_timer_ms),
-        )
-        self._on_quest_post_apply_reaction(quest_reaction)
+        quest_reaction = resolve_quest_presentation_reaction(driver.quest_spawn_state)
         return merge_post_apply_reactions(
             reaction,
             PostApplyReaction(quest=quest_reaction),
@@ -558,13 +545,7 @@ class ReplayPlaybackMode:
             reaction=reaction,
             play_sfx=runtime.audio_bridge.router.play_sfx,
             play_completion_music=self._play_quest_completion_music,
-            on_quest_reaction=self._on_quest_post_apply_reaction,
         )
-
-    def _on_quest_post_apply_reaction(self, reaction: QuestPresentationReaction) -> None:
-        self._quest_spawn_timeline_ms = float(reaction.spawn_timeline_ms)
-        self._quest_name_timer_ms = float(reaction.name_timer_ms)
-        self._quest_completion_transition_ms = float(reaction.completion_transition_ms)
 
     def _play_quest_completion_music(self) -> None:
         if self._audio is None:
@@ -782,8 +763,16 @@ class ReplayPlaybackMode:
         level = str(self._quest_level or "")
         if not title or not level:
             return
+        driver = self._driver
+        if driver is None or driver.quest_spawn_state is None:
+            return
 
-        draw_quest_title_timer_overlay(font, title, level, timer_ms=float(self._quest_name_timer_ms))
+        draw_quest_title_timer_overlay(
+            font,
+            title,
+            level,
+            timer_ms=float(driver.quest_spawn_state.spawn_timeline_ms),
+        )
 
     def _draw_quest_complete_banner(self) -> None:
         replay = self._replay
@@ -792,7 +781,13 @@ class ReplayPlaybackMode:
         tex = self._quest_complete_texture
         if tex is None:
             return
-        draw_quest_complete_banner_overlay(tex, timer_ms=float(self._quest_completion_transition_ms))
+        driver = self._driver
+        if driver is None or driver.quest_spawn_state is None:
+            return
+        draw_quest_complete_banner_overlay(
+            tex,
+            timer_ms=float(driver.quest_spawn_state.completion_transition_ms),
+        )
 
     def draw(self) -> None:
         sim_world = self._runtime.sim_world if self._runtime is not None else None
@@ -817,7 +812,9 @@ class ReplayPlaybackMode:
                     total = int(self._quest_total_spawn_count)
                     kills = int(sim_world.creatures.kill_count)
                     quest_progress_ratio = float(kills) / float(total) if total > 0 else None
-                    elapsed_ms = float(self._quest_spawn_timeline_ms)
+                    driver = self._driver
+                    if driver is not None and driver.quest_spawn_state is not None:
+                        elapsed_ms = float(driver.quest_spawn_state.spawn_timeline_ms)
                 case _:
                     pass
             draw_hud_overlay(

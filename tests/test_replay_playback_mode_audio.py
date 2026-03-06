@@ -295,7 +295,14 @@ def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_vie
     _set_private(view, "_grim_mono", object())
     _set_private(view, "_quest_title", "Castle Keep")
     _set_private(view, "_quest_level", "4.7")
-    view._quest_name_timer_ms = 123.0
+    _set_private(
+        view,
+        "_driver",
+        FakePlaybackDriver(
+            tick_limit=1,
+            quest_spawn_state=QuestSpawnState(spawn_timeline_ms=123.0),
+        ),
+    )
 
     draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_title_timer_overlay")
 
@@ -313,7 +320,14 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
     )
     texture = object()
     _set_private(view, "_quest_complete_texture", texture)
-    view._quest_completion_transition_ms = 777.0
+    _set_private(
+        view,
+        "_driver",
+        FakePlaybackDriver(
+            tick_limit=1,
+            quest_spawn_state=QuestSpawnState(completion_transition_ms=777.0),
+        ),
+    )
 
     draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_complete_banner_overlay")
 
@@ -357,9 +371,9 @@ def test_post_apply_reaction_reads_quest_runtime_from_driver(mocker, replay_play
     )
     view._apply_post_apply_reaction(reaction)
 
-    assert view._quest_spawn_timeline_ms == 444.0
-    assert view._quest_name_timer_ms == pytest.approx(1000.0 / 60.0)
-    assert view._quest_completion_transition_ms == 222.0
+    assert reaction.quest is not None
+    assert reaction.quest.play_hit_sfx is True
+    assert reaction.quest.play_completion_music is True
     play_sfx.assert_called_once_with("sfx_questhit")
     play_music.assert_called_once()
 
