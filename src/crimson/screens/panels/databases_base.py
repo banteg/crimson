@@ -10,7 +10,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..menu import (
     MENU_PANEL_OFFSET_X,
@@ -75,8 +75,8 @@ class _DatabaseBaseView:
         self._action = None
 
         cache = _ensure_texture_cache(self.state)
-        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        button_md = cache.texture(TextureId.UI_BUTTON_MD)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
 

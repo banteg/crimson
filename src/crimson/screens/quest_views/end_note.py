@@ -11,7 +11,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache, _require_runtime_texture
+from ..assets import _ensure_texture_cache
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
@@ -70,9 +70,9 @@ class EndNoteView:
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
 
         cache = _ensure_texture_cache(self.state)
-        self._panel_tex = _require_runtime_texture(cache, TextureId.UI_MENU_PANEL)
-        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        self._panel_tex = cache.texture(TextureId.UI_MENU_PANEL)
+        button_md = cache.texture(TextureId.UI_BUTTON_MD)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._small_font = None
 

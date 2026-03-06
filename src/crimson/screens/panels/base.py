@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from grim.assets import RuntimeResources
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -8,7 +7,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, load_menu_assets
 from ..menu import (
     MENU_ITEM_OFFSET_X,
     MENU_ITEM_OFFSET_Y,
@@ -207,9 +206,6 @@ class PanelMenuView:
             play_sfx(self.state.audio, "sfx_ui_buttonclick", rng=self.state.rng)
         self._closing = True
         self._close_action = action
-
-    def _ensure_cache(self) -> RuntimeResources:
-        return _ensure_texture_cache(self.state)
 
     def _init_ground(self) -> None:
         if self.state.pause_background is not None:

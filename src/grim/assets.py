@@ -207,8 +207,12 @@ class RuntimeResources(msgspec.Struct):
     logos: LogoAssets
     small_font_widths: list[int]
 
-    def texture(self, texture_id: TextureId) -> rl.Texture | None:
-        return self.textures.get(texture_id)
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        texture = self.textures.get(texture_id)
+        if texture is None:
+            rel_path = TEXTURE_SPECS[texture_id].rel_path
+            raise RuntimeError(f"runtime texture is not available: {rel_path}")
+        return texture
 
     def unload(self) -> None:
         seen: set[int] = set()
@@ -244,7 +248,7 @@ def runtime_resources_for(assets_dir: Path) -> RuntimeResources:
     return resources
 
 
-def texture_for(assets_dir: Path, texture_id: TextureId) -> rl.Texture | None:
+def texture_for(assets_dir: Path, texture_id: TextureId) -> rl.Texture:
     return runtime_resources_for(assets_dir).texture(texture_id)
 
 

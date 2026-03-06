@@ -17,7 +17,7 @@ from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code,
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
-from ..assets import _require_runtime_texture
+from ..assets import _ensure_texture_cache
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
@@ -139,13 +139,13 @@ class ControlsMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = self._ensure_cache()
+        cache = _ensure_texture_cache(self.state)
         # UI elements used by the classic controls screen.
-        self._text_controls = _require_runtime_texture(cache, TextureId.UI_TEXT_CONTROLS)
-        self._drop_on = _require_runtime_texture(cache, TextureId.UI_DROP_ON)
-        self._drop_off = _require_runtime_texture(cache, TextureId.UI_DROP_OFF)
-        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
-        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
+        self._text_controls = cache.texture(TextureId.UI_TEXT_CONTROLS)
+        self._drop_on = cache.texture(TextureId.UI_DROP_ON)
+        self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
+        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
+        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
         self._config_player = max(1, min(4, int(self._config_player)))
         self._move_method_open = False
         self._aim_method_open = False

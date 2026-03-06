@@ -14,7 +14,7 @@ from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -139,17 +139,17 @@ class HighScoresView:
         self._score_list_open = False
 
         cache = _ensure_texture_cache(self.state)
-        self._button_tex = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
-        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        self._button_tex = cache.texture(TextureId.UI_BUTTON_MD)
+        button_sm = cache.texture(TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
-        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
-        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
-        self._drop_on = _require_runtime_texture(cache, TextureId.UI_DROP_ON)
-        self._drop_off = _require_runtime_texture(cache, TextureId.UI_DROP_OFF)
-        self._arrow_tex = _require_runtime_texture(cache, TextureId.UI_ARROW)
-        self._wicons_tex = _require_runtime_texture(cache, TextureId.UI_WICONS)
-        self._clock_table_tex = _require_runtime_texture(cache, TextureId.UI_CLOCK_TABLE)
-        self._clock_pointer_tex = _require_runtime_texture(cache, TextureId.UI_CLOCK_POINTER)
+        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
+        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
+        self._drop_on = cache.texture(TextureId.UI_DROP_ON)
+        self._drop_off = cache.texture(TextureId.UI_DROP_OFF)
+        self._arrow_tex = cache.texture(TextureId.UI_ARROW)
+        self._wicons_tex = cache.texture(TextureId.UI_WICONS)
+        self._clock_table_tex = cache.texture(TextureId.UI_CLOCK_TABLE)
+        self._clock_pointer_tex = cache.texture(TextureId.UI_CLOCK_POINTER)
 
         request = resolve_request(self.state)
         self._request = request

@@ -15,7 +15,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -114,18 +114,18 @@ class QuestsMenuView:
         self._assets = load_menu_assets(self.state)
         self._init_ground()
 
-        self._text_quest = _require_runtime_texture(cache, TextureId.UI_TEXT_QUEST)
+        self._text_quest = cache.texture(TextureId.UI_TEXT_QUEST)
         self._stage_icons = {
-            1: _require_runtime_texture(cache, TextureId.UI_NUM1),
-            2: _require_runtime_texture(cache, TextureId.UI_NUM2),
-            3: _require_runtime_texture(cache, TextureId.UI_NUM3),
-            4: _require_runtime_texture(cache, TextureId.UI_NUM4),
-            5: _require_runtime_texture(cache, TextureId.UI_NUM5),
+            1: cache.texture(TextureId.UI_NUM1),
+            2: cache.texture(TextureId.UI_NUM2),
+            3: cache.texture(TextureId.UI_NUM3),
+            4: cache.texture(TextureId.UI_NUM4),
+            5: cache.texture(TextureId.UI_NUM5),
         }
-        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
-        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
-        self._button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
-        self._button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        self._check_on = cache.texture(TextureId.UI_CHECK_ON)
+        self._check_off = cache.texture(TextureId.UI_CHECK_OFF)
+        self._button_sm = cache.texture(TextureId.UI_BUTTON_SM)
+        self._button_md = cache.texture(TextureId.UI_BUTTON_MD)
         self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
 
         self._action = None
