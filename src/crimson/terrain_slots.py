@@ -16,11 +16,11 @@ Q3_TERRAIN_SLOTS: TerrainSlotTriplet = (4, 5, 4)
 Q4_TERRAIN_SLOTS: TerrainSlotTriplet = (6, 7, 6)
 DEFAULT_TERRAIN_SLOTS: TerrainSlotTriplet = Q1_TERRAIN_SLOTS
 
-MENU_UNLOCK_TERRAIN_SLOTS: tuple[tuple[int, TerrainSlotTriplet], ...] = (
-    (0x28, Q4_TERRAIN_SLOTS),
-    (0x1E, Q3_TERRAIN_SLOTS),
-    (0x14, Q2_TERRAIN_SLOTS),
-)
+MENU_UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
+    40: Q4_TERRAIN_SLOTS,  # after quest 4.10 "The End of All"
+    30: Q3_TERRAIN_SLOTS,  # after quest 3.10 "Zombie Masters"
+    20: Q2_TERRAIN_SLOTS,  # after quest 2.10 "Spideroids"
+}
 
 _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     0: TextureId.TER_Q1_BASE,
@@ -84,7 +84,7 @@ def choose_menu_terrain_slots(
     rand: Callable[[], int],
 ) -> TerrainSlotTriplet:
     unlock_index = int(quest_unlock_index)
-    for threshold, slots in MENU_UNLOCK_TERRAIN_SLOTS:
+    for threshold, slots in MENU_UNLOCK_TERRAIN_SLOTS.items():
         if unlock_index >= int(threshold) and (int(rand()) & 7) == 3:
             return slots
     return DEFAULT_TERRAIN_SLOTS
