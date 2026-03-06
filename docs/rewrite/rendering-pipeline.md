@@ -142,9 +142,11 @@ flowchart TD
 
 `draw_background()`:
 
-- clears to a dark fallback color
-- draws `GroundRenderer` if terrain is available
-- otherwise draws a debug world-bounds rectangle
+- clears the backbuffer
+- blits `GroundRenderer` using the current camera/view window
+
+The live world path now treats terrain as required. Missing `ground` is no
+longer a supported fallback mode in `draw_world()`.
 
 ### Entity passes
 
@@ -270,11 +272,14 @@ The current intended boundary is:
 - live rendering starts only once concrete `RuntimeResources` are available
 - `RenderFrame` and `WorldRenderCtx` are live-draw types, not optional-resource
   compatibility shims
+- live world drawing also assumes `ground` is initialized
 
 Practical consequences:
 
 - post-boot screens and gameplay rendering should assert resources once at the
   boundary, not carry repeated `if resources is None` branches
+- missing terrain in the main world draw path is now treated as an invariant
+  failure, not as a debug fallback
 - terrain bootstrap is the only place that should still need registry lookups
   outside a bound live runtime
 - render callsites should pass explicit `RenderFrame` objects instead of

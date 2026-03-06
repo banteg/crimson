@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import pytest
+
 import crimson.render.world.draw as world_draw
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.gameplay import GameplayState
@@ -93,3 +95,12 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
         ("sprite", 5),
         ("sprite", 3),
     ]
+
+
+def test_draw_world_requires_initialized_ground(mocker) -> None:
+    render_ctx = _render_ctx_for_creatures([])
+    mocker.patch.object(world_draw.rl, "get_screen_width", return_value=1024)
+    mocker.patch.object(world_draw.rl, "get_screen_height", return_value=768)
+
+    with pytest.raises(AssertionError, match="ground renderer must be initialized"):
+        world_draw.draw_world(render_ctx)

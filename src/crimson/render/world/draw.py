@@ -79,7 +79,7 @@ def draw_world(
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     camera, view_scale, scale, screen_size, out_size = compute_view_transform(render_ctx)
     with profile_pass("background"):
-        draw_background(render_ctx, camera=camera, screen_size=screen_size, out_size=out_size, view_scale=view_scale)
+        draw_background(render_ctx, camera=camera, screen_size=screen_size, out_size=out_size)
     if entity_alpha <= 1e-3:
         return
 
@@ -125,37 +125,23 @@ def draw_background(
     camera: Vec2,
     screen_size: Vec2,
     out_size: Vec2,
-    view_scale: Vec2,
 ) -> None:
     clear_color = rl.Color(10, 10, 12, 255)
     ground = render_ctx.ground
+    assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
-    if ground is not None:
-        ground.draw(
-            camera,
-            screen_w=screen_size.x,
-            screen_h=screen_size.y,
-            out_w=out_size.x,
-            out_h=out_size.y,
-        )
-        return
-
-    # World bounds for debug if terrain is missing.
-    world_min = camera.mul_components(view_scale)
-    world_max = (camera + Vec2(float(render_ctx.world_size), float(render_ctx.world_size))).mul_components(view_scale)
-    rl.draw_rectangle_lines(
-        int(world_min.x),
-        int(world_min.y),
-        int(world_max.x - world_min.x),
-        int(world_max.y - world_min.y),
-        rl.Color(40, 40, 55, 255),
+    ground.draw(
+        camera,
+        screen_w=screen_size.x,
+        screen_h=screen_size.y,
+        out_w=out_size.x,
+        out_h=out_size.y,
     )
 
 
 def alpha_test_enabled(render_ctx: WorldRenderCtx) -> bool:
     ground = render_ctx.ground
-    if ground is None:
-        return True
+    assert ground is not None, "ground renderer must be initialized before live world draw"
     return ground.alpha_test
 
 
