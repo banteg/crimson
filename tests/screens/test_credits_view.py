@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 
 import crimson.screens.panels.credits as credits_panel
+from crimson.game.types import GameState
 from crimson.screens.panels.credits import (
     _CREDITS_SECRET_LINES,
     _FLAG_CLICKED,
@@ -75,7 +77,7 @@ def test_credits_unlock_secret_lines_sets_flags_and_text() -> None:
 
 
 def test_credits_secret_button_visible_in_debug_or_after_unlock(mocker) -> None:
-    view = CreditsView(SimpleNamespace())
+    view = CreditsView(cast(GameState, SimpleNamespace()))
 
     view._secret_unlock = False
     mocker.patch.object(credits_panel, "debug_enabled", side_effect=lambda: False)

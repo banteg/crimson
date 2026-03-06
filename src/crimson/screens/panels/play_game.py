@@ -8,6 +8,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
+from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..menu import (
@@ -17,7 +18,6 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
@@ -58,7 +58,7 @@ class PlayGameMenuView(PanelMenuView):
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
 
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             title="Play Game",

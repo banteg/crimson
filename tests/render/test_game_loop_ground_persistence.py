@@ -8,6 +8,7 @@ from typing import cast
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
+from crimson.game_modes import GameMode
 from crimson.persistence import save_status
 from crimson.screens.menu import ensure_menu_ground
 from grim.assets import PaqTextureCache
@@ -18,7 +19,56 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 
-class _GroundSourceView:
+class _GameplayScreenStub:
+    close_requested = False
+    default_game_mode_id = GameMode.SURVIVAL
+
+    def bind_status(self, status) -> None:
+        _ = status
+
+    def bind_screen_fade(self, fade) -> None:
+        _ = fade
+
+    def bind_audio(self, audio, audio_rng) -> None:
+        _ = (audio, audio_rng)
+
+    def set_lan_runtime(
+        self,
+        *,
+        enabled: bool,
+        role: str,
+        expected_players: int,
+        connected_players: int,
+        waiting_for_players: bool,
+    ) -> None:
+        _ = (enabled, role, expected_players, connected_players, waiting_for_players)
+
+    def bind_lan_runtime(self, runtime) -> None:
+        _ = runtime
+
+    def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
+        _ = (seed, start_tick, status_snapshot)
+
+    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+        _ = entity_alpha
+
+    def console_elapsed_ms(self) -> float:
+        return 0.0
+
+    def regenerate_terrain_for_console(self) -> None:
+        return None
+
+    def set_rtx_mode(self, mode) -> None:
+        _ = mode
+
+    def set_runtime_updates_per_frame(self, value: int) -> None:
+        _ = value
+
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]:
+        return (0, 0, 0, 0.0, 0.0, 0.0)
+
+
+class _GroundSourceView(_GameplayScreenStub):
     def __init__(self, ground: GroundRenderer | None, camera: Vec2 | None = None) -> None:
         self._ground = ground
         self._camera = camera
@@ -185,7 +235,6 @@ def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
     state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = gameplay_view
     loop._front_stack = []
-    loop._gameplay_views = frozenset({gameplay_view})
 
     loop._capture_gameplay_ground_for_menu()
 
@@ -208,7 +257,6 @@ def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
     state.menu_ground_camera = Vec2(-1.0, -1.0)
     loop._front_active = overlay_view
     loop._front_stack = [gameplay_view]
-    loop._gameplay_views = frozenset({gameplay_view})
 
     loop._capture_gameplay_ground_for_menu()
 

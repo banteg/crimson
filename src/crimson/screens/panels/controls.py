@@ -11,6 +11,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
+from ...game.types import GameState
 from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
@@ -20,7 +21,6 @@ from ..menu import (
     MENU_PANEL_WIDTH,
     MenuView,
 )
-from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
     PICK_PERK_BIND_SLOT,
@@ -111,7 +111,7 @@ class _RebindRowLayout(msgspec.Struct, frozen=True):
 
 
 class ControlsMenuView(PanelMenuView):
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
             title="Controls",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias
+from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias, runtime_checkable
 
 import msgspec
 
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from grim.terrain_render import GroundRenderer
 
     from ..modes.quest_mode import QuestRunOutcome
+    from ..net.lockstep_protocol import StatusSnapshot
     from ..net.lockstep_runtime import LockstepRuntime
     from ..net.rollback_runtime import RollbackRuntime
     from ..persistence.save_status import GameStatus
@@ -115,7 +116,8 @@ class HighScoresRequest(msgspec.Struct):
     highlight_rank: int | None = None
 
 
-class ScreenView(Protocol):
+@runtime_checkable
+class Screen(Protocol):
     def open(self) -> None: ...
 
     def close(self) -> None: ...
@@ -125,6 +127,52 @@ class ScreenView(Protocol):
     def draw(self) -> None: ...
 
     def take_action(self) -> str | None: ...
+
+
+@runtime_checkable
+class GameplayScreen(Screen, PauseBackground, Protocol):
+    close_requested: bool
+    default_game_mode_id: GameMode
+
+    def bind_status(self, status: "GameStatus | None") -> None: ...
+
+    def bind_screen_fade(self, fade: "GameState | None") -> None: ...
+
+    def bind_audio(self, audio: "AudioState | None", audio_rng: random.Random | None) -> None: ...
+
+    def set_lan_runtime(
+        self,
+        *,
+        enabled: bool,
+        role: str,
+        expected_players: int,
+        connected_players: int,
+        waiting_for_players: bool,
+    ) -> None: ...
+
+    def bind_lan_runtime(self, runtime: "RollbackRuntime | LockstepRuntime | None") -> None: ...
+
+    def set_lan_match_start(
+        self,
+        *,
+        seed: int,
+        start_tick: int = 0,
+        status_snapshot: "StatusSnapshot | None" = None,
+    ) -> None: ...
+
+    def steal_ground_for_menu(self) -> "GroundRenderer | None": ...
+
+    def menu_ground_camera(self) -> "Vec2": ...
+
+    def console_elapsed_ms(self) -> float: ...
+
+    def regenerate_terrain_for_console(self) -> None: ...
+
+    def set_rtx_mode(self, mode: RtxRenderMode) -> None: ...
+
+    def set_runtime_updates_per_frame(self, value: int) -> None: ...
+
+    def frame_telemetry(self) -> tuple[int, int, int, float, float, float]: ...
 
 
 class GameState(msgspec.Struct):
@@ -186,7 +234,7 @@ class GameState(msgspec.Struct):
 
 
 __all__ = [
-    "ScreenView",
+    "GameplayScreen",
     "GameConfig",
     "GameState",
     "HighScoresRequest",
@@ -200,4 +248,5 @@ __all__ = [
     "PauseBackground",
     "RollbackEndpoint",
     "RollbackSessionConfig",
+    "Screen",
 ]

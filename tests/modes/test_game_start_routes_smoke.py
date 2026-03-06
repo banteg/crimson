@@ -5,8 +5,12 @@ import time
 from pathlib import Path
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
 from crimson.game.types import GameState
+from crimson.modes.quest_mode import QuestMode
+from crimson.modes.rush_mode import RushMode
+from crimson.modes.survival_mode import SurvivalMode
+from crimson.modes.tutorial_mode import TutorialMode
+from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence import save_status
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.network_session import NetworkSessionPanelView
@@ -38,10 +42,10 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     loop = GameLoopView(state)
     views = loop._front_views  # intentional: routing smoke test
 
-    assert isinstance(views["start_survival"], SurvivalGameView)
-    assert isinstance(views["start_rush"], RushGameView)
-    assert isinstance(views["start_typo"], TypoShooterGameView)
-    assert isinstance(views["start_tutorial"], TutorialGameView)
-    assert isinstance(views["start_quest"], QuestGameView)
+    assert isinstance(views["start_survival"], SurvivalMode)
+    assert isinstance(views["start_rush"], RushMode)
+    assert isinstance(views["start_typo"], TypoShooterMode)
+    assert isinstance(views["start_tutorial"], TutorialMode)
+    assert isinstance(views["start_quest"], QuestMode)
     assert isinstance(views["open_high_scores"], HighScoresView)
     assert isinstance(views["open_lan_session"], NetworkSessionPanelView)

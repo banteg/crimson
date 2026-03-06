@@ -6,6 +6,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
+from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
 from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
@@ -29,7 +30,6 @@ from ..menu import (
     menu_ground_camera,
 )
 from ..transitions import _draw_screen_fade
-from ..types import ScreenContext
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
@@ -40,7 +40,7 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
         self._assets: MenuAssets | None = None

@@ -7,8 +7,8 @@ from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets
 from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
 from grim.raylib_api import rl
 
+from ..game.types import GameState
 from .assets import _load_resource_entries
-from .types import ScreenContext
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
     0: (
@@ -135,7 +135,7 @@ def _debug_loading_hold_seconds() -> float:
 
 
 class BootView:
-    def __init__(self, state: ScreenContext) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
         self._texture_stage = 0
         self._textures_done = False

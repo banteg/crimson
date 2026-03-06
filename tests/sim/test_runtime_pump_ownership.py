@@ -13,6 +13,7 @@ from pathlib import Path
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.game_modes import GameMode
 from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
@@ -313,6 +314,9 @@ def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, m
     loop = GameLoopView(state)
 
     class _FakeGameplayView:
+        close_requested = False
+        default_game_mode_id = GameMode.SURVIVAL
+
         def open(self) -> None:
             return
 
@@ -328,6 +332,50 @@ def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, m
         def take_action(self) -> str | None:
             return None
 
+        def bind_status(self, status) -> None:
+            _ = status
+
+        def bind_screen_fade(self, fade) -> None:
+            _ = fade
+
+        def bind_audio(self, audio, audio_rng) -> None:
+            _ = (audio, audio_rng)
+
+        def set_lan_runtime(
+            self,
+            *,
+            enabled: bool,
+            role: str,
+            expected_players: int,
+            connected_players: int,
+            waiting_for_players: bool,
+        ) -> None:
+            _ = (enabled, role, expected_players, connected_players, waiting_for_players)
+
+        def bind_lan_runtime(self, runtime) -> None:
+            _ = runtime
+
+        def set_lan_match_start(self, *, seed: int, start_tick: int = 0, status_snapshot=None) -> None:
+            _ = (seed, start_tick, status_snapshot)
+
+        def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
+            _ = entity_alpha
+
+        def steal_ground_for_menu(self):
+            return None
+
+        def menu_ground_camera(self):
+            return None
+
+        def console_elapsed_ms(self) -> float:
+            return 0.0
+
+        def regenerate_terrain_for_console(self) -> None:
+            return None
+
+        def set_rtx_mode(self, mode) -> None:
+            _ = mode
+
         def set_runtime_updates_per_frame(self, value: int) -> None:
             _ = value
 
@@ -337,7 +385,6 @@ def test_gameplay_frame_telemetry_is_propagated_to_game_state(make_game_state, m
     view = _FakeGameplayView()
     loop._front_active = view
     loop._active = view
-    loop._gameplay_views = frozenset({view})
 
     mocker.patch.object(loop_view_module, "input_begin_frame", side_effect=lambda: None)
     mocker.patch.object(type(state.console), "handle_hotkey", return_value=None)
