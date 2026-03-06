@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -47,7 +48,7 @@ def draw_secondary_rocket(ctx: SecondaryProjectileDrawCtx) -> bool:
         return False
 
     renderer = ctx.renderer
-    texture = renderer.projs_texture
+    texture = renderer.resources.texture(TextureId.PROJS)
     if texture is None:
         return False
 
@@ -89,7 +90,7 @@ def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
 def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: SecondaryRocketStyle) -> None:
     renderer = ctx.renderer
     fx_detail_1 = renderer.config.fx_detail(level=1, default=True) if renderer.config is not None else True
-    particles_texture = renderer.particles_texture
+    particles_texture = renderer.resources.texture(TextureId.PARTICLES)
     if not fx_detail_1 or particles_texture is None:
         return
 

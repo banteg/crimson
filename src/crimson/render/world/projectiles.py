@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
@@ -37,7 +38,7 @@ def draw_projectile(
         return
 
     projectile_render_ctx = render_ctx.with_projection(camera=camera, view_scale=view_scale)
-    texture = projectile_render_ctx.projs_texture
+    texture = projectile_render_ctx.resources.texture(TextureId.PROJS)
     type_id = proj.type_id
     proj_pos = proj.pos
     screen = projectile_render_ctx.world_to_screen(proj_pos)
@@ -130,8 +131,7 @@ def draw_sharpshooter_laser_sight(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    if render_ctx.bullet_trail_texture is None:
-        return
+    bullet_trail_texture = render_ctx.resources.texture(TextureId.BULLET_TRAIL)
 
     players = render_ctx.players
     if not players:
@@ -143,7 +143,7 @@ def draw_sharpshooter_laser_sight(
     head = rl.Color(255, 0, 0, head_alpha)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    rl.rl_set_texture(render_ctx.bullet_trail_texture.id)
+    rl.rl_set_texture(bullet_trail_texture.id)
     rl.rl_begin(rd.RL_QUADS)
 
     for player in players:

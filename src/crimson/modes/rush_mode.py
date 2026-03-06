@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Literal
 
+from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -351,10 +352,13 @@ class RushMode(BaseGameplayMode):
         )
 
     def _draw_game_cursor(self) -> None:
+        resources = self.render_resources.resources
+        if resources is None:
+            return
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(
-            self.render_resources.particles_texture,
+            resources.texture(TextureId.PARTICLES),
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),

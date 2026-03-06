@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -57,8 +58,9 @@ def draw_clock_gauge(
     scale: float,
     alpha: float = 1.0,
 ) -> None:
-    if render_ctx.clock_table_texture is None or render_ctx.clock_pointer_texture is None:
-        return
+    resources = render_ctx.resources
+    table = resources.texture(TextureId.UI_CLOCK_TABLE)
+    pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
     size = 32.0 * scale
     if size <= 1e-3:
         return
@@ -68,23 +70,23 @@ def draw_clock_gauge(
     table_src = rl.Rectangle(
         0.0,
         0.0,
-        float(render_ctx.clock_table_texture.width),
-        float(render_ctx.clock_table_texture.height),
+        float(table.width),
+        float(table.height),
     )
     table_dst = rl.Rectangle(pos.x, pos.y, size, size)
-    rl.draw_texture_pro(render_ctx.clock_table_texture, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    rl.draw_texture_pro(table, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
     seconds = int(ms) // 1000
     pointer_src = rl.Rectangle(
         0.0,
         0.0,
-        float(render_ctx.clock_pointer_texture.width),
-        float(render_ctx.clock_pointer_texture.height),
+        float(pointer.width),
+        float(pointer.height),
     )
     pointer_dst = rl.Rectangle(pos.x + half, pos.y + half, size, size)
     origin = rl.Vector2(half, half)
     rotation_deg = float(seconds) * 6.0
-    rl.draw_texture_pro(render_ctx.clock_pointer_texture, pointer_src, pointer_dst, origin, rotation_deg, tint)
+    rl.draw_texture_pro(pointer, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
 
 def hud_indicator_enabled(render_ctx: WorldRenderCtx, player_index: int) -> bool:
@@ -121,9 +123,7 @@ def draw_direction_arrows(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    arrow = render_ctx.arrow_texture
-    if arrow is None:
-        return
+    arrow = render_ctx.resources.texture(TextureId.ARROW)
 
     src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
     width = max(1.0, float(arrow.width) * scale)

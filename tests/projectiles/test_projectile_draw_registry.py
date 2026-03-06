@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
     from grim.raylib_api import rl
 
 
@@ -20,10 +21,12 @@ class _TextureLike(Protocol):
     height: int
 
 
+class _ResourcesLike(Protocol):
+    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
+
+
 class _RendererLike(Protocol):
-    bullet_trail_texture: _TextureLike | None
-    bullet_texture: _TextureLike | None
-    particles_texture: _TextureLike | None
+    resources: _ResourcesLike
     config: object | None
     players: list[object]
     rtx_mode: RtxRenderMode
@@ -31,8 +34,8 @@ class _RendererLike(Protocol):
     def _is_bullet_trail_type(self, type_id: int) -> bool: ...
 
 
-def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: Any) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 def _as_texture(texture: _TextureLike) -> rl.Texture:
@@ -68,10 +71,29 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
+class _ResourcesStub:
+    bullet_trail: _TextureLike | None = None
+    bullet: _TextureLike | None = None
+    particles: _TextureLike | None = None
+    projs: _TextureLike | None = None
+
+    def texture(self, texture_id: TextureId) -> _TextureLike | None:
+        match texture_id:
+            case TextureId.BULLET_TRAIL:
+                return self.bullet_trail
+            case TextureId.BULLET_I:
+                return self.bullet
+            case TextureId.PARTICLES:
+                return self.particles
+            case TextureId.PROJS:
+                return self.projs
+            case _:
+                return None
+
+
+@dataclass(slots=True)
 class _RendererStub:
-    bullet_trail_texture: _TextureLike | None = None
-    bullet_texture: _TextureLike | None = None
-    particles_texture: _TextureLike | None = None
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     config: object | None = None
     players: list[object] = field(default_factory=list)
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC

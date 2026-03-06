@@ -9,10 +9,11 @@ import crimson.render.projectile_draw.primary_beam as primary_beam
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
 from crimson.render.rtx.mode import RtxRenderMode
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
     from grim.raylib_api import rl
 
 
@@ -37,10 +38,20 @@ class _CreatureStub:
 
 
 @dataclass(slots=True)
+class _ResourcesStub:
+    particles: _TextureStub | None = None
+
+    def texture(self, texture_id: TextureId) -> _TextureStub | None:
+        if texture_id == TextureId.PARTICLES:
+            return self.particles
+        return None
+
+
+@dataclass(slots=True)
 class _RendererStub:
     rtx_mode: RtxRenderMode
     players: list[object] = field(default_factory=list)
-    particles_texture: _TextureStub | None = None
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     creatures: _CreaturesStub = field(default_factory=_CreaturesStub)
     atlas_calls: int = 0
 
@@ -52,8 +63,8 @@ class _RendererStub:
         self.atlas_calls += 1
 
 
-def _as_renderer(renderer: _RendererStub) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: _RendererStub) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 def _as_texture(texture: _TextureStub) -> rl.Texture:

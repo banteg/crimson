@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import crimson.render.world.projectiles as world_projectiles
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.frame import RenderFrame
@@ -9,6 +7,7 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.projectiles import draw_bullet_trail
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 
@@ -16,18 +15,18 @@ class _TextureStub:
     id = 1
 
 
-class _RenderResourcesStub:
-    def __init__(self) -> None:
-        self.bullet_trail_texture = _TextureStub()
+class _RuntimeResourcesStub:
+    def texture(self, texture_id: TextureId) -> _TextureStub:
+        assert texture_id == TextureId.BULLET_TRAIL
+        return _TextureStub()
 
 
 class _WorldStub:
     def __init__(self) -> None:
-        self.render_resources = _RenderResourcesStub()
+        self.resources = _RuntimeResourcesStub()
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
-            assets_dir=Path("."),
             world_size=1024.0,
             demo_mode_active=False,
             config=None,
@@ -36,19 +35,7 @@ class _WorldStub:
             state=object(),  # type: ignore[arg-type]
             players=[],
             creatures=object(),  # type: ignore[arg-type]
-            creature_textures={},
-            projs_texture=None,
-            particles_texture=None,
-            bullet_texture=None,
-            bullet_trail_texture=self.render_resources.bullet_trail_texture,  # type: ignore[arg-type]
-            arrow_texture=None,
-            bonuses_texture=None,
-            bodyset_texture=None,
-            clock_table_texture=None,
-            clock_pointer_texture=None,
-            aim_texture=None,
-            muzzle_flash_texture=None,
-            wicons_texture=None,
+            resources=self.resources,  # type: ignore[arg-type]
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
             lan_player_rings_enabled=False,

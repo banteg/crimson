@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -80,6 +81,9 @@ def draw_player_trooper_sprite(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
+    resources = render_ctx.resources
+    particles_texture = resources.texture(TextureId.PARTICLES)
+    muzzle_flash_texture = resources.texture(TextureId.MUZZLE_FLASH)
     sprite_grid = 8
     cell = float(texture.width) / float(sprite_grid) if sprite_grid > 0 else float(texture.width)
     if cell <= 0.0:
@@ -98,7 +102,7 @@ def draw_player_trooper_sprite(
         alpha=alpha,
     )
 
-    if render_ctx.particles_texture is not None and perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
+    if perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
         atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
         if atlas is not None:
             aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -106,8 +110,8 @@ def draw_player_trooper_sprite(
                 frame = int(atlas.frame)
                 col = frame % aura_grid
                 row = frame // aura_grid
-                cell_w = float(render_ctx.particles_texture.width) / float(aura_grid)
-                cell_h = float(render_ctx.particles_texture.height) / float(aura_grid)
+                cell_w = float(particles_texture.width) / float(aura_grid)
+                cell_h = float(particles_texture.height) / float(aura_grid)
                 src = rl.Rectangle(
                     cell_w * float(col),
                     cell_h * float(row),
@@ -122,7 +126,7 @@ def draw_player_trooper_sprite(
                     origin = rl.Vector2(size * 0.5, size * 0.5)
                     tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
                     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                    rl.draw_texture_pro(render_ctx.particles_texture, src, dst, origin, 0.0, tint)
+                    rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
                     rl.end_blend_mode()
 
     tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
@@ -189,7 +193,7 @@ def draw_player_trooper_sprite(
             color=overlay_tint,
         )
 
-        if render_ctx.particles_texture is not None and float(player.shield_timer) > 1e-3 and alpha > 1e-3:
+        if float(player.shield_timer) > 1e-3 and alpha > 1e-3:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.SHIELD_RING))
             if atlas is not None:
                 shield_grid = SIZE_CODE_GRID.get(int(atlas.size_code))
@@ -197,8 +201,8 @@ def draw_player_trooper_sprite(
                     frame = int(atlas.frame)
                     col = frame % shield_grid
                     row = frame // shield_grid
-                    cell_w = float(render_ctx.particles_texture.width) / float(shield_grid)
-                    cell_h = float(render_ctx.particles_texture.height) / float(shield_grid)
+                    cell_w = float(particles_texture.width) / float(shield_grid)
+                    cell_h = float(particles_texture.height) / float(shield_grid)
                     src = rl.Rectangle(
                         cell_w * float(col),
                         cell_h * float(row),
@@ -232,11 +236,11 @@ def draw_player_trooper_sprite(
                         rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
                         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                        rl.draw_texture_pro(render_ctx.particles_texture, src, dst, origin, rotation_deg, tint)
-                        rl.draw_texture_pro(render_ctx.particles_texture, src, dst2, origin2, rotation2_deg, tint2)
+                        rl.draw_texture_pro(particles_texture, src, dst, origin, rotation_deg, tint)
+                        rl.draw_texture_pro(particles_texture, src, dst2, origin2, rotation2_deg, tint2)
                         rl.end_blend_mode()
 
-        if render_ctx.muzzle_flash_texture is not None and float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
+        if float(player.muzzle_flash_alpha) > 1e-3 and alpha > 1e-3:
             weapon = WEAPON_BY_ID[player.weapon.weapon_id]
             flags = int(weapon.flags) if weapon.flags is not None else 0
             if (flags & 0x8) == 0:
@@ -249,15 +253,15 @@ def draw_player_trooper_sprite(
                     src = rl.Rectangle(
                         0.0,
                         0.0,
-                        float(render_ctx.muzzle_flash_texture.width),
-                        float(render_ctx.muzzle_flash_texture.height),
+                        float(muzzle_flash_texture.width),
+                        float(muzzle_flash_texture.height),
                     )
                     dst = rl.Rectangle(flash_pos.x, flash_pos.y, size, size)
                     origin = rl.Vector2(size * 0.5, size * 0.5)
                     tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                     rl.draw_texture_pro(
-                        render_ctx.muzzle_flash_texture,
+                        muzzle_flash_texture,
                         src,
                         dst,
                         origin,

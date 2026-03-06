@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim.assets import TextureId
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
@@ -58,16 +59,11 @@ def draw_bonus_pickups(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    if render_ctx.bonuses_texture is None:
-        for bonus in render_ctx.state.bonus_pool.entries:
-            if bonus.bonus_id == BonusId.UNUSED:
-                continue
-            screen = render_ctx._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
-            tint = rl.Color(220, 220, 90, int(255 * alpha + 0.5))
-            rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 10.0 * scale), tint)
-        return
+    resources = render_ctx.resources
+    bonuses_texture = resources.texture(TextureId.BONUSES)
+    wicons_texture = resources.texture(TextureId.UI_WICONS)
 
-    bubble_src = bonus_icon_src(render_ctx.bonuses_texture, 0)
+    bubble_src = bonus_icon_src(bonuses_texture, 0)
     bubble_size = 32.0 * scale
 
     for idx, bonus in enumerate(render_ctx.state.bonus_pool.entries):
@@ -81,7 +77,7 @@ def draw_bonus_pickups(
         bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
         bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
         tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(render_ctx.bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
+        rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
 
         bonus_id = bonus.bonus_id
         if bonus_id == BonusId.WEAPON:
@@ -89,7 +85,7 @@ def draw_bonus_pickups(
             if not isinstance(payload, BonusWeaponPayload):
                 continue
             icon_index = int(WEAPON_BY_ID[WeaponId(int(payload.weapon_id))].icon_index)
-            if not (0 <= icon_index <= 31) or render_ctx.wicons_texture is None:
+            if not (0 <= icon_index <= 31):
                 continue
 
             pulse = math.sin(float(render_ctx.bonus_anim_phase)) ** 4 * 0.25 + 0.75
@@ -97,12 +93,12 @@ def draw_bonus_pickups(
             if icon_scale <= 1e-3:
                 continue
 
-            src = weapon_icon_src(render_ctx.wicons_texture, icon_index)
+            src = weapon_icon_src(wicons_texture, icon_index)
             w = 60.0 * icon_scale * scale
             h = 30.0 * icon_scale * scale
             dst = rl.Rectangle(screen.x, screen.y, w, h)
             origin = rl.Vector2(w * 0.5, h * 0.5)
-            rl.draw_texture_pro(render_ctx.wicons_texture, src, dst, origin, 0.0, tint)
+            rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, tint)
             continue
 
         meta = BONUS_BY_ID.get(bonus_id)
@@ -117,12 +113,12 @@ def draw_bonus_pickups(
         if icon_scale <= 1e-3:
             continue
 
-        src = bonus_icon_src(render_ctx.bonuses_texture, icon_id)
+        src = bonus_icon_src(bonuses_texture, icon_id)
         size = 32.0 * icon_scale * scale
         rotation_rad = math.sin(float(idx) - float(render_ctx.elapsed_ms) * 0.003) * 0.2
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        rl.draw_texture_pro(render_ctx.bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
+        rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
 
 def draw_bonus_hover_labels(
@@ -136,7 +132,7 @@ def draw_bonus_hover_labels(
     if alpha <= 1e-3:
         return
 
-    font = render_ctx._ensure_small_font()
+    font = render_ctx.resources.small_font
     text_scale = 1.0
     screen_w = float(rl.get_screen_width())
 
@@ -159,16 +155,9 @@ def draw_bonus_hover_labels(
         x = aim_screen.x + 16.0
         y = aim_screen.y - 7.0
 
-        if font is not None:
-            text_w = measure_small_text_width(font, label, text_scale)
-        else:
-            text_w = float(rl.measure_text(label, int(18 * text_scale)))
+        text_w = measure_small_text_width(font, label, text_scale)
         if x + text_w > screen_w:
             x = max(0.0, screen_w - text_w)
 
-        if font is not None:
-            draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), text_scale, shadow)
-            draw_small_text(font, label, Vec2(x, y), text_scale, color)
-        else:
-            rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
-            rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)
+        draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), text_scale, shadow)
+        draw_small_text(font, label, Vec2(x, y), text_scale, color)

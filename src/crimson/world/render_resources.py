@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import cast
 
 import msgspec
 
-from grim.assets import TextureId, texture_for
+from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -20,16 +19,6 @@ from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_fx_queues
 from ..sim.state_types import PlayerState
-from ..sim.world_defs import CREATURE_ASSET
-
-_CREATURE_TEXTURE_IDS: dict[str, TextureId] = {
-    "alien": TextureId.ALIEN,
-    "lizard": TextureId.LIZARD,
-    "spider_sp1": TextureId.SPIDER_SP1,
-    "spider_sp2": TextureId.SPIDER_SP2,
-    "trooper": TextureId.TROOPER,
-    "zombie": TextureId.ZOMBIE,
-}
 
 
 class RenderResources(msgspec.Struct):
@@ -41,22 +30,13 @@ class RenderResources(msgspec.Struct):
     fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
     fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
     fx_textures: FxQueueTextures | None = None
-    creature_textures: dict[str, rl.Texture] = msgspec.field(default_factory=dict)
-    projs_texture: rl.Texture | None = None
-    particles_texture: rl.Texture | None = None
-    bullet_texture: rl.Texture | None = None
-    bullet_trail_texture: rl.Texture | None = None
-    arrow_texture: rl.Texture | None = None
-    bonuses_texture: rl.Texture | None = None
-    bodyset_texture: rl.Texture | None = None
-    clock_table_texture: rl.Texture | None = None
-    clock_pointer_texture: rl.Texture | None = None
-    aim_texture: rl.Texture | None = None
-    muzzle_flash_texture: rl.Texture | None = None
-    wicons_texture: rl.Texture | None = None
+    resources: RuntimeResources | None = None
 
-    def load_texture(self, texture_id: TextureId) -> rl.Texture | None:
-        return texture_for(self.assets_dir, texture_id)
+    def texture(self, texture_id: TextureId) -> rl.Texture:
+        resources = self.resources
+        if resources is not None:
+            return resources.texture(texture_id)
+        return runtime_resources_for(self.assets_dir).texture(texture_id)
 
     def sync_ground_settings(self) -> None:
         if self.ground is None:
@@ -107,41 +87,17 @@ class RenderResources(msgspec.Struct):
 
     def open(self, *, terrain_seed: int) -> None:
         self.close()
-        self.creature_textures.clear()
+        resources = runtime_resources_for(self.assets_dir)
+        self.resources = resources
 
-        base = cast(rl.Texture, self.load_texture(TextureId.TER_Q1_BASE))
-        overlay = cast(rl.Texture, self.load_texture(TextureId.TER_Q1_OVERLAY))
+        base = self.texture(TextureId.TER_Q1_BASE)
+        overlay = self.texture(TextureId.TER_Q1_OVERLAY)
         self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
         self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
-
-        for asset in sorted(set(CREATURE_ASSET.values())):
-            texture_id = _CREATURE_TEXTURE_IDS.get(asset)
-            if texture_id is None:
-                continue
-            texture = self.load_texture(texture_id)
-            if texture is not None:
-                self.creature_textures[asset] = texture
-
-        self.projs_texture = self.load_texture(TextureId.PROJS)
-        self.particles_texture = self.load_texture(TextureId.PARTICLES)
-        self.bullet_texture = self.load_texture(TextureId.BULLET_I)
-        self.bullet_trail_texture = self.load_texture(TextureId.BULLET_TRAIL)
-        self.arrow_texture = self.load_texture(TextureId.ARROW)
-        self.bonuses_texture = self.load_texture(TextureId.BONUSES)
-        self.wicons_texture = self.load_texture(TextureId.UI_WICONS)
-        self.bodyset_texture = self.load_texture(TextureId.BODYSET)
-        self.clock_table_texture = self.load_texture(TextureId.UI_CLOCK_TABLE)
-        self.clock_pointer_texture = self.load_texture(TextureId.UI_CLOCK_POINTER)
-        self.aim_texture = self.load_texture(TextureId.UI_AIM)
-        self.muzzle_flash_texture = self.load_texture(TextureId.MUZZLE_FLASH)
-
-        if self.particles_texture is not None and self.bodyset_texture is not None:
-            self.fx_textures = FxQueueTextures(
-                particles=self.particles_texture,
-                bodyset=self.bodyset_texture,
-            )
-        else:
-            self.fx_textures = None
+        self.fx_textures = FxQueueTextures(
+            particles=resources.texture(TextureId.PARTICLES),
+            bodyset=resources.texture(TextureId.BODYSET),
+        )
 
     def close(self) -> None:
         if self.ground is not None and self.ground.render_target is not None:
@@ -149,19 +105,7 @@ class RenderResources(msgspec.Struct):
             self.ground.render_target = None
         self.ground = None
 
-        self.creature_textures.clear()
-        self.projs_texture = None
-        self.particles_texture = None
-        self.bullet_texture = None
-        self.bullet_trail_texture = None
-        self.arrow_texture = None
-        self.bonuses_texture = None
-        self.wicons_texture = None
-        self.bodyset_texture = None
-        self.clock_table_texture = None
-        self.clock_pointer_texture = None
-        self.aim_texture = None
-        self.muzzle_flash_texture = None
+        self.resources = None
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
@@ -199,7 +143,6 @@ class RenderResources(msgspec.Struct):
         rtx_mode: RtxRenderMode,
     ) -> RenderFrame:
         return RenderFrame(
-            assets_dir=self.assets_dir,
             world_size=float(self.world_size),
             demo_mode_active=bool(demo_mode_active),
             config=self.config,
@@ -208,19 +151,7 @@ class RenderResources(msgspec.Struct):
             state=state,
             players=players,
             creatures=creatures,
-            creature_textures=self.creature_textures,
-            projs_texture=self.projs_texture,
-            particles_texture=self.particles_texture,
-            bullet_texture=self.bullet_texture,
-            bullet_trail_texture=self.bullet_trail_texture,
-            arrow_texture=self.arrow_texture,
-            bonuses_texture=self.bonuses_texture,
-            bodyset_texture=self.bodyset_texture,
-            clock_table_texture=self.clock_table_texture,
-            clock_pointer_texture=self.clock_pointer_texture,
-            aim_texture=self.aim_texture,
-            muzzle_flash_texture=self.muzzle_flash_texture,
-            wicons_texture=self.wicons_texture,
+            resources=self.resources,
             elapsed_ms=float(elapsed_ms),
             bonus_anim_phase=float(bonus_anim_phase),
             lan_player_rings_enabled=bool(lan_player_rings_enabled),

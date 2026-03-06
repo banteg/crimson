@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 import msgspec
 
-from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
 
 from ..frame import RenderFrame
@@ -15,7 +14,6 @@ from .draw import draw_world
 class WorldRenderer(msgspec.Struct):
     _build_render_frame: Callable[[], RenderFrame]
     _render_frame: RenderFrame | None = None
-    _small_font: SmallFontData | None = None
 
     def _active_render_frame(self) -> RenderFrame:
         if self._render_frame is not None:
@@ -33,6 +31,8 @@ class WorldRenderer(msgspec.Struct):
         entity_alpha: float = 1.0,
     ) -> None:
         frame = render_frame if render_frame is not None else self._build_render_frame()
+        if frame.resources is None:
+            raise RuntimeError("runtime resources not loaded")
         self._render_frame = frame
         try:
             render_ctx = build_world_render_ctx(self, render_frame=frame)

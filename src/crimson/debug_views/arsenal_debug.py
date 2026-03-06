@@ -123,8 +123,8 @@ class ArsenalDebugView:
             build_inputs=self._build_runner_inputs,
         )
 
-    def _load_texture(self, texture_id: TextureId) -> rl.Texture | None:
-        return self._runtime.render_resources.load_texture(texture_id)
+    def _load_texture(self, texture_id: TextureId) -> rl.Texture:
+        return self._runtime.render_resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -446,8 +446,11 @@ class ArsenalDebugView:
         y += line
         draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
+        resources = self._runtime.render_resources.resources
+        if resources is None:
+            return
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(self._runtime.render_resources.particles_texture, self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("arsenal", "Arsenal")

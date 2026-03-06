@@ -4,7 +4,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import runtime_resources_for
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -22,10 +22,7 @@ SMALL_FONT_RENDER_SCALE = 1.0
 
 
 def load_small_font(assets_root: Path) -> SmallFontData:
-    resources = runtime_resources_for(assets_root)
-    texture = resources.texture(TextureId.SMALL_WHITE)
-    rl.set_texture_filter(texture, SMALL_FONT_FILTER)
-    return SmallFontData(widths=list(resources.small_font_widths), texture=texture)
+    return runtime_resources_for(assets_root).small_font
 
 
 def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:

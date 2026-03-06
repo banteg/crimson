@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol, cast
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
 from crimson.projectiles.types import SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
-    from crimson.render.projectile_draw import ProjectileRendererLike
+    from crimson.render.world.context import WorldRenderCtx
 
 
 class _TextureLike(Protocol):
@@ -19,14 +20,17 @@ class _TextureLike(Protocol):
     height: int
 
 
+class _ResourcesLike(Protocol):
+    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
+
+
 class _RendererLike(Protocol):
-    projs_texture: _TextureLike | None
-    particles_texture: _TextureLike | None
+    resources: _ResourcesLike
     config: object | None
 
 
-def _as_renderer(renderer: _RendererLike) -> ProjectileRendererLike:
-    return cast("ProjectileRendererLike", renderer)
+def _as_renderer(renderer: Any) -> WorldRenderCtx:
+    return cast("WorldRenderCtx", renderer)
 
 
 @dataclass(slots=True)
@@ -37,9 +41,23 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
+class _ResourcesStub:
+    projs: _TextureLike | None = None
+    particles: _TextureLike | None = None
+
+    def texture(self, texture_id: TextureId) -> _TextureLike | None:
+        match texture_id:
+            case TextureId.PROJS:
+                return self.projs
+            case TextureId.PARTICLES:
+                return self.particles
+            case _:
+                return None
+
+
+@dataclass(slots=True)
 class _RendererStub:
-    projs_texture: _TextureLike | None = None
-    particles_texture: _TextureLike | None = None
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     config: object | None = None
 
 
@@ -60,7 +78,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
-    renderer.projs_texture = _TextureStub(width=0, height=128)
+    renderer.resources.projs = _TextureStub(width=0, height=128)
     proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),

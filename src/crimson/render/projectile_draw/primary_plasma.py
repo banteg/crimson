@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -15,13 +16,14 @@ from .types import ProjectileDrawCtx
 
 def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
+    resources = renderer.resources
     type_id = int(ctx.type_id)
     if type_id not in PLASMA_PARTICLE_TYPES:
         return False
-    if renderer.particles_texture is None:
+    particles_texture = resources.texture(TextureId.PARTICLES)
+    if particles_texture is None:
         return False
 
-    particles_texture = renderer.particles_texture
     atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
     if atlas is None:
         return False

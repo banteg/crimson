@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import msgspec
 
+from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
-from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..creatures.runtime import CreaturePool
@@ -22,8 +20,6 @@ class RenderFrame(msgspec.Struct, frozen=True):
     deterministic per frame boundary while remaining allocation-light.
     """
 
-    assets_dir: Path
-
     world_size: float
     demo_mode_active: bool
     config: CrimsonConfig | None
@@ -33,20 +29,7 @@ class RenderFrame(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
     creatures: CreaturePool
-
-    creature_textures: dict[str, rl.Texture]
-    projs_texture: rl.Texture | None
-    particles_texture: rl.Texture | None
-    bullet_texture: rl.Texture | None
-    bullet_trail_texture: rl.Texture | None
-    arrow_texture: rl.Texture | None
-    bonuses_texture: rl.Texture | None
-    bodyset_texture: rl.Texture | None
-    clock_table_texture: rl.Texture | None
-    clock_pointer_texture: rl.Texture | None
-    aim_texture: rl.Texture | None
-    muzzle_flash_texture: rl.Texture | None
-    wicons_texture: rl.Texture | None
+    resources: RuntimeResources | None
 
     elapsed_ms: float
     bonus_anim_phase: float

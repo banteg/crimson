@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.assets import RuntimeResources, TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -31,6 +32,17 @@ from .trooper import draw_player_trooper_sprite
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
+
+
+_CREATURE_TEXTURE_IDS: dict[str, TextureId] = {
+    "alien": TextureId.ALIEN,
+    "lizard": TextureId.LIZARD,
+    "spider_sp1": TextureId.SPIDER_SP1,
+    "spider_sp2": TextureId.SPIDER_SP2,
+    "trooper": TextureId.TROOPER,
+    "zombie": TextureId.ZOMBIE,
+}
+
 
 class WorldDrawContext(msgspec.Struct, frozen=True):
     camera: Vec2 = Vec2()
@@ -165,20 +177,19 @@ def build_draw_context(
     scale: float,
     entity_alpha: float,
 ) -> WorldDrawContext:
+    resources = render_ctx.resources
     trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
-    trooper_texture = render_ctx.creature_textures.get(trooper_asset) if trooper_asset is not None else None
-    particles_texture = render_ctx.particles_texture
+    trooper_texture = _creature_texture(resources, trooper_asset)
+    particles_texture = resources.texture(TextureId.PARTICLES)
 
     monster_vision = bool(render_ctx.players) and perk_active(render_ctx.players[0], PerkId.MONSTER_VISION)
     monster_vision_src = None
-    if monster_vision and particles_texture is not None:
+    if monster_vision:
         monster_vision_src = effect_src_rect(particles_texture, EffectId.AURA)
 
-    poison_src = None
-    if particles_texture is not None:
-        # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
-        # (monster vision, shadow, poison aura).
-        poison_src = effect_src_rect(particles_texture, EffectId.AURA)
+    # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
+    # (monster vision, shadow, poison aura).
+    poison_src = effect_src_rect(particles_texture, EffectId.AURA)
 
     return WorldDrawContext(
         camera=camera,
@@ -279,13 +290,14 @@ def draw_creature_overlays(
 
 
 def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    resources = render_ctx.resources
     for _idx, creature in sorted_active_creatures(render_ctx):
         screen = render_ctx._world_to_screen_with(creature.pos, camera=ctx.camera, view_scale=ctx.view_scale)
         lifecycle_stage = float(creature.lifecycle_stage)
 
         type_id = creature.type_id
         asset = CREATURE_ASSET[type_id]
-        texture = render_ctx.creature_textures.get(asset)
+        texture = _creature_texture(resources, asset)
 
         draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
 
@@ -547,7 +559,16 @@ def draw_aim_enhancements(
         if player.health <= 0.0:
             continue
         aim_screen = transform(player.aim, ctx.camera, ctx.view_scale)
-        draw_aim_cursor(ctx.particles_texture, render_ctx.aim_texture, pos=aim_screen)
+        draw_aim_cursor(ctx.particles_texture, render_ctx.resources.texture(TextureId.UI_AIM), pos=aim_screen)
+
+
+def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl.Texture | None:
+    if asset_name is None:
+        return None
+    texture_id = _CREATURE_TEXTURE_IDS.get(asset_name)
+    if texture_id is None:
+        return None
+    return resources.texture(texture_id)
 
 
 def draw_bonus_and_ui(
