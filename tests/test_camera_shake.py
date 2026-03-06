@@ -19,7 +19,6 @@ from crimson.sim.sessions import (
 )
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.sim.world_tick_runner_harness import step_world_once
 from grim.geom import Vec2
 from tests.factories import make_creature_state as _creature
 from tests.helpers import assert_float_close
@@ -116,7 +115,7 @@ def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
     )
     assert entry is not None
 
-    step_world_once(world, 1.0 / 60.0, perk_progression_enabled=False)
+    world.step_survival_frame(1.0 / 60.0, perk_progression_enabled=False)
 
     assert entry.picked
     assert world.sim_world.state.camera_shake_pulses == 0x14

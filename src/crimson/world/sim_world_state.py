@@ -40,7 +40,7 @@ class SimWorldState(msgspec.Struct):
     creatures: CreaturePool = cast(CreaturePool, None)
 
     damage_scale_by_type: dict[int, float] = msgspec.field(default_factory=_weapon_damage_scale_map)
-    elapsed_ms: float = 0.0
+    presentation_elapsed_ms: float = 0.0
     bonus_anim_phase: float = 0.0
     game_tune_started: bool = False
     last_events: WorldEvents = msgspec.field(
@@ -73,7 +73,7 @@ class SimWorldState(msgspec.Struct):
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = PresentationStepCommands()
 
-        self.elapsed_ms = 0.0
+        self.presentation_elapsed_ms = 0.0
         self.bonus_anim_phase = 0.0
         self.game_tune_started = False
 
@@ -118,7 +118,7 @@ class SimWorldState(msgspec.Struct):
         self.last_presentation = presentation
 
         if float(dt_sim) > 0.0:
-            self.elapsed_ms += float(dt_sim) * 1000.0
+            self.presentation_elapsed_ms += float(dt_sim) * 1000.0
             self.bonus_anim_phase += float(dt_sim) * 1.3
 
         self.game_tune_started = bool(game_tune_started)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from .hooks import TickResult
 from .sessions import QuestSpawnState
 
 
@@ -16,6 +17,22 @@ class QuestPresentationReaction:
 class PostApplyReaction:
     sfx_keys: tuple[str, ...] = ()
     quest: QuestPresentationReaction | None = None
+
+
+def build_post_apply_reaction(
+    *,
+    tick_result: TickResult,
+    quest_state: QuestSpawnState | None = None,
+) -> PostApplyReaction:
+    reaction = PostApplyReaction(
+        sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
+    )
+    if quest_state is None:
+        return reaction
+    return merge_post_apply_reactions(
+        reaction,
+        PostApplyReaction(quest=resolve_quest_presentation_reaction(quest_state)),
+    )
 
 
 def resolve_quest_presentation_reaction(

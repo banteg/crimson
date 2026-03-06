@@ -4,7 +4,6 @@ from pathlib import Path
 
 import msgspec
 
-from crimson.creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.quests.runtime import build_quest_spawn_table
@@ -28,7 +27,6 @@ from crimson.sim.sessions import (
     rush_input_transform,
     rush_mid_step,
 )
-from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -102,69 +100,25 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
 
     checkpoints: list[ReplayCheckpoint] = []
     dt = 1.0 / float(replay.header.tick_rate)
-    dt_ms = dt * 1000.0
-    elapsed_ms = 0.0
-    stage = 0
-    spawn_cooldown_ms = 0.0
 
     for tick_index in range(len(replay.ticks)):
-        elapsed_before_ms = float(elapsed_ms)
-        rng_before_world_step = int(world.sim_world.state.rng.state)
-        world_step_marks: dict[str, int] = {"before_world_step": int(rng_before_world_step)}
-        step_world_once(
-            world,
+        tick = world.step_survival_frame(
             dt,
             inputs=_inputs_for_tick(replay, tick_index),
             auto_pick_perks=False,
-            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=True,
             defer_camera_shake_update=True,
-            rng_marks_out=world_step_marks,
+            apply_audio=False,
         )
-        world_events = world.sim_world.last_events
-        rng_after_world_step = int(world.sim_world.state.rng.state)
-
-        player_level = world.sim_world.players[0].level if world.sim_world.players else 1
-        stage, milestone_calls = advance_survival_spawn_stage(stage, player_level=int(player_level))
-        for call in milestone_calls:
-            world.sim_world.creatures.spawn_template(
-                int(call.template_id),
-                call.pos,
-                float(call.heading),
-                world.sim_world.state.rng,
-                rand=world.sim_world.state.rng.rand,
-            )
-        rng_after_stage_spawns = int(world.sim_world.state.rng.state)
-
-        player_xp = world.sim_world.players[0].experience if world.sim_world.players else 0
-        cooldown, wave_spawns = tick_survival_wave_spawns(
-            spawn_cooldown_ms,
-            dt_ms,
-            world.sim_world.state.rng,
-            player_count=len(world.sim_world.players),
-            survival_elapsed_ms=elapsed_before_ms,
-            player_experience=int(player_xp),
-            terrain_width=int(world.world_size),
-            terrain_height=int(world.world_size),
-        )
-        spawn_cooldown_ms = cooldown
-        world.sim_world.creatures.spawn_inits(wave_spawns)
-        rng_after_wave_spawns = int(world.sim_world.state.rng.state)
-        elapsed_ms += float(dt_ms)
 
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
-                elapsed_ms=float(elapsed_ms),
-                rng_marks={
-                    **world_step_marks,
-                    "after_world_step": int(rng_after_world_step),
-                    "after_stage_spawns": int(rng_after_stage_spawns),
-                    "after_wave_spawns": int(rng_after_wave_spawns),
-                },
-                deaths=world_events.deaths,
-                events=world_events,
+                elapsed_ms=float(tick.elapsed_ms),
+                rng_marks=dict(tick.rng_marks),
+                deaths=tick.step.events.deaths,
+                events=tick.step.events,
             ),
         )
 

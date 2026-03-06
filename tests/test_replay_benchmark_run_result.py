@@ -22,7 +22,7 @@ def test_run_result_from_replay_mode_reads_sim_world_state(monkeypatch) -> None:
     )
 
     sim_world = SimpleNamespace(
-        elapsed_ms=777,
+        presentation_elapsed_ms=777,
         state=SimpleNamespace(rng=SimpleNamespace(state=12345)),
         players=[SimpleNamespace(experience=456)],
         creatures=SimpleNamespace(kill_count=12),
@@ -31,7 +31,7 @@ def test_run_result_from_replay_mode_reads_sim_world_state(monkeypatch) -> None:
     # at mode root. The replay benchmark must read from `mode._runtime.sim_world`.
     mode = SimpleNamespace(
         _runtime=SimpleNamespace(sim_world=sim_world),
-        _driver=None,
+        _driver=SimpleNamespace(elapsed_ms=777.0),
         tick_index=88,
     )
     replay = SimpleNamespace(header=SimpleNamespace(game_mode_id=int(GameMode.SURVIVAL), tick_rate=60))
@@ -63,14 +63,17 @@ def test_run_result_from_replay_mode_reads_authoritative_quest_runtime(monkeypat
     )
 
     sim_world = SimpleNamespace(
-        elapsed_ms=777,
+        presentation_elapsed_ms=777,
         state=SimpleNamespace(rng=SimpleNamespace(state=12345)),
         players=[SimpleNamespace(experience=456)],
         creatures=SimpleNamespace(kill_count=12),
     )
     mode = SimpleNamespace(
         _runtime=SimpleNamespace(sim_world=sim_world),
-        _driver=SimpleNamespace(quest_spawn_state=QuestSpawnState(spawn_timeline_ms=999.0)),
+        _driver=SimpleNamespace(
+            elapsed_ms=999.0,
+            quest_spawn_state=QuestSpawnState(spawn_timeline_ms=999.0),
+        ),
         tick_index=88,
     )
     replay = SimpleNamespace(header=SimpleNamespace(game_mode_id=int(GameMode.QUESTS), tick_rate=60))

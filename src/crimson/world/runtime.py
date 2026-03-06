@@ -19,7 +19,11 @@ from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
 from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext, LocalInputProvider
-from ..sim.presentation_reactions import PostApplyReaction, apply_post_apply_reaction
+from ..sim.presentation_reactions import (
+    PostApplyReaction,
+    apply_post_apply_reaction,
+    build_post_apply_reaction,
+)
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
@@ -203,7 +207,7 @@ class WorldRuntime:
             creatures=self.sim_world.creatures,
             camera=self.camera,
             demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self.sim_world.elapsed_ms),
+            elapsed_ms=float(self.sim_world.presentation_elapsed_ms),
             bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
             lan_player_rings_enabled=bool(self.lan_player_rings_enabled),
             lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
@@ -212,7 +216,7 @@ class WorldRuntime:
         )
 
     # ------------------------------------------------------------------
-    # Tick-stepping (absorbed from WorldTickRunnerHarness)
+    # Tick-stepping
     # ------------------------------------------------------------------
 
     def init_tick_runner(
@@ -308,9 +312,7 @@ class WorldRuntime:
             game_tune_started=bool(session.game_tune_started),
         )
         reactions = {
-            int(result.source_tick.tick_index): PostApplyReaction(
-                sfx_keys=tuple(str(key) for key in result.payload.step.post_apply_sfx_keys),
-            )
+            int(result.source_tick.tick_index): build_post_apply_reaction(tick_result=result)
             for result in batch.completed_results
         }
         apply_presentation_outputs(

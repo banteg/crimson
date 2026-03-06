@@ -676,14 +676,10 @@ def _run_result_from_replay_mode(*, mode: ReplayPlaybackMode, replay: Replay) ->
     except ValueError as exc:
         raise ReplayBenchmarkError(f"render benchmark failed: unsupported game_mode_id={mode_raw}") from exc
 
-    match game_mode_id:
-        case GameMode.QUESTS:
-            driver = mode._driver
-            if driver is None or driver.quest_spawn_state is None:
-                raise ReplayBenchmarkError("render benchmark failed: quest runtime state was not available")
-            elapsed_ms = int(driver.quest_spawn_state.spawn_timeline_ms)
-        case _:
-            elapsed_ms = int(sim_world.elapsed_ms)
+    driver = mode._driver
+    if driver is None:
+        raise ReplayBenchmarkError("render benchmark failed: replay driver was not available")
+    elapsed_ms = int(driver.elapsed_ms)
 
     shots_fired, shots_hit = player0_shots(sim_world.state)
     most_used_weapon_id = player0_most_used_weapon_id(sim_world.state, sim_world.players)

@@ -40,8 +40,7 @@ from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
     apply_post_apply_reaction,
-    merge_post_apply_reactions,
-    resolve_quest_presentation_reaction,
+    build_post_apply_reaction,
 )
 from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
@@ -502,16 +501,14 @@ class ReplayPlaybackMode:
         )
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        reaction = PostApplyReaction(
-            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
-        )
         driver = self._driver
-        if driver is None or driver.quest_spawn_state is None:
-            return reaction
-        quest_reaction = resolve_quest_presentation_reaction(driver.quest_spawn_state)
-        return merge_post_apply_reactions(
-            reaction,
-            PostApplyReaction(quest=quest_reaction),
+        return build_post_apply_reaction(
+            tick_result=tick_result,
+            quest_state=(
+                None
+                if driver is None
+                else driver.quest_spawn_state
+            ),
         )
 
     def _apply_post_apply_reaction(self, reaction: PostApplyReaction) -> None:
@@ -778,17 +775,19 @@ class ReplayPlaybackMode:
             mode_id = replay.header.game_mode_id
             hud_flags = hud_flags_for_game_mode(mode_id)
             quest_progress_ratio: float | None = None
-            elapsed_ms = float(sim_world.elapsed_ms)
+            elapsed_ms = float(sim_world.presentation_elapsed_ms)
             match mode_id:
                 case GameMode.QUESTS:
                     total = int(self._quest_total_spawn_count)
                     kills = int(sim_world.creatures.kill_count)
                     quest_progress_ratio = float(kills) / float(total) if total > 0 else None
                     driver = self._driver
-                    if driver is not None and driver.quest_spawn_state is not None:
-                        elapsed_ms = float(driver.quest_spawn_state.spawn_timeline_ms)
+                    if driver is not None:
+                        elapsed_ms = float(driver.elapsed_ms)
                 case _:
-                    pass
+                    driver = self._driver
+                    if driver is not None:
+                        elapsed_ms = float(driver.elapsed_ms)
             draw_hud_overlay(
                 HudRenderContext(
                     assets=self._hud_assets,

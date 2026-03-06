@@ -25,6 +25,8 @@ Not everything is split-brained anymore.
 - Most replay consumers now build drivers through `build_verify_playback_driver()` / `build_runtime_playback_driver()`, and replay info collection goes through `collect_replay_info(driver, ...)`.
 - Ordinary repo call sites are now factory-first, and the old nested replay driver config surface is gone.
 - Quest title and completion overlays now also read directly from authoritative quest runtime instead of keeping separate live/replay timer copies.
+- `SimWorldState.elapsed_ms` has been demoted to `presentation_elapsed_ms`, so the render/HUD clock cache no longer looks like an authoritative simulation timer.
+- The old `world_tick_runner_harness` path is gone from `src/`; tests now step through real runtime/session structures instead of a production helper that existed only for test ergonomics.
 - The sim plan/apply split is already shared in important paths.
 
 That matters because the remaining work is no longer "invent a deterministic runtime". The remaining work is to remove the mismatched orchestration and reaction layers still wrapped around it.
@@ -37,6 +39,7 @@ Timer semantics are no longer one of the fuzzy parts:
 
 - survival and rush use the deterministic session elapsed timer
 - quest runtime still owns `spawn_timeline_ms` for quest progression, replay elapsed stats, and quest results timing
+- render/HUD animation caches use `presentation_elapsed_ms`, which is explicitly presentational rather than a second runtime owner
 - session-timer access in active gameplay now asserts on invalid lifecycle use instead of silently falling back
 
 ### 1) Live and replay still use separate shared frame-pump helpers

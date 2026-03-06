@@ -44,8 +44,7 @@ from ..sim.input_providers import PerkMenuOpenCommand
 from ..sim.presentation_reactions import (
     PostApplyReaction,
     apply_post_apply_reaction,
-    merge_post_apply_reactions,
-    resolve_quest_presentation_reaction,
+    build_post_apply_reaction,
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSpawnState, quest_post_step
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
@@ -341,11 +340,9 @@ class QuestMode(BaseGameplayMode):
         return "continue"
 
     def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        reaction = super()._build_tick_post_apply_reaction(tick_result=tick_result)
-        quest_reaction = resolve_quest_presentation_reaction(self._quest_spawn_state)
-        return merge_post_apply_reactions(
-            reaction,
-            PostApplyReaction(quest=quest_reaction),
+        return build_post_apply_reaction(
+            tick_result=tick_result,
+            quest_state=self._quest_spawn_state,
         )
 
     def _apply_tick_post_apply_reaction(self, reaction: PostApplyReaction, *, dt_seconds: float) -> None:

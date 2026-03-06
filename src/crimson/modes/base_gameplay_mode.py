@@ -78,7 +78,11 @@ from ..sim.input_providers import (
     PerkPickCommand,
     ResolvedTick,
 )
-from ..sim.presentation_reactions import PostApplyReaction, apply_post_apply_reaction
+from ..sim.presentation_reactions import (
+    PostApplyReaction,
+    apply_post_apply_reaction,
+    build_post_apply_reaction,
+)
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from ..ui.game_over import GameOverUi
@@ -745,7 +749,7 @@ class BaseGameplayMode:
         return float(session.elapsed_ms)
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self.sim_world.elapsed_ms)
+        return float(self.sim_world.presentation_elapsed_ms)
 
     def _replay_claimed_stats_complete(self) -> bool:
         return False
@@ -981,7 +985,7 @@ class BaseGameplayMode:
     def _trace_lan_state_heartbeat(self) -> None:
         if not self._lan_enabled:
             return
-        elapsed_ms = float(self.sim_world.elapsed_ms)
+        elapsed_ms = float(self.sim_world.presentation_elapsed_ms)
         if (elapsed_ms - float(self._lan_trace_last_ms)) < 1000.0:
             return
         self._lan_trace_last_ms = float(elapsed_ms)
@@ -1358,7 +1362,7 @@ class BaseGameplayMode:
         return self.camera
 
     def console_elapsed_ms(self) -> float:
-        return float(self.sim_world.elapsed_ms)
+        return float(self.sim_world.presentation_elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
         if self.render_resources.ground is None:
@@ -1849,9 +1853,7 @@ class BaseGameplayMode:
         )
 
     def _build_tick_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
-        return PostApplyReaction(
-            sfx_keys=tuple(str(key) for key in tick_result.payload.step.post_apply_sfx_keys),
-        )
+        return build_post_apply_reaction(tick_result=tick_result)
 
     def _augment_post_apply_reaction(
         self,

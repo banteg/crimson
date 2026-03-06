@@ -431,13 +431,10 @@ class PlaybackDriver:
         tick_result: TickResult,
         use_world_step_creature_count: bool = False,
     ) -> ReplayCheckpoint:
-        elapsed_ms = float(tick_result.payload.elapsed_ms)
-        if self._quest_spawn_state is not None:
-            elapsed_ms = float(self._quest_spawn_state.spawn_timeline_ms)
         return build_replay_checkpoint(
             tick_index=int(tick_result.source_tick.tick_index),
             world=self.world,
-            elapsed_ms=elapsed_ms,
+            elapsed_ms=float(self.elapsed_ms),
             creature_count_override=(
                 int(tick_result.payload.creature_count_world_step)
                 if bool(use_world_step_creature_count)
@@ -536,15 +533,12 @@ class PlaybackDriver:
         shots_fired, shots_hit = player0_shots(self.world.state)
         most_used_weapon_id = player0_most_used_weapon_id(self.world.state, self.world.players)
         score_xp = int(self.world.players[0].experience) if self.world.players else 0
-        elapsed_ms = int(self.session.elapsed_ms)
-        if self._quest_spawn_state is not None:
-            elapsed_ms = int(self._quest_spawn_state.spawn_timeline_ms)
 
         return RunResult(
             game_mode_id=self.mode_id,
             tick_rate=int(self.tick_rate),
             ticks=int(ticks),
-            elapsed_ms=int(elapsed_ms),
+            elapsed_ms=int(self.elapsed_ms),
             score_xp=int(score_xp),
             creature_kill_count=int(self.world.creatures.kill_count),
             most_used_weapon_id=most_used_weapon_id,
@@ -552,6 +546,13 @@ class PlaybackDriver:
             shots_hit=int(shots_hit),
             rng_state=int(self.world.state.rng.state),
         )
+
+    @property
+    def elapsed_ms(self) -> float:
+        quest_state = self._quest_spawn_state
+        if quest_state is not None:
+            return float(quest_state.spawn_timeline_ms)
+        return float(self.session.elapsed_ms)
 
     @property
     def quest_spawn_state(self) -> QuestSpawnState | None:

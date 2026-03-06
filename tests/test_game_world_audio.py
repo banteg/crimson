@@ -7,7 +7,6 @@ from builders.session import make_session
 from builders.tick_payload import make_tick_payload
 
 import crimson.audio_router as audio_router_module
-import crimson.sim.world_tick_runner_harness as world_tick_runner_harness_module
 from crimson.bonuses import BonusId
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
@@ -15,7 +14,6 @@ from crimson.sim.hooks import TickResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import InputStatus, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
-from crimson.sim.world_tick_runner_harness import step_world_once
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
@@ -125,8 +123,7 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     player = world.sim_world.players[0]
     player.experience = 10_000
 
-    step_world_once(
-        world,
+    world.step_survival_frame(
         0.05,
         inputs=[PlayerInput()],
         auto_pick_perks=False,
@@ -152,7 +149,7 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     )
     assert entry is not None
 
-    step_world_once(world, 0.016, perk_progression_enabled=False)
+    world.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     play_sfx.assert_called_once()
@@ -174,27 +171,11 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     )
     assert entry is not None
 
-    step_world_once(world, 0.016, perk_progression_enabled=False)
+    world.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert play_sfx.call_count == 2
     assert {call.args[1] for call in play_sfx.call_args_list} == {"sfx_ui_bonus", "sfx_explosion_medium"}
-
-
-def test_step_world_once_applies_post_apply_bonus_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
-
-    step = make_tick_payload(post_apply_sfx_keys=("sfx_ui_bonus",)).step
-    mocker.patch.object(world_tick_runner_harness_module, "run_deterministic_step", return_value=step)
-
-    step_world_once(world, 1.0 / 60.0, perk_progression_enabled=False)
-
-    play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == "sfx_ui_bonus"
 
 
 def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> None:
@@ -243,7 +224,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     play_sfx.reset_mock()
     player.perk_counts[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
-    step_world_once(world, 0.2, inputs=[aim], perk_progression_enabled=False)
+    world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -252,7 +233,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.man_bomb_timer = 0.0
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
-    step_world_once(world, 0.1, inputs=[aim], perk_progression_enabled=False)
+    world.step_survival_frame(0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
@@ -265,7 +246,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.weapon.reload_timer_max = 2.0
     player.weapon.clip_size = 10
     player.weapon.ammo = 0
-    step_world_once(world, 0.2, inputs=[aim], perk_progression_enabled=False)
+    world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == "sfx_explosion_small"
 
