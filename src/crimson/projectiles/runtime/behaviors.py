@@ -210,7 +210,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             origin_pos = hit.proj.pos
             min_dist_sq = 100.0 * 100.0
 
-            best_idx = 0
+            best_idx = 0 if bool(runtime_state.preserve_bugs) else -1
             best_dist_sq = 1e12
             for creature_id, creature in enumerate(creatures):
                 if creature_id == hit_creature:
@@ -223,6 +223,10 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                 if d_sq < best_dist_sq:
                     best_dist_sq = d_sq
                     best_idx = creature_id
+
+            if best_idx < 0:
+                _post_hit_ion_common(ctx, hit)
+                return
 
             origin = creatures[hit_creature]
             target = creatures[best_idx]

@@ -49,10 +49,15 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
     return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS
 
 
-def _creature_find_nearest_for_secondary(*, creatures: Sequence[CreatureState], origin: Vec2) -> int:
+def _creature_find_nearest_for_secondary(
+    *,
+    creatures: Sequence[CreatureState],
+    origin: Vec2,
+    preserve_bugs: bool = False,
+) -> int:
     """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
 
-    best_idx = 0
+    best_idx = 0 if preserve_bugs else -1
     best_dist_sq = 1_000_000.0
     max_index = min(len(creatures), 0x180)
     for idx in range(max_index):

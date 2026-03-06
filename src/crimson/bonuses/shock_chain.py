@@ -19,9 +19,8 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
     # - requires `active != 0`
     # - requires `lifecycle_stage == 16.0` (alive sentinel)
     # - no HP gate
-    # - falls back to index 0 if nothing qualifies
     origin = origin_pos.pos
-    best_idx = 0
+    best_idx = 0 if bool(ctx.state.preserve_bugs) else -1
     best_dist_sq = 1e12
     for idx, creature in enumerate(creatures):
         if not creature.active:
@@ -32,6 +31,9 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
         if d_sq < best_dist_sq:
             best_dist_sq = d_sq
             best_idx = idx
+
+    if best_idx < 0:
+        return
 
     target = creatures[best_idx]
     angle = (target.pos - origin).to_heading()
