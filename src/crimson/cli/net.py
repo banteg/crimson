@@ -50,10 +50,9 @@ def cmd_net_host(
     """Host a network session (rollback default)."""
     from ..game.types import (
         LockstepEndpoint,
-        LockstepSessionConfig,
+        NetworkSessionConfig,
         PendingNetworkSession,
         RollbackEndpoint,
-        RollbackSessionConfig,
     )
 
     resolved_netcode = _parse_netcode_mode(netcode)
@@ -80,9 +79,10 @@ def cmd_net_host(
             host=str(host).strip() or "127.0.0.1",
             port=int(port),
         )
-        config = LockstepSessionConfig(
+        config = NetworkSessionConfig(
             mode=resolved_mode,
             endpoint=endpoint,
+            netcode_mode="lockstep",
             player_count=int(players),
             quest_level=normalized_quest_level,
             rollback_max_ticks=int(rollback_max_ticks),
@@ -101,9 +101,10 @@ def cmd_net_host(
             relay_port=int(relay_port),
             room_code=str(room_code).strip().upper(),
         )
-        config = RollbackSessionConfig(
+        config = NetworkSessionConfig(
             mode=resolved_mode,
             endpoint=endpoint,
+            netcode_mode="rollback",
             player_count=int(players),
             quest_level=normalized_quest_level,
             rollback_max_ticks=int(rollback_max_ticks),
@@ -167,10 +168,9 @@ def cmd_net_join(
     """Join a network session."""
     from ..game.types import (
         LockstepEndpoint,
-        LockstepSessionConfig,
+        NetworkSessionConfig,
         PendingNetworkSession,
         RollbackEndpoint,
-        RollbackSessionConfig,
     )
 
     resolved_netcode = _parse_netcode_mode(netcode)
@@ -196,9 +196,10 @@ def cmd_net_join(
             host=normalized_host,
             port=int(port),
         )
-        config = LockstepSessionConfig(
+        config = NetworkSessionConfig(
             mode=_parse_session_mode(mode),
             endpoint=endpoint,
+            netcode_mode="lockstep",
             player_count=1,
             quest_level=normalized_quest_level,
             rollback_max_ticks=int(rollback_max_ticks),
@@ -218,9 +219,10 @@ def cmd_net_join(
             relay_port=int(relay_port),
             room_code=room_code,
         )
-        config = RollbackSessionConfig(
+        config = NetworkSessionConfig(
             mode=_parse_session_mode(mode),
             endpoint=endpoint,
+            netcode_mode="rollback",
             player_count=1,
             quest_level=normalized_quest_level,
             rollback_max_ticks=int(rollback_max_ticks),

@@ -72,17 +72,6 @@ def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
 _PROJECTILE_HIT_PERK_HOOKS: tuple[_ProjectileHitPerkHook, ...] = (_projectile_hit_perk_poison_bullets,)
 
 
-ProjectileLingerHandler = Callable[[_ProjectileUpdateCtx, Projectile], None]
-ProjectilePreHitCreatureHandler = Callable[[_ProjectileUpdateCtx, Projectile, int], None]
-ProjectilePostHitCreatureHandler = Callable[[_ProjectileUpdateCtx, _ProjectileHitInfo], None]
-
-
-class ProjectileBehavior(msgspec.Struct, frozen=True):
-    linger: ProjectileLingerHandler
-    pre_hit_creature: ProjectilePreHitCreatureHandler | None = None
-    post_hit_creature: ProjectilePostHitCreatureHandler | None = None
-
-
 def _life_timer_sub_f32(life_timer: float, amount: float) -> float:
     return float(f32(float(life_timer) - float(amount)))
 
@@ -316,35 +305,3 @@ def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     creature = ctx.creatures[int(hit.hit_idx)]
     creature.plague_infected = True
-
-
-_DEFAULT_PROJECTILE_BEHAVIOR = ProjectileBehavior(linger=_linger_default)
-
-# Public: non-default behavior overrides keyed by projectile template id.
-PROJECTILE_BEHAVIOR_BY_TYPE_ID: dict[int, ProjectileBehavior] = {
-    ProjectileTemplateId.GAUSS_GUN: ProjectileBehavior(linger=_linger_gauss_gun),
-    ProjectileTemplateId.PULSE_GUN: ProjectileBehavior(linger=_linger_default, post_hit_creature=_post_hit_pulse_gun),
-    ProjectileTemplateId.ION_RIFLE: ProjectileBehavior(
-        linger=_linger_ion_rifle, post_hit_creature=_post_hit_ion_rifle,
-    ),
-    ProjectileTemplateId.ION_MINIGUN: ProjectileBehavior(
-        linger=_linger_ion_minigun, post_hit_creature=_post_hit_ion_common,
-    ),
-    ProjectileTemplateId.ION_CANNON: ProjectileBehavior(
-        linger=_linger_ion_cannon, post_hit_creature=_post_hit_ion_common,
-    ),
-    ProjectileTemplateId.SHRINKIFIER: ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_shrinkifier,
-    ),
-    ProjectileTemplateId.PLASMA_CANNON: ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_plasma_cannon,
-    ),
-    ProjectileTemplateId.SPLITTER_GUN: ProjectileBehavior(linger=_linger_default, pre_hit_creature=_pre_hit_splitter),
-    ProjectileTemplateId.PLAGUE_SPREADER: ProjectileBehavior(
-        linger=_linger_default, post_hit_creature=_post_hit_plague_spreader,
-    ),
-}
-
-
-def projectile_behavior_for_type_id(type_id: ProjectileTemplateId) -> ProjectileBehavior:
-    return PROJECTILE_BEHAVIOR_BY_TYPE_ID.get(int(type_id), _DEFAULT_PROJECTILE_BEHAVIOR)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
 from crimson.game_modes import GameMode
 from crimson.screens.panels.play_game import PlayGameMenuView
 
@@ -25,13 +25,14 @@ def _lockstep_pending(
 ) -> PendingNetworkSession:
     return PendingNetworkSession(
         role="host",
-        config=LockstepSessionConfig(
+        config=NetworkSessionConfig(
             mode=mode,
             endpoint=LockstepEndpoint(
                 bind_host="0.0.0.0",
                 host="127.0.0.1",
                 port=31993,
             ),
+            netcode_mode="lockstep",
             player_count=players,
             quest_level=quest_level,
             rollback_max_ticks=8,

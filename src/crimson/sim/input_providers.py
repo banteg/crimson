@@ -59,8 +59,6 @@ class InputProvider(Protocol):
     def submit_command(self, command: GameCommand) -> None: ...
 
 
-ResolvedTickResolver: TypeAlias = Callable[[int, float], ResolvedTick | None]
-TickCommandSubmitter: TypeAlias = Callable[[GameCommand], None]
 LocalInputBuilder: TypeAlias = Callable[[FrameContext], Sequence[PlayerInput]]
 
 
@@ -123,42 +121,3 @@ class LocalInputProvider:
 
     def submit_command(self, command: GameCommand) -> None:
         self._pending_commands.append(command)
-
-
-class NetworkInputProvider:
-    """Runtime-backed input source; may stall when a tick is not ready yet."""
-
-    def __init__(
-        self,
-        *,
-        player_count: int,
-        resolve_tick: ResolvedTickResolver | None = None,
-        submit_command: TickCommandSubmitter | None = None,
-    ) -> None:
-        self._player_count = max(0, player_count)
-        self._resolve_tick = resolve_tick
-        self._submit_command = submit_command
-
-    def begin_frame(self, frame_ctx: FrameContext) -> None:
-        _ = frame_ctx
-        return
-
-    def pull_tick(self, tick_index: int, default_dt_seconds: float) -> TickSupply:
-        resolver = self._resolve_tick
-        if resolver is None:
-            return TickSupply(status=InputStatus.STALLED, tick=None)
-        resolved_tick = resolver(int(tick_index), float(default_dt_seconds))
-        if resolved_tick is None:
-            return TickSupply(status=InputStatus.STALLED, tick=None)
-        return TickSupply(
-            status=InputStatus.READY,
-            tick=resolved_tick,
-        )
-
-    def supports_command_submission(self) -> bool:
-        return self._submit_command is not None
-
-    def submit_command(self, command: GameCommand) -> None:
-        submit_command = self._submit_command
-        if submit_command is not None:
-            submit_command(command)

@@ -26,7 +26,6 @@ from ..sim.presentation_reactions import (
 from ..sim.sessions import DeterministicSession
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
 from .audio_bridge import AudioBridge
-from .presentation import PresentationLayer
 from .render_resources import RenderResources
 from .sim_world_state import SimWorldState
 from .terrain_runtime import TerrainRuntime
@@ -78,18 +77,16 @@ class WorldRuntime:
             world_size=float(self.world_size),
             config=self.config,
         )
-        self.presentation = PresentationLayer(
+        self.render_resources = render_resources
+        self.audio_bridge = AudioBridge(
+            demo_mode_active=bool(self.demo_mode_active),
+            reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            audio=self.audio,
+            audio_rng=self.audio_rng,
+        )
+        self.terrain_runtime = TerrainRuntime(
+            world_size=float(self.world_size),
             render_resources=render_resources,
-            audio_bridge=AudioBridge(
-                demo_mode_active=bool(self.demo_mode_active),
-                reflex_boost_timer_source=lambda: float(self.sim_world.state.bonuses.reflex_boost),
-                audio=self.audio,
-                audio_rng=self.audio_rng,
-            ),
-            terrain_runtime=TerrainRuntime(
-                world_size=float(self.world_size),
-                render_resources=render_resources,
-            ),
         )
 
         self.camera = Vec2(-1.0, -1.0)
@@ -100,22 +97,6 @@ class WorldRuntime:
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
         self.renderer = WorldRenderer(cast(WorldRenderHost, self))
-
-    # ------------------------------------------------------------------
-    # Forwarding properties (satisfy WorldHost / WorldRenderHost protocols)
-    # ------------------------------------------------------------------
-
-    @property
-    def render_resources(self) -> RenderResources:
-        return self.presentation.render_resources
-
-    @property
-    def audio_bridge(self) -> AudioBridge:
-        return self.presentation.audio_bridge
-
-    @property
-    def terrain_runtime(self) -> TerrainRuntime:
-        return self.presentation.terrain_runtime
 
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)

@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import crimson.screens.panels.network_lobby as lan_lobby_module
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import PendingNetworkSession, RollbackEndpoint, RollbackSessionConfig
+from crimson.game.types import NetworkSessionConfig, PendingNetworkSession, RollbackEndpoint
 from crimson.net.relay_protocol import RoomState
 from crimson.screens.panels.network_lobby import NetworkLobbyPanelView
 from grim.geom import Vec2
@@ -57,13 +57,14 @@ def test_loop_view_resolves_lan_action_using_pending_network_session(make_game_s
     state = make_game_state()
     state.pending_network_session = PendingNetworkSession(
         role="host",
-        config=RollbackSessionConfig(
+        config=NetworkSessionConfig(
             mode="rush",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
                 room_code="",
             ),
+            netcode_mode="rollback",
             player_count=2,
             quest_level="",
             rollback_max_ticks=8,
@@ -86,13 +87,14 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=RollbackSessionConfig(
+        config=NetworkSessionConfig(
             mode="survival",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
                 room_code="ZZ99",
             ),
+            netcode_mode="rollback",
             player_count=2,
             quest_level="",
             rollback_max_ticks=8,
@@ -141,13 +143,14 @@ def test_network_lobby_panel_update_match_start_applies_state_and_transition(mak
     state = make_game_state()
     pending = PendingNetworkSession(
         role="host",
-        config=RollbackSessionConfig(
+        config=NetworkSessionConfig(
             mode="quests",
             endpoint=RollbackEndpoint(
                 relay_host="127.0.0.1",
                 relay_port=31993,
                 room_code="QZ42",
             ),
+            netcode_mode="rollback",
             player_count=2,
             quest_level="1.1",
             rollback_max_ticks=8,

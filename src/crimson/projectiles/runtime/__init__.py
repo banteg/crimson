@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from .behaviors import PROJECTILE_BEHAVIOR_BY_TYPE_ID, ProjectileBehavior, projectile_behavior_for_type_id
 from .collision import _within_native_find_radius
 from .primary_rules import PRIMARY_PROJECTILE_RULE_BY_TYPE_ID, PrimaryProjectileRule, primary_rule_for_type_id
 from .projectile_pool import PrimaryStepCtx, ProjectilePool, ProjectileUpdateOptions, projectile_collision_profile
@@ -9,10 +8,8 @@ from .secondary_rules import SECONDARY_RULE_BY_TYPE_ID, secondary_rule_for_type_
 
 __all__ = [
     "PRIMARY_PROJECTILE_RULE_BY_TYPE_ID",
-    "PROJECTILE_BEHAVIOR_BY_TYPE_ID",
     "PrimaryProjectileRule",
     "PrimaryStepCtx",
-    "ProjectileBehavior",
     "ProjectilePool",
     "ProjectileUpdateOptions",
     "SECONDARY_RULE_BY_TYPE_ID",
@@ -20,7 +17,6 @@ __all__ = [
     "SecondaryStepCtx",
     "SecondaryProjectilePool",
     "_within_native_find_radius",
-    "projectile_behavior_for_type_id",
     "projectile_collision_profile",
     "primary_rule_for_type_id",
     "secondary_rule_for_type_id",

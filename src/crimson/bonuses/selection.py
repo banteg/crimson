@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
-
-import msgspec
 
 from ..game_modes import GameMode
 from ..perks import PerkId
@@ -53,82 +50,36 @@ def _bonus_id_from_roll(roll: int, rng: CrandLike) -> BonusId:
     return BonusId(v6)
 
 
-class _BonusPickCtx(msgspec.Struct):
-    pool: BonusPool
-    state: GameplayState
-    players: list[PlayerState]
-    bonus_id: BonusId
-    has_fire_bullets_drop: bool
-
-
-_BonusPickSuppressRule = Callable[[_BonusPickCtx], bool]
-
-
-def _bonus_pick_suppress_active_shock_chain(ctx: _BonusPickCtx) -> bool:
-    return ctx.state.shock_chain_links_left > 0 and ctx.bonus_id == BonusId.SHOCK_CHAIN
-
-
-def _bonus_pick_suppress_quest_minor10_nuke(ctx: _BonusPickCtx) -> bool:
-    if not (ctx.state.game_mode == GameMode.QUESTS and int(ctx.state.quest_stage_minor) == 10):
-        return False
-    if ctx.bonus_id != BonusId.NUKE:
-        return False
-    major = int(ctx.state.quest_stage_major)
-    if major in (2, 4, 5):
+def _bonus_pick_suppressed(
+    *,
+    state: GameplayState,
+    players: list[PlayerState],
+    bonus_id: BonusId,
+    has_fire_bullets_drop: bool,
+) -> bool:
+    if not _bonus_enabled(bonus_id):
         return True
-    return bool(ctx.state.hardcore) and major == 3
-
-
-def _bonus_pick_suppress_quest_minor10_freeze(ctx: _BonusPickCtx) -> bool:
-    if not (ctx.state.game_mode == GameMode.QUESTS and int(ctx.state.quest_stage_minor) == 10):
+    if state.shock_chain_links_left > 0 and bonus_id == BonusId.SHOCK_CHAIN:
+        return True
+    if bonus_id == BonusId.FREEZE and state.bonuses.freeze > 0.0:
+        return True
+    if bonus_id == BonusId.SHIELD and any(player.shield_timer > 0.0 for player in players):
+        return True
+    if bonus_id == BonusId.WEAPON and has_fire_bullets_drop:
+        return True
+    if bonus_id == BonusId.WEAPON and any(perk_active(player, PerkId.MY_FAVOURITE_WEAPON) for player in players):
+        return True
+    if bonus_id == BonusId.MEDIKIT and any(perk_active(player, PerkId.DEATH_CLOCK) for player in players):
+        return True
+    if state.game_mode != GameMode.QUESTS or state.quest_stage_minor != 10:
         return False
-    if ctx.bonus_id != BonusId.FREEZE:
-        return False
-    major = int(ctx.state.quest_stage_major)
-    return major == 4 or (bool(ctx.state.hardcore) and major == 2)
 
-
-def _bonus_pick_suppress_freeze_active(ctx: _BonusPickCtx) -> bool:
-    return ctx.bonus_id == BonusId.FREEZE and float(ctx.state.bonuses.freeze) > 0.0
-
-
-def _bonus_pick_suppress_shield_active(ctx: _BonusPickCtx) -> bool:
-    if ctx.bonus_id != BonusId.SHIELD:
-        return False
-    return any(player.shield_timer > 0.0 for player in ctx.players)
-
-
-def _bonus_pick_suppress_weapon_when_fire_bullets_drop(ctx: _BonusPickCtx) -> bool:
-    return ctx.bonus_id == BonusId.WEAPON and bool(ctx.has_fire_bullets_drop)
-
-
-def _bonus_pick_suppress_weapon_when_favourite_weapon(ctx: _BonusPickCtx) -> bool:
-    if ctx.bonus_id != BonusId.WEAPON:
-        return False
-    return any(perk_active(player, PerkId.MY_FAVOURITE_WEAPON) for player in ctx.players)
-
-
-def _bonus_pick_suppress_medikit_when_death_clock(ctx: _BonusPickCtx) -> bool:
-    if ctx.bonus_id != BonusId.MEDIKIT:
-        return False
-    return any(perk_active(player, PerkId.DEATH_CLOCK) for player in ctx.players)
-
-
-def _bonus_pick_suppress_disabled(ctx: _BonusPickCtx) -> bool:
-    return not _bonus_enabled(ctx.bonus_id)
-
-
-_BONUS_PICK_SUPPRESS_RULES: tuple[_BonusPickSuppressRule, ...] = (
-    _bonus_pick_suppress_active_shock_chain,
-    _bonus_pick_suppress_quest_minor10_nuke,
-    _bonus_pick_suppress_quest_minor10_freeze,
-    _bonus_pick_suppress_freeze_active,
-    _bonus_pick_suppress_shield_active,
-    _bonus_pick_suppress_weapon_when_fire_bullets_drop,
-    _bonus_pick_suppress_weapon_when_favourite_weapon,
-    _bonus_pick_suppress_medikit_when_death_clock,
-    _bonus_pick_suppress_disabled,
-)
+    major = state.quest_stage_major
+    if bonus_id == BonusId.NUKE:
+        return major in (2, 4, 5) or (state.hardcore and major == 3)
+    if bonus_id == BonusId.FREEZE:
+        return major == 4 or (state.hardcore and major == 2)
+    return False
 
 
 def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[PlayerState]) -> BonusId:
@@ -141,19 +92,12 @@ def bonus_pick_random_type(pool: BonusPool, state: GameplayState, players: list[
         bonus_id = _bonus_id_from_roll(roll, state.rng)
         if bonus_id == BonusId.UNUSED:
             continue
-        ctx = _BonusPickCtx(
-            pool=pool,
+        if _bonus_pick_suppressed(
             state=state,
             players=players,
             bonus_id=bonus_id,
-            has_fire_bullets_drop=bool(has_fire_bullets_drop),
-        )
-        suppressed = False
-        for rule in _BONUS_PICK_SUPPRESS_RULES:
-            if rule(ctx):
-                suppressed = True
-                break
-        if suppressed:
+            has_fire_bullets_drop=has_fire_bullets_drop,
+        ):
             continue
         return bonus_id
     return BonusId.POINTS
