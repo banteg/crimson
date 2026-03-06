@@ -12,6 +12,7 @@ from crimson.sim.input_providers import ResolvedTick
 from crimson.sim.presentation_reactions import apply_post_apply_reaction, build_post_apply_reaction
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
 from crimson.sim.world_state import WorldState
+from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
 from grim.assets import TextureId
 from grim.audio import AudioState
@@ -233,7 +234,7 @@ class WorldRuntimeHost:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_slots: tuple[int, int, int],
+        terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:

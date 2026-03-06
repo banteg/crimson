@@ -85,6 +85,7 @@ from ..sim.presentation_reactions import (
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
+from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
@@ -436,7 +437,7 @@ class BaseGameplayMode:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_slots: tuple[int, int, int],
+        terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:
@@ -449,7 +450,7 @@ class BaseGameplayMode:
     def set_terrain_slots(
         self,
         *,
-        terrain_slots: tuple[int, int, int],
+        terrain_slots: TerrainSlotTriplet,
     ) -> None:
         self.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
         terrain_seed = int(self.sim_world.state.rng.state)
