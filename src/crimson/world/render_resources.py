@@ -5,7 +5,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureId, runtime_resources_for
+from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -18,7 +18,6 @@ from ..gameplay import GameplayState
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_fx_queues
-from ..render.world_assets import WorldRenderAssets, build_world_render_assets
 from ..sim.state_types import PlayerState
 
 
@@ -31,9 +30,12 @@ class RenderResources(msgspec.Struct):
     fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
     fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
     fx_textures: FxQueueTextures | None = None
-    assets: WorldRenderAssets | None = None
+    resources: RuntimeResources | None = None
 
     def texture(self, texture_id: TextureId) -> rl.Texture:
+        resources = self.resources
+        if resources is not None:
+            return resources.texture(texture_id)
         return runtime_resources_for(self.assets_dir).texture(texture_id)
 
     def sync_ground_settings(self) -> None:
@@ -85,17 +87,16 @@ class RenderResources(msgspec.Struct):
 
     def open(self, *, terrain_seed: int) -> None:
         self.close()
-        self.assets = build_world_render_assets(runtime_resources_for(self.assets_dir))
+        resources = runtime_resources_for(self.assets_dir)
+        self.resources = resources
 
         base = self.texture(TextureId.TER_Q1_BASE)
         overlay = self.texture(TextureId.TER_Q1_OVERLAY)
         self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
         self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
-        assets = self.assets
-        assert assets is not None
         self.fx_textures = FxQueueTextures(
-            particles=assets.particles,
-            bodyset=assets.bodyset,
+            particles=resources.texture(TextureId.PARTICLES),
+            bodyset=resources.texture(TextureId.BODYSET),
         )
 
     def close(self) -> None:
@@ -104,7 +105,7 @@ class RenderResources(msgspec.Struct):
             self.ground.render_target = None
         self.ground = None
 
-        self.assets = None
+        self.resources = None
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
@@ -150,7 +151,7 @@ class RenderResources(msgspec.Struct):
             state=state,
             players=players,
             creatures=creatures,
-            assets=self.assets,
+            resources=self.resources,
             elapsed_ms=float(elapsed_ms),
             bonus_anim_phase=float(bonus_anim_phase),
             lan_player_rings_enabled=bool(lan_player_rings_enabled),

@@ -31,8 +31,8 @@ class WorldRenderer(msgspec.Struct):
         entity_alpha: float = 1.0,
     ) -> None:
         frame = render_frame if render_frame is not None else self._build_render_frame()
-        if frame.assets is None:
-            raise RuntimeError("world render assets not loaded")
+        if frame.resources is None:
+            raise RuntimeError("runtime resources not loaded")
         self._render_frame = frame
         try:
             render_ctx = build_world_render_ctx(self, render_frame=frame)

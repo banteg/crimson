@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
@@ -20,15 +21,12 @@ class _TextureLike(Protocol):
     height: int
 
 
-class _AssetsLike(Protocol):
-    bullet_trail: _TextureLike | None
-    bullet: _TextureLike | None
-    particles: _TextureLike | None
-    projs: _TextureLike | None
+class _ResourcesLike(Protocol):
+    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
 
 
 class _RendererLike(Protocol):
-    assets: _AssetsLike
+    resources: _ResourcesLike
     config: object | None
     players: list[object]
     rtx_mode: RtxRenderMode
@@ -73,16 +71,29 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
-class _AssetsStub:
+class _ResourcesStub:
     bullet_trail: _TextureLike | None = None
     bullet: _TextureLike | None = None
     particles: _TextureLike | None = None
     projs: _TextureLike | None = None
 
+    def texture(self, texture_id: TextureId) -> _TextureLike | None:
+        match texture_id:
+            case TextureId.BULLET_TRAIL:
+                return self.bullet_trail
+            case TextureId.BULLET_I:
+                return self.bullet
+            case TextureId.PARTICLES:
+                return self.particles
+            case TextureId.PROJS:
+                return self.projs
+            case _:
+                return None
+
 
 @dataclass(slots=True)
 class _RendererStub:
-    assets: _AssetsStub = field(default_factory=_AssetsStub)
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     config: object | None = None
     players: list[object] = field(default_factory=list)
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC

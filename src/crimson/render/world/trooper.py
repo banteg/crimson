@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -80,9 +81,9 @@ def draw_player_trooper_sprite(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    assets = render_ctx.assets
-    particles_texture = assets.particles
-    muzzle_flash_texture = assets.muzzle_flash
+    resources = render_ctx.resources
+    particles_texture = resources.texture(TextureId.PARTICLES)
+    muzzle_flash_texture = resources.texture(TextureId.MUZZLE_FLASH)
     sprite_grid = 8
     cell = float(texture.width) / float(sprite_grid) if sprite_grid > 0 else float(texture.width)
     if cell <= 0.0:

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Protocol
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
 class ProjectileRendererLike(Protocol):
     @property
-    def assets(self) -> ProjectileRenderAssetsLike: ...
+    def resources(self) -> ProjectileRenderResourcesLike: ...
 
     @property
     def config(self) -> CrimsonConfig | None: ...
@@ -68,18 +69,8 @@ class ProjectileRendererLike(Protocol):
     ) -> None: ...
 
 
-class ProjectileRenderAssetsLike(Protocol):
-    @property
-    def bullet_trail(self) -> rl.Texture | None: ...
-
-    @property
-    def bullet(self) -> rl.Texture | None: ...
-
-    @property
-    def particles(self) -> rl.Texture | None: ...
-
-    @property
-    def projs(self) -> rl.Texture | None: ...
+class ProjectileRenderResourcesLike(Protocol):
+    def texture(self, texture_id: TextureId) -> rl.Texture | None: ...
 
 
 class ProjectileDrawCtx(msgspec.Struct, frozen=True):
@@ -108,7 +99,7 @@ class SecondaryProjectileDrawCtx(msgspec.Struct, frozen=True):
 
 __all__ = [
     "ProjectileDrawCtx",
-    "ProjectileRenderAssetsLike",
+    "ProjectileRenderResourcesLike",
     "ProjectileRendererLike",
     "SecondaryProjectileDrawCtx",
 ]

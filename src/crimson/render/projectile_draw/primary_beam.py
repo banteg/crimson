@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -57,7 +58,7 @@ def _draw_beam_body_sprites(
 
 def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
-    assets = renderer.assets
+    resources = renderer.resources
     type_id = int(ctx.type_id)
     texture = ctx.texture
     if type_id not in BEAM_TYPES:
@@ -164,8 +165,8 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
             )
 
         # Fire Bullets renders an extra particles.png overlay in a later pass.
-        if is_fire_bullets and assets.particles is not None:
-            particles_texture = assets.particles
+        particles_texture = resources.texture(TextureId.PARTICLES)
+        if is_fire_bullets and particles_texture is not None:
             atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
             if atlas is not None:
                 grid = SIZE_CODE_GRID.get(int(atlas.size_code))

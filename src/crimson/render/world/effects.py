@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
@@ -23,7 +24,7 @@ def draw_particle_pool(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    texture = render_ctx.assets.particles
+    texture = render_ctx.resources.texture(TextureId.PARTICLES)
 
     particles = render_ctx.state.particles.entries
     if not any(entry.active for entry in particles):
@@ -125,7 +126,7 @@ def draw_sprite_effect_pool(
         return
     if render_ctx.config is not None and not render_ctx.config.fx_detail(level=2, default=False):
         return
-    texture = render_ctx.assets.particles
+    texture = render_ctx.resources.texture(TextureId.PARTICLES)
 
     effects = render_ctx.state.sprite_effects.entries
     if not any(entry.active for entry in effects):
@@ -171,7 +172,7 @@ def draw_effect_pool(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    texture = render_ctx.assets.particles
+    texture = render_ctx.resources.texture(TextureId.PARTICLES)
 
     effects = render_ctx.state.effects.entries
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):

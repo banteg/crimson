@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import crimson.render.world.draw as world_draw_module
 from crimson.render.world import WorldDrawContext, WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
+from grim.assets import TextureId
 from grim.geom import Vec2
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -21,6 +21,11 @@ def _make_players() -> list[PlayerState]:
 
 
 def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRenderer:
+    class _ResourcesStub:
+        def texture(self, texture_id: TextureId) -> object:
+            assert texture_id == TextureId.UI_AIM
+            return object()
+
     repo_root = Path(__file__).resolve().parents[1]
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     world.reset(player_count=len(players))
@@ -31,7 +36,7 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
         runtime_player.health = test_player.health
     world.lan_local_aim_indicators_only = bool(local_only)
     world.lan_local_player_slot_index = int(local_slot)
-    world.render_resources.assets = SimpleNamespace(aim=object())
+    world.render_resources.resources = _ResourcesStub()  # type: ignore[assignment]
     return world.renderer
 
 

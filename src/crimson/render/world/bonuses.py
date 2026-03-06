@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim.assets import TextureId
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
@@ -58,9 +59,9 @@ def draw_bonus_pickups(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    assets = render_ctx.assets
-    bonuses_texture = assets.bonuses
-    wicons_texture = assets.wicons
+    resources = render_ctx.resources
+    bonuses_texture = resources.texture(TextureId.BONUSES)
+    wicons_texture = resources.texture(TextureId.UI_WICONS)
 
     bubble_src = bonus_icon_src(bonuses_texture, 0)
     bubble_size = 32.0 * scale
@@ -131,7 +132,7 @@ def draw_bonus_hover_labels(
     if alpha <= 1e-3:
         return
 
-    font = render_ctx.assets.small_font
+    font = render_ctx.resources.small_font
     text_scale = 1.0
     screen_w = float(rl.get_screen_width())
 

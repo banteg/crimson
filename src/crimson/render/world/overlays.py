@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -57,9 +58,9 @@ def draw_clock_gauge(
     scale: float,
     alpha: float = 1.0,
 ) -> None:
-    assets = render_ctx.assets
-    table = assets.clock_table
-    pointer = assets.clock_pointer
+    resources = render_ctx.resources
+    table = resources.texture(TextureId.UI_CLOCK_TABLE)
+    pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
     size = 32.0 * scale
     if size <= 1e-3:
         return
@@ -122,7 +123,7 @@ def draw_direction_arrows(
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
-    arrow = render_ctx.assets.arrow
+    arrow = render_ctx.resources.texture(TextureId.ARROW)
 
     src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
     width = max(1.0, float(arrow.width) * scale)

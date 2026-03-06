@@ -7,6 +7,7 @@ import crimson.render.projectile_draw.secondary_detonation as secondary_detonati
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
 from crimson.projectiles.types import SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 if TYPE_CHECKING:
@@ -19,13 +20,12 @@ class _TextureLike(Protocol):
     height: int
 
 
-class _AssetsLike(Protocol):
-    projs: _TextureLike | None
-    particles: _TextureLike | None
+class _ResourcesLike(Protocol):
+    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
 
 
 class _RendererLike(Protocol):
-    assets: _AssetsLike
+    resources: _ResourcesLike
     config: object | None
 
 
@@ -41,14 +41,23 @@ class _TextureStub:
 
 
 @dataclass(slots=True)
-class _AssetsStub:
+class _ResourcesStub:
     projs: _TextureLike | None = None
     particles: _TextureLike | None = None
+
+    def texture(self, texture_id: TextureId) -> _TextureLike | None:
+        match texture_id:
+            case TextureId.PROJS:
+                return self.projs
+            case TextureId.PARTICLES:
+                return self.particles
+            case _:
+                return None
 
 
 @dataclass(slots=True)
 class _RendererStub:
-    assets: _AssetsStub = field(default_factory=_AssetsStub)
+    resources: _ResourcesStub = field(default_factory=_ResourcesStub)
     config: object | None = None
 
 
@@ -69,7 +78,7 @@ def test_secondary_draw_registry_returns_false_when_not_handled() -> None:
 
 def test_secondary_draw_registry_returns_true_for_rocket_like_when_texture_invalid() -> None:
     renderer = _RendererStub()
-    renderer.assets.projs = _TextureStub(width=0, height=128)
+    renderer.resources.projs = _TextureStub(width=0, height=128)
     proj = SecondaryProjectile(type_id=SecondaryProjectileTypeId.ROCKET, pos=Vec2(), angle=0.0)
     ctx = SecondaryProjectileDrawCtx(
         renderer=_as_renderer(renderer),

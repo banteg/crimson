@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
 
 from ...projectiles.types import ProjectileTemplateId
 from ..rtx.mode import RtxRenderMode
-from ..world_assets import WorldRenderAssets
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
@@ -62,10 +62,10 @@ class WorldRenderCtx(msgspec.Struct):
         return self.frame.creatures
 
     @property
-    def assets(self) -> WorldRenderAssets:
-        assets = self.frame.assets
-        assert assets is not None, "world render assets must be loaded before drawing"
-        return assets
+    def resources(self) -> RuntimeResources:
+        resources = self.frame.resources
+        assert resources is not None, "runtime resources must be loaded before drawing"
+        return resources
 
     @property
     def elapsed_ms(self) -> float:
@@ -262,7 +262,7 @@ def _draw_bullet_trail(
     scale: float,
     angle: float,
 ) -> bool:
-    bullet_trail_texture = render_ctx.assets.bullet_trail
+    bullet_trail_texture = render_ctx.resources.texture(TextureId.BULLET_TRAIL)
     if alpha <= 0:
         return False
 

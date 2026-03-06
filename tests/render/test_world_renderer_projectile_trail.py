@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import crimson.render.world.projectiles as world_projectiles
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.frame import RenderFrame
@@ -9,6 +7,7 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.projectiles import draw_bullet_trail
+from grim.assets import TextureId
 from grim.geom import Vec2
 
 
@@ -16,14 +15,15 @@ class _TextureStub:
     id = 1
 
 
-class _RenderResourcesStub:
-    def __init__(self) -> None:
-        self.assets = SimpleNamespace(bullet_trail=_TextureStub())
+class _RuntimeResourcesStub:
+    def texture(self, texture_id: TextureId) -> _TextureStub:
+        assert texture_id == TextureId.BULLET_TRAIL
+        return _TextureStub()
 
 
 class _WorldStub:
     def __init__(self) -> None:
-        self.render_resources = _RenderResourcesStub()
+        self.resources = _RuntimeResourcesStub()
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
@@ -35,7 +35,7 @@ class _WorldStub:
             state=object(),  # type: ignore[arg-type]
             players=[],
             creatures=object(),  # type: ignore[arg-type]
-            assets=self.render_resources.assets,  # type: ignore[arg-type]
+            resources=self.resources,  # type: ignore[arg-type]
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
             lan_player_rings_enabled=False,

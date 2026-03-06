@@ -3286,11 +3286,11 @@ class LightingDebugView:
                 color=UI_ERROR,
             )
 
-        world_assets = self._runtime.render_resources.assets
-        if world_assets is None:
+        resources = self._runtime.render_resources.resources
+        if resources is None:
             return
         mouse = rl.get_mouse_position()
-        draw_aim_cursor(world_assets.particles, self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 
 
 @register_view("lighting-debug", "Lighting debug")

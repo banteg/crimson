@@ -11,6 +11,7 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.effects import draw_effect_pool
+from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -20,6 +21,12 @@ class _TextureStub:
     id = 1
     width = 256
     height = 256
+
+
+class _ResourcesStub:
+    def texture(self, texture_id: TextureId) -> _TextureStub:
+        assert texture_id == TextureId.PARTICLES
+        return _TextureStub()
 
 
 @dataclass(slots=True)
@@ -39,7 +46,7 @@ class _SimWorldStub:
 
 class _WorldStub:
     def __init__(self, entries: list[EffectEntry]) -> None:
-        self.render_assets = SimpleNamespace(particles=_TextureStub())
+        self.resources = _ResourcesStub()
         self.sim_world = _SimWorldStub(state=_StateStub(effects=_EffectPoolStub(entries=entries)))
 
     def build_render_frame(self) -> RenderFrame:
@@ -52,7 +59,7 @@ class _WorldStub:
             state=self.sim_world.state,  # type: ignore[arg-type]
             players=[],
             creatures=SimpleNamespace(entries=[]),  # type: ignore[arg-type]
-            assets=self.render_assets,  # type: ignore[arg-type]
+            resources=self.resources,  # type: ignore[arg-type]
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
             lan_player_rings_enabled=False,

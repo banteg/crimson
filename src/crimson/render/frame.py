@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -10,7 +11,6 @@ from ..creatures.runtime import CreaturePool
 from ..gameplay import GameplayState
 from ..sim.state_types import PlayerState
 from .rtx.mode import RtxRenderMode
-from .world_assets import WorldRenderAssets
 
 
 class RenderFrame(msgspec.Struct, frozen=True):
@@ -29,7 +29,7 @@ class RenderFrame(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
     creatures: CreaturePool
-    assets: WorldRenderAssets | None
+    resources: RuntimeResources | None
 
     elapsed_ms: float
     bonus_anim_phase: float

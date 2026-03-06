@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -498,13 +499,13 @@ class TutorialMode(BaseGameplayMode):
         assets = self._ui_assets
         if assets is None:
             return
-        world_assets = self.render_resources.assets
-        if world_assets is None:
+        resources = self.render_resources.resources
+        if resources is None:
             return
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
-            world_assets.particles,
+            resources.texture(TextureId.PARTICLES),
             cursor_tex,
             pos=mouse_pos,
             pulse_time=float(self._cursor_pulse_time),
