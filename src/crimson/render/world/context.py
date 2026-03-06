@@ -25,71 +25,29 @@ if TYPE_CHECKING:
 
 class WorldRenderCtx(msgspec.Struct):
     renderer: WorldRenderer
-    frame: RenderFrame
+    world_size: float
+    demo_mode_active: bool
+    config: CrimsonConfig | None
+    camera: Vec2
+    ground: GroundRenderer | None
+    state: GameplayState
+    players: list[PlayerState]
+    creatures: CreaturePool
+    _resources: RuntimeResources | None
+    elapsed_ms: float
+    bonus_anim_phase: float
+    lan_player_rings_enabled: bool
+    lan_local_aim_indicators_only: bool
+    lan_local_player_slot_index: int
+    rtx_mode: RtxRenderMode
     projection_camera: Vec2 | None = None
     projection_view_scale: Vec2 | None = None
 
     @property
-    def world_size(self) -> float:
-        return self.frame.world_size
-
-    @property
-    def demo_mode_active(self) -> bool:
-        return self.frame.demo_mode_active
-
-    @property
-    def config(self) -> CrimsonConfig | None:
-        return self.frame.config
-
-    @property
-    def camera(self) -> Vec2:
-        return self.frame.camera
-
-    @property
-    def ground(self) -> GroundRenderer | None:
-        return self.frame.ground
-
-    @property
-    def state(self) -> GameplayState:
-        return self.frame.state
-
-    @property
-    def players(self) -> list[PlayerState]:
-        return self.frame.players
-
-    @property
-    def creatures(self) -> CreaturePool:
-        return self.frame.creatures
-
-    @property
     def resources(self) -> RuntimeResources:
-        resources = self.frame.resources
+        resources = self._resources
         assert resources is not None, "runtime resources must be loaded before drawing"
         return resources
-
-    @property
-    def elapsed_ms(self) -> float:
-        return self.frame.elapsed_ms
-
-    @property
-    def bonus_anim_phase(self) -> float:
-        return self.frame.bonus_anim_phase
-
-    @property
-    def lan_player_rings_enabled(self) -> bool:
-        return bool(self.frame.lan_player_rings_enabled)
-
-    @property
-    def lan_local_aim_indicators_only(self) -> bool:
-        return bool(self.frame.lan_local_aim_indicators_only)
-
-    @property
-    def lan_local_player_slot_index(self) -> int:
-        return int(self.frame.lan_local_player_slot_index)
-
-    @property
-    def rtx_mode(self) -> RtxRenderMode:
-        return self.frame.rtx_mode
 
     def _camera_screen_size(
         self,
@@ -178,7 +136,21 @@ class WorldRenderCtx(msgspec.Struct):
     def with_projection(self, *, camera: Vec2, view_scale: Vec2) -> WorldRenderCtx:
         return WorldRenderCtx(
             renderer=self.renderer,
-            frame=self.frame,
+            world_size=self.world_size,
+            demo_mode_active=self.demo_mode_active,
+            config=self.config,
+            camera=self.camera,
+            ground=self.ground,
+            state=self.state,
+            players=self.players,
+            creatures=self.creatures,
+            _resources=self._resources,
+            elapsed_ms=self.elapsed_ms,
+            bonus_anim_phase=self.bonus_anim_phase,
+            lan_player_rings_enabled=self.lan_player_rings_enabled,
+            lan_local_aim_indicators_only=self.lan_local_aim_indicators_only,
+            lan_local_player_slot_index=self.lan_local_player_slot_index,
+            rtx_mode=self.rtx_mode,
             projection_camera=camera,
             projection_view_scale=view_scale,
         )
@@ -236,7 +208,24 @@ def build_world_render_ctx(
     render_frame: RenderFrame | None = None,
 ) -> WorldRenderCtx:
     frame = render_frame if render_frame is not None else renderer._active_render_frame()
-    return WorldRenderCtx(renderer=renderer, frame=frame)
+    return WorldRenderCtx(
+        renderer=renderer,
+        world_size=frame.world_size,
+        demo_mode_active=frame.demo_mode_active,
+        config=frame.config,
+        camera=frame.camera,
+        ground=frame.ground,
+        state=frame.state,
+        players=frame.players,
+        creatures=frame.creatures,
+        _resources=frame.resources,
+        elapsed_ms=frame.elapsed_ms,
+        bonus_anim_phase=frame.bonus_anim_phase,
+        lan_player_rings_enabled=frame.lan_player_rings_enabled,
+        lan_local_aim_indicators_only=frame.lan_local_aim_indicators_only,
+        lan_local_player_slot_index=frame.lan_local_player_slot_index,
+        rtx_mode=frame.rtx_mode,
+    )
 
 
 def _is_bullet_trail_type(type_id: int) -> bool:

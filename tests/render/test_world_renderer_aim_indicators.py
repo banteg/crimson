@@ -36,7 +36,7 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
         runtime_player.health = test_player.health
     world.lan_local_aim_indicators_only = bool(local_only)
     world.lan_local_player_slot_index = int(local_slot)
-    world.render_resources.resources = _ResourcesStub()  # type: ignore[assignment]
+    world.render_resources.resources = _ResourcesStub()
     return world.renderer
 
 
