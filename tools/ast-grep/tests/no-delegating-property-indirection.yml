@@ -1,0 +1,27 @@
+id: no-delegating-property-indirection
+valid:
+  - |
+    @property
+    def config(self):
+        return self._runtime.active_config
+  - |
+    @property
+    def camera(self) -> Vec2:
+        return build_camera(self._world_runtime)
+  - |
+    @cached_property
+    def config(self) -> Config:
+        return self._runtime.config
+invalid:
+  - |
+    @property
+    def config(self):
+        return self._runtime.config
+  - |
+    @property
+    def camera(self) -> Vec2:
+        return self._world_runtime.camera
+  - |
+    @property
+    def some_name(self, *, fallback=None) -> Value:
+        return self._delegate.some_name

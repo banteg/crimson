@@ -1,0 +1,14 @@
+id: no-delegating-property-indirection
+language: python
+severity: warning
+message: This property is a pure delegation wrapper. Consider whether the extra indirection is intentional.
+rule:
+  any:
+    - pattern: |
+        @property
+        def $NAME($$$PARAMS):
+            return self.$OBJ.$NAME
+    - pattern: |
+        @property
+        def $NAME($$$PARAMS) -> $RET:
+            return self.$OBJ.$NAME

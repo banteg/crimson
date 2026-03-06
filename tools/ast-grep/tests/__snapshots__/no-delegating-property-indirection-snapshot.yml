@@ -1,0 +1,38 @@
+id: no-delegating-property-indirection
+snapshots:
+  ? |
+    @property
+    def camera(self) -> Vec2:
+        return self._world_runtime.camera
+  : labels:
+    - source: |-
+        @property
+        def camera(self) -> Vec2:
+            return self._world_runtime.camera
+      style: primary
+      start: 0
+      end: 73
+  ? |
+    @property
+    def config(self):
+        return self._runtime.config
+  : labels:
+    - source: |-
+        @property
+        def config(self):
+            return self._runtime.config
+      style: primary
+      start: 0
+      end: 59
+  ? |
+    @property
+    def some_name(self, *, fallback=None) -> Value:
+        return self._delegate.some_name
+  : labels:
+    - source: |-
+        @property
+        def some_name(self, *, fallback=None) -> Value:
+            return self._delegate.some_name
+      style: primary
+      start: 0
+      end: 93
