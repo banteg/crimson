@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from types import SimpleNamespace
 
 import crimson.render.world.effects as world_effects
 from crimson.effects import EffectEntry
 from crimson.effects_atlas import EffectId
+from crimson.render.frame import RenderFrame
+from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.effects import draw_effect_pool
@@ -40,6 +43,38 @@ class _WorldStub:
         self.render_resources = SimpleNamespace(particles_texture=_TextureStub())
         self.sim_world = _SimWorldStub(state=_StateStub(effects=_EffectPoolStub(entries=entries)))
 
+    def build_render_frame(self) -> RenderFrame:
+        return RenderFrame(
+            assets_dir=Path("."),
+            world_size=1024.0,
+            demo_mode_active=False,
+            config=None,
+            camera=Vec2(),
+            ground=None,
+            state=self.sim_world.state,  # type: ignore[arg-type]
+            players=[],
+            creatures=SimpleNamespace(entries=[]),  # type: ignore[arg-type]
+            creature_textures={},
+            projs_texture=None,
+            particles_texture=self.render_resources.particles_texture,
+            bullet_texture=None,
+            bullet_trail_texture=None,
+            arrow_texture=None,
+            bonuses_texture=None,
+            bodyset_texture=None,
+            clock_table_texture=None,
+            clock_pointer_texture=None,
+            aim_texture=None,
+            muzzle_flash_texture=None,
+            wicons_texture=None,
+            elapsed_ms=0.0,
+            bonus_anim_phase=0.0,
+            lan_player_rings_enabled=False,
+            lan_local_aim_indicators_only=False,
+            lan_local_player_slot_index=0,
+            rtx_mode=RtxRenderMode.CLASSIC,
+        )
+
 
 def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     return EffectEntry(
@@ -71,7 +106,8 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         _entry(flags=0x40, pos=Vec2(10.0, 20.0)),
         _entry(flags=0x01, pos=Vec2(30.0, 40.0)),
     ]
-    renderer = WorldRenderer(_world=_WorldStub(entries))  # type: ignore[arg-type]
+    world = _WorldStub(entries)
+    renderer = WorldRenderer(world.build_render_frame)
     render_ctx = build_world_render_ctx(renderer)
 
     draw_effect_pool(

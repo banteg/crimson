@@ -27,177 +27,121 @@ if TYPE_CHECKING:
 
 class WorldRenderCtx(msgspec.Struct):
     renderer: WorldRenderer
-    frame: RenderFrame | None = None
+    frame: RenderFrame
     projection_camera: Vec2 | None = None
     projection_view_scale: Vec2 | None = None
 
     @property
     def assets_dir(self) -> Path:
-        if self.frame is not None:
-            return self.frame.assets_dir
-        return self.renderer._world.assets_dir
+        return self.frame.assets_dir
 
     @property
     def world_size(self) -> float:
-        if self.frame is not None:
-            return self.frame.world_size
-        return self.renderer._world.world_size
+        return self.frame.world_size
 
     @property
     def demo_mode_active(self) -> bool:
-        if self.frame is not None:
-            return self.frame.demo_mode_active
-        return self.renderer._world.demo_mode_active
+        return self.frame.demo_mode_active
 
     @property
     def config(self) -> CrimsonConfig | None:
-        if self.frame is not None:
-            return self.frame.config
-        return self.renderer._world.config
+        return self.frame.config
 
     @property
     def camera(self) -> Vec2:
-        if self.frame is not None:
-            return self.frame.camera
-        return self.renderer._world.camera
+        return self.frame.camera
 
     @property
     def ground(self) -> GroundRenderer | None:
-        if self.frame is not None:
-            return self.frame.ground
-        return self.renderer._world.render_resources.ground
+        return self.frame.ground
 
     @property
     def state(self) -> GameplayState:
-        if self.frame is not None:
-            return self.frame.state
-        return self.renderer._world.sim_world.state
+        return self.frame.state
 
     @property
     def players(self) -> list[PlayerState]:
-        if self.frame is not None:
-            return self.frame.players
-        return self.renderer._world.sim_world.players
+        return self.frame.players
 
     @property
     def creatures(self) -> CreaturePool:
-        if self.frame is not None:
-            return self.frame.creatures
-        return self.renderer._world.sim_world.creatures
+        return self.frame.creatures
 
     @property
     def creature_textures(self) -> dict[str, rl.Texture]:
-        if self.frame is not None:
-            return self.frame.creature_textures
-        return self.renderer._world.render_resources.creature_textures
+        return self.frame.creature_textures
 
     @property
     def projs_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.projs_texture
-        return self.renderer._world.render_resources.projs_texture
+        return self.frame.projs_texture
 
     @property
     def particles_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.particles_texture
-        return self.renderer._world.render_resources.particles_texture
+        return self.frame.particles_texture
 
     @property
     def bullet_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.bullet_texture
-        return self.renderer._world.render_resources.bullet_texture
+        return self.frame.bullet_texture
 
     @property
     def bullet_trail_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.bullet_trail_texture
-        return self.renderer._world.render_resources.bullet_trail_texture
+        return self.frame.bullet_trail_texture
 
     @property
     def arrow_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.arrow_texture
-        return self.renderer._world.render_resources.arrow_texture
+        return self.frame.arrow_texture
 
     @property
     def bonuses_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.bonuses_texture
-        return self.renderer._world.render_resources.bonuses_texture
+        return self.frame.bonuses_texture
 
     @property
     def bodyset_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.bodyset_texture
-        return self.renderer._world.render_resources.bodyset_texture
+        return self.frame.bodyset_texture
 
     @property
     def clock_table_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.clock_table_texture
-        return self.renderer._world.render_resources.clock_table_texture
+        return self.frame.clock_table_texture
 
     @property
     def clock_pointer_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.clock_pointer_texture
-        return self.renderer._world.render_resources.clock_pointer_texture
+        return self.frame.clock_pointer_texture
 
     @property
     def aim_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.aim_texture
-        return self.renderer._world.render_resources.aim_texture
+        return self.frame.aim_texture
 
     @property
     def muzzle_flash_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.muzzle_flash_texture
-        return self.renderer._world.render_resources.muzzle_flash_texture
+        return self.frame.muzzle_flash_texture
 
     @property
     def wicons_texture(self) -> rl.Texture | None:
-        if self.frame is not None:
-            return self.frame.wicons_texture
-        return self.renderer._world.render_resources.wicons_texture
+        return self.frame.wicons_texture
 
     @property
     def elapsed_ms(self) -> float:
-        if self.frame is not None:
-            return self.frame.elapsed_ms
-        return float(self.renderer._world.sim_world.presentation_elapsed_ms)
+        return self.frame.elapsed_ms
 
     @property
     def bonus_anim_phase(self) -> float:
-        if self.frame is not None:
-            return self.frame.bonus_anim_phase
-        return float(self.renderer._world.sim_world.bonus_anim_phase)
+        return self.frame.bonus_anim_phase
 
     @property
     def lan_player_rings_enabled(self) -> bool:
-        if self.frame is not None:
-            return bool(self.frame.lan_player_rings_enabled)
-        return bool(self.renderer._world.lan_player_rings_enabled)
+        return bool(self.frame.lan_player_rings_enabled)
 
     @property
     def lan_local_aim_indicators_only(self) -> bool:
-        if self.frame is not None:
-            return bool(self.frame.lan_local_aim_indicators_only)
-        return bool(self.renderer._world.lan_local_aim_indicators_only)
+        return bool(self.frame.lan_local_aim_indicators_only)
 
     @property
     def lan_local_player_slot_index(self) -> int:
-        if self.frame is not None:
-            return int(self.frame.lan_local_player_slot_index)
-        return int(self.renderer._world.lan_local_player_slot_index)
+        return int(self.frame.lan_local_player_slot_index)
 
     @property
     def rtx_mode(self) -> RtxRenderMode:
-        if self.frame is not None:
-            return self.frame.rtx_mode
-        return self.renderer._world.rtx_mode
+        return self.frame.rtx_mode
 
     def _ensure_small_font(self) -> SmallFontData | None:
         if self.renderer._small_font is not None:
@@ -349,7 +293,8 @@ def build_world_render_ctx(
     *,
     render_frame: RenderFrame | None = None,
 ) -> WorldRenderCtx:
-    return WorldRenderCtx(renderer=renderer, frame=render_frame)
+    frame = render_frame if render_frame is not None else renderer._active_render_frame()
+    return WorldRenderCtx(renderer=renderer, frame=frame)
 
 
 def _is_bullet_trail_type(type_id: int) -> bool:

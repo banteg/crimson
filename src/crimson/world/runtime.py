@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import cast
 
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -12,7 +11,7 @@ from grim.rand import Crand
 from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
-from ..render.world.renderer import WorldRenderer, WorldRenderHost
+from ..render.world.renderer import WorldRenderer
 from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
 from ..sim.frame_pump import advance_tick_runner_frame
@@ -36,8 +35,7 @@ WorldTickInputBuilder = Callable[[FrameContext], Sequence[PlayerInput]]
 class WorldRuntime:
     """Composition container owning the 4 world components and shared lifecycle methods.
 
-    Satisfies both ``WorldHost`` (sim/tick harness) and ``WorldRenderHost``
-    (renderer) protocols, eliminating unsafe ``cast()`` patterns.
+    Satisfies the world/tick harness directly and provides render frames to the renderer.
     """
 
     def __init__(
@@ -96,7 +94,7 @@ class WorldRuntime:
 
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(cast(WorldRenderHost, self))
+        self.renderer = WorldRenderer(self.build_render_frame)
 
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)
