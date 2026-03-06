@@ -450,3 +450,28 @@ Rewrite behavior:
   targeted player’s own position.
 - With `--preserve-bugs`: keep native player-1-sourced distance bias for player
   2 auto-target replacement.
+
+## 20) No-target homing lookups silently fall back to creature slot 0
+
+Native behavior:
+
+- `creature_find_nearest` (`0x00420040`) initializes its return slot to `0` and
+  never emits a “not found” sentinel.
+- If no creature qualifies, the helper returns `0`, and its callers immediately
+  treat that as a valid target.
+- This affects Shock Chain startup/retargeting and seeker rocket
+  spawn/retargeting when a frame has no valid target.
+
+Why it’s likely a bug:
+
+- The helper is clearly doing a nearest-target search, but a miss is silently
+  converted into an unrelated pool index.
+- This can point homing behavior at stale slot-0 data instead of ending the
+  chain / rocket retarget cleanly.
+
+Rewrite behavior:
+
+- Default: use a no-target sentinel when no qualifying creature exists, so Shock
+  Chain and seeker rockets stop retargeting instead of reusing slot 0.
+- With `--preserve-bugs`: keep native slot-0 fallback behavior on target-search
+  misses.

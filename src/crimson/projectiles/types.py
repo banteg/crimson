@@ -25,6 +25,7 @@ class _SpriteEffectsLike(Protocol):
 class ProjectileRuntimeState(Protocol):
     bonus_spawn_guard: bool
     camera_shake_pulses: int
+    preserve_bugs: bool
     shock_chain_links_left: int
     shock_chain_projectile_id: int
 

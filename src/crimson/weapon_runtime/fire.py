@@ -320,6 +320,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     owner=owner,
                     target_hint=target_hint,
                     creatures=spawn_creatures,
+                    preserve_bugs=bool(state.preserve_bugs),
                 ),
             )
         case ParticleStreamMode(style=style, slow=slow):
@@ -379,6 +380,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                         owner=owner,
                         target_hint=aim,
                         creatures=creatures,
+                        preserve_bugs=bool(state.preserve_bugs),
                     ),
                 )
                 angle += step
