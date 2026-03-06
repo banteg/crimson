@@ -1,67 +1,14 @@
 from __future__ import annotations
 
-from collections.abc import Callable, MutableSequence
+from collections.abc import Callable
 from enum import IntEnum
 from typing import Protocol
 
 import msgspec
 
-from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import CrandLike
 
-from ..effects import EffectPool
 from ..owner_ref import OwnerRef
-
-
-class _BonusesLike(Protocol):
-    freeze: float
-
-
-class _SpriteEffectsLike(Protocol):
-    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int: ...
-
-
-class ProjectileRuntimeState(Protocol):
-    bonus_spawn_guard: bool
-    camera_shake_pulses: int
-    preserve_bugs: bool
-    shock_chain_links_left: int
-    shock_chain_projectile_id: int
-
-    @property
-    def effects(self) -> EffectPool: ...
-
-    @property
-    def sprite_effects(self) -> _SpriteEffectsLike: ...
-
-    @property
-    def rng(self) -> CrandLike: ...
-
-    @property
-    def bonuses(self) -> _BonusesLike: ...
-
-    @property
-    def sfx_queue(self) -> MutableSequence[str]: ...
-
-    @property
-    def shots_hit(self) -> MutableSequence[int]: ...
-
-
-class FxQueueLike(Protocol):
-    def add(
-        self,
-        *,
-        effect_id: int,
-        pos: Vec2,
-        width: float,
-        height: float,
-        rotation: float,
-        rgba: RGBA,
-    ) -> bool: ...
-
-    def add_random(self, *, pos: Vec2, rand: Callable[[], int]) -> bool: ...
-
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
@@ -155,12 +102,10 @@ class SecondaryProjectile(msgspec.Struct):
 
 __all__ = [
     "CreatureDamageApplier",
-    "FxQueueLike",
     "MAIN_PROJECTILE_POOL_SIZE",
     "Projectile",
     "ProjectileCollisionProfile",
     "ProjectileHit",
-    "ProjectileRuntimeState",
     "ProjectileTemplateId",
     "OwnerRef",
     "SecondaryDetonationKillHandler",
@@ -168,5 +113,4 @@ __all__ = [
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
     "_rng_zero",
-    "_SpriteEffectsLike",
 ]

@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-"""Ordered projectile-decal hooks for presentation planning."""
-
 from collections.abc import Callable
-
-import msgspec
 
 from grim.geom import Vec2
 
@@ -13,36 +9,24 @@ from ...effects import FxQueue
 from ...projectiles.types import ProjectileHit, ProjectileTemplateId
 
 
-class ProjectileDecalCtx(msgspec.Struct):
-    hit: ProjectileHit
-    base_angle: float
-    fx_queue: FxQueue
-    rand: Callable[[], int]
-    freeze_origin: Vec2 | None = None
-    spawn_freeze_shard: Callable[[Vec2, float], None] | None = None
-
-
-def _hook_large_streak_projectiles(ctx: ProjectileDecalCtx) -> bool:
-    type_id = ctx.hit.type_id
+def queue_projectile_large_streak_decal(
+    *,
+    hit: ProjectileHit,
+    base_angle: float,
+    fx_queue: FxQueue,
+    rand: Callable[[], int],
+    freeze_origin: Vec2 | None = None,
+    spawn_freeze_shard: Callable[[Vec2, float], None] | None = None,
+) -> bool:
+    type_id = hit.type_id
     if type_id not in (ProjectileTemplateId.GAUSS_GUN, ProjectileTemplateId.FIRE_BULLETS):
         return False
     queue_large_hit_decal_streak(
-        hit=ctx.hit,
-        base_angle=float(ctx.base_angle),
-        fx_queue=ctx.fx_queue,
-        rand=ctx.rand,
-        freeze_origin=ctx.freeze_origin,
-        spawn_freeze_shard=ctx.spawn_freeze_shard,
+        hit=hit,
+        base_angle=float(base_angle),
+        fx_queue=fx_queue,
+        rand=rand,
+        freeze_origin=freeze_origin,
+        spawn_freeze_shard=spawn_freeze_shard,
     )
     return True
-
-
-_PROJECTILE_DECAL_HOOKS = (_hook_large_streak_projectiles,)
-
-
-def run_projectile_decal_hooks(ctx: ProjectileDecalCtx) -> bool:
-    """Run ordered decal hooks and return True when one handles the hit."""
-    for hook in _PROJECTILE_DECAL_HOOKS:
-        if hook(ctx):
-            return True
-    return False

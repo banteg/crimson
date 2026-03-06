@@ -3,10 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from grim.geom import Vec2
+
 from ..perks import PerkId
 from ..perks.helpers import perk_count_get
 from ..sim.state_types import GameplayState, PlayerState
-from .apply_context import BonusApplyCtx, BonusApplyHandler, HasPos
+from .apply_context import BonusApplyCtx, BonusApplyHandler
 from .double_experience import apply_double_experience
 from .energizer import apply_energizer
 from .fire_bullets import apply_fire_bullets
@@ -50,7 +52,7 @@ def bonus_apply(
     bonus_id: BonusId,
     *,
     amount: int | None = None,
-    origin: HasPos | None = None,
+    origin: Vec2,
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
     detail_preset: int = 5,
@@ -73,7 +75,7 @@ def bonus_apply(
         player=player,
         bonus_id=bonus_id,
         amount=int(amount),
-        origin=origin,
+        origin_pos=origin,
         creatures=creatures,
         players=players,
         detail_preset=int(detail_preset),

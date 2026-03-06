@@ -62,7 +62,7 @@ def bonus_telekinetic_update(
             player,
             entry.bonus_id,
             amount=int(entry.amount),
-            origin=entry,
+            origin=entry.pos,
             creatures=creatures,
             players=players,
             detail_preset=int(detail_preset),

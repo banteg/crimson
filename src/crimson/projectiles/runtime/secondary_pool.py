@@ -11,20 +11,17 @@ from grim.geom import Vec2
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
-from ...effects import EffectPool
+from ...effects import EffectPool, FxQueue, SpriteEffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import f32
 from ...owner_ref import OwnerRef
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
     CreatureDamageApplier,
-    FxQueueLike,
-    ProjectileRuntimeState,
     SecondaryDetonationKillHandler,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
     _rng_zero,
-    _SpriteEffectsLike,
 )
 from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
 from .secondary_rules import (
@@ -38,6 +35,7 @@ from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
+    from ...gameplay import GameplayState
 
 
 class SecondarySpawnSpec(msgspec.Struct, frozen=True):
@@ -54,8 +52,8 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
 class SecondaryStepCtx(msgspec.Struct, frozen=True):
     dt: float
     creatures: Sequence[CreatureState]
-    runtime_state: ProjectileRuntimeState | None = None
-    fx_queue: FxQueueLike | None = None
+    runtime_state: GameplayState | None = None
+    fx_queue: FxQueue | None = None
     detail_preset: int = 5
     on_detonation_kill: SecondaryDetonationKillHandler | None = None
 
@@ -173,7 +171,7 @@ class SecondaryProjectilePool:
         rand = _rng_zero
         freeze_active = False
         effects: EffectPool | None = None
-        sprite_effects: _SpriteEffectsLike | None = None
+        sprite_effects: SpriteEffectPool | None = None
         sfx_queue: MutableSequence[str] | None = None
         if runtime_state is not None:
             rand = runtime_state.rng.rand

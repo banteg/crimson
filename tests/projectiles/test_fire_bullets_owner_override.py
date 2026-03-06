@@ -88,7 +88,7 @@ def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner(
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1, creatures=[], players=players, detail_preset=5)
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
     non_owner_types = _active_type_ids(state)
 
     assert int(ProjectileTemplateId.FIRE_BULLETS) not in non_owner_types
@@ -99,7 +99,7 @@ def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner(
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1, creatures=[], players=players, detail_preset=5)
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
     owner_types = _active_type_ids(state)
 
     assert owner_types
@@ -148,7 +148,7 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    bonus_apply(state, player1, BonusId.NUKE, origin=player1, creatures=[], players=players, detail_preset=5)
+    bonus_apply(state, player1, BonusId.NUKE, origin=player1.pos, creatures=[], players=players, detail_preset=5)
     nuke_types = _active_type_ids(state)
     assert nuke_types
     assert set(nuke_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}

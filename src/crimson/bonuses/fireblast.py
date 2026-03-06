@@ -7,14 +7,14 @@ from .apply_context import BonusApplyCtx
 
 
 def apply_fireblast(ctx: BonusApplyCtx) -> None:
-    origin = ctx.origin_pos()
+    origin = ctx.origin_pos
     owner = (
         owner_ref_for_player(ctx.player.index) if ctx.state.friendly_fire_enabled else OwnerRef.from_local_player(0)
     )
     ctx.state.bonus_spawn_guard = True
     spawn_projectile_ring(
         ctx.state,
-        origin.pos,
+        origin,
         count=16,
         angle_offset=0.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,

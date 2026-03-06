@@ -425,7 +425,7 @@ class BonusPool:
                         player,
                         entry.bonus_id,
                         amount=entry.amount,
-                        origin=entry,
+                        origin=entry.pos,
                         creatures=creatures,
                         players=players,
                         detail_preset=int(detail_preset),

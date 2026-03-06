@@ -12,7 +12,7 @@ from ..bonuses.freeze import freeze_bonus_active
 from ..creatures.runtime import CreatureDeath
 from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue
-from ..features.presentation import ProjectileDecalCtx, run_projectile_decal_hooks
+from ..features.presentation import queue_projectile_large_streak_decal
 from ..game_modes import GameMode
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -335,15 +335,13 @@ def queue_projectile_decals_post_hit(
     # post-hit terrain decal burst branch.
     rand()
 
-    hook_handled = run_projectile_decal_hooks(
-        ProjectileDecalCtx(
-            hit=hit,
-            base_angle=float(base_angle),
-            fx_queue=fx_queue,
-            rand=rand,
-            freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
-            spawn_freeze_shard=post_ctx.freeze_shard_spawn,
-        ),
+    hook_handled = queue_projectile_large_streak_decal(
+        hit=hit,
+        base_angle=float(base_angle),
+        fx_queue=fx_queue,
+        rand=rand,
+        freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
+        spawn_freeze_shard=post_ctx.freeze_shard_spawn,
     )
 
     if bool(hook_handled) or bool(post_ctx.freeze_active):

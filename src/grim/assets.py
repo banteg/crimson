@@ -170,17 +170,6 @@ TEXTURE_SPECS: Final[dict[TextureId, TextureSpec]] = {
     TextureId.UI_TEXT_LEVEL_UP: TextureSpec("ui/ui_textLevelUp.jaz", clamp=True),
 }
 
-class TextureAsset(msgspec.Struct):
-    texture: rl.Texture | None
-
-    def unload(self) -> None:
-        texture = self.texture
-        if texture is None:
-            return
-        rl.unload_texture(texture)
-        self.texture = None
-
-
 class RuntimeResources(msgspec.Struct):
     assets_dir: Path
     textures: dict[TextureId, rl.Texture]
@@ -227,10 +216,6 @@ def runtime_resources_for(assets_dir: Path) -> RuntimeResources:
     return resources
 
 
-def texture_for(assets_dir: Path, texture_id: TextureId) -> rl.Texture:
-    return runtime_resources_for(assets_dir).texture(texture_id)
-
-
 def load_paq_entries_from_path(paq_path: Path) -> dict[str, bytes]:
     entries: dict[str, bytes] = {}
     if not paq_path.exists():
@@ -259,7 +244,7 @@ def _apply_texture_settings(texture: rl.Texture, *, clamp: bool, point_filter: b
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
 
 
-def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> TextureAsset:
+def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> rl.Texture | None:
     if data is None:
         raise FileNotFoundError(f"Missing asset data: {rel_path}")
     texture: rl.Texture | None
@@ -280,7 +265,7 @@ def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> Texture
         texture = _load_texture_from_bytes(buf.getvalue(), ".png")
     else:
         texture = None
-    return TextureAsset(texture=texture)
+    return texture
 
 
 def _build_small_font(textures: dict[TextureId, rl.Texture], widths_data: bytes) -> SmallFontData:
@@ -296,8 +281,7 @@ def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
     entries = load_paq_entries(Path(assets_dir))
     textures: dict[TextureId, rl.Texture] = {}
     for texture_id, spec in TEXTURE_SPECS.items():
-        asset = _load_texture_asset_from_bytes(spec.rel_path, entries.get(spec.rel_path))
-        texture = asset.texture
+        texture = _load_texture_asset_from_bytes(spec.rel_path, entries.get(spec.rel_path))
         if texture is None:
             raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")
         _apply_texture_settings(texture, clamp=bool(spec.clamp), point_filter=bool(spec.point_filter))

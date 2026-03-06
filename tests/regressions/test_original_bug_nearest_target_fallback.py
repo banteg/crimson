@@ -37,7 +37,7 @@ def test_shock_chain_initial_target_miss_handling(
     player = PlayerState(index=0, pos=Vec2())
     creatures = [make_creature_state(pos=Vec2(50.0, 0.0), active=False)]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures, players=[player])
+    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
 
     assert state.shock_chain_links_left == expected_links_left
     assert state.sfx_queue == expected_sfx
@@ -65,7 +65,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
         make_creature_state(pos=Vec2(50.0, 0.0), hp=100.0),
     ]
 
-    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures, players=[player])
+    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
     first_proj = int(state.shock_chain_projectile_id)
     assert first_proj >= 0
 

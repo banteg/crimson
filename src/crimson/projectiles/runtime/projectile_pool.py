@@ -21,7 +21,6 @@ from ..types import (
     Projectile,
     ProjectileCollisionProfile,
     ProjectileHit,
-    ProjectileRuntimeState,
     ProjectileTemplateId,
 )
 from .behaviors import (
@@ -36,6 +35,7 @@ from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
+    from ...gameplay import GameplayState
     from ...sim.state_types import PlayerState
 
 
@@ -43,7 +43,7 @@ class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
     damage_scale_by_type: dict[int, float]
     rng: Callable[[], int]
-    runtime_state: ProjectileRuntimeState
+    runtime_state: GameplayState
     players: Sequence[PlayerState]
     apply_player_damage: Callable[[int, float], None]
     ion_aoe_scale: float = 1.0

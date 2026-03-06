@@ -23,13 +23,13 @@ from ..effects import (
 )
 from ..types import (
     Projectile,
-    ProjectileRuntimeState,
     ProjectileTemplateId,
 )
 from .collision import _apply_damage_to_creature, _hit_radius_for
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
+    from ...gameplay import GameplayState
     from .projectile_pool import ProjectilePool
 
 
@@ -40,7 +40,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     ion_scale: float
     detail_preset: int
     rng: Callable[[], int]
-    runtime_state: ProjectileRuntimeState | None
+    runtime_state: GameplayState | None
     effects: EffectPool | None
     sfx_queue: MutableSequence[str] | None
 
