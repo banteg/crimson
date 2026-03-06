@@ -8,6 +8,7 @@ from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
 from ..ui.perk_menu import MENU_ITEM_ALPHA_IDLE, MENU_ITEM_RGB, draw_menu_item
+from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
 from .registry import register_view
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -39,9 +40,11 @@ class SmallFontDebugView:
         self._vector_font_path: Path | None = None
         self._vector_font_alt: rl.Font | None = None
         self._vector_font_alt_path: Path | None = None
+        self._runtime_resources_owned = False
 
     def open(self) -> None:
         self._missing_assets.clear()
+        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
         self._small = load_small_font(self._assets_root)
         self._vector_font = None
         self._vector_font_path = None
@@ -89,6 +92,8 @@ class SmallFontDebugView:
             rl.unload_font(self._vector_font_alt)
             self._vector_font_alt = None
             self._vector_font_alt_path = None
+        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
+        self._runtime_resources_owned = False
 
     def update(self, dt: float) -> None:
         del dt

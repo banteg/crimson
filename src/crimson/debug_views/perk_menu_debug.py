@@ -24,6 +24,7 @@ from ..ui.perk_menu import (
     menu_item_hit_rect,
     perk_menu_compute_layout,
 )
+from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
 from .registry import register_view
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -73,9 +74,11 @@ class PerkMenuDebugView:
         self._cancel_button = UiButtonState("Cancel")
         self._debug_overlay = True
         self._show_prompt_rect = False
+        self._runtime_resources_owned = False
 
     def open(self) -> None:
         self._missing_assets.clear()
+        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
         self._small = load_small_font(self._assets_root)
         self._assets = load_perk_menu_assets(self._assets_root)
         rl.hide_cursor()
@@ -86,6 +89,8 @@ class PerkMenuDebugView:
             self._assets = None
         if self._small is not None:
             self._small = None
+        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
+        self._runtime_resources_owned = False
 
     def _choices(self) -> list[PerkId]:
         if not self._perk_ids:

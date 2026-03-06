@@ -25,6 +25,7 @@ from ..weapons import (
     projectile_type_id_for_weapon_id,
 )
 from ..world import WorldRuntime
+from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -111,6 +112,7 @@ class ArsenalDebugView:
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
         self._console: ConsoleState | None = None
+        self._runtime_resources_owned = False
 
         self._weapon_ids = sorted({int(entry.weapon_id) for entry in WEAPON_TABLE})
         self._weapon_index = 0
@@ -330,6 +332,7 @@ class ArsenalDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
+        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
         bootstrap = init_view_audio(self._assets_root)
         self._runtime.config = bootstrap.config
         self._console = bootstrap.console
@@ -362,6 +365,8 @@ class ArsenalDebugView:
         self._runtime.audio_rng = None
         self._runtime.close_runtime()
         self._aim_texture = None
+        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
+        self._runtime_resources_owned = False
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested
