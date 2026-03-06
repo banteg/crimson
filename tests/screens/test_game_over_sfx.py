@@ -118,6 +118,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
 
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
+    mocker.patch.object(high_scores_view_module, "ensure_menu_ground", return_value=None)
     mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub())
 

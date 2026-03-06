@@ -7,7 +7,6 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.projectiles import draw_bullet_trail
-from crimson.render.world.viewport import WorldViewportState
 from grim.assets import TextureId
 from grim.geom import Vec2
 
@@ -45,14 +44,6 @@ class _WorldStub:
             rtx_mode=RtxRenderMode.CLASSIC,
         )
 
-    def build_viewport_state(self) -> WorldViewportState:
-        return WorldViewportState(
-            world_size=1024.0,
-            config=None,
-            camera=Vec2(),
-        )
-
-
 def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
     mocker.patch.object(world_projectiles.rl, "rl_set_texture")
@@ -64,8 +55,9 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     mocker.patch.object(world_projectiles.rl, "end_blend_mode")
 
     world = _WorldStub()
-    renderer = WorldRenderer(world.build_render_frame, world.build_viewport_state)
-    render_ctx = build_world_render_ctx(renderer)
+    frame = world.build_render_frame()
+    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
+    render_ctx = build_world_render_ctx(renderer, render_frame=frame)
 
     drawn = draw_bullet_trail(
         render_ctx,

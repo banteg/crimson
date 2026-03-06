@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import crimson.render.world.draw as world_draw_module
-from crimson.render.world import WorldDrawContext, WorldRenderer
+from crimson.render.world import WorldDrawContext
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import draw_aim_enhancements, draw_aim_indicators
 from crimson.sim.state_types import PlayerState
@@ -20,7 +20,7 @@ def _make_players() -> list[PlayerState]:
     ]
 
 
-def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRenderer:
+def _make_world(*, players: list[PlayerState], local_only: bool, local_slot: int) -> WorldRuntimeHost:
     class _ResourcesStub:
         def texture(self, texture_id: TextureId) -> object:
             assert texture_id == TextureId.UI_AIM
@@ -37,7 +37,7 @@ def _make_renderer(*, players: list[PlayerState], local_only: bool, local_slot: 
     world.lan_local_aim_indicators_only = bool(local_only)
     world.lan_local_player_slot_index = int(local_slot)
     world.render_resources.resources = _ResourcesStub()
-    return world.renderer
+    return world
 
 
 def _draw_ctx() -> WorldDrawContext:
@@ -51,8 +51,9 @@ def _x_from_call_arg(call, *, key: str, arg_index: int) -> float:
 
 
 def test_lan_aim_indicators_draw_local_player_only(mocker) -> None:
-    renderer = _make_renderer(players=_make_players(), local_only=True, local_slot=1)
-    render_ctx = build_world_render_ctx(renderer)
+    world = _make_world(players=_make_players(), local_only=True, local_slot=1)
+    renderer = world.renderer
+    render_ctx = build_world_render_ctx(renderer, render_frame=world.build_render_frame())
     ctx = _draw_ctx()
     draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
     draw_aim_circle = mocker.Mock()
@@ -77,8 +78,9 @@ def test_lan_aim_indicators_draw_local_player_only(mocker) -> None:
 
 
 def test_non_lan_aim_indicators_draw_all_players(mocker) -> None:
-    renderer = _make_renderer(players=_make_players(), local_only=False, local_slot=1)
-    render_ctx = build_world_render_ctx(renderer)
+    world = _make_world(players=_make_players(), local_only=False, local_slot=1)
+    renderer = world.renderer
+    render_ctx = build_world_render_ctx(renderer, render_frame=world.build_render_frame())
     ctx = _draw_ctx()
     draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
     draw_aim_circle = mocker.Mock()

@@ -25,6 +25,7 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
             return _texture_stub()
 
     mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
+    mocker.patch.object(end_note_module, "ensure_menu_ground", return_value=None)
     mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
     mocker.patch.object(EndNoteView, "_ensure_small_font", return_value=_font_stub())

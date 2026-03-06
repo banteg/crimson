@@ -8,9 +8,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 import pytest
 
 import grim.terrain_render as terrain_render
-from crimson.render.frame import RenderFrame
 from crimson.render.world import renderer as world_renderer
-from crimson.render.world.viewport import WorldViewportState
 from crimson.world import runtime as world_runtime
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
@@ -143,17 +141,11 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
     assert_float_close(world.camera.y, -224.0)
 
 
-def test_renderer_viewport_helpers_do_not_build_render_frame(mocker) -> None:
-    def _unused_render_frame() -> RenderFrame:
-        raise AssertionError("render frame should not be built")
-
+def test_renderer_viewport_helpers_are_frame_independent(mocker) -> None:
     renderer = world_renderer.WorldRenderer(
-        _unused_render_frame,
-        lambda: WorldViewportState(
-            world_size=1024.0,
-            config=None,
-            camera=Vec2(-32.0, -48.0),
-        ),
+        world_size=1024.0,
+        config=None,
+        camera=Vec2(-32.0, -48.0),
     )
     mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
     mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)

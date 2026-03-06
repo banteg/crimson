@@ -11,7 +11,6 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.draw import WorldDrawContext
 from crimson.render.world.renderer import WorldRenderer
-from crimson.render.world.viewport import WorldViewportState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_state
 
@@ -45,12 +44,7 @@ def _render_ctx_for_creatures(creatures: list[object]):
         lan_local_player_slot_index=0,
         rtx_mode=RtxRenderMode.CLASSIC,
     )
-    viewport_state = WorldViewportState(
-        world_size=frame.world_size,
-        config=frame.config,
-        camera=frame.camera,
-    )
-    renderer = WorldRenderer(lambda: frame, lambda: viewport_state)
+    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
     return build_world_render_ctx(renderer, render_frame=frame)
 
 

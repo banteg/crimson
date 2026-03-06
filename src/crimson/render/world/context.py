@@ -176,26 +176,25 @@ class WorldRenderCtx(msgspec.Struct):
 def build_world_render_ctx(
     renderer: WorldRenderer,
     *,
-    render_frame: RenderFrame | None = None,
+    render_frame: RenderFrame,
 ) -> WorldRenderCtx:
-    frame = render_frame if render_frame is not None else renderer._active_render_frame()
     return WorldRenderCtx(
         renderer=renderer,
-        world_size=frame.world_size,
-        demo_mode_active=frame.demo_mode_active,
-        config=frame.config,
-        camera=frame.camera,
-        ground=frame.ground,
-        state=frame.state,
-        players=frame.players,
-        creatures=frame.creatures,
-        resources=frame.resources,
-        elapsed_ms=frame.elapsed_ms,
-        bonus_anim_phase=frame.bonus_anim_phase,
-        lan_player_rings_enabled=frame.lan_player_rings_enabled,
-        lan_local_aim_indicators_only=frame.lan_local_aim_indicators_only,
-        lan_local_player_slot_index=frame.lan_local_player_slot_index,
-        rtx_mode=frame.rtx_mode,
+        world_size=render_frame.world_size,
+        demo_mode_active=render_frame.demo_mode_active,
+        config=render_frame.config,
+        camera=render_frame.camera,
+        ground=render_frame.ground,
+        state=render_frame.state,
+        players=render_frame.players,
+        creatures=render_frame.creatures,
+        resources=render_frame.resources,
+        elapsed_ms=render_frame.elapsed_ms,
+        bonus_anim_phase=render_frame.bonus_anim_phase,
+        lan_player_rings_enabled=render_frame.lan_player_rings_enabled,
+        lan_local_aim_indicators_only=render_frame.lan_local_aim_indicators_only,
+        lan_local_player_slot_index=render_frame.lan_local_player_slot_index,
+        rtx_mode=render_frame.rtx_mode,
     )
 
 
