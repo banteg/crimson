@@ -272,8 +272,15 @@ def cmd_dbg_tick(
     typer.echo(
         "tick="
         + str(payload.get("tick_index"))
-        + " elapsed_ms="
-        + str(payload.get("elapsed_ms"))
+        + " "
+        + next(
+            (
+                key + "=" + str(payload.get(key))
+                for key in ("sim_elapsed_ms", "raw_frame_elapsed_ms", "quest_spawn_timeline_ms")
+                if key in payload
+            ),
+            "elapsed=<missing>",
+        )
         + " dt_ms_i32="
         + str(payload.get("dt_ms_i32"))
         + " mode_id="

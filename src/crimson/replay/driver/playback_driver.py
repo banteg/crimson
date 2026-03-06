@@ -39,6 +39,7 @@ from .setup import (
     RunResult,
     build_damage_scale_by_type,
     build_empty_fx_queues,
+    build_run_result_for_mode,
     player0_most_used_weapon_id,
     player0_shots,
     reset_players,
@@ -312,7 +313,7 @@ class PlaybackDriver:
                     game_tune_started=False,
                     clear_fx_queues_each_tick=True,
                     finalize_post_render_lifecycle=True,
-                    elapsed_uses_raw_dt=True,
+                    session_elapsed_source="raw_frame_elapsed_ms",
                     mid_step_hook=lambda ctx: rush_mid_step(ctx, rush_spawn),
                     before_step_hook=lambda: enforce_rush_loadout(self.world),
                     input_transform=rush_input_transform,
@@ -379,6 +380,7 @@ class PlaybackDriver:
             tick_index=int(tick_result.source_tick.tick_index),
             world=self.world,
             elapsed_ms=float(self.elapsed_ms),
+            game_mode_id=self.mode_id,
             creature_count_override=(
                 int(tick_result.payload.creature_count_world_step)
                 if bool(use_world_step_creature_count)
@@ -485,7 +487,7 @@ class PlaybackDriver:
         most_used_weapon_id = player0_most_used_weapon_id(self.world.state, self.world.players)
         score_xp = int(self.world.players[0].experience) if self.world.players else 0
 
-        return RunResult(
+        return build_run_result_for_mode(
             game_mode_id=self.mode_id,
             tick_rate=int(self.tick_rate),
             ticks=int(ticks),

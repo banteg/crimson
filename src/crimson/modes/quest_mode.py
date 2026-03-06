@@ -276,7 +276,7 @@ class QuestMode(BaseGameplayMode):
                     tick_index=int(frame_tick_index),
                     replay_state=self._net_replay_snapshot_state(),
                     runtime_state=QuestsRuntimeSnapshotV2(
-                        elapsed_ms=float(session.elapsed_ms if session is not None else 0.0),
+                        sim_elapsed_ms=float(session.elapsed_ms if session is not None else 0.0),
                         spawn_entries=tuple(spawn_state.spawn_entries),
                         spawn_timeline_ms=float(spawn_state.spawn_timeline_ms),
                         no_creatures_timer_ms=float(spawn_state.no_creatures_timer_ms),

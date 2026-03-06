@@ -8,6 +8,7 @@ import msgspec
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..effects import FxQueue, FxQueueRotated
+from ..elapsed_clock import SessionElapsedSource
 from ..game_modes import GameMode
 from ..gameplay import survival_update_weapon_handouts
 from ..perks.selection import perk_selection_current_choices, perk_selection_pick
@@ -31,9 +32,13 @@ from .world_state import WorldState
 
 class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
-    elapsed_ms: float
+    session_elapsed_ms: float
     rng_marks: dict[str, int]
     creature_count_world_step: int
+
+    @property
+    def elapsed_ms(self) -> float:
+        return float(self.session_elapsed_ms)
 
 
 
@@ -46,10 +51,14 @@ class MidStepContext(msgspec.Struct, frozen=True):
 
     world: WorldState
     rng_marks: dict[str, int]
-    elapsed_before_ms: float
+    session_elapsed_before_ms: float
     dt_sim_ms: float
     dt_raw_ms: float
     world_size: float
+
+    @property
+    def elapsed_before_ms(self) -> float:
+        return float(self.session_elapsed_before_ms)
 
 MidStepHook: TypeAlias = Callable[[MidStepContext], None]
 
@@ -86,7 +95,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     survival_update_weapon_handouts(
         state,
         ctx.world.players,
-        survival_elapsed_ms=ctx.elapsed_before_ms,
+        survival_elapsed_ms=ctx.session_elapsed_before_ms,
     )
 
     player_level = ctx.world.players[0].level if ctx.world.players else 1
@@ -108,7 +117,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         ctx.dt_sim_ms,
         state.rng,
         player_count=len(ctx.world.players),
-        survival_elapsed_ms=ctx.elapsed_before_ms,
+        survival_elapsed_ms=ctx.session_elapsed_before_ms,
         player_experience=int(player_xp),
         terrain_width=int(ctx.world_size),
         terrain_height=int(ctx.world_size),
@@ -124,7 +133,7 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
         ctx.dt_raw_ms,
         state.rng,
         player_count=len(ctx.world.players),
-        survival_elapsed_ms=int(ctx.elapsed_before_ms),
+        survival_elapsed_ms=int(ctx.session_elapsed_before_ms),
         terrain_width=float(ctx.world_size),
         terrain_height=float(ctx.world_size),
     )
@@ -232,10 +241,10 @@ class DeterministicSession(msgspec.Struct):
     defer_camera_shake_update: bool = False
     clear_fx_queues_each_tick: bool = False
     finalize_post_render_lifecycle: bool = False
-    elapsed_uses_raw_dt: bool = False
+    session_elapsed_source: SessionElapsedSource = "sim_elapsed_ms"
 
     # Mutable timing
-    elapsed_ms: float = 0.0
+    session_elapsed_ms: float = 0.0
 
     # Optional hooks (provided by modes / callers)
     mid_step_hook: MidStepHook | None = None
@@ -245,6 +254,14 @@ class DeterministicSession(msgspec.Struct):
 
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _session_timing(self.world.state, dt)
+
+    @property
+    def elapsed_ms(self) -> float:
+        return float(self.session_elapsed_ms)
+
+    @elapsed_ms.setter
+    def elapsed_ms(self, value: float) -> None:
+        self.session_elapsed_ms = float(value)
 
     def step_tick(
         self,
@@ -300,7 +317,7 @@ class DeterministicSession(msgspec.Struct):
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         dt_raw_ms = float(timing.dt_ms_i32)
-        elapsed_before_ms = self.elapsed_ms
+        session_elapsed_before_ms = self.session_elapsed_ms
 
         rng_marks: dict[str, int] = {}
         if commands:
@@ -312,7 +329,7 @@ class DeterministicSession(msgspec.Struct):
             ctx = MidStepContext(
                 world=self.world,
                 rng_marks=rng_marks,
-                elapsed_before_ms=elapsed_before_ms,
+                session_elapsed_before_ms=session_elapsed_before_ms,
                 dt_sim_ms=dt_sim_ms,
                 dt_raw_ms=dt_raw_ms,
                 world_size=self.world_size,
@@ -371,12 +388,12 @@ class DeterministicSession(msgspec.Struct):
         if self.finalize_post_render_lifecycle:
             self.world.creatures.finalize_post_render_lifecycle()
 
-        dt_elapsed = dt_raw_ms if self.elapsed_uses_raw_dt else dt_sim_ms
-        self.elapsed_ms = elapsed_before_ms + dt_elapsed
+        dt_elapsed = dt_raw_ms if self.session_elapsed_source == "raw_frame_elapsed_ms" else dt_sim_ms
+        self.session_elapsed_ms = session_elapsed_before_ms + dt_elapsed
 
         return DeterministicSessionTick(
             step=step,
-            elapsed_ms=self.elapsed_ms,
+            session_elapsed_ms=self.session_elapsed_ms,
             rng_marks=rng_marks,
             creature_count_world_step=creature_count_world_step,
         )

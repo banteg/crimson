@@ -191,7 +191,7 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         perk_progression_enabled=False,
         mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
         input_transform=rush_input_transform,
-        elapsed_uses_raw_dt=True,
+        session_elapsed_source="raw_frame_elapsed_ms",
         finalize_post_render_lifecycle=True,
     )
 

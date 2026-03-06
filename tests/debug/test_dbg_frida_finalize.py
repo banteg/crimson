@@ -97,11 +97,11 @@ def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) 
     }
 
 
-def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
-    return {
+def _checkpoint_stub(*, tick_index: int, elapsed_ms: int, mode_id: int) -> dict[str, object]:
+    checkpoint = {
+        "mode": "survival",
         "tick_index": int(tick_index),
         "rng_state": 0,
-        "elapsed_ms": int(elapsed_ms),
         "score_xp": 0,
         "kills": 0,
         "creature_count": 0,
@@ -109,6 +109,18 @@ def _checkpoint_stub(*, tick_index: int, elapsed_ms: int) -> dict[str, object]:
         "players": [],
         "bonus_timers": {},
     }
+    mode_i = int(mode_id)
+    elapsed_i = int(elapsed_ms)
+    if mode_i == 2:
+        checkpoint["mode"] = "rush"
+        checkpoint["raw_frame_elapsed_ms"] = elapsed_i
+        return checkpoint
+    if mode_i == 3:
+        checkpoint["mode"] = "quests"
+        checkpoint["quest_spawn_timeline_ms"] = elapsed_i
+        return checkpoint
+    checkpoint["sim_elapsed_ms"] = elapsed_i
+    return checkpoint
 
 
 def _sim_state_stub(
@@ -214,7 +226,7 @@ def _channels_stub(
     secondary_projectiles: list[dict[str, object]] | None = None,
     checkpoint_overrides: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms))
+    checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms), mode_id=int(mode_id))
     if checkpoint_overrides:
         checkpoint.update(dict(checkpoint_overrides))
     return {
@@ -612,17 +624,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_pat
                 "replay_inputs": _replay_inputs_stub(player_count=1),
                 "channels": {
                     **_channels_stub(tick_index=123, elapsed_ms=0, mode_id=1),
-                    "checkpoint": {
-                        "tick_index": 123,
-                        "rng_state": 777,
-                        "elapsed_ms": 0,
-                        "score_xp": 0,
-                        "kills": 0,
-                        "creature_count": 0,
-                        "perk_pending": 0,
-                        "players": [],
-                        "bonus_timers": {},
-                    },
+                    "checkpoint": _checkpoint_stub(tick_index=123, elapsed_ms=0, mode_id=1) | {"rng_state": 777},
                     "rng_marks": {
                         "rand_calls": 3,
                         "rand_last": 99,

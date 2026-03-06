@@ -41,7 +41,7 @@ from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..render.rtx.mode import RtxRenderMode
-from ..replay import Replay, ReplayClaimedStatsSnapshot, dump_replay
+from ..replay import Replay, dump_replay
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
@@ -53,6 +53,7 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..replay.types import build_claimed_stats_for_mode
 from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
     PresentationTickOutput,
@@ -773,6 +774,7 @@ class BaseGameplayMode:
                 tick_index=int(tick_index),
                 world=self.sim_world.world_state,
                 elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
+                game_mode_id=self._config_game_mode_id(),
                 deaths=deaths,
                 events=events,
             ),
@@ -798,7 +800,8 @@ class BaseGameplayMode:
             player_index=int(self.player.index),
             fallback_weapon_id=self.player.weapon.weapon_id,
         )
-        claimed_stats = ReplayClaimedStatsSnapshot(
+        claimed_stats = build_claimed_stats_for_mode(
+            game_mode_id=self._config_game_mode_id(),
             complete=bool(self._replay_claimed_stats_complete()),
             ticks=int(recorder.tick_index),
             elapsed_ms=int(self._replay_claimed_stats_elapsed_ms()),

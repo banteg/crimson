@@ -3,7 +3,7 @@ from __future__ import annotations
 import struct
 
 from crimson.dbg.checkpoint_diff import checkpoint_deepdiff
-from crimson.replay.checkpoints import ReplayCheckpoint, ReplayPlayerCheckpoint
+from crimson.replay.checkpoints import ReplayCheckpoint, ReplayPlayerCheckpoint, SurvivalReplayCheckpoint
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -15,10 +15,10 @@ def _next_float32(value: float, *, ulps: int) -> float:
 
 
 def _checkpoint_with_health(health: float) -> ReplayCheckpoint:
-    return ReplayCheckpoint(
+    return SurvivalReplayCheckpoint(
         tick_index=0,
         rng_state=123,
-        elapsed_ms=1000,
+        sim_elapsed_ms=1000,
         score_xp=0,
         kills=0,
         creature_count=0,

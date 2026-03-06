@@ -7,9 +7,9 @@ import msgspec
 from crimson.game_modes import GameMode
 from crimson.replay import (
     Replay,
-    ReplayClaimedStatsSnapshot,
     ReplayHeader,
     ReplayRecorder,
+    build_claimed_stats_for_mode,
     dump_replay,
 )
 from crimson.replay.checkpoints import (
@@ -51,7 +51,8 @@ def build_replay(
         replay,
         header=msgspec.structs.replace(
             replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
+            claimed_stats=build_claimed_stats_for_mode(
+                game_mode_id=mode,
                 complete=True,
                 ticks=int(result.ticks),
                 elapsed_ms=int(result.elapsed_ms),

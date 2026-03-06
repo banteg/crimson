@@ -33,7 +33,7 @@ def make_tick_payload(
     )
     return DeterministicSessionTick(
         step=step,
-        elapsed_ms=elapsed_ms,
+        session_elapsed_ms=elapsed_ms,
         rng_marks={},
         creature_count_world_step=creature_count,
     )

@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayClaimedStatsSnapshot
+from crimson.replay import build_claimed_stats_for_mode
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WeaponId
 
@@ -54,7 +54,8 @@ def test_replay_verify_checks_header_claimed_stats_match(tmp_path: Path) -> None
         replay,
         header=msgspec.structs.replace(
             replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
+            claimed_stats=build_claimed_stats_for_mode(
+                game_mode_id=replay.header.game_mode_id,
                 complete=True,
                 ticks=int(expected.ticks),
                 elapsed_ms=int(expected.elapsed_ms),
@@ -84,7 +85,8 @@ def test_replay_verify_reports_header_claimed_stats_mismatch(tmp_path: Path) -> 
         replay,
         header=msgspec.structs.replace(
             replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
+            claimed_stats=build_claimed_stats_for_mode(
+                game_mode_id=replay.header.game_mode_id,
                 complete=True,
                 ticks=2,
                 elapsed_ms=1,
@@ -105,7 +107,7 @@ def test_replay_verify_reports_header_claimed_stats_mismatch(tmp_path: Path) -> 
     payload = json.loads(result.output)
     assert payload["status"] == "header_stats_mismatch"
     assert payload["header_claim"]["match"] is False
-    assert "elapsed_ms" in payload["header_claim"]["mismatched_fields"]
+    assert "sim_elapsed_ms" in payload["header_claim"]["mismatched_fields"]
     assert "score_xp" in payload["header_claim"]["mismatched_fields"]
     assert payload["score_claim"] is None
 

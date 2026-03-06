@@ -11,13 +11,13 @@ import crimson.replay.codec as replay_codec_mod
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.replay import (
-    ReplayClaimedStatsSnapshot,
     ReplayCodecError,
     ReplayGameVersionError,
     ReplayGameVersionWarning,
     ReplayHeader,
     ReplayRecorder,
     ReplayStatusSnapshot,
+    SurvivalClaimedStatsSnapshot,
     dump_replay,
     load_replay,
     warn_on_game_version_mismatch,
@@ -41,9 +41,10 @@ def _minimal_wire_replay_obj() -> dict[str, object]:
                 "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
             },
             "claimed_stats": {
+                "mode": "survival",
                 "complete": False,
                 "ticks": 0,
-                "elapsed_ms": 0,
+                "sim_elapsed_ms": 0,
                 "score_xp": 0,
                 "kills": 0,
                 "most_used_weapon_id": 0,
@@ -115,10 +116,10 @@ def test_replay_codec_roundtrip_claimed_stats() -> None:
         seed=0x1234,
         tick_rate=60,
         player_count=1,
-        claimed_stats=ReplayClaimedStatsSnapshot(
+        claimed_stats=SurvivalClaimedStatsSnapshot(
             complete=True,
             ticks=1,
-            elapsed_ms=16,
+            sim_elapsed_ms=16,
             score_xp=200,
             kills=3,
             most_used_weapon_id=WeaponId.MEAN_MINIGUN,
@@ -138,9 +139,10 @@ def test_replay_codec_rejects_invalid_claimed_stats() -> None:
     replay_obj = _minimal_wire_replay_obj()
     replay_header = cast("dict[str, object]", replay_obj["header"])
     replay_header["claimed_stats"] = {
+        "mode": "survival",
         "complete": True,
         "ticks": 1,
-        "elapsed_ms": 16,
+        "sim_elapsed_ms": 16,
         "score_xp": 0,
         "kills": 0,
         "most_used_weapon_id": 1,
@@ -214,9 +216,10 @@ def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
                 "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
             },
             "claimed_stats": {
+                "mode": "survival",
                 "complete": False,
                 "ticks": 1,
-                "elapsed_ms": 16,
+                "sim_elapsed_ms": 16,
                 "score_xp": 0,
                 "kills": 0,
                 "most_used_weapon_id": 0,

@@ -27,7 +27,7 @@ def test_encode_decode_mode_snapshot_round_trip() -> None:
         snapshot=SurvivalStateSnapshotV2(
             tick_index=42,
             runtime_state=SurvivalRuntimeSnapshotV2(
-                elapsed_ms=42.0,
+                sim_elapsed_ms=42.0,
                 stage=3,
                 spawn_cooldown_ms=0.100000001,
                 perk_pending_count=0,
@@ -49,7 +49,7 @@ def test_resync_message_build_and_assembler_round_trip() -> None:
         snapshot=RushStateSnapshotV2(
             tick_index=9,
             runtime_state=RushRuntimeSnapshotV2(
-                elapsed_ms=9.0,
+                raw_frame_elapsed_ms=9.0,
                 spawn_cooldown_ms=0.0,
                 kill_count=0,
             ),
@@ -81,7 +81,7 @@ def test_resync_assembler_rejects_commit_tick_mismatch() -> None:
         snapshot=QuestsStateSnapshotV2(
             tick_index=12,
             runtime_state=QuestsRuntimeSnapshotV2(
-                elapsed_ms=12.0,
+                sim_elapsed_ms=12.0,
                 spawn_entries=spawn_entries,
                 spawn_timeline_ms=0.0,
                 no_creatures_timer_ms=0.0,
@@ -119,7 +119,7 @@ def test_quest_snapshot_round_trip_preserves_spawn_entries() -> None:
         snapshot=QuestsStateSnapshotV2(
             tick_index=7,
             runtime_state=QuestsRuntimeSnapshotV2(
-                elapsed_ms=1200.0,
+                sim_elapsed_ms=1200.0,
                 spawn_entries=spawn_entries,
                 spawn_timeline_ms=900.0,
                 no_creatures_timer_ms=300.0,

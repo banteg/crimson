@@ -10,6 +10,8 @@ from typing import Literal, TypeAlias
 import msgspec
 
 from ..aim_schemes import AimScheme, aim_scheme_from_value
+from ..elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ..elapsed_clock import elapsed_ms_value as _elapsed_ms_value
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..movement_controls import MovementControlType, movement_control_type_from_value
@@ -17,8 +19,8 @@ from ..sim.input_providers import GameCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 9
-ReplayFormatVersion: TypeAlias = Literal[9]
+REPLAY_FORMAT_VERSION = 10
+ReplayFormatVersion: TypeAlias = Literal[10]
 
 BootstrapKind: TypeAlias = Literal["none", "terrain_v1"]
 
@@ -242,15 +244,112 @@ class ReplayStatusSnapshot(msgspec.Struct, frozen=True):
     weapon_usage_counts: tuple[int, ...] = msgspec.field(default_factory=lambda: (0,) * WEAPON_USAGE_COUNT)
 
 
-class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
+class _ReplayClaimedStatsBase(msgspec.Struct, frozen=True):
     complete: bool = False
     ticks: int = 0
-    elapsed_ms: int = 0
     score_xp: int = 0
     kills: int = 0
     most_used_weapon_id: WeaponId = WeaponId.NONE
     shots_fired: int = 0
     shots_hit: int = 0
+
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalClaimedStatsSnapshot(
+    _ReplayClaimedStatsBase,
+    frozen=True,
+    tag="survival",
+    tag_field="mode",
+):
+    sim_elapsed_ms: int = 0
+
+
+class RushClaimedStatsSnapshot(
+    _ReplayClaimedStatsBase,
+    frozen=True,
+    tag="rush",
+    tag_field="mode",
+):
+    raw_frame_elapsed_ms: int = 0
+
+
+class QuestClaimedStatsSnapshot(
+    _ReplayClaimedStatsBase,
+    frozen=True,
+    tag="quests",
+    tag_field="mode",
+):
+    quest_spawn_timeline_ms: int = 0
+
+
+type ReplayClaimedStatsSnapshot = (
+    SurvivalClaimedStatsSnapshot
+    | RushClaimedStatsSnapshot
+    | QuestClaimedStatsSnapshot
+)
+
+
+def default_claimed_stats_for_mode(game_mode_id: GameMode | int) -> ReplayClaimedStatsSnapshot:
+    mode = GameMode(int(game_mode_id))
+    if mode == GameMode.RUSH:
+        return RushClaimedStatsSnapshot()
+    if mode == GameMode.QUESTS:
+        return QuestClaimedStatsSnapshot()
+    return SurvivalClaimedStatsSnapshot()
+
+
+def build_claimed_stats_for_mode(
+    *,
+    game_mode_id: GameMode | int,
+    complete: bool,
+    ticks: int,
+    elapsed_ms: int,
+    score_xp: int,
+    kills: int,
+    most_used_weapon_id: WeaponId,
+    shots_fired: int,
+    shots_hit: int,
+) -> ReplayClaimedStatsSnapshot:
+    mode = GameMode(int(game_mode_id))
+    if mode == GameMode.RUSH:
+        return RushClaimedStatsSnapshot(
+            complete=bool(complete),
+            ticks=int(ticks),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            kills=int(kills),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+    if mode == GameMode.QUESTS:
+        return QuestClaimedStatsSnapshot(
+            complete=bool(complete),
+            ticks=int(ticks),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            kills=int(kills),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+    return SurvivalClaimedStatsSnapshot(
+        complete=bool(complete),
+        ticks=int(ticks),
+        sim_elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        kills=int(kills),
+        most_used_weapon_id=most_used_weapon_id,
+        shots_fired=int(shots_fired),
+        shots_hit=int(shots_hit),
+    )
 
 
 class ReplayHeader(msgspec.Struct, frozen=True):
@@ -273,8 +372,35 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     world_size: float = 1024.0
     player_count: int = 1
     status: ReplayStatusSnapshot = msgspec.field(default_factory=ReplayStatusSnapshot)
-    claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
+    claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=SurvivalClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
+
+    def __post_init__(self) -> None:
+        claimed_stats = self.claimed_stats
+        expected = default_claimed_stats_for_mode(self.game_mode_id)
+        if isinstance(expected, SurvivalClaimedStatsSnapshot) and isinstance(claimed_stats, SurvivalClaimedStatsSnapshot):
+            return
+        if isinstance(expected, RushClaimedStatsSnapshot) and isinstance(claimed_stats, RushClaimedStatsSnapshot):
+            return
+        if isinstance(expected, QuestClaimedStatsSnapshot) and isinstance(claimed_stats, QuestClaimedStatsSnapshot):
+            return
+        if (
+            isinstance(claimed_stats, SurvivalClaimedStatsSnapshot)
+            and not bool(claimed_stats.complete)
+            and int(claimed_stats.ticks) == 0
+            and int(claimed_stats.score_xp) == 0
+            and int(claimed_stats.kills) == 0
+            and int(claimed_stats.most_used_weapon_id) == int(WeaponId.NONE)
+            and int(claimed_stats.shots_fired) == 0
+            and int(claimed_stats.shots_hit) == 0
+            and int(claimed_stats.sim_elapsed_ms) == 0
+        ):
+            object.__setattr__(self, "claimed_stats", expected)
+            return
+        raise ValueError(
+            "replay header claimed_stats variant does not match game_mode_id: "
+            f"{type(claimed_stats).__name__} vs {int(self.game_mode_id)}",
+        )
 
 
 class ReplayTick(msgspec.Struct, frozen=True):

@@ -5,12 +5,15 @@ from typing import Any
 
 import msgspec
 
+from ..elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ..elapsed_clock import elapsed_ms_value as _elapsed_ms_value
+from ..game_modes import GameMode
 from ..replay.checkpoints import ReplayCheckpoint
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 7
+TRACE_SCHEMA_VERSION = 8
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (
@@ -59,13 +62,89 @@ class ReplayTickChannels(msgspec.Struct):
     timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
 
 
-class TickRecord(msgspec.Struct):
+class _TickRecordBase(msgspec.Struct):
     tick_index: int
-    elapsed_ms: int
     dt_ms_i32: int
     mode_id: int
     channels: ReplayTickChannels
     phase_markers: list[str] = msgspec.field(default_factory=list)
+
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalTickRecord(
+    _TickRecordBase,
+    kw_only=True,
+    tag="survival",
+    tag_field="mode",
+):
+    sim_elapsed_ms: int
+
+
+class RushTickRecord(
+    _TickRecordBase,
+    kw_only=True,
+    tag="rush",
+    tag_field="mode",
+):
+    raw_frame_elapsed_ms: int
+
+
+class QuestTickRecord(
+    _TickRecordBase,
+    kw_only=True,
+    tag="quests",
+    tag_field="mode",
+):
+    quest_spawn_timeline_ms: int
+
+
+type TickRecord = SurvivalTickRecord | RushTickRecord | QuestTickRecord
+
+
+def build_tick_record_for_mode(
+    *,
+    mode_id: GameMode | int,
+    tick_index: int,
+    elapsed_ms: int,
+    dt_ms_i32: int,
+    channels: ReplayTickChannels,
+    phase_markers: list[str] | None = None,
+) -> TickRecord:
+    mode = GameMode(int(mode_id))
+    normalized_phase_markers = list(phase_markers or ())
+    if mode == GameMode.RUSH:
+        return RushTickRecord(
+            tick_index=int(tick_index),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            dt_ms_i32=int(dt_ms_i32),
+            mode_id=int(mode),
+            channels=channels,
+            phase_markers=normalized_phase_markers,
+        )
+    if mode == GameMode.QUESTS:
+        return QuestTickRecord(
+            tick_index=int(tick_index),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            dt_ms_i32=int(dt_ms_i32),
+            mode_id=int(mode),
+            channels=channels,
+            phase_markers=normalized_phase_markers,
+        )
+    return SurvivalTickRecord(
+        tick_index=int(tick_index),
+        sim_elapsed_ms=int(elapsed_ms),
+        dt_ms_i32=int(dt_ms_i32),
+        mode_id=int(mode),
+        channels=channels,
+        phase_markers=normalized_phase_markers,
+    )
 
 
 class TickBlock(msgspec.Struct):

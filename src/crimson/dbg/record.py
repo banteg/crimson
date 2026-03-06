@@ -9,6 +9,7 @@ from typing import Literal
 
 import msgspec
 
+from ..elapsed_clock import authoritative_elapsed_field_for_mode
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
@@ -40,6 +41,7 @@ from .schema import (
     ReplayTickChannels,
     TickRecord,
     TraceMeta,
+    build_tick_record_for_mode,
     channel_versions_for,
 )
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
@@ -292,6 +294,7 @@ def _build_trace_meta(
     channels_sorted = sorted(channels_seen)
     config = {
         "impl": str(impl),
+        "elapsed_field_name": str(authoritative_elapsed_field_for_mode(replay.header.game_mode_id)),
     }
     if config_extra is not None:
         config.update(config_extra)
@@ -407,11 +410,11 @@ def _record_replay_to_trace_python(
 
         channels_seen.update(TRACE_REQUIRED_CHANNELS)
         tick_rows.append(
-            TickRecord(
+            build_tick_record_for_mode(
+                mode_id=int(replay.header.game_mode_id),
                 tick_index=tick_index,
                 elapsed_ms=int(checkpoint.elapsed_ms),
                 dt_ms_i32=tick_dt_ms_i32,
-                mode_id=int(replay.header.game_mode_id),
                 phase_markers=[],
                 channels=channels,
             ),

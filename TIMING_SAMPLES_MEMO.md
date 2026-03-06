@@ -26,7 +26,9 @@ The repo currently has a few different timing *carriers* and a larger set of dow
 | `frame_dt_ms_f32` | Native globals via Frida | Float ms copy of frame dt as kept by native |
 | `dt_sim` | Python `FrameTiming.compute()` | The delta actually fed into most deterministic world update code after time scaling and zero gating |
 | `dt_player_local` | Python `FrameTiming.dt_player_local` | The special player-local movement delta after the Reflex Boost round-trip |
-| `elapsed_ms` | Session/runtime accumulation | The running elapsed time used by modes and some progression logic |
+| `sim_elapsed_ms` | Session/runtime accumulation | The authoritative elapsed clock for survival-style deterministic time |
+| `raw_frame_elapsed_ms` | Session/runtime accumulation | The authoritative elapsed clock for Rush, which advances from raw frame ms |
+| `quest_spawn_timeline_ms` | Quest runtime accumulation | The authoritative quest spawn timeline clock carried through quest parity surfaces |
 
 ### Control inputs, not carriers
 
@@ -138,11 +140,18 @@ Python replay models the actual timing math in code, but it does not currently e
 
 `src/crimson/gameplay.py` also has `player_frame_dt_after_roundtrip()` to mirror the local player scaling/restore behavior.
 
-`src/crimson/sim/sessions.py` advances `elapsed_ms` from either raw or sim milliseconds:
+`src/crimson/sim/sessions.py` now advances an explicit `session_elapsed_ms` from a named source:
 
 - `dt_raw_ms = timing.dt_ms_i32`
 - `dt_sim_ms = timing.dt_sim_ms_i32`
-- `elapsed_ms += dt_raw_ms` or `dt_sim_ms` depending on `elapsed_uses_raw_dt`
+- `session_elapsed_source == "raw_frame_elapsed_ms"` means `session_elapsed_ms += dt_raw_ms`
+- `session_elapsed_source == "sim_elapsed_ms"` means `session_elapsed_ms += dt_sim_ms`
+
+The durable replay-facing schemas no longer flatten those clocks back into one generic `elapsed_ms` field:
+
+- survival artifacts carry `sim_elapsed_ms`
+- rush artifacts carry `raw_frame_elapsed_ms`
+- quest artifacts carry `quest_spawn_timeline_ms`
 
 ### Replay trace emission gap
 
@@ -219,7 +228,7 @@ sequenceDiagram
     P->>P: local scale enter
     P->>P: local scale restore
     G->>G: restore outer dt / ms
-    G->>S: advance elapsed_ms from raw or sim ms
+    G->>S: advance explicit session clock from raw or sim ms
 ```
 
 ## What A Better Timing Sample Contract Should Capture
@@ -248,13 +257,13 @@ Suggested carrier vocabulary:
 - `frame_dt_ms_f32`
 - `dt_sim`
 - `dt_player_local`
-- `elapsed_ms`
+- `sim_elapsed_ms` / `raw_frame_elapsed_ms` / `quest_spawn_timeline_ms`
 
 This is also where the "other times" question becomes clearer:
 
 - `frame_dt_ms_i32` is not a side detail; it is a first-class derived carrier because native often consumes integer ms
 - `frame_dt_ms_f32` is worth tracking because native may compare or propagate float-ms forms separately
-- `elapsed_ms` is a first-class accumulator because it feeds modes and progression
+- the mode-specific elapsed clocks are first-class accumulators because they feed modes and progression
 - bonus timers and mode timers are usually context or downstream consumers, not the carrier itself
 
 ## Target Direction
@@ -266,7 +275,7 @@ The target shape is not "more timing fields". It is a cleaner provenance story.
 - Treat timing samples as provenance rows, not generic snapshots.
 - Explicitly distinguish carrier from control state.
 - Keep ms conversions visible as first-class derived events.
-- Treat `elapsed_ms` advance as part of the timing story, not an unrelated bookkeeping detail.
+- Treat elapsed-clock advance as part of the timing story, not an unrelated bookkeeping detail.
 - Keep downstream timers out of the core timing channel unless they directly explain a deterministic branch.
 
 ### Target provenance flow
@@ -280,7 +289,7 @@ flowchart TD
     D --> F[carrier: frame_dt_ms_f32]
     D --> G[carrier: dt_sim]
     D --> H[carrier: dt_player_local]
-    D --> I[carrier: elapsed_ms]
+    D --> I[carrier: mode-specific elapsed clock]
 
     I --> J[mode timers and gameplay consumers]
     G --> J

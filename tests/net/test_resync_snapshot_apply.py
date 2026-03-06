@@ -62,7 +62,7 @@ def test_survival_apply_resync_snapshot_restores_mode_state() -> None:
     snapshot = SurvivalStateSnapshotV2(
         tick_index=100,
         runtime_state=SurvivalRuntimeSnapshotV2(
-            elapsed_ms=5000.0,
+            sim_elapsed_ms=5000.0,
             stage=3,
             spawn_cooldown_ms=1200.0,
             perk_pending_count=2,
@@ -86,7 +86,7 @@ def test_rush_apply_resync_snapshot_restores_mode_state() -> None:
     snapshot = RushStateSnapshotV2(
         tick_index=200,
         runtime_state=RushRuntimeSnapshotV2(
-            elapsed_ms=8000.0,
+            raw_frame_elapsed_ms=8000.0,
             spawn_cooldown_ms=500.0,
             kill_count=42,
         ),
@@ -120,7 +120,7 @@ def test_quest_apply_resync_snapshot_restores_authoritative_runtime() -> None:
     snapshot = QuestsStateSnapshotV2(
         tick_index=55,
         runtime_state=QuestsRuntimeSnapshotV2(
-            elapsed_ms=7000.0,
+            sim_elapsed_ms=7000.0,
             spawn_entries=spawn_entries,
             spawn_timeline_ms=6500.0,
             no_creatures_timer_ms=250.0,
@@ -144,7 +144,7 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner() -> No
     snapshot = SurvivalStateSnapshotV2(
         tick_index=8,
         runtime_state=SurvivalRuntimeSnapshotV2(
-            elapsed_ms=3000.0,
+            sim_elapsed_ms=3000.0,
             stage=2,
             spawn_cooldown_ms=600.0,
             perk_pending_count=0,
@@ -205,7 +205,7 @@ def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime() -> 
     snapshot = QuestsStateSnapshotV2(
         tick_index=9,
         runtime_state=QuestsRuntimeSnapshotV2(
-            elapsed_ms=4000.0,
+            sim_elapsed_ms=4000.0,
             spawn_entries=spawn_entries,
             spawn_timeline_ms=3333.0,
             no_creatures_timer_ms=1200.0,

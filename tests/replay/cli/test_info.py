@@ -44,7 +44,7 @@ def test_replay_info_json_output_payload_ok_schema_v2(tmp_path: Path) -> None:
     assert payload["summary"]["game_mode_id"] == int(GameMode.SURVIVAL)
     assert payload["summary"]["tick_rate"] == 60
     assert payload["summary"]["ticks_simulated"] == 2
-    assert payload["summary"]["elapsed_ms"] >= 0
+    assert payload["summary"]["sim_elapsed_ms"] >= 0
     assert payload["summary"]["player_count"] == 1
     assert payload["summary"]["event_count"] >= 0
     assert isinstance(payload["summary"]["event_counts_by_kind"], dict)
@@ -160,6 +160,12 @@ def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
         assert payload["status"] == "ok"
         assert payload["summary"]["game_mode_id"] == mode_id
         assert payload["summary"]["ticks_simulated"] == 2
+        if mode_id == int(GameMode.SURVIVAL):
+            assert "sim_elapsed_ms" in payload["summary"]
+        elif mode_id == int(GameMode.RUSH):
+            assert "raw_frame_elapsed_ms" in payload["summary"]
+        else:
+            assert "quest_spawn_timeline_ms" in payload["summary"]
 
 
 def test_replay_info_player_index_filter_limits_events(tmp_path: Path) -> None:

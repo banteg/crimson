@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.replay import ReplayClaimedStatsSnapshot
+from crimson.replay import build_claimed_stats_for_mode
 from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file
 from crimson.weapons import WeaponId
 
@@ -107,7 +107,8 @@ def test_replay_list_uses_header_claimed_stats_even_when_sidecar_exists(tmp_path
         replay,
         header=msgspec.structs.replace(
             replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
+            claimed_stats=build_claimed_stats_for_mode(
+                game_mode_id=replay.header.game_mode_id,
                 complete=True,
                 ticks=2,
                 elapsed_ms=33,
@@ -146,7 +147,8 @@ def test_replay_list_uses_header_claimed_stats_without_sidecar(tmp_path: Path) -
         replay,
         header=msgspec.structs.replace(
             replay.header,
-            claimed_stats=ReplayClaimedStatsSnapshot(
+            claimed_stats=build_claimed_stats_for_mode(
+                game_mode_id=replay.header.game_mode_id,
                 complete=True,
                 ticks=2,
                 elapsed_ms=33,

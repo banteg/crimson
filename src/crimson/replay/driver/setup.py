@@ -9,6 +9,8 @@ import msgspec
 from grim.geom import Vec2
 
 from ...effects import FxQueue, FxQueueRotated
+from ...elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ...elapsed_clock import elapsed_ms_value as _elapsed_ms_value
 from ...game_modes import GameMode
 from ...math_parity import f32
 from ...persistence.save_status import GameStatus
@@ -24,17 +26,107 @@ class ReplayRunnerError(ValueError):
     pass
 
 
-class RunResult(msgspec.Struct, frozen=True):
+class _RunResultBase(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     tick_rate: int
     ticks: int
-    elapsed_ms: int
     score_xp: int
     creature_kill_count: int
     most_used_weapon_id: WeaponId
     shots_fired: int
     shots_hit: int
     rng_state: int
+
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalRunResult(
+    _RunResultBase,
+    frozen=True,
+    tag="survival",
+    tag_field="mode",
+):
+    sim_elapsed_ms: int
+
+
+class RushRunResult(
+    _RunResultBase,
+    frozen=True,
+    tag="rush",
+    tag_field="mode",
+):
+    raw_frame_elapsed_ms: int
+
+
+class QuestRunResult(
+    _RunResultBase,
+    frozen=True,
+    tag="quests",
+    tag_field="mode",
+):
+    quest_spawn_timeline_ms: int
+
+
+type RunResult = SurvivalRunResult | RushRunResult | QuestRunResult
+
+
+def build_run_result_for_mode(
+    *,
+    game_mode_id: GameMode,
+    tick_rate: int,
+    ticks: int,
+    elapsed_ms: int,
+    score_xp: int,
+    creature_kill_count: int,
+    most_used_weapon_id: WeaponId,
+    shots_fired: int,
+    shots_hit: int,
+    rng_state: int,
+) -> RunResult:
+    if game_mode_id == GameMode.RUSH:
+        return RushRunResult(
+            game_mode_id=game_mode_id,
+            tick_rate=int(tick_rate),
+            ticks=int(ticks),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            creature_kill_count=int(creature_kill_count),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+            rng_state=int(rng_state),
+        )
+    if game_mode_id == GameMode.QUESTS:
+        return QuestRunResult(
+            game_mode_id=game_mode_id,
+            tick_rate=int(tick_rate),
+            ticks=int(ticks),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            creature_kill_count=int(creature_kill_count),
+            most_used_weapon_id=most_used_weapon_id,
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+            rng_state=int(rng_state),
+        )
+    return SurvivalRunResult(
+        game_mode_id=game_mode_id,
+        tick_rate=int(tick_rate),
+        ticks=int(ticks),
+        sim_elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        creature_kill_count=int(creature_kill_count),
+        most_used_weapon_id=most_used_weapon_id,
+        shots_fired=int(shots_fired),
+        shots_hit=int(shots_hit),
+        rng_state=int(rng_state),
+    )
 
 def build_damage_scale_by_type() -> dict[int, float]:
     damage_scale_by_type: dict[int, float] = {}

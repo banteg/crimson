@@ -22,10 +22,11 @@ from crimson.dbg.schema import (
     ReplayTickChannels,
     TickRecord,
     TraceMeta,
+    build_tick_record_for_mode,
     channel_versions_for,
 )
 from crimson.dbg.trace import TraceError, TraceReader, write_trace
-from crimson.replay.checkpoints import ReplayCheckpoint, ReplayDeathLedgerEntry
+from crimson.replay.checkpoints import ReplayDeathLedgerEntry, SurvivalReplayCheckpoint
 from crimson.replay.types import WEAPON_USAGE_COUNT
 
 
@@ -45,10 +46,10 @@ def _meta() -> TraceMeta:
 
 def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickChannels:
     return ReplayTickChannels(
-        checkpoint=ReplayCheckpoint(
+        checkpoint=SurvivalReplayCheckpoint(
             tick_index=int(tick_index),
             rng_state=0,
-            elapsed_ms=int(elapsed_ms),
+            sim_elapsed_ms=int(elapsed_ms),
             score_xp=int(score_xp),
             kills=0,
             creature_count=0,
@@ -133,11 +134,11 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
 
 
 def _row(*, tick_index: int, elapsed_ms: int, score_xp: int) -> TickRecord:
-    return TickRecord(
+    return build_tick_record_for_mode(
+        mode_id=1,
         tick_index=int(tick_index),
         elapsed_ms=int(elapsed_ms),
         dt_ms_i32=16,
-        mode_id=1,
         channels=_channels(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms), score_xp=int(score_xp)),
         phase_markers=[],
     )
@@ -186,8 +187,9 @@ def test_trace_meta_decodes_with_unknown_fields() -> None:
 def test_tick_record_decodes_with_unknown_fields() -> None:
     payload = msgspec.msgpack.encode(
         {
+            "mode": "rush",
             "tick_index": 7,
-            "elapsed_ms": 112,
+            "raw_frame_elapsed_ms": 112,
             "dt_ms_i32": 16,
             "mode_id": 2,
             "phase_markers": ["pre", "post"],

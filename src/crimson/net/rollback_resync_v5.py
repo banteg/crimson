@@ -34,13 +34,13 @@ class ReplayStateSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
 
 
 class SurvivalRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
-    elapsed_ms: float = 0.0
+    sim_elapsed_ms: float = 0.0
     stage: int = 0
     spawn_cooldown_ms: float = 0.0
     perk_pending_count: int = 0
 
     def __post_init__(self) -> None:
-        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="survival.runtime_state.elapsed_ms")
+        self.sim_elapsed_ms = wire_f32(float(self.sim_elapsed_ms), field="survival.runtime_state.sim_elapsed_ms")
         self.stage = int(self.stage)
         self.spawn_cooldown_ms = wire_f32(
             float(self.spawn_cooldown_ms),
@@ -48,20 +48,31 @@ class SurvivalRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
         )
         self.perk_pending_count = int(self.perk_pending_count)
 
+    @property
+    def elapsed_ms(self) -> float:
+        return float(self.sim_elapsed_ms)
+
 
 class RushRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
-    elapsed_ms: float = 0.0
+    raw_frame_elapsed_ms: float = 0.0
     spawn_cooldown_ms: float = 0.0
     kill_count: int = 0
 
     def __post_init__(self) -> None:
-        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="rush.runtime_state.elapsed_ms")
+        self.raw_frame_elapsed_ms = wire_f32(
+            float(self.raw_frame_elapsed_ms),
+            field="rush.runtime_state.raw_frame_elapsed_ms",
+        )
         self.spawn_cooldown_ms = wire_f32(float(self.spawn_cooldown_ms), field="rush.runtime_state.spawn_cooldown_ms")
         self.kill_count = int(self.kill_count)
 
+    @property
+    def elapsed_ms(self) -> float:
+        return float(self.raw_frame_elapsed_ms)
+
 
 class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
-    elapsed_ms: float = 0.0
+    sim_elapsed_ms: float = 0.0
     spawn_entries: tuple[SpawnEntry, ...] = msgspec.field(default_factory=tuple)
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
@@ -69,7 +80,7 @@ class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
     perk_pending_count: int = 0
 
     def __post_init__(self) -> None:
-        self.elapsed_ms = wire_f32(float(self.elapsed_ms), field="quests.runtime_state.elapsed_ms")
+        self.sim_elapsed_ms = wire_f32(float(self.sim_elapsed_ms), field="quests.runtime_state.sim_elapsed_ms")
         self.spawn_entries = tuple(self.spawn_entries)
         self.spawn_timeline_ms = wire_f32(float(self.spawn_timeline_ms), field="quests.runtime_state.spawn_timeline_ms")
         self.no_creatures_timer_ms = wire_f32(
@@ -81,6 +92,10 @@ class QuestsRuntimeSnapshotV2(msgspec.Struct, forbid_unknown_fields=True):
             field="quests.runtime_state.completion_transition_ms",
         )
         self.perk_pending_count = int(self.perk_pending_count)
+
+    @property
+    def elapsed_ms(self) -> float:
+        return float(self.sim_elapsed_ms)
 
 
 class _ModeStateSnapshotV2Base(msgspec.Struct, forbid_unknown_fields=True):
@@ -170,7 +185,10 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
     match snapshot:
         case SurvivalStateSnapshotV2():
             runtime_state = snapshot.runtime_state
-            runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="survival.runtime_state.elapsed_ms")
+            runtime_state.sim_elapsed_ms = assert_wire_f32(
+                runtime_state.sim_elapsed_ms,
+                field="survival.runtime_state.sim_elapsed_ms",
+            )
             runtime_state.spawn_cooldown_ms = assert_wire_f32(
                 runtime_state.spawn_cooldown_ms,
                 field="survival.runtime_state.spawn_cooldown_ms",
@@ -178,7 +196,10 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
             return
         case RushStateSnapshotV2():
             runtime_state = snapshot.runtime_state
-            runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="rush.runtime_state.elapsed_ms")
+            runtime_state.raw_frame_elapsed_ms = assert_wire_f32(
+                runtime_state.raw_frame_elapsed_ms,
+                field="rush.runtime_state.raw_frame_elapsed_ms",
+            )
             runtime_state.spawn_cooldown_ms = assert_wire_f32(
                 runtime_state.spawn_cooldown_ms,
                 field="rush.runtime_state.spawn_cooldown_ms",
@@ -186,7 +207,10 @@ def _assert_snapshot_f32(snapshot: ModeStateSnapshotV2) -> None:
             return
         case QuestsStateSnapshotV2():
             runtime_state = snapshot.runtime_state
-            runtime_state.elapsed_ms = assert_wire_f32(runtime_state.elapsed_ms, field="quests.runtime_state.elapsed_ms")
+            runtime_state.sim_elapsed_ms = assert_wire_f32(
+                runtime_state.sim_elapsed_ms,
+                field="quests.runtime_state.sim_elapsed_ms",
+            )
             runtime_state.spawn_entries = tuple(runtime_state.spawn_entries)
             runtime_state.spawn_timeline_ms = assert_wire_f32(
                 runtime_state.spawn_timeline_ms,

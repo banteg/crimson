@@ -89,9 +89,10 @@ def test_load_checkpoints_defaults_optional_checkpoint_fields() -> None:
         "sample_rate": 60,
         "checkpoints": [
             {
+                "mode": "survival",
                 "tick_index": 10,
                 "rng_state": 20,
-                "elapsed_ms": 300,
+                "sim_elapsed_ms": 300,
                 "score_xp": 40,
                 "kills": 2,
                 "creature_count": 3,

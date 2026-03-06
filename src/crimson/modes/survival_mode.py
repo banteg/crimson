@@ -482,7 +482,7 @@ class SurvivalMode(BaseGameplayMode):
                     tick_index=int(frame_tick_index),
                     replay_state=self._net_replay_snapshot_state(),
                     runtime_state=SurvivalRuntimeSnapshotV2(
-                        elapsed_ms=float(session_elapsed_ms),
+                        sim_elapsed_ms=float(session_elapsed_ms),
                         stage=int(session_stage),
                         spawn_cooldown_ms=float(session_spawn_cooldown_ms),
                         perk_pending_count=int(self.state.perk_selection.pending_count),

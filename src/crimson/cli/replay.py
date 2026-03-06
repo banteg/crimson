@@ -11,6 +11,8 @@ import msgspec
 import typer
 from tqdm import tqdm
 
+from ..elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ..elapsed_clock import elapsed_ms_value as _elapsed_ms_value
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 
@@ -22,6 +24,8 @@ if TYPE_CHECKING:
         ReplayRenderTelemetryFrame,
         ReplayRenderTelemetryTopTick,
     )
+    from ..replay.driver.replay_info import ReplayInfoResult as _ReplayInfoSummaryPayloadSource
+    from ..replay.driver.replay_info import ReplayInfoTimelineEvent as _ReplayInfoEventPayloadSource
     from ..replay.driver.replay_render import ReplayRenderPhase
     from ..replay.driver.setup import RunResult
 
@@ -189,17 +193,41 @@ def _replay_mode_label(game_mode_id: GameMode) -> str:
             return "unknown"
 
 
-class _RunResultPayload(msgspec.Struct, forbid_unknown_fields=True):
+class _ElapsedPayloadBase(msgspec.Struct, forbid_unknown_fields=True):
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class _RunResultPayloadBase(_ElapsedPayloadBase, forbid_unknown_fields=True):
     game_mode_id: GameMode
     tick_rate: int
     ticks: int
-    elapsed_ms: int
     score_xp: int
     creature_kill_count: int
     most_used_weapon_id: int
     shots_fired: int
     shots_hit: int
     rng_state: int
+
+
+class _SurvivalRunResultPayload(_RunResultPayloadBase, forbid_unknown_fields=True):
+    sim_elapsed_ms: int
+
+
+class _RushRunResultPayload(_RunResultPayloadBase, forbid_unknown_fields=True):
+    raw_frame_elapsed_ms: int
+
+
+class _QuestRunResultPayload(_RunResultPayloadBase, forbid_unknown_fields=True):
+    quest_spawn_timeline_ms: int
+
+
+type _RunResultPayload = _SurvivalRunResultPayload | _RushRunResultPayload | _QuestRunResultPayload
 
 
 class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -209,15 +237,42 @@ class _ReplayVerifyScoreClaimPayload(msgspec.Struct, forbid_unknown_fields=True)
     match: bool
 
 
-class _ReplayVerifyClaimedStatsPayload(msgspec.Struct, forbid_unknown_fields=True):
+class _ReplayVerifyClaimedStatsPayloadBase(_ElapsedPayloadBase, forbid_unknown_fields=True):
     complete: bool
     ticks: int
-    elapsed_ms: int
     score_xp: int
     kills: int
     most_used_weapon_id: int
     shots_fired: int
     shots_hit: int
+
+
+class _SurvivalReplayVerifyClaimedStatsPayload(
+    _ReplayVerifyClaimedStatsPayloadBase,
+    forbid_unknown_fields=True,
+):
+    sim_elapsed_ms: int
+
+
+class _RushReplayVerifyClaimedStatsPayload(
+    _ReplayVerifyClaimedStatsPayloadBase,
+    forbid_unknown_fields=True,
+):
+    raw_frame_elapsed_ms: int
+
+
+class _QuestReplayVerifyClaimedStatsPayload(
+    _ReplayVerifyClaimedStatsPayloadBase,
+    forbid_unknown_fields=True,
+):
+    quest_spawn_timeline_ms: int
+
+
+type _ReplayVerifyClaimedStatsPayload = (
+    _SurvivalReplayVerifyClaimedStatsPayload
+    | _RushReplayVerifyClaimedStatsPayload
+    | _QuestReplayVerifyClaimedStatsPayload
+)
 
 
 class _ReplayVerifyHeaderClaimPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -236,24 +291,60 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     score_claim: _ReplayVerifyScoreClaimPayload | None
 
 
-class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
+class _ReplayInfoSummaryPayloadBase(_ElapsedPayloadBase, forbid_unknown_fields=True):
     game_mode_id: GameMode
     tick_rate: int
     ticks_simulated: int
-    elapsed_ms: int
     player_count: int
     event_count: int
     event_counts_by_kind: dict[str, int]
 
 
-class _ReplayInfoEventPayload(msgspec.Struct, forbid_unknown_fields=True):
+class _SurvivalReplayInfoSummaryPayload(_ReplayInfoSummaryPayloadBase, forbid_unknown_fields=True):
+    sim_elapsed_ms: int
+
+
+class _RushReplayInfoSummaryPayload(_ReplayInfoSummaryPayloadBase, forbid_unknown_fields=True):
+    raw_frame_elapsed_ms: int
+
+
+class _QuestReplayInfoSummaryPayload(_ReplayInfoSummaryPayloadBase, forbid_unknown_fields=True):
+    quest_spawn_timeline_ms: int
+
+
+type _ReplayInfoSummaryPayload = (
+    _SurvivalReplayInfoSummaryPayload
+    | _RushReplayInfoSummaryPayload
+    | _QuestReplayInfoSummaryPayload
+)
+
+
+class _ReplayInfoEventPayloadBase(_ElapsedPayloadBase, forbid_unknown_fields=True):
     tick_index: int
-    elapsed_ms: int
     elapsed_s: float
     kind: str
     player_index: int | None
     detail: str
     data: dict[str, object]
+
+
+class _SurvivalReplayInfoEventPayload(_ReplayInfoEventPayloadBase, forbid_unknown_fields=True):
+    sim_elapsed_ms: int
+
+
+class _RushReplayInfoEventPayload(_ReplayInfoEventPayloadBase, forbid_unknown_fields=True):
+    raw_frame_elapsed_ms: int
+
+
+class _QuestReplayInfoEventPayload(_ReplayInfoEventPayloadBase, forbid_unknown_fields=True):
+    quest_spawn_timeline_ms: int
+
+
+type _ReplayInfoEventPayload = (
+    _SurvivalReplayInfoEventPayload
+    | _RushReplayInfoEventPayload
+    | _QuestReplayInfoEventPayload
+)
 
 
 class _ReplayInfoPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -377,17 +468,172 @@ class _ReplayBenchmarkPayload(msgspec.Struct, forbid_unknown_fields=True):
 
 def _run_result_payload(run_result: RunResult) -> _RunResultPayload:
     result = run_result
-    return _RunResultPayload(
+    if result.elapsed_field_name == "raw_frame_elapsed_ms":
+        return _RushRunResultPayload(
+            game_mode_id=GameMode(int(result.game_mode_id)),
+            tick_rate=int(result.tick_rate),
+            ticks=int(result.ticks),
+            raw_frame_elapsed_ms=int(result.elapsed_ms),
+            score_xp=int(result.score_xp),
+            creature_kill_count=int(result.creature_kill_count),
+            most_used_weapon_id=int(result.most_used_weapon_id),
+            shots_fired=int(result.shots_fired),
+            shots_hit=int(result.shots_hit),
+            rng_state=int(result.rng_state),
+        )
+    if result.elapsed_field_name == "quest_spawn_timeline_ms":
+        return _QuestRunResultPayload(
+            game_mode_id=GameMode(int(result.game_mode_id)),
+            tick_rate=int(result.tick_rate),
+            ticks=int(result.ticks),
+            quest_spawn_timeline_ms=int(result.elapsed_ms),
+            score_xp=int(result.score_xp),
+            creature_kill_count=int(result.creature_kill_count),
+            most_used_weapon_id=int(result.most_used_weapon_id),
+            shots_fired=int(result.shots_fired),
+            shots_hit=int(result.shots_hit),
+            rng_state=int(result.rng_state),
+        )
+    return _SurvivalRunResultPayload(
         game_mode_id=GameMode(int(result.game_mode_id)),
         tick_rate=int(result.tick_rate),
         ticks=int(result.ticks),
-        elapsed_ms=int(result.elapsed_ms),
+        sim_elapsed_ms=int(result.elapsed_ms),
         score_xp=int(result.score_xp),
         creature_kill_count=int(result.creature_kill_count),
-        most_used_weapon_id=result.most_used_weapon_id,
+        most_used_weapon_id=int(result.most_used_weapon_id),
         shots_fired=int(result.shots_fired),
         shots_hit=int(result.shots_hit),
         rng_state=int(result.rng_state),
+    )
+
+
+def _verify_claimed_stats_payload(
+    *,
+    complete: bool,
+    ticks: int,
+    elapsed_field_name: str,
+    elapsed_ms: int,
+    score_xp: int,
+    kills: int,
+    most_used_weapon_id: int,
+    shots_fired: int,
+    shots_hit: int,
+) -> _ReplayVerifyClaimedStatsPayload:
+    if elapsed_field_name == "raw_frame_elapsed_ms":
+        return _RushReplayVerifyClaimedStatsPayload(
+            complete=bool(complete),
+            ticks=int(ticks),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            kills=int(kills),
+            most_used_weapon_id=int(most_used_weapon_id),
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+    if elapsed_field_name == "quest_spawn_timeline_ms":
+        return _QuestReplayVerifyClaimedStatsPayload(
+            complete=bool(complete),
+            ticks=int(ticks),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            score_xp=int(score_xp),
+            kills=int(kills),
+            most_used_weapon_id=int(most_used_weapon_id),
+            shots_fired=int(shots_fired),
+            shots_hit=int(shots_hit),
+        )
+    return _SurvivalReplayVerifyClaimedStatsPayload(
+        complete=bool(complete),
+        ticks=int(ticks),
+        sim_elapsed_ms=int(elapsed_ms),
+        score_xp=int(score_xp),
+        kills=int(kills),
+        most_used_weapon_id=int(most_used_weapon_id),
+        shots_fired=int(shots_fired),
+        shots_hit=int(shots_hit),
+    )
+
+
+def _replay_info_event_payload(event: "_ReplayInfoEventPayloadSource") -> _ReplayInfoEventPayload:
+    tick_index = int(event.tick_index)
+    elapsed_field_name = _elapsed_field_name(event)
+    elapsed_ms = int(_elapsed_ms_value(event))
+    elapsed_s = float(elapsed_ms) / 1000.0
+    kind = str(event.kind)
+    player_index = None if event.player_index is None else int(event.player_index)
+    detail = str(event.detail)
+    data = dict(event.data)
+    if elapsed_field_name == "raw_frame_elapsed_ms":
+        return _RushReplayInfoEventPayload(
+            tick_index=tick_index,
+            raw_frame_elapsed_ms=elapsed_ms,
+            elapsed_s=elapsed_s,
+            kind=kind,
+            player_index=player_index,
+            detail=detail,
+            data=data,
+        )
+    if elapsed_field_name == "quest_spawn_timeline_ms":
+        return _QuestReplayInfoEventPayload(
+            tick_index=tick_index,
+            quest_spawn_timeline_ms=elapsed_ms,
+            elapsed_s=elapsed_s,
+            kind=kind,
+            player_index=player_index,
+            detail=detail,
+            data=data,
+        )
+    return _SurvivalReplayInfoEventPayload(
+        tick_index=tick_index,
+        sim_elapsed_ms=elapsed_ms,
+        elapsed_s=elapsed_s,
+        kind=kind,
+        player_index=player_index,
+        detail=detail,
+        data=data,
+    )
+
+
+def _replay_info_summary_payload(
+    info_result: "_ReplayInfoSummaryPayloadSource",
+    *,
+    event_count: int,
+    event_counts_by_kind: dict[str, int],
+) -> _ReplayInfoSummaryPayload:
+    game_mode_id = GameMode(int(info_result.game_mode_id))
+    tick_rate = int(info_result.tick_rate)
+    ticks_simulated = int(info_result.ticks_simulated)
+    player_count = int(info_result.player_count)
+    field_name = _elapsed_field_name(info_result)
+    elapsed_ms = int(_elapsed_ms_value(info_result))
+    if field_name == "raw_frame_elapsed_ms":
+        return _RushReplayInfoSummaryPayload(
+            game_mode_id=game_mode_id,
+            tick_rate=tick_rate,
+            ticks_simulated=ticks_simulated,
+            raw_frame_elapsed_ms=elapsed_ms,
+            player_count=player_count,
+            event_count=int(event_count),
+            event_counts_by_kind=dict(event_counts_by_kind),
+        )
+    if field_name == "quest_spawn_timeline_ms":
+        return _QuestReplayInfoSummaryPayload(
+            game_mode_id=game_mode_id,
+            tick_rate=tick_rate,
+            ticks_simulated=ticks_simulated,
+            quest_spawn_timeline_ms=elapsed_ms,
+            player_count=player_count,
+            event_count=int(event_count),
+            event_counts_by_kind=dict(event_counts_by_kind),
+        )
+    return _SurvivalReplayInfoSummaryPayload(
+        game_mode_id=game_mode_id,
+        tick_rate=tick_rate,
+        ticks_simulated=ticks_simulated,
+        sim_elapsed_ms=elapsed_ms,
+        player_count=player_count,
+        event_count=int(event_count),
+        event_counts_by_kind=dict(event_counts_by_kind),
     )
 
 
@@ -829,23 +1075,25 @@ def cmd_replay_verify(
     header_claim_matches = True
     claimed_stats = replay.header.claimed_stats
     if bool(full_replay_simulated):
-        expected_claim = _ReplayVerifyClaimedStatsPayload(
+        expected_claim = _verify_claimed_stats_payload(
             complete=bool(claimed_stats.complete),
             ticks=int(claimed_stats.ticks),
+            elapsed_field_name=str(claimed_stats.elapsed_field_name),
             elapsed_ms=int(claimed_stats.elapsed_ms),
             score_xp=int(claimed_stats.score_xp),
             kills=int(claimed_stats.kills),
-            most_used_weapon_id=claimed_stats.most_used_weapon_id,
+            most_used_weapon_id=int(claimed_stats.most_used_weapon_id),
             shots_fired=int(claimed_stats.shots_fired),
             shots_hit=int(claimed_stats.shots_hit),
         )
-        simulated_claim = _ReplayVerifyClaimedStatsPayload(
+        simulated_claim = _verify_claimed_stats_payload(
             complete=bool(claimed_stats.complete),
             ticks=int(result.ticks),
+            elapsed_field_name=str(result.elapsed_field_name),
             elapsed_ms=int(result.elapsed_ms),
             score_xp=int(result.score_xp),
             kills=int(result.creature_kill_count),
-            most_used_weapon_id=result.most_used_weapon_id,
+            most_used_weapon_id=int(result.most_used_weapon_id),
             shots_fired=int(result.shots_fired),
             shots_hit=int(result.shots_hit),
         )
@@ -853,7 +1101,7 @@ def cmd_replay_verify(
         if int(expected_claim.ticks) != int(simulated_claim.ticks):
             mismatched_fields.append("ticks")
         if int(expected_claim.elapsed_ms) != int(simulated_claim.elapsed_ms):
-            mismatched_fields.append("elapsed_ms")
+            mismatched_fields.append(str(expected_claim.elapsed_field_name))
         if int(expected_claim.score_xp) != int(simulated_claim.score_xp):
             mismatched_fields.append("score_xp")
         if int(expected_claim.kills) != int(simulated_claim.kills):
@@ -897,7 +1145,7 @@ def cmd_replay_verify(
     else:
         message = (
             f"{status}: "
-            f"ticks={result.ticks} elapsed_ms={result.elapsed_ms} score_xp={result.score_xp} "
+            f"ticks={result.ticks} {result.elapsed_field_name}={result.elapsed_ms} score_xp={result.score_xp} "
             f"kills={result.creature_kill_count} most_used_weapon_id={result.most_used_weapon_id} "
             f"shots_fired={result.shots_fired} shots_hit={result.shots_hit} rng_state={result.rng_state}"
         )
@@ -981,24 +1229,9 @@ def cmd_replay_info(
         typer.echo(f"replay info failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    timeline_payload = [
-        _ReplayInfoEventPayload(
-            tick_index=int(event.tick_index),
-            elapsed_ms=int(event.elapsed_ms),
-            elapsed_s=float(event.elapsed_ms) / 1000.0,
-            kind=str(event.kind),
-            player_index=(None if event.player_index is None else int(event.player_index)),
-            detail=str(event.detail),
-            data=dict(event.data),
-        )
-        for event in result.timeline
-    ]
-    summary_payload = _ReplayInfoSummaryPayload(
-        game_mode_id=GameMode(int(result.game_mode_id)),
-        tick_rate=int(result.tick_rate),
-        ticks_simulated=int(result.ticks_simulated),
-        elapsed_ms=int(result.elapsed_ms),
-        player_count=int(result.player_count),
+    timeline_payload = [_replay_info_event_payload(event) for event in result.timeline]
+    summary_payload = _replay_info_summary_payload(
+        result,
         event_count=len(timeline_payload),
         event_counts_by_kind=event_counts_by_kind(result.timeline),
     )
@@ -1024,7 +1257,7 @@ def cmd_replay_info(
         f"replay={replay_path} "
         f"mode={_replay_mode_label(summary_payload.game_mode_id)} "
         f"ticks={int(summary_payload.ticks_simulated)} "
-        f"elapsed_ms={int(summary_payload.elapsed_ms)} "
+        f"{summary_payload.elapsed_field_name}={int(summary_payload.elapsed_ms)} "
         f"events={int(summary_payload.event_count)}",
     )
     for event in timeline_payload:
@@ -1485,7 +1718,7 @@ def cmd_replay_render(
         f"ok: output={render.output_path} "
         f"frames={render.frame_count} fps={render.fps} "
         f"resolution={render.width}x{render.height} "
-        f"ticks={render.run_result.ticks} elapsed_ms={render.run_result.elapsed_ms} "
+        f"ticks={render.run_result.ticks} {render.run_result.elapsed_field_name}={render.run_result.elapsed_ms} "
         f"score_xp={render.run_result.score_xp} kills={render.run_result.creature_kill_count}"
     )
     typer.echo(message)

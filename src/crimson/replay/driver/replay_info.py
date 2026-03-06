@@ -6,6 +6,8 @@ from typing import Literal, TypeAlias
 import msgspec
 
 from ...bonuses.ids import BonusId, bonus_display_name
+from ...elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ...elapsed_clock import elapsed_ms_value as _elapsed_ms_value
 from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
@@ -45,22 +47,145 @@ _CORE_EVENT_KINDS: frozenset[ReplayInfoCoreEventKind] = frozenset(
 )
 
 
-class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
+class _ReplayInfoTimelineEventBase(msgspec.Struct, frozen=True):
     tick_index: int
-    elapsed_ms: int
     kind: ReplayInfoEventKind
     player_index: int | None
     detail: str
     data: dict[str, object]
 
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
 
-class ReplayInfoResult(msgspec.Struct, frozen=True):
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalReplayInfoTimelineEvent(_ReplayInfoTimelineEventBase, frozen=True):
+    sim_elapsed_ms: int
+
+
+class RushReplayInfoTimelineEvent(_ReplayInfoTimelineEventBase, frozen=True):
+    raw_frame_elapsed_ms: int
+
+
+class QuestReplayInfoTimelineEvent(_ReplayInfoTimelineEventBase, frozen=True):
+    quest_spawn_timeline_ms: int
+
+
+type ReplayInfoTimelineEvent = (
+    SurvivalReplayInfoTimelineEvent
+    | RushReplayInfoTimelineEvent
+    | QuestReplayInfoTimelineEvent
+)
+
+
+class _ReplayInfoResultBase(msgspec.Struct, frozen=True):
     game_mode_id: GameMode
     tick_rate: int
     ticks_simulated: int
-    elapsed_ms: int
     player_count: int
     timeline: list[ReplayInfoTimelineEvent]
+
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalReplayInfoResult(_ReplayInfoResultBase, frozen=True):
+    sim_elapsed_ms: int
+
+
+class RushReplayInfoResult(_ReplayInfoResultBase, frozen=True):
+    raw_frame_elapsed_ms: int
+
+
+class QuestReplayInfoResult(_ReplayInfoResultBase, frozen=True):
+    quest_spawn_timeline_ms: int
+
+
+type ReplayInfoResult = SurvivalReplayInfoResult | RushReplayInfoResult | QuestReplayInfoResult
+
+
+def _build_timeline_event_for_mode(
+    *,
+    game_mode_id: GameMode,
+    tick_index: int,
+    elapsed_ms: int,
+    kind: ReplayInfoEventKind,
+    player_index: int | None,
+    detail: str,
+    data: dict[str, object],
+) -> ReplayInfoTimelineEvent:
+    if game_mode_id == GameMode.RUSH:
+        return RushReplayInfoTimelineEvent(
+            tick_index=int(tick_index),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            kind=kind,
+            player_index=player_index,
+            detail=str(detail),
+            data=dict(data),
+        )
+    if game_mode_id == GameMode.QUESTS:
+        return QuestReplayInfoTimelineEvent(
+            tick_index=int(tick_index),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            kind=kind,
+            player_index=player_index,
+            detail=str(detail),
+            data=dict(data),
+        )
+    return SurvivalReplayInfoTimelineEvent(
+        tick_index=int(tick_index),
+        sim_elapsed_ms=int(elapsed_ms),
+        kind=kind,
+        player_index=player_index,
+        detail=str(detail),
+        data=dict(data),
+    )
+
+
+def _build_replay_info_result_for_mode(
+    *,
+    game_mode_id: GameMode,
+    tick_rate: int,
+    ticks_simulated: int,
+    elapsed_ms: int,
+    player_count: int,
+    timeline: list[ReplayInfoTimelineEvent],
+) -> ReplayInfoResult:
+    if game_mode_id == GameMode.RUSH:
+        return RushReplayInfoResult(
+            game_mode_id=game_mode_id,
+            tick_rate=int(tick_rate),
+            ticks_simulated=int(ticks_simulated),
+            raw_frame_elapsed_ms=int(elapsed_ms),
+            player_count=int(player_count),
+            timeline=list(timeline),
+        )
+    if game_mode_id == GameMode.QUESTS:
+        return QuestReplayInfoResult(
+            game_mode_id=game_mode_id,
+            tick_rate=int(tick_rate),
+            ticks_simulated=int(ticks_simulated),
+            quest_spawn_timeline_ms=int(elapsed_ms),
+            player_count=int(player_count),
+            timeline=list(timeline),
+        )
+    return SurvivalReplayInfoResult(
+        game_mode_id=game_mode_id,
+        tick_rate=int(tick_rate),
+        ticks_simulated=int(ticks_simulated),
+        sim_elapsed_ms=int(elapsed_ms),
+        player_count=int(player_count),
+        timeline=list(timeline),
+    )
 
 
 class _PlayerSnapshot(msgspec.Struct, frozen=True):
@@ -89,6 +214,7 @@ def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
 def _append_event(
     timeline: list[ReplayInfoTimelineEvent],
     *,
+    game_mode_id: GameMode,
     tick_index: int,
     elapsed_ms: int,
     kind: ReplayInfoEventKind,
@@ -103,7 +229,8 @@ def _append_event(
     if player_filter is not None and player_index is not None and player_index != player_filter:
         return
     timeline.append(
-        ReplayInfoTimelineEvent(
+        _build_timeline_event_for_mode(
+            game_mode_id=game_mode_id,
             tick_index=tick_index,
             elapsed_ms=elapsed_ms,
             kind=kind,
@@ -116,6 +243,7 @@ def _append_event(
 
 def _append_extra_replay_commands(
     *,
+    game_mode_id: GameMode,
     commands: list[GameCommand],
     tick_index: int,
     elapsed_ms: int,
@@ -129,6 +257,7 @@ def _append_extra_replay_commands(
         if isinstance(cmd, PerkMenuOpenCommand):
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="perk_menu_open",
@@ -142,6 +271,7 @@ def _append_extra_replay_commands(
 
 def _append_bonus_pickup_events(
     *,
+    game_mode_id: GameMode,
     tick_index: int,
     elapsed_ms: int,
     timeline: list[ReplayInfoTimelineEvent],
@@ -167,6 +297,7 @@ def _append_bonus_pickup_events(
             data["weapon_name"] = weapon_name
         _append_event(
             timeline,
+            game_mode_id=game_mode_id,
             tick_index=tick_index,
             elapsed_ms=elapsed_ms,
             kind="bonus_pickup",
@@ -180,6 +311,7 @@ def _append_bonus_pickup_events(
 
 def _append_snapshot_diff_events(
     *,
+    game_mode_id: GameMode,
     tick_index: int,
     elapsed_ms: int,
     before: list[_PlayerSnapshot],
@@ -200,6 +332,7 @@ def _append_snapshot_diff_events(
             weapon_after_name = weapon_display_name(post.weapon_id, preserve_bugs=preserve_bugs)
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="weapon_change",
@@ -218,6 +351,7 @@ def _append_snapshot_diff_events(
         if post.level > pre.level:
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="level_up",
@@ -245,6 +379,7 @@ def _append_snapshot_diff_events(
             )
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="perk_pick",
@@ -266,6 +401,7 @@ def _append_snapshot_diff_events(
             amount = health_before - health_after
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="health_damage",
@@ -283,6 +419,7 @@ def _append_snapshot_diff_events(
             amount = health_after - health_before
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="health_heal",
@@ -300,6 +437,7 @@ def _append_snapshot_diff_events(
         if health_before > 0.0 and health_after <= 0.0:
             _append_event(
                 timeline,
+                game_mode_id=game_mode_id,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
                 kind="player_death",
@@ -346,6 +484,7 @@ def collect_replay_info(
         elapsed_ms = int(tick.elapsed_ms)
         if mode != GameMode.RUSH:
             _append_extra_replay_commands(
+                game_mode_id=mode,
                 commands=source_tick.commands,
                 tick_index=int(source_tick.tick_index),
                 elapsed_ms=elapsed_ms,
@@ -355,6 +494,7 @@ def collect_replay_info(
             )
 
         _append_bonus_pickup_events(
+            game_mode_id=mode,
             tick_index=int(source_tick.tick_index),
             elapsed_ms=elapsed_ms,
             timeline=timeline,
@@ -367,6 +507,7 @@ def collect_replay_info(
         if tick.step.events.deaths:
             _append_event(
                 timeline,
+                game_mode_id=mode,
                 tick_index=int(source_tick.tick_index),
                 elapsed_ms=elapsed_ms,
                 kind="creature_deaths",
@@ -378,6 +519,7 @@ def collect_replay_info(
             )
 
         _append_snapshot_diff_events(
+            game_mode_id=mode,
             tick_index=int(source_tick.tick_index),
             elapsed_ms=elapsed_ms,
             before=before,
@@ -405,7 +547,7 @@ def collect_replay_info(
     )
     run_result = driver.build_run_result(ticks=int(walk_result.ticks_completed))
 
-    return ReplayInfoResult(
+    return _build_replay_info_result_for_mode(
         game_mode_id=mode,
         tick_rate=replay.header.tick_rate,
         ticks_simulated=int(walk_result.ticks_completed),

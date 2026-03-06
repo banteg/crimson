@@ -200,20 +200,18 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
     event_types_sorted = sorted(event_counts.items(), key=lambda item: (-item[1], item[0]))
     top_event_types = [f"{name}:{count}" for name, count in event_types_sorted[:8]]
 
-    return to_builtin_object(
-        {
-            "tick_index": row.tick_index,
-            "elapsed_ms": row.elapsed_ms,
-            "dt_ms_i32": row.dt_ms_i32,
-            "mode_id": row.mode_id,
-            "phase_markers": list(row.phase_markers),
-            "checkpoint": checkpoint,
-            "entity_counts": entity_counts,
-            "event_count_total": event_count_total,
-            "top_event_types": top_event_types,
-        },
-        field="tick_summary",
-    )
+    summary = {
+        "tick_index": row.tick_index,
+        row.elapsed_field_name: row.elapsed_ms,
+        "dt_ms_i32": row.dt_ms_i32,
+        "mode_id": row.mode_id,
+        "phase_markers": list(row.phase_markers),
+        "checkpoint": checkpoint,
+        "entity_counts": entity_counts,
+        "event_count_total": event_count_total,
+        "top_event_types": top_event_types,
+    }
+    return to_builtin_object(summary, field="tick_summary")
 
 
 def summarize_tick(*, trace_path: Path, tick_index: int) -> BuiltinObject:

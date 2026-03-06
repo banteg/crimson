@@ -1388,6 +1388,26 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   return outState.currentRunElapsedNormalizedMs | 0;
 }
 
+function setCheckpointElapsedField(checkpoint, modeId, elapsedMs) {
+  if (!checkpoint || typeof checkpoint !== "object") return;
+  delete checkpoint.elapsed_ms;
+  delete checkpoint.sim_elapsed_ms;
+  delete checkpoint.raw_frame_elapsed_ms;
+  delete checkpoint.quest_spawn_timeline_ms;
+  if ((modeId | 0) === GAME_MODE_RUSH) {
+    checkpoint.mode = "rush";
+    checkpoint.raw_frame_elapsed_ms = elapsedMs | 0;
+    return;
+  }
+  if ((modeId | 0) === GAME_MODE_QUESTS) {
+    checkpoint.mode = "quests";
+    checkpoint.quest_spawn_timeline_ms = elapsedMs | 0;
+    return;
+  }
+  checkpoint.mode = "survival";
+  checkpoint.sim_elapsed_ms = elapsedMs | 0;
+}
+
 // tick rows are replay-grade rows. Missing required fields are contract errors,
 // not something finalize should coerce after the fact.
 function buildTraceTickRow(tickObj) {
@@ -1448,7 +1468,7 @@ function buildTraceTickRow(tickObj) {
   if (!Number.isFinite(elapsedMs) || elapsedMs < 0) {
     return emitCaptureContractError("invalid_tick_elapsed_ms", tickObj);
   }
-  checkpoint.elapsed_ms = elapsedMs;
+  setCheckpointElapsedField(checkpoint, modeId, elapsedMs);
   const replayInputs = replayInputsFromTick(tickObj);
   const playerCount = runPlayerCountFromTick(tickObj);
   if ((playerCount | 0) <= 0) {

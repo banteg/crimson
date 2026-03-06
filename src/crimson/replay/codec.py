@@ -17,6 +17,7 @@ from .types import (
     ReplayClaimedStatsSnapshot,
     ReplayHeader,
     ReplayTick,
+    default_claimed_stats_for_mode,
 )
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
@@ -64,7 +65,7 @@ def _validate_claimed_stats(stats: ReplayClaimedStatsSnapshot) -> None:
         raise ReplayCodecError(f"replay header claimed_stats.ticks must be non-negative, got {int(stats.ticks)}")
     if int(stats.elapsed_ms) < 0:
         raise ReplayCodecError(
-            f"replay header claimed_stats.elapsed_ms must be non-negative, got {int(stats.elapsed_ms)}",
+            f"replay header claimed_stats.{stats.elapsed_field_name} must be non-negative, got {int(stats.elapsed_ms)}",
         )
     if int(stats.score_xp) < 0:
         raise ReplayCodecError(
@@ -99,6 +100,12 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
         raise ReplayCodecError(f"unsupported input_quantization: {header.input_quantization!r}; expected 'f32'")
     if str(header.bootstrap_kind) not in ("none", "terrain_v1"):
         raise ReplayCodecError(f"unknown bootstrap_kind: {header.bootstrap_kind!r}")
+    expected_claimed_stats = default_claimed_stats_for_mode(header.game_mode_id)
+    if type(header.claimed_stats) is not type(expected_claimed_stats):
+        raise ReplayCodecError(
+            "replay header claimed_stats variant does not match game_mode_id: "
+            f"{type(header.claimed_stats).__name__} vs {int(header.game_mode_id)}",
+        )
     _validate_usage_counts(header.status.weapon_usage_counts)
     _validate_claimed_stats(header.claimed_stats)
 

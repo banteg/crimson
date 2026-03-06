@@ -12,6 +12,7 @@ import msgspec
 
 from grim.rand import CrtRand
 
+from ..elapsed_clock import authoritative_elapsed_field_for_mode
 from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
 from ..replay.checkpoints import ReplayCheckpoint
@@ -29,6 +30,7 @@ from .schema import (
     ReplayTickChannels,
     TickRecord,
     TraceMeta,
+    build_tick_record_for_mode,
     channel_versions_for,
 )
 from .trace import TraceSummary, write_trace_iter
@@ -428,6 +430,7 @@ def _build_meta(
     config = msgspec.to_builtins(session_start.config)
     if not isinstance(config, dict):
         raise FridaFinalizeError("session_start.config must encode to a mapping")
+    config["elapsed_field_name"] = str(authoritative_elapsed_field_for_mode(run.mode_id))
     source = dict(raw_fingerprint)
     source["run_id"] = int(run.run_id)
     source["mode_id"] = int(run.mode_id)
@@ -709,11 +712,11 @@ def finalize_frida_jsonl_to_traces(
                         active_run.replay_status = _replay_status_from_channels(tick_row.channels)
                         active_run.replay_inputs.append(list(replay_inputs))
                         active_run.replay_dt.append(float(tick_row.dt))
-                        tick = TickRecord(
+                        tick = build_tick_record_for_mode(
+                            mode_id=int(tick_row.mode_id),
                             tick_index=int(active_run.next_local_tick),
                             elapsed_ms=int(tick_row.elapsed_ms),
                             dt_ms_i32=int(tick_row.dt_ms_i32),
-                            mode_id=int(tick_row.mode_id),
                             phase_markers=list(tick_row.phase_markers),
                             channels=channels,
                         )

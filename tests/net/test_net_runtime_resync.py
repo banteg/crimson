@@ -71,7 +71,7 @@ def test_resync_request_to_stream_to_apply_flow(mocker) -> None:
         snapshot=SurvivalStateSnapshotV2(
             tick_index=8,
             runtime_state=SurvivalRuntimeSnapshotV2(
-                elapsed_ms=8.0,
+                sim_elapsed_ms=8.0,
                 stage=1,
                 spawn_cooldown_ms=0.0,
                 perk_pending_count=0,
@@ -107,7 +107,7 @@ def test_resync_checksum_mismatch_sets_error(mocker) -> None:
         snapshot=RushStateSnapshotV2(
             tick_index=16,
             runtime_state=RushRuntimeSnapshotV2(
-                elapsed_ms=16.0,
+                raw_frame_elapsed_ms=16.0,
                 spawn_cooldown_ms=0.0,
                 kill_count=0,
             ),

@@ -107,7 +107,7 @@ class RushMode(BaseGameplayMode):
             game_tune_started=bool(self.sim_world.game_tune_started),
             clear_fx_queues_each_tick=False,
             finalize_post_render_lifecycle=True,
-            elapsed_uses_raw_dt=True,
+            session_elapsed_source="raw_frame_elapsed_ms",
             mid_step_hook=lambda ctx: rush_mid_step(ctx, spawn),
             before_step_hook=self._enforce_rush_loadout,
             input_transform=rush_input_transform,
@@ -288,7 +288,7 @@ class RushMode(BaseGameplayMode):
                     tick_index=int(frame_tick_index),
                     replay_state=self._net_replay_snapshot_state(),
                     runtime_state=RushRuntimeSnapshotV2(
-                        elapsed_ms=elapsed_ms,
+                        raw_frame_elapsed_ms=elapsed_ms,
                         spawn_cooldown_ms=spawn_cooldown_ms,
                         kill_count=int(self.creatures.kill_count),
                     ),

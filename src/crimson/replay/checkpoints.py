@@ -11,6 +11,9 @@ import zstandard as zstd
 from grim.geom import Vec2
 
 from ..bonuses import BonusId
+from ..elapsed_clock import elapsed_field_name as _elapsed_field_name
+from ..elapsed_clock import elapsed_ms_value as _elapsed_ms_value
+from ..game_modes import GameMode
 from ..owner_ref import OwnerRef
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
@@ -31,7 +34,7 @@ class _EventsLike(Protocol):
     pickups: list[object]
     sfx: list[str]
 
-FORMAT_VERSION = 4
+FORMAT_VERSION = 5
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _DEFAULT_MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
@@ -50,10 +53,9 @@ class ReplayPlayerCheckpoint(msgspec.Struct, frozen=True):
     experience: int
     level: int
 
-class ReplayCheckpoint(msgspec.Struct, frozen=True):
+class _ReplayCheckpointBase(msgspec.Struct, frozen=True):
     tick_index: int
     rng_state: int
-    elapsed_ms: int
     score_xp: int
     kills: int
     creature_count: int
@@ -63,6 +65,51 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True):
     deaths: list["ReplayDeathLedgerEntry"] = msgspec.field(default_factory=list)
     perk: "ReplayPerkSnapshot" = msgspec.field(default_factory=lambda: ReplayPerkSnapshot())
     events: "ReplayEventSummary" = msgspec.field(default_factory=lambda: ReplayEventSummary())
+
+    @property
+    def elapsed_ms(self) -> int:
+        return _elapsed_ms_value(self)
+
+    @property
+    def elapsed_field_name(self) -> str:
+        return _elapsed_field_name(self)
+
+
+class SurvivalReplayCheckpoint(
+    _ReplayCheckpointBase,
+    frozen=True,
+    kw_only=True,
+    tag="survival",
+    tag_field="mode",
+):
+    sim_elapsed_ms: int
+
+
+class RushReplayCheckpoint(
+    _ReplayCheckpointBase,
+    frozen=True,
+    kw_only=True,
+    tag="rush",
+    tag_field="mode",
+):
+    raw_frame_elapsed_ms: int
+
+
+class QuestReplayCheckpoint(
+    _ReplayCheckpointBase,
+    frozen=True,
+    kw_only=True,
+    tag="quests",
+    tag_field="mode",
+):
+    quest_spawn_timeline_ms: int
+
+
+type ReplayCheckpoint = (
+    SurvivalReplayCheckpoint
+    | RushReplayCheckpoint
+    | QuestReplayCheckpoint
+)
 
 
 class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True):
@@ -132,6 +179,7 @@ def build_checkpoint(
     tick_index: int,
     world: WorldState,
     elapsed_ms: float,
+    game_mode_id: GameMode | int | None = None,
     creature_count_override: int | None = None,
     deaths: Sequence[object] | None = None,
     events: object | None = None,
@@ -206,10 +254,42 @@ def build_checkpoint(
         sfx_head=[str(key) for key in sfx[:4]],
     )
 
-    return ReplayCheckpoint(
+    mode = GameMode(int(state.game_mode) if game_mode_id is None else int(game_mode_id))
+    elapsed_value = int(round(elapsed_ms))
+    if mode == GameMode.RUSH:
+        return RushReplayCheckpoint(
+            tick_index=int(tick_index),
+            rng_state=int(state.rng.state),
+            raw_frame_elapsed_ms=elapsed_value,
+            score_xp=int(score_xp),
+            kills=int(kills),
+            creature_count=int(creature_count),
+            perk_pending=int(state.perk_selection.pending_count),
+            players=player_ckpts,
+            bonus_timers=bonus_timers,
+            deaths=death_entries,
+            perk=perk_snapshot,
+            events=event_summary,
+        )
+    if mode == GameMode.QUESTS:
+        return QuestReplayCheckpoint(
+            tick_index=int(tick_index),
+            rng_state=int(state.rng.state),
+            quest_spawn_timeline_ms=elapsed_value,
+            score_xp=int(score_xp),
+            kills=int(kills),
+            creature_count=int(creature_count),
+            perk_pending=int(state.perk_selection.pending_count),
+            players=player_ckpts,
+            bonus_timers=bonus_timers,
+            deaths=death_entries,
+            perk=perk_snapshot,
+            events=event_summary,
+        )
+    return SurvivalReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
-        elapsed_ms=int(round(elapsed_ms)),
+        sim_elapsed_ms=elapsed_value,
         score_xp=int(score_xp),
         kills=int(kills),
         creature_count=int(creature_count),

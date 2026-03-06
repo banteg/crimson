@@ -87,7 +87,7 @@ def test_runtime_tracks_prediction_mismatches_and_rollbacks(mocker) -> None:
             snapshot=SurvivalStateSnapshotV2(
                 tick_index=0,
                 runtime_state=SurvivalRuntimeSnapshotV2(
-                    elapsed_ms=0.0,
+                    sim_elapsed_ms=0.0,
                     stage=0,
                     spawn_cooldown_ms=0.0,
                     perk_pending_count=0,
@@ -139,7 +139,7 @@ def test_runtime_accepts_resync_stream_and_exposes_pending_snapshot(mocker) -> N
         snapshot=SurvivalStateSnapshotV2(
             tick_index=12,
             runtime_state=SurvivalRuntimeSnapshotV2(
-                elapsed_ms=12.0,
+                sim_elapsed_ms=12.0,
                 stage=0,
                 spawn_cooldown_ms=0.0,
                 perk_pending_count=0,
