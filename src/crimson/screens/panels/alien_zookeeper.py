@@ -271,18 +271,18 @@ class AlienZooKeeperView:
     def _fill_empty_cells(self) -> None:
         for i, value in enumerate(self._board):
             if value == -1:
-                self._board[i] = self.state.rng.randrange(5)
+                self._board[i] = int(self.state.rng.rand() % 5)
 
     def _reroll_board_no_initial_match(self) -> None:
         for _ in range(4096):
             for i in range(_BOARD_CELLS):
-                self._board[i] = self.state.rng.randrange(5)
+                self._board[i] = int(self.state.rng.rand() % 5)
             has_match, _out_idx, _out_dir = _credits_secret_match3_find(self._board)
             if not has_match:
                 return
         # Fallback to avoid a hard loop even though this should never happen in practice.
         for i in range(_BOARD_CELLS):
-            self._board[i] = self.state.rng.randrange(5)
+            self._board[i] = int(self.state.rng.rand() % 5)
 
     def _reset_state(self) -> None:
         self._reroll_board_no_initial_match()

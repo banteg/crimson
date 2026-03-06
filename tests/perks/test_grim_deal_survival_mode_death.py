@@ -12,6 +12,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.screens.results.game_over import GameOverUi
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -29,7 +30,7 @@ def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
 @pytest.mark.parametrize("mode_cls", [SurvivalMode, QuestMode])
 def test_grim_deal_kills_player_during_perk_menu_transition(mocker, mode_cls: type[SurvivalMode] | type[QuestMode]) -> None:
     ctx = ViewContext(assets_dir=_assets_dir())
-    mode = mode_cls(ctx)
+    mode = mode_cls(ctx, audio_rng=Crand(0xBEEF))
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
     assert mode.player.health > 0.0

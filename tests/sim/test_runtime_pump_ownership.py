@@ -18,6 +18,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
 from crimson.sim.input_providers import InputStatus, PerkPickCommand, ResolvedTick
 from crimson.sim.tick_runner import TickBatchResult
+from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.builders import FakeRunner, make_tick_payload
 from tests.support.builders.session import make_session
@@ -56,6 +57,10 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
+def _mode_rng() -> Crand:
+    return Crand(0xBEEF)
+
+
 def test_interactive_frame_driver_pumps_runtime_once(make_game_state) -> None:
     state = make_game_state()
     state.pending_network_session = _pending_session()
@@ -84,7 +89,7 @@ def test_interactive_headless_no_runtime_pumps_zero(make_game_state) -> None:
 
 
 def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
     tick_payload = make_tick_payload()
     runner = FakeRunner(results=
         [
@@ -137,7 +142,7 @@ def test_lan_tick_consumption_drives_runner_until_stall(mocker) -> None:
 
 
 def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
     provider = _LanRuntimeInputProvider(
         player_count=1,
         tick_rate=60,
@@ -170,7 +175,7 @@ def test_lan_tick_consumption_treats_before_pop_block_as_non_stall(mocker) -> No
 
 
 def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
     ticks = [
         TickResult(
             source_tick=ResolvedTick(
@@ -251,7 +256,7 @@ def test_lan_tick_consumption_does_not_emit_sync_for_stop_before_finalize(mocker
 
 
 def test_lan_tick_consumption_broadcasts_tick_frame_commands(mocker) -> None:
-    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()))
+    mode = SurvivalMode(ViewContext(assets_dir=_assets_dir()), audio_rng=_mode_rng())
     command = PerkPickCommand(player_index=0, choice_index=2)
     tick = TickResult(
         source_tick=ResolvedTick(

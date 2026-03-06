@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import cast
@@ -8,6 +7,7 @@ from typing import cast
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
+from grim.rand import Crand
 
 from ..game_modes import GameMode
 from ..render.frame import RenderFrame
@@ -51,8 +51,8 @@ class WorldRuntime:
         hardcore: bool = False,
         preserve_bugs: bool = False,
         config: CrimsonConfig | None = None,
+        audio_rng: Crand,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         self.assets_dir = Path(assets_dir)

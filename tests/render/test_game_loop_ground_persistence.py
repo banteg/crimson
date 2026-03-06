@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import time
 from pathlib import Path
 from typing import cast
@@ -13,6 +12,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.gameplay_screen import GameplayScreenStub
@@ -35,23 +35,15 @@ class _ResourcesStub:
         return self._textures.get(texture_id)
 
 
-class _RngStub(random.Random):
+class _RngStub(Crand):
     def __init__(self, values: list[int]) -> None:
         super().__init__(0)
         self._values = list(values)
 
-    def randrange(self, start: int, stop: int | None = None, step: int = 1) -> int:
-        if int(step) != 1:
-            raise AssertionError("rng stub only supports step=1")
-        if stop is None:
-            stop = start
-            start = 0
+    def rand(self) -> int:
         if not self._values:
-            raise AssertionError("rng stub exhausted")
-        value = int(self._values.pop(0))
-        if not (int(start) <= value < int(stop)):
-            raise AssertionError(f"stub value {value} outside range [{start}, {stop})")
-        return value
+            return 0
+        return int(self._values.pop(0))
 
 
 class _AdoptMenuGroundView:
@@ -103,7 +95,7 @@ def _build_state(tmp_path: Path) -> GameState:
     return GameState(
         base_dir=tmp_path,
         assets_dir=assets_dir,
-        rng=random.Random(0),
+        rng=Crand(0),
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),
@@ -175,6 +167,7 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     state.resources = cast(RuntimeResources, resources)
     state.status.quest_unlock_index = 0x28
     # unlock>=40 and first (rand & 7)==3 should pick (6,7,6) i.e. q4 base/tex1/base.
+    # Remaining draws are consumed by terrain stamping and can be arbitrary.
     state.rng = _RngStub([3, 1234])
 
     ground = ensure_menu_ground(state, regenerate=True)

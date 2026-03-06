@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
 from typing import Literal
 
@@ -8,6 +7,7 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -63,7 +63,7 @@ class RushMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
+        audio_rng: Crand,
         session_factory: RushSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
@@ -161,6 +161,7 @@ class RushMode(BaseGameplayMode):
             seed=bootstrap.terrain_seed,
             layers=3,
         )
+        self.sim_world.state.rng.srand(int(bootstrap.seed_after))
         self._sim_session = self._new_sim_session()
         self._enforce_rush_loadout()
         weapon_usage_counts = normalize_weapon_usage_counts(

@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 import datetime as dt
-import random
 
 from crimson.screens.panels.stats import (
     _is_orbes_volantes_day,
     _stats_menu_easter_roll,
 )
+from grim.rand import Crand
 
 
 def test_stats_menu_easter_roll_keeps_existing_value() -> None:
-    rng = random.Random(123)
+    rng = Crand(123)
     assert _stats_menu_easter_roll(7, rng=rng) == 7
 
 
 def test_stats_menu_easter_roll_generates_0_to_31_when_unset() -> None:
-    rng = random.Random(123)
+    rng = Crand(123)
     roll = _stats_menu_easter_roll(-1, rng=rng)
     assert 0 <= roll < 32
 

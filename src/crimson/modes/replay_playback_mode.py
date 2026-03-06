@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from pathlib import Path
 
 from grim import music as grim_music
@@ -14,6 +13,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -142,7 +142,7 @@ class ReplayPlaybackMode:
         self._quest_total_spawn_count = 0
 
         self._audio: AudioState | None = None
-        self._audio_rng: random.Random | None = None
+        self._audio_rng: Crand | None = None
 
     @property
     def tick_index(self) -> int:
@@ -336,7 +336,7 @@ class ReplayPlaybackMode:
 
         world_size = float(replay.header.world_size)
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
-        audio_rng = random.Random(int(replay.header.seed) & 0xFFFFFFFF)
+        audio_rng = Crand(int(replay.header.seed) & 0xFFFFFFFF)
         self._audio = audio
         self._audio_rng = audio_rng
         self._register_replay_audio_commands()

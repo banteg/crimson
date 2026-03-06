@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import inspect
-import random
 from typing import cast
 
 from syrupy import SnapshotAssertion
 from syrupy.types import PropertyMatcher
 
 from crimson.quests import QuestContext, all_quests
+from grim.rand import Crand
 
 
 def _round_matcher(data: object, **_: object) -> object:
@@ -20,7 +20,7 @@ def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, obje
     params = inspect.signature(builder).parameters
     kwargs: dict[str, object] = {}
     if "rng" in params:
-        kwargs["rng"] = random.Random(seed)
+        kwargs["rng"] = Crand(seed)
     if "full_version" in params:
         kwargs["full_version"] = True
     entries = builder(ctx, **kwargs)

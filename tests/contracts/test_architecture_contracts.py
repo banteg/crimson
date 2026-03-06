@@ -38,6 +38,7 @@ from crimson.world.terrain_runtime import TerrainRuntime
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 from tests.support.builders.session import make_session
@@ -300,7 +301,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
             self.sim_world = sw
             self.render_resources = RenderResources(assets_dir=_assets_dir())
             self.terrain_runtime = TerrainRuntime(render_resources=self.render_resources)
-            self.audio_bridge = AudioBridge()
+            self.audio_bridge = AudioBridge(audio_rng=kwargs.get("audio_rng", Crand(0xBEEF)))  # type: ignore[arg-type]
             self.camera = Vec2(-1.0, -1.0)
 
         def reset(self, *, seed: int, player_count: int, **_kw: object) -> None:
@@ -363,7 +364,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
         demo_mode_active=False,
         reflex_boost_timer_source=lambda: 0.0,
         audio=object(),  # type: ignore[arg-type]  # sentinel; play_sfx is patched
-        audio_rng=None,
+        audio_rng=Crand(0xBEEF),
     )
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     draw_text = mocker.patch.object(rl, "draw_text")

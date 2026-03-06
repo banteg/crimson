@@ -11,6 +11,7 @@ from crimson.sim.sessions import DeterministicSession
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.music import init_music_state
+from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.view import ViewContext
 
@@ -19,7 +20,7 @@ def _make_mode() -> RushMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"game_mode": 2})
-    mode = RushMode(ctx, config=config)
+    mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mode._game_over_active = True
     mode._game_over_record = HighScoreRecord.blank()
     return mode
@@ -110,7 +111,7 @@ def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"game_mode": 2})
-    mode = RushMode(ctx, config=config)
+    mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 9876.0

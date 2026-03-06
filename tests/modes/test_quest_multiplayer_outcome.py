@@ -6,6 +6,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
 from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
+from grim.rand import Crand
 from grim.view import ViewContext
 
 
@@ -18,7 +19,7 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     ctx = ViewContext(assets_dir=assets_dir)
 
     mocker.patch.object(QuestMode, "set_terrain", return_value=None)
-    mode = QuestMode(ctx, config=cfg)
+    mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.prepare_new_run("1.1", status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
@@ -40,7 +41,7 @@ def test_prepare_new_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) 
     ctx = ViewContext(assets_dir=assets_dir)
 
     mocker.patch.object(QuestMode, "set_terrain", return_value=None)
-    mode = QuestMode(ctx, config=cfg)
+    mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.prepare_new_run("1.1", status=None)
 
     quest = quest_by_level("1.1")
@@ -58,7 +59,7 @@ def test_prepare_new_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_p
     ctx = ViewContext(assets_dir=assets_dir)
 
     mocker.patch.object(QuestMode, "set_terrain", return_value=None)
-    mode = QuestMode(ctx, config=cfg)
+    mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
 
     seed_before_run = 0xCAFE
     mode.state.rng.srand(seed_before_run)

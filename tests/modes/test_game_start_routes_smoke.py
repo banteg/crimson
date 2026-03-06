@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import time
 from pathlib import Path
 
@@ -16,6 +15,7 @@ from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.network_session import NetworkSessionPanelView
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
+from grim.rand import Crand
 
 
 def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
@@ -26,7 +26,7 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     state = GameState(
         base_dir=tmp_path,
         assets_dir=assets_dir,
-        rng=random.Random(0),
+        rng=Crand(0),
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),

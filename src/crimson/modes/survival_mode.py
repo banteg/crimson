@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
 from typing import Literal, cast
 
@@ -11,6 +10,7 @@ from grim.config import (
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -72,7 +72,7 @@ class SurvivalMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
+        audio_rng: Crand,
         session_factory: SurvivalSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
@@ -236,6 +236,7 @@ class SurvivalMode(BaseGameplayMode):
             terrain_seed=int(bootstrap.terrain_seed),
         )
         self.apply_bootstrap_terrain(terrain_ids=bootstrap.terrain_ids, seed=bootstrap.terrain_seed, layers=3)
+        self.sim_world.state.rng.srand(int(bootstrap.seed_after))
 
         self._sim_session = self._new_sim_session()
 

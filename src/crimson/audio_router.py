@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
 
-from grim.audio import AudioState, play_sfx, trigger_game_tune
+from grim.audio import AudioState, play_sfx, play_sfx_resolved, trigger_game_tune
+from grim.rand import Crand
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
@@ -70,8 +70,8 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 
 
 class AudioRouter(msgspec.Struct):
+    audio_rng: Crand
     audio: AudioState | None = None
-    audio_rng: random.Random | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True
     reflex_boost_timer_source: Callable[[], float] | None = None
@@ -102,27 +102,16 @@ class AudioRouter(msgspec.Struct):
     def play_sfx_resolved(self, key: str | None) -> None:
         if self.audio is None or (not self.sfx_enabled):
             return
-        play_sfx(
+        play_sfx_resolved(
             self.audio,
             key,
-            rng=self.audio_rng,
-            allow_variants=False,
             reflex_boost_timer=self._reflex_boost_timer(),
         )
 
     def trigger_game_tune(self) -> str | None:
         if self.audio is None:
             return None
-
-        audio_rng = self.audio_rng
-        if audio_rng is None:
-            return trigger_game_tune(self.audio)
-
-        def _rand() -> int:
-            # Keep music randomization deterministic when a session RNG is bound.
-            return int(audio_rng.randrange(0, 0x8000))
-
-        return trigger_game_tune(self.audio, rand=_rand)
+        return trigger_game_tune(self.audio, rand=self.audio_rng.rand)
 
     def handle_player_audio(
         self,

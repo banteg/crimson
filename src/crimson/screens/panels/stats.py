@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import datetime as dt
-import random
 
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
@@ -64,10 +64,10 @@ _STATS_EASTER_TEXT = "Orbes Volantes Exstare"
 _STATS_EASTER_TEXT_Y = 5.0
 
 
-def _stats_menu_easter_roll(current_roll: int, *, rng: random.Random) -> int:
+def _stats_menu_easter_roll(current_roll: int, *, rng: Crand) -> int:
     if int(current_roll) != _STATS_EASTER_ROLL_UNSET:
         return int(current_roll)
-    return int(rng.randrange(32))
+    return int(rng.rand() % 32)
 
 
 def _is_orbes_volantes_day(today: dt.date) -> bool:
@@ -363,7 +363,7 @@ class StatisticsMenuView:
 
         if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
-            x = float(self.state.rng.randrange(64) + 16)
+            x = float(self.state.rng.rand() % 64 + 16)
             draw_small_text(
                 font,
                 _STATS_EASTER_TEXT,

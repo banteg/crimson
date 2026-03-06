@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import os
-import random
 import time
 from typing import TYPE_CHECKING
 
@@ -13,6 +12,7 @@ from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
@@ -1196,13 +1196,14 @@ class LightingDebugView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
         self._audio: AudioState | None = None
-        self._audio_rng: random.Random | None = None
+        self._audio_rng = Crand(0xBEEF)
         self._console: ConsoleState | None = None
 
         self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
             world_size=float(WORLD_SIZE),
             preserve_bugs=bool(ctx.preserve_bugs),
+            audio_rng=self._audio_rng,
         )
         self._runtime.reset(player_count=1)
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
@@ -2339,6 +2340,7 @@ class LightingDebugView:
         self._audio_rng = bootstrap.audio_rng
         self._runtime.audio = self._audio
         self._runtime.audio_rng = self._audio_rng
+        self._runtime.sync_audio_bridge_state()
 
         try:
             # Load after audio/bootstrap so missing PAQs can be downloaded first.
@@ -2387,10 +2389,10 @@ class LightingDebugView:
         if self._audio is not None:
             shutdown_audio(self._audio)
             self._audio = None
-            self._audio_rng = None
             self._console = None
         self._runtime.audio = None
-        self._runtime.audio_rng = None
+        self._runtime.audio_rng = self._audio_rng
+        self._runtime.sync_audio_bridge_state()
         self._runtime.close_runtime()
         self._aim_texture = None
 

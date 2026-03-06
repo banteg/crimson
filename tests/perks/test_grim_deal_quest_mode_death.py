@@ -7,6 +7,7 @@ import crimson.modes.quest_mode as quest_mode_module
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -14,7 +15,7 @@ from grim.view import ViewContext
 def _make_quest_mode() -> QuestMode:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    return QuestMode(ctx)
+    return QuestMode(ctx, audio_rng=Crand(0xBEEF))
 
 
 def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker) -> None:

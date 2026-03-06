@@ -6,6 +6,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from grim.config import CrimsonConfig
+from grim.rand import Crand
 from grim.view import ViewContext
 
 
@@ -14,7 +15,7 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) ->
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
     config = CrimsonConfig(path=repo_root / "crimson.cfg", data={"player_count": 2, "game_mode": 1})
 
-    mode = SurvivalMode(ctx, config=config)
+    mode = SurvivalMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
     player0, player1 = mode.sim_world.players[:2]
@@ -42,7 +43,7 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker) ->
 def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    mode = SurvivalMode(ctx)
+    mode = SurvivalMode(ctx, audio_rng=Crand(0xBEEF))
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 4321.0

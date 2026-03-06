@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import random
-
 from crimson.creatures.spawn import SpawnId
 from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
@@ -10,6 +8,7 @@ from crimson.quests.runtime import (
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand, CrandLike
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
@@ -47,10 +46,10 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
 
 
 def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
-    def builder(ctx: QuestContext, rng: random.Random | None = None, full_version: bool = True) -> list[SpawnEntry]:
+    def builder(ctx: QuestContext, rng: CrandLike | None = None, full_version: bool = True) -> list[SpawnEntry]:
         del ctx
-        rng = rng or random.Random()
-        trigger = rng.randrange(10_000)
+        rng = rng or Crand()
+        trigger = int(rng.rand() % 10_000)
         count = 1 if full_version else 2
         return [
             SpawnEntry(
