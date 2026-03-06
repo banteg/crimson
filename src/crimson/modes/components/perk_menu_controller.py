@@ -163,7 +163,7 @@ class PerkMenuController:
                 i += 1
                 continue
 
-            remaining -= measure_small_text_width(font, ch, float(scale))
+            remaining -= measure_small_text_width(font, ch)
             if remaining < 0.0:
                 j = i
                 while j > 0 and wrapped[j] not in {" ", "\n"}:

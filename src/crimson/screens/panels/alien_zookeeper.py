@@ -445,18 +445,12 @@ class AlienZooKeeperView:
         fx_detail = self.state.config.fx_detail(level=0, default=False)
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
-        draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), 1.0 * scale, rl.WHITE)
-        draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), 1.0 * scale, rl.WHITE)
-        draw_small_text(font, _SUBTITLE_2, Vec2(layout.subtitle_2_x, layout.subtitle_2_y), 1.0 * scale, rl.WHITE)
+        draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
+        draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), rl.WHITE)
+        draw_small_text(font, _SUBTITLE_2, Vec2(layout.subtitle_2_x, layout.subtitle_2_y), rl.WHITE)
 
         score_text = _LABEL_SCORE % int(self._score)
-        draw_small_text(
-            font,
-            score_text,
-            Vec2(layout.score_x, layout.score_y),
-            1.0 * scale,
-            _to_color(1.0, 1.0, 1.0, 0.7),
-        )
+        draw_small_text(font, score_text, Vec2(layout.score_x, layout.score_y), _to_color(1.0, 1.0, 1.0, 0.7))
 
         board_bg = rl.Rectangle(layout.board_x, layout.board_y, layout.board_size, layout.board_size)
         rl.draw_rectangle_rec(board_bg, _to_color(0.0, 0.0, 0.0, 0.6))
@@ -524,13 +518,7 @@ class AlienZooKeeperView:
                 rl.draw_texture_pro(alien, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
-            draw_small_text(
-                font,
-                _LABEL_GAME_OVER,
-                Vec2(layout.game_over_x, layout.game_over_y),
-                1.0 * scale,
-                rl.WHITE,
-            )
+            draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):

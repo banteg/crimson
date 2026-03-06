@@ -414,7 +414,7 @@ class HighScoresView:
                     label_w = float(rl.measure_text(label, int(20 * scale)))
                     font_h = 16.0 * scale
                 else:
-                    label_w = measure_small_text_width(font, label, 1.0 * scale)
+                    label_w = measure_small_text_width(font, label)
                     font_h = float(font.cell_size) * scale
                 rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
                 rect_h = max(float(check_tex.height) * scale, font_h)

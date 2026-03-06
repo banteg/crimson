@@ -223,15 +223,9 @@ class NetworkLobbyPanelView(PanelMenuView):
         label_color = rl.Color(190, 190, 200, 230)
         value_color = rl.Color(225, 235, 247, 255)
 
-        draw_small_text(font, "Network Lobby", base_pos, title_scale, title_color)
+        draw_small_text(font, "Network Lobby", base_pos, title_color)
         y = base_pos.y + float(font.cell_size) * title_scale + 6.0 * scale
-        draw_small_text(
-            font,
-            "Waiting for peers to connect and ready up.",
-            Vec2(base_pos.x, y),
-            0.9 * scale,
-            body_color,
-        )
+        draw_small_text(font, "Waiting for peers to connect and ready up.", Vec2(base_pos.x, y), body_color)
         y += float(font.cell_size) * 0.9 * scale + 10.0 * scale
 
         pending = self.state.pending_network_session
@@ -271,39 +265,39 @@ class NetworkLobbyPanelView(PanelMenuView):
         code_text = room_code or "-"
 
         label_w = max(
-            measure_small_text_width(font, "Connected:", text_scale),
-            measure_small_text_width(font, "Role:", text_scale),
-            measure_small_text_width(font, "Code:", text_scale),
-            measure_small_text_width(font, "Address:", text_scale),
-            measure_small_text_width(font, "Session:", text_scale),
+            measure_small_text_width(font, "Connected:"),
+            measure_small_text_width(font, "Role:"),
+            measure_small_text_width(font, "Code:"),
+            measure_small_text_width(font, "Address:"),
+            measure_small_text_width(font, "Session:"),
         )
         value_x = base_pos.x + label_w + 10.0 * scale
         line_h = float(font.cell_size) * text_scale + 3.0 * scale
 
-        draw_small_text(font, "Connected:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, connected_text, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Connected:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, connected_text, Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Role:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, role_label, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Role:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, role_label, Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, code_text, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Code:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, code_text, Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Address:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, relay_text, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Address:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, relay_text, Vec2(value_x, y), value_color)
         y += line_h
 
         if session_id:
-            draw_small_text(font, "Session:", Vec2(base_pos.x, y), text_scale, label_color)
-            draw_small_text(font, session_id, Vec2(value_x, y), text_scale, rl.Color(155, 175, 200, 255))
+            draw_small_text(font, "Session:", Vec2(base_pos.x, y), label_color)
+            draw_small_text(font, session_id, Vec2(value_x, y), rl.Color(155, 175, 200, 255))
             y += line_h
 
         if isinstance(slots, list) and slots:
             y += 8.0 * scale
-            draw_small_text(font, "Slots:", Vec2(base_pos.x, y), text_scale, rl.Color(200, 200, 210, 255))
+            draw_small_text(font, "Slots:", Vec2(base_pos.x, y), rl.Color(200, 200, 210, 255))
             y += line_h * 0.9
 
             col_slot_x = base_pos.x
@@ -315,27 +309,21 @@ class NetworkLobbyPanelView(PanelMenuView):
                 state = "READY" if slot.ready else ("CONNECTED" if slot.connected else "EMPTY")
                 state_color = rl.Color(160, 220, 160, 255) if slot.ready else rl.Color(210, 210, 210, 255)
 
-                draw_small_text(font, f"[{int(slot.slot_index)}]", Vec2(col_slot_x, y), text_scale, value_color)
-                draw_small_text(font, label, Vec2(col_name_x, y), text_scale, value_color)
-                draw_small_text(font, state, Vec2(col_state_x, y), text_scale, state_color)
+                draw_small_text(font, f"[{int(slot.slot_index)}]", Vec2(col_slot_x, y), value_color)
+                draw_small_text(font, label, Vec2(col_name_x, y), value_color)
+                draw_small_text(font, state, Vec2(col_state_x, y), state_color)
                 y += row_h
 
         if self._error:
             y += 8.0 * scale
-            draw_small_text(font, self._error, Vec2(base_pos.x, y), text_scale, rl.Color(240, 90, 90, 255))
+            draw_small_text(font, self._error, Vec2(base_pos.x, y), rl.Color(240, 90, 90, 255))
             y += line_h
 
         if debug_enabled():
             y += 10.0 * scale
-            draw_small_text(font, "Debug:", Vec2(base_pos.x, y), text_scale, rl.Color(232, 197, 117, 255))
+            draw_small_text(font, "Debug:", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
             y += line_h
-            draw_small_text(
-                font,
-                f"logs: {str(self.state.base_dir)}/logs/lan/",
-                Vec2(base_pos.x, y),
-                text_scale,
-                rl.Color(232, 197, 117, 255),
-            )
+            draw_small_text(font, f"logs: {str(self.state.base_dir)}/logs/lan/", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
 
         textures = self._button_textures
         if textures is not None:

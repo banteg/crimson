@@ -54,14 +54,8 @@ def draw_main_panel(
         case _:
             pass
     title_draw_pos = left_panel_top_left + Vec2(title_x * scale, 41.0 * scale)
-    draw_small_text(
-        font,
-        title,
-        title_draw_pos,
-        1.0 * scale,
-        rl.Color(255, 255, 255, 255),
-    )
-    ul_w = measure_small_text_width(font, title, 1.0 * scale)
+    draw_small_text(font, title, title_draw_pos, rl.Color(255, 255, 255, 255))
+    ul_w = measure_small_text_width(font, title)
     ul_h = max(1, int(round(1.0 * scale)))
     ul_pos = left_panel_top_left + Vec2(title_x * scale, HS_TITLE_UNDERLINE_Y * scale)
     rl.draw_rectangle(
@@ -78,13 +72,7 @@ def draw_main_panel(
         else:
             quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
         quest_label = f"{int(quest_major)}.{int(quest_minor)}: {quest_title(quest_major, quest_minor)}"
-        draw_small_text(
-            font,
-            quest_label,
-            left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale),
-            1.0 * scale,
-            quest_color,
-        )
+        draw_small_text(font, quest_label, left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale), quest_color)
         arrow = view._arrow_tex
         if arrow is not None:
             major = max(1, min(5, int(quest_major)))
@@ -117,9 +105,9 @@ def draw_main_panel(
                 rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
     header_color = rl.Color(255, 255, 255, 255)
-    draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), 1.0 * scale, header_color)
-    draw_small_text(font, "Score", left_panel_top_left + Vec2(246.0 * scale, 84.0 * scale), 1.0 * scale, header_color)
-    draw_small_text(font, "Player", left_panel_top_left + Vec2(302.0 * scale, 84.0 * scale), 1.0 * scale, header_color)
+    draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), header_color)
+    draw_small_text(font, "Score", left_panel_top_left + Vec2(246.0 * scale, 84.0 * scale), header_color)
+    draw_small_text(font, "Player", left_panel_top_left + Vec2(302.0 * scale, 84.0 * scale), header_color)
 
     # Score list viewport frame (white 1px border + black interior).
     frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
@@ -157,13 +145,7 @@ def draw_main_panel(
             selected_rank = hovered_idx
 
     if start >= end:
-        draw_small_text(
-            font,
-            "No scores yet.",
-            Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale),
-            1.0 * scale,
-            rl.Color(190, 190, 200, 255),
-        )
+        draw_small_text(font, "No scores yet.", Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale), rl.Color(190, 190, 200, 255))
     else:
         for idx in range(start, end):
             entry = view._records[idx]
@@ -184,9 +166,9 @@ def draw_main_panel(
             if selected_rank is not None and int(selected_rank) == idx:
                 color = rl.Color(255, 255, 255, 255)
 
-            draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), 1.0 * scale, color)
-            draw_small_text(font, value, Vec2(left_panel_top_left.x + 246.0 * scale, y), 1.0 * scale, color)
-            draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), 1.0 * scale, color)
+            draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), color)
+            draw_small_text(font, value, Vec2(left_panel_top_left.x + 246.0 * scale, y), color)
+            draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), color)
             y += row_step
 
     textures = view._button_textures

@@ -395,23 +395,22 @@ class DemoView:
         rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         small = self._ensure_small_font()
-        text_scale = 1.2
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
-        draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), color)
         y += 28.0
-        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), color)
 
-        underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE, text_scale)
+        underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE)
         rl.draw_rectangle_rec(rl.Rectangle(x_text, y + 15.0, underline_w, 2.0), rl.Color(255, 255, 255, 160))
 
         y += 22.0
         x_list = x_text + 8.0
         for line, delta_y in _DEMO_PURCHASE_FEATURE_LINES:
-            draw_small_text(small, line, Vec2(x_list, y), text_scale, color)
+            draw_small_text(small, line, Vec2(x_list, y), color)
             y += delta_y
-        draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), text_scale, color)
+        draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), color)
 
         # Buttons on the right.
         resources = self.state.resources

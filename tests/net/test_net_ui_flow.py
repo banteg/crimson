@@ -116,7 +116,7 @@ def test_network_lobby_panel_shows_room_code_not_session_id(make_game_state, moc
     mocker.patch.object(
         lan_lobby_module,
         "measure_small_text_width",
-        side_effect=lambda _font, text, _scale: float(len(str(text)) * 8),
+        side_effect=lambda _font, text: float(len(str(text)) * 8),
     )
     mocker.patch.object(panel, "_ensure_small_font", side_effect=lambda: SimpleNamespace(cell_size=8))
     mocker.patch.object(

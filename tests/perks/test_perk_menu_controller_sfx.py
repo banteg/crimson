@@ -374,7 +374,7 @@ def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> Non
     mocker.patch.object(
         perk_menu_controller_module,
         "measure_small_text_width",
-        side_effect=lambda _font, text, _scale: float(len(text)),
+        side_effect=lambda _font, text: float(len(text)),
     )
     wrapped = menu._wrap_small_text_native(object(), "alpha beta", 6.0, scale=1.0)  # type: ignore[arg-type]
     assert wrapped == "alpha\nbeta"
@@ -386,7 +386,7 @@ def test_prewrapped_perk_desc_uses_cache(mocker) -> None:
     measure_small_text_width = mocker.patch.object(
         perk_menu_controller_module,
         "measure_small_text_width",
-        side_effect=lambda _font, text, _scale: float(len(text)),
+        side_effect=lambda _font, text: float(len(text)),
     )
     mocker.patch.object(
         perk_menu_controller_module,

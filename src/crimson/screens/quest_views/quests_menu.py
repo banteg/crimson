@@ -341,7 +341,7 @@ class QuestsMenuView:
         font = self._ensure_small_font()
         text_scale = 1.0
         label = "Hardcore"
-        label_w = measure_small_text_width(font, label, text_scale)
+        label_w = measure_small_text_width(font, label)
 
         check_pos = layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
         rect_w = float(check_on.width) + 6.0 + label_w
@@ -566,13 +566,7 @@ class QuestsMenuView:
                     0.0,
                     rl.WHITE,
                 )
-                draw_small_text(
-                    font,
-                    "Hardcore",
-                    check_pos + Vec2(float(check_tex.width) + 6.0, 1.0),
-                    1.0,
-                    base_color,
-                )
+                draw_small_text(font, "Hardcore", check_pos + Vec2(float(check_tex.width) + 6.0, 1.0), base_color)
 
         # Quest list (10 rows).
         for row in range(10):
@@ -580,14 +574,14 @@ class QuestsMenuView:
             unlocked = self._quest_unlocked(stage, row)
             color = hover_color if hovered_row == row else base_color
 
-            draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_pos.x, y), 1.0, color)
+            draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_pos.x, y), color)
 
             if unlocked:
                 title = self._quest_title(stage, row)
             else:
                 title = "???"
-            draw_small_text(font, title, Vec2(list_pos.x + QUEST_LIST_NAME_X_OFFSET, y), 1.0, color)
-            title_w = measure_small_text_width(font, title, 1.0) if unlocked else 0.0
+            draw_small_text(font, title, Vec2(list_pos.x + QUEST_LIST_NAME_X_OFFSET, y), color)
+            title_w = measure_small_text_width(font, title) if unlocked else 0.0
             if unlocked:
                 line_y = y + 13.0
                 rl.draw_line(int(list_pos.x), int(line_y), int(list_pos.x + title_w + 32.0), int(line_y), color)
@@ -597,13 +591,13 @@ class QuestsMenuView:
                 if counts is not None:
                     completed, games = counts
                     counts_x = list_pos.x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
-                    draw_small_text(font, f"({completed}/{games})", Vec2(counts_x, y), 1.0, color)
+                    draw_small_text(font, f"({completed}/{games})", Vec2(counts_x, y), color)
 
         if show_counts:
             # Header is drawn below the list, aligned with the count column.
             header_x = list_pos.x + 96.0
             header_y = y0 + QUEST_LIST_ROW_STEP * 10.0 - 2.0
-            draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), 1.0, base_color)
+            draw_small_text(font, "(completed/games)", Vec2(header_x, header_y), base_color)
 
         # Back button.
         textures = self._button_textures

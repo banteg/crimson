@@ -226,7 +226,7 @@ def load_hud_assets(assets_root: Path) -> HudAssets:
 
 def _draw_text(font: SmallFontData | None, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
     if font is not None:
-        draw_small_text(font, text, pos, scale, color)
+        draw_small_text(font, text, pos, color)
     else:
         rl.draw_text(text, int(pos.x), int(pos.y), int(18 * scale), color)
 

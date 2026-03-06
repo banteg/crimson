@@ -209,7 +209,7 @@ def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_faile
     drawn_lines: list[tuple[int, int, int, int]] = []
     drawn_rects: list[tuple[int, int, int, int]] = []
 
-    def _draw_small_text(_font, text, pos, scale, color):
+    def _draw_small_text(_font, text, pos, color):
         drawn_text.append(str(text))
 
     def _draw_line(x1, y1, x2, y2, color):

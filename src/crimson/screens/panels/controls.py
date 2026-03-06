@@ -311,7 +311,7 @@ class ControlsMenuView(PanelMenuView):
         text_scale = 1.0 * panel_scale
         label = "Show direction arrow"
         check_pos = Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 174.0 * panel_scale)
-        label_w = measure_small_text_width(font, label, text_scale)
+        label_w = measure_small_text_width(font, label)
         rect_w = float(check_on.width) * panel_scale + 6.0 * panel_scale + label_w
         rect_h = max(float(check_on.height) * panel_scale, font.cell_size * text_scale)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
@@ -357,7 +357,6 @@ class ControlsMenuView(PanelMenuView):
         sections: tuple[tuple[str, tuple[tuple[str, int], ...]], ...],
     ) -> tuple[_RebindRowLayout, ...]:
         font = self._ensure_small_font()
-        text_scale = 1.0 * panel_scale
         rows: list[_RebindRowLayout] = []
         y = right_top_left.y + 64.0 * panel_scale
         for _section_title, section_rows in sections:
@@ -366,7 +365,7 @@ class ControlsMenuView(PanelMenuView):
                 key_code = int(self._slot_key(player_index=player_index, slot=slot))
                 value_text = input_code_name(key_code)
                 value_pos = Vec2(right_top_left.x + 180.0 * panel_scale, row_y)
-                value_w = max(60.0 * panel_scale, measure_small_text_width(font, value_text, text_scale))
+                value_w = max(60.0 * panel_scale, measure_small_text_width(font, value_text))
                 value_rect = Rect.from_top_left(
                     Vec2(value_pos.x - 2.0 * panel_scale, row_y - 2.0 * panel_scale),
                     value_w + 4.0 * panel_scale,
@@ -474,7 +473,7 @@ class ControlsMenuView(PanelMenuView):
         text_scale = 1.0 * scale
         max_label_w = 0.0
         for label in items:
-            max_label_w = max(max_label_w, measure_small_text_width(font, label, text_scale))
+            max_label_w = max(max_label_w, measure_small_text_width(font, label))
         width = max_label_w + 48.0 * scale
         header_h = 16.0 * scale
         row_h = 16.0 * scale
@@ -695,29 +694,11 @@ class ControlsMenuView(PanelMenuView):
                 tint=rl.WHITE,
             )
 
-        draw_small_text(
-            font,
-            "Configure for:",
-            Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color_soft,
-        )
+        draw_small_text(font, "Configure for:", Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale), text_color_soft)
 
-        draw_small_text(
-            font,
-            "Aiming method:",
-            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color_full,
-        )
+        draw_small_text(font, "Aiming method:", Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale), text_color_full)
 
-        draw_small_text(
-            font,
-            "Moving method:",
-            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color_full,
-        )
+        draw_small_text(font, "Moving method:", Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale), text_color_full)
 
         check_tex = self._check_on if self._direction_arrow_enabled() else self._check_off
         if check_tex is not None:
@@ -740,13 +721,7 @@ class ControlsMenuView(PanelMenuView):
             enabled=self._checkbox_enabled(),
         )
         checkbox_alpha = 255 if checkbox_hovered else 178
-        draw_small_text(
-            font,
-            "Show direction arrow",
-            Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale),
-            1.0 * panel_scale,
-            rl.Color(255, 255, 255, checkbox_alpha),
-        )
+        draw_small_text(font, "Show direction arrow", Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale), rl.Color(255, 255, 255, checkbox_alpha))
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (
@@ -798,13 +773,7 @@ class ControlsMenuView(PanelMenuView):
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:
             x_heading = right_top_left.x + 44.0 * panel_scale
-            draw_small_text(
-                font,
-                title,
-                Vec2(x_heading, y),
-                1.0 * panel_scale,
-                text_color_full,
-            )
+            draw_small_text(font, title, Vec2(x_heading, y), text_color_full)
             line = rl.Rectangle(
                 x_heading,
                 y + 13.0 * panel_scale,
@@ -813,14 +782,8 @@ class ControlsMenuView(PanelMenuView):
             )
             rl.draw_rectangle_lines_ex(line, max(1.0, panel_scale), rl.Color(255, 255, 255, 178))
 
-        draw_small_text(
-            font,
-            "Configured controls",
-            Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale),
-            1.0 * panel_scale,
-            text_color_full,
-        )
-        header_w = measure_small_text_width(font, "Configured controls", 1.0 * panel_scale)
+        draw_small_text(font, "Configured controls", Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale), text_color_full)
+        header_w = measure_small_text_width(font, "Configured controls")
         header_line = rl.Rectangle(
             right_top_left.x + 120.0 * panel_scale,
             right_top_left.y + 51.0 * panel_scale,
@@ -860,26 +823,14 @@ class ControlsMenuView(PanelMenuView):
                 )
                 value_pos = row.value_pos
 
-                draw_small_text(
-                    font,
-                    label,
-                    Vec2(right_top_left.x + 52.0 * panel_scale, row_y),
-                    1.0 * panel_scale,
-                    rl.Color(255, 255, 255, 178),
-                )
+                draw_small_text(font, label, Vec2(right_top_left.x + 52.0 * panel_scale, row_y), rl.Color(255, 255, 255, 178))
                 value_color = CONTROLS_REBIND_VALUE_COLOR
                 if hovered_row:
                     value_color = CONTROLS_REBIND_HOVER_COLOR
                 if active_row:
                     value_color = CONTROLS_REBIND_ACTIVE_COLOR
-                draw_small_text(
-                    font,
-                    value_text,
-                    value_pos,
-                    1.0 * panel_scale,
-                    value_color,
-                )
-                value_w = measure_small_text_width(font, value_text, 1.0 * panel_scale)
+                draw_small_text(font, value_text, value_pos, value_color)
+                value_w = measure_small_text_width(font, value_text)
                 underline_y = row.row_y + 13.0 * panel_scale
                 rl.draw_line(
                     int(value_pos.x),
@@ -896,13 +847,7 @@ class ControlsMenuView(PanelMenuView):
                 right_top_left.x + 48.0 * panel_scale,
                 right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,
             )
-            draw_small_text(
-                font,
-                "Esc/Right: cancel  Backspace: default  Delete: unbind",
-                hint_pos,
-                0.85 * panel_scale,
-                rl.Color(255, 226, 188, 220),
-            )
+            draw_small_text(font, "Esc/Right: cancel  Backspace: default  Delete: unbind", hint_pos, rl.Color(255, 226, 188, 220))
 
     def _draw_dropdown(
         self,
@@ -953,13 +898,7 @@ class ControlsMenuView(PanelMenuView):
         idx = max(0, min(len(items) - 1, int(selected_index))) if items else 0
         header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
         if items:
-            draw_small_text(
-                self._ensure_small_font(),
-                items[idx],
-                layout.text_pos,
-                layout.text_scale,
-                rl.Color(255, 255, 255, header_alpha),
-            )
+            draw_small_text(self._ensure_small_font(), items[idx], layout.text_pos, rl.Color(255, 255, 255, header_alpha))
 
         if not is_open:
             return
@@ -977,10 +916,4 @@ class ControlsMenuView(PanelMenuView):
                 alpha = 242
             if idx == selected_index:
                 alpha = max(alpha, 245)
-            draw_small_text(
-                self._ensure_small_font(),
-                item,
-                Vec2(layout.text_pos.x, item_y),
-                layout.text_scale,
-                rl.Color(255, 255, 255, alpha),
-            )
+            draw_small_text(self._ensure_small_font(), item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))

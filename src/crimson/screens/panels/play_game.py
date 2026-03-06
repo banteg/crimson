@@ -403,7 +403,7 @@ class PlayGameMenuView(PanelMenuView):
         text_scale = 1.0 * scale
         max_label_w = 0.0
         for label in self._PLAYER_COUNT_LABELS:
-            max_label_w = max(max_label_w, measure_small_text_width(font, label, text_scale))
+            max_label_w = max(max_label_w, measure_small_text_width(font, label))
         width = max_label_w + 48.0 * scale
         header_h = 16.0 * scale
         row_h = 16.0 * scale
@@ -509,13 +509,7 @@ class PlayGameMenuView(PanelMenuView):
         show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         if show_counts:
-            draw_small_text(
-                font,
-                "times played:",
-                base_pos + Vec2(132.0 * scale, 16.0 * scale),
-                text_scale,
-                text_color,
-            )
+            draw_small_text(font, "times played:", base_pos + Vec2(132.0 * scale, 16.0 * scale), text_color)
 
         for mode in entries:
             self._draw_mode_button(mode, Vec2(base_pos.x, y), scale)
@@ -577,7 +571,7 @@ class PlayGameMenuView(PanelMenuView):
             player_count = len(self._PLAYER_COUNT_LABELS)
         label = self._PLAYER_COUNT_LABELS[player_count - 1]
         header_alpha = 242 if hovered_header else 191  # 0x3f733333 / 0x3f400000
-        draw_small_text(font, label, layout.text_pos, layout.text_scale, rl.Color(255, 255, 255, header_alpha))
+        draw_small_text(font, label, layout.text_pos, rl.Color(255, 255, 255, header_alpha))
 
         if not self._player_list_open:
             return
@@ -595,9 +589,7 @@ class PlayGameMenuView(PanelMenuView):
                 alpha = 242  # 0x3f733333
             if idx == (player_count - 1):
                 alpha = max(alpha, 245)  # 0x3f75c28f
-            draw_small_text(
-                font, item, Vec2(layout.text_pos.x, item_y), layout.text_scale, rl.Color(255, 255, 255, alpha),
-            )
+            draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))
 
     def _draw_mode_button(self, mode: _PlayGameModeEntry, pos: Vec2, scale: float) -> None:
         textures = self._button_textures
@@ -622,7 +614,7 @@ class PlayGameMenuView(PanelMenuView):
             count = int(status.mode_play_count("typo"))
         else:
             return
-        draw_small_text(self._ensure_small_font(), f"{count}", pos, scale, color)
+        draw_small_text(self._ensure_small_font(), f"{count}", pos, color)
 
     def _draw_tooltips(self, entries: list[_PlayGameModeEntry], base_pos: Vec2, y_end: float, scale: float) -> None:
         # `sub_44ed80` draws these below the mode list based on per-button hover timers.
@@ -648,5 +640,5 @@ class PlayGameMenuView(PanelMenuView):
             x = tooltip_x + off_x * scale
             y = tooltip_y + off_y * scale
             for line in mode.tooltip.splitlines():
-                draw_small_text(font, line, Vec2(x, y), 1.0 * scale, rl.Color(255, 255, 255, alpha))
+                draw_small_text(font, line, Vec2(x, y), rl.Color(255, 255, 255, alpha))
                 y += font.cell_size * 1.0 * scale

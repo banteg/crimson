@@ -155,9 +155,16 @@ def draw_bonus_hover_labels(
         x = aim_screen.x + 16.0
         y = aim_screen.y - 7.0
 
-        text_w = measure_small_text_width(font, label, text_scale)
+        if font is not None:
+            text_w = measure_small_text_width(font, label)
+        else:
+            text_w = float(rl.measure_text(label, int(18 * text_scale)))
         if x + text_w > screen_w:
             x = max(0.0, screen_w - text_w)
 
-        draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), text_scale, shadow)
-        draw_small_text(font, label, Vec2(x, y), text_scale, color)
+        if font is not None:
+            draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), shadow)
+            draw_small_text(font, label, Vec2(x, y), color)
+        else:
+            rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
+            rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)

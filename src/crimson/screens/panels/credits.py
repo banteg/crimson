@@ -430,7 +430,7 @@ class CreditsView:
             if index < 0 or index >= len(self._lines):
                 continue
             line = self._lines[index]
-            text_w = measure_small_text_width(font, line.text, 1.0 * scale)
+            text_w = measure_small_text_width(font, line.text)
             x = center_x - (text_w * 0.5)
             y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
             if not self._mouse_inside_rect(
@@ -578,13 +578,7 @@ class CreditsView:
         draw_classic_menu_panel(assets.panel, dst=dst, tint=rl.WHITE, shadow=fx_detail)
 
         font = self._ensure_small_font()
-        draw_small_text(
-            font,
-            "credits",
-            panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale),
-            1.0 * scale,
-            rl.Color(255, 255, 255, 255),
-        )
+        draw_small_text(font, "credits", panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale), rl.Color(255, 255, 255, 255))
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
         if visible_count > 0:
@@ -600,14 +594,8 @@ class CreditsView:
                 y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
                 alpha = self._line_alpha(y=y, base_y=base_y, visible_count=visible_count, scale=scale)
                 color = self._line_color(line.flags, alpha=alpha)
-                text_w = measure_small_text_width(font, line.text, 1.0 * scale)
-                draw_small_text(
-                    font,
-                    line.text,
-                    Vec2(center_x - (text_w * 0.5), y),
-                    1.0 * scale,
-                    color,
-                )
+                text_w = measure_small_text_width(font, line.text)
+                draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
         textures = self._button_textures
         if textures is not None and (textures.button_md is not None or textures.button_sm is not None):

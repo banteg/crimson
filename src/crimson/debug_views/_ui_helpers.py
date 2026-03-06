@@ -20,6 +20,6 @@ def draw_ui_text(
     scale: float = 1.0,
 ) -> None:
     if font is not None:
-        draw_small_text(font, text, pos, float(scale), color)
+        draw_small_text(font, text, pos, color)
     else:
         rl.draw_text(text, int(pos.x), int(pos.y), int(20 * float(scale)), color)

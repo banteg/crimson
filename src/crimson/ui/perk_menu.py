@@ -197,7 +197,7 @@ def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
 def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:
     if font is None:
         return rl.measure_text(text, int(20 * scale))
-    return measure_small_text_width(font, text, scale)
+    return measure_small_text_width(font, text)
 
 
 def draw_ui_text(
@@ -209,7 +209,7 @@ def draw_ui_text(
     color: rl.Color,
 ) -> None:
     if font is not None:
-        draw_small_text(font, text, pos, scale, color)
+        draw_small_text(font, text, pos, color)
     else:
         rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 

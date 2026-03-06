@@ -457,13 +457,13 @@ class ReplayPlaybackMode:
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, pos, scale, color)
+            draw_small_text(self._small, text, pos, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
     def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
         if self._small is not None:
-            return float(measure_small_text_width(self._small, text, scale))
+            return float(measure_small_text_width(self._small, text))
         return float(len(text)) * 8.0 * float(scale)
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:

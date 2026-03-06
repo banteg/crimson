@@ -229,13 +229,7 @@ class QuestFailedView:
 
         font = self._ensure_small_font()
         text_color = rl.Color(235, 235, 235, 255)
-        draw_small_text(
-            font,
-            self._failure_message(),
-            panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET),
-            1.0,
-            text_color,
-        )
+        draw_small_text(font, self._failure_message(), panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET), text_color)
         self._draw_score_preview(font, panel_top_left=panel_top_left)
 
         textures = self._button_textures
@@ -406,7 +400,7 @@ class QuestFailedView:
         font = self._small_font
         if font is None:
             return float(rl.measure_text(text, int(20 * scale)))
-        return float(measure_small_text_width(font, text, scale))
+        return float(measure_small_text_width(font, text))
 
     def _draw_score_preview(self, font: SmallFontData, *, panel_top_left: Vec2) -> None:
         record = self._record
@@ -422,20 +416,20 @@ class QuestFailedView:
 
         score_label = "Score"
         score_label_w = self._text_width(score_label, 1.0)
-        draw_small_text(font, score_label, score_pos.offset(dx=32.0 - score_label_w * 0.5), 1.0, label_color)
+        draw_small_text(font, score_label, score_pos.offset(dx=32.0 - score_label_w * 0.5), label_color)
 
         score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
         score_value_w = self._text_width(score_value, 1.0)
-        draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), 1.0, value_color)
+        draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), value_color)
 
         sep_pos = score_pos.offset(dx=80.0)
         rl.draw_line(int(sep_pos.x), int(sep_pos.y), int(sep_pos.x), int(sep_pos.y + 48.0), separator_color)
 
         col2_pos = score_pos.offset(dx=96.0)
-        draw_small_text(font, "Experience", col2_pos, 1.0, value_color)
+        draw_small_text(font, "Experience", col2_pos, value_color)
         xp_value = f"{int(record.score_xp)}"
         xp_w = self._text_width(xp_value, 1.0)
-        draw_small_text(font, xp_value, col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0), 1.0, label_color)
+        draw_small_text(font, xp_value, col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0), label_color)
 
         # `FUN_004411c0`: horizontal 192px separator at x-16 after the score row.
         line_pos = score_pos + Vec2(-16.0, 52.0)

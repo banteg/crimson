@@ -274,11 +274,11 @@ class QuestResultsUi(msgspec.Struct):
     def _text_width(self, text: str, scale: float) -> float:
         if self.font is None:
             return float(rl.measure_text(text, int(20 * scale)))
-        return float(measure_small_text_width(self.font, text, scale))
+        return float(measure_small_text_width(self.font, text))
 
     def _draw_small(self, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
         if self.font is not None:
-            draw_small_text(self.font, text, pos, scale, color)
+            draw_small_text(self.font, text, pos, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 
