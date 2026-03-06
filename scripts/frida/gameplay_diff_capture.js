@@ -1388,24 +1388,36 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   return outState.currentRunElapsedNormalizedMs | 0;
 }
 
-function setCheckpointElapsedField(checkpoint, modeId, elapsedMs) {
-  if (!checkpoint || typeof checkpoint !== "object") return;
-  delete checkpoint.elapsed_ms;
-  delete checkpoint.sim_elapsed_ms;
-  delete checkpoint.raw_frame_elapsed_ms;
-  delete checkpoint.quest_spawn_timeline_ms;
+function buildReplayCheckpoint(rawCheckpoint, modeId, elapsedMs) {
+  const {
+    elapsed_ms: _legacyElapsedMs,
+    sim_elapsed_ms: _legacySimElapsedMs,
+    raw_frame_elapsed_ms: _legacyRawFrameElapsedMs,
+    quest_spawn_timeline_ms: _legacyQuestSpawnTimelineMs,
+    mode: _legacyMode,
+    ...checkpoint
+  } = rawCheckpoint;
+  checkpoint.state_hash = "";
+  checkpoint.command_hash = "";
   if ((modeId | 0) === GAME_MODE_RUSH) {
-    checkpoint.mode = "rush";
-    checkpoint.raw_frame_elapsed_ms = elapsedMs | 0;
-    return;
+    return {
+      ...checkpoint,
+      mode: "rush",
+      raw_frame_elapsed_ms: elapsedMs | 0,
+    };
   }
   if ((modeId | 0) === GAME_MODE_QUESTS) {
-    checkpoint.mode = "quests";
-    checkpoint.quest_spawn_timeline_ms = elapsedMs | 0;
-    return;
+    return {
+      ...checkpoint,
+      mode: "quests",
+      quest_spawn_timeline_ms: elapsedMs | 0,
+    };
   }
-  checkpoint.mode = "survival";
-  checkpoint.sim_elapsed_ms = elapsedMs | 0;
+  return {
+    ...checkpoint,
+    mode: "survival",
+    sim_elapsed_ms: elapsedMs | 0,
+  };
 }
 
 // tick rows are replay-grade rows. Missing required fields are contract errors,
@@ -1414,20 +1426,18 @@ function buildTraceTickRow(tickObj) {
   if (!tickObj || typeof tickObj !== "object") {
     return emitCaptureContractError("missing_tick_payload", tickObj);
   }
-  const checkpoint = tickObj.checkpoint;
-  if (!checkpoint || typeof checkpoint !== "object") {
+  const rawCheckpoint = tickObj.checkpoint;
+  if (!rawCheckpoint || typeof rawCheckpoint !== "object") {
     return emitCaptureContractError("missing_tick_checkpoint", tickObj);
   }
-  if (!Array.isArray(checkpoint.players)) {
+  if (!Array.isArray(rawCheckpoint.players)) {
     return emitCaptureContractError("invalid_tick_checkpoint_players", tickObj);
   }
-  if (checkpoint.rng_state == null || !Number.isFinite(checkpoint.rng_state)) {
+  if (rawCheckpoint.rng_state == null || !Number.isFinite(rawCheckpoint.rng_state)) {
     return emitCaptureContractError("invalid_tick_rng_state", tickObj);
   }
   const rngStream = rngStreamFromTick(tickObj);
   const timingSamples = timingSamplesFromTick(tickObj);
-  checkpoint.state_hash = "";
-  checkpoint.command_hash = "";
   const modeId = tickModeId(tickObj);
   if (modeId < 0) {
     return emitCaptureContractError("invalid_tick_mode_id", tickObj);
@@ -1463,12 +1473,12 @@ function buildTraceTickRow(tickObj) {
   if (dtSeconds == null || !Number.isFinite(dtSeconds) || dtSeconds < 0) {
     return emitCaptureContractError("invalid_tick_dt", tickObj);
   }
-  const elapsedRawMs = intOr(checkpoint.elapsed_ms, -1);
+  const elapsedRawMs = intOr(rawCheckpoint.elapsed_ms, -1);
   const elapsedMs = normalizeRunElapsedMs(elapsedRawMs, dtMsI32);
   if (!Number.isFinite(elapsedMs) || elapsedMs < 0) {
     return emitCaptureContractError("invalid_tick_elapsed_ms", tickObj);
   }
-  setCheckpointElapsedField(checkpoint, modeId, elapsedMs);
+  const checkpoint = buildReplayCheckpoint(rawCheckpoint, modeId, elapsedMs);
   const replayInputs = replayInputsFromTick(tickObj);
   const playerCount = runPlayerCountFromTick(tickObj);
   if ((playerCount | 0) <= 0) {
