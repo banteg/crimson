@@ -19,6 +19,56 @@ Shared frame/apply helpers live in `src/crimson/sim/frame_pump.py`,
 `src/crimson/sim/driver/playback_pump.py`, `src/crimson/sim/batch_apply.py`,
 and `src/crimson/sim/presentation_reactions.py`.
 
+## Architecture Overview
+
+```mermaid
+flowchart TD
+    subgraph Sources["Tick Sources"]
+        Local["LocalInputProvider"]
+        Lan["LAN TickFrame"]
+        Replay["ReplayTick"]
+    end
+
+    subgraph Contract["Shared Tick Contract"]
+        Pull["InputProvider.pull_tick()"]
+        Tick["ResolvedTick"]
+        Runner["TickRunner"]
+        Driver["PlaybackDriver.step_tick()"]
+        Session["DeterministicSession.step_tick()"]
+        Result["TickResult"]
+    end
+
+    subgraph Apply["Shared Apply Layers"]
+        Metadata["apply_sim_metadata_*"]
+        Present["apply_presentation_outputs()"]
+        Reactions["build/apply post-apply reactions"]
+    end
+
+    subgraph Consumers["Outer Loops"]
+        Gameplay["BaseGameplayMode / LAN"]
+        World["WorldRuntime"]
+        ReplayMode["ReplayPlaybackMode"]
+        ReplayTools["verify / info / benchmark / render"]
+    end
+
+    Local --> Pull --> Tick --> Runner --> Session --> Result
+    Lan --> Pull
+    Replay --> Driver --> Session
+    Driver --> Result
+
+    Result --> Metadata --> Present --> Reactions
+
+    Gameplay --> Runner
+    World --> Runner
+    ReplayMode --> Driver
+    ReplayTools --> Driver
+```
+
+The important architectural point is that live, LAN, replay verification, and
+replay playback no longer invent separate in-memory tick/result shapes. They
+all converge on `ResolvedTick -> DeterministicSession -> TickResult`, then fan
+out into shared apply layers plus mode- or tool-specific outer loops.
+
 ## Tick Contract
 
 At the runtime boundary, one deterministic tick is one `ResolvedTick`:
@@ -46,6 +96,19 @@ whose `step` is a `DeterministicStepResult` with:
 - `post_apply_sfx_keys`: post-apply presentation reactions triggered by successful command effects
 - optional RNG trace data when replay trace mode is enabled
 
+```mermaid
+flowchart LR
+    ResolvedTick["ResolvedTick<br/>tick_index + dt + inputs + commands"]
+    Session["DeterministicSession.step_tick()"]
+    TickResult["TickResult"]
+    SessionTick["DeterministicSessionTick"]
+    Step["DeterministicStepResult"]
+
+    ResolvedTick --> Session --> TickResult
+    TickResult --> SessionTick
+    SessionTick --> Step
+```
+
 ## Shared Step / Apply Path
 
 The runtime is now split into a consistent sequence:
@@ -70,6 +133,36 @@ Shared helpers own the bookkeeping around that sequence:
 
 This keeps live gameplay, replay playback, headless verification, and runtime
 harnesses close to the same deterministic contract even when their outer loops differ.
+
+```mermaid
+sequenceDiagram
+    participant Outer as Outer Loop
+    participant Source as Tick Source
+    participant Session as DeterministicSession
+    participant Apply as Shared Apply Layers
+    participant Hooks as Recording / Sync / Info
+
+    Outer->>Source: request next tick
+    Source-->>Outer: ResolvedTick
+    Outer->>Session: step_tick(timing, inputs, commands)
+    Session-->>Outer: TickResult
+    Outer->>Apply: apply_sim_metadata_*
+    Outer->>Apply: apply_presentation_outputs()
+    Outer->>Apply: build/apply post-apply reactions
+    Outer->>Hooks: optional checkpoints / replay info / LAN sync
+```
+
+### Timer Ownership
+
+Timer semantics are now explicit instead of implicit:
+
+- survival and rush runtime timing comes from `DeterministicSession.elapsed_ms`
+- quest progression/replay timing comes from `QuestSpawnState.spawn_timeline_ms`
+- render/HUD animation caches use `SimWorldState.presentation_elapsed_ms`
+
+That separation is deliberate. The session or spawn state owns authoritative
+runtime time; `presentation_elapsed_ms` is only a presentational cache for
+world rendering and HUD animation.
 
 ## Why This Matters
 
