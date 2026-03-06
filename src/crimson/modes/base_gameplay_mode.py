@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, TypeAlias
@@ -729,7 +729,7 @@ class BaseGameplayMode:
         tick_index: int,
         *,
         force: bool = False,
-        deaths: list[CreatureDeath] | tuple[CreatureDeath, ...] | None = None,
+        deaths: Sequence[CreatureDeath] | None = None,
         events: WorldEvents | None = None,
     ) -> None:
         recorder = self._replay_recorder
