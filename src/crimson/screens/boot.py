@@ -3,12 +3,11 @@ from __future__ import annotations
 import datetime as dt
 import os
 
-from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets
+from grim.assets import LogoAssets, preload_paq_resources
 from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
 from grim.raylib_api import rl
 
 from ..game.types import GameState
-from .assets import _load_resource_entries
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
     0: (
@@ -209,12 +208,12 @@ class BootView:
 
     def open(self) -> None:
         if self.state.logos is None:
-            entries = _load_resource_entries(self.state)
-            logos = load_logo_assets(self.state.assets_dir, entries=entries)
+            resources = preload_paq_resources(self.state.assets_dir, paq_path=self.state.resource_paq)
+            logos = resources.logos
             self.state.console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
             self.state.console.log.flush()
             self.state.logos = logos
-            self.state.texture_cache = PaqTextureCache(entries=entries, textures={})
+            self.state.texture_cache = resources.resource_paq.texture_cache
         if self.state.audio is None:
             self.state.audio = init_audio_state(self.state.config, self.state.assets_dir, self.state.console)
             self.state.console.exec_line("exec music/game_tunes.txt")

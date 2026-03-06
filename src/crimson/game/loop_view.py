@@ -3,6 +3,7 @@ from __future__ import annotations
 import webbrowser
 
 from crimson.quests.level import QuestLevel
+from grim.assets import unload_preloaded_paq_resources
 from grim.audio import stop_music
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -1098,4 +1099,7 @@ class GameLoopView:
             self.state.menu_ground.render_target = None
         self._boot.close()
         self.state.console.close()
+        unload_preloaded_paq_resources(self.state.assets_dir)
+        self.state.texture_cache = None
+        self.state.logos = None
         rl.show_cursor()

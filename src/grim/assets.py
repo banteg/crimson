@@ -50,6 +50,9 @@ class TextureLoader(msgspec.Struct):
 
     @classmethod
     def from_assets_root(cls, assets_root: Path) -> TextureLoader:
+        shared = preloaded_paq_resources(assets_root)
+        if shared is not None:
+            return cls(assets_root=assets_root, cache=shared.resource_paq.texture_cache)
         paq_path = find_paq_path(assets_root)
         if paq_path is not None:
             try:
@@ -135,6 +138,7 @@ class LogoAssets(msgspec.Struct):
 class PaqTextureCache(msgspec.Struct):
     entries: dict[str, bytes]
     textures: dict[str, TextureAsset]
+    paths: dict[str, TextureAsset] = msgspec.field(default_factory=dict)
 
     def get(self, name: str) -> TextureAsset | None:
         return self.textures.get(name)
@@ -146,12 +150,103 @@ class PaqTextureCache(msgspec.Struct):
     def get_or_load(self, name: str, rel_path: str) -> TextureAsset:
         if name in self.textures:
             return self.textures[name]
+        rel_path = rel_path.replace("\\", "/")
+        existing = self.paths.get(rel_path)
+        if existing is not None:
+            self.textures[name] = existing
+            return existing
         asset = _load_texture_asset_from_bytes(name, rel_path, self.entries.get(rel_path))
         self.textures[name] = asset
+        self.paths[rel_path] = asset
         return asset
 
     def loaded_count(self) -> int:
-        return sum(1 for asset in self.textures.values() if asset.texture is not None)
+        return sum(1 for asset in self.paths.values() if asset.texture is not None)
+
+    def unload_all(self) -> None:
+        seen: set[int] = set()
+        for asset in self.paths.values():
+            asset_id = id(asset)
+            if asset_id in seen:
+                continue
+            seen.add(asset_id)
+            asset.unload()
+        self.textures.clear()
+        self.paths.clear()
+
+
+class ResourcePaqStore(msgspec.Struct):
+    paq_path: Path
+    entries: dict[str, bytes]
+    texture_cache: PaqTextureCache
+
+
+class PreloadedPaqResources(msgspec.Struct):
+    assets_root: Path
+    resource_paq: ResourcePaqStore
+    logos: LogoAssets
+
+
+_PRELOADED_PAQ_RESOURCES: dict[Path, PreloadedPaqResources] = {}
+_PRELOADABLE_TEXTURE_SUFFIXES = frozenset({".jaz", ".tga", ".jpg", ".jpeg"})
+
+
+def _assets_root_key(assets_root: Path) -> Path:
+    return assets_root.resolve()
+
+
+def _is_preloadable_texture_entry(rel_path: str) -> bool:
+    suffix = Path(rel_path.replace("\\", "/")).suffix.lower()
+    return suffix in _PRELOADABLE_TEXTURE_SUFFIXES
+
+
+def preloaded_paq_resources(assets_root: Path) -> PreloadedPaqResources | None:
+    return _PRELOADED_PAQ_RESOURCES.get(_assets_root_key(assets_root))
+
+
+def preload_paq_resources(assets_root: Path, *, paq_path: Path | None = None) -> PreloadedPaqResources:
+    key = _assets_root_key(assets_root)
+    existing = _PRELOADED_PAQ_RESOURCES.get(key)
+    if existing is not None:
+        return existing
+
+    if paq_path is None:
+        resolved = find_paq_path(assets_root)
+        if resolved is None:
+            raise FileNotFoundError(f"Missing PAQ archive for assets root: {assets_root}")
+        paq_path = resolved
+
+    entries = load_paq_entries_from_path(paq_path)
+    cache = PaqTextureCache(entries=entries, textures={})
+    for rel_path in sorted(entries):
+        if not _is_preloadable_texture_entry(rel_path):
+            continue
+        cache.get_or_load(rel_path, rel_path)
+
+    resources = PreloadedPaqResources(
+        assets_root=assets_root,
+        resource_paq=ResourcePaqStore(
+            paq_path=Path(paq_path),
+            entries=entries,
+            texture_cache=cache,
+        ),
+        logos=LogoAssets(
+            backplasma=cache.get_or_load("backplasma", "load/backplasma.jaz"),
+            mockup=cache.get_or_load("mockup", "load/mockup.jaz"),
+            logo_esrb=cache.get_or_load("logo_esrb", "load/esrb_mature.jaz"),
+            loading=cache.get_or_load("loading", "load/loading.jaz"),
+            cl_logo=cache.get_or_load("cl_logo", "load/logo_crimsonland.tga"),
+        ),
+    )
+    _PRELOADED_PAQ_RESOURCES[key] = resources
+    return resources
+
+
+def unload_preloaded_paq_resources(assets_root: Path) -> None:
+    resources = _PRELOADED_PAQ_RESOURCES.pop(_assets_root_key(assets_root), None)
+    if resources is None:
+        return
+    resources.resource_paq.texture_cache.unload_all()
 
 
 def load_paq_entries_from_path(paq_path: Path) -> dict[str, bytes]:

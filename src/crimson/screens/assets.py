@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path
+from grim.assets import PaqTextureCache, TextureLoader, load_paq_entries_from_path, preloaded_paq_resources
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -16,14 +16,21 @@ class MenuAssets(msgspec.Struct):
 
 
 def _load_resource_entries(state: GameState) -> dict[str, bytes]:
+    shared = preloaded_paq_resources(state.assets_dir)
+    if shared is not None:
+        return shared.resource_paq.entries
     return load_paq_entries_from_path(state.resource_paq)
 
 
 def _ensure_texture_cache(state: GameState) -> PaqTextureCache:
     cache = state.texture_cache
     if cache is None:
-        entries = _load_resource_entries(state)
-        cache = PaqTextureCache(entries=entries, textures={})
+        shared = preloaded_paq_resources(state.assets_dir)
+        if shared is not None:
+            cache = shared.resource_paq.texture_cache
+        else:
+            entries = _load_resource_entries(state)
+            cache = PaqTextureCache(entries=entries, textures={})
         state.texture_cache = cache
     return cache
 
