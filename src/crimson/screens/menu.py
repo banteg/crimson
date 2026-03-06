@@ -14,6 +14,10 @@ from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
 from ..sim.bootstrap import terrain_stamping_draws
+from ..terrain_slots import (
+    choose_menu_terrain_slots,
+    terrain_slots_to_texture_ids,
+)
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from .assets import MenuAssets, load_menu_assets
@@ -62,16 +66,6 @@ MENU_SIGN_POS_X_PAD = 4.0
 # Measured in the shareware/demo attract loop trace:
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
-MENU_DEFAULT_TERRAIN_IDS = (TextureId.TER_Q1_BASE, TextureId.TER_Q1_OVERLAY, TextureId.TER_Q1_BASE)
-MENU_UNLOCK_TERRAIN_RULES: tuple[
-    tuple[int, tuple[TextureId, TextureId, TextureId]],
-    ...,
-] = (
-    (0x28, (TextureId.TER_Q4_BASE, TextureId.TER_Q4_OVERLAY, TextureId.TER_Q4_BASE)),
-    (0x1E, (TextureId.TER_Q3_BASE, TextureId.TER_Q3_OVERLAY, TextureId.TER_Q3_BASE)),
-    (0x14, (TextureId.TER_Q2_BASE, TextureId.TER_Q2_OVERLAY, TextureId.TER_Q2_BASE)),
-)
-
 
 class _TimelineView(Protocol):
     _timeline_ms: int
@@ -84,24 +78,6 @@ def menu_ground_camera(state: GameState) -> Vec2:
     return Vec2()
 
 
-def _menu_unlock_index(state: GameState) -> int:
-    status = state.status
-    if status is None:
-        return 0
-    try:
-        return int(status.quest_unlock_index)
-    except (TypeError, ValueError):
-        return 0
-
-
-def _choose_menu_terrain_ids(state: GameState) -> tuple[TextureId, TextureId, TextureId]:
-    unlock_index = _menu_unlock_index(state)
-    for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
-        if unlock_index >= threshold and (int(state.rng.rand()) & 7) == 3:
-            return ids
-    return MENU_DEFAULT_TERRAIN_IDS
-
-
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
     resources = state.resources
     if resources is None:
@@ -112,31 +88,29 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     screen_height = float(state.config.screen_height)
     texture_scale = state.config.texture_scale
     explicit_regenerate = bool(regenerate)
-    should_select_layers = ground is None or explicit_regenerate
     scale_changed = False
     if ground is not None:
         scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
 
-    base: rl.Texture | None = ground.texture if ground is not None else None
-    overlay: rl.Texture | None = ground.overlay if ground is not None else None
-    detail: rl.Texture | None = ground.overlay_detail if ground is not None else None
-
-    if should_select_layers:
-        base_id, overlay_id, detail_id = _choose_menu_terrain_ids(state)
-        selected_base = resources.texture(base_id)
-        if selected_base is None and (base_id, overlay_id, detail_id) != MENU_DEFAULT_TERRAIN_IDS:
-            base_id, overlay_id, detail_id = MENU_DEFAULT_TERRAIN_IDS
-            selected_base = resources.texture(base_id)
-        if selected_base is not None:
-            base = selected_base
-            overlay = resources.texture(overlay_id)
-            detail = resources.texture(detail_id)
+    if ground is None or explicit_regenerate:
+        base_id, overlay_id, detail_id = terrain_slots_to_texture_ids(
+            choose_menu_terrain_slots(
+                quest_unlock_index=int(state.status.quest_unlock_index),
+                rand=lambda: state.rng.rand(),
+            ),
+        )
+        base = resources.texture(base_id)
+        overlay = resources.texture(overlay_id)
+        detail = resources.texture(detail_id)
+        assert base is not None
+        assert overlay is not None
+        assert detail is not None
+    else:
+        base = ground.texture
+        overlay = ground.overlay
+        detail = ground.overlay_detail
 
     if ground is None:
-        if base is None:
-            return None
-        if detail is None:
-            detail = overlay or base
         ground = GroundRenderer(
             texture=base,
             overlay=overlay,
@@ -150,10 +124,9 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         state.menu_ground = ground
         regenerate = True
     else:
-        if base is not None:
-            ground.texture = base
+        ground.texture = base
         ground.overlay = overlay
-        ground.overlay_detail = detail or overlay or ground.texture
+        ground.overlay_detail = detail
         ground.texture_scale = texture_scale
         ground.screen_width = screen_width
         ground.screen_height = screen_height

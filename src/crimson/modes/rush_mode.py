@@ -151,13 +151,11 @@ class RushMode(BaseGameplayMode):
             seed_after=int(bootstrap.seed_after),
             selection_draws=int(bootstrap.selection_draws),
             stamping_draws=int(bootstrap.stamping_draws),
-            terrain_base=int(bootstrap.terrain_ids[0]),
-            terrain_overlay=int(bootstrap.terrain_ids[1]),
-            terrain_detail=int(bootstrap.terrain_ids[2]),
+            terrain_slots=bootstrap.terrain_slots,
             terrain_seed=int(bootstrap.terrain_seed),
         )
         self.apply_bootstrap_terrain(
-            terrain_ids=bootstrap.terrain_ids,
+            terrain_slots=bootstrap.terrain_slots,
             seed=bootstrap.terrain_seed,
             layers=3,
         )

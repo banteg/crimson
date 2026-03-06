@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 import msgspec
 
-from grim.assets import TextureId
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
@@ -85,6 +84,7 @@ from ..sim.presentation_reactions import (
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
+from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime
@@ -436,28 +436,22 @@ class BaseGameplayMode:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_ids: tuple[int, int, int],
+        terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:
         self.terrain_runtime.apply_bootstrap_terrain(
-            terrain_ids=terrain_ids,
+            terrain_slots=terrain_slots,
             seed=int(seed),
             layers=int(layers),
         )
 
-    def set_terrain(
+    def set_terrain_slots(
         self,
         *,
-        base_texture_id: TextureId,
-        overlay_texture_id: TextureId,
-        detail_texture_id: TextureId | None = None,
+        terrain_slots: TerrainSlotTriplet,
     ) -> None:
-        self.terrain_runtime.set_terrain(
-            base_texture_id=base_texture_id,
-            overlay_texture_id=overlay_texture_id,
-            detail_texture_id=detail_texture_id,
-        )
+        self.terrain_runtime.set_terrain_slots(terrain_slots=terrain_slots)
         terrain_seed = int(self.sim_world.state.rng.state)
         self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 

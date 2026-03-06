@@ -140,14 +140,14 @@ def _format_id_list(values: tuple[int, ...] | None) -> str:
 
 def _format_meta(quest: QuestDefinition) -> list[str]:
     builder_addr = f"0x{quest.builder_address:08x}" if quest.builder_address is not None else "unknown"
-    terrain_ids = _format_id_list(quest.terrain_ids)
+    terrain_slots = _format_id_list(quest.terrain_slots)
     return [
         f"time_limit_ms={quest.time_limit_ms}",
         f"start_weapon_id={quest.start_weapon_id}",
         f"unlock_perk_id={_format_id(quest.unlock_perk_id)}",
         f"unlock_weapon_id={_format_id(quest.unlock_weapon_id)}",
         f"builder_address={builder_addr}",
-        f"terrain_ids={terrain_ids}",
+        f"terrain_slots={terrain_slots}",
     ]
 
 

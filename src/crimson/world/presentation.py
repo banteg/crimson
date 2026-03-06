@@ -6,6 +6,7 @@ from grim.rand import Crand
 from ..audio_router import AudioRouter
 from ..effects import FxQueue, FxQueueRotated
 from ..sim.presentation_step import PresentationStepCommands
+from ..terrain_slots import TerrainSlotTriplet
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
 from .terrain_runtime import TerrainRuntime
@@ -87,12 +88,12 @@ class PresentationLayer:
     def apply_bootstrap_terrain(
         self,
         *,
-        terrain_ids: tuple[int, int, int],
+        terrain_slots: TerrainSlotTriplet,
         seed: int,
         layers: int = 3,
     ) -> None:
         self.terrain_runtime.apply_bootstrap_terrain(
-            terrain_ids=terrain_ids,
+            terrain_slots=terrain_slots,
             seed=seed,
             layers=layers,
         )

@@ -6,6 +6,7 @@ from crimson.quests.runtime import (
     build_quest_spawn_table,
 )
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
+from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
@@ -68,6 +69,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
         builder=builder,
         time_limit_ms=1000,
         start_weapon_id=WeaponId.NONE,
+        terrain_slots=DEFAULT_TERRAIN_SLOTS,
     )
     ctx = QuestContext(width=1024, height=1024, player_count=1)
 

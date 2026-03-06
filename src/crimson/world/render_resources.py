@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 import msgspec
 
@@ -72,12 +73,10 @@ class RenderResources(msgspec.Struct):
     def set_ground_textures(
         self,
         *,
-        base: rl.Texture | None,
-        overlay: rl.Texture | None,
-        detail: rl.Texture | None,
+        base: rl.Texture,
+        overlay: rl.Texture,
+        detail: rl.Texture,
     ) -> None:
-        if base is None:
-            return
         if self.ground is None:
             self.ground = GroundRenderer(
                 texture=base,
@@ -110,10 +109,9 @@ class RenderResources(msgspec.Struct):
         self.close()
         self.creature_textures.clear()
 
-        base = self.load_texture(TextureId.TER_Q1_BASE)
-        overlay = self.load_texture(TextureId.TER_Q1_OVERLAY)
-        detail = overlay or base
-        self.set_ground_textures(base=base, overlay=overlay, detail=detail)
+        base = cast(rl.Texture, self.load_texture(TextureId.TER_Q1_BASE))
+        overlay = cast(rl.Texture, self.load_texture(TextureId.TER_Q1_OVERLAY))
+        self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
         self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
 
         for asset in sorted(set(CREATURE_ASSET.values())):
