@@ -80,11 +80,17 @@ def player_take_damage(
                 player.health = 0.0
         else:
             player.health = float(f32(float(player.health) - float(damage_scaled)))
-            if player.health < 0.0 and dt is not None and float(dt) > 0.0:
-                player.death_timer -= float(dt) * 28.0
+
+    # Native routes exact-zero Highlander kills through the pain branch; default
+    # rewrite mode treats `health == 0` as lethal here.
+    lethal_hit = float(player.health) < 0.0
+    if not state.preserve_bugs and float(player.health) == 0.0:
+        lethal_hit = True
+    if not dodged and lethal_hit and dt is not None and float(dt) > 0.0:
+        player.death_timer -= float(dt) * 28.0
 
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.
-    if player.health >= 0.0:
+    if not lethal_hit:
         state.sfx_queue.append(_PLAYER_PAIN_SFX[int(rng()) % len(_PLAYER_PAIN_SFX)])
         if not was_alive:
             return max(0.0, health_before - float(player.health))

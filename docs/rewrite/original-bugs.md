@@ -399,3 +399,30 @@ Rewrite behavior:
 - Default: Mini-Rocket Swarmers use an even, aim-centered cone spread so each
   rocket in the burst gets a distinct heading.
 - With `--preserve-bugs`: keep native ammo-scaled stepping (including clumping).
+
+## 18) Exact-zero lethal hits skip death-only handling
+
+Native behavior:
+
+- In `player_take_damage` (`0x00425e50`), Highlander can set player health to
+  exactly `0.0`.
+- The function then routes `health >= 0.0` through the pain branch, while the
+  death-only branch runs only when health drops below `0.0`.
+- Exact-zero lethal hits therefore miss the immediate death-only work in that
+  function: death SFX, Final Revenge, and the `death_timer -= frame_dt * 28.0`
+  kick.
+
+Why it’s likely a bug:
+
+- Elsewhere in the exe, `health <= 0.0` counts as dead for player death state
+  and game-over flow.
+- Highlander itself creates the exact-zero case, so the split between
+  “globally dead” and “not dead enough for death handling” looks accidental.
+
+Rewrite behavior:
+
+- Default: treat `health <= 0.0` as lethal for the `player_take_damage`
+  death-only branch, so exact-zero kills trigger the same immediate handling as
+  negative-health kills.
+- With `--preserve-bugs`: keep native exact-zero behavior where Highlander kills
+  fall through the pain branch.
