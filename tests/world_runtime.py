@@ -21,7 +21,7 @@ class WorldRuntimeHost:
         assets_dir: Path,
         world_size: float = 1024.0,
         demo_mode_active: bool = False,
-        difficulty_level: int = 0,
+        quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
         texture_cache: PaqTextureCache | None = None,
@@ -34,7 +34,7 @@ class WorldRuntimeHost:
             assets_dir=assets_dir,
             world_size=world_size,
             demo_mode_active=demo_mode_active,
-            difficulty_level=difficulty_level,
+            quest_fail_retry_count=quest_fail_retry_count,
             hardcore=hardcore,
             preserve_bugs=preserve_bugs,
             texture_cache=texture_cache,
@@ -73,12 +73,12 @@ class WorldRuntimeHost:
         self._runtime.demo_mode_active = bool(value)
 
     @property
-    def difficulty_level(self) -> int:
-        return self._runtime.difficulty_level
+    def quest_fail_retry_count(self) -> int:
+        return self._runtime.quest_fail_retry_count
 
-    @difficulty_level.setter
-    def difficulty_level(self, value: int) -> None:
-        self._runtime.difficulty_level = int(value)
+    @quest_fail_retry_count.setter
+    def quest_fail_retry_count(self, value: int) -> None:
+        self._runtime.quest_fail_retry_count = int(value)
 
     @property
     def hardcore(self) -> bool:

@@ -44,7 +44,7 @@ class WorldRuntime:
         assets_dir: Path,
         world_size: float = 1024.0,
         demo_mode_active: bool = False,
-        difficulty_level: int = 0,
+        quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
         texture_cache: PaqTextureCache | None = None,
@@ -56,7 +56,7 @@ class WorldRuntime:
         self.assets_dir = Path(assets_dir)
         self.world_size = float(world_size)
         self.demo_mode_active = bool(demo_mode_active)
-        self.difficulty_level = int(difficulty_level)
+        self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(preserve_bugs)
         self.texture_cache = texture_cache
@@ -69,7 +69,7 @@ class WorldRuntime:
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
-            difficulty_level=int(self.difficulty_level),
+            quest_fail_retry_count=int(self.quest_fail_retry_count),
             preserve_bugs=bool(self.preserve_bugs),
         )
         render_resources = RenderResources(
@@ -145,7 +145,7 @@ class WorldRuntime:
         self._sync_world_size_ownership()
         self.sim_world.demo_mode_active = bool(self.demo_mode_active)
         self.sim_world.hardcore = bool(self.hardcore)
-        self.sim_world.difficulty_level = int(self.difficulty_level)
+        self.sim_world.quest_fail_retry_count = int(self.quest_fail_retry_count)
         self.sim_world.preserve_bugs = bool(self.preserve_bugs)
         self.sim_world.reset(
             seed=int(seed),

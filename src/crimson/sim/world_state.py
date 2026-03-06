@@ -70,7 +70,7 @@ class WorldState(msgspec.Struct):
         world_size: float,
         demo_mode_active: bool,
         hardcore: bool,
-        difficulty_level: int,
+        quest_fail_retry_count: int,
         preserve_bugs: bool = False,
     ) -> WorldState:
         spawn_env = SpawnEnv(
@@ -78,7 +78,7 @@ class WorldState(msgspec.Struct):
             terrain_height=float(world_size),
             demo_mode_active=demo_mode_active,
             hardcore=hardcore,
-            difficulty_level=int(difficulty_level),
+            quest_fail_retry_count=int(quest_fail_retry_count),
         )
         state = build_gameplay_state()
         state.demo_mode_active = demo_mode_active

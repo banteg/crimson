@@ -344,7 +344,7 @@ class ReplayPlaybackMode:
         self._register_replay_audio_commands()
         self._load_game_tune_queue()
 
-        difficulty_level = int(replay.header.difficulty_level)
+        quest_fail_retry_count = int(replay.header.quest_fail_retry_count)
         hardcore = bool(replay.header.hardcore)
         preserve_bugs = bool(replay.header.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
@@ -353,7 +353,7 @@ class ReplayPlaybackMode:
             assets_dir=self._ctx.assets_dir,
             world_size=float(world_size),
             demo_mode_active=False,
-            difficulty_level=int(difficulty_level),
+            quest_fail_retry_count=int(quest_fail_retry_count),
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
             texture_cache=self._texture_cache,

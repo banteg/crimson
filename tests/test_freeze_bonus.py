@@ -88,7 +88,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))

@@ -289,7 +289,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
                 world_size=float(kwargs.get("world_size", 1024.0)),  # type: ignore[arg-type]
                 demo_mode_active=bool(kwargs.get("demo_mode_active", False)),
                 hardcore=bool(kwargs.get("hardcore", False)),
-                difficulty_level=int(kwargs.get("difficulty_level", 0)),  # type: ignore[arg-type]
+                quest_fail_retry_count=int(kwargs.get("quest_fail_retry_count", 0)),  # type: ignore[arg-type]
                 preserve_bugs=bool(kwargs.get("preserve_bugs", False)),
             )
             self.sim_world = sw

@@ -139,7 +139,7 @@ def _build_session_world(*, seed: int = 0x1234, world_size: float = 1024.0) -> W
         world_size=float(world_size),
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     reset_players(world.players, state=world.state, world_size=float(world_size), player_count=1)
     world.state.rng.srand(int(seed))

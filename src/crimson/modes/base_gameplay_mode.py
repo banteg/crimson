@@ -254,7 +254,7 @@ class BaseGameplayMode:
         world_size: float,
         default_game_mode_id: GameMode,
         demo_mode_active: bool = False,
-        difficulty_level: int = 0,
+        quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
@@ -297,7 +297,7 @@ class BaseGameplayMode:
         self.assets_dir = ctx.assets_dir
         self.world_size = float(world_size)
         self.demo_mode_active = bool(demo_mode_active)
-        self.difficulty_level = int(difficulty_level)
+        self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(ctx.preserve_bugs)
         self.texture_cache = texture_cache
@@ -308,7 +308,7 @@ class BaseGameplayMode:
             assets_dir=self.assets_dir,
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
-            difficulty_level=int(self.difficulty_level),
+            quest_fail_retry_count=int(self.quest_fail_retry_count),
             hardcore=bool(self.hardcore),
             preserve_bugs=bool(self.preserve_bugs),
             texture_cache=self.texture_cache,
@@ -421,7 +421,7 @@ class BaseGameplayMode:
         runtime = self._world_runtime
         runtime.world_size = float(self.world_size)
         runtime.demo_mode_active = bool(self.demo_mode_active)
-        runtime.difficulty_level = int(self.difficulty_level)
+        runtime.quest_fail_retry_count = int(self.quest_fail_retry_count)
         runtime.hardcore = bool(self.hardcore)
         runtime.preserve_bugs = bool(self.preserve_bugs)
         runtime.texture_cache = self.texture_cache

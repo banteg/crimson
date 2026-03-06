@@ -37,7 +37,7 @@ def test_spawn_template_child_references_exist() -> None:
         terrain_height=1024.0,
         demo_mode_active=False,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
 
     child_template_ids: set[SpawnId] = set()

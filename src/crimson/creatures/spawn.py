@@ -657,7 +657,7 @@ class SpawnEnv(msgspec.Struct, frozen=True, kw_only=True):
     terrain_height: float
     demo_mode_active: bool
     hardcore: bool
-    difficulty_level: int
+    quest_fail_retry_count: int
 
 
 class BurstEffect(msgspec.Struct, frozen=True, kw_only=True):
@@ -1680,7 +1680,7 @@ def apply_tail(
 
     c.heading = final_heading
 
-    # Difficulty modifiers.
+    # Quest fail retry count modifiers.
     slot_idx = c.spawn_slot
     has_spawn_slot = slot_idx is not None and 0 <= slot_idx < len(plan_spawn_slots)
 
@@ -1690,8 +1690,8 @@ def apply_tail(
         if (c.flags & HAS_SPAWN_SLOT_FLAG) and has_spawn_slot and slot_idx is not None:
             plan_spawn_slots[slot_idx].interval += 0.2
 
-        if env.difficulty_level > 0:
-            d = env.difficulty_level
+        if env.quest_fail_retry_count > 0:
+            d = env.quest_fail_retry_count
             if (
                 c.reward_value is not None
                 and c.move_speed is not None
@@ -1727,7 +1727,7 @@ def apply_tail(
             if has_spawn_slot and (c.flags & HAS_SPAWN_SLOT_FLAG) and slot_idx is not None:
                 plan_spawn_slots[slot_idx].interval += min(3.0, float(d) * 0.35)
     else:
-        # In hardcore: difficulty level is forcibly cleared (global), and creature stats are buffed.
+        # In hardcore: quest fail retry count is forcibly cleared (global), and creature stats are buffed.
         if c.move_speed is not None:
             c.move_speed *= 1.05
         if c.contact_damage is not None:

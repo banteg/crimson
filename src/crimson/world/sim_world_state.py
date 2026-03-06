@@ -29,7 +29,7 @@ def _weapon_damage_scale_map() -> dict[int, float]:
 class SimWorldState(msgspec.Struct):
     world_size: float = 1024.0
     demo_mode_active: bool = False
-    difficulty_level: int = 0
+    quest_fail_retry_count: int = 0
     hardcore: bool = False
     preserve_bugs: bool = False
 
@@ -61,7 +61,7 @@ class SimWorldState(msgspec.Struct):
             world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             hardcore=bool(self.hardcore),
-            difficulty_level=int(self.difficulty_level),
+            quest_fail_retry_count=int(self.quest_fail_retry_count),
             preserve_bugs=bool(self.preserve_bugs),
         )
         self.spawn_env = self.world_state.spawn_env

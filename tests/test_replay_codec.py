@@ -60,7 +60,7 @@ def test_replay_codec_roundtrip() -> None:
         game_mode_id=GameMode.SURVIVAL,
         seed=0x1234,
         tick_rate=60,
-        difficulty_level=2,
+        quest_fail_retry_count=2,
         hardcore=True,
         preserve_bugs=True,
         world_size=1024.0,

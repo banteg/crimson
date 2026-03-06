@@ -73,7 +73,7 @@ class TypoShooterMode(BaseGameplayMode):
             world_size=WORLD_SIZE,
             default_game_mode_id=GameMode.TYPO,
             demo_mode_active=False,
-            difficulty_level=0,
+            quest_fail_retry_count=0,
             hardcore=False,
             texture_cache=texture_cache,
             config=config,

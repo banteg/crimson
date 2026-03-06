@@ -42,7 +42,7 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
         world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
-        difficulty_level=0,
+        quest_fail_retry_count=0,
     )
     world.players.append(PlayerState(index=0, pos=Vec2(300.0, 300.0)))
     world.players.append(PlayerState(index=1, pos=Vec2(700.0, 300.0)))

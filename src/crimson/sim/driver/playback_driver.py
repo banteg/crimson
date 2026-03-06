@@ -229,7 +229,7 @@ class PlaybackDriver:
             world_size=float(self.world_size),
             demo_mode_active=False,
             hardcore=bool(self.replay.header.hardcore),
-            difficulty_level=int(self.replay.header.difficulty_level),
+            quest_fail_retry_count=int(self.replay.header.quest_fail_retry_count),
             preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
         reset_players(

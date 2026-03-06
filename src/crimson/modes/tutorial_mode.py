@@ -71,7 +71,7 @@ class TutorialMode(BaseGameplayMode):
             world_size=1024.0,
             default_game_mode_id=GameMode.TUTORIAL,
             demo_mode_active=bool(demo_mode_active),
-            difficulty_level=0,
+            quest_fail_retry_count=0,
             hardcore=False,
             texture_cache=texture_cache,
             config=config,
