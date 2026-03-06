@@ -408,7 +408,7 @@ class PerkMenuDebugView:
 def _ui_text_width(font: SmallFontData | None, text: str, scale: float) -> float:
     if font is None:
         return float(rl.measure_text(text, int(20 * scale)))
-    return float(measure_small_text_width(font, text, scale))
+    return float(measure_small_text_width(font, text))
 
 
 @register_view("perk-menu-debug", "Perk menu render debug")

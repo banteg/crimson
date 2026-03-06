@@ -58,7 +58,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
         left = left_top_left
         right = right_top_left
-        text_scale = 1.0 * scale
         text_color = rl.WHITE
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         gore_disabled = self._gore_disabled()
@@ -67,14 +66,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
         title_text = "Unlocked Perks Database"
-        draw_small_text(
-            font,
-            title_text,
-            title_pos,
-            text_scale,
-            rl.Color(255, 255, 255, 255),
-        )
-        title_w = measure_small_text_width(font, title_text, text_scale)
+        draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
+        title_w = measure_small_text_width(font, title_text)
         # Decompile path draws a 1px outline strip under the title with alpha 0.5.
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(
@@ -90,20 +83,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_ids = self._perk_ids
         count = len(perk_ids)
         perk_label = "perk" if count == 1 else "perks"
-        draw_small_text(
-            font,
-            f"{count} {perk_label} in database",
-            left + Vec2(210.0 * scale, 78.0 * scale),
-            text_scale,
-            dim_color,
-        )
-        draw_small_text(
-            font,
-            "Perks",
-            left + Vec2(210.0 * scale, 106.0 * scale),
-            text_scale,
-            text_color,
-        )
+        draw_small_text(font, f"{count} {perk_label} in database", left + Vec2(210.0 * scale, 78.0 * scale), dim_color)
+        draw_small_text(font, "Perks", left + Vec2(210.0 * scale, 106.0 * scale), text_color)
 
         frame_x = left.x + self._LIST_FRAME_X * scale
         frame_y = left.y + self._LIST_FRAME_Y * scale
@@ -132,13 +113,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 row_alpha = 0.9
             else:
                 row_alpha = 0.7
-            draw_small_text(
-                font,
-                self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs),
-                list_top_left.offset(dy=float(row) * row_step),
-                text_scale,
-                rl.Color(255, 255, 255, int(255 * row_alpha)),
-            )
+            draw_small_text(font, self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs), list_top_left.offset(dy=float(row) * row_step), rl.Color(255, 255, 255, int(255 * row_alpha)))
 
         if count > self._VISIBLE_ROWS:
             # Native list draws a 1px scrollbar strip + draggable thumb.
@@ -177,16 +152,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_name = self._perk_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
         detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
         perk_no_label = "perkno" if preserve_bugs else "perk"
-        draw_small_text(
-            font,
-            f"{perk_no_label} #{perk_id}",
-            detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
-            text_scale,
-            rl.Color(255, 255, 255, int(255 * 0.4)),
-        )
-        name_w = measure_small_text_width(font, perk_name, text_scale)
+        draw_small_text(font, f"{perk_no_label} #{perk_id}", detail_anchor + Vec2(190.0 * scale, -40.0 * scale), rl.Color(255, 255, 255, int(255 * 0.4)))
+        name_w = measure_small_text_width(font, perk_name)
         perk_name_pos = Vec2(detail_anchor.x + 128.0 * scale - name_w * 0.5, detail_anchor.y - 22.0 * scale)
-        draw_small_text(font, perk_name, perk_name_pos, text_scale, text_color)
+        draw_small_text(font, perk_name, perk_name_pos, text_color)
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(
                 perk_name_pos.x,
@@ -201,18 +170,12 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
         prereq_name = self._perk_prereq_name(perk_id, gore_disabled=gore_disabled, preserve_bugs=preserve_bugs)
         if prereq_name:
-            draw_small_text(
-                font,
-                f"Requires: {prereq_name}",
-                desc_pos,
-                text_scale,
-                rl.Color(255, 204, 204, int(255 * 0.8)),
-            )
+            draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl.Color(255, 204, 204, int(255 * 0.8)))
             desc_pos = desc_pos.offset(dy=18.0 * scale)
 
         wrapped_desc = self._prewrapped_perk_desc(perk_id, font, gore_disabled=gore_disabled)
         if wrapped_desc:
-            draw_small_text(font, wrapped_desc, desc_pos, text_scale, dim_color)
+            draw_small_text(font, wrapped_desc, desc_pos, dim_color)
 
     def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
         perk_ids = self._perk_ids
@@ -439,7 +402,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 i += 1
                 continue
 
-            remaining -= measure_small_text_width(font, ch, float(scale))
+            remaining -= measure_small_text_width(font, ch)
             if remaining < 0.0:
                 j = i
                 while j > 0 and wrapped[j] not in {" ", "\n"}:

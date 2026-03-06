@@ -74,8 +74,8 @@ class FontView:
         draw_ui_text(self._small, "Small font", Vec2(24, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12
         if self._small is not None:
-            draw_small_text(self._small, self._sample, Vec2(24, y), SMALL_SAMPLE_SCALE, rl.WHITE)
-            y += int(measure_small_text_height(self._small, self._sample, SMALL_SAMPLE_SCALE)) + 40
+            draw_small_text(self._small, self._sample, Vec2(24, y), rl.WHITE)
+            y += int(measure_small_text_height(self._small, self._sample)) + 40
 
         draw_ui_text(self._small, "Grim2D mono font", Vec2(24, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
         y += ui_line_height(self._small, scale=UI_TEXT_SCALE) + 12

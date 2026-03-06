@@ -296,7 +296,7 @@ class OptionsMenuView(PanelMenuView):
         font = self._ensure_small_font()
         text_scale = 1.0 * scale
         label = "UI Info texts"
-        label_w = measure_small_text_width(font, label, text_scale)
+        label_w = measure_small_text_width(font, label)
         rect_w = float(check_on.width) * scale + 6.0 * scale + label_w
         rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
@@ -318,7 +318,6 @@ class OptionsMenuView(PanelMenuView):
         scale = layout.scale
 
         font = self._ensure_small_font()
-        text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         if labels_tex is not None:
@@ -348,7 +347,7 @@ class OptionsMenuView(PanelMenuView):
 
         y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
-            draw_small_text(font, label, label_pos.offset(dy=offset * scale), text_scale, text_color)
+            draw_small_text(font, label, label_pos.offset(dy=offset * scale), text_color)
 
         rect_on = self._rect_on
         rect_off = self._rect_off
@@ -405,13 +404,7 @@ class OptionsMenuView(PanelMenuView):
                 0.0,
                 rl.WHITE,
             )
-            draw_small_text(
-                font,
-                "UI Info texts",
-                check_pos + Vec2(check_w + 6.0 * scale, 1.0 * scale),
-                text_scale,
-                text_color,
-            )
+            draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0 * scale, 1.0 * scale), text_color)
 
         button = self._button_tex
         textures = self._button_textures

@@ -37,7 +37,9 @@ u1 = u0 + widths[idx] / 256
 v1 = v0 + 1/16
 ```
 
-A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
+The original Direct3D8 renderer applies a small bias of 1/512 to the U/V values
+to reduce bleeding. The Raylib/OpenGL port intentionally omits that inset
+because it visibly crops the small-font glyphs on this backend.
 
 ### Identification (font source)
 

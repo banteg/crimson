@@ -615,12 +615,12 @@ class BaseGameplayMode:
 
     def _ui_text_width(self, text: str, scale: float = 1.0) -> int:
         if self._small is not None:
-            return int(measure_small_text_width(self._small, text, scale))
+            return int(measure_small_text_width(self._small, text))
         return int(rl.measure_text(text, int(20 * scale)))
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
         if self._small is not None:
-            draw_small_text(self._small, text, pos, scale, color)
+            draw_small_text(self._small, text, pos, color)
         else:
             rl.draw_text(text, int(pos.x), int(pos.y), int(20 * scale), color)
 

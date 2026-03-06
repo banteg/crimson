@@ -349,86 +349,80 @@ class NetworkSessionPanelView(PanelMenuView):
         value_color = rl.Color(225, 235, 247, 255)
         active_color = rl.Color(232, 197, 117, 255)
 
-        draw_small_text(font, "Network Session", base_pos, title_scale, title_color)
+        draw_small_text(font, "Network Session", base_pos, title_color)
         y = base_pos.y + float(font.cell_size) * title_scale + 6.0 * scale
-        draw_small_text(
-            font,
-            "TAB role | M mode | [/] players | N netcode | H/B/P/C/L edit | ENTER continue",
-            Vec2(base_pos.x, y),
-            0.85 * scale,
-            body_color,
-        )
+        draw_small_text(font, "TAB role | M mode | [/] players | N netcode | H/B/P/C/L edit | ENTER continue", Vec2(base_pos.x, y), body_color)
         y += float(font.cell_size) * 0.9 * scale + 10.0 * scale
 
         mode = self._current_mode()
         role_label = "Host" if self._role == "host" else "Join"
 
         label_w = max(
-            measure_small_text_width(font, "Role:", text_scale),
-            measure_small_text_width(font, "Mode:", text_scale),
-            measure_small_text_width(font, "Players:", text_scale),
-            measure_small_text_width(font, "Netcode:", text_scale),
-            measure_small_text_width(font, "Bind:", text_scale),
-            measure_small_text_width(font, "Host:", text_scale),
-            measure_small_text_width(font, "Relay:", text_scale),
-            measure_small_text_width(font, "Code:", text_scale),
-            measure_small_text_width(font, "Port:", text_scale),
-            measure_small_text_width(font, "Quest:", text_scale),
+            measure_small_text_width(font, "Role:"),
+            measure_small_text_width(font, "Mode:"),
+            measure_small_text_width(font, "Players:"),
+            measure_small_text_width(font, "Netcode:"),
+            measure_small_text_width(font, "Bind:"),
+            measure_small_text_width(font, "Host:"),
+            measure_small_text_width(font, "Relay:"),
+            measure_small_text_width(font, "Code:"),
+            measure_small_text_width(font, "Port:"),
+            measure_small_text_width(font, "Quest:"),
         )
         value_x = base_pos.x + label_w + 10.0 * scale
         line_h = float(font.cell_size) * text_scale + 3.0 * scale
 
-        draw_small_text(font, "Role:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, role_label, Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Role:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, role_label, Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Mode:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, str(mode), Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Mode:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, str(mode), Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Players:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, str(self._player_count), Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Players:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, str(self._player_count), Vec2(value_x, y), value_color)
         y += line_h
 
-        draw_small_text(font, "Netcode:", Vec2(base_pos.x, y), text_scale, label_color)
-        draw_small_text(font, str(self._netcode_mode), Vec2(value_x, y), text_scale, value_color)
+        draw_small_text(font, "Netcode:", Vec2(base_pos.x, y), label_color)
+        draw_small_text(font, str(self._netcode_mode), Vec2(value_x, y), value_color)
         y += line_h
 
         if self._netcode_mode == "lockstep":
-            draw_small_text(font, "Bind:", Vec2(base_pos.x, y), text_scale, label_color)
+            draw_small_text(font, "Bind:", Vec2(base_pos.x, y), label_color)
             bind_tint = active_color if self._active_field == "bind_host" else value_color
-            draw_small_text(font, self._bind_host or "-", Vec2(value_x, y), text_scale, bind_tint)
+            draw_small_text(font, self._bind_host or "-", Vec2(value_x, y), bind_tint)
             y += line_h
 
-            draw_small_text(font, "Host:", Vec2(base_pos.x, y), text_scale, label_color)
+            draw_small_text(font, "Host:", Vec2(base_pos.x, y), label_color)
             host_tint = active_color if self._active_field == "host" else value_color
-            draw_small_text(font, self._host or "-", Vec2(value_x, y), text_scale, host_tint)
+            draw_small_text(font, self._host or "-", Vec2(value_x, y), host_tint)
             y += line_h
         else:
-            draw_small_text(font, "Relay:", Vec2(base_pos.x, y), text_scale, label_color)
+            draw_small_text(font, "Relay:", Vec2(base_pos.x, y), label_color)
             relay_tint = active_color if self._active_field == "host" else value_color
-            draw_small_text(font, self._host or "-", Vec2(value_x, y), text_scale, relay_tint)
+            draw_small_text(font, self._host or "-", Vec2(value_x, y), relay_tint)
             y += line_h
 
-            draw_small_text(font, "Code:", Vec2(base_pos.x, y), text_scale, label_color)
+            draw_small_text(font, "Code:", Vec2(base_pos.x, y), label_color)
             code_tint = active_color if self._active_field == "room_code" else value_color
-            draw_small_text(font, self._room_code or "-", Vec2(value_x, y), text_scale, code_tint)
+            draw_small_text(font, self._room_code or "-", Vec2(value_x, y), code_tint)
             y += line_h
 
-        draw_small_text(font, "Port:", Vec2(base_pos.x, y), text_scale, label_color)
+        draw_small_text(font, "Port:", Vec2(base_pos.x, y), label_color)
         port_tint = active_color if self._active_field == "port" else value_color
-        draw_small_text(font, self._port_text or "-", Vec2(value_x, y), text_scale, port_tint)
+        draw_small_text(font, self._port_text or "-", Vec2(value_x, y), port_tint)
         y += line_h
 
         if mode == "quests":
-            draw_small_text(font, "Quest:", Vec2(base_pos.x, y), text_scale, label_color)
+            draw_small_text(font, "Quest:", Vec2(base_pos.x, y), label_color)
             quest_tint = active_color if self._active_field == "quest_level" else value_color
-            draw_small_text(font, self._quest_level or "-", Vec2(value_x, y), text_scale, quest_tint)
+            draw_small_text(font, self._quest_level or "-", Vec2(value_x, y), quest_tint)
             y += line_h
 
         if self._error:
             y += float(font.cell_size) * 0.9 * scale + 6.0 * scale
-            draw_small_text(font, self._error, Vec2(base_pos.x, y), text_scale, rl.Color(240, 90, 90, 255))
+            draw_small_text(font, self._error, Vec2(base_pos.x, y), rl.Color(240, 90, 90, 255))
 
         textures = self._button_textures
         if textures is not None:

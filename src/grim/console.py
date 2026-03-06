@@ -572,21 +572,21 @@ class ConsoleState(msgspec.Struct):
         if font is None:
             rl.draw_text(text, int(pos.x), int(pos.y), int(16 * CONSOLE_SMALL_SCALE), color)
             return
-        draw_small_text(font, text, pos, CONSOLE_SMALL_SCALE, color)
+        draw_small_text(font, text, pos, color)
 
     def _draw_version_text(self, pos: Vec2, color: rl.Color) -> None:
         font = self._ensure_small_font()
         if font is None:
             self._draw_mono_text(CONSOLE_VERSION_TEXT, pos, color)
             return
-        draw_small_text(font, CONSOLE_VERSION_TEXT, pos, CONSOLE_SMALL_SCALE, color)
+        draw_small_text(font, CONSOLE_VERSION_TEXT, pos, color)
 
     def _small_caret_x(self) -> float:
         font = self._ensure_small_font()
         if font is None:
             return CONSOLE_TEXT_X + 16.0 + float(self.input_caret) * 8.0
-        prompt_w = measure_small_text_width(font, CONSOLE_PROMPT_SMALL_FMT.replace("%s", ""), CONSOLE_SMALL_SCALE)
-        input_w = measure_small_text_width(font, self.input_buffer[: self.input_caret], CONSOLE_SMALL_SCALE)
+        prompt_w = measure_small_text_width(font, CONSOLE_PROMPT_SMALL_FMT.replace("%s", ""))
+        input_w = measure_small_text_width(font, self.input_buffer[: self.input_caret])
         return CONSOLE_TEXT_X + prompt_w + input_w
 
     def _flush_input_queue(self) -> None:

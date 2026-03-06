@@ -252,15 +252,15 @@ class EndNoteView:
         header_color = rl.Color(255, 255, 255, int(255 * 0.8))
         body_color = rl.Color(255, 255, 255, int(255 * 0.5))
 
-        draw_small_text(font, header, header_pos, 1.5 * scale, header_color)
+        draw_small_text(font, header, header_pos, header_color)
 
         body_pos = Vec2(panel_top_left.x + END_NOTE_BODY_X_OFFSET * scale, header_pos.y + END_NOTE_BODY_Y_GAP * scale)
         for idx, line in enumerate(body_lines):
-            draw_small_text(font, line, body_pos, 1.0 * scale, body_color)
+            draw_small_text(font, line, body_pos, body_color)
             if idx != len(body_lines) - 1:
                 body_pos = body_pos.offset(dy=END_NOTE_LINE_STEP_Y * scale)
         body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP * scale)
-        draw_small_text(font, "Good luck with your battles, trooper!", body_pos, 1.0 * scale, body_color)
+        draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
         textures = self._button_textures
         if textures is not None and (textures.button_sm is not None or textures.button_md is not None):
