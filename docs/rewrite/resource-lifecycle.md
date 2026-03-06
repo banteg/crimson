@@ -79,32 +79,28 @@ flowchart LR
 That means headless or pre-open camera logic no longer depends on a draw
 context with optional resources attached to it.
 
-## The Narrower Leftover
+## What We Fixed Next
 
-The remaining smell is smaller now.
+The next leftover was the renderer convenience path.
 
-`RenderFrame.resources` is still `RuntimeResources | None`, and
 `WorldRenderer.world_to_screen()` / `screen_to_world()` / `_world_params()`
-still derive their inputs from the active `RenderFrame`.
+used to keep pulling from `RenderFrame`, which meant helper transforms still
+depended on a draw snapshot type.
 
-So the renderer convenience helpers are no longer coupled to `WorldRenderCtx`,
-but they are still coupled to a frame type that also serves drawing.
+That is now split too.
+
+- `WorldRenderer` takes a dedicated `WorldViewportState` builder
+- helper transforms read only viewport inputs
+- draw still uses `RenderFrame`
 
 ```mermaid
 flowchart TD
-    A["Renderer convenience helper"] --> B["active RenderFrame"]
+    A["Renderer convenience helper"] --> B["WorldViewportState"]
     B --> C["world_size / config / camera"]
-    B --> D["resources: RuntimeResources | None"]
-    D -.unused by helper, but still on the same type.- C
 
-    E["Renderer.draw()"] --> B
+    D["Renderer.draw()"] --> E["RenderFrame"]
     E --> F["draw path requires concrete resources"]
 ```
-
-This is better than before, but it still mixes:
-
-- draw-ready frame data
-- helper-only viewport inputs
 
 ## What Is Still Wrong
 
@@ -113,8 +109,8 @@ This is better than before, but it still mixes:
   `open_runtime()`.
 - `RenderResources.texture()` still has a fallback lookup path, which hides
   lifecycle mistakes instead of surfacing them.
-- `WorldRenderer` convenience transforms still pull from a full `RenderFrame`
-  instead of a smaller viewport-specific state object.
+- `RenderFrame.resources` is still `RuntimeResources | None`, even though the
+  draw entrypoint rejects unloaded frames.
 
 ## Better Shape From Here
 
@@ -134,9 +130,8 @@ Concretely:
 - keep `RenderResources._resources` optional internally for pre-open world state
 - keep viewport math pure and resource-free
 - make active draw APIs consume concrete resources
-- eventually stop using `RenderFrame` as the input type for renderer convenience
-  transforms
+- eventually make draw snapshots concrete enough that `RenderFrame.resources`
+  does not need to represent the unloaded phase
 
-The real bug now is no longer “camera math depends on renderer state.” That was
-fixed. The remaining bug is that draw snapshots still carry optionality farther
-than they should.
+The remaining bug is that draw snapshots and resource access still carry
+optionality farther than they should.
