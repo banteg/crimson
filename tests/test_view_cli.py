@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
-import crimson.views as views
+import crimson.debug_views as views
 import grim.app as grim_app
 from crimson.cli import app
 

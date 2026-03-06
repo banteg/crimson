@@ -6,13 +6,13 @@ from grim.view import ViewContext
 
 
 def test_import_crimson_views_succeeds() -> None:
-    import crimson.views as views
+    import crimson.debug_views as views
 
     assert views is not None
 
 
 def test_lighting_debug_view_is_registered() -> None:
-    from crimson.views import all_views, view_by_name
+    from crimson.debug_views import all_views, view_by_name
 
     entry = view_by_name("lighting-debug")
     assert entry is not None
@@ -20,8 +20,8 @@ def test_lighting_debug_view_is_registered() -> None:
 
 
 def test_lighting_debug_factory_constructs_without_window() -> None:
-    from crimson.views import view_by_name
-    from crimson.views.lighting_debug import LightingDebugView
+    from crimson.debug_views import view_by_name
+    from crimson.debug_views.lighting_debug import LightingDebugView
 
     entry = view_by_name("lighting-debug")
     assert entry is not None

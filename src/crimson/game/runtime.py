@@ -7,7 +7,7 @@ import time
 import webbrowser
 from pathlib import Path
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim import music
 from grim.app import RunViewHooks, run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path
@@ -30,11 +30,11 @@ from ..demo_trial import (
     demo_trial_overlay_info,
     format_demo_trial_time,
 )
-from ..frontend.assets import _ensure_texture_cache
 from ..game_modes import GameMode
 from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
+from ..screens.assets import _ensure_texture_cache
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState, LockstepSessionConfig
 

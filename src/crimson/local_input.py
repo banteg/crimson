@@ -12,7 +12,6 @@ from grim.raylib_api import rl
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
-from .frontend.panels.controls_labels import controls_method_values
 from .input_codes import (
     config_keybinds_for_player,
     input_axis_value_for_player,
@@ -20,6 +19,7 @@ from .input_codes import (
     input_code_is_pressed_for_player,
 )
 from .movement_controls import MovementControlType
+from .screens.panels.controls_labels import controls_method_values
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
 

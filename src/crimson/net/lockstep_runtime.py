@@ -9,7 +9,7 @@ from typing import Literal, TypeAlias, cast
 
 import msgspec
 
-from crimson.quest_level import normalize_quest_level_text
+from crimson.quests.level import normalize_quest_level_text
 
 from ..replay.types import PackedPlayerInput
 from ..sim.input_providers import GameCommand

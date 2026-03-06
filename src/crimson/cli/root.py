@@ -235,7 +235,7 @@ def cmd_view(
     from grim.app import run_view
     from grim.view import ViewContext
 
-    from ..views import all_views, view_by_name
+    from ..debug_views import all_views, view_by_name
 
     view_def = view_by_name(name)
     if view_def is None:

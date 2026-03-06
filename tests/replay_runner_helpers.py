@@ -8,10 +8,10 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay import ReplayHeader, ReplayRecorder
 from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
+from crimson.replay.driver.setup import RunResult
 from crimson.replay.types import current_replay_game_version
-from crimson.sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
-from crimson.sim.driver.replay_info import ReplayInfoResult, collect_replay_info
-from crimson.sim.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2

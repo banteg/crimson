@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from crimson.frontend.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
+from crimson.screens.menu import MENU_DEMO_IDLE_START_MS, MenuEntry, MenuView
 
 
 def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
-    import crimson.frontend.menu as menu_mod
+    import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=True)
     view = MenuView(state)
@@ -28,7 +28,7 @@ def test_menu_demo_idle_starts_demo(mocker, make_game_state) -> None:
 
 
 def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) -> None:
-    import crimson.frontend.menu as menu_mod
+    import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=False)
     view = MenuView(state)
@@ -48,7 +48,7 @@ def test_menu_idle_does_not_start_demo_in_full_version(mocker, make_game_state) 
 
 
 def test_menu_idle_resets_on_key_press(mocker, make_game_state) -> None:
-    import crimson.frontend.menu as menu_mod
+    import crimson.screens.menu as menu_mod
 
     state = make_game_state(demo_enabled=True)
     view = MenuView(state)

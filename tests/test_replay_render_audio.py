@@ -7,7 +7,7 @@ from unittest.mock import call
 
 import pytest
 
-from crimson.sim.driver.replay_render import (
+from crimson.replay.driver.replay_render import (
     ReplayRenderError,
     _build_audio_sync_filter,
     _infer_effective_capture_sample_rate,
@@ -47,7 +47,7 @@ def test_infer_effective_capture_sample_rate_rejects_out_of_range() -> None:
 
 def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_path: Path) -> None:
     import crimson.modes.replay_playback_mode as replay_playback_mode_mod
-    import crimson.sim.driver.replay_render as replay_render_mod
+    import crimson.replay.driver.replay_render as replay_render_mod
 
     class _Queue:
         def __init__(self) -> None:
@@ -152,7 +152,7 @@ def test_capture_audio_track_clears_fx_queues_and_reports_progress(mocker, tmp_p
 
 
 def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_time_warp(mocker, tmp_path: Path) -> None:
-    import crimson.sim.driver.replay_render as replay_render_mod
+    import crimson.replay.driver.replay_render as replay_render_mod
 
     video_path = tmp_path / "video.mp4"
     audio_path = tmp_path / "audio.f32le"

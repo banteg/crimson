@@ -54,6 +54,7 @@ from ..replay.checkpoints import (
     dump_checkpoints_file,
 )
 from ..replay.input_codec import pack_player_input, unpack_player_input
+from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
     PresentationTickOutput,
     apply_presentation_outputs,
@@ -84,7 +85,6 @@ from ..sim.presentation_reactions import (
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
-from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime

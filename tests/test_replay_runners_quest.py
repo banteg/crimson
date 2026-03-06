@@ -4,7 +4,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
-from crimson.sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from crimson.sim.input_providers import PerkPickCommand
 from crimson.weapons import WEAPON_BY_ID
 from tests.replay_runner_helpers import (

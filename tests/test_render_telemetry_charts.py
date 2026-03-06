@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.sim.driver import render_telemetry_charts as charts
+from crimson.replay.driver import render_telemetry_charts as charts
 
 
 def test_build_binned_pass_rows_uses_exclusive_parent_pass_timing() -> None:

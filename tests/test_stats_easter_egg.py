@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import random
 
-from crimson.frontend.panels.stats import (
+from crimson.screens.panels.stats import (
     _is_orbes_volantes_day,
     _stats_menu_easter_roll,
 )

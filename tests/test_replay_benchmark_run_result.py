@@ -7,7 +7,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
-from crimson.sim.driver.replay_benchmark import ReplayBenchmarkError, _run_result_for_replay_mode
+from crimson.replay.driver.replay_benchmark import ReplayBenchmarkError, _run_result_for_replay_mode
 from crimson.weapons import WeaponId
 
 

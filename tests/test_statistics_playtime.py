@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.frontend.panels.stats import _format_playtime_text
 from crimson.game.loop_view import GameLoopView
+from crimson.screens.panels.stats import _format_playtime_text
 
 
 def test_format_playtime_text_uses_hour_and_minute_buckets() -> None:

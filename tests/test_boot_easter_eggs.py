@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 from types import SimpleNamespace
 
-from crimson.frontend.boot import TEXTURE_LOAD_STAGES, BootView, _is_balloon_easter_egg_day
+from crimson.screens.boot import TEXTURE_LOAD_STAGES, BootView, _is_balloon_easter_egg_day
 
 
 def test_balloon_easter_egg_day_matches_three_known_dates() -> None:

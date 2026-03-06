@@ -4,9 +4,7 @@ import math
 from pathlib import Path
 from typing import cast
 
-from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
-from crimson.sim.state_types import PlayerState
-from crimson.views.lighting_debug import (
+from crimson.debug_views.lighting_debug import (
     EMISSIVE_PROFILES,
     EmissiveProfile,
     LightingDebugView,
@@ -22,6 +20,8 @@ from crimson.views.lighting_debug import (
     collect_shadow_occluders,
     tick_transient_lights,
 )
+from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
+from crimson.sim.state_types import PlayerState
 from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
 from grim.view import ViewContext

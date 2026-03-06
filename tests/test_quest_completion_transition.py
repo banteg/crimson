@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.quests.runtime import QUEST_COMPLETION_TRANSITION_MS, tick_quest_completion_transition
-from crimson.views.quest_run_overlay import quest_complete_banner_alpha
+from crimson.ui.overlays.quest_run import quest_complete_banner_alpha
 
 
 def test_tick_quest_completion_transition_resets_when_not_idle_complete() -> None:

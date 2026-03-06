@@ -44,8 +44,8 @@ tags:
 - Added capture-script mode telemetry:
   - `scripts/frida/gameplay_diff_capture.js` now emits per-player `config_player_mode_flags` and `config_aim_scheme` in globals and `input_approx`.
 - Added mode-5 parity in controls UI:
-  - `src/crimson/frontend/panels/controls_labels.py`
-  - `src/crimson/frontend/panels/controls.py`
+  - `src/crimson/screens/panels/controls_labels.py`
+  - `src/crimson/screens/panels/controls.py`
   - mode `5` is displayed when loaded from config, but not offered unless already loaded.
 - Added replay/verification override plumbing for telemetry-poor captures:
   - `--aim-scheme-player PLAYER=SCHEME` for `verify-capture`, `convert-capture`, `divergence-report`, `bisect-divergence`, and `focus-trace`.

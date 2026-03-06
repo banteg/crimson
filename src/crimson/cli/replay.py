@@ -17,13 +17,13 @@ from ..paths import default_runtime_dir
 if TYPE_CHECKING:
     from ..dbg.checkpoint_diff import ReplayDiffResult
     from ..replay import Replay
-    from ..sim.driver.replay_benchmark import (
+    from ..replay.driver.replay_benchmark import (
         BenchmarkAggregate,
         ReplayRenderTelemetryFrame,
         ReplayRenderTelemetryTopTick,
     )
-    from ..sim.driver.replay_render import ReplayRenderPhase
-    from ..sim.driver.setup import RunResult
+    from ..replay.driver.replay_render import ReplayRenderPhase
+    from ..replay.driver.setup import RunResult
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 2
 _REPLAY_INFO_SCHEMA_VERSION = 2
@@ -805,8 +805,8 @@ def cmd_replay_verify(
 ) -> None:
     """Headlessly simulate a replay and report resulting run stats."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.playback_driver import build_verify_playback_driver
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.playback_driver import build_verify_playback_driver
+    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -956,9 +956,9 @@ def cmd_replay_info(
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.playback_driver import build_verify_playback_driver
-    from ..sim.driver.replay_info import collect_replay_info, event_counts_by_kind
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.playback_driver import build_verify_playback_driver
+    from ..replay.driver.replay_info import collect_replay_info, event_counts_by_kind
+    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1123,12 +1123,12 @@ def cmd_replay_benchmark(
 ) -> None:
     """Benchmark replay throughput, with optional profiler hotspots."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.replay_benchmark import (
+    from ..replay.driver.replay_benchmark import (
         ReplayBenchmarkError,
         run_replay_benchmark,
         run_replay_render_benchmark,
     )
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1435,8 +1435,8 @@ def cmd_replay_render(
 ) -> None:
     """Render replay playback to video using ffmpeg."""
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
-    from ..sim.driver.replay_render import ReplayRenderError, run_replay_render_video
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.replay_render import ReplayRenderError, run_replay_render_video
+    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():
@@ -1527,8 +1527,8 @@ def cmd_replay_verify_checkpoints(
         default_checkpoints_path,
         load_checkpoints_file,
     )
-    from ..sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
+    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
     if not replay_path.is_file():

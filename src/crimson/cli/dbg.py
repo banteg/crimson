@@ -33,7 +33,7 @@ def cmd_dbg_record(
     """Run replay simulation and record a CDT trace."""
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
-    from ..sim.driver.setup import ReplayRunnerError
+    from ..replay.driver.setup import ReplayRunnerError
 
     warnings_out: list[str] = []
     try:

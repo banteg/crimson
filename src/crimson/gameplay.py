@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 import msgspec
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 

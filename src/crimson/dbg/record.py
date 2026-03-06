@@ -11,8 +11,8 @@ import msgspec
 
 from ..replay import load_replay_file
 from ..replay.checkpoints import ReplayCheckpoint
+from ..replay.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from ..replay.types import Replay
-from ..sim.driver.playback_driver import PlaybackWalkHooks, build_verify_playback_driver
 from ..sim.timing import ftol_ms_i32
 from ..sim.world_state import WorldState
 from ..status_snapshot import debug_snapshot_from_progress_status, progress_status_from_game_status

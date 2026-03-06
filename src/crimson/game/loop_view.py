@@ -3,7 +3,7 @@ from __future__ import annotations
 import webbrowser
 from typing import cast
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -12,30 +12,30 @@ from grim.view import View
 from ..debug import debug_enabled
 from ..demo import DemoView
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
-from ..frontend.boot import BootView
-from ..frontend.menu import MenuView, ensure_menu_ground
-from ..frontend.panels.alien_zookeeper import AlienZooKeeperView
-from ..frontend.panels.base import PanelMenuView
-from ..frontend.panels.controls import ControlsMenuView
-from ..frontend.panels.credits import CreditsView
-from ..frontend.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
-from ..frontend.panels.mods import ModsMenuView
-from ..frontend.panels.network_lobby import NetworkLobbyPanelView
-from ..frontend.panels.network_session import NetworkSessionPanelView
-from ..frontend.panels.options import OptionsMenuView
-from ..frontend.panels.play_game import PlayGameMenuView
-from ..frontend.panels.stats import StatisticsMenuView
-from ..frontend.pause_menu import PauseMenuView
-from ..frontend.transitions import _update_screen_fade
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
+from ..screens.boot import BootView
+from ..screens.high_scores_view import HighScoresView
+from ..screens.menu import MenuView, ensure_menu_ground
+from ..screens.panels.alien_zookeeper import AlienZooKeeperView
+from ..screens.panels.base import PanelMenuView
+from ..screens.panels.controls import ControlsMenuView
+from ..screens.panels.credits import CreditsView
+from ..screens.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..screens.panels.mods import ModsMenuView
+from ..screens.panels.network_lobby import NetworkLobbyPanelView
+from ..screens.panels.network_session import NetworkSessionPanelView
+from ..screens.panels.options import OptionsMenuView
+from ..screens.panels.play_game import PlayGameMenuView
+from ..screens.panels.stats import StatisticsMenuView
+from ..screens.pause_menu import PauseMenuView
+from ..screens.quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
+from ..screens.transitions import _update_screen_fade
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
-from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
-from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
-from .types import FrontView, GameState, PauseBackground
+from .types import GameState, PauseBackground, ScreenView
 
 _GAMMA_RAMP_SHADER: rl.Shader | None = None
 _GAMMA_RAMP_SHADER_GAIN_LOC: int = -1
@@ -134,7 +134,7 @@ class GameLoopView:
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
-        self._front_views: dict[str, FrontView] = {
+        self._front_views: dict[str, ScreenView] = {
             "open_play_game": PlayGameMenuView(state),
             "open_lan_session": NetworkSessionPanelView(state),
             "open_lan_lobby": NetworkLobbyPanelView(state),
@@ -163,8 +163,8 @@ class GameLoopView:
                 body="This menu is out of scope for the rewrite.",
             ),
         }
-        self._front_active: FrontView | None = None
-        self._front_stack: list[FrontView] = []
+        self._front_active: ScreenView | None = None
+        self._front_stack: list[ScreenView] = []
         self._active: View = self._boot
         self._demo_trial_overlay = DemoTrialOverlayUi(state.assets_dir)
         self._demo_trial_info: DemoTrialOverlayInfo | None = None
@@ -172,7 +172,7 @@ class GameLoopView:
         self._menu_active = False
         self._quit_after_demo = False
         self._screenshot_requested = False
-        self._gameplay_views: frozenset[FrontView] = frozenset(
+        self._gameplay_views: frozenset[ScreenView] = frozenset(
             {
                 self._front_views["start_survival"],
                 self._front_views["start_rush"],
@@ -719,7 +719,7 @@ class GameLoopView:
         self.state.status.game_sequence_id = int(self.state.status.game_sequence_id + delta_ms)
 
     def _sync_console_elapsed_ms(self) -> None:
-        views: list[FrontView] = []
+        views: list[ScreenView] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
@@ -737,7 +737,7 @@ class GameLoopView:
 
     def _regenerate_terrain_for_console(self) -> None:
         ensure_menu_ground(self.state, regenerate=True)
-        views: list[FrontView] = []
+        views: list[ScreenView] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
@@ -825,7 +825,7 @@ class GameLoopView:
 
         return True
 
-    def _maybe_adopt_menu_ground(self, action: str, _view: FrontView) -> None:
+    def _maybe_adopt_menu_ground(self, action: str, _view: ScreenView) -> None:
         if action not in {"start_survival", "start_rush"}:
             return
         # Native `game_state_set(9)` always calls `gameplay_reset_state()`, which
@@ -833,7 +833,7 @@ class GameLoopView:
         # but entering a fresh gameplay run must regenerate terrain instead of
         # reusing the captured menu render target.
 
-    def _as_gameplay_view(self, view: FrontView | None) -> _GameplayView | None:
+    def _as_gameplay_view(self, view: ScreenView | None) -> _GameplayView | None:
         if view is None or view not in self._gameplay_views:
             return None
         return cast(_GameplayView, view)
@@ -846,7 +846,7 @@ class GameLoopView:
         self.state.console.log.log(f"render mode: {mode.value} ({source})")
 
     def _sync_rtx_mode(self) -> None:
-        views: list[FrontView] = []
+        views: list[ScreenView] = []
         if self._front_active is not None:
             views.append(self._front_active)
         if self._front_stack:
@@ -856,7 +856,7 @@ class GameLoopView:
             if gameplay is not None:
                 gameplay.set_rtx_mode(self.state.rtx_mode)
 
-    def _steal_ground_from_view(self, view: FrontView | None) -> GroundRenderer | None:
+    def _steal_ground_from_view(self, view: ScreenView | None) -> GroundRenderer | None:
         gameplay = self._as_gameplay_view(view)
         if gameplay is None:
             return None
@@ -865,7 +865,7 @@ class GameLoopView:
             return ground
         return None
 
-    def _menu_ground_camera_from_view(self, view: FrontView | None) -> Vec2 | None:
+    def _menu_ground_camera_from_view(self, view: ScreenView | None) -> Vec2 | None:
         gameplay = self._as_gameplay_view(view)
         if gameplay is None:
             return None

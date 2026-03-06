@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, cast
 
 from crimson.render.world.profile_hooks import profile_pass
-from crimson.sim.driver.render_telemetry import RenderTelemetrySession
-from crimson.sim.driver.replay_benchmark import (
+from crimson.replay.driver.render_telemetry import RenderTelemetrySession
+from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
     ReplayRenderTelemetryFrame,
     _summarize_render_telemetry,

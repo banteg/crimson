@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Literal
 
-from crimson.frontend.panels.play_game import PlayGameMenuView
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
 from crimson.game_modes import GameMode
+from crimson.screens.panels.play_game import PlayGameMenuView
 
 
 def test_play_game_network_entry_is_available_by_default(make_game_state) -> None:

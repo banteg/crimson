@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game.quest_views import QuestsMenuView
 from crimson.persistence import save_status
+from crimson.screens.quest_views import QuestsMenuView
 
 
 def test_quest_select_f1_counts_stage5_reads_tail_fields(make_game_state, tmp_path: Path) -> None:

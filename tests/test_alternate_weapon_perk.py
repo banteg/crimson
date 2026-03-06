@@ -7,7 +7,7 @@ from crimson.gameplay import (
     player_update,
 )
 from crimson.perks import PerkId
-from crimson.sim.driver.setup import reset_players
+from crimson.replay.driver.setup import reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import weapon_assign_player

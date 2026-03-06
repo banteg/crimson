@@ -11,7 +11,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
-from crimson.ui.game_over import GameOverUi
+from crimson.screens.results.game_over import GameOverUi
 from grim.raylib_api import rl
 from grim.view import ViewContext
 

@@ -7,7 +7,7 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.sim.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
+from crimson.replay.driver.setup import build_damage_scale_by_type, build_empty_fx_queues, reset_players
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
