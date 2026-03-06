@@ -11,10 +11,10 @@ from crimson.terrain_slots import (
 
 
 def test_terrain_slots_for_level_matches_native_layout() -> None:
-    assert terrain_slots_for_level("1.1") == DEFAULT_TERRAIN_SLOTS
-    assert terrain_slots_for_level("4.5") == Q4_TERRAIN_SLOTS
-    assert terrain_slots_for_level("2.6") == (2, 2, 3)
-    assert terrain_slots_for_level("5.7") == (3, 1, 3)
+    assert terrain_slots_for_level(1, 1) == DEFAULT_TERRAIN_SLOTS
+    assert terrain_slots_for_level(4, 5) == Q4_TERRAIN_SLOTS
+    assert terrain_slots_for_level(2, 6) == (2, 2, 3)
+    assert terrain_slots_for_level(5, 7) == (3, 1, 3)
 
 
 def test_choose_menu_terrain_slots_uses_sequential_unlock_rolls() -> None:

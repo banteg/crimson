@@ -5,9 +5,6 @@ from typing import TypeAlias
 
 from grim.assets import TextureId
 
-_QUEST_STAGE_COUNT = 5
-_QUESTS_PER_STAGE = 10
-
 TerrainSlotTriplet: TypeAlias = tuple[int, int, int]
 
 Q1_TERRAIN_SLOTS: TerrainSlotTriplet = (0, 1, 0)
@@ -40,42 +37,16 @@ DEFAULT_TERRAIN_TEXTURE_IDS: tuple[TextureId, TextureId, TextureId] = (
 )
 
 
-def _level_parts(level_or_major: str | int, minor: int | None = None) -> tuple[int, int]:
-    if isinstance(level_or_major, str):
-        text = str(level_or_major).strip()
-        major_text, sep, minor_text = text.partition(".")
-        if sep != "." or not major_text or not minor_text:
-            raise ValueError(f"invalid quest level: {level_or_major!r}")
-        try:
-            major = int(major_text)
-            minor = int(minor_text)
-        except ValueError as exc:
-            raise ValueError(f"invalid quest level: {level_or_major!r}") from exc
-        if not (1 <= major <= _QUEST_STAGE_COUNT):
-            raise ValueError(f"quest stage out of range: {major} (expected 1..{_QUEST_STAGE_COUNT})")
-        if not (1 <= minor <= _QUESTS_PER_STAGE):
-            raise ValueError(f"quest row out of range: {minor} (expected 1..{_QUESTS_PER_STAGE})")
-        return major, minor
-    if minor is None:
-        raise TypeError("minor is required when major is passed as an int")
-    major = int(level_or_major)
+def terrain_slots_for_level(major: int, minor: int) -> TerrainSlotTriplet:
+    tier = int(major)
     quest = int(minor)
-    if not (1 <= major <= _QUEST_STAGE_COUNT):
-        raise ValueError(f"quest stage out of range: {major} (expected 1..{_QUEST_STAGE_COUNT})")
-    if not (1 <= quest <= _QUESTS_PER_STAGE):
-        raise ValueError(f"quest row out of range: {quest} (expected 1..{_QUESTS_PER_STAGE})")
-    return major, quest
-
-
-def terrain_slots_for_level(level_or_major: str | int, minor: int | None = None) -> TerrainSlotTriplet:
-    tier, quest = _level_parts(level_or_major, minor)
     if tier <= 4:
         base = (tier - 1) * 2
         alt = base + 1
         if quest < 6:
             return base, alt, base
         return base, base, alt
-    return quest & 0x3, 1, 3
+    return quest & 3, 1, 3
 
 
 def choose_menu_terrain_slots(
