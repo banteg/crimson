@@ -3287,8 +3287,6 @@ class LightingDebugView:
             )
 
         resources = self._runtime.render_resources.resources
-        if resources is None:
-            return
         mouse = rl.get_mouse_position()
         draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 

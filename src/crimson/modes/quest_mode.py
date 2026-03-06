@@ -779,8 +779,6 @@ class QuestMode(BaseGameplayMode):
         assets = self._perk_menu_assets
         cursor_tex = assets.cursor if assets is not None else None
         resources = self.render_resources.resources
-        if resources is None:
-            return
         mouse_pos = self._ui_mouse
         draw_menu_cursor(
             resources.texture(TextureId.PARTICLES),
