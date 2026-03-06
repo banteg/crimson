@@ -58,7 +58,6 @@ from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_playe
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanFramePolicy,
     LanSession,
     LanStepAction,
 )
@@ -235,19 +234,12 @@ class QuestMode(BaseGameplayMode):
     def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
-    def _lan_frame_policy(self) -> LanFramePolicy:
-        return LanFramePolicy(
-            prepare_frame=self._quest_prepare_lan_frame,
-            on_tick_applied=self._quest_on_tick_applied,
-            on_paused=self._quest_on_lan_paused,
-        )
-
-    def _quest_on_lan_paused(self, dt: float) -> None:
+    def _lan_on_paused(self, dt: float) -> None:
         self._tick_death_timers(dt, rate=1.0)
         if self._death_transition_ready():
             self._close_failed_run()
 
-    def _quest_prepare_lan_frame(
+    def _lan_prepare_frame(
         self,
         role: str,
         dt_ui_ms: float,
@@ -259,7 +251,7 @@ class QuestMode(BaseGameplayMode):
         session.gore_disabled = int(self._deterministic_gore_disabled())
         return True
 
-    def _quest_on_tick_applied(
+    def _lan_on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         frame_tick_index: int | None,
@@ -705,7 +697,7 @@ class QuestMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._quest_on_tick_applied(tick, None, tick_dt)
+            action = self._lan_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:

@@ -37,7 +37,6 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
-    LanFramePolicy,
     LanSession,
     LanStepAction,
 )
@@ -255,13 +254,7 @@ class RushMode(BaseGameplayMode):
     def _lan_match_session(self) -> DeterministicSession | None:
         return self._sim_session
 
-    def _lan_frame_policy(self) -> LanFramePolicy:
-        return LanFramePolicy(
-            prepare_frame=self._rush_prepare_lan_frame,
-            on_tick_applied=self._rush_on_tick_applied,
-        )
-
-    def _rush_prepare_lan_frame(
+    def _lan_prepare_frame(
         self,
         role: str,
         dt_ui_ms: float,
@@ -273,7 +266,7 @@ class RushMode(BaseGameplayMode):
         session.gore_disabled = int(self._deterministic_gore_disabled())
         return True
 
-    def _rush_on_tick_applied(
+    def _lan_on_tick_applied(
         self,
         tick: DeterministicSessionTick,
         frame_tick_index: int | None,
@@ -340,7 +333,7 @@ class RushMode(BaseGameplayMode):
 
         def _on_tick(tick, tick_index: int | None) -> bool:
             _ = tick_index
-            action = self._rush_on_tick_applied(tick, None, tick_dt)
+            action = self._lan_on_tick_applied(tick, None, tick_dt)
             return action != "continue"
 
         def _on_checkpoint(tick_index: int, tick) -> None:
