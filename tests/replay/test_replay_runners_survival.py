@@ -75,7 +75,7 @@ def test_survival_runner_menu_open_allows_same_tick_perk_pick() -> None:
     assert result.ticks == 1
 
 
-def test_survival_runner_checkpoints_capture_rng_marks() -> None:
+def test_survival_runner_checkpoints_capture_debug_fields() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
     checkpoints = []
@@ -88,26 +88,6 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
 
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
     for ckpt in checkpoints:
-        assert {
-            "before_world_step",
-            "gw_begin",
-            "gw_after_weapon_refresh",
-            "gw_after_perks_rebuild",
-            "gw_after_time_scale",
-            "after_world_step",
-            "after_stage_spawns",
-            "after_wave_spawns",
-        }.issubset(ckpt.rng_marks.keys())
-        assert {
-            "ws_begin",
-            "ws_after_particles_update",
-            "ws_after_sprite_effects",
-            "ws_after_projectiles",
-            "ws_after_bonus_update",
-            "ws_after_sfx_queue_merge",
-            "ws_after_player_damage_sfx",
-            "ws_after_sfx",
-        }.issubset(ckpt.rng_marks.keys())
         assert isinstance(ckpt.events.hit_count, int)
         assert isinstance(ckpt.events.pickup_count, int)
         assert isinstance(ckpt.events.sfx_count, int)
@@ -117,17 +97,25 @@ def test_survival_runner_checkpoints_capture_rng_marks() -> None:
 def test_survival_runner_trace_rng_captures_presentation_marks() -> None:
     _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
     replay = rec.finish()
-    checkpoints = []
+    marks_by_tick: dict[int, dict[str, int]] = {}
+
+    def _observer(
+        tick_index: int,
+        _world: object,
+        _elapsed_ms: float,
+        _events: object,
+        rng_marks: dict[str, int],
+    ) -> None:
+        marks_by_tick[int(tick_index)] = dict(rng_marks)
 
     _run_verify_playback(
         replay,
         trace_rng=True,
-        checkpoints_out=checkpoints,
-        checkpoint_ticks={0},
+        tick_trace_observer=_observer,
     )
 
-    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0]
-    assert checkpoints[0].rng_marks["ps_draws_total"] >= 0
+    assert sorted(marks_by_tick.keys()) == [0]
+    assert marks_by_tick[0]["ps_draws_total"] >= 0
 
 
 def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:

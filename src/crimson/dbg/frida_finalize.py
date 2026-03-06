@@ -22,7 +22,6 @@ from ..sim.bootstrap import run_terrain_bootstrap
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
 from .payloads import BuiltinObject
-from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS,
@@ -42,7 +41,7 @@ _GAME_MODE_SURVIVAL = int(GameMode.SURVIVAL)
 _GAME_MODE_RUSH = int(GameMode.RUSH)
 _TERRAIN_BOOTSTRAP_MODES = {_GAME_MODE_SURVIVAL, _GAME_MODE_RUSH}
 _BOOTSTRAP_KINDS: set[BootstrapKind] = {"none", "terrain_v1"}
-_SUPPORTED_CAPTURE_FORMAT_VERSION = 9
+_SUPPORTED_CAPTURE_FORMAT_VERSION = 10
 _SUPPORTED_JSONL_SCHEMA_VERSION = 1
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
@@ -65,7 +64,6 @@ class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
     timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
 
@@ -296,30 +294,11 @@ def _canonical_channels_payload(
     local_tick: int,
     field: str,
 ) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
-    checkpoint = msgspec.structs.replace(
-        channels.checkpoint,
-        tick_index=int(local_tick),
-    )
-    expected_rng_marks = canonical_rng_marks(
-        rng_state=int(checkpoint.rng_state),
-        rng_stream=channels.rng_stream,
-    )
-    if dict(checkpoint.rng_marks) != expected_rng_marks:
-        raise FridaFinalizeError(
-            f"{field}.checkpoint.rng_marks must match canonical rng marks; "
-            "recapture with updated gameplay_diff_capture.js",
-        )
-    if dict(channels.rng_marks) != expected_rng_marks:
-        raise FridaFinalizeError(
-            f"{field}.rng_marks must match canonical rng marks; "
-            "recapture with updated gameplay_diff_capture.js",
-        )
-    checkpoint = msgspec.structs.replace(checkpoint, rng_marks=dict(expected_rng_marks))
+    checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
     normalized = _TickChannels(
         checkpoint=checkpoint,
         sim_state=channels.sim_state,
         entity_samples=channels.entity_samples,
-        rng_marks=dict(expected_rng_marks),
         rng_stream=list(channels.rng_stream),
         timing_samples=list(channels.timing_samples),
     )
@@ -327,7 +306,6 @@ def _canonical_channels_payload(
         checkpoint=normalized.checkpoint,
         sim_state=normalized.sim_state,
         entity_samples=normalized.entity_samples,
-        rng_marks=dict(normalized.rng_marks),
         rng_stream=list(normalized.rng_stream),
         timing_samples=list(normalized.timing_samples),
     )

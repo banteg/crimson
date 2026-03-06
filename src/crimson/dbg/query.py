@@ -11,7 +11,6 @@ from .channel_helpers import (
     checkpoint_channel,
     entity_rows,
     entity_samples_channel,
-    rng_marks_channel_required,
 )
 from .payloads import BuiltinObject, BuiltinValue, coerce_builtin_value, to_builtin_object
 from .schema import TickRecord
@@ -185,7 +184,6 @@ def _event_type_counts(row: TickRecord) -> dict[str, int]:
 def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
     checkpoint_obj = checkpoint_channel(row)
     checkpoint = to_builtin_object(checkpoint_obj, field="checkpoint") if checkpoint_obj is not None else {}
-    rng_marks = dict(rng_marks_channel_required(row))
     samples = entity_samples_channel(row)
     if samples is None:
         entity_counts = {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
@@ -210,7 +208,6 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
             "mode_id": row.mode_id,
             "phase_markers": list(row.phase_markers),
             "checkpoint": checkpoint,
-            "rng_marks": rng_marks,
             "entity_counts": entity_counts,
             "event_count_total": event_count_total,
             "top_event_types": top_event_types,

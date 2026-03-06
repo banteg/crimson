@@ -33,7 +33,6 @@ from .canonical_channels import (
     bonus_timer_ms,
 )
 from .payloads import BuiltinObject
-from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS,
@@ -391,20 +390,11 @@ def _record_replay_to_trace_python(
         entity_samples_obj = entity_samples_by_tick[tick_index]
         sim_state_obj = sim_state_by_tick[tick_index]
         rng_stream = list(rng_stream_by_tick[tick_index])
-        trace_rng_marks = canonical_rng_marks(
-            rng_state=int(checkpoint.rng_state),
-            rng_stream=rng_stream,
-        )
-        trace_checkpoint = msgspec.structs.replace(
-            checkpoint,
-            rng_marks=dict(trace_rng_marks),
-        )
 
         channels = ReplayTickChannels(
-            checkpoint=trace_checkpoint,
+            checkpoint=checkpoint,
             sim_state=sim_state_obj,
             entity_samples=entity_samples_obj,
-            rng_marks=dict(trace_rng_marks),
             rng_stream=rng_stream,
             timing_samples=[],
         )

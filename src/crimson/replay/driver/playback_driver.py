@@ -384,7 +384,6 @@ class PlaybackDriver:
                 if bool(use_world_step_creature_count)
                 else None
             ),
-            rng_marks=dict(tick_result.payload.rng_marks),
             deaths=tick_result.payload.step.events.deaths,
             events=tick_result.payload.step.events,
         )

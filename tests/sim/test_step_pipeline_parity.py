@@ -36,7 +36,7 @@ from tests.support.world_runtime import WorldRuntimeHost
 
 def _checkpoint_state_projection(checkpoint: ReplayCheckpoint) -> dict[str, object]:
     obj = msgspec.to_builtins(checkpoint)
-    for key in ("elapsed_ms", "rng_state", "rng_marks", "deaths", "perk", "events"):
+    for key in ("elapsed_ms", "rng_state", "deaths", "perk", "events"):
         obj.pop(key, None)
     return obj
 
@@ -116,7 +116,6 @@ def _live_survival_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
                 elapsed_ms=float(tick.elapsed_ms),
-                rng_marks=dict(tick.rng_marks),
                 deaths=tick.step.events.deaths,
                 events=tick.step.events,
             ),
@@ -178,7 +177,6 @@ def _live_rush_checkpoints(replay: Replay) -> list[ReplayCheckpoint]:
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
                 elapsed_ms=float(tick.elapsed_ms),
-                rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
                 events=step.events,
             ),
@@ -262,7 +260,6 @@ def _live_quest_checkpoints(replay: Replay, *, spawn_entries: tuple) -> list[Rep
                 tick_index=int(tick_index),
                 world=world.sim_world.world_state,
                 elapsed_ms=float(quest_spawn_state.spawn_timeline_ms),
-                rng_marks=dict(tick.rng_marks),
                 deaths=step.events.deaths,
                 events=step.events,
             ),

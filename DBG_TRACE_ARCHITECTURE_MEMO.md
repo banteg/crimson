@@ -160,7 +160,6 @@ The required channel list today is:
 - `checkpoint`
 - `sim_state`
 - `entity_samples`
-- `rng_marks`
 - `rng_stream`
 - `timing_samples`
 

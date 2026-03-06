@@ -9,40 +9,12 @@ from ..replay.checkpoints import ReplayCheckpoint
 from .payloads import BuiltinObject, to_builtin_object
 from .strict_compare import strict_mismatch_payload
 
-DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
-    "before_world_step",
-    "gw_begin",
-    "gw_after_weapon_refresh",
-    "gw_after_perks_rebuild",
-    "gw_after_time_scale",
-    "ws_begin",
-    "ws_after_perk_effects",
-    "ws_after_effects_update",
-    "ws_after_creatures",
-    "ws_after_projectiles",
-    "ws_after_secondary_projectiles",
-    "ws_after_particles_update",
-    "ws_after_sprite_effects",
-    "ws_after_particles",
-    "ws_after_player_update_p0",
-    "ws_after_player_update",
-    "ws_after_bonus_update",
-    "ws_after_progression",
-    "ws_after_sfx_queue_merge",
-    "ws_after_player_damage_sfx",
-    "ws_after_sfx",
-    "after_world_step",
-    "after_stage_spawns",
-    "after_wave_spawns",
-    "after_rush_spawns",
-)
 
 class ReplayDiffFailure(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
     expected: ReplayCheckpoint
     actual: ReplayCheckpoint | None = None
-    first_rng_mark: str | None = None
 
 
 class ReplayDiffResult(msgspec.Struct, frozen=True):
@@ -65,7 +37,7 @@ def _checkpoint_to_obj(
 ) -> BuiltinObject:
     obj = to_builtin_object(checkpoint, field="checkpoint")
     if not include_rng_fields:
-        for key in ("rng_state", "rng_marks"):
+        for key in ("rng_state",):
             obj.pop(key, None)
     return obj
 
@@ -89,8 +61,6 @@ def checkpoint_deepdiff(
 def compare_checkpoints(
     expected: Sequence[ReplayCheckpoint],
     actual: Sequence[ReplayCheckpoint],
-    *,
-    rng_mark_order: Sequence[str] = DEFAULT_RNG_MARK_ORDER,
 ) -> ReplayDiffResult:
     actual_by_tick = {int(ckpt.tick_index): ckpt for ckpt in actual}
     first_rng_only_tick: int | None = None
@@ -123,20 +93,6 @@ def compare_checkpoints(
                 first_rng_only_tick = tick
             continue
 
-        mark_keys = sorted({*exp.rng_marks.keys(), *act.rng_marks.keys()})
-        mark_mismatch: list[str] = []
-        for key in mark_keys:
-            if key in exp.rng_marks:
-                exp_mark = int(exp.rng_marks[key])
-            else:
-                exp_mark = -1
-            if key in act.rng_marks:
-                act_mark = int(act.rng_marks[key])
-            else:
-                act_mark = -1
-            if exp_mark != act_mark:
-                mark_mismatch.append(key)
-        first_mark = next((key for key in rng_mark_order if key in mark_mismatch), mark_mismatch[0] if mark_mismatch else None)
         return ReplayDiffResult(
             ok=False,
             checked_count=checked_count,
@@ -146,7 +102,6 @@ def compare_checkpoints(
                 tick_index=tick,
                 expected=exp,
                 actual=act,
-                first_rng_mark=first_mark,
             ),
         )
 

@@ -6,14 +6,13 @@ from pathlib import Path
 import pytest
 
 from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_to_traces
-from crimson.dbg.rng import canonical_rng_marks
 from crimson.dbg.trace import load_trace
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import WEAPON_USAGE_COUNT
 from crimson.sim.bootstrap import run_terrain_bootstrap
 from grim.rand import CrtRand
 
-CAPTURE_FORMAT_VERSION = 9
+CAPTURE_FORMAT_VERSION = 10
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -214,21 +213,10 @@ def _channels_stub(
     projectiles: list[dict[str, object]] | None = None,
     secondary_projectiles: list[dict[str, object]] | None = None,
     checkpoint_overrides: dict[str, object] | None = None,
-    rng_marks: dict[str, int] | None = None,
 ) -> dict[str, object]:
     checkpoint = _checkpoint_stub(tick_index=int(tick_index), elapsed_ms=int(elapsed_ms))
     if checkpoint_overrides:
         checkpoint.update(dict(checkpoint_overrides))
-    if rng_marks is None:
-        rng_state_obj = checkpoint.get("rng_state", -1)
-        assert isinstance(rng_state_obj, int)
-        marks = canonical_rng_marks(
-            rng_state=int(rng_state_obj),
-            rng_stream=[],
-        )
-    else:
-        marks = dict(rng_marks)
-    checkpoint["rng_marks"] = dict(marks)
     return {
         "checkpoint": checkpoint,
         "sim_state": _sim_state_stub(
@@ -241,7 +229,6 @@ def _channels_stub(
             projectiles=projectiles,
             secondary_projectiles=secondary_projectiles,
         ),
-        "rng_marks": dict(marks),
         "rng_stream": [],
         "timing_samples": [],
     }
@@ -608,7 +595,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
     ]
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -635,12 +622,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
                         "perk_pending": 0,
                         "players": [],
                         "bonus_timers": {},
-                        "rng_marks": {
-                            "rand_calls": 3,
-                            "rand_last": 99,
-                            "rand_hash": "0xdeadbeef",
-                            "rand_head": [],
-                        },
                     },
                     "rng_marks": {
                         "rand_calls": 3,
@@ -655,7 +636,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_non_int_checkpoint_rng_marks(tmp
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="invalid capture row: Expected `int`"):
+    with pytest.raises(FridaFinalizeError, match="invalid capture row"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -764,7 +745,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 9"):
+    with pytest.raises(FridaFinalizeError, match="unsupported capture_format_version=6; expected 10"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 

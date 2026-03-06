@@ -195,7 +195,6 @@ def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert "channels=" in result.output
     assert "checkpoint" in result.output
-    assert "rng_marks" in result.output
     assert "rng_stream" in result.output
     assert "sim_state" in result.output
     assert "entity_samples" in result.output
@@ -204,7 +203,6 @@ def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
         tick0 = trace.tick(0)
         assert tick0 is not None
         assert tick0.channels.checkpoint.tick_index == 0
-        assert isinstance(tick0.channels.rng_marks, dict)
         assert isinstance(tick0.channels.rng_stream, list)
         assert tick0.channels.sim_state is not None
         assert tick0.channels.entity_samples is not None
@@ -221,7 +219,6 @@ def test_dbg_record_uses_canonical_channels(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert "checkpoint" in result.output
-    assert "rng_marks" in result.output
     assert "rng_stream" in result.output
     assert "sim_state" in result.output
     assert "entity_samples" in result.output

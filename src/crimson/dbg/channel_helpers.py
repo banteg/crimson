@@ -52,11 +52,6 @@ def entity_samples_channel_required(row: TickRecord | None) -> EntitySamplesSnap
 def rng_stream_channel_required(row: TickRecord | None) -> list[RngStreamRow]:
     return list(_require_row(row, channel_name="rng_stream").channels.rng_stream)
 
-
-def rng_marks_channel_required(row: TickRecord | None) -> dict[str, int]:
-    return dict(_require_row(row, channel_name="rng_marks").channels.rng_marks)
-
-
 def timing_samples_channel_required(row: TickRecord | None) -> list[TimingSampleRow]:
     return list(_require_row(row, channel_name="timing_samples").channels.timing_samples)
 

@@ -265,7 +265,6 @@ def cmd_dbg_tick(
         return
 
     checkpoint = _as_dict(payload.get("checkpoint"))
-    rng_marks = _as_dict(payload.get("rng_marks"))
     entity_counts = _as_dict(payload.get("entity_counts"))
     top_events = payload.get("top_event_types")
     top_events_text = ",".join(str(item) for item in top_events) if isinstance(top_events, list) else ""
@@ -291,7 +290,6 @@ def cmd_dbg_tick(
         + " perk_pending="
         + str(checkpoint.get("perk_pending")),
     )
-    typer.echo("rng_marks=" + ",".join(sorted(str(key) for key in rng_marks.keys())))
     typer.echo(
         "entity_counts "
         + "creatures="
@@ -458,8 +456,6 @@ def cmd_dbg_focus(
         + " checkpoint_diff_count="
         + str(payload.get("checkpoint_diff_count")),
     )
-    rng_marks = _as_dict(payload.get("rng_marks"))
-    typer.echo("first_rng_mark=" + str(rng_marks.get("first_mismatch_mark")))
     rng_stream = _as_dict(payload.get("rng_stream"))
     typer.echo(
         "rng_stream "

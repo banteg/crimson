@@ -55,7 +55,6 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
             perk_pending=0,
             players=[],
             bonus_timers={},
-            rng_marks={},
             deaths=[
                 ReplayDeathLedgerEntry(
                     creature_index=3,
@@ -128,7 +127,6 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
             ],
             bonuses=[],
         ),
-        rng_marks={},
         rng_stream=[],
         timing_samples=[],
     )

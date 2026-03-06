@@ -44,13 +44,6 @@ def focus_tick(
 
     checkpoint_diff = checkpoint_deepdiff(expected_checkpoint, candidate_checkpoint)
 
-    expected_rng = {str(key): int(value) for key, value in expected_checkpoint.rng_marks.items()}
-    candidate_rng = {str(key): int(value) for key, value in candidate_checkpoint.rng_marks.items()}
-    mismatching_rng = [key for key in sorted(set(expected_rng) | set(candidate_rng)) if expected_rng.get(key) != candidate_rng.get(key)]
-    first_rng_mark = None
-    if mismatching_rng:
-        first_rng_mark = mismatching_rng[0]
-
     rng_ok, rng_stream_detail = compare_rng_stream(
         rng_stream_channel_required(expected_row),
         rng_stream_channel_required(candidate_row),
@@ -85,7 +78,6 @@ def focus_tick(
 
     diverged = bool(
         checkpoint_diff is not None
-        or mismatching_rng
         or not bool(rng_stream.get("ok"))
         or entity_diverged
         or not entity_samples_ok
@@ -105,12 +97,6 @@ def focus_tick(
                     "pretty": checkpoint_diff.pretty,
                 }
             ),
-            "rng_marks": {
-                "first_mismatch_mark": first_rng_mark,
-                "mismatching_marks": mismatching_rng,
-                "expected": expected_rng,
-                "candidate": candidate_rng,
-            },
             "rng_stream": rng_stream,
             "entity_presence": entity_presence,
             "entity_samples": {

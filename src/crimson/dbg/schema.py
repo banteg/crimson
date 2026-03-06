@@ -10,14 +10,13 @@ from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSna
 
 TRACE_MAGIC = b"crimson_debug_trace_v1\n"
 TRACE_FORMAT_VERSION = 1
-TRACE_SCHEMA_VERSION = 6
+TRACE_SCHEMA_VERSION = 7
 SUPPORTED_TRACE_SCHEMA_VERSIONS = frozenset((TRACE_SCHEMA_VERSION,))
 
 TRACE_REQUIRED_CHANNELS = (
     "checkpoint",
     "sim_state",
     "entity_samples",
-    "rng_marks",
     "rng_stream",
     "timing_samples",
 )
@@ -56,7 +55,6 @@ class ReplayTickChannels(msgspec.Struct):
     checkpoint: ReplayCheckpoint
     sim_state: SimStateSnapshot
     entity_samples: EntitySamplesSnapshot
-    rng_marks: dict[str, int] = msgspec.field(default_factory=dict)
     rng_stream: list[RngStreamRow] = msgspec.field(default_factory=list)
     timing_samples: list[TimingSampleRow] = msgspec.field(default_factory=list)
 

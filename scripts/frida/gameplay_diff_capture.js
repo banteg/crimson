@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 9;
+const CAPTURE_FORMAT_VERSION = 10;
 const FRIDA_JSONL_SCHEMA_VERSION = 1;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -1042,24 +1042,6 @@ function runPlayerCountFromTick(tickObj) {
   return Math.max(1, outState.playerCountResolved | 0);
 }
 
-function canonicalRngMarksFromStream(checkpoint, rngStreamRows) {
-  const rows = Array.isArray(rngStreamRows) ? rngStreamRows : [];
-  const callsTotal = rows.length | 0;
-
-  const firstRow = rows.length > 0 ? rows[0] : null;
-  const lastRow = rows.length > 0 ? rows[rows.length - 1] : null;
-  const checkpointRngState = intOr(checkpoint && checkpoint.rng_state, -1);
-
-  return {
-    calls_total: callsTotal | 0,
-    first_value_15: intOr(firstRow && firstRow.value_15, -1),
-    last_value_15: intOr(lastRow && lastRow.value_15, -1),
-    first_state_before_u32: intOr(firstRow && firstRow.state_before_u32, -1),
-    last_state_after_u32: intOr(lastRow && lastRow.state_after_u32, -1),
-    checkpoint_rng_state: checkpointRngState | 0,
-  };
-}
-
 function numberOr(value, fallback) {
   const parsed = captureNumber(value);
   return parsed == null ? fallback : parsed;
@@ -1424,10 +1406,8 @@ function buildTraceTickRow(tickObj) {
   }
   const rngStream = rngStreamFromTick(tickObj);
   const timingSamples = timingSamplesFromTick(tickObj);
-  const rngMarks = canonicalRngMarksFromStream(checkpoint, rngStream);
   checkpoint.state_hash = "";
   checkpoint.command_hash = "";
-  checkpoint.rng_marks = rngMarks;
   const modeId = tickModeId(tickObj);
   if (modeId < 0) {
     return emitCaptureContractError("invalid_tick_mode_id", tickObj);
@@ -1493,7 +1473,6 @@ function buildTraceTickRow(tickObj) {
     replay_inputs: replayInputs,
     channels: {
       checkpoint: checkpoint,
-      rng_marks: rngMarks,
       rng_stream: rngStream,
       timing_samples: timingSamples,
       sim_state: simState,
@@ -4057,7 +4036,6 @@ function finalizeTick() {
         : [],
     },
     bonus_timers: bonusTimers,
-    rng_marks: {},
     deaths: checkpointDeathsFromEventHeads(tick.event_heads),
     perk: perkSnapshot,
     events: eventSummary,

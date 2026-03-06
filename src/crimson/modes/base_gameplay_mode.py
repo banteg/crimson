@@ -770,7 +770,6 @@ class BaseGameplayMode:
         tick_index: int,
         *,
         force: bool = False,
-        rng_marks: dict[str, int] | None = None,
         deaths: list[object] | tuple[object, ...] | None = None,
         events: object | None = None,
     ) -> None:
@@ -788,7 +787,6 @@ class BaseGameplayMode:
                 tick_index=int(tick_index),
                 world=self.sim_world.world_state,
                 elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
-                rng_marks=rng_marks,
                 deaths=deaths,
                 events=events,
             ),
@@ -1583,7 +1581,6 @@ class BaseGameplayMode:
         world_events = tick.step.events
         self._record_replay_checkpoint(
             int(tick_index),
-            rng_marks=tick.rng_marks,
             deaths=world_events.deaths,
             events=world_events,
         )
