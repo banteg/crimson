@@ -12,7 +12,7 @@ from typing import cast
 import pytest
 from PIL import Image, ImageChops, ImageStat
 
-from grim.assets import TextureAsset, _load_texture_asset_from_bytes, load_paq_entries
+from grim.assets import _load_texture_asset_from_bytes, load_paq_entries
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
@@ -131,21 +131,21 @@ def raylib_context() -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def terrain_textures(raylib_context) -> Iterator[dict[int, TextureAsset]]:
+def terrain_textures(raylib_context) -> Iterator[dict[int, rl.Texture]]:
     if not PAQ_PATH.exists():
         pytest.skip(f"missing game assets: {PAQ_PATH}")
     entries = load_paq_entries(PAQ_DIR)
     assets = {}
     for terrain_id, rel_path in TEXTURE_PATHS.items():
         asset = _load_texture_asset_from_bytes(rel_path, entries.get(rel_path))
-        if asset.texture is None:
+        if asset is None:
             pytest.skip(f"missing terrain texture: {rel_path}")
         assets[terrain_id] = asset
     try:
         yield assets
     finally:
-        for asset in assets.values():
-            asset.unload()
+        for texture in assets.values():
+            rl.unload_texture(texture)
 
 
 def _export_render_target(target: rl.RenderTexture, out_path: Path) -> None:
@@ -173,7 +173,7 @@ def _diff_summary(expected: Image.Image, actual: Image.Image) -> tuple[int, floa
     return int(max_delta), float(mean_delta)
 
 
-def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset]) -> None:
+def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) -> None:
     cases = _load_cases()
     if not cases:
         pytest.skip("missing ground dump fixtures")
@@ -185,12 +185,9 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset]) 
         fixture_path = FIXTURE_DIR / case.fixture
         if not fixture_path.exists():
             pytest.skip(f"missing fixture: {fixture_path}")
-        base = terrain_textures[case.tex0_index].texture
-        overlay = terrain_textures[case.tex1_index].texture
-        detail = terrain_textures[case.tex2_index].texture
-        assert base is not None
-        assert overlay is not None
-        assert detail is not None
+        base = terrain_textures[case.tex0_index]
+        overlay = terrain_textures[case.tex1_index]
+        detail = terrain_textures[case.tex2_index]
         renderer = GroundRenderer(
             texture=base,
             overlay=overlay,
