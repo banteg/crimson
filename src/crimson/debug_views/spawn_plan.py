@@ -20,7 +20,7 @@ from ..creatures.spawn import (
     spawn_id_label,
     tick_spawn_slot,
 )
-from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
+from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
@@ -58,7 +58,7 @@ class _PlanSummary(msgspec.Struct, frozen=True):
     primary_idx: int
 
 
-class SpawnPlanView:
+class SpawnPlanView(RuntimeResourcesDebugViewMixin):
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -81,20 +81,18 @@ class SpawnPlanView:
         self._sim_time = 0.0
         self._sim_slots: list[SpawnSlotInit] = []
         self._sim_events: list[str] = []
-        self._runtime_resources_owned = False
 
         self._rebuild_plan()
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
+        self._open_runtime_resources()
         self._small = load_small_font(self._assets_root)
 
     def close(self) -> None:
         if self._small is not None:
             self._small = None
-        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
-        self._runtime_resources_owned = False
+        self._close_runtime_resources()
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
         label_text = f"{label}: "

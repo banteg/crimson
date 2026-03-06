@@ -11,7 +11,7 @@ from ..persistence.highscores import HighScoreRecord, scores_path_for_config, wr
 from ..screens.results.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
 from ..weapons import WeaponId
-from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
+from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from .registry import register_view
 
 _BASE_DIR = Path("artifacts") / "game_over_debug"
@@ -47,7 +47,7 @@ def _seed_highscores(config: CrimsonConfig) -> None:
     write_highscore_records(path, records)
 
 
-class GameOverDebugView:
+class GameOverDebugView(RuntimeResourcesDebugViewMixin):
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         data = default_crimson_cfg_data()
@@ -67,11 +67,10 @@ class GameOverDebugView:
         self._qualifies = True
 
         self.close_requested = False
-        self._runtime_resources_owned = False
 
     def open(self) -> None:
         self.close_requested = False
-        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
+        self._open_runtime_resources()
         rl.hide_cursor()
         self._hud = load_hud_assets(self._assets_root)
         _seed_highscores(self._config)
@@ -83,8 +82,7 @@ class GameOverDebugView:
         self._ui.close()
         if self._hud is not None:
             self._hud = None
-        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
-        self._runtime_resources_owned = False
+        self._close_runtime_resources()
 
     def _reset_record(self) -> None:
         record = HighScoreRecord.blank()

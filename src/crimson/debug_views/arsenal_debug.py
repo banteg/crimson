@@ -18,6 +18,14 @@ from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
+from ..weapon_runtime.fire_recipes import (
+    MultiPlasmaFanMode,
+    ParticleStreamMode,
+    PrimaryPelletsMode,
+    SecondaryShotMode,
+    SwarmerDumpMode,
+    resolve_fire_recipe,
+)
 from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
@@ -25,7 +33,7 @@ from ..weapons import (
     projectile_type_id_for_weapon_id,
 )
 from ..world import WorldRuntime
-from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
+from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -55,18 +63,6 @@ DEFAULT_SPAWN_IDS = (
     SpawnId.SPIDER_SP2_RANDOM_35,
 )
 
-SPECIAL_PROJECTILES: dict[int, str] = {
-    9: "particle style 0 (plasma rifle)",
-    13: "secondary type 2 (seeker rockets)",
-    14: "secondary type 2 (plasma shotgun)",
-    16: "particle style 1 (hr flamer)",
-    17: "secondary type 2 (mini-rocket swarmers)",
-    18: "secondary type 4 (rocket minigun)",
-    19: "secondary type 4 (pulse gun)",
-    43: "particle style 8 (rainbow gun)",
-}
-
-
 def _fmt_float(value: float | None, *, digits: int = 3) -> str:
     if value is None:
         return "—"
@@ -94,7 +90,7 @@ def _projectile_type_label(type_id: int) -> str:
     return f"{name} (id {type_id})"
 
 
-class ArsenalDebugView:
+class ArsenalDebugView(RuntimeResourcesDebugViewMixin):
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -112,7 +108,6 @@ class ArsenalDebugView:
         self._audio: AudioState | None = None
         self._audio_rng: random.Random | None = None
         self._console: ConsoleState | None = None
-        self._runtime_resources_owned = False
 
         self._weapon_ids = sorted({int(entry.weapon_id) for entry in WEAPON_TABLE})
         self._weapon_index = 0
@@ -293,13 +288,33 @@ class ArsenalDebugView:
         self._runtime.reset_tick_runner()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
-        special = SPECIAL_PROJECTILES.get(int(weapon_id))
-        if special is not None:
-            return special
+        weapon = WEAPON_BY_ID[weapon_id]
+        recipe = resolve_fire_recipe(
+            weapon_id,
+            pellet_count=int(weapon.pellet_count),
+            fire_bullets_active=False,
+        )
+        if recipe is None:
+            return "unsupported/unmapped"
+        match recipe.mode:
+            case PrimaryPelletsMode(type_id=type_id):
+                if type_id is None:
+                    return "unsupported/unmapped"
+                return _projectile_type_label(int(type_id))
+            case SecondaryShotMode(type_id=type_id):
+                return f"secondary type {int(type_id)}"
+            case ParticleStreamMode(style=style, slow=slow):
+                if style is None:
+                    return "slow particle stream" if slow else "particle stream"
+                return f"particle style {int(style)}"
+            case MultiPlasmaFanMode():
+                return "plasma fan"
+            case SwarmerDumpMode():
+                return "secondary swarm dump"
         try:
             type_id = projectile_type_id_for_weapon_id(weapon_id)
         except ValueError:
-            return "particle/secondary"
+            return "unsupported/unmapped"
         return _projectile_type_label(int(type_id))
 
     def _weapon_debug_lines(self) -> list[str]:
@@ -332,7 +347,7 @@ class ArsenalDebugView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
+        self._open_runtime_resources()
         bootstrap = init_view_audio(self._assets_root)
         self._runtime.config = bootstrap.config
         self._console = bootstrap.console
@@ -365,8 +380,7 @@ class ArsenalDebugView:
         self._runtime.audio_rng = None
         self._runtime.close_runtime()
         self._aim_texture = None
-        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
-        self._runtime_resources_owned = False
+        self._close_runtime_resources()
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested

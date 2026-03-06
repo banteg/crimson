@@ -20,7 +20,7 @@ from ..ui.overlays.quest_title import (
     draw_quest_title_overlay,
     quest_title_base_scale,
 )
-from ._runtime_resources import ensure_runtime_resources_loaded, release_runtime_resources
+from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
@@ -37,26 +37,24 @@ GRIM_MONO_FILTER_NAME = "Bilinear"
 GRIM_MONO_FILTER_VALUE = rl.TextureFilter.TEXTURE_FILTER_BILINEAR
 
 
-class FontView:
+class FontView(RuntimeResourcesDebugViewMixin):
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._sample = DEFAULT_SAMPLE
-        self._runtime_resources_owned = False
 
     def close(self) -> None:
         if self._small is not None:
             self._small = None
         if self._grim_mono is not None:
             self._grim_mono = None
-        release_runtime_resources(self._assets_root, owned=self._runtime_resources_owned)
-        self._runtime_resources_owned = False
+        self._close_runtime_resources()
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._runtime_resources_owned = ensure_runtime_resources_loaded(self._assets_root)
+        self._open_runtime_resources()
         self._small = load_small_font(self._assets_root)
         self._grim_mono = load_grim_mono_font(self._assets_root)
         self._apply_grim_filter()
