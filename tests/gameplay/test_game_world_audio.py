@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from pathlib import Path
 
 import crimson.audio_router as audio_router_module
@@ -15,6 +14,7 @@ from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
+from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from tests.support.builders.session import make_session
 from tests.support.builders.tick_payload import make_tick_payload
@@ -35,7 +35,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 
@@ -76,7 +76,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 
@@ -117,7 +117,7 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
 
     player = world.sim_world.players[0]
     player.experience = 10_000
@@ -138,7 +138,7 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
 
     player = world.sim_world.players[0]
     entry = world.sim_world.state.bonus_pool.spawn_at(
@@ -160,7 +160,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
 
     player = world.sim_world.players[0]
     entry = world.sim_world.state.bonus_pool.spawn_at(
@@ -182,7 +182,7 @@ def test_world_runtime_apply_tick_batch_applies_post_apply_bonus_sfx(mocker) -> 
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
 
     batch = TickBatchResult(
         ticks_completed=1,
@@ -215,7 +215,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
 
     player = world.sim_world.players[0]
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
@@ -255,7 +255,7 @@ def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
-    world.audio_rng = random.Random(0)
+    world.audio_rng = Crand(0)
     world.audio_bridge.router.audio = world.audio
     world.audio_bridge.router.audio_rng = world.audio_rng
 

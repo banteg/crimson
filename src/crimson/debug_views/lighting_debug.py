@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import os
-import random
 import time
 from typing import TYPE_CHECKING
 
@@ -13,6 +12,7 @@ from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
@@ -1196,7 +1196,7 @@ class LightingDebugView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
         self._audio: AudioState | None = None
-        self._audio_rng: random.Random | None = None
+        self._audio_rng: Crand | None = None
         self._console: ConsoleState | None = None
 
         self._runtime = WorldRuntime(

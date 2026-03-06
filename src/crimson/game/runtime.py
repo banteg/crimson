@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime as dt
 import faulthandler
-import random
 import time
 import webbrowser
 from pathlib import Path
@@ -18,6 +17,7 @@ from grim.console import (
     register_boot_commands,
     register_core_cvars,
 )
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import View
 
@@ -257,7 +257,7 @@ def run_game(config: GameConfig) -> None:
     cfg = ensure_crimson_cfg(base_dir)
     width = cfg.screen_width if config.width is None else config.width
     height = cfg.screen_height if config.height is None else config.height
-    rng = random.Random(config.seed)
+    rng = Crand(config.seed)
     assets_dir = _resolve_assets_dir(config)
     console = create_console(base_dir, assets_dir=assets_dir)
     status = ensure_game_status(base_dir)

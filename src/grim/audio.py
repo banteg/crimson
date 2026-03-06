@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
 from pathlib import Path
 
@@ -11,6 +10,7 @@ from grim.raylib_api import rl
 from . import music, sfx
 from .config import CrimsonConfig
 from .console import ConsoleState
+from .rand import Crand
 
 
 class AudioState(msgspec.Struct):
@@ -76,7 +76,7 @@ def play_sfx(
     state: AudioState | None,
     key: str | None,
     *,
-    rng: random.Random | None = None,
+    rng: Crand | None = None,
     allow_variants: bool = True,
     reflex_boost_timer: float = 0.0,
 ) -> None:

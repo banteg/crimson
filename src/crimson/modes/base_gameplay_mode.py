@@ -16,6 +16,7 @@ from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
@@ -262,7 +263,7 @@ class BaseGameplayMode:
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
+        audio_rng: Crand | None = None,
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
@@ -625,7 +626,7 @@ class BaseGameplayMode:
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
 
-    def bind_audio(self, audio: AudioState | None, audio_rng: random.Random | None) -> None:
+    def bind_audio(self, audio: AudioState | None, audio_rng: Crand | None) -> None:
         self.audio = audio
         self.audio_rng = audio_rng
         self._world_runtime.audio = audio

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import random
 from collections.abc import Callable
 
 from grim.audio import AudioState
@@ -9,6 +8,7 @@ from grim.color import RGBA
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -57,7 +57,7 @@ class TypoShooterMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
+        audio_rng: Crand | None = None,
         session_factory: TypoSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(

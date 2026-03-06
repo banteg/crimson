@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias, runtime_checkable
 
 import msgspec
+
+from grim.rand import Crand
 
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
@@ -138,7 +139,7 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
 
     def bind_screen_fade(self, fade: "GameState | None") -> None: ...
 
-    def bind_audio(self, audio: "AudioState | None", audio_rng: random.Random | None) -> None: ...
+    def bind_audio(self, audio: "AudioState | None", audio_rng: Crand | None) -> None: ...
 
     def set_lan_runtime(
         self,
@@ -178,7 +179,7 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
 class GameState(msgspec.Struct):
     base_dir: Path
     assets_dir: Path
-    rng: random.Random
+    rng: Crand
     config: CrimsonConfig
     status: GameStatus
     console: ConsoleState

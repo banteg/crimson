@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import math
-import random
 
 from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
@@ -106,7 +106,7 @@ class ArsenalDebugView:
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
         self._audio: AudioState | None = None
-        self._audio_rng: random.Random | None = None
+        self._audio_rng: Crand | None = None
         self._console: ConsoleState | None = None
 
         self._weapon_ids = sorted({int(entry.weapon_id) for entry in WEAPON_TABLE})

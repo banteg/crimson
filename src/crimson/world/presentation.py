@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import random
-
 from grim.audio import AudioState
+from grim.rand import Crand
 
 from ..audio_router import AudioRouter
 from ..effects import FxQueue, FxQueueRotated
@@ -60,7 +59,7 @@ class PresentationLayer:
         self,
         *,
         audio: AudioState | None,
-        audio_rng: random.Random | None,
+        audio_rng: Crand | None,
         demo_mode_active: bool,
     ) -> None:
         self.audio_bridge.sync(

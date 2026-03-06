@@ -12,6 +12,7 @@ from grim.raylib_api import rl
 
 from . import paq, sfx_map
 from .console import ConsoleState
+from .rand import Crand
 
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4
@@ -233,7 +234,7 @@ def play_sfx(
     state: SfxState | None,
     key: str | None,
     *,
-    rng: random.Random | None = None,
+    rng: Crand | None = None,
     allow_variants: bool = True,
     reflex_boost_timer: float = 0.0,
 ) -> None:
@@ -275,7 +276,7 @@ def sfx_key_for_id(sfx_id: int) -> str | None:
     return sfx_map.SFX_KEY_BY_ID[sfx_id]
 
 
-def play_sfx_id(state: SfxState | None, sfx_id: int, *, rng: random.Random | None = None) -> None:
+def play_sfx_id(state: SfxState | None, sfx_id: int, *, rng: Crand | None = None) -> None:
     key = sfx_key_for_id(int(sfx_id))
     if key is None:
         return

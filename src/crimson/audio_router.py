@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.audio import AudioState, play_sfx, trigger_game_tune
+from grim.rand import Crand
 
 from .creatures.spawn import CreatureTypeId
 from .game_modes import GameMode
@@ -71,7 +71,7 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 
 class AudioRouter(msgspec.Struct):
     audio: AudioState | None = None
-    audio_rng: random.Random | None = None
+    audio_rng: Crand | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True
     reflex_boost_timer_source: Callable[[], float] | None = None

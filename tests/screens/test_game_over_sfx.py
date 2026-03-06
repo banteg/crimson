@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import time
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,6 +20,7 @@ from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.music import init_music_state
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 
@@ -98,7 +98,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
     state = GameState(
         base_dir=tmp_path,
         assets_dir=assets_dir,
-        rng=random.Random(0),
+        rng=Crand(0),
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),
@@ -154,7 +154,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     state = GameState(
         base_dir=tmp_path,
         assets_dir=assets_dir,
-        rng=random.Random(0),
+        rng=Crand(0),
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),

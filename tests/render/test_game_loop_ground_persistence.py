@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 import time
 from pathlib import Path
 from typing import cast
@@ -13,6 +12,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.gameplay_screen import GameplayScreenStub
@@ -35,7 +35,7 @@ class _ResourcesStub:
         return self._textures.get(texture_id)
 
 
-class _RngStub(random.Random):
+class _RngStub(Crand):
     def __init__(self, values: list[int]) -> None:
         super().__init__(0)
         self._values = list(values)
@@ -103,7 +103,7 @@ def _build_state(tmp_path: Path) -> GameState:
     return GameState(
         base_dir=tmp_path,
         assets_dir=assets_dir,
-        rng=random.Random(0),
+        rng=Crand(0),
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),

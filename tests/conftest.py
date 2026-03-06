@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import random
 import sys
 import time
 from collections.abc import Callable, Mapping
@@ -11,6 +10,8 @@ from typing import TYPE_CHECKING
 import msgspec
 import pytest
 from pytest_mock import MockerFixture
+
+from grim.rand import Crand
 
 TESTS_ROOT = Path(__file__).resolve().parent
 
@@ -151,7 +152,7 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameStat
         state = GameState(
             base_dir=resolved_base_dir,
             assets_dir=resolved_assets_dir,
-            rng=random.Random(int(rng_seed)),
+            rng=Crand(int(rng_seed)),
             config=cfg,
             status=game_status,
             console=create_console(resolved_base_dir, assets_dir=resolved_assets_dir),

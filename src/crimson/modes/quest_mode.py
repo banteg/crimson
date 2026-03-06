@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
 from typing import Literal, cast
 
@@ -15,6 +14,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
@@ -114,7 +114,7 @@ class QuestMode(BaseGameplayMode):
         config: CrimsonConfig | None = None,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
-        audio_rng: random.Random | None = None,
+        audio_rng: Crand | None = None,
         session_factory: QuestSessionFactory = DeterministicSession,
     ) -> None:
         super().__init__(
