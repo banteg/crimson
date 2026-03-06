@@ -5,7 +5,7 @@ import platform
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, cast
+from typing import Literal
 
 import msgspec
 
@@ -33,6 +33,7 @@ from .canonical_channels import (
     bonus_timer_ms,
 )
 from .checkpoint_codec import checkpoint_to_channel
+from .payloads import BuiltinObject, to_builtin_object, to_builtin_value
 from .rng import canonical_rng_marks
 from .schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION, TickRecord, TraceMeta, channel_versions_for
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
@@ -63,7 +64,7 @@ class _EntityGenerationState(msgspec.Struct):
         return int(self.generation_by_index[idx])
 
 
-def _fingerprint(path: Path) -> dict[str, object]:
+def _fingerprint(path: Path) -> BuiltinObject:
     stat = path.stat()
     raw = path.read_bytes()
     return {
@@ -261,7 +262,7 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
     )
 
 
-def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> dict[str, object]:
+def _build_replay_fingerprint(*, replay_path: Path, replay: Replay) -> BuiltinObject:
     replay_fingerprint = _fingerprint(replay_path)
     replay_fingerprint["tick_rate"] = replay.header.tick_rate
     replay_fingerprint["seed"] = replay.header.seed
@@ -277,7 +278,7 @@ def _build_trace_meta(
     tick_rows: list[TickRecord],
     channels_seen: set[str],
     impl: Literal["python", "zig"],
-    config_extra: dict[str, object] | None = None,
+    config_extra: BuiltinObject | None = None,
 ) -> TraceMeta:
     tick_start = min((row.tick_index for row in tick_rows), default=-1)
     tick_end = max((row.tick_index for row in tick_rows), default=-1)
@@ -392,12 +393,12 @@ def _record_replay_to_trace_python(
             rng_marks=dict(trace_rng_marks),
         )
 
-        channels: dict[str, object] = {
+        channels: BuiltinObject = {
             "checkpoint": checkpoint_to_channel(trace_checkpoint),
-            "sim_state": cast("dict[str, object]", msgspec.to_builtins(sim_state_obj)),
-            "entity_samples": cast("dict[str, object]", msgspec.to_builtins(entity_samples_obj)),
+            "sim_state": to_builtin_object(sim_state_obj, field="sim_state"),
+            "entity_samples": to_builtin_object(entity_samples_obj, field="entity_samples"),
             "rng_marks": dict(trace_rng_marks),
-            "rng_stream": msgspec.to_builtins(rng_stream),
+            "rng_stream": to_builtin_value(rng_stream, field="rng_stream"),
             "timing_samples": [],
         }
 

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
-from typing import cast
 
 from .channel_helpers import ENTITY_SAMPLE_KINDS, checkpoint_channel, entity_samples_channel
 from .diff import diff_traces
+from .payloads import BuiltinObject, BuiltinValue, builtin_object_or_empty, builtin_rows_or_empty, to_builtin_object
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -24,7 +24,7 @@ def _entity_counts(row: TickRecord | None) -> dict[str, int]:
     }
 
 
-def _checkpoint_value(row: TickRecord | None, key: str) -> object:
+def _checkpoint_value(row: TickRecord | None, key: str) -> BuiltinValue | None:
     if row is None:
         return None
     checkpoint = checkpoint_channel(row)
@@ -53,7 +53,7 @@ def _timeline_rows(
     candidate_trace: Path,
     tick_start: int,
     tick_end: int,
-) -> list[dict[str, object]]:
+) -> list[BuiltinObject]:
     with TraceReader(Path(golden_trace)) as expected, TraceReader(Path(candidate_trace)) as candidate:
         expected_rows = {
             int(row.tick_index): row
@@ -65,7 +65,7 @@ def _timeline_rows(
         }
 
     all_ticks = sorted(set(expected_rows) | set(candidate_rows))
-    out: list[dict[str, object]] = []
+    out: list[BuiltinObject] = []
     for tick in all_ticks:
         expected_row = expected_rows.get(tick)
         candidate_row = candidate_rows.get(tick)
@@ -112,14 +112,14 @@ def _default_focus_tick(
         return int(trace.footer.first_tick)
 
 
-def _render_html(*, payload: dict[str, object]) -> str:
-    rows = cast("list[dict[str, object]]", payload.get("rows", []))
+def _render_html(*, payload: BuiltinObject) -> str:
+    rows = builtin_rows_or_empty(payload.get("rows"))
     body_rows: list[str] = []
     focus_tick = payload.get("focus_tick")
     for row in rows:
         tick = row.get("tick_index")
-        expected_entities = cast("dict[str, object]", row.get("expected_entities", {}))
-        candidate_entities = cast("dict[str, object]", row.get("candidate_entities", {}))
+        expected_entities = builtin_object_or_empty(row.get("expected_entities"))
+        candidate_entities = builtin_object_or_empty(row.get("candidate_entities"))
         classes: list[str] = []
         if bool(row.get("diverged")):
             classes.append("diverged")
@@ -255,7 +255,7 @@ def write_viz_html(
     window_before: int = 64,
     window_after: int = 64,
     out_path: Path,
-) -> dict[str, object]:
+) -> BuiltinObject:
     focus_tick = (
         int(tick)
         if tick is not None
@@ -272,15 +272,18 @@ def write_viz_html(
         tick_start=left,
         tick_end=right,
     )
-    payload: dict[str, object] = {
-        "golden_trace": str(golden_trace),
-        "candidate_trace": str(candidate_trace),
-        "focus_tick": int(focus_tick),
-        "tick_start": int(left),
-        "tick_end": int(right),
-        "row_count": len(rows),
-        "rows": rows,
-    }
+    payload = to_builtin_object(
+        {
+            "golden_trace": str(golden_trace),
+            "candidate_trace": str(candidate_trace),
+            "focus_tick": int(focus_tick),
+            "tick_start": int(left),
+            "tick_end": int(right),
+            "row_count": len(rows),
+            "rows": rows,
+        },
+        field="viz_payload",
+    )
     html_text = _render_html(payload=payload)
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)

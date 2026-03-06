@@ -2,20 +2,25 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Literal, cast
+from typing import Literal
 
 import typer
+
+from ..dbg.payloads import BuiltinObject, builtin_object_or_empty, coerce_builtin_value
 
 dbg_app = typer.Typer(add_completion=False)
 
 
-def _as_dict(value: object) -> dict[str, object]:
+def _as_dict(value: object) -> BuiltinObject:
     if not isinstance(value, dict):
         return {}
-    out: dict[str, object] = {}
+    out: BuiltinObject = {}
     for key, item in value.items():
         if isinstance(key, str):
-            out[key] = item
+            try:
+                out[key] = coerce_builtin_value(item, field=f"payload.{key}")
+            except TypeError:
+                continue
     return out
 
 
@@ -82,14 +87,9 @@ def cmd_dbg_health(
         typer.echo(f"dbg health failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    tick_window_obj = summary.get("tick_window")
-    tick_window: dict[str, object] = (
-        cast("dict[str, object]", tick_window_obj) if isinstance(tick_window_obj, dict) else {}
-    )
-    metrics_obj = summary.get("metrics")
-    metrics: dict[str, object] = cast("dict[str, object]", metrics_obj) if isinstance(metrics_obj, dict) else {}
-    channels_obj = summary.get("channels_present")
-    channels: dict[str, object] = cast("dict[str, object]", channels_obj) if isinstance(channels_obj, dict) else {}
+    tick_window = builtin_object_or_empty(summary.get("tick_window"))
+    metrics = builtin_object_or_empty(summary.get("metrics"))
+    channels = builtin_object_or_empty(summary.get("channels_present"))
     issues_obj = summary.get("issues")
     issues = [str(item) for item in issues_obj] if isinstance(issues_obj, list) else []
     ok = bool(summary.get("ok_for_movement_root_cause"))

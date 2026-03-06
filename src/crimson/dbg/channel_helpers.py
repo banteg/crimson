@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, TypeVar, cast
 
 import msgspec
 
@@ -15,18 +15,27 @@ from .canonical_channels import (
     SimStateSnapshot,
     TimingSampleRow,
 )
+from .payloads import BuiltinValue, coerce_builtin_value
 from .schema import TickRecord
 from .trace import TraceError
 
 ENTITY_SAMPLE_KINDS = ("creatures", "projectiles", "secondary_projectiles", "bonuses")
 
 EntitySampleRow = CreatureEntitySample | ProjectileEntitySample | SecondaryProjectileEntitySample | BonusEntitySample
+_DecodedChannelT = TypeVar("_DecodedChannelT")
 
-def _decode_channel(value: object, *, channel_name: str, target: object) -> object:
+
+def _decode_channel(
+    value: BuiltinValue,
+    *,
+    channel_name: str,
+    target: Any,
+) -> _DecodedChannelT:
     try:
-        return msgspec.convert(value, type=target)
+        decoded = msgspec.convert(value, type=target)
     except (msgspec.ValidationError, TypeError, ValueError) as exc:
         raise TraceError(f"invalid {channel_name} channel payload") from exc
+    return cast("_DecodedChannelT", decoded)
 
 
 def _require_row(row: TickRecord | None, *, channel_name: str) -> TickRecord:
@@ -35,11 +44,11 @@ def _require_row(row: TickRecord | None, *, channel_name: str) -> TickRecord:
     return row
 
 
-def _require_channel_payload(row: TickRecord | None, *, channel_name: str) -> object:
+def _require_channel_payload(row: TickRecord | None, *, channel_name: str) -> BuiltinValue:
     record = _require_row(row, channel_name=channel_name)
     if channel_name not in record.channels:
         raise TraceError(f"missing {channel_name} channel payload")
-    return record.channels[channel_name]
+    return coerce_builtin_value(record.channels[channel_name], field=f"channels.{channel_name}")
 
 
 def checkpoint_channel(row: TickRecord | None) -> ReplayCheckpoint | None:
@@ -48,12 +57,16 @@ def checkpoint_channel(row: TickRecord | None) -> ReplayCheckpoint | None:
     payload = row.channels.get("checkpoint")
     if payload is None:
         return None
-    return cast("ReplayCheckpoint", _decode_channel(payload, channel_name="checkpoint", target=ReplayCheckpoint))
+    return _decode_channel(
+        coerce_builtin_value(payload, field="channels.checkpoint"),
+        channel_name="checkpoint",
+        target=ReplayCheckpoint,
+    )
 
 
 def checkpoint_channel_required(row: TickRecord | None) -> ReplayCheckpoint:
     payload = _require_channel_payload(row, channel_name="checkpoint")
-    return cast("ReplayCheckpoint", _decode_channel(payload, channel_name="checkpoint", target=ReplayCheckpoint))
+    return _decode_channel(payload, channel_name="checkpoint", target=ReplayCheckpoint)
 
 
 def sim_state_channel(row: TickRecord | None) -> SimStateSnapshot | None:
@@ -62,12 +75,16 @@ def sim_state_channel(row: TickRecord | None) -> SimStateSnapshot | None:
     payload = row.channels.get("sim_state")
     if payload is None:
         return None
-    return cast("SimStateSnapshot", _decode_channel(payload, channel_name="sim_state", target=SimStateSnapshot))
+    return _decode_channel(
+        coerce_builtin_value(payload, field="channels.sim_state"),
+        channel_name="sim_state",
+        target=SimStateSnapshot,
+    )
 
 
 def sim_state_channel_required(row: TickRecord | None) -> SimStateSnapshot:
     payload = _require_channel_payload(row, channel_name="sim_state")
-    return cast("SimStateSnapshot", _decode_channel(payload, channel_name="sim_state", target=SimStateSnapshot))
+    return _decode_channel(payload, channel_name="sim_state", target=SimStateSnapshot)
 
 
 def entity_samples_channel(row: TickRecord | None) -> EntitySamplesSnapshot | None:
@@ -76,36 +93,31 @@ def entity_samples_channel(row: TickRecord | None) -> EntitySamplesSnapshot | No
     payload = row.channels.get("entity_samples")
     if payload is None:
         return None
-    return cast(
-        "EntitySamplesSnapshot",
-        _decode_channel(payload, channel_name="entity_samples", target=EntitySamplesSnapshot),
+    return _decode_channel(
+        coerce_builtin_value(payload, field="channels.entity_samples"),
+        channel_name="entity_samples",
+        target=EntitySamplesSnapshot,
     )
 
 
 def entity_samples_channel_required(row: TickRecord | None) -> EntitySamplesSnapshot:
     payload = _require_channel_payload(row, channel_name="entity_samples")
-    return cast(
-        "EntitySamplesSnapshot",
-        _decode_channel(payload, channel_name="entity_samples", target=EntitySamplesSnapshot),
-    )
+    return _decode_channel(payload, channel_name="entity_samples", target=EntitySamplesSnapshot)
 
 
 def rng_stream_channel_required(row: TickRecord | None) -> list[RngStreamRow]:
     payload = _require_channel_payload(row, channel_name="rng_stream")
-    return cast("list[RngStreamRow]", _decode_channel(payload, channel_name="rng_stream", target=list[RngStreamRow]))
+    return _decode_channel(payload, channel_name="rng_stream", target=list[RngStreamRow])
 
 
 def rng_marks_channel_required(row: TickRecord | None) -> dict[str, int]:
     payload = _require_channel_payload(row, channel_name="rng_marks")
-    return cast("dict[str, int]", _decode_channel(payload, channel_name="rng_marks", target=dict[str, int]))
+    return _decode_channel(payload, channel_name="rng_marks", target=dict[str, int])
 
 
 def timing_samples_channel_required(row: TickRecord | None) -> list[TimingSampleRow]:
     payload = _require_channel_payload(row, channel_name="timing_samples")
-    return cast(
-        "list[TimingSampleRow]",
-        _decode_channel(payload, channel_name="timing_samples", target=list[TimingSampleRow]),
-    )
+    return _decode_channel(payload, channel_name="timing_samples", target=list[TimingSampleRow])
 
 
 def entity_rows(samples: EntitySamplesSnapshot, *, kind: str) -> list[EntitySampleRow]:

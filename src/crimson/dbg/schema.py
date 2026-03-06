@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Any
 
 import msgspec
 
@@ -40,12 +41,12 @@ class TraceMeta(msgspec.Struct):
     trace_format_version: int
     trace_schema_version: int
     created_utc: str
-    producer: dict[str, object]
-    source: dict[str, object]
+    producer: dict[str, Any]
+    source: dict[str, Any]
     channels: list[str]
     channel_versions: dict[str, int]
     tick_range: dict[str, int]
-    config: dict[str, object]
+    config: dict[str, Any]
 
 
 class TickRecord(msgspec.Struct):
@@ -54,7 +55,7 @@ class TickRecord(msgspec.Struct):
     dt_ms_i32: int
     mode_id: int
     phase_markers: list[str]
-    channels: dict[str, object]
+    channels: dict[str, Any]
 
 
 class TickBlock(msgspec.Struct):

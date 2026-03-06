@@ -13,6 +13,7 @@ from .channel_helpers import (
     timing_samples_channel_required,
 )
 from .checkpoint_diff import checkpoint_deepdiff
+from .payloads import BuiltinObject, to_builtin_object
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_REQUIRED_CHANNELS,
@@ -27,7 +28,7 @@ from .trace import TraceError, TraceReader, write_trace
 class TraceMismatch(msgspec.Struct, frozen=True):
     kind: str
     tick_index: int
-    detail: dict[str, object] | None = None
+    detail: BuiltinObject | None = None
 
 
 class TraceDiffReport(msgspec.Struct, frozen=True):
@@ -52,12 +53,15 @@ class _TickPair(msgspec.Struct, frozen=True):
     actual_row: TickRecord | None
 
 
-def _tick_mismatch_row(*, kind: str, channel: str, detail: dict[str, object] | None) -> dict[str, object]:
-    return {
-        "kind": str(kind),
-        "channel": str(channel),
-        "detail": (None if detail is None else msgspec.to_builtins(detail)),
-    }
+def _tick_mismatch_row(*, kind: str, channel: str, detail: BuiltinObject | None) -> BuiltinObject:
+    return to_builtin_object(
+        {
+            "kind": str(kind),
+            "channel": str(channel),
+            "detail": (None if detail is None else to_builtin_object(detail, field=f"{channel}.detail")),
+        },
+        field=f"{channel}.mismatch",
+    )
 
 
 def _first_mismatch(
@@ -79,7 +83,7 @@ def _first_mismatch(
                     tick_index=tick,
                 ),
             )
-        tick_mismatches: list[dict[str, object]] = []
+        tick_mismatches: list[BuiltinObject] = []
 
         expected = checkpoint_channel_required(pair.expected_row)
         actual = checkpoint_channel_required(pair.actual_row)
@@ -300,11 +304,11 @@ def bisect_traces(
                 tick = pair.tick_index
                 if tick < left or tick > right:
                     continue
-                channels: dict[str, object] = {}
+                channels: BuiltinObject = {}
                 if pair.expected_row is not None:
-                    channels["golden"] = msgspec.to_builtins(pair.expected_row.channels)
+                    channels["golden"] = to_builtin_object(pair.expected_row.channels, field="golden")
                 if pair.actual_row is not None:
-                    channels["candidate"] = msgspec.to_builtins(pair.actual_row.channels)
+                    channels["candidate"] = to_builtin_object(pair.actual_row.channels, field="candidate")
                 channels["focus_tick"] = tick == first_bad
                 source_row = pair.expected_row if pair.expected_row is not None else pair.actual_row
                 if source_row is None:
@@ -358,33 +362,42 @@ def bisect_traces(
         )
 
 
-def mismatch_to_json(mismatch: TraceMismatch | None) -> dict[str, object] | None:
+def mismatch_to_json(mismatch: TraceMismatch | None) -> BuiltinObject | None:
     if mismatch is None:
         return None
-    return {
-        "kind": mismatch.kind,
-        "tick_index": mismatch.tick_index,
-        "detail": (None if mismatch.detail is None else msgspec.to_builtins(mismatch.detail)),
-    }
+    return to_builtin_object(
+        {
+            "kind": mismatch.kind,
+            "tick_index": mismatch.tick_index,
+            "detail": (None if mismatch.detail is None else to_builtin_object(mismatch.detail, field="mismatch.detail")),
+        },
+        field="mismatch_json",
+    )
 
 
-def diff_report_to_json(report: TraceDiffReport) -> dict[str, object]:
-    return {
-        "schema_version": 1,
-        "status": ("ok" if report.ok else "diverged"),
-        "checked_count": report.checked_count,
-        "tick_start": report.tick_start,
-        "tick_end": report.tick_end,
-        "mismatch": mismatch_to_json(report.mismatch),
-    }
+def diff_report_to_json(report: TraceDiffReport) -> BuiltinObject:
+    return to_builtin_object(
+        {
+            "schema_version": 1,
+            "status": ("ok" if report.ok else "diverged"),
+            "checked_count": report.checked_count,
+            "tick_start": report.tick_start,
+            "tick_end": report.tick_end,
+            "mismatch": mismatch_to_json(report.mismatch),
+        },
+        field="diff_report",
+    )
 
 
-def bisect_report_to_json(report: TraceBisectReport) -> dict[str, object]:
-    return {
-        "schema_version": 1,
-        "status": ("ok" if report.ok else "diverged"),
-        "checked_count": report.checked_count,
-        "first_bad_tick": report.first_bad_tick,
-        "mismatch": mismatch_to_json(report.mismatch),
-        "repro_trace_path": (None if report.repro_trace_path is None else str(report.repro_trace_path)),
-    }
+def bisect_report_to_json(report: TraceBisectReport) -> BuiltinObject:
+    return to_builtin_object(
+        {
+            "schema_version": 1,
+            "status": ("ok" if report.ok else "diverged"),
+            "checked_count": report.checked_count,
+            "first_bad_tick": report.first_bad_tick,
+            "mismatch": mismatch_to_json(report.mismatch),
+            "repro_trace_path": (None if report.repro_trace_path is None else str(report.repro_trace_path)),
+        },
+        field="bisect_report",
+    )

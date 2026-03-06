@@ -8,6 +8,7 @@ from .channel_helpers import (
     sim_state_channel,
     timing_samples_channel_required,
 )
+from .payloads import BuiltinObject, to_builtin_object
 from .schema import TRACE_REQUIRED_CHANNELS
 from .trace import TraceReader
 
@@ -17,7 +18,7 @@ def summarize_trace_health(
     *,
     tick_start: int | None = None,
     tick_end: int | None = None,
-) -> dict[str, object]:
+) -> BuiltinObject:
     path = Path(trace_path)
     with TraceReader(path) as trace:
         channels_present: dict[str, int] = {}
@@ -68,27 +69,30 @@ def summarize_trace_health(
                 window_start = int(meta_range.get("start_tick", -1))
             if window_end is None:
                 window_end = int(meta_range.get("end_tick", -1))
-        return {
-            "trace_format_version": int(trace.meta.trace_format_version),
-            "trace_schema_version": int(trace.meta.trace_schema_version),
-            "tick_window": {
-                "requested_start": (None if tick_start is None else int(tick_start)),
-                "requested_end": (None if tick_end is None else int(tick_end)),
-                "actual_start": (None if window_start is None else int(window_start)),
-                "actual_end": (None if window_end is None else int(window_end)),
-                "ticks_in_window": int(ticks_total),
+        return to_builtin_object(
+            {
+                "trace_format_version": int(trace.meta.trace_format_version),
+                "trace_schema_version": int(trace.meta.trace_schema_version),
+                "tick_window": {
+                    "requested_start": (None if tick_start is None else int(tick_start)),
+                    "requested_end": (None if tick_end is None else int(tick_end)),
+                    "actual_start": (None if window_start is None else int(window_start)),
+                    "actual_end": (None if window_end is None else int(window_end)),
+                    "ticks_in_window": int(ticks_total),
+                },
+                "channels_present": {str(key): int(value) for key, value in sorted(channels_present.items())},
+                "metrics": {
+                    "ticks_with_dt_ms_i32": int(ticks_with_dt),
+                    "rng_stream_rows": int(rng_stream_rows),
+                    "sim_state_rows": int(sim_state_rows),
+                    "sample_creature_rows": int(sample_creature_rows),
+                    "sample_projectile_rows": int(sample_projectile_rows),
+                    "sample_secondary_projectile_rows": int(sample_secondary_rows),
+                    "sample_bonus_rows": int(sample_bonus_rows),
+                    "timing_samples_rows": int(timing_samples_rows),
+                },
+                "issues": issues,
+                "ok_for_movement_root_cause": len(issues) == 0,
             },
-            "channels_present": {str(key): int(value) for key, value in sorted(channels_present.items())},
-            "metrics": {
-                "ticks_with_dt_ms_i32": int(ticks_with_dt),
-                "rng_stream_rows": int(rng_stream_rows),
-                "sim_state_rows": int(sim_state_rows),
-                "sample_creature_rows": int(sample_creature_rows),
-                "sample_projectile_rows": int(sample_projectile_rows),
-                "sample_secondary_projectile_rows": int(sample_secondary_rows),
-                "sample_bonus_rows": int(sample_bonus_rows),
-                "timing_samples_rows": int(timing_samples_rows),
-            },
-            "issues": issues,
-            "ok_for_movement_root_cause": len(issues) == 0,
-        }
+            field="trace_health",
+        )

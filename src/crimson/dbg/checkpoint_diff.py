@@ -6,6 +6,7 @@ from collections.abc import Sequence
 import msgspec
 
 from ..replay.checkpoints import ReplayCheckpoint
+from .payloads import BuiltinObject, to_builtin_object
 from .strict_compare import strict_mismatch_payload
 
 DEFAULT_RNG_MARK_ORDER: tuple[str, ...] = (
@@ -52,7 +53,7 @@ class ReplayDiffResult(msgspec.Struct, frozen=True):
 
 
 class CheckpointDeepDiff(msgspec.Struct, frozen=True):
-    payload: dict[str, object]
+    payload: BuiltinObject
     pretty: str
     diff_count: int
 
@@ -61,8 +62,8 @@ def _checkpoint_to_obj(
     checkpoint: ReplayCheckpoint,
     *,
     include_rng_fields: bool,
-) -> dict[str, object]:
-    obj = msgspec.to_builtins(checkpoint)
+) -> BuiltinObject:
+    obj = to_builtin_object(checkpoint, field="checkpoint")
     if not include_rng_fields:
         for key in ("rng_state", "rng_marks"):
             obj.pop(key, None)
@@ -77,7 +78,7 @@ def checkpoint_deepdiff(
     if int(diff_count) <= 0:
         return None
 
-    payload: dict[str, object] = {"mismatches": mismatches}
+    payload = to_builtin_object({"mismatches": mismatches}, field="checkpoint_diff.payload")
     return CheckpointDeepDiff(
         payload=payload,
         pretty=json.dumps(payload, sort_keys=True, indent=2, default=repr),

@@ -6,7 +6,7 @@ from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import BinaryIO, cast
+from typing import Any, BinaryIO, cast
 
 import msgspec
 
@@ -21,6 +21,7 @@ from ..replay.types import WEAPON_USAGE_COUNT, BootstrapKind, Replay, ReplayStat
 from ..sim.bootstrap import run_terrain_bootstrap
 from ..status_snapshot import progress_status_from_debug_snapshot, replay_status_from_progress
 from .canonical_channels import EntitySamplesSnapshot, RngStreamRow, SimStateSnapshot, TimingSampleRow
+from .payloads import BuiltinObject, to_builtin_object
 from .rng import canonical_rng_marks
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -77,8 +78,8 @@ class _SessionStartRow(
     platform: str = "windows"
     arch: str = "x86"
     script_version: str = ""
-    config: dict[str, object] = msgspec.field(default_factory=dict)
-    session_fingerprint: dict[str, object] = msgspec.field(default_factory=dict)
+    config: dict[str, Any] = msgspec.field(default_factory=dict)
+    session_fingerprint: dict[str, Any] = msgspec.field(default_factory=dict)
 
 
 class _RunStartRow(
@@ -193,7 +194,7 @@ class _OpenRun(msgspec.Struct):
     global_tick_last: int | None = None
 
 
-def _fingerprint(path: Path) -> dict[str, object]:
+def _fingerprint(path: Path) -> BuiltinObject:
     stat = path.stat()
     raw = path.read_bytes()
     return {
@@ -222,7 +223,7 @@ def _canonical_channels_payload(
     channels: _TickChannels,
     local_tick: int,
     field: str,
-) -> tuple[ReplayCheckpoint, dict[str, object]]:
+) -> tuple[ReplayCheckpoint, BuiltinObject]:
     checkpoint = msgspec.structs.replace(
         channels.checkpoint,
         tick_index=int(local_tick),
@@ -250,8 +251,7 @@ def _canonical_channels_payload(
         rng_stream=list(channels.rng_stream),
         timing_samples=list(channels.timing_samples),
     )
-    built = msgspec.to_builtins(normalized)
-    return checkpoint, cast("dict[str, object]", built)
+    return checkpoint, to_builtin_object(normalized, field=field)
 
 
 def _replay_tick_inputs_from_row(
@@ -359,7 +359,7 @@ def _validate_run_seed_for_replay(run: _OpenRun) -> None:
 
 def _build_meta(
     *,
-    raw_fingerprint: dict[str, object],
+    raw_fingerprint: BuiltinObject,
     session_start: _SessionStartRow,
     run: _OpenRun,
     tick_count: int,
@@ -406,7 +406,7 @@ def _write_run_trace(
     *,
     raw_path: Path,
     output_dir: Path,
-    raw_fingerprint: dict[str, object],
+    raw_fingerprint: BuiltinObject,
     session_start: _SessionStartRow,
     run: _OpenRun,
     chunk_ticks: int,

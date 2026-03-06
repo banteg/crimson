@@ -12,6 +12,7 @@ from .channel_helpers import (
     sim_state_channel_required,
 )
 from .checkpoint_diff import checkpoint_deepdiff
+from .payloads import BuiltinObject, to_builtin_object
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -29,7 +30,7 @@ def focus_tick(
     golden_trace: Path,
     candidate_trace: Path,
     tick_index: int,
-) -> dict[str, object]:
+) -> BuiltinObject:
     tick = int(tick_index)
     with TraceReader(Path(golden_trace)) as expected, TraceReader(Path(candidate_trace)) as candidate:
         expected_row = expected.tick(tick)
@@ -57,7 +58,7 @@ def focus_tick(
     rng_stream = dict(rng_stream_detail or {})
     rng_stream["ok"] = bool(rng_ok)
 
-    entity_presence: dict[str, object] = {}
+    entity_presence: BuiltinObject = {}
     entity_diverged = False
     for kind in ENTITY_SAMPLE_KINDS:
         expected_uids = _entity_uid_set(expected_row, kind)
@@ -91,32 +92,35 @@ def focus_tick(
         or not sim_state_ok,
     )
 
-    return {
-        "tick_index": int(tick),
-        "diverged": diverged,
-        "checkpoint_diff_count": (0 if checkpoint_diff is None else int(checkpoint_diff.diff_count)),
-        "checkpoint_diff": (
-            None
-            if checkpoint_diff is None
-            else {
-                "payload": checkpoint_diff.payload,
-                "pretty": checkpoint_diff.pretty,
-            }
-        ),
-        "rng_marks": {
-            "first_mismatch_mark": first_rng_mark,
-            "mismatching_marks": mismatching_rng,
-            "expected": expected_rng,
-            "candidate": candidate_rng,
+    return to_builtin_object(
+        {
+            "tick_index": int(tick),
+            "diverged": diverged,
+            "checkpoint_diff_count": (0 if checkpoint_diff is None else int(checkpoint_diff.diff_count)),
+            "checkpoint_diff": (
+                None
+                if checkpoint_diff is None
+                else {
+                    "payload": checkpoint_diff.payload,
+                    "pretty": checkpoint_diff.pretty,
+                }
+            ),
+            "rng_marks": {
+                "first_mismatch_mark": first_rng_mark,
+                "mismatching_marks": mismatching_rng,
+                "expected": expected_rng,
+                "candidate": candidate_rng,
+            },
+            "rng_stream": rng_stream,
+            "entity_presence": entity_presence,
+            "entity_samples": {
+                "ok": bool(entity_samples_ok),
+                "detail": entity_samples_detail,
+            },
+            "sim_state": {
+                "ok": bool(sim_state_ok),
+                "detail": sim_state_detail,
+            },
         },
-        "rng_stream": rng_stream,
-        "entity_presence": entity_presence,
-        "entity_samples": {
-            "ok": bool(entity_samples_ok),
-            "detail": entity_samples_detail,
-        },
-        "sim_state": {
-            "ok": bool(sim_state_ok),
-            "detail": sim_state_detail,
-        },
-    }
+        field="focus_tick",
+    )
