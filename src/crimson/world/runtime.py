@@ -7,10 +7,12 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.raylib_api import rl
 
 from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
+from ..render.world import viewport
 from ..render.world.renderer import WorldRenderer
 from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
@@ -158,7 +160,12 @@ class WorldRuntime:
         if not self.sim_world.players:
             return
 
-        screen_size = self.renderer._camera_screen_size()
+        screen_size = viewport.camera_screen_size(
+            world_size=self.world_size,
+            config=self.config,
+            runtime_w=float(rl.get_screen_width()),
+            runtime_h=float(rl.get_screen_height()),
+        )
         alive = [player for player in self.sim_world.players if player.health > 0.0]
         if alive:
             inv_alive = 1.0 / float(len(alive))
@@ -171,7 +178,11 @@ class WorldRuntime:
             camera = self.camera
 
         camera = camera + self.sim_world.state.camera_shake_offset
-        self.camera = self.renderer._clamp_camera(camera, screen_size)
+        self.camera = viewport.clamp_camera(
+            world_size=self.world_size,
+            camera=camera,
+            screen_size=screen_size,
+        )
 
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(

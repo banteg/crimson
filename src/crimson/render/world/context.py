@@ -10,6 +10,7 @@ from grim.raylib_api import rd, rl
 
 from ...projectiles.types import ProjectileTemplateId
 from ..rtx.mode import RtxRenderMode
+from . import viewport
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
@@ -55,59 +56,39 @@ class WorldRenderCtx(msgspec.Struct):
         runtime_w: float | None = None,
         runtime_h: float | None = None,
     ) -> Vec2:
-        if runtime_w is None:
-            runtime_w = float(rl.get_screen_width())
-        if runtime_h is None:
-            runtime_h = float(rl.get_screen_height())
-        if runtime_w > 0.0 and runtime_h > 0.0:
-            # Prefer live framebuffer dimensions. Config values can lag behind
-            # the actual game window resolution during launcher/state handoff.
-            screen_w = runtime_w
-            screen_h = runtime_h
-        elif self.config is not None:
-            screen_w = float(self.config.screen_width)
-            screen_h = float(self.config.screen_height)
-        else:
-            screen_w = max(1.0, runtime_w)
-            screen_h = max(1.0, runtime_h)
-        world = float(self.world_size)
-        if world <= 0.0:
-            return Vec2(max(1.0, screen_w), max(1.0, screen_h))
-        out_w = max(1.0, screen_w)
-        out_h = max(1.0, screen_h)
-        scale = max(out_w / world, out_h / world, 1.0)
-        return Vec2(min(world, out_w / scale), min(world, out_h / scale))
+        out_w = runtime_w if runtime_w is not None else float(rl.get_screen_width())
+        out_h = runtime_h if runtime_h is not None else float(rl.get_screen_height())
+        return viewport.camera_screen_size(
+            world_size=self.world_size,
+            config=self.config,
+            runtime_w=out_w,
+            runtime_h=out_h,
+        )
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
-        cam_x = camera.x
-        cam_y = camera.y
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_y > -1.0:
-            cam_y = -1.0
-        min_x = screen_size.x - float(self.world_size)
-        min_y = screen_size.y - float(self.world_size)
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_y < min_y:
-            cam_y = min_y
-        return Vec2(cam_x, cam_y)
+        return viewport.clamp_camera(
+            world_size=self.world_size,
+            camera=camera,
+            screen_size=screen_size,
+        )
 
     def _world_params(self) -> tuple[Vec2, Vec2]:
         out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
-        screen_size = self._camera_screen_size(runtime_w=out_size.x, runtime_h=out_size.y)
-        camera = self._clamp_camera(self.camera, screen_size)
-        scale_x = out_size.x / screen_size.x if screen_size.x > 0 else 1.0
-        scale_y = out_size.y / screen_size.y if screen_size.y > 0 else 1.0
-        return camera, Vec2(scale_x, scale_y)
+        camera, view_scale, _screen_size = viewport.view_transform(
+            world_size=self.world_size,
+            config=self.config,
+            camera=self.camera,
+            out_size=out_size,
+        )
+        return camera, view_scale
 
     @staticmethod
     def _world_to_screen_with(pos: Vec2, *, camera: Vec2, view_scale: Vec2) -> Vec2:
-        return (pos + camera).mul_components(view_scale)
+        return viewport.world_to_screen_with(pos, camera=camera, view_scale=view_scale)
 
     @staticmethod
     def _view_scale_avg(view_scale: Vec2) -> float:
-        return view_scale.avg_component()
+        return viewport.view_scale_avg(view_scale)
 
     def _draw_atlas_sprite(
         self,
@@ -195,11 +176,7 @@ class WorldRenderCtx(msgspec.Struct):
         view_scale = self.projection_view_scale
         if camera is None or view_scale is None:
             camera, view_scale = self._world_params()
-        safe_scale = Vec2(
-            view_scale.x if view_scale.x > 0.0 else 1.0,
-            view_scale.y if view_scale.y > 0.0 else 1.0,
-        )
-        return pos.div_components(safe_scale) - camera
+        return viewport.screen_to_world_with(pos, camera=camera, view_scale=view_scale)
 
 
 def build_world_render_ctx(

@@ -19,6 +19,7 @@ from ...perks import PerkId
 from ...perks.helpers import perk_active
 from ...sim.world_defs import CREATURE_ANIM, CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
+from . import viewport
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
 from .constants import _RAD_TO_DEG, monster_vision_fade_alpha
 from .context import WorldRenderCtx
@@ -108,12 +109,13 @@ def compute_view_transform(render_ctx: WorldRenderCtx) -> tuple[Vec2, Vec2, floa
     out_w = float(rl.get_screen_width())
     out_h = float(rl.get_screen_height())
     out_size = Vec2(out_w, out_h)
-    screen_size = render_ctx._camera_screen_size(runtime_w=out_w, runtime_h=out_h)
-    camera = render_ctx._clamp_camera(render_ctx.camera, screen_size)
-    scale_x = out_w / screen_size.x if screen_size.x > 0 else 1.0
-    scale_y = out_h / screen_size.y if screen_size.y > 0 else 1.0
-    view_scale = Vec2(scale_x, scale_y)
-    scale = render_ctx._view_scale_avg(view_scale)
+    camera, view_scale, screen_size = viewport.view_transform(
+        world_size=render_ctx.world_size,
+        config=render_ctx.config,
+        camera=render_ctx.camera,
+        out_size=out_size,
+    )
+    scale = viewport.view_scale_avg(view_scale)
     return camera, view_scale, scale, screen_size, out_size
 
 

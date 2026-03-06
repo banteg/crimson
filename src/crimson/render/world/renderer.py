@@ -5,8 +5,10 @@ from collections.abc import Callable
 import msgspec
 
 from grim.geom import Vec2
+from grim.raylib_api import rl
 
 from ..frame import RenderFrame
+from . import viewport
 from .context import WorldRenderCtx, build_world_render_ctx
 from .draw import draw_world
 
@@ -50,16 +52,39 @@ class WorldRenderer(msgspec.Struct):
         runtime_w: float | None = None,
         runtime_h: float | None = None,
     ) -> Vec2:
-        return self._active_render_ctx()._camera_screen_size(runtime_w=runtime_w, runtime_h=runtime_h)
+        frame = self._active_render_frame()
+        out_w = runtime_w if runtime_w is not None else float(rl.get_screen_width())
+        out_h = runtime_h if runtime_h is not None else float(rl.get_screen_height())
+        return viewport.camera_screen_size(
+            world_size=frame.world_size,
+            config=frame.config,
+            runtime_w=out_w,
+            runtime_h=out_h,
+        )
 
     def _clamp_camera(self, camera: Vec2, screen_size: Vec2) -> Vec2:
-        return self._active_render_ctx()._clamp_camera(camera, screen_size)
+        frame = self._active_render_frame()
+        return viewport.clamp_camera(
+            world_size=frame.world_size,
+            camera=camera,
+            screen_size=screen_size,
+        )
 
     def _world_params(self) -> tuple[Vec2, Vec2]:
-        return self._active_render_ctx()._world_params()
+        frame = self._active_render_frame()
+        out_size = Vec2(float(rl.get_screen_width()), float(rl.get_screen_height()))
+        camera, view_scale, _screen_size = viewport.view_transform(
+            world_size=frame.world_size,
+            config=frame.config,
+            camera=frame.camera,
+            out_size=out_size,
+        )
+        return camera, view_scale
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
-        return self._active_render_ctx().world_to_screen(pos)
+        camera, view_scale = self._world_params()
+        return viewport.world_to_screen_with(pos, camera=camera, view_scale=view_scale)
 
     def screen_to_world(self, pos: Vec2) -> Vec2:
-        return self._active_render_ctx().screen_to_world(pos)
+        camera, view_scale = self._world_params()
+        return viewport.screen_to_world_with(pos, camera=camera, view_scale=view_scale)
