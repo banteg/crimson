@@ -5,7 +5,6 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import cast
 
-from grim.assets import PaqTextureCache
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -51,7 +50,6 @@ class WorldRuntime:
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
-        texture_cache: PaqTextureCache | None = None,
         config: CrimsonConfig | None = None,
         audio: AudioState | None = None,
         audio_rng: random.Random | None = None,
@@ -63,7 +61,6 @@ class WorldRuntime:
         self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(preserve_bugs)
-        self.texture_cache = texture_cache
         self.config = config
         self.audio = audio
         self.audio_rng = audio_rng
@@ -79,7 +76,6 @@ class WorldRuntime:
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
             world_size=float(self.world_size),
-            texture_cache=self.texture_cache,
             config=self.config,
         )
         self.presentation = PresentationLayer(
@@ -164,10 +160,8 @@ class WorldRuntime:
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
 
     def open_runtime(self) -> None:
-        self.render_resources.texture_cache = self.texture_cache
         self.render_resources.config = self.config
         self.render_resources.open(terrain_seed=int(self.sim_world.state.rng.state))
-        self.texture_cache = self.render_resources.texture_cache
 
     def close_runtime(self) -> None:
         self.render_resources.close()

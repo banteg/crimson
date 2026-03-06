@@ -3,12 +3,13 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, cast
 
+from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ..assets import _ensure_texture_cache
+from ..assets import _ensure_texture_cache, _require_runtime_texture
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -30,7 +31,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         self._selected_weapon_id = None
         self._list_scroll_index = 0
         cache = _ensure_texture_cache(self.state)
-        self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
+        self._wicons_tex = _require_runtime_texture(cache, TextureId.UI_WICONS)
 
     def close(self) -> None:
         self._wicons_tex = None

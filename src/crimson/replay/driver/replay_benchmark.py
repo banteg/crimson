@@ -160,6 +160,7 @@ def run_replay_render_benchmark(
     rtx: bool = False,
     show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
+    from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.raylib_api import rl
@@ -201,8 +202,11 @@ def run_replay_render_benchmark(
     config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
     if int(config_flags) != 0:
         rl.set_config_flags(int(config_flags))
+    resources = None
+    window_open = False
     try:
         rl.init_window(int(render_width), int(render_height), f"Replay Benchmark - {Path(replay_path).name}")
+        window_open = True
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
@@ -212,6 +216,7 @@ def run_replay_render_benchmark(
 
     progress: _ProgressBarLike | None = None
     try:
+        resources = load_runtime_resources(runtime_assets_dir)
         planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
         if bool(show_progress) and planned_steps > 0:
             progress = cast(
@@ -407,7 +412,9 @@ def run_replay_render_benchmark(
     finally:
         if progress is not None:
             progress.close()
-        rl.close_window()
+        unload_runtime_resources(resources)
+        if window_open:
+            rl.close_window()
 
     wall_values = [sample.wall_ms for sample in samples]
     tps_values = [sample.ticks_per_second for sample in samples]

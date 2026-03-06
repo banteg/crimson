@@ -106,7 +106,6 @@ class SfxState(msgspec.Struct):
     volume: float
     voice_count: int
     entries: dict[str, bytes]
-    directory: Path | None
     key_to_entry: dict[str, str]
     variants: dict[str, tuple[str, ...]]
     samples: dict[str, SfxSample]
@@ -127,7 +126,6 @@ def init_sfx_state(
         volume=float(volume),
         voice_count=max(1, int(voice_count)),
         entries={},
-        directory=None,
         key_to_entry={},
         variants={},
         samples={},
@@ -164,30 +162,20 @@ def _build_variants(keys: Iterable[str]) -> dict[str, tuple[str, ...]]:
     return {base: tuple(sorted(values)) for base, values in base_to_keys.items()}
 
 
+def _load_sample_from_data(state: SfxState, *, entry_name: str, data: bytes) -> SfxSample:
+    file_type = Path(entry_name).suffix.lower()
+    wave = rl.load_wave_from_memory(file_type, cast(str, data), len(data))
+    source = rl.load_sound_from_wave(wave)
+    rl.unload_wave(wave)
+    aliases = [rl.load_sound_alias(source) for _ in range(max(1, state.voice_count) - 1)]
+    sample = SfxSample(entry_name=entry_name, source=source, aliases=aliases)
+    for voice in sample.voices():
+        rl.set_sound_volume(voice, state.volume)
+    return sample
+
+
 def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> None:
     if not state.ready or not state.enabled:
-        return
-
-    sfx_dir = assets_dir / "sfx"
-    if sfx_dir.exists() and sfx_dir.is_dir():
-        entry_names: list[str] = []
-        for path in sorted(sfx_dir.iterdir()):
-            if not path.is_file():
-                continue
-            if path.suffix.lower() not in {".ogg", ".wav"}:
-                continue
-            entry_names.append(path.name)
-
-        state.directory = sfx_dir
-        state.entries.clear()
-        available = set(entry_names)
-        state.key_to_entry = {_derive_sfx_key(name): name for name in entry_names}
-        for key, name in sfx_map.SFX_ENTRY_BY_KEY.items():
-            if name in available:
-                state.key_to_entry[key] = name
-        state.variants = _build_variants(state.key_to_entry.keys())
-        console.log.log(f"audio: sfx indexed {len(entry_names)} files from {sfx_dir}")
-        console.log.flush()
         return
 
     paq_path = assets_dir / SFX_PAK_NAME
@@ -195,16 +183,24 @@ def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> 
         raise FileNotFoundError(f"audio: missing {SFX_PAK_NAME} in {assets_dir}")
     entries: dict[str, bytes] = {}
     for name, data in paq.iter_entries(paq_path):
-        entries[name.replace("\\", "/")] = data
-    state.directory = None
-    state.entries = entries
+        normalized = name.replace("\\", "/")
+        if Path(normalized).suffix.lower() not in {".ogg", ".wav"}:
+            continue
+        entries[normalized] = data
+    state.entries = {}
     available = set(entries.keys())
     state.key_to_entry = {_derive_sfx_key(name): name for name in entries.keys()}
     for key, name in sfx_map.SFX_ENTRY_BY_KEY.items():
         if name in available:
             state.key_to_entry[key] = name
-    state.variants = _build_variants(state.key_to_entry.keys())
-    console.log.log(f"audio: sfx indexed {len(entries)} entries from {SFX_PAK_NAME}")
+
+    state.samples.clear()
+    for entry_name in sorted(entries.keys()):
+        canonical_key = _derive_sfx_key(entry_name)
+        state.samples[canonical_key] = _load_sample_from_data(state, entry_name=entry_name, data=entries[entry_name])
+    state.variants = _build_variants(state.samples.keys())
+
+    console.log.log(f"audio: sfx loaded {len(state.samples)} samples from {SFX_PAK_NAME}")
     console.log.flush()
 
 
@@ -215,12 +211,14 @@ def _normalize_sfx_key(state: SfxState, key: str) -> str | None:
     key = sfx_map.SFX_KEY_ALIASES.get(key, key)
     if "_alias_" in key:
         key = key.split("_alias_", 1)[0]
-    if key in state.key_to_entry:
-        return key
+    entry_name = state.key_to_entry.get(key)
+    if entry_name is not None:
+        return _derive_sfx_key(entry_name)
     if key.endswith("_alt"):
         cand = key[: -len("_alt")]
-        if cand in state.key_to_entry:
-            return cand
+        entry_name = state.key_to_entry.get(cand)
+        if entry_name is not None:
+            return _derive_sfx_key(entry_name)
     return None
 
 
@@ -228,33 +226,7 @@ def _load_sample(state: SfxState, key: str) -> SfxSample | None:
     resolved = _normalize_sfx_key(state, key)
     if resolved is None:
         return None
-    existing = state.samples.get(resolved)
-    if existing is not None:
-        return existing
-
-    entry_name = state.key_to_entry.get(resolved)
-    if entry_name is None:
-        return None
-
-    if state.directory is not None:
-        path = state.directory / entry_name
-        source = rl.load_sound(str(path))
-    else:
-        data = state.entries.get(entry_name)
-        if data is None:
-            return None
-        file_type = Path(entry_name).suffix.lower()
-        wave = rl.load_wave_from_memory(file_type, cast(str, data), len(data))
-        source = rl.load_sound_from_wave(wave)
-        rl.unload_wave(wave)
-
-    aliases = [rl.load_sound_alias(source) for _ in range(max(1, state.voice_count) - 1)]
-
-    sample = SfxSample(entry_name=entry_name, source=source, aliases=aliases)
-    for voice in sample.voices():
-        rl.set_sound_volume(voice, state.volume)
-    state.samples[resolved] = sample
-    return sample
+    return state.samples.get(resolved)
 
 
 def play_sfx(
@@ -319,7 +291,12 @@ def set_sfx_volume(state: SfxState | None, volume: float) -> None:
     if volume > 1.0:
         volume = 1.0
     state.volume = volume
+    seen: set[int] = set()
     for sample in state.samples.values():
+        sample_id = id(sample)
+        if sample_id in seen:
+            continue
+        seen.add(sample_id)
         for voice in sample.voices():
             rl.set_sound_volume(voice, state.volume)
 
@@ -327,7 +304,12 @@ def set_sfx_volume(state: SfxState | None, volume: float) -> None:
 def shutdown_sfx(state: SfxState) -> None:
     if not state.ready:
         return
+    seen: set[int] = set()
     for sample in state.samples.values():
+        sample_id = id(sample)
+        if sample_id in seen:
+            continue
+        seen.add(sample_id)
         for alias in sample.aliases:
             _stop_sound_safe(alias)
             _unload_sound_alias_safe(alias)
@@ -338,4 +320,3 @@ def shutdown_sfx(state: SfxState) -> None:
     state.key_to_entry.clear()
     state.variants.clear()
     state.missing_keys.clear()
-    state.directory = None

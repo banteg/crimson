@@ -46,9 +46,9 @@ class FontView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            self._small = None
         if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
+            self._grim_mono = None
 
     def open(self) -> None:
         self._missing_assets.clear()

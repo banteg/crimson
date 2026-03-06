@@ -104,23 +104,21 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(t
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=_audio_state_stub(),
-        resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
 
     play_sfx = mocker.Mock()
 
-    class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):
-            return SimpleNamespace(texture=None)
+    class _DummyResources:
+        def texture(self, *_args, **_kwargs):
+            return _texture_stub()
 
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
     mocker.patch.object(high_scores_view_module, "play_sfx", side_effect=play_sfx)
-    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub())
 
     view = HighScoresView(state)
@@ -162,23 +160,21 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=None,
-        resource_paq=tmp_path / "crimson.paq",
         session_start=time.monotonic(),
     )
     state.pending_high_scores = HighScoresRequest(game_mode_id=GameMode.SURVIVAL)
     draw_pause_background_mock = mocker.Mock()
     state.pause_background = cast("PauseBackground", SimpleNamespace(draw_pause_background=draw_pause_background_mock))
 
-    class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):
-            return SimpleNamespace(texture=None)
+    class _DummyResources:
+        def texture(self, *_args, **_kwargs):
+            return _texture_stub()
 
     dummy_tex = _texture_stub()
     mocker.patch.object(high_scores_view_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(high_scores_view_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(high_scores_view_module, "load_menu_assets", side_effect=lambda _state: _menu_assets_stub(tex=dummy_tex))
     mocker.patch.object(high_scores_view_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)

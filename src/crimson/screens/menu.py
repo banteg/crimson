@@ -6,16 +6,16 @@ from typing import Protocol
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
-from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
-from .assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from .assets import MenuAssets, load_menu_assets
 from .transitions import _draw_screen_fade
 
 MENU_LABEL_WIDTH = 122.0
@@ -61,14 +61,14 @@ MENU_SIGN_POS_X_PAD = 4.0
 # Measured in the shareware/demo attract loop trace:
 # {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
 MENU_DEMO_IDLE_START_MS = 23_000
-MENU_DEFAULT_TERRAIN_IDS = (TerrainTextureId.Q1_BASE, TerrainTextureId.Q1_OVERLAY, TerrainTextureId.Q1_BASE)
+MENU_DEFAULT_TERRAIN_IDS = (TextureId.TER_Q1_BASE, TextureId.TER_Q1_OVERLAY, TextureId.TER_Q1_BASE)
 MENU_UNLOCK_TERRAIN_RULES: tuple[
-    tuple[int, tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]],
+    tuple[int, tuple[TextureId, TextureId, TextureId]],
     ...,
 ] = (
-    (0x28, (TerrainTextureId.Q4_BASE, TerrainTextureId.Q4_OVERLAY, TerrainTextureId.Q4_BASE)),
-    (0x1E, (TerrainTextureId.Q3_BASE, TerrainTextureId.Q3_OVERLAY, TerrainTextureId.Q3_BASE)),
-    (0x14, (TerrainTextureId.Q2_BASE, TerrainTextureId.Q2_OVERLAY, TerrainTextureId.Q2_BASE)),
+    (0x28, (TextureId.TER_Q4_BASE, TextureId.TER_Q4_OVERLAY, TextureId.TER_Q4_BASE)),
+    (0x1E, (TextureId.TER_Q3_BASE, TextureId.TER_Q3_OVERLAY, TextureId.TER_Q3_BASE)),
+    (0x14, (TextureId.TER_Q2_BASE, TextureId.TER_Q2_OVERLAY, TextureId.TER_Q2_BASE)),
 )
 
 
@@ -93,7 +93,7 @@ def _menu_unlock_index(state: GameState) -> int:
         return 0
 
 
-def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, TerrainTextureId, TerrainTextureId]:
+def _choose_menu_terrain_ids(state: GameState) -> tuple[TextureId, TextureId, TextureId]:
     unlock_index = _menu_unlock_index(state)
     for threshold, ids in MENU_UNLOCK_TERRAIN_RULES:
         if unlock_index >= threshold and (state.rng.randrange(0, 8) & 7) == 3:
@@ -101,24 +101,9 @@ def _choose_menu_terrain_ids(state: GameState) -> tuple[TerrainTextureId, Terrai
     return MENU_DEFAULT_TERRAIN_IDS
 
 
-def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.Texture | None:
-    cache = state.texture_cache
-    if cache is None:
-        return None
-    terrain = terrain_texture_by_id(terrain_id)
-    if terrain is None:
-        return None
-
-    key, rel_path = terrain
-    texture = cache.texture(key)
-    if texture is not None:
-        return texture
-    return cache.get_or_load(key, rel_path).texture
-
-
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
-    cache = state.texture_cache
-    if cache is None:
+    resources = state.resources
+    if resources is None:
         return None
 
     ground = state.menu_ground
@@ -137,14 +122,14 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
 
     if should_select_layers:
         base_id, overlay_id, detail_id = _choose_menu_terrain_ids(state)
-        selected_base = _menu_terrain_texture(state, base_id)
+        selected_base = resources.texture(base_id)
         if selected_base is None and (base_id, overlay_id, detail_id) != MENU_DEFAULT_TERRAIN_IDS:
             base_id, overlay_id, detail_id = MENU_DEFAULT_TERRAIN_IDS
-            selected_base = _menu_terrain_texture(state, base_id)
+            selected_base = resources.texture(base_id)
         if selected_base is not None:
             base = selected_base
-            overlay = _menu_terrain_texture(state, overlay_id)
-            detail = _menu_terrain_texture(state, detail_id)
+            overlay = resources.texture(overlay_id)
+            detail = resources.texture(detail_id)
 
     if ground is None:
         if base is None:
@@ -180,9 +165,11 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
 
 
 def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
-    cache = _ensure_texture_cache(state)
-    particles = cache.get_or_load("particles", "game/particles.jaz").texture
-    cursor_tex = cache.get_or_load("ui_cursor", "ui/ui_cursor.jaz").texture
+    resources = state.resources
+    if resources is None:
+        return
+    particles = resources.texture(TextureId.PARTICLES)
+    cursor_tex = resources.texture(TextureId.UI_CURSOR)
 
     mouse = rl.get_mouse_position()
     draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))

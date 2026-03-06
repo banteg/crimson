@@ -236,6 +236,7 @@ def cmd_view(
     from grim.view import ViewContext
 
     from ..debug_views import all_views, view_by_name
+    from ..runtime_resources_view import RuntimeResourcesView
 
     view_def = view_by_name(name)
     if view_def is None:
@@ -266,13 +267,14 @@ def cmd_view(
     else:
         view = view_def.factory()
     title = f"{view_def.title} — Crimsonland"
+    hooks = _view_run_hooks(view)
     run_view(
-        view,
+        RuntimeResourcesView(view, assets_dir=assets_dir),
         width=width,
         height=height,
         title=title,
         fps=fps,
-        hooks=_view_run_hooks(view),
+        hooks=hooks,
     )
 
 @app.callback(invoke_without_command=True)

@@ -373,10 +373,8 @@ class ConsoleState(msgspec.Struct):
 
     def close(self) -> None:
         if self._mono_font is not None:
-            rl.unload_texture(self._mono_font.texture)
             self._mono_font = None
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
             self._small_font = None
 
     def _tokenize_line(self, line: str) -> list[str]:

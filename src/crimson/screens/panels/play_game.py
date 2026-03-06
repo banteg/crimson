@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -11,6 +12,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import _require_runtime_texture
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -83,11 +85,11 @@ class PlayGameMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         cache = self._ensure_cache()
-        self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        self._button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        self._button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
         self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
-        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
-        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
+        self._drop_on = _require_runtime_texture(cache, TextureId.UI_DROP_ON)
+        self._drop_off = _require_runtime_texture(cache, TextureId.UI_DROP_OFF)
         self._player_list_open = False
         self._dirty = False
         self._tooltip_ms.clear()

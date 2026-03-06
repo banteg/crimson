@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.terrain_assets import TerrainTextureId
 from crimson.world.terrain_runtime import DEFAULT_TERRAIN_IDS, normalize_terrain_ids
+from grim.assets import TextureId
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.world_runtime import WorldRuntimeHost
@@ -17,8 +18,7 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     world = _build_world(assets_dir)
     tex = rl.Texture()
 
-    def _load_texture(_self, _name: str, *, cache_path: str) -> rl.Texture:
-        _ = cache_path
+    def _load_texture(_self, _texture_id: TextureId) -> rl.Texture:
         return tex
 
     monkeypatch.setattr(type(world.render_resources), "load_texture", _load_texture, raising=True)
@@ -46,26 +46,21 @@ def test_set_terrain_updates_render_cache_without_touching_sim_rng(assets_dir: P
     base = rl.Texture()
     overlay = rl.Texture()
     detail = rl.Texture()
+    textures = {
+        TextureId.TER_Q1_BASE: base,
+        TextureId.TER_Q1_OVERLAY: overlay,
+        TextureId.TER_Q2_OVERLAY: detail,
+    }
 
-    def _load_texture(_self, name: str, *, cache_path: str) -> rl.Texture | None:
-        _ = cache_path
-        if name == "base":
-            return base
-        if name == "overlay":
-            return overlay
-        if name == "detail":
-            return detail
-        return None
+    def _load_texture(_self, texture_id: TextureId) -> rl.Texture | None:
+        return textures.get(texture_id)
 
     monkeypatch.setattr(type(world.render_resources), "load_texture", _load_texture, raising=True)
 
     world.set_terrain(
-        base_key="base",
-        overlay_key="overlay",
-        base_path="base.paq",
-        overlay_path="overlay.paq",
-        detail_key="detail",
-        detail_path="detail.paq",
+        base_texture_id=TextureId.TER_Q1_BASE,
+        overlay_texture_id=TextureId.TER_Q1_OVERLAY,
+        detail_texture_id=TextureId.TER_Q2_OVERLAY,
     )
 
     assert int(world.sim_world.state.rng.state) == before_rng_state

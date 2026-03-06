@@ -6,7 +6,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureLoader
+from grim.assets import TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -115,13 +115,10 @@ def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle
 
 def load_quest_results_assets(assets_root: Path) -> QuestResultsAssets:
     perk_menu_assets = load_perk_menu_assets(assets_root)
-    loader = TextureLoader.from_assets_root(assets_root)
-    text_well_done = loader.get(
-        name="ui_textWellDone",
-        paq_rel="ui/ui_textWellDone.jaz",
-    )
-    particles = loader.get(name="particles", paq_rel="game/particles.jaz")
-    wicons = loader.get(name="ui_wicons", paq_rel="ui/ui_wicons.jaz")
+    resources = runtime_resources_for(assets_root)
+    text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
+    particles = resources.texture(TextureId.PARTICLES)
+    wicons = resources.texture(TextureId.UI_WICONS)
     return QuestResultsAssets(
         menu_panel=perk_menu_assets.menu_panel,
         text_well_done=text_well_done,
@@ -242,9 +239,7 @@ class QuestResultsUi(msgspec.Struct):
     def close(self) -> None:
         if self.assets is not None:
             self.assets = None
-        if self.font is not None:
-            rl.unload_texture(self.font.texture)
-            self.font = None
+        self.font = None
 
     def _begin_close_transition(self, action: str) -> None:
         if self._closing:

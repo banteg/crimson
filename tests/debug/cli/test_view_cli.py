@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from typer.testing import CliRunner
 
 import crimson.debug_views as views
+import crimson.runtime_resources_view as runtime_resources_view
 import grim.app as grim_app
 from crimson.cli import app
 
@@ -91,3 +92,36 @@ def test_view_autotune_sets_env_and_invokes_run_view(mocker) -> None:
     assert kwargs["fps"] == 75
     assert str(kwargs["title"]).startswith("Lighting Debug")
     os.environ.pop("CRIMSON_LIGHTING_DEBUG_AUTO_TUNE", None)
+
+
+def test_view_owns_runtime_resources_at_cli_boundary(mocker) -> None:
+    view = SimpleNamespace(
+        open=mocker.Mock(),
+        update=lambda _dt: None,
+        draw=lambda: None,
+        close=mocker.Mock(),
+    )
+    view_def = SimpleNamespace(
+        name="fonts",
+        title="Font Preview",
+        factory=lambda ctx: view,
+    )
+
+    mocker.patch.object(views, "view_by_name", side_effect=lambda name: view_def if name == "fonts" else None)
+    mocker.patch.object(views, "all_views", side_effect=lambda: [view_def])
+    load_runtime_resources = mocker.patch.object(runtime_resources_view, "load_runtime_resources", return_value=object())
+    unload_runtime_resources = mocker.patch.object(runtime_resources_view, "unload_runtime_resources")
+    run_view = mocker.patch.object(grim_app, "run_view")
+
+    runner = CliRunner()
+    result = runner.invoke(app, ["view", "fonts"])
+
+    assert result.exit_code == 0, result.output
+    run_view.assert_called_once()
+    wrapped_view = run_view.call_args.args[0]
+    wrapped_view.open()
+    load_runtime_resources.assert_called_once()
+    view.open.assert_called_once()
+    wrapped_view.close()
+    view.close.assert_called_once()
+    unload_runtime_resources.assert_called_once()

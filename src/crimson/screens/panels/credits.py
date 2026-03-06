@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
     SmallFontData,
@@ -17,7 +18,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
@@ -274,8 +275,8 @@ class CreditsView:
         self._scroll_line_end_index = 0
 
         cache = _ensure_texture_cache(self.state)
-        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
@@ -287,7 +288,6 @@ class CreditsView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._button_textures = None
         self._assets = None

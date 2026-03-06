@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from crimson.quests.level import QuestLevel
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -14,7 +15,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -113,18 +114,18 @@ class QuestsMenuView:
         self._assets = load_menu_assets(self.state)
         self._init_ground()
 
-        self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
+        self._text_quest = _require_runtime_texture(cache, TextureId.UI_TEXT_QUEST)
         self._stage_icons = {
-            1: cache.get_or_load("ui_num1", "ui/ui_num1.jaz").texture,
-            2: cache.get_or_load("ui_num2", "ui/ui_num2.jaz").texture,
-            3: cache.get_or_load("ui_num3", "ui/ui_num3.jaz").texture,
-            4: cache.get_or_load("ui_num4", "ui/ui_num4.jaz").texture,
-            5: cache.get_or_load("ui_num5", "ui/ui_num5.jaz").texture,
+            1: _require_runtime_texture(cache, TextureId.UI_NUM1),
+            2: _require_runtime_texture(cache, TextureId.UI_NUM2),
+            3: _require_runtime_texture(cache, TextureId.UI_NUM3),
+            4: _require_runtime_texture(cache, TextureId.UI_NUM4),
+            5: _require_runtime_texture(cache, TextureId.UI_NUM5),
         }
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
+        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
+        self._button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
+        self._button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
         self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
 
         self._action = None

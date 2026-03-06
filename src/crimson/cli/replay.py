@@ -646,6 +646,7 @@ def cmd_replay_play(
 
     from ..assets_fetch import download_missing_paqs
     from ..modes.replay_playback_mode import ReplayPlaybackMode
+    from ..runtime_resources_view import RuntimeResourcesView
 
     if assets_dir is None:
         assets_dir = base_dir
@@ -668,8 +669,9 @@ def cmd_replay_play(
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
     view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=cfg, console=console)
     title = f"Replay — {replay_path.name}"
+
     run_view(
-        view,
+        RuntimeResourcesView(view, assets_dir=assets_dir),
         width=width,
         height=height,
         title=title,

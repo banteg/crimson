@@ -1,25 +1,33 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import crimson.screens.quest_views.end_note as end_note_module
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.quest_views import EndNoteView
 from grim.raylib_api import rl
 
 
+def _texture_stub() -> rl.Texture:
+    return SimpleNamespace(width=1, height=1)  # type: ignore[return-value]
+
+
+def _font_stub() -> SimpleNamespace:
+    return SimpleNamespace(widths=[8] * 256)
+
+
 def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, mocker) -> None:
     state = make_game_state(assets_root=tmp_path, audio=object())
     play_sfx = mocker.patch.object(end_note_module, "play_sfx")
 
-    class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):
-            class _StubAsset:
-                texture = None
-
-            return _StubAsset()
+    class _DummyResources:
+        def texture(self, *_args, **_kwargs):
+            return _texture_stub()
 
     mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(EndNoteView, "_ensure_small_font", return_value=_font_stub())
 
     view = EndNoteView(state)
     view.open()
@@ -48,17 +56,15 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
     pause_background = mocker.Mock()
     state.pause_background = pause_background
 
-    class _DummyCache:
-        def get_or_load(self, *_args, **_kwargs):
-            class _StubAsset:
-                texture = None
-
-            return _StubAsset()
+    class _DummyResources:
+        def texture(self, *_args, **_kwargs):
+            return _texture_stub()
 
     mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyCache())
+    mocker.patch.object(end_note_module, "_ensure_texture_cache", side_effect=lambda _state: _DummyResources())
     mocker.patch.object(end_note_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(end_note_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(EndNoteView, "_ensure_small_font", return_value=_font_stub())
 
     view = EndNoteView(state)
     view.open()

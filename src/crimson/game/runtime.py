@@ -10,7 +10,6 @@ from pathlib import Path
 from crimson.quests.level import QuestLevel
 from grim import music
 from grim.app import RunViewHooks, run_view
-from grim.assets import PaqTextureCache, load_paq_entries_from_path
 from grim.config import ensure_crimson_cfg
 from grim.console import (
     CommandHandler,
@@ -34,7 +33,6 @@ from ..game_modes import GameMode
 from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_log
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
-from ..screens.assets import _ensure_texture_cache
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState, LockstepSessionConfig
 
@@ -42,20 +40,11 @@ CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
 SFX_PAQ_NAME = "sfx.paq"
 AUTOEXEC_NAME = "autoexec.txt"
-REQUIRED_RUNTIME_PAQS: tuple[str, ...] = (CRIMSON_PAQ_NAME,)
-OPTIONAL_AUDIO_PAQ_FALLBACKS: tuple[tuple[str, str], ...] = (
-    (MUSIC_PAQ_NAME, "music"),
-    (SFX_PAQ_NAME, "sfx"),
-)
+REQUIRED_RUNTIME_PAQS: tuple[str, ...] = (CRIMSON_PAQ_NAME, MUSIC_PAQ_NAME, SFX_PAQ_NAME)
 
 
 def _runtime_download_targets(assets_dir: Path) -> tuple[str, ...]:
-    names: list[str] = [CRIMSON_PAQ_NAME]
-    for paq_name, dir_name in OPTIONAL_AUDIO_PAQ_FALLBACKS:
-        if (assets_dir / paq_name).is_file() or (assets_dir / dir_name).is_dir():
-            continue
-        names.append(paq_name)
-    return tuple(names)
+    return tuple(name for name in REQUIRED_RUNTIME_PAQS if not (assets_dir / name).is_file())
 
 
 def _require_runtime_assets(assets_dir: Path) -> None:
@@ -63,14 +52,6 @@ def _require_runtime_assets(assets_dir: Path) -> None:
     if missing:
         joined = ", ".join(missing)
         raise FileNotFoundError(f"assets: missing required archives: {joined}")
-    missing_audio = [
-        f"{paq_name} (or {dir_name}/)"
-        for paq_name, dir_name in OPTIONAL_AUDIO_PAQ_FALLBACKS
-        if not (assets_dir / paq_name).is_file() and not (assets_dir / dir_name).is_dir()
-    ]
-    if missing_audio:
-        joined = ", ".join(missing_audio)
-        raise FileNotFoundError(f"assets: missing audio archives or unpacked directories: {joined}")
 
 def _parse_float_arg(value: str) -> float:
     try:
@@ -83,25 +64,6 @@ def _apply_debug_console_defaults(console: ConsoleState, *, debug: bool) -> None
     if not bool(debug):
         return
     console.register_cvar("cv_showFPS", "1")
-
-
-def _cvar_float(console: ConsoleState, name: str, default: float = 0.0) -> float:
-    cvar = console.cvars.get(name)
-    if cvar is None:
-        return default
-    return float(cvar.value_f)
-
-
-def _resolve_resource_paq_path(state: GameState, raw: str) -> Path | None:
-    candidate = Path(raw)
-    if candidate.is_file():
-        return candidate
-    if not candidate.is_absolute():
-        for base in (state.assets_dir, state.base_dir):
-            path = base / candidate
-            if path.is_file():
-                return path
-    return None
 
 
 def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
@@ -141,43 +103,13 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         if len(args) != 1:
             console.log.log("setresourcepaq <resourcepaq>")
             return
-        raw = args[0]
-        resolved = _resolve_resource_paq_path(state, raw)
-        if resolved is None:
-            console.log.log(f"File '{raw}' not found.")
-            return
-        entries = load_paq_entries_from_path(resolved)
-        state.resource_paq = resolved
-        if state.texture_cache is None:
-            state.texture_cache = PaqTextureCache(entries=entries, textures={})
-        else:
-            state.texture_cache.entries = entries
-        console.log.log(f"Set resource paq to '{raw}'")
+        console.log.log("setresourcepaq is not supported in the rewrite.")
 
     def cmd_load_texture(args: list[str]) -> None:
         if len(args) != 1:
             console.log.log("loadtexture <texturefileid>")
             return
-        name = args[0]
-        rel_path = name.replace("\\", "/")
-        try:
-            cache = _ensure_texture_cache(state)
-        except FileNotFoundError:
-            console.log.log(f"...loading texture '{name}' failed")
-            return
-        existing = cache.get(name)
-        if existing is not None and existing.texture is not None:
-            return
-        try:
-            asset = cache.get_or_load(name, rel_path)
-        except FileNotFoundError:
-            console.log.log(f"...loading texture '{name}' failed")
-            return
-        if asset.texture is None:
-            console.log.log(f"...loading texture '{name}' failed")
-            return
-        if _cvar_float(console, "cv_silentloads", 0.0) == 0.0:
-            console.log.log(f"...loading texture '{name}' ok")
+        console.log.log("loadtexture is not supported in the rewrite.")
 
     def cmd_open_url(args: list[str]) -> None:
         if len(args) != 1:
@@ -341,10 +273,8 @@ def run_game(config: GameConfig) -> None:
             demo_enabled=config.demo_enabled,
             preserve_bugs=config.preserve_bugs,
             skip_intro=config.no_intro,
-            logos=None,
-            texture_cache=None,
+            resources=None,
             audio=None,
-            resource_paq=assets_dir / CRIMSON_PAQ_NAME,
             session_start=time.monotonic(),
             rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
             pending_network_session=config.pending_network_session,

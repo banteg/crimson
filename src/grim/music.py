@@ -60,30 +60,6 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
     if not state.ready or not state.enabled:
         return
 
-    music_dir = assets_dir / "music"
-    if music_dir.exists() and music_dir.is_dir():
-        loaded = 0
-        for track_name, candidates in MUSIC_TRACKS.items():
-            music = None
-            for candidate in candidates:
-                path = assets_dir / candidate
-                if not path.exists():
-                    continue
-                music = rl.load_music_stream(str(path))
-                if music is not None:
-                    break
-            if music is None:
-                raise FileNotFoundError(f"audio: missing music file for track '{track_name}' in {music_dir}")
-            rl.set_music_volume(music, state.volume)
-            state.tracks[track_name] = music
-            loaded += 1
-        state.track_ids = {name: idx for idx, name in enumerate(state.tracks.keys())}
-        state.next_track_id = len(state.track_ids)
-        state.paq_entries = None
-        console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from {music_dir}")
-        console.log.flush()
-        return
-
     paq_path = assets_dir / MUSIC_PAK_NAME
     if not paq_path.exists():
         raise FileNotFoundError(f"audio: missing {MUSIC_PAK_NAME} in {assets_dir}")
@@ -141,27 +117,28 @@ def load_music_track(
     console: ConsoleState | None = None,
 ) -> tuple[str, int] | None:
     normalized = rel_path.replace("\\", "/")
-    track_id = state.next_track_id
-    state.next_track_id += 1
     if not state.ready or not state.enabled:
         if console is not None:
-            console.log.log(f"SFX Tune {track_id} <- '{normalized}' FAILED")
+            console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
     key = _normalize_track_key(normalized)
-    existing = state.tracks.get(key)
-    if existing is not None:
-        existing_id = state.track_ids.get(key)
-        if existing_id is None:
-            state.track_ids[key] = track_id
-            existing_id = track_id
+    track_id = state.track_ids.get(key)
+    if track_id is not None:
         if console is not None:
-            console.log.log(f"SFX Tune {existing_id} <- '{normalized}' ok")
-        return key, int(existing_id)
+            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
+        return key, int(track_id)
+    if key in state.tracks:
+        track_id = state.next_track_id
+        state.next_track_id += 1
+        state.track_ids[key] = track_id
+        if console is not None:
+            console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
+        return key, track_id
     music_stream = None
     file_path = assets_dir / normalized
     if file_path.is_file():
         music_stream = rl.load_music_stream(str(file_path))
-    else:
+    if music_stream is None:
         entries = _ensure_music_entries(state, assets_dir)
         if entries is not None:
             data = entries.get(normalized)
@@ -171,14 +148,16 @@ def load_music_track(
                 music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
     if music_stream is None:
         if console is not None:
-            console.log.log(f"SFX Tune {track_id} <- '{normalized}' FAILED")
+            console.log.log(f"SFX Tune {state.next_track_id} <- '{normalized}' FAILED")
         return None
+    track_id = state.next_track_id
+    state.next_track_id += 1
     rl.set_music_volume(music_stream, state.volume)
     state.tracks[key] = music_stream
     state.track_ids[key] = track_id
     if console is not None:
         console.log.log(f"SFX Tune {track_id} <- '{normalized}' ok")
-    return key, track_id
+    return key, int(track_id)
 
 
 def queue_track(state: MusicState, track_key: str) -> None:
@@ -398,6 +377,9 @@ def shutdown_music(state: MusicState) -> None:
         _stop_music_stream_safe(music)
         _unload_music_stream_safe(music)
     state.tracks.clear()
+    state.track_ids.clear()
+    state.next_track_id = 0
+    state.paq_entries = None
     state.active_track = None
     state.game_tune_started = False
     state.game_tune_track = None

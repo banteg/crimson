@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import random
 
+from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.geom import Vec2
@@ -12,7 +13,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, _require_runtime_texture, load_menu_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
@@ -133,8 +134,8 @@ class StatisticsMenuView:
         self._pending_action = None
 
         cache = _ensure_texture_cache(self.state)
-        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
@@ -153,7 +154,6 @@ class StatisticsMenuView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._button_textures = None
         self._assets = None

@@ -4,7 +4,10 @@ import random
 from pathlib import Path
 
 from grim import music as grim_music
-from grim.assets import PaqTextureCache, TextureLoader
+from grim.assets import (
+    TextureId,
+    runtime_resources_for,
+)
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -42,7 +45,6 @@ from ..sim.presentation_reactions import (
     apply_post_apply_reaction,
     build_post_apply_reaction,
 )
-from ..terrain_assets import terrain_texture_by_id
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -116,7 +118,6 @@ class ReplayPlaybackMode:
         self.close_requested = False
 
         self._replay: Replay | None = None
-        self._texture_cache: PaqTextureCache | None = None
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
@@ -309,8 +310,6 @@ class ReplayPlaybackMode:
         self._small = load_small_font(self._ctx.assets_dir)
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
         self._hud_state = HudState()
-        if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
         self._grim_mono = None
         self._quest_complete_texture = None
         self._quest_title = ""
@@ -355,7 +354,6 @@ class ReplayPlaybackMode:
             quest_fail_retry_count=int(quest_fail_retry_count),
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
-            texture_cache=self._texture_cache,
             config=self._config,
             audio=self._audio,
             audio_rng=self._audio_rng,
@@ -367,7 +365,6 @@ class ReplayPlaybackMode:
             player_count=int(replay.header.player_count),
         )
         runtime.open_runtime()
-        self._texture_cache = runtime.texture_cache
 
         sim_world = runtime.sim_world
         render_resources = runtime.render_resources
@@ -409,27 +406,16 @@ class ReplayPlaybackMode:
                 self._quest_complete_texture = self._load_quest_complete_texture()
                 quest_stage_major, quest_stage_minor = quest.level_key
 
-                base_id, overlay_id, detail_id = normalize_terrain_ids(quest.terrain_ids)
-                base = terrain_texture_by_id(base_id)
-                overlay = terrain_texture_by_id(overlay_id)
-                detail = terrain_texture_by_id(detail_id)
-                if base is not None and overlay is not None:
-                    base_key, base_path = base
-                    overlay_key, overlay_path = overlay
-                    detail_key = detail[0] if detail is not None else None
-                    detail_path = detail[1] if detail is not None else None
-                    runtime.terrain_runtime.set_terrain(
-                        base_key=base_key,
-                        overlay_key=overlay_key,
-                        base_path=base_path,
-                        overlay_path=overlay_path,
-                        detail_key=detail_key,
-                        detail_path=detail_path,
-                    )
-                    runtime.terrain_runtime.schedule_from_rng_seed(
-                        seed=int(sim_world.state.rng.state),
-                        layers=3,
-                    )
+                base_texture_id, overlay_texture_id, detail_texture_id = normalize_terrain_ids(quest.terrain_ids)
+                runtime.terrain_runtime.set_terrain(
+                    base_texture_id=base_texture_id,
+                    overlay_texture_id=overlay_texture_id,
+                    detail_texture_id=detail_texture_id,
+                )
+                runtime.terrain_runtime.schedule_from_rng_seed(
+                    seed=int(sim_world.state.rng.state),
+                    layers=3,
+                )
 
                 start_weapon_id = quest.start_weapon_id
                 if start_weapon_id <= WeaponId.NONE:
@@ -456,12 +442,8 @@ class ReplayPlaybackMode:
             raise ValueError(f"unsupported replay game_mode_id: {int(mode_id)}") from exc
 
     def close(self) -> None:
-        if self._small is not None:
-            rl.unload_texture(self._small.texture)
-            self._small = None
-        if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
-            self._grim_mono = None
+        self._small = None
+        self._grim_mono = None
         self._quest_complete_texture = None
         self._hud_assets = None
         self._driver = None
@@ -491,14 +473,7 @@ class ReplayPlaybackMode:
         return float(len(text)) * 8.0 * float(scale)
 
     def _load_quest_complete_texture(self) -> rl.Texture | None:
-        loader = TextureLoader(
-            assets_root=self._ctx.assets_dir,
-            cache=self._texture_cache,
-        )
-        return loader.get(
-            name="ui_textLevComp",
-            paq_rel="ui/ui_textLevComp.jaz",
-        )
+        return runtime_resources_for(self._ctx.assets_dir).texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
 
     def _build_post_apply_reaction(self, *, tick_result: TickResult) -> PostApplyReaction:
         driver = self._driver

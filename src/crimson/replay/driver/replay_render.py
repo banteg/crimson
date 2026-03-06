@@ -143,6 +143,7 @@ def run_replay_render_video(
     mute_audio: bool = True,
     progress: Callable[[ReplayRenderPhase, int, int, int], None] | None = None,
 ) -> ReplayRenderResult:
+    from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.raylib_api import rl
@@ -202,12 +203,14 @@ def run_replay_render_video(
         temp_dir = Path(temp_dir_str)
         video_out_path = out_path if not capture_audio else temp_dir / "video_only.mp4"
         audio_raw_path = temp_dir / "audio_mix.f32le"
+        resources = None
         try:
             try:
                 rl.init_window(render_width, render_height, f"Replay Render - {Path(replay_path).name}")
                 window_open = True
             except RuntimeError as exc:
                 raise ReplayRenderError(f"replay render could not initialize window: {exc}") from exc
+            resources = load_runtime_resources(runtime_assets_dir)
 
             capture_width = rl.get_render_width()
             capture_height = rl.get_render_height()
@@ -329,6 +332,7 @@ def run_replay_render_video(
                 mode.close()
             if render_pipeline is not None:
                 render_pipeline.close()
+            unload_runtime_resources(resources)
             if window_open:
                 rl.close_window()
 

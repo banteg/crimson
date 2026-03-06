@@ -4,7 +4,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import TextureId, runtime_resources_for
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -22,32 +22,12 @@ SMALL_FONT_RENDER_SCALE = 1.0
 
 
 def load_small_font(assets_root: Path) -> SmallFontData:
-    # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
-    # assets when present for development convenience.
-    paq_path = find_paq_path(assets_root)
-    if paq_path is not None:
-        try:
-            entries = load_paq_entries_from_path(paq_path)
-            widths_data = entries.get("load/smallFnt.dat")
-            if widths_data is not None:
-                cache = PaqTextureCache(entries=entries, textures={})
-                texture_asset = cache.get_or_load("smallWhite", "load/smallWhite.tga")
-                if texture_asset.texture is not None:
-                    rl.set_texture_filter(texture_asset.texture, SMALL_FONT_FILTER)
-                    return SmallFontData(widths=list(widths_data), texture=texture_asset.texture)
-        except (FileNotFoundError, OSError, ValueError):
-            # Fall back to extracted assets when PAQ decode/load fails.
-            paq_path = None
-
-    widths_path = assets_root / "crimson" / "load" / "smallFnt.dat"
-    atlas_png = assets_root / "crimson" / "load" / "smallWhite.png"
-    atlas_tga = assets_root / "crimson" / "load" / "smallWhite.tga"
-    if not widths_path.is_file() or (not atlas_png.is_file() and not atlas_tga.is_file()):
-        raise FileNotFoundError(f"Missing small font assets: {widths_path} and {atlas_png} or {atlas_tga}")
-    widths = list(widths_path.read_bytes())
-    texture = rl.load_texture(str(atlas_png if atlas_png.is_file() else atlas_tga))
+    resources = runtime_resources_for(assets_root)
+    texture = resources.texture(TextureId.SMALL_WHITE)
+    if texture is None:
+        raise FileNotFoundError("Missing runtime font texture: load/smallWhite.tga")
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
-    return SmallFontData(widths=widths, texture=texture)
+    return SmallFontData(widths=list(resources.small_font_widths), texture=texture)
 
 
 def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:

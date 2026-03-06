@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from grim.assets import PaqTextureCache
+from grim.assets import RuntimeResources
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -208,7 +208,7 @@ class PanelMenuView:
         self._closing = True
         self._close_action = action
 
-    def _ensure_cache(self) -> PaqTextureCache:
+    def _ensure_cache(self) -> RuntimeResources:
         return _ensure_texture_cache(self.state)
 
     def _init_ground(self) -> None:

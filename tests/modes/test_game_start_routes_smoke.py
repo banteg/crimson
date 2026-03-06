@@ -32,10 +32,8 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
         console=create_console(tmp_path, assets_dir=assets_dir),
         demo_enabled=False,
         preserve_bugs=False,
-        logos=None,
-        texture_cache=None,
+        resources=None,
         audio=None,
-        resource_paq=assets_dir / "crimson.paq",
         session_start=time.monotonic(),
     )
 

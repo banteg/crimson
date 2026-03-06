@@ -4,7 +4,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import TextureLoader
+from grim.assets import TextureId, runtime_resources_for
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
@@ -181,25 +181,16 @@ class PerkMenuAssets(msgspec.Struct):
 
 
 def load_perk_menu_assets(assets_root: Path) -> PerkMenuAssets:
-    loader = TextureLoader.from_assets_root(assets_root)
+    resources = runtime_resources_for(assets_root)
     return PerkMenuAssets(
-        menu_panel=loader.get(name="ui_menuPanel", paq_rel="ui/ui_menuPanel.jaz"),
-        title_pick_perk=loader.get(
-            name="ui_textPickAPerk",
-            paq_rel="ui/ui_textPickAPerk.jaz",
-        ),
-        title_level_up=loader.get(
-            name="ui_textLevelUp",
-            paq_rel="ui/ui_textLevelUp.jaz",
-        ),
-        menu_item=loader.get(name="ui_menuItem", paq_rel="ui/ui_menuItem.jaz"),
-        button_sm=loader.get(name="ui_buttonSm", paq_rel="ui/ui_button_64x32.jaz"),
-        button_md=loader.get(
-            name="ui_buttonMd",
-            paq_rel="ui/ui_button_128x32.jaz",
-        ),
-        cursor=loader.get(name="ui_cursor", paq_rel="ui/ui_cursor.jaz"),
-        aim=loader.get(name="ui_aim", paq_rel="ui/ui_aim.jaz"),
+        menu_panel=resources.texture(TextureId.UI_MENU_PANEL),
+        title_pick_perk=resources.texture(TextureId.UI_TEXT_PICK_A_PERK),
+        title_level_up=resources.texture(TextureId.UI_TEXT_LEVEL_UP),
+        menu_item=resources.texture(TextureId.UI_MENU_ITEM),
+        button_sm=resources.texture(TextureId.UI_BUTTON_SM),
+        button_md=resources.texture(TextureId.UI_BUTTON_MD),
+        cursor=resources.texture(TextureId.UI_CURSOR),
+        aim=resources.texture(TextureId.UI_AIM),
     )
 
 

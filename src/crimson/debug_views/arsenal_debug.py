@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 
+from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
@@ -18,6 +19,14 @@ from ..sim.input import PlayerInput
 from ..sim.input_providers import FrameContext
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
+from ..weapon_runtime.fire_recipes import (
+    MultiPlasmaFanMode,
+    ParticleStreamMode,
+    PrimaryPelletsMode,
+    SecondaryShotMode,
+    SwarmerDumpMode,
+    resolve_fire_recipe,
+)
 from ..weapons import (
     WEAPON_BY_ID,
     WEAPON_TABLE,
@@ -53,18 +62,6 @@ DEFAULT_SPAWN_IDS = (
     SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E,
     SpawnId.SPIDER_SP2_RANDOM_35,
 )
-
-SPECIAL_PROJECTILES: dict[int, str] = {
-    9: "particle style 0 (plasma rifle)",
-    13: "secondary type 2 (seeker rockets)",
-    14: "secondary type 2 (plasma shotgun)",
-    16: "particle style 1 (hr flamer)",
-    17: "secondary type 2 (mini-rocket swarmers)",
-    18: "secondary type 4 (rocket minigun)",
-    19: "secondary type 4 (pulse gun)",
-    43: "particle style 8 (rainbow gun)",
-}
-
 
 def _fmt_float(value: float | None, *, digits: int = 3) -> str:
     if value is None:
@@ -125,8 +122,8 @@ class ArsenalDebugView:
             build_inputs=self._build_runner_inputs,
         )
 
-    def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        return self._runtime.render_resources.load_texture(name, cache_path=cache_path)
+    def _load_texture(self, texture_id: TextureId) -> rl.Texture | None:
+        return self._runtime.render_resources.load_texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -291,13 +288,33 @@ class ArsenalDebugView:
         self._runtime.reset_tick_runner()
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
-        special = SPECIAL_PROJECTILES.get(int(weapon_id))
-        if special is not None:
-            return special
+        weapon = WEAPON_BY_ID[weapon_id]
+        recipe = resolve_fire_recipe(
+            weapon_id,
+            pellet_count=int(weapon.pellet_count),
+            fire_bullets_active=False,
+        )
+        if recipe is None:
+            return "unsupported/unmapped"
+        match recipe.mode:
+            case PrimaryPelletsMode(type_id=type_id):
+                if type_id is None:
+                    return "unsupported/unmapped"
+                return _projectile_type_label(int(type_id))
+            case SecondaryShotMode(type_id=type_id):
+                return f"secondary type {int(type_id)}"
+            case ParticleStreamMode(style=style, slow=slow):
+                if style is None:
+                    return "slow particle stream" if slow else "particle stream"
+                return f"particle style {int(style)}"
+            case MultiPlasmaFanMode():
+                return "plasma fan"
+            case SwarmerDumpMode():
+                return "secondary swarm dump"
         try:
             type_id = projectile_type_id_for_weapon_id(weapon_id)
         except ValueError:
-            return "particle/secondary"
+            return "unsupported/unmapped"
         return _projectile_type_label(int(type_id))
 
     def _weapon_debug_lines(self) -> list[str]:
@@ -341,10 +358,7 @@ class ArsenalDebugView:
         self._small = load_small_font(self._assets_root)
 
         self._runtime.open_runtime()
-        self._aim_texture = self._load_texture(
-            "ui_aim",
-            cache_path="ui/ui_aim.jaz",
-        )
+        self._aim_texture = self._load_texture(TextureId.UI_AIM)
         self._reset_scene()
         rl.hide_cursor()
 
@@ -352,7 +366,6 @@ class ArsenalDebugView:
         rl.show_cursor()
         self._reset_tick_runner()
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
         if self._audio is not None:
             shutdown_audio(self._audio)

@@ -80,7 +80,6 @@ class SmallFontDebugView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
             self._small = None
         if self._vector_font is not None:
             rl.unload_font(self._vector_font)
