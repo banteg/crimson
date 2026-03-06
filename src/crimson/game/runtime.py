@@ -34,7 +34,7 @@ from ..net.debug_log import close_lan_debug_log, init_lan_debug_log, lan_debug_l
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from .loop_view import GameLoopView
-from .types import GameConfig, GameState, LockstepSessionConfig
+from .types import GameConfig, GameState, LockstepEndpoint
 
 CRIMSON_PAQ_NAME = "crimson.paq"
 MUSIC_PAQ_NAME = "music.paq"
@@ -283,12 +283,11 @@ def run_game(config: GameConfig) -> None:
         if pending is not None:
             from ..net.lockstep_protocol import current_build_id
 
-            if isinstance(pending.config, LockstepSessionConfig):
-                endpoint = pending.config.endpoint
+            endpoint = pending.config.endpoint
+            if isinstance(endpoint, LockstepEndpoint):
                 host = str(endpoint.host)
                 port = int(endpoint.port)
             else:
-                endpoint = pending.config.endpoint
                 host = str(endpoint.relay_host)
                 port = int(endpoint.relay_port)
             log_path = init_lan_debug_log(

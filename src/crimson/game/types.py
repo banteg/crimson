@@ -67,10 +67,10 @@ class RollbackEndpoint(msgspec.Struct, frozen=True):
 NetworkEndpoint: TypeAlias = LockstepEndpoint | RollbackEndpoint
 
 
-class LockstepSessionConfig(msgspec.Struct, frozen=True):
+class NetworkSessionConfig(msgspec.Struct, frozen=True):
     mode: NetworkSessionMode
-    endpoint: LockstepEndpoint
-    netcode_mode: Literal["lockstep"] = "lockstep"
+    endpoint: NetworkEndpoint
+    netcode_mode: NetcodeMode = "rollback"
     player_count: int = 1
     quest_level: str = ""
     rollback_max_ticks: int = 8
@@ -78,28 +78,18 @@ class LockstepSessionConfig(msgspec.Struct, frozen=True):
     input_delay_ticks: int = 1
     preserve_bugs: bool = False
 
-    @property
-    def quest_level_value(self) -> QuestLevel | None:
-        return QuestLevel.try_parse(self.quest_level)
-
-
-class RollbackSessionConfig(msgspec.Struct, frozen=True):
-    mode: NetworkSessionMode
-    endpoint: RollbackEndpoint
-    netcode_mode: Literal["rollback"] = "rollback"
-    player_count: int = 1
-    quest_level: str = ""
-    rollback_max_ticks: int = 8
-    reconnect_timeout_ms: int = 15_000
-    input_delay_ticks: int = 1
-    preserve_bugs: bool = False
+    def __post_init__(self) -> None:
+        endpoint = self.endpoint
+        if self.netcode_mode == "lockstep":
+            if not isinstance(endpoint, LockstepEndpoint):
+                raise TypeError("lockstep sessions require LockstepEndpoint")
+            return
+        if not isinstance(endpoint, RollbackEndpoint):
+            raise TypeError("rollback sessions require RollbackEndpoint")
 
     @property
     def quest_level_value(self) -> QuestLevel | None:
         return QuestLevel.try_parse(self.quest_level)
-
-
-NetworkSessionConfig: TypeAlias = LockstepSessionConfig | RollbackSessionConfig
 
 
 class PendingNetworkSession(msgspec.Struct):
@@ -238,7 +228,6 @@ __all__ = [
     "GameState",
     "HighScoresRequest",
     "LockstepEndpoint",
-    "LockstepSessionConfig",
     "NetcodeMode",
     "NetworkEndpoint",
     "NetworkSessionConfig",
@@ -246,6 +235,5 @@ __all__ = [
     "PendingNetworkSession",
     "PauseBackground",
     "RollbackEndpoint",
-    "RollbackSessionConfig",
     "Screen",
 ]

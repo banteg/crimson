@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...debug import debug_enabled
-from ...game.types import GameState, LockstepSessionConfig
+from ...game.types import GameState, LockstepEndpoint
 from ...game_modes import GameMode
 from ...net.lockstep_protocol import LobbyState
 from ...net.lockstep_runtime import LockstepRuntime
@@ -240,12 +240,11 @@ class NetworkLobbyPanelView(PanelMenuView):
         room_code = ""
         relay_text = "127.0.0.1:31993"
         if cfg is not None:
-            if isinstance(cfg, LockstepSessionConfig):
-                endpoint = cfg.endpoint
+            endpoint = cfg.endpoint
+            if isinstance(endpoint, LockstepEndpoint):
                 room_code = "-"
                 relay_text = f"{endpoint.host}:{int(endpoint.port)}"
             else:
-                endpoint = cfg.endpoint
                 room_code = str(endpoint.room_code).upper().strip() or "-"
                 relay_text = f"{endpoint.relay_host}:{int(endpoint.relay_port)}"
 

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import crimson.game.loop_view as loop_view_module
 from crimson.game.loop_view import GameLoopView
-from crimson.game.types import LockstepEndpoint, LockstepSessionConfig, PendingNetworkSession
+from crimson.game.types import LockstepEndpoint, NetworkSessionConfig, PendingNetworkSession
 from crimson.modes.base_gameplay_mode import LanFramePolicy, _LanRuntimeInputProvider
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.hooks import LanFrameSample, LanSyncCallbacks, LanTickSync, TickResult
@@ -45,9 +45,10 @@ class _DummyRuntime:
 def _pending_session() -> PendingNetworkSession:
     return PendingNetworkSession(
         role="host",
-        config=LockstepSessionConfig(
+        config=NetworkSessionConfig(
             mode="survival",
             endpoint=LockstepEndpoint(),
+            netcode_mode="lockstep",
             player_count=2,
         ),
     )
