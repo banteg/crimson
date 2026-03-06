@@ -325,11 +325,10 @@ class DemoView:
         rl.clear_background(rl.BLACK)
 
         resources = self.state.resources
-        if resources is None or resources.logos.backplasma.texture is None:
+        if resources is None:
             return
         logos = resources.logos
-        backplasma = logos.backplasma.texture
-        assert backplasma is not None
+        backplasma = logos.backplasma
 
         pulse_phase = float(self._upsell_pulse_ms % 1000)
         pulse = math.sin(pulse_phase * 6.2831855)
@@ -382,21 +381,19 @@ class DemoView:
         wide_shift = self._purchase_var_28_2()
 
         # Mockup and logo textures.
-        if logos.mockup.texture is not None:
-            mockup = logos.mockup.texture
-            x = screen_w / 2.0 - 128.0 + wide_shift
-            y = screen_h / 2.0 - 140.0
-            dst = rl.Rectangle(x, y, 512.0, 256.0)
-            src = rl.Rectangle(0.0, 0.0, float(mockup.width), float(mockup.height))
-            rl.draw_texture_pro(mockup, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        mockup = logos.mockup
+        x = screen_w / 2.0 - 128.0 + wide_shift
+        y = screen_h / 2.0 - 140.0
+        dst = rl.Rectangle(x, y, 512.0, 256.0)
+        src = rl.Rectangle(0.0, 0.0, float(mockup.width), float(mockup.height))
+        rl.draw_texture_pro(mockup, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        if logos.cl_logo.texture is not None:
-            cl_logo = logos.cl_logo.texture
-            x = screen_w / 2.0 - 256.0
-            y = screen_h / 2.0 - 200.0 - wide_shift * 0.4
-            dst = rl.Rectangle(x, y, 512.0, 64.0)
-            src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
-            rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        cl_logo = logos.cl_logo
+        x = screen_w / 2.0 - 256.0
+        y = screen_h / 2.0 - 200.0 - wide_shift * 0.4
+        dst = rl.Rectangle(x, y, 512.0, 64.0)
+        src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
+        rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         small = self._ensure_small_font()
         text_scale = 1.2

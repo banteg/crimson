@@ -137,7 +137,7 @@ def terrain_textures(raylib_context) -> Iterator[dict[int, TextureAsset]]:
     entries = load_paq_entries(PAQ_DIR)
     assets = {}
     for terrain_id, rel_path in TEXTURE_PATHS.items():
-        asset = _load_texture_asset_from_bytes(f"terrain_{terrain_id}", rel_path, entries.get(rel_path))
+        asset = _load_texture_asset_from_bytes(rel_path, entries.get(rel_path))
         if asset.texture is None:
             pytest.skip(f"missing terrain texture: {rel_path}")
         assets[terrain_id] = asset

@@ -89,88 +89,85 @@ class TextureId(Enum):
 
 
 class TextureSpec(msgspec.Struct, frozen=True):
-    legacy_name: str
     rel_path: str
     clamp: bool = False
     point_filter: bool = False
 
 
 TEXTURE_SPECS: Final[dict[TextureId, TextureSpec]] = {
-    TextureId.BACKPLASMA: TextureSpec("backplasma", "load/backplasma.jaz"),
-    TextureId.MOCKUP: TextureSpec("mockup", "load/mockup.jaz"),
-    TextureId.LOGO_ESRB: TextureSpec("logo_esrb", "load/esrb_mature.jaz"),
-    TextureId.LOADING: TextureSpec("loading", "load/loading.jaz"),
-    TextureId.CL_LOGO: TextureSpec("cl_logo", "load/logo_crimsonland.tga"),
-    TextureId.SPLASH_10TONS: TextureSpec("splash10tons", "load/splash10tons.jaz"),
-    TextureId.SPLASH_REFLEXIVE: TextureSpec("splashReflexive", "load/splashReflexive.jpg"),
-    TextureId.DEFAULT_FONT_COURIER: TextureSpec("default_font_courier", "load/default_font_courier.tga"),
-    TextureId.SMALL_WHITE: TextureSpec("smallWhite", "load/smallWhite.tga", point_filter=True),
-    TextureId.TROOPER: TextureSpec("trooper", "game/trooper.jaz"),
-    TextureId.ZOMBIE: TextureSpec("zombie", "game/zombie.jaz"),
-    TextureId.SPIDER_SP1: TextureSpec("spider_sp1", "game/spider_sp1.jaz"),
-    TextureId.SPIDER_SP2: TextureSpec("spider_sp2", "game/spider_sp2.jaz"),
-    TextureId.ALIEN: TextureSpec("alien", "game/alien.jaz"),
-    TextureId.LIZARD: TextureSpec("lizard", "game/lizard.jaz"),
-    TextureId.ARROW: TextureSpec("arrow", "load/arrow.tga"),
-    TextureId.BULLET_I: TextureSpec("bullet_i", "load/bullet16.tga"),
-    TextureId.BULLET_TRAIL: TextureSpec("bulletTrail", "load/bulletTrail.tga"),
-    TextureId.BODYSET: TextureSpec("bodyset", "game/bodyset.jaz"),
-    TextureId.PROJS: TextureSpec("projs", "game/projs.jaz"),
-    TextureId.UI_ICON_AIM: TextureSpec("ui_iconAim", "ui/ui_iconAim.jaz", clamp=True),
-    TextureId.UI_BUTTON_SM: TextureSpec("ui_buttonSm", "ui/ui_button_64x32.jaz", clamp=True),
-    TextureId.UI_BUTTON_MD: TextureSpec("ui_buttonMd", "ui/ui_button_128x32.jaz", clamp=True),
-    TextureId.UI_CHECK_ON: TextureSpec("ui_checkOn", "ui/ui_checkOn.jaz", clamp=True),
-    TextureId.UI_CHECK_OFF: TextureSpec("ui_checkOff", "ui/ui_checkOff.jaz", clamp=True),
-    TextureId.UI_RECT_OFF: TextureSpec("ui_rectOff", "ui/ui_rectOff.jaz", clamp=True),
-    TextureId.UI_RECT_ON: TextureSpec("ui_rectOn", "ui/ui_rectOn.jaz", clamp=True),
-    TextureId.BONUSES: TextureSpec("bonuses", "game/bonuses.jaz"),
-    TextureId.UI_IND_BULLET: TextureSpec("ui_indBullet", "ui/ui_indBullet.jaz", clamp=True),
-    TextureId.UI_IND_ROCKET: TextureSpec("ui_indRocket", "ui/ui_indRocket.jaz", clamp=True),
-    TextureId.UI_IND_ELECTRIC: TextureSpec("ui_indElectric", "ui/ui_indElectric.jaz", clamp=True),
-    TextureId.UI_IND_FIRE: TextureSpec("ui_indFire", "ui/ui_indFire.jaz", clamp=True),
-    TextureId.PARTICLES: TextureSpec("particles", "game/particles.jaz"),
-    TextureId.UI_IND_LIFE: TextureSpec("ui_indLife", "ui/ui_indLife.jaz", clamp=True),
-    TextureId.UI_IND_PANEL: TextureSpec("ui_indPanel", "ui/ui_indPanel.jaz", clamp=True),
-    TextureId.UI_ARROW: TextureSpec("ui_arrow", "ui/ui_arrow.jaz", clamp=True),
-    TextureId.UI_CURSOR: TextureSpec("ui_cursor", "ui/ui_cursor.jaz", clamp=True),
-    TextureId.UI_AIM: TextureSpec("ui_aim", "ui/ui_aim.jaz", clamp=True),
-    TextureId.TER_Q1_BASE: TextureSpec("ter_q1_base", "ter/ter_q1_base.jaz"),
-    TextureId.TER_Q1_OVERLAY: TextureSpec("ter_q1_tex1", "ter/ter_q1_tex1.jaz"),
-    TextureId.TER_Q2_BASE: TextureSpec("ter_q2_base", "ter/ter_q2_base.jaz"),
-    TextureId.TER_Q2_OVERLAY: TextureSpec("ter_q2_tex1", "ter/ter_q2_tex1.jaz"),
-    TextureId.TER_Q3_BASE: TextureSpec("ter_q3_base", "ter/ter_q3_base.jaz"),
-    TextureId.TER_Q3_OVERLAY: TextureSpec("ter_q3_tex1", "ter/ter_q3_tex1.jaz"),
-    TextureId.TER_Q4_BASE: TextureSpec("ter_q4_base", "ter/ter_q4_base.jaz"),
-    TextureId.TER_Q4_OVERLAY: TextureSpec("ter_q4_tex1", "ter/ter_q4_tex1.jaz"),
-    TextureId.UI_TEXT_LEVEL_COMPLETE: TextureSpec("ui_textLevComp", "ui/ui_textLevComp.jaz", clamp=True),
-    TextureId.UI_TEXT_QUEST: TextureSpec("ui_textQuest", "ui/ui_textQuest.jaz", clamp=True),
-    TextureId.UI_NUM1: TextureSpec("ui_num1", "ui/ui_num1.jaz", clamp=True),
-    TextureId.UI_NUM2: TextureSpec("ui_num2", "ui/ui_num2.jaz", clamp=True),
-    TextureId.UI_NUM3: TextureSpec("ui_num3", "ui/ui_num3.jaz", clamp=True),
-    TextureId.UI_NUM4: TextureSpec("ui_num4", "ui/ui_num4.jaz", clamp=True),
-    TextureId.UI_NUM5: TextureSpec("ui_num5", "ui/ui_num5.jaz", clamp=True),
-    TextureId.UI_WICONS: TextureSpec("ui_wicons", "ui/ui_wicons.jaz", clamp=True),
-    TextureId.UI_GAME_TOP: TextureSpec("iGameUI", "ui/ui_gameTop.jaz", clamp=True),
-    TextureId.UI_LIFE_HEART: TextureSpec("iHeart", "ui/ui_lifeHeart.jaz", clamp=True),
-    TextureId.UI_CLOCK_TABLE: TextureSpec("ui_clockTable", "ui/ui_clockTable.jaz", clamp=True),
-    TextureId.UI_CLOCK_POINTER: TextureSpec("ui_clockPointer", "ui/ui_clockPointer.jaz", clamp=True),
-    TextureId.MUZZLE_FLASH: TextureSpec("muzzleFlash", "game/muzzleFlash.jaz"),
-    TextureId.UI_DROP_ON: TextureSpec("ui_dropOn", "ui/ui_dropDownOn.jaz", clamp=True),
-    TextureId.UI_DROP_OFF: TextureSpec("ui_dropOff", "ui/ui_dropDownOff.jaz", clamp=True),
-    TextureId.UI_SIGN_CRIMSON: TextureSpec("ui_signCrimson", "ui/ui_signCrimson.jaz", clamp=True),
-    TextureId.UI_MENU_ITEM: TextureSpec("ui_menuItem", "ui/ui_menuItem.jaz", clamp=True),
-    TextureId.UI_MENU_PANEL: TextureSpec("ui_menuPanel", "ui/ui_menuPanel.jaz", clamp=True),
-    TextureId.UI_ITEM_TEXTS: TextureSpec("ui_itemTexts", "ui/ui_itemTexts.jaz", clamp=True),
-    TextureId.UI_TEXT_REAPER: TextureSpec("ui_textReaper", "ui/ui_textReaper.jaz", clamp=True),
-    TextureId.UI_TEXT_WELL_DONE: TextureSpec("ui_textWellDone", "ui/ui_textWellDone.jaz", clamp=True),
-    TextureId.UI_TEXT_CONTROLS: TextureSpec("ui_textControls", "ui/ui_textControls.jaz", clamp=True),
-    TextureId.UI_TEXT_PICK_A_PERK: TextureSpec("ui_textPickAPerk", "ui/ui_textPickAPerk.jaz", clamp=True),
-    TextureId.UI_TEXT_LEVEL_UP: TextureSpec("ui_textLevelUp", "ui/ui_textLevelUp.jaz", clamp=True),
+    TextureId.BACKPLASMA: TextureSpec("load/backplasma.jaz"),
+    TextureId.MOCKUP: TextureSpec("load/mockup.jaz"),
+    TextureId.LOGO_ESRB: TextureSpec("load/esrb_mature.jaz"),
+    TextureId.LOADING: TextureSpec("load/loading.jaz"),
+    TextureId.CL_LOGO: TextureSpec("load/logo_crimsonland.tga"),
+    TextureId.SPLASH_10TONS: TextureSpec("load/splash10tons.jaz"),
+    TextureId.SPLASH_REFLEXIVE: TextureSpec("load/splashReflexive.jpg"),
+    TextureId.DEFAULT_FONT_COURIER: TextureSpec("load/default_font_courier.tga"),
+    TextureId.SMALL_WHITE: TextureSpec("load/smallWhite.tga", point_filter=True),
+    TextureId.TROOPER: TextureSpec("game/trooper.jaz"),
+    TextureId.ZOMBIE: TextureSpec("game/zombie.jaz"),
+    TextureId.SPIDER_SP1: TextureSpec("game/spider_sp1.jaz"),
+    TextureId.SPIDER_SP2: TextureSpec("game/spider_sp2.jaz"),
+    TextureId.ALIEN: TextureSpec("game/alien.jaz"),
+    TextureId.LIZARD: TextureSpec("game/lizard.jaz"),
+    TextureId.ARROW: TextureSpec("load/arrow.tga"),
+    TextureId.BULLET_I: TextureSpec("load/bullet16.tga"),
+    TextureId.BULLET_TRAIL: TextureSpec("load/bulletTrail.tga"),
+    TextureId.BODYSET: TextureSpec("game/bodyset.jaz"),
+    TextureId.PROJS: TextureSpec("game/projs.jaz"),
+    TextureId.UI_ICON_AIM: TextureSpec("ui/ui_iconAim.jaz", clamp=True),
+    TextureId.UI_BUTTON_SM: TextureSpec("ui/ui_button_64x32.jaz", clamp=True),
+    TextureId.UI_BUTTON_MD: TextureSpec("ui/ui_button_128x32.jaz", clamp=True),
+    TextureId.UI_CHECK_ON: TextureSpec("ui/ui_checkOn.jaz", clamp=True),
+    TextureId.UI_CHECK_OFF: TextureSpec("ui/ui_checkOff.jaz", clamp=True),
+    TextureId.UI_RECT_OFF: TextureSpec("ui/ui_rectOff.jaz", clamp=True),
+    TextureId.UI_RECT_ON: TextureSpec("ui/ui_rectOn.jaz", clamp=True),
+    TextureId.BONUSES: TextureSpec("game/bonuses.jaz"),
+    TextureId.UI_IND_BULLET: TextureSpec("ui/ui_indBullet.jaz", clamp=True),
+    TextureId.UI_IND_ROCKET: TextureSpec("ui/ui_indRocket.jaz", clamp=True),
+    TextureId.UI_IND_ELECTRIC: TextureSpec("ui/ui_indElectric.jaz", clamp=True),
+    TextureId.UI_IND_FIRE: TextureSpec("ui/ui_indFire.jaz", clamp=True),
+    TextureId.PARTICLES: TextureSpec("game/particles.jaz"),
+    TextureId.UI_IND_LIFE: TextureSpec("ui/ui_indLife.jaz", clamp=True),
+    TextureId.UI_IND_PANEL: TextureSpec("ui/ui_indPanel.jaz", clamp=True),
+    TextureId.UI_ARROW: TextureSpec("ui/ui_arrow.jaz", clamp=True),
+    TextureId.UI_CURSOR: TextureSpec("ui/ui_cursor.jaz", clamp=True),
+    TextureId.UI_AIM: TextureSpec("ui/ui_aim.jaz", clamp=True),
+    TextureId.TER_Q1_BASE: TextureSpec("ter/ter_q1_base.jaz"),
+    TextureId.TER_Q1_OVERLAY: TextureSpec("ter/ter_q1_tex1.jaz"),
+    TextureId.TER_Q2_BASE: TextureSpec("ter/ter_q2_base.jaz"),
+    TextureId.TER_Q2_OVERLAY: TextureSpec("ter/ter_q2_tex1.jaz"),
+    TextureId.TER_Q3_BASE: TextureSpec("ter/ter_q3_base.jaz"),
+    TextureId.TER_Q3_OVERLAY: TextureSpec("ter/ter_q3_tex1.jaz"),
+    TextureId.TER_Q4_BASE: TextureSpec("ter/ter_q4_base.jaz"),
+    TextureId.TER_Q4_OVERLAY: TextureSpec("ter/ter_q4_tex1.jaz"),
+    TextureId.UI_TEXT_LEVEL_COMPLETE: TextureSpec("ui/ui_textLevComp.jaz", clamp=True),
+    TextureId.UI_TEXT_QUEST: TextureSpec("ui/ui_textQuest.jaz", clamp=True),
+    TextureId.UI_NUM1: TextureSpec("ui/ui_num1.jaz", clamp=True),
+    TextureId.UI_NUM2: TextureSpec("ui/ui_num2.jaz", clamp=True),
+    TextureId.UI_NUM3: TextureSpec("ui/ui_num3.jaz", clamp=True),
+    TextureId.UI_NUM4: TextureSpec("ui/ui_num4.jaz", clamp=True),
+    TextureId.UI_NUM5: TextureSpec("ui/ui_num5.jaz", clamp=True),
+    TextureId.UI_WICONS: TextureSpec("ui/ui_wicons.jaz", clamp=True),
+    TextureId.UI_GAME_TOP: TextureSpec("ui/ui_gameTop.jaz", clamp=True),
+    TextureId.UI_LIFE_HEART: TextureSpec("ui/ui_lifeHeart.jaz", clamp=True),
+    TextureId.UI_CLOCK_TABLE: TextureSpec("ui/ui_clockTable.jaz", clamp=True),
+    TextureId.UI_CLOCK_POINTER: TextureSpec("ui/ui_clockPointer.jaz", clamp=True),
+    TextureId.MUZZLE_FLASH: TextureSpec("game/muzzleFlash.jaz"),
+    TextureId.UI_DROP_ON: TextureSpec("ui/ui_dropDownOn.jaz", clamp=True),
+    TextureId.UI_DROP_OFF: TextureSpec("ui/ui_dropDownOff.jaz", clamp=True),
+    TextureId.UI_SIGN_CRIMSON: TextureSpec("ui/ui_signCrimson.jaz", clamp=True),
+    TextureId.UI_MENU_ITEM: TextureSpec("ui/ui_menuItem.jaz", clamp=True),
+    TextureId.UI_MENU_PANEL: TextureSpec("ui/ui_menuPanel.jaz", clamp=True),
+    TextureId.UI_ITEM_TEXTS: TextureSpec("ui/ui_itemTexts.jaz", clamp=True),
+    TextureId.UI_TEXT_REAPER: TextureSpec("ui/ui_textReaper.jaz", clamp=True),
+    TextureId.UI_TEXT_WELL_DONE: TextureSpec("ui/ui_textWellDone.jaz", clamp=True),
+    TextureId.UI_TEXT_CONTROLS: TextureSpec("ui/ui_textControls.jaz", clamp=True),
+    TextureId.UI_TEXT_PICK_A_PERK: TextureSpec("ui/ui_textPickAPerk.jaz", clamp=True),
+    TextureId.UI_TEXT_LEVEL_UP: TextureSpec("ui/ui_textLevelUp.jaz", clamp=True),
 }
 
 class TextureAsset(msgspec.Struct):
-    name: str
-    rel_path: str
     texture: rl.Texture | None
 
     def unload(self) -> None:
@@ -182,23 +179,11 @@ class TextureAsset(msgspec.Struct):
 
 
 class LogoAssets(msgspec.Struct):
-    backplasma: TextureAsset
-    mockup: TextureAsset
-    logo_esrb: TextureAsset
-    loading: TextureAsset
-    cl_logo: TextureAsset
-
-    def all(self) -> tuple[TextureAsset, ...]:
-        return (
-            self.backplasma,
-            self.mockup,
-            self.logo_esrb,
-            self.loading,
-            self.cl_logo,
-        )
-
-    def loaded_count(self) -> int:
-        return sum(1 for asset in self.all() if asset.texture is not None)
+    backplasma: rl.Texture
+    mockup: rl.Texture
+    logo_esrb: rl.Texture
+    loading: rl.Texture
+    cl_logo: rl.Texture
 
 
 class RuntimeResources(msgspec.Struct):
@@ -280,7 +265,7 @@ def _apply_texture_settings(texture: rl.Texture, *, clamp: bool, point_filter: b
         rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_POINT)
 
 
-def _load_texture_asset_from_bytes(name: str, rel_path: str, data: bytes | None) -> TextureAsset:
+def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> TextureAsset:
     if data is None:
         raise FileNotFoundError(f"Missing asset data: {rel_path}")
     texture: rl.Texture | None
@@ -301,36 +286,16 @@ def _load_texture_asset_from_bytes(name: str, rel_path: str, data: bytes | None)
         texture = _load_texture_from_bytes(buf.getvalue(), ".png")
     else:
         texture = None
-    return TextureAsset(name=name, rel_path=rel_path, texture=texture)
+    return TextureAsset(texture=texture)
 
 
 def _build_logo_assets(textures: dict[TextureId, rl.Texture]) -> LogoAssets:
     return LogoAssets(
-        backplasma=TextureAsset(
-            name=TEXTURE_SPECS[TextureId.BACKPLASMA].legacy_name,
-            rel_path=TEXTURE_SPECS[TextureId.BACKPLASMA].rel_path,
-            texture=textures.get(TextureId.BACKPLASMA),
-        ),
-        mockup=TextureAsset(
-            name=TEXTURE_SPECS[TextureId.MOCKUP].legacy_name,
-            rel_path=TEXTURE_SPECS[TextureId.MOCKUP].rel_path,
-            texture=textures.get(TextureId.MOCKUP),
-        ),
-        logo_esrb=TextureAsset(
-            name=TEXTURE_SPECS[TextureId.LOGO_ESRB].legacy_name,
-            rel_path=TEXTURE_SPECS[TextureId.LOGO_ESRB].rel_path,
-            texture=textures.get(TextureId.LOGO_ESRB),
-        ),
-        loading=TextureAsset(
-            name=TEXTURE_SPECS[TextureId.LOADING].legacy_name,
-            rel_path=TEXTURE_SPECS[TextureId.LOADING].rel_path,
-            texture=textures.get(TextureId.LOADING),
-        ),
-        cl_logo=TextureAsset(
-            name=TEXTURE_SPECS[TextureId.CL_LOGO].legacy_name,
-            rel_path=TEXTURE_SPECS[TextureId.CL_LOGO].rel_path,
-            texture=textures.get(TextureId.CL_LOGO),
-        ),
+        backplasma=textures[TextureId.BACKPLASMA],
+        mockup=textures[TextureId.MOCKUP],
+        logo_esrb=textures[TextureId.LOGO_ESRB],
+        loading=textures[TextureId.LOADING],
+        cl_logo=textures[TextureId.CL_LOGO],
     )
 
 
@@ -338,7 +303,7 @@ def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
     entries = load_paq_entries(Path(assets_dir))
     textures: dict[TextureId, rl.Texture] = {}
     for texture_id, spec in TEXTURE_SPECS.items():
-        asset = _load_texture_asset_from_bytes(spec.legacy_name, spec.rel_path, entries.get(spec.rel_path))
+        asset = _load_texture_asset_from_bytes(spec.rel_path, entries.get(spec.rel_path))
         texture = asset.texture
         if texture is None:
             raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")

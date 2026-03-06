@@ -202,8 +202,8 @@ class BootView:
         if alpha <= 0.0:
             return
 
-        logo = logos.cl_logo.texture
-        logo_h = float(logo.height) if logo is not None else 64.0
+        logo = logos.cl_logo
+        logo_h = float(logo.height)
         band_height = logo_h * 2.0
         band_top = (screen_h - band_height) * 0.5 - 4.0
         band_bottom = band_top + band_height
@@ -243,22 +243,19 @@ class BootView:
 
         tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
 
-        if logo is not None:
-            logo_w = float(logo.width)
-            logo_h = float(logo.height)
-            logo_x = (screen_w - logo_w) * 0.5
-            logo_y = (screen_h - logo_h) * 0.5
-            rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), tint)
-            loading = logos.loading.texture
-            if loading is not None:
-                loading_x = screen_w * 0.5 + 128.0
-                loading_y = screen_h * 0.5 + 16.0
-                rl.draw_texture_v(loading, rl.Vector2(loading_x, loading_y), tint)
+        logo_w = float(logo.width)
+        logo_h = float(logo.height)
+        logo_x = (screen_w - logo_w) * 0.5
+        logo_y = (screen_h - logo_h) * 0.5
+        rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), tint)
+        loading = logos.loading
+        loading_x = screen_w * 0.5 + 128.0
+        loading_y = screen_h * 0.5 + 16.0
+        rl.draw_texture_v(loading, rl.Vector2(loading_x, loading_y), tint)
 
-        esrb = logos.logo_esrb.texture
-        if esrb is not None:
-            esrb_w = float(esrb.width)
-            esrb_h = float(esrb.height)
-            esrb_x = screen_w - esrb_w - 1.0
-            esrb_y = screen_h - esrb_h - 1.0
-            rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), tint)
+        esrb = logos.logo_esrb
+        esrb_w = float(esrb.width)
+        esrb_h = float(esrb.height)
+        esrb_x = screen_w - esrb_w - 1.0
+        esrb_y = screen_h - esrb_h - 1.0
+        rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), tint)
