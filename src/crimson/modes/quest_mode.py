@@ -703,10 +703,7 @@ class QuestMode(BaseGameplayMode):
         session.detail_preset = int(self._deterministic_detail_preset())
         session.gore_disabled = int(self._deterministic_gore_disabled())
 
-        if self.audio_bridge.router is not None:
-            self.audio_bridge.router.audio = self.audio
-            self.audio_bridge.router.audio_rng = self.audio_rng
-            self.audio_bridge.router.demo_mode_active = self.demo_mode_active
+        self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
             self.sync_ground_settings()
             self.render_resources.ground.process_pending()

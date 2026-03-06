@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -70,19 +70,11 @@ _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[str, ...]] = {
 
 
 class AudioRouter(msgspec.Struct):
+    audio_rng: Crand
     audio: AudioState | None = None
-    audio_rng: Crand | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True
     reflex_boost_timer_source: Callable[[], float] | None = None
-
-    def __post_init__(self) -> None:
-        self._validate_audio_binding(self.audio, self.audio_rng)
-
-    @staticmethod
-    def _validate_audio_binding(audio: AudioState | None, audio_rng: Crand | None) -> None:
-        if audio is not None and audio_rng is None:
-            raise ValueError("audio rng required when audio is bound")
 
     @staticmethod
     def _rand_choice(rand: Callable[[], int], options: tuple[str, ...]) -> str | None:
@@ -100,11 +92,10 @@ class AudioRouter(msgspec.Struct):
     def play_sfx(self, key: str | None) -> None:
         if self.audio is None or (not self.sfx_enabled):
             return
-        audio_rng = cast(Crand, self.audio_rng)
         play_sfx(
             self.audio,
             key,
-            rng=audio_rng,
+            rng=self.audio_rng,
             reflex_boost_timer=self._reflex_boost_timer(),
         )
 
@@ -120,8 +111,7 @@ class AudioRouter(msgspec.Struct):
     def trigger_game_tune(self) -> str | None:
         if self.audio is None:
             return None
-        audio_rng = cast(Crand, self.audio_rng)
-        return trigger_game_tune(self.audio, rand=audio_rng.rand)
+        return trigger_game_tune(self.audio, rand=self.audio_rng.rand)
 
     def handle_player_audio(
         self,

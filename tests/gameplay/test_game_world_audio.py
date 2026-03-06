@@ -36,8 +36,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
-    world.audio_bridge.router.audio = world.audio
-    world.audio_bridge.router.audio_rng = world.audio_rng
+    world.sync_audio_bridge_state()
 
     player = world.sim_world.players[0]
 
@@ -77,8 +76,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
-    world.audio_bridge.router.audio = world.audio
-    world.audio_bridge.router.audio_rng = world.audio_rng
+    world.sync_audio_bridge_state()
 
     player = world.sim_world.players[0]
 
@@ -256,8 +254,7 @@ def test_audio_router_forwards_live_reflex_timer(mocker) -> None:
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")
     world.audio = _audio_state_stub()
     world.audio_rng = Crand(0)
-    world.audio_bridge.router.audio = world.audio
-    world.audio_bridge.router.audio_rng = world.audio_rng
+    world.sync_audio_bridge_state()
 
     world.sim_world.state.bonuses.reflex_boost = 0.75
     world.audio_bridge.router.play_sfx("sfx_pistol_fire")

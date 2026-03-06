@@ -1769,10 +1769,7 @@ class BaseGameplayMode:
         return bool(stop_after_finalize)
 
     def _sync_audio_and_ground(self) -> None:
-        if self.audio_bridge.router is not None:
-            self.audio_bridge.router.audio = self.audio
-            self.audio_bridge.router.audio_rng = self.audio_rng
-            self.audio_bridge.router.demo_mode_active = self.demo_mode_active
+        self._world_runtime.sync_audio_bridge_state()
         if self.render_resources.ground is not None:
             self.sync_ground_settings()
             self.render_resources.ground.process_pending()

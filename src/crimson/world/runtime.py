@@ -51,8 +51,8 @@ class WorldRuntime:
         hardcore: bool = False,
         preserve_bugs: bool = False,
         config: CrimsonConfig | None = None,
+        audio_rng: Crand,
         audio: AudioState | None = None,
-        audio_rng: Crand | None = None,
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         self.assets_dir = Path(assets_dir)

@@ -95,18 +95,19 @@ class ArsenalDebugView:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
+        self._audio_rng = Crand(0xBEEF)
 
         self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
             world_size=float(WORLD_SIZE),
             preserve_bugs=bool(ctx.preserve_bugs),
+            audio_rng=self._audio_rng,
         )
         self._runtime.reset(player_count=1)
 
         self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
         self._aim_texture: rl.Texture | None = None
         self._audio: AudioState | None = None
-        self._audio_rng: Crand | None = None
         self._console: ConsoleState | None = None
 
         self._weapon_ids = sorted({int(entry.weapon_id) for entry in WEAPON_TABLE})
@@ -354,6 +355,7 @@ class ArsenalDebugView:
         self._audio_rng = bootstrap.audio_rng
         self._runtime.audio = self._audio
         self._runtime.audio_rng = self._audio_rng
+        self._runtime.sync_audio_bridge_state()
 
         self._small = load_small_font(self._assets_root)
 
@@ -370,10 +372,10 @@ class ArsenalDebugView:
         if self._audio is not None:
             shutdown_audio(self._audio)
             self._audio = None
-            self._audio_rng = None
             self._console = None
         self._runtime.audio = None
-        self._runtime.audio_rng = None
+        self._runtime.audio_rng = self._audio_rng
+        self._runtime.sync_audio_bridge_state()
         self._runtime.close_runtime()
         self._aim_texture = None
 

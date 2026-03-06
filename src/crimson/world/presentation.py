@@ -59,7 +59,7 @@ class PresentationLayer:
         self,
         *,
         audio: AudioState | None,
-        audio_rng: Crand | None,
+        audio_rng: Crand,
         demo_mode_active: bool,
     ) -> None:
         self.audio_bridge.sync(

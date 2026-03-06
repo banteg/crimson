@@ -35,6 +35,7 @@ class WorldRuntimeHost:
         audio_rng: Crand | None = None,
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
+        resolved_audio_rng = audio_rng if audio_rng is not None else Crand(0xBEEF)
         self._runtime = WorldRuntime(
             assets_dir=assets_dir,
             world_size=world_size,
@@ -44,7 +45,7 @@ class WorldRuntimeHost:
             preserve_bugs=preserve_bugs,
             config=config,
             audio=audio,
-            audio_rng=audio_rng,
+            audio_rng=resolved_audio_rng,
             rtx_mode=rtx_mode,
         )
         player_count = 1
@@ -119,11 +120,11 @@ class WorldRuntimeHost:
         self._runtime.audio = value
 
     @property
-    def audio_rng(self) -> Crand | None:
+    def audio_rng(self) -> Crand:
         return self._runtime.audio_rng
 
     @audio_rng.setter
-    def audio_rng(self, value: Crand | None) -> None:
+    def audio_rng(self, value: Crand) -> None:
         self._runtime.audio_rng = value
 
     @property

@@ -18,16 +18,17 @@ class ViewAudioBootstrap(msgspec.Struct):
     config: CrimsonConfig | None
     console: ConsoleState | None
     audio: AudioState | None
-    audio_rng: Crand | None
+    audio_rng: Crand
 
 
 def init_view_audio(assets_dir: Path, *, seed: int = 0xBEEF) -> ViewAudioBootstrap:
+    audio_rng = Crand(seed)
     runtime_dir = default_runtime_dir()
     runtime_dir.mkdir(parents=True, exist_ok=True)
     try:
         config = ensure_crimson_cfg(runtime_dir)
     except (ConstructError, OSError, ValueError):
-        return ViewAudioBootstrap(None, None, None, None)
+        return ViewAudioBootstrap(None, None, None, audio_rng)
 
     console = ConsoleState(
         base_dir=runtime_dir,
@@ -43,6 +44,6 @@ def init_view_audio(assets_dir: Path, *, seed: int = 0xBEEF) -> ViewAudioBootstr
     try:
         audio = init_audio_state(config, assets_dir, console)
     except (ConstructError, OSError, RuntimeError, ValueError):
-        return ViewAudioBootstrap(config, console, None, None)
+        return ViewAudioBootstrap(config, console, None, audio_rng)
 
-    return ViewAudioBootstrap(config, console, audio, Crand(seed))
+    return ViewAudioBootstrap(config, console, audio, audio_rng)
