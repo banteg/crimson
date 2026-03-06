@@ -10,6 +10,7 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import load_classic_ui_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
@@ -63,14 +64,13 @@ class OptionsMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = self._ensure_cache()
-        self._rect_on = cache.get_or_load("ui_rectOn", "ui/ui_rectOn.jaz").texture
-        self._rect_off = cache.get_or_load("ui_rectOff", "ui/ui_rectOff.jaz").texture
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
+        widgets = load_classic_ui_assets(self.state)
+        self._rect_on = widgets.rect_on
+        self._rect_off = widgets.rect_off
+        self._check_on = widgets.check_on
+        self._check_off = widgets.check_off
+        self._button_tex = widgets.button_md
+        self._button_textures = widgets.button_textures
         self._controls_button = UiButtonState("Controls", force_wide=True)
         self._active_slider = None
         self._dirty = False

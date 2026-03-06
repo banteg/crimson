@@ -16,6 +16,7 @@ from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code,
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
+from ..assets import load_classic_ui_assets
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
@@ -138,12 +139,13 @@ class ControlsMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         cache = self._ensure_cache()
+        widgets = load_classic_ui_assets(self.state, cache=cache)
         # UI elements used by the classic controls screen.
         self._text_controls = cache.get_or_load("ui_textControls", "ui/ui_textControls.jaz").texture
-        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
-        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._drop_on = widgets.drop_on
+        self._drop_off = widgets.drop_off
+        self._check_on = widgets.check_on
+        self._check_off = widgets.check_off
         self._config_player = max(1, min(4, int(self._config_player)))
         self._move_method_open = False
         self._aim_method_open = False

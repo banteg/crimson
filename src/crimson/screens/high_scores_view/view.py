@@ -13,7 +13,7 @@ from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_classic_ui_assets, load_menu_assets
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -138,14 +138,14 @@ class HighScoresView:
         self._score_list_open = False
 
         cache = _ensure_texture_cache(self.state)
-        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
-        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
-        self._arrow_tex = cache.get_or_load("ui_arrow", "ui/ui_arrow.jaz").texture
+        widgets = load_classic_ui_assets(self.state, cache=cache)
+        self._button_tex = widgets.button_md
+        self._button_textures = widgets.button_textures
+        self._check_on = widgets.check_on
+        self._check_off = widgets.check_off
+        self._drop_on = widgets.drop_on
+        self._drop_off = widgets.drop_off
+        self._arrow_tex = widgets.arrow
         self._wicons_tex = cache.get_or_load("ui_wicons", "ui/ui_wicons.jaz").texture
         self._clock_table_tex = cache.get_or_load("ui_clockTable", "ui/ui_clockTable.jaz").texture
         self._clock_pointer_tex = cache.get_or_load("ui_clockPointer", "ui/ui_clockPointer.jaz").texture

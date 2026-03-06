@@ -11,6 +11,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import load_classic_ui_assets
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -82,12 +83,12 @@ class PlayGameMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        cache = self._ensure_cache()
-        self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
-        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
-        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
+        widgets = load_classic_ui_assets(self.state)
+        self._button_sm = widgets.button_sm
+        self._button_md = widgets.button_md
+        self._button_textures = widgets.button_textures
+        self._drop_on = widgets.drop_on
+        self._drop_off = widgets.drop_off
         self._player_list_open = False
         self._dirty = False
         self._tooltip_ms.clear()

@@ -14,7 +14,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..assets import MenuAssets, _ensure_texture_cache, load_classic_ui_assets, load_menu_assets
 from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
@@ -112,6 +112,7 @@ class QuestsMenuView:
         # Sign and ground match the main menu/panels.
         self._assets = load_menu_assets(self.state)
         self._init_ground()
+        widgets = load_classic_ui_assets(self.state, cache=cache)
 
         self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
         self._stage_icons = {
@@ -121,11 +122,11 @@ class QuestsMenuView:
             4: cache.get_or_load("ui_num4", "ui/ui_num4.jaz").texture,
             5: cache.get_or_load("ui_num5", "ui/ui_num5.jaz").texture,
         }
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
-        self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        self._button_textures = UiButtonTextureSet(button_sm=self._button_sm, button_md=self._button_md)
+        self._check_on = widgets.check_on
+        self._check_off = widgets.check_off
+        self._button_sm = widgets.button_sm
+        self._button_md = widgets.button_md
+        self._button_textures = widgets.button_textures
 
         self._action = None
         self._dirty = False
