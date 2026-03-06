@@ -8,12 +8,12 @@ from builders.session import make_session
 import crimson.audio_router as audio_router_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.replay_playback_mode as replay_playback_mode
+import crimson.replay.driver.playback_driver as playback_driver_module
+import crimson.replay.driver.playback_pump as playback_pump_module
+import crimson.replay.driver.replay_benchmark as replay_benchmark_module
+import crimson.replay.driver.replay_info as replay_info_module
+import crimson.replay.driver.replay_render as replay_render_module
 import crimson.sim.batch_apply as batch_apply_module
-import crimson.sim.driver.playback_driver as playback_driver_module
-import crimson.sim.driver.playback_pump as playback_pump_module
-import crimson.sim.driver.replay_benchmark as replay_benchmark_module
-import crimson.sim.driver.replay_info as replay_info_module
-import crimson.sim.driver.replay_render as replay_render_module
 import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.runtime as world_runtime_module

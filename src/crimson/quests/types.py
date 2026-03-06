@@ -4,7 +4,7 @@ from typing import Protocol
 
 import msgspec
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 
 from ..creatures.spawn import SpawnId

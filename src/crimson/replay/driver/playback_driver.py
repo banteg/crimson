@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TypeAlias
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.rand import CrtRand, RngTraceSink
 
 from ...effects import FxQueue, FxQueueRotated
@@ -18,11 +18,9 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.header_settings import session_settings_from_replay_header
 from ...replay.input_codec import unpack_tick_inputs
-from ...weapon_runtime import weapon_assign_player
-from ...weapons import WeaponId
-from ..hooks import TickResult
-from ..input_providers import ResolvedTick
-from ..sessions import (
+from ...sim.hooks import TickResult
+from ...sim.input_providers import ResolvedTick
+from ...sim.sessions import (
     DeterministicSession,
     QuestSpawnState,
     RushSpawnState,
@@ -32,7 +30,9 @@ from ..sessions import (
     rush_mid_step,
     survival_mid_step,
 )
-from ..world_state import WorldState
+from ...sim.world_state import WorldState
+from ...weapon_runtime import weapon_assign_player
+from ...weapons import WeaponId
 from .replay_timing import should_apply_world_dt_steps_for_replay
 from .setup import (
     ReplayRunnerError,

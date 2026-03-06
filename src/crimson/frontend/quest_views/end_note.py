@@ -6,14 +6,14 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...frontend.assets import _ensure_texture_cache
-from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
-from ...frontend.panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-from ...frontend.transitions import _draw_screen_fade
+from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..types import GameState
+from ..assets import _ensure_texture_cache
+from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
+from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..transitions import _draw_screen_fade
 from .shared import (
     END_NOTE_AFTER_BODY_Y_GAP,
     END_NOTE_BODY_X_OFFSET,

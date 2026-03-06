@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from ..batch_apply import PresentationTickOutput, SimMetadataSink, apply_tick_to_sim
-from ..clock import FixedStepClock
-from ..hooks import TickResult
+from ...sim.batch_apply import PresentationTickOutput, SimMetadataSink, apply_tick_to_sim
+from ...sim.clock import FixedStepClock
+from ...sim.hooks import TickResult
 
 
 class PlaybackFrameDriver(Protocol):

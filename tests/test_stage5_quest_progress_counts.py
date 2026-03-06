@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game.quest_views import QuestsMenuView
+from crimson.frontend.quest_views import QuestsMenuView
 from crimson.persistence import save_status
 
 

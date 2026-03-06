@@ -16,11 +16,11 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
 
-from ._ui_helpers import draw_ui_text, ui_line_height
-from .quest_title_overlay import (
+from ..ui.overlays.quest_title import (
     draw_quest_title_overlay,
     quest_title_base_scale,
 )
+from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
 DEFAULT_SAMPLE = """CRIMSONLAND

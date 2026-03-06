@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...frontend.high_scores_layout import (
+from ...game.types import HighScoresRequest
+from ...game_modes import GameMode
+from ...ui.perk_menu import button_draw, button_width
+from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
     HS_BUTTON_STEP_Y,
@@ -21,9 +24,6 @@ from ...frontend.high_scores_layout import (
     HS_SCORE_FRAME_Y,
     HS_TITLE_UNDERLINE_Y,
 )
-from ...game_modes import GameMode
-from ...ui.perk_menu import button_draw, button_width
-from ..types import HighScoresRequest
 from .shared import mode_label, quest_title
 
 if TYPE_CHECKING:

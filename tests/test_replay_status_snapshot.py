@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.persistence.save_status import WEAPON_USAGE_COUNT
-from crimson.sim.driver.setup import status_from_snapshot
+from crimson.replay.driver.setup import status_from_snapshot
 from crimson.weapons import WeaponId
 
 

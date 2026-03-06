@@ -6,9 +6,9 @@ from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..frontend.results.game_over import GameOverUi
 from ..game_modes import GameMode
 from ..persistence.highscores import HighScoreRecord, scores_path_for_config, write_highscore_records
-from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, load_hud_assets
 from ..weapons import WeaponId
 from .registry import register_view

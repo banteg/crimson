@@ -9,7 +9,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
-from ..quest_level import QuestLevel
+from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
 
 

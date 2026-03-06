@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...frontend.assets import _ensure_texture_cache
-from ...frontend.menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
-from ...frontend.transitions import _draw_screen_fade
+from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..types import GameState
+from ..assets import _ensure_texture_cache
+from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
+from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_FAILED_BANNER_H,
     QUEST_FAILED_BANNER_W,

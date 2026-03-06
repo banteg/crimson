@@ -12,8 +12,8 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ..game_modes import GameMode
-from ..persistence.highscores import (
+from ...game_modes import GameMode
+from ...persistence.highscores import (
     NAME_MAX_EDIT,
     TABLE_MAX,
     HighScoreRecord,
@@ -22,13 +22,12 @@ from ..persistence.highscores import (
     scores_path_for_mode,
     upsert_highscore_record,
 )
-from ..quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
-from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
-from .cursor import draw_menu_cursor
-from .formatting import format_ordinal, format_time_mm_ss
-from .layout import menu_widescreen_y_shift, ui_scale
-from .menu_panel import draw_classic_menu_panel
-from .perk_menu import (
+from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
+from ...ui.cursor import draw_menu_cursor
+from ...ui.formatting import format_ordinal, format_time_mm_ss
+from ...ui.layout import menu_widescreen_y_shift, ui_scale
+from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.perk_menu import (
     PerkMenuAssets,
     UiButtonState,
     button_draw,
@@ -37,7 +36,8 @@ from .perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
 )
-from .text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
+from ...ui.text_input import flush_text_input_events, gameplay_controls_held, poll_text_input
+from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how

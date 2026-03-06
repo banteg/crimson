@@ -22,6 +22,13 @@ from ..replay import (
     load_replay_file,
     warn_on_game_version_mismatch,
 )
+from ..replay.driver.playback_driver import (
+    PlaybackDriver,
+    build_runtime_playback_driver,
+    resolve_replay_quest_setup,
+)
+from ..replay.driver.playback_pump import advance_playback_frame
+from ..replay.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..replay.types import ReplayHeader
 from ..sim.batch_apply import (
     PresentationTickOutput,
@@ -29,13 +36,6 @@ from ..sim.batch_apply import (
 )
 from ..sim.bootstrap import BOOTSTRAP_KIND_TERRAIN_V1
 from ..sim.clock import FixedStepClock
-from ..sim.driver.playback_driver import (
-    PlaybackDriver,
-    build_runtime_playback_driver,
-    resolve_replay_quest_setup,
-)
-from ..sim.driver.playback_pump import advance_playback_frame
-from ..sim.driver.setup import ReplayRunnerError, status_from_snapshot
 from ..sim.hooks import TickResult
 from ..sim.presentation_reactions import (
     PostApplyReaction,
@@ -54,7 +54,7 @@ from ..ui.hud import (
     hud_ui_scale,
     load_hud_assets,
 )
-from ..views.quest_run_overlay import (
+from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
     quest_level_label,

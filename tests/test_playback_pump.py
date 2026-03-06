@@ -6,9 +6,9 @@ from unittest.mock import call
 import pytest
 from builders import FakePlaybackDriver
 
-import crimson.sim.driver.playback_pump as playback_pump_module
+import crimson.replay.driver.playback_pump as playback_pump_module
+from crimson.replay.driver.playback_pump import advance_playback_frame
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.driver.playback_pump import advance_playback_frame
 from crimson.sim.presentation_step import PresentationStepCommands
 from crimson.sim.world_state import WorldEvents
 

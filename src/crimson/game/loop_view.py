@@ -3,7 +3,7 @@ from __future__ import annotations
 import webbrowser
 from typing import cast
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -13,6 +13,7 @@ from ..debug import debug_enabled
 from ..demo import DemoView
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
 from ..frontend.boot import BootView
+from ..frontend.high_scores_view import HighScoresView
 from ..frontend.menu import MenuView, ensure_menu_ground
 from ..frontend.panels.alien_zookeeper import AlienZooKeeperView
 from ..frontend.panels.base import PanelMenuView
@@ -26,15 +27,14 @@ from ..frontend.panels.options import OptionsMenuView
 from ..frontend.panels.play_game import PlayGameMenuView
 from ..frontend.panels.stats import StatisticsMenuView
 from ..frontend.pause_menu import PauseMenuView
+from ..frontend.quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from ..frontend.transitions import _update_screen_fade
 from ..game_modes import GameMode
 from ..input_codes import input_begin_frame
 from ..net.debug_log import init_lan_debug_log, lan_debug_log, lan_debug_log_path
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
-from .high_scores_view import HighScoresView
 from .mode_views import QuestGameView, RushGameView, SurvivalGameView, TutorialGameView, TypoShooterGameView
-from .quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
 from .types import FrontView, GameState, PauseBackground
 
 _GAMMA_RAMP_SHADER: rl.Shader | None = None

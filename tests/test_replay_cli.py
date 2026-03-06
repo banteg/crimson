@@ -26,7 +26,7 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
     load_checkpoints_file,
 )
-from crimson.sim.driver.replay_benchmark import (
+from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
     BenchmarkSample,
     ReplayBenchmarkResult,
@@ -36,8 +36,8 @@ from crimson.sim.driver.replay_benchmark import (
     ReplayRenderTelemetrySummary,
     ReplayRenderTelemetryTopTick,
 )
-from crimson.sim.driver.replay_render import ReplayRenderResult
-from crimson.sim.driver.setup import RunResult
+from crimson.replay.driver.replay_render import ReplayRenderResult
+from crimson.replay.driver.setup import RunResult
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from crimson.weapons import WeaponId
@@ -556,7 +556,7 @@ def test_replay_info_stale_perk_pick_is_noop(tmp_path: Path) -> None:
 
 
 def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_info as replay_info_mod
+    import crimson.replay.driver.replay_info as replay_info_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -741,7 +741,7 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
 
 
 def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -807,7 +807,7 @@ def test_replay_benchmark_render_mode_uses_render_runner(tmp_path: Path, mocker)
 
 
 def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -862,7 +862,7 @@ def test_replay_benchmark_render_mode_defaults_to_single_run_no_warmup(tmp_path:
 
 
 def test_replay_benchmark_render_mode_passes_rtx_flag(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -915,7 +915,7 @@ def test_replay_benchmark_render_mode_passes_rtx_flag(tmp_path: Path, mocker) ->
 
 
 def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -969,7 +969,7 @@ def test_replay_benchmark_headless_defaults_remain_five_and_one(tmp_path: Path, 
 
 
 def test_replay_benchmark_headless_human_format_enables_progress(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -1062,7 +1062,7 @@ def test_replay_benchmark_headless_rejects_rtx_flag(tmp_path: Path) -> None:
 
 
 def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_benchmark as replay_benchmark_mod
+    import crimson.replay.driver.replay_benchmark as replay_benchmark_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -1167,7 +1167,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
 
 
 def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_render as replay_render_mod
+    import crimson.replay.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -1293,7 +1293,7 @@ def test_replay_render_progress_callback_uses_separate_video_audio_bars(mocker) 
 
 
 def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_render as replay_render_mod
+    import crimson.replay.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -1348,7 +1348,7 @@ def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker)
 
 
 def test_replay_render_supports_mute_audio_flag(tmp_path: Path, mocker) -> None:
-    import crimson.sim.driver.replay_render as replay_render_mod
+    import crimson.replay.driver.replay_render as replay_render_mod
 
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")

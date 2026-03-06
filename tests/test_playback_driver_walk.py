@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.sim.driver.playback_driver import (
+from crimson.replay.driver.playback_driver import (
     PlaybackWalkHooks,
     PlaybackWalkResult,
     build_verify_playback_driver,
 )
-from crimson.sim.driver.setup import ReplayRunnerError
+from crimson.replay.driver.setup import ReplayRunnerError
 from tests.replay_runner_helpers import _blank_survival_replay
 
 

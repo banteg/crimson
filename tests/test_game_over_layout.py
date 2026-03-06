@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-import crimson.ui.game_over as game_over_module
+import crimson.frontend.results.game_over as game_over_module
+from crimson.frontend.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
 from crimson.game_modes import GameMode
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.ui.game_over import PANEL_SLIDE_DURATION_MS, GameOverAssets, GameOverUi
 from crimson.ui.hud import HudAssets
 from crimson.ui.perk_menu import PerkMenuAssets
 from crimson.weapons import WeaponId
@@ -100,7 +100,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
     ui._intro_ms = PANEL_SLIDE_DURATION_MS
 
     button_update = mocker.patch.object(game_over_module, "button_update", return_value=False)
-    patch_raylib_module("crimson.ui.game_over")
+    patch_raylib_module("crimson.frontend.results.game_over")
 
     ui.update(
         0.0,
@@ -141,7 +141,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
     mocker.patch.object(game_over_module, "rank_index", side_effect=lambda _records, _candidate: 0)
     mocker.patch.object(game_over_module, "scores_path_for_config", side_effect=lambda *_args, **_kwargs: tmp_path / "scores.hi")
     mocker.patch.object(game_over_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    patch_raylib_module("crimson.ui.game_over")
+    patch_raylib_module("crimson.frontend.results.game_over")
     mocker.patch.object(game_over_module.rl, "get_char_pressed", side_effect=_get_char_pressed)
     mocker.patch.object(game_over_module.rl, "get_key_pressed", side_effect=_get_key_pressed)
 
@@ -167,7 +167,7 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     ui.input_caret = len(ui.input_text)
     ui._defer_name_input_until_controls_released = True
 
-    patch_raylib_module("crimson.ui.game_over")
+    patch_raylib_module("crimson.frontend.results.game_over")
     mocker.patch.object(game_over_module, "button_update", return_value=False)
     mocker.patch.object(game_over_module, "gameplay_controls_held", side_effect=[True, False, False])
     poll_text = mocker.patch.object(game_over_module, "poll_text_input", return_value="ww")
@@ -204,7 +204,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     mocker.patch.object(game_over_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(GameOverUi, "_draw_score_card", return_value=None)
-    patch_raylib_module("crimson.ui.game_over")
+    patch_raylib_module("crimson.frontend.results.game_over")
 
     ui.draw(
         record=HighScoreRecord.blank(),

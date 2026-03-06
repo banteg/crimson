@@ -3,8 +3,8 @@ from __future__ import annotations
 import datetime as dt
 from typing import TYPE_CHECKING
 
+from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
-from ..types import GameState, HighScoresRequest
 from .shared import parse_quest_level
 
 if TYPE_CHECKING:

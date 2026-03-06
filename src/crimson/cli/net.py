@@ -4,7 +4,7 @@ from pathlib import Path
 
 import typer
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 
 from ..paths import default_runtime_dir
 from .session import _parse_netcode_mode, _parse_session_mode, _run_game_with_pending_session

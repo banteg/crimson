@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.frontend.results.game_over import GameOverUi
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.game_over import GameOverUi
 from grim.config import CrimsonConfig
 from grim.view import ViewContext
 

@@ -6,7 +6,8 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...frontend.high_scores_layout import (
+from ...game_modes import GameMode
+from ..high_scores_layout import (
     HS_LOCAL_CLOCK_X,
     HS_LOCAL_CLOCK_Y,
     HS_LOCAL_DATE_X,
@@ -75,8 +76,7 @@ from ...frontend.high_scores_layout import (
     hs_right_local_card_x_shift,
     hs_right_options_x_shift,
 )
-from ...frontend.panels.hit_test import mouse_inside_rect_with_padding
-from ...game_modes import GameMode
+from ..panels.hit_test import mouse_inside_rect_with_padding
 from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
 if TYPE_CHECKING:

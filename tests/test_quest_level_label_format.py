@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.views.quest_run_overlay import quest_level_label
+from crimson.ui.overlays.quest_run import quest_level_label
 
 
 def test_quest_level_label_matches_exe_format() -> None:

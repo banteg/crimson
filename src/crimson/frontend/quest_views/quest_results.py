@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
-from ...frontend.menu import ensure_menu_ground, menu_ground_camera
-from ...frontend.transitions import _draw_screen_fade
+from ...game.types import GameState, HighScoresRequest
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ..types import GameState, HighScoresRequest
+from ..menu import ensure_menu_ground, menu_ground_camera
+from ..transitions import _draw_screen_fade
 from .shared import _next_quest_level, _player_name_default
 
 
@@ -29,7 +29,7 @@ class QuestResultsView:
     def open(self) -> None:
         from ...persistence.highscores import HighScoreRecord
         from ...quests.results import compute_quest_final_time
-        from ...ui.quest_results import QuestResultsUi
+        from ..results.quest_results import QuestResultsUi
 
         self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)

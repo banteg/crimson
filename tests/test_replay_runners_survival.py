@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_modes import GameMode
-from crimson.sim.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand
 from tests.replay_runner_helpers import _blank_survival_replay, _run_verify_playback
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 

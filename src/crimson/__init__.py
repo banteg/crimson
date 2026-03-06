@@ -12,6 +12,7 @@ __all__ = [
     "gameplay",
     "effects",
     "effects_atlas",
+    "debug_views",
     "modes",
     "perks",
     "persistence",
@@ -20,6 +21,5 @@ __all__ = [
     "render",
     "sim",
     "ui",
-    "views",
     "weapons",
 ]

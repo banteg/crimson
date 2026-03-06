@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 
 from ...game_modes import GameMode
 

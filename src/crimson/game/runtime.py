@@ -7,7 +7,7 @@ import time
 import webbrowser
 from pathlib import Path
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim import music
 from grim.app import RunViewHooks, run_view
 from grim.assets import PaqTextureCache, load_paq_entries_from_path

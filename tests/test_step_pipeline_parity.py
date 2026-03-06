@@ -16,8 +16,8 @@ from crimson.replay import (
     unpack_packed_player_input,
 )
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
-from crimson.sim.driver.playback_driver import resolve_quest_level_from_replay
-from crimson.sim.driver.setup import status_from_snapshot
+from crimson.replay.driver.playback_driver import resolve_quest_level_from_replay
+from crimson.replay.driver.setup import status_from_snapshot
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,

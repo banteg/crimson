@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from crimson.quest_level import QuestLevel
+from crimson.quests.level import QuestLevel
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -10,8 +10,12 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
-from ...frontend.assets import MenuAssets, _ensure_texture_cache, load_menu_assets
-from ...frontend.menu import (
+from ...game.types import GameState
+from ...game_modes import GameMode
+from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import MenuAssets, _ensure_texture_cache, load_menu_assets
+from ..menu import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
     MENU_SCALE_SMALL_THRESHOLD,
@@ -28,12 +32,8 @@ from ...frontend.menu import (
     ensure_menu_ground,
     menu_ground_camera,
 )
-from ...frontend.panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
-from ...frontend.transitions import _draw_screen_fade
-from ...game_modes import GameMode
-from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..types import GameState
+from ..panels.base import FADE_TO_GAME_ACTIONS, PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
+from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
     QUEST_BACK_BUTTON_Y_OFFSET,

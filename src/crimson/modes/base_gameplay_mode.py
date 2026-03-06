@@ -21,6 +21,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
+from ..frontend.results.game_over import GameOverUi
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter, clear_input_edges
 from ..net.debug_log import lan_debug_log
@@ -84,7 +85,6 @@ from ..sim.presentation_reactions import (
 )
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.tick_runner import TickBatchResult, TickRunner, TickRunnerConfig
-from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, HudState, draw_target_health_bar, load_hud_assets
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..world.runtime import WorldRuntime

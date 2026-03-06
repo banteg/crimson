@@ -50,12 +50,12 @@ from ..sim.sessions import DeterministicSession, DeterministicSessionTick, Quest
 from ..terrain_assets import TerrainTextureId, terrain_texture_by_id
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
-from ..views.quest_run_overlay import (
+from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
     quest_level_label,
 )
+from ..ui.perk_menu import PerkMenuAssets, load_perk_menu_assets
 from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (

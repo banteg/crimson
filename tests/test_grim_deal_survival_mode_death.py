@@ -7,11 +7,11 @@ import pytest
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
 import crimson.modes.quest_mode as quest_mode_module
 import crimson.modes.survival_mode as survival_mode_module
+from crimson.frontend.results.game_over import GameOverUi
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
-from crimson.ui.game_over import GameOverUi
 from grim.raylib_api import rl
 from grim.view import ViewContext
 

@@ -4,7 +4,7 @@ from grim.fonts.grim_mono import GrimMonoFont
 from grim.math import clamp
 from grim.raylib_api import rl
 
-from .quest_title_overlay import draw_quest_title_overlay
+from .quest_title import draw_quest_title_overlay
 
 QUEST_TITLE_FADE_IN_MS = 500.0
 QUEST_TITLE_HOLD_MS = 1000.0

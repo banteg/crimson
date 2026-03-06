@@ -9,10 +9,10 @@ from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
 from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
+from ...sim.hooks import TickResult
+from ...sim.input_providers import GameCommand, PerkMenuOpenCommand
+from ...sim.state_types import BonusPickupEvent, PlayerState
 from ...weapons import WeaponId, weapon_display_name
-from ..hooks import TickResult
-from ..input_providers import GameCommand, PerkMenuOpenCommand
-from ..state_types import BonusPickupEvent, PlayerState
 from .playback_driver import PlaybackDriver, PlaybackWalkHooks
 from .setup import ReplayRunnerError
 

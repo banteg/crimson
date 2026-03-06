@@ -13,11 +13,11 @@ from ...game_modes import GameMode
 from ...math_parity import f32
 from ...persistence.save_status import GameStatus
 from ...replay.types import ReplayStatusSnapshot
+from ...sim.state_types import GameplayState, PlayerState
+from ...sim.step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 from ...status_snapshot import game_status_from_progress_status, progress_status_from_replay
 from ...weapon_runtime import init_default_alt_weapon, most_used_weapon_id_for_player, weapon_assign_player
 from ...weapons import WEAPON_TABLE, WeaponId
-from ..state_types import GameplayState, PlayerState
-from ..step_pipeline import time_scale_reflex_boost_bonus as _time_scale_reflex_boost_bonus
 
 
 class ReplayRunnerError(ValueError):

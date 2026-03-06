@@ -3,11 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import crimson.ui.quest_results as quest_results_module
+import crimson.frontend.results.quest_results as quest_results_module
+from crimson.frontend.results.quest_results import (
+    PANEL_SLIDE_END_MS,
+    PANEL_SLIDE_START_MS,
+    QuestResultsAssets,
+    QuestResultsUi,
+)
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
 from crimson.ui.perk_menu import PerkMenuAssets
-from crimson.ui.quest_results import PANEL_SLIDE_END_MS, PANEL_SLIDE_START_MS, QuestResultsAssets, QuestResultsUi
 from crimson.weapons import WeaponId
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.raylib_api import rl

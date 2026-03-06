@@ -7,7 +7,7 @@ import pytest
 from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.replay import load_replay_file
 from crimson.replay.checkpoints import load_checkpoints_file
-from crimson.sim.driver.playback_driver import (
+from crimson.replay.driver.playback_driver import (
     PlaybackWalkHooks,
     build_verify_playback_driver,
 )

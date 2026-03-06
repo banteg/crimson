@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-import crimson.game.quest_views.quest_failed as quest_failed_module
-from crimson.game.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
+import crimson.frontend.quest_views.quest_failed as quest_failed_module
+from crimson.frontend.quest_views import QUEST_FAILED_PANEL_SLIDE_DURATION_MS, QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.weapons import WeaponId
 from grim import music as grim_music
