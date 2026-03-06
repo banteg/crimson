@@ -6,7 +6,7 @@ from typing import Literal, cast
 
 import msgspec
 
-from grim.assets import TEXTURE_SPECS, TextureId, runtime_resources_for
+from grim.assets import TextureId, runtime_resources_for
 from grim.audio import AudioState, play_music
 from grim.config import (
     CrimsonConfig,
@@ -433,12 +433,9 @@ class QuestMode(BaseGameplayMode):
         detail = terrain_texture_by_id(detail_id)
         if base is not None and overlay is not None:
             self.set_terrain(
-                base_key=TEXTURE_SPECS[base].legacy_name,
-                overlay_key=TEXTURE_SPECS[overlay].legacy_name,
-                base_path=TEXTURE_SPECS[base].rel_path,
-                overlay_path=TEXTURE_SPECS[overlay].rel_path,
-                detail_key=TEXTURE_SPECS[detail].legacy_name if detail is not None else None,
-                detail_path=TEXTURE_SPECS[detail].rel_path if detail is not None else None,
+                base_texture_id=base,
+                overlay_texture_id=overlay,
+                detail_texture_id=detail,
             )
 
         # Quest metadata already stores native (1-based) weapon ids.

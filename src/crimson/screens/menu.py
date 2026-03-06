@@ -6,6 +6,7 @@ from typing import Protocol
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -112,7 +113,8 @@ def _menu_terrain_texture(state: GameState, terrain_id: TerrainTextureId) -> rl.
 
 
 def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
-    if state.resources is None:
+    resources = state.resources
+    if resources is None:
         return None
 
     ground = state.menu_ground
@@ -177,8 +179,8 @@ def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
     resources = state.resources
     if resources is None:
         return
-    particles = resources.legacy_texture("particles", "game/particles.jaz")
-    cursor_tex = resources.legacy_texture("ui_cursor", "ui/ui_cursor.jaz")
+    particles = resources.texture(TextureId.PARTICLES)
+    cursor_tex = resources.texture(TextureId.UI_CURSOR)
 
     mouse = rl.get_mouse_position()
     draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))

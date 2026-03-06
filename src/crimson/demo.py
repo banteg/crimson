@@ -113,16 +113,12 @@ class DemoView:
     def _set_terrain(
         self,
         *,
-        base_key: str,
-        overlay_key: str,
-        base_path: str,
-        overlay_path: str,
+        base_texture_id: TextureId,
+        overlay_texture_id: TextureId,
     ) -> None:
         self._runtime.terrain_runtime.set_terrain(
-            base_key=base_key,
-            overlay_key=overlay_key,
-            base_path=base_path,
-            overlay_path=overlay_path,
+            base_texture_id=base_texture_id,
+            overlay_texture_id=overlay_texture_id,
         )
         self._runtime.terrain_runtime.schedule_from_rng_seed(
             seed=int(self._runtime.sim_world.state.rng.state),
@@ -501,50 +497,36 @@ class DemoView:
             return
         terrain = {
             0: (
-                "ter_q1_base",
-                "ter_q1_tex1",
-                "ter/ter_q1_base.jaz",
-                "ter/ter_q1_tex1.jaz",
+                TextureId.TER_Q1_BASE,
+                TextureId.TER_Q1_OVERLAY,
             ),
             1: (
-                "ter_q2_base",
-                "ter_q2_tex1",
-                "ter/ter_q2_base.jaz",
-                "ter/ter_q2_tex1.jaz",
+                TextureId.TER_Q2_BASE,
+                TextureId.TER_Q2_OVERLAY,
             ),
             2: (
-                "ter_q3_base",
-                "ter_q3_tex1",
-                "ter/ter_q3_base.jaz",
-                "ter/ter_q3_tex1.jaz",
+                TextureId.TER_Q3_BASE,
+                TextureId.TER_Q3_OVERLAY,
             ),
             3: (
-                "ter_q4_base",
-                "ter_q4_tex1",
-                "ter/ter_q4_base.jaz",
-                "ter/ter_q4_tex1.jaz",
+                TextureId.TER_Q4_BASE,
+                TextureId.TER_Q4_OVERLAY,
             ),
             4: (
-                "ter_q1_base",
-                "ter_q1_tex1",
-                "ter/ter_q1_base.jaz",
-                "ter/ter_q1_tex1.jaz",
+                TextureId.TER_Q1_BASE,
+                TextureId.TER_Q1_OVERLAY,
             ),
         }.get(
             index,
             (
-                "ter_q1_base",
-                "ter_q1_tex1",
-                "ter/ter_q1_base.jaz",
-                "ter/ter_q1_tex1.jaz",
+                TextureId.TER_Q1_BASE,
+                TextureId.TER_Q1_OVERLAY,
             ),
         )
-        base_key, overlay_key, base_path, overlay_path = terrain
+        base_texture_id, overlay_texture_id = terrain
         self._set_terrain(
-            base_key=base_key,
-            overlay_key=overlay_key,
-            base_path=base_path,
-            overlay_path=overlay_path,
+            base_texture_id=base_texture_id,
+            overlay_texture_id=overlay_texture_id,
         )
 
     def _crand_mod(self, mod: int) -> int:

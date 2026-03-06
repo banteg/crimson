@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 import time
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -17,27 +16,6 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.gameplay_screen import GameplayScreenStub
-
-
-@dataclass(slots=True)
-class _TextureAssetStub:
-    texture: rl.Texture | None
-
-
-class _TextureCacheStub:
-    def __init__(self) -> None:
-        self._asset = _TextureAssetStub(texture=rl.Texture())
-
-    def texture(self, name: str) -> rl.Texture:
-        _ = name
-        texture = self._asset.texture
-        if texture is None:
-            raise AssertionError("texture should be available in this stub")
-        return texture
-
-    def get_or_load(self, name: str, rel_path: str) -> _TextureAssetStub:
-        _ = (name, rel_path)
-        return self._asset
 
 
 class _ResourcesStub:

@@ -168,14 +168,6 @@ TEXTURE_SPECS: Final[dict[TextureId, TextureSpec]] = {
     TextureId.UI_TEXT_LEVEL_UP: TextureSpec("ui_textLevelUp", "ui/ui_textLevelUp.jaz", clamp=True),
 }
 
-TEXTURE_ID_BY_LEGACY_NAME: Final[dict[str, TextureId]] = {
-    spec.legacy_name: texture_id for texture_id, spec in TEXTURE_SPECS.items()
-}
-TEXTURE_ID_BY_REL_PATH: Final[dict[str, TextureId]] = {
-    spec.rel_path.replace("\\", "/"): texture_id for texture_id, spec in TEXTURE_SPECS.items()
-}
-
-
 class TextureAsset(msgspec.Struct):
     name: str
     rel_path: str
@@ -218,12 +210,6 @@ class RuntimeResources(msgspec.Struct):
     def texture(self, texture_id: TextureId) -> rl.Texture | None:
         return self.textures.get(texture_id)
 
-    def legacy_texture(self, name: str, rel_path: str | None = None) -> rl.Texture | None:
-        texture_id = resolve_texture_id(name=name, rel_path=rel_path)
-        if texture_id is None:
-            return None
-        return self.texture(texture_id)
-
     def unload(self) -> None:
         seen: set[int] = set()
         for texture in self.textures.values():
@@ -233,25 +219,6 @@ class RuntimeResources(msgspec.Struct):
             rl.unload_texture(texture)
             seen.add(texture_id)
         self.textures.clear()
-
-
-class RuntimeTextureView:
-    def __init__(self, resources: RuntimeResources) -> None:
-        self._resources = resources
-
-    def texture(self, name: str) -> rl.Texture | None:
-        return self._resources.legacy_texture(name)
-
-    def get(self, name: str) -> TextureAsset | None:
-        texture = self.texture(name)
-        texture_id = TEXTURE_ID_BY_LEGACY_NAME.get(name)
-        if texture_id is None:
-            return None
-        spec = TEXTURE_SPECS[texture_id]
-        return TextureAsset(name=name, rel_path=spec.rel_path, texture=texture)
-
-    def get_or_load(self, name: str, rel_path: str) -> TextureAsset:
-        return TextureAsset(name=name, rel_path=rel_path, texture=self._resources.legacy_texture(name, rel_path))
 
 
 _REGISTERED_RESOURCES: dict[Path, RuntimeResources] = {}
@@ -277,27 +244,8 @@ def runtime_resources_for(assets_dir: Path) -> RuntimeResources:
     return resources
 
 
-def runtime_texture_view_for(assets_dir: Path) -> RuntimeTextureView:
-    return RuntimeTextureView(runtime_resources_for(assets_dir))
-
-
-def resolve_texture_id(*, name: str | None = None, rel_path: str | None = None) -> TextureId | None:
-    if name:
-        texture_id = TEXTURE_ID_BY_LEGACY_NAME.get(str(name))
-        if texture_id is not None:
-            return texture_id
-    if rel_path:
-        normalized = str(rel_path).replace("\\", "/")
-        return TEXTURE_ID_BY_REL_PATH.get(normalized)
-    return None
-
-
 def texture_for(assets_dir: Path, texture_id: TextureId) -> rl.Texture | None:
     return runtime_resources_for(assets_dir).texture(texture_id)
-
-
-def legacy_texture_for(assets_dir: Path, *, name: str, rel_path: str | None = None) -> rl.Texture | None:
-    return runtime_resources_for(assets_dir).legacy_texture(name=name, rel_path=rel_path)
 
 
 def load_paq_entries_from_path(paq_path: Path) -> dict[str, bytes]:
@@ -412,4 +360,3 @@ def unload_runtime_resources(resources: RuntimeResources | None) -> None:
         return
     unregister_runtime_resources(resources.assets_dir)
     resources.unload()
-

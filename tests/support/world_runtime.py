@@ -14,6 +14,7 @@ from crimson.sim.presentation_reactions import apply_post_apply_reaction, build_
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState, survival_mid_step
 from crimson.sim.world_state import WorldState
 from crimson.world import WorldRuntime
+from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -244,20 +245,14 @@ class WorldRuntimeHost:
     def set_terrain(
         self,
         *,
-        base_key: str,
-        overlay_key: str,
-        base_path: str,
-        overlay_path: str,
-        detail_key: str | None = None,
-        detail_path: str | None = None,
+        base_texture_id: TextureId,
+        overlay_texture_id: TextureId,
+        detail_texture_id: TextureId | None = None,
     ) -> None:
         self._runtime.terrain_runtime.set_terrain(
-            base_key=base_key,
-            overlay_key=overlay_key,
-            base_path=base_path,
-            overlay_path=overlay_path,
-            detail_key=detail_key,
-            detail_path=detail_path,
+            base_texture_id=base_texture_id,
+            overlay_texture_id=overlay_texture_id,
+            detail_texture_id=detail_texture_id,
         )
         terrain_seed = int(self._runtime.sim_world.state.rng.state)
         self._runtime.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)

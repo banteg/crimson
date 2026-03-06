@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 
+from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
@@ -121,8 +122,8 @@ class ArsenalDebugView:
             build_inputs=self._build_runner_inputs,
         )
 
-    def _load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        return self._runtime.render_resources.load_texture(name, cache_path=cache_path)
+    def _load_texture(self, texture_id: TextureId) -> rl.Texture | None:
+        return self._runtime.render_resources.load_texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -357,10 +358,7 @@ class ArsenalDebugView:
         self._small = load_small_font(self._assets_root)
 
         self._runtime.open_runtime()
-        self._aim_texture = self._load_texture(
-            "ui_aim",
-            cache_path="ui/ui_aim.jaz",
-        )
+        self._aim_texture = self._load_texture(TextureId.UI_AIM)
         self._reset_scene()
         rl.hide_cursor()
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.config import (
     KEYBIND_UNBOUND_CODE,
     default_player_keybind_block,
@@ -16,6 +17,7 @@ from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code,
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
+from ..assets import _require_runtime_texture
 from ..menu import (
     MENU_PANEL_HEIGHT,
     MENU_PANEL_WIDTH,
@@ -139,11 +141,11 @@ class ControlsMenuView(PanelMenuView):
         super().open()
         cache = self._ensure_cache()
         # UI elements used by the classic controls screen.
-        self._text_controls = cache.get_or_load("ui_textControls", "ui/ui_textControls.jaz").texture
-        self._drop_on = cache.get_or_load("ui_dropOn", "ui/ui_dropDownOn.jaz").texture
-        self._drop_off = cache.get_or_load("ui_dropOff", "ui/ui_dropDownOff.jaz").texture
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._text_controls = _require_runtime_texture(cache, TextureId.UI_TEXT_CONTROLS)
+        self._drop_on = _require_runtime_texture(cache, TextureId.UI_DROP_ON)
+        self._drop_off = _require_runtime_texture(cache, TextureId.UI_DROP_OFF)
+        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
+        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
         self._config_player = max(1, min(4, int(self._config_player)))
         self._move_method_open = False
         self._aim_method_open = False

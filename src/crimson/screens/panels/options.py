@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -10,6 +11,7 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
+from ..assets import _require_runtime_texture
 from ..menu import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_OPTIONS,
@@ -64,12 +66,12 @@ class OptionsMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         cache = self._ensure_cache()
-        self._rect_on = cache.get_or_load("ui_rectOn", "ui/ui_rectOn.jaz").texture
-        self._rect_off = cache.get_or_load("ui_rectOff", "ui/ui_rectOff.jaz").texture
-        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
-        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
-        self._button_tex = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._rect_on = _require_runtime_texture(cache, TextureId.UI_RECT_ON)
+        self._rect_off = _require_runtime_texture(cache, TextureId.UI_RECT_OFF)
+        self._check_on = _require_runtime_texture(cache, TextureId.UI_CHECK_ON)
+        self._check_off = _require_runtime_texture(cache, TextureId.UI_CHECK_OFF)
+        self._button_tex = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=self._button_tex)
         self._controls_button = UiButtonState("Controls", force_wide=True)
         self._active_slider = None

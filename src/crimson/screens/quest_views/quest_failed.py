@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.quests.level import QuestLevel
+from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
@@ -13,7 +14,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, UiButtonTextureSet, button_draw, button_update, button_width
-from ..assets import _ensure_texture_cache
+from ..assets import _ensure_texture_cache, _require_runtime_texture
 from ..menu import MenuView, _draw_menu_cursor, ensure_menu_ground, menu_ground_camera
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -91,10 +92,10 @@ class QuestFailedView:
         self._build_score_preview(outcome)
 
         cache = _ensure_texture_cache(self.state)
-        self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
-        self._reaper_tex = cache.get_or_load("ui_textReaper", "ui/ui_textReaper.jaz").texture
-        button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
-        button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._panel_tex = _require_runtime_texture(cache, TextureId.UI_MENU_PANEL)
+        self._reaper_tex = _require_runtime_texture(cache, TextureId.UI_TEXT_REAPER)
+        button_md = _require_runtime_texture(cache, TextureId.UI_BUTTON_MD)
+        button_sm = _require_runtime_texture(cache, TextureId.UI_BUTTON_SM)
         self._button_textures = UiButtonTextureSet(button_sm=button_sm, button_md=button_md)
 
     def close(self) -> None:

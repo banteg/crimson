@@ -5,7 +5,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import legacy_texture_for
+from grim.assets import TextureId, texture_for
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -20,6 +20,15 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_fx_queues
 from ..sim.state_types import PlayerState
 from ..sim.world_defs import CREATURE_ASSET
+
+_CREATURE_TEXTURE_IDS: dict[str, TextureId] = {
+    "alien": TextureId.ALIEN,
+    "lizard": TextureId.LIZARD,
+    "spider_sp1": TextureId.SPIDER_SP1,
+    "spider_sp2": TextureId.SPIDER_SP2,
+    "trooper": TextureId.TROOPER,
+    "zombie": TextureId.ZOMBIE,
+}
 
 
 class RenderResources(msgspec.Struct):
@@ -45,8 +54,8 @@ class RenderResources(msgspec.Struct):
     muzzle_flash_texture: rl.Texture | None = None
     wicons_texture: rl.Texture | None = None
 
-    def load_texture(self, name: str, *, cache_path: str) -> rl.Texture | None:
-        return legacy_texture_for(self.assets_dir, name=name, rel_path=cache_path)
+    def load_texture(self, texture_id: TextureId) -> rl.Texture | None:
+        return texture_for(self.assets_dir, texture_id)
 
     def sync_ground_settings(self) -> None:
         if self.ground is None:
@@ -101,38 +110,32 @@ class RenderResources(msgspec.Struct):
         self.close()
         self.creature_textures.clear()
 
-        base = self.load_texture(
-            "ter_q1_base",
-            cache_path="ter/ter_q1_base.jaz",
-        )
-        overlay = self.load_texture(
-            "ter_q1_tex1",
-            cache_path="ter/ter_q1_tex1.jaz",
-        )
+        base = self.load_texture(TextureId.TER_Q1_BASE)
+        overlay = self.load_texture(TextureId.TER_Q1_OVERLAY)
         detail = overlay or base
         self.set_ground_textures(base=base, overlay=overlay, detail=detail)
         self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
 
         for asset in sorted(set(CREATURE_ASSET.values())):
-            texture = self.load_texture(
-                asset,
-                cache_path=f"game/{asset}.jaz",
-            )
+            texture_id = _CREATURE_TEXTURE_IDS.get(asset)
+            if texture_id is None:
+                continue
+            texture = self.load_texture(texture_id)
             if texture is not None:
                 self.creature_textures[asset] = texture
 
-        self.projs_texture = self.load_texture("projs", cache_path="game/projs.jaz")
-        self.particles_texture = self.load_texture("particles", cache_path="game/particles.jaz")
-        self.bullet_texture = self.load_texture("bullet_i", cache_path="load/bullet16.tga")
-        self.bullet_trail_texture = self.load_texture("bulletTrail", cache_path="load/bulletTrail.tga")
-        self.arrow_texture = self.load_texture("arrow", cache_path="load/arrow.tga")
-        self.bonuses_texture = self.load_texture("bonuses", cache_path="game/bonuses.jaz")
-        self.wicons_texture = self.load_texture("ui_wicons", cache_path="ui/ui_wicons.jaz")
-        self.bodyset_texture = self.load_texture("bodyset", cache_path="game/bodyset.jaz")
-        self.clock_table_texture = self.load_texture("ui_clockTable", cache_path="ui/ui_clockTable.jaz")
-        self.clock_pointer_texture = self.load_texture("ui_clockPointer", cache_path="ui/ui_clockPointer.jaz")
-        self.aim_texture = self.load_texture("ui_aim", cache_path="ui/ui_aim.jaz")
-        self.muzzle_flash_texture = self.load_texture("muzzleFlash", cache_path="game/muzzleFlash.jaz")
+        self.projs_texture = self.load_texture(TextureId.PROJS)
+        self.particles_texture = self.load_texture(TextureId.PARTICLES)
+        self.bullet_texture = self.load_texture(TextureId.BULLET_I)
+        self.bullet_trail_texture = self.load_texture(TextureId.BULLET_TRAIL)
+        self.arrow_texture = self.load_texture(TextureId.ARROW)
+        self.bonuses_texture = self.load_texture(TextureId.BONUSES)
+        self.wicons_texture = self.load_texture(TextureId.UI_WICONS)
+        self.bodyset_texture = self.load_texture(TextureId.BODYSET)
+        self.clock_table_texture = self.load_texture(TextureId.UI_CLOCK_TABLE)
+        self.clock_pointer_texture = self.load_texture(TextureId.UI_CLOCK_POINTER)
+        self.aim_texture = self.load_texture(TextureId.UI_AIM)
+        self.muzzle_flash_texture = self.load_texture(TextureId.MUZZLE_FLASH)
 
         if self.particles_texture is not None and self.bodyset_texture is not None:
             self.fx_textures = FxQueueTextures(
