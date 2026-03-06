@@ -5,8 +5,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, cast
 
+import pytest
+
 import grim.terrain_render as terrain_render
-from crimson.render.world import context as world_context
+from crimson.render.world import renderer as world_renderer
+from crimson.world import runtime as world_runtime
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -98,8 +101,8 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
         screen_width=1024,
         screen_height=768,
     ).renderer
-    mocker.patch.object(world_context.rl, "get_screen_width", return_value=1280)
-    mocker.patch.object(world_context.rl, "get_screen_height", return_value=720)
+    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
+    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)
     size = renderer._camera_screen_size()
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
@@ -111,11 +114,66 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> N
         screen_width=1024,
         screen_height=768,
     ).renderer
-    mocker.patch.object(world_context.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(world_context.rl, "get_screen_height", return_value=768)
+    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1024)
+    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=768)
     size = renderer._camera_screen_size(runtime_w=1280.0, runtime_h=720.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
+
+
+def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocker) -> None:
+    world = _runtime_world(
+        world_size=1024.0,
+        screen_width=1024,
+        screen_height=768,
+    )
+    player = world.sim_world.players[0]
+    player.health = 100.0
+    player.pos = Vec2(512.0, 512.0)
+    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
+    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    mocker.patch.object(world_renderer.WorldRenderer, "_camera_screen_size", side_effect=AssertionError("unused"))
+    mocker.patch.object(world_renderer.WorldRenderer, "_clamp_camera", side_effect=AssertionError("unused"))
+
+    world.update_camera(0.0)
+
+    assert_float_close(world.camera.x, 0.0)
+    assert_float_close(world.camera.y, -224.0)
+
+
+def test_renderer_viewport_helpers_are_frame_independent(mocker) -> None:
+    renderer = world_renderer.WorldRenderer(
+        world_size=1024.0,
+        config=None,
+        camera=Vec2(-32.0, -48.0),
+    )
+    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
+    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)
+
+    screen_size = renderer._camera_screen_size()
+    assert_float_close(screen_size.x, 1024.0)
+    assert_float_close(screen_size.y, 576.0)
+
+    camera, view_scale = renderer._world_params()
+    assert_float_close(camera.x, 0.0)
+    assert_float_close(camera.y, -48.0)
+    assert_float_close(view_scale.x, 1.25)
+    assert_float_close(view_scale.y, 1.25)
+
+    screen = renderer.world_to_screen(Vec2(100.0, 200.0))
+    assert_float_close(screen.x, 125.0)
+    assert_float_close(screen.y, 190.0)
+
+    world = renderer.screen_to_world(screen)
+    assert_float_close(world.x, 100.0)
+    assert_float_close(world.y, 200.0)
+
+
+def test_runtime_build_render_frame_requires_bound_resources() -> None:
+    world = _runtime_world(world_size=1024.0)
+
+    with pytest.raises(AssertionError, match="runtime resources must be loaded before use"):
+        world.build_render_frame()
 
 
 def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:

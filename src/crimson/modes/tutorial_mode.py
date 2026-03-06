@@ -500,8 +500,6 @@ class TutorialMode(BaseGameplayMode):
         if assets is None:
             return
         resources = self.render_resources.resources
-        if resources is None:
-            return
         cursor_tex = assets.cursor
         mouse_pos = self._ui_mouse
         draw_menu_cursor(

@@ -341,8 +341,6 @@ class TypoShooterMode(BaseGameplayMode):
 
     def _draw_game_cursor(self) -> None:
         resources = self.render_resources.resources
-        if resources is None:
-            return
         mouse_pos = self._ui_mouse
         cursor_tex = self._ui_assets.cursor if self._ui_assets is not None else None
         draw_menu_cursor(

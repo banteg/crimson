@@ -44,7 +44,6 @@ class _WorldStub:
             rtx_mode=RtxRenderMode.CLASSIC,
         )
 
-
 def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
     mocker.patch.object(world_projectiles.rl, "rl_set_texture")
@@ -56,8 +55,9 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     mocker.patch.object(world_projectiles.rl, "end_blend_mode")
 
     world = _WorldStub()
-    renderer = WorldRenderer(world.build_render_frame)
-    render_ctx = build_world_render_ctx(renderer)
+    frame = world.build_render_frame()
+    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
+    render_ctx = build_world_render_ctx(renderer, render_frame=frame)
 
     drawn = draw_bullet_trail(
         render_ctx,

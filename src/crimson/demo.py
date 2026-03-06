@@ -15,6 +15,7 @@ from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
 from .quests import quest_by_stage
+from .screens.assets import require_runtime_resources
 from .sim.bootstrap import terrain_stamping_draws
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
@@ -250,6 +251,13 @@ class DemoView:
             return 128.0
         return 0.0
 
+    def _purchase_button_textures(self) -> UiButtonTextureSet:
+        resources = require_runtime_resources(self.state)
+        return UiButtonTextureSet(
+            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
+            button_md=resources.texture(TextureId.UI_BUTTON_MD),
+        )
+
     def _update_purchase_screen(self, dt_ms: int) -> None:
         dt_ms = max(0, int(dt_ms))
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -258,15 +266,7 @@ class DemoView:
             return
 
         font = self._ensure_small_font()
-        resources = self.state.resources
-        if resources is None:
-            return
-        textures = UiButtonTextureSet(
-            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
-            button_md=resources.texture(TextureId.UI_BUTTON_MD),
-        )
-        if textures.button_sm is None and textures.button_md is None:
-            return
+        textures = self._purchase_button_textures()
 
         w = float(self.state.config.screen_width)
         h = float(self.state.config.screen_height)
@@ -324,9 +324,7 @@ class DemoView:
     def _draw_purchase_screen(self) -> None:
         rl.clear_background(rl.BLACK)
 
-        resources = self.state.resources
-        if resources is None:
-            return
+        resources = require_runtime_resources(self.state)
         backplasma = resources.texture(TextureId.BACKPLASMA)
 
         pulse_phase = float(self._upsell_pulse_ms % 1000)
@@ -413,15 +411,7 @@ class DemoView:
         draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), color)
 
         # Buttons on the right.
-        resources = self.state.resources
-        if resources is None:
-            return
-        textures = UiButtonTextureSet(
-            button_sm=resources.texture(TextureId.UI_BUTTON_SM),
-            button_md=resources.texture(TextureId.UI_BUTTON_MD),
-        )
-        if textures.button_sm is None and textures.button_md is None:
-            return
+        textures = self._purchase_button_textures()
 
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)

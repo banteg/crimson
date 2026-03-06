@@ -117,6 +117,7 @@ See also:
 - [Netplay (rollback primary)](netplay-rollback.md)
 - [LAN lockstep (fallback mode)](lan-lockstep.md)
 - [Local multiplayer rewrite notes](local-multiplayer.md)
+- [Rendering pipeline](rendering-pipeline.md)
 - [Float parity policy](float-parity-policy.md)
 - [Float expression precision map](float-expression-precision-map.md)
 - [Beam rendering (classic + RTX)](beam-rendering.md)

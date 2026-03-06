@@ -15,14 +15,18 @@ class MenuAssets(msgspec.Struct):
     labels: rl.Texture
 
 
-def _ensure_texture_cache(state: GameState) -> RuntimeResources:
+def require_runtime_resources(state: GameState) -> RuntimeResources:
     if state.resources is None:
         raise RuntimeError("runtime resources are not loaded")
     return state.resources
 
 
+def _ensure_texture_cache(state: GameState) -> RuntimeResources:
+    return require_runtime_resources(state)
+
+
 def load_menu_assets(state: GameState) -> MenuAssets:
-    resources = _ensure_texture_cache(state)
+    resources = require_runtime_resources(state)
     return MenuAssets(
         sign=resources.texture(TextureId.UI_SIGN_CRIMSON),
         item=resources.texture(TextureId.UI_MENU_ITEM),

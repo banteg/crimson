@@ -20,7 +20,7 @@ from ..terrain_slots import (
 )
 from ..ui.cursor import draw_menu_cursor
 from ..ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
-from .assets import MenuAssets, load_menu_assets
+from .assets import MenuAssets, load_menu_assets, require_runtime_resources
 from .transitions import _draw_screen_fade
 
 MENU_LABEL_WIDTH = 122.0
@@ -78,11 +78,8 @@ def menu_ground_camera(state: GameState) -> Vec2:
     return Vec2()
 
 
-def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
-    resources = state.resources
-    if resources is None:
-        return None
-
+def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer:
+    resources = require_runtime_resources(state)
     ground = state.menu_ground
     screen_width = float(state.config.screen_width)
     screen_height = float(state.config.screen_height)
@@ -138,9 +135,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
 
 
 def _draw_menu_cursor(state: GameState, *, pulse_time: float) -> None:
-    resources = state.resources
-    if resources is None:
-        return
+    resources = require_runtime_resources(state)
     particles = resources.texture(TextureId.PARTICLES)
     cursor_tex = resources.texture(TextureId.UI_CURSOR)
 

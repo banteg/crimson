@@ -20,7 +20,7 @@ def test_apply_bootstrap_terrain_keeps_sim_rng_state(assets_dir: Path, monkeypat
     def _texture(_self, _texture_id: TextureId) -> rl.Texture:
         return tex
 
-    monkeypatch.setattr(type(world.render_resources), "texture", _texture, raising=True)
+    monkeypatch.setattr(type(world.render_resources), "registry_texture", _texture, raising=True)
     before_rng_state = int(world.sim_world.state.rng.state)
 
     world.apply_bootstrap_terrain(
@@ -52,7 +52,7 @@ def test_set_terrain_slots_updates_render_cache_without_touching_sim_rng(assets_
         assert texture is not None
         return texture
 
-    monkeypatch.setattr(type(world.render_resources), "texture", _texture, raising=True)
+    monkeypatch.setattr(type(world.render_resources), "registry_texture", _texture, raising=True)
 
     world.set_terrain_slots(terrain_slots=(0, 1, 3))
 

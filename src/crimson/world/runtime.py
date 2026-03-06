@@ -7,10 +7,12 @@ from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import Crand
+from grim.raylib_api import rl
 
 from ..game_modes import GameMode
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
+from ..render.world import viewport
 from ..render.world.renderer import WorldRenderer
 from ..sim.batch_apply import apply_presentation_outputs, apply_sim_metadata_batch
 from ..sim.clock import FixedStepClock
@@ -91,10 +93,14 @@ class WorldRuntime:
         self.lan_player_rings_enabled = False
         self.lan_local_aim_indicators_only = False
         self.lan_local_player_slot_index = 0
+        self.renderer = WorldRenderer(
+            world_size=float(self.world_size),
+            config=self.config,
+            camera=self.camera,
+        )
 
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self.build_render_frame)
 
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)
@@ -108,6 +114,11 @@ class WorldRuntime:
         self.sim_world.world_size = world_size
         self.render_resources.world_size = world_size
         self.terrain_runtime.world_size = world_size
+        self.renderer.sync_viewport(
+            world_size=world_size,
+            config=self.config,
+            camera=self.camera,
+        )
         ground = self.render_resources.ground
         if ground is not None:
             side = max(0, int(world_size))
@@ -134,6 +145,11 @@ class WorldRuntime:
         self.render_resources.fx_queue.clear()
         self.render_resources.fx_queue_rotated.clear()
         self.camera = Vec2(-1.0, -1.0)
+        self.renderer.sync_viewport(
+            world_size=self.world_size,
+            config=self.config,
+            camera=self.camera,
+        )
         if self.render_resources.ground is not None:
             terrain_seed = int(self.sim_world.state.rng.state)
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed, layers=3)
@@ -158,7 +174,12 @@ class WorldRuntime:
         if not self.sim_world.players:
             return
 
-        screen_size = self.renderer._camera_screen_size()
+        screen_size = viewport.camera_screen_size(
+            world_size=self.world_size,
+            config=self.config,
+            runtime_w=float(rl.get_screen_width()),
+            runtime_h=float(rl.get_screen_height()),
+        )
         alive = [player for player in self.sim_world.players if player.health > 0.0]
         if alive:
             inv_alive = 1.0 / float(len(alive))
@@ -171,7 +192,16 @@ class WorldRuntime:
             camera = self.camera
 
         camera = camera + self.sim_world.state.camera_shake_offset
-        self.camera = self.renderer._clamp_camera(camera, screen_size)
+        self.camera = viewport.clamp_camera(
+            world_size=self.world_size,
+            camera=camera,
+            screen_size=screen_size,
+        )
+        self.renderer.sync_viewport(
+            world_size=self.world_size,
+            config=self.config,
+            camera=self.camera,
+        )
 
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(

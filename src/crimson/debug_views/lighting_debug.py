@@ -1292,7 +1292,7 @@ class LightingDebugView:
         )
 
     def _load_texture(self, texture_id: TextureId) -> rl.Texture:
-        return self._runtime.render_resources.texture(texture_id)
+        return self._runtime.render_resources.resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.render_resources.bake_fx_queues()
@@ -3287,8 +3287,6 @@ class LightingDebugView:
             )
 
         resources = self._runtime.render_resources.resources
-        if resources is None:
-            return
         mouse = rl.get_mouse_position()
         draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 

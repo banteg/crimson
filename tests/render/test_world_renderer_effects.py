@@ -68,7 +68,6 @@ class _WorldStub:
             rtx_mode=RtxRenderMode.CLASSIC,
         )
 
-
 def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     return EffectEntry(
         pos=pos,
@@ -100,8 +99,9 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         _entry(flags=0x01, pos=Vec2(30.0, 40.0)),
     ]
     world = _WorldStub(entries)
-    renderer = WorldRenderer(world.build_render_frame)
-    render_ctx = build_world_render_ctx(renderer)
+    frame = world.build_render_frame()
+    renderer = WorldRenderer(world_size=frame.world_size, config=frame.config, camera=frame.camera)
+    render_ctx = build_world_render_ctx(renderer, render_frame=frame)
 
     draw_effect_pool(
         render_ctx,

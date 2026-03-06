@@ -30,12 +30,19 @@ class RenderResources(msgspec.Struct):
     fx_queue: FxQueue = msgspec.field(default_factory=FxQueue)
     fx_queue_rotated: FxQueueRotated = msgspec.field(default_factory=FxQueueRotated)
     fx_textures: FxQueueTextures | None = None
-    resources: RuntimeResources | None = None
+    _resources: RuntimeResources | None = None
 
-    def texture(self, texture_id: TextureId) -> rl.Texture:
-        resources = self.resources
-        if resources is not None:
-            return resources.texture(texture_id)
+    @property
+    def resources(self) -> RuntimeResources:
+        resources = self._resources
+        assert resources is not None, "runtime resources must be loaded before use"
+        return resources
+
+    @resources.setter
+    def resources(self, value: RuntimeResources | None) -> None:
+        self._resources = value
+
+    def registry_texture(self, texture_id: TextureId) -> rl.Texture:
         return runtime_resources_for(self.assets_dir).texture(texture_id)
 
     def sync_ground_settings(self) -> None:
@@ -88,10 +95,10 @@ class RenderResources(msgspec.Struct):
     def open(self, *, terrain_seed: int) -> None:
         self.close()
         resources = runtime_resources_for(self.assets_dir)
-        self.resources = resources
+        self._resources = resources
 
-        base = self.texture(TextureId.TER_Q1_BASE)
-        overlay = self.texture(TextureId.TER_Q1_OVERLAY)
+        base = resources.texture(TextureId.TER_Q1_BASE)
+        overlay = resources.texture(TextureId.TER_Q1_OVERLAY)
         self.set_ground_textures(base=base, overlay=overlay, detail=overlay)
         self.schedule_ground_generation(seed=int(terrain_seed), layers=3)
         self.fx_textures = FxQueueTextures(
@@ -105,7 +112,7 @@ class RenderResources(msgspec.Struct):
             self.ground.render_target = None
         self.ground = None
 
-        self.resources = None
+        self._resources = None
         self.fx_textures = None
         self.fx_queue.clear()
         self.fx_queue_rotated.clear()
