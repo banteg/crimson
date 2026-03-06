@@ -14,7 +14,13 @@ from grim.assets import PaqTextureCache
 from grim.audio import AudioState, stop_music, update_audio
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.console import ConsoleState
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_width,
+    unload_small_font,
+)
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -1289,7 +1295,7 @@ class BaseGameplayMode:
     def close(self) -> None:
         self._game_over_ui.close()
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
             self._small = None
         self._hud_assets = None
         self._reset_tick_runner_state()

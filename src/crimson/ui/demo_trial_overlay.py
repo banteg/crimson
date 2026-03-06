@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from grim.assets import PaqTextureCache
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, unload_small_font
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -40,7 +40,7 @@ class DemoTrialOverlayUi:
 
     def close(self) -> None:
         if self._font is not None:
-            rl.unload_texture(self._font.texture)
+            unload_small_font(self._font)
             self._font = None
         self._assets = None
         self._cl_logo = None

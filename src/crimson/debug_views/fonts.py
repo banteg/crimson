@@ -5,12 +5,14 @@ from grim.fonts.grim_mono import (
     draw_grim_mono_text,
     load_grim_mono_font,
     measure_grim_mono_text_height,
+    unload_grim_mono_font,
 )
 from grim.fonts.small import (
     SmallFontData,
     draw_small_text,
     load_small_font,
     measure_small_text_height,
+    unload_small_font,
 )
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -46,9 +48,11 @@ class FontView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
+            self._small = None
         if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
+            unload_grim_mono_font(self._grim_mono)
+            self._grim_mono = None
 
     def open(self) -> None:
         self._missing_assets.clear()

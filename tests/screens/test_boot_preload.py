@@ -39,12 +39,16 @@ def test_boot_open_adopts_preloaded_resource_cache(make_game_state, mocker) -> N
         ),
     )
     preload = mocker.patch.object(boot_module, "preload_paq_resources", return_value=resources)
+    preload_small = mocker.patch.object(boot_module, "preload_small_font")
+    preload_grim_mono = mocker.patch.object(boot_module, "preload_grim_mono_font")
     init_audio = mocker.patch.object(boot_module, "init_audio_state", return_value=object())
     exec_line = mocker.patch.object(type(state.console), "exec_line")
 
     view.open()
 
     preload.assert_called_once_with(state.assets_dir, paq_path=state.resource_paq)
+    preload_small.assert_called_once_with(state.assets_dir)
+    preload_grim_mono.assert_called_once_with(state.assets_dir)
     init_audio.assert_called_once_with(state.config, state.assets_dir, state.console)
     exec_line.assert_called_once_with("exec music/game_tunes.txt")
     assert state.logos is logos

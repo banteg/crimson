@@ -8,6 +8,7 @@ from grim.fonts.small import (
     draw_small_text,
     load_small_font,
     measure_small_text_width,
+    unload_small_font,
 )
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -287,7 +288,7 @@ class CreditsView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
         self._button_textures = None
         self._assets = None

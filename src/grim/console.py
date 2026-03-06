@@ -11,12 +11,14 @@ from grim.fonts.grim_mono import (
     GrimMonoFont,
     draw_grim_mono_text,
     load_grim_mono_font,
+    unload_grim_mono_font,
 )
 from grim.fonts.small import (
     SmallFontData,
     draw_small_text,
     load_small_font,
     measure_small_text_width,
+    unload_small_font,
 )
 from grim.geom import Vec2
 from grim.math import clamp
@@ -373,10 +375,10 @@ class ConsoleState(msgspec.Struct):
 
     def close(self) -> None:
         if self._mono_font is not None:
-            rl.unload_texture(self._mono_font.texture)
+            unload_grim_mono_font(self._mono_font)
             self._mono_font = None
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
 
     def _tokenize_line(self, line: str) -> list[str]:

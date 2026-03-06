@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font, unload_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
@@ -80,7 +80,7 @@ class SmallFontDebugView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
             self._small = None
         if self._vector_font is not None:
             rl.unload_font(self._vector_font)

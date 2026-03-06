@@ -8,8 +8,14 @@ from grim.assets import PaqTextureCache, TextureLoader
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
-from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font, unload_grim_mono_font
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_width,
+    unload_small_font,
+)
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -310,7 +316,7 @@ class ReplayPlaybackMode:
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
         self._hud_state = HudState()
         if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
+            unload_grim_mono_font(self._grim_mono)
         self._grim_mono = None
         self._quest_complete_texture = None
         self._quest_title = ""
@@ -457,10 +463,10 @@ class ReplayPlaybackMode:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
             self._small = None
         if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
+            unload_grim_mono_font(self._grim_mono)
             self._grim_mono = None
         self._quest_complete_texture = None
         self._hud_assets = None

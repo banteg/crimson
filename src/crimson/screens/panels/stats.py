@@ -4,7 +4,7 @@ import datetime as dt
 import random
 
 from grim.audio import play_music, play_sfx, stop_music, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, unload_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -153,7 +153,7 @@ class StatisticsMenuView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
         self._button_textures = None
         self._assets = None

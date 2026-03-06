@@ -4,7 +4,7 @@ from pathlib import Path
 
 import msgspec
 
-from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path
+from grim.assets import PaqTextureCache, find_paq_path, load_paq_entries_from_path, preloaded_paq_resources
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -12,6 +12,7 @@ from grim.raylib_api import rl
 class SmallFontData(msgspec.Struct, frozen=True):
     widths: list[int]
     texture: rl.Texture
+    shared: bool = False
     cell_size: int = 16
     grid: int = 16
 
@@ -19,9 +20,61 @@ class SmallFontData(msgspec.Struct, frozen=True):
 SMALL_FONT_UV_BIAS_PX = 0.5
 SMALL_FONT_FILTER = rl.TextureFilter.TEXTURE_FILTER_POINT
 SMALL_FONT_RENDER_SCALE = 1.0
+_SHARED_SMALL_FONTS: dict[Path, SmallFontData] = {}
+
+
+def _assets_root_key(assets_root: Path) -> Path:
+    return assets_root.resolve()
+
+
+def _load_small_font_from_shared_paq(assets_root: Path) -> SmallFontData | None:
+    shared = preloaded_paq_resources(assets_root)
+    if shared is None:
+        return None
+    widths_data = shared.resource_paq.entries.get("load/smallFnt.dat")
+    if widths_data is None:
+        raise FileNotFoundError("Missing small font widths in resource PAQ: load/smallFnt.dat")
+    texture_asset = shared.resource_paq.texture_cache.get_or_load("smallWhite", "load/smallWhite.tga")
+    texture = texture_asset.texture
+    if texture is None:
+        raise FileNotFoundError("Missing small font atlas in resource PAQ: load/smallWhite.tga")
+    rl.set_texture_filter(texture, SMALL_FONT_FILTER)
+    return SmallFontData(widths=list(widths_data), texture=texture, shared=True)
+
+
+def preload_small_font(assets_root: Path) -> SmallFontData:
+    key = _assets_root_key(assets_root)
+    existing = _SHARED_SMALL_FONTS.get(key)
+    if existing is not None:
+        return existing
+    font = _load_small_font_from_shared_paq(assets_root)
+    if font is None:
+        raise FileNotFoundError(f"Shared small font requires preloaded PAQ resources: {assets_root}")
+    _SHARED_SMALL_FONTS[key] = font
+    return font
+
+
+def clear_preloaded_small_font(assets_root: Path) -> None:
+    _SHARED_SMALL_FONTS.pop(_assets_root_key(assets_root), None)
+
+
+def unload_small_font(font: SmallFontData | None) -> None:
+    if font is None or bool(getattr(font, "shared", False)):
+        return
+    texture = getattr(font, "texture", None)
+    if texture is None:
+        return
+    rl.unload_texture(texture)
 
 
 def load_small_font(assets_root: Path) -> SmallFontData:
+    shared = _SHARED_SMALL_FONTS.get(_assets_root_key(assets_root))
+    if shared is not None:
+        return shared
+    preloaded = _load_small_font_from_shared_paq(assets_root)
+    if preloaded is not None:
+        _SHARED_SMALL_FONTS[_assets_root_key(assets_root)] = preloaded
+        return preloaded
     # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
     # assets when present for development convenience.
     paq_path = find_paq_path(assets_root)
@@ -34,7 +87,7 @@ def load_small_font(assets_root: Path) -> SmallFontData:
                 texture_asset = cache.get_or_load("smallWhite", "load/smallWhite.tga")
                 if texture_asset.texture is not None:
                     rl.set_texture_filter(texture_asset.texture, SMALL_FONT_FILTER)
-                    return SmallFontData(widths=list(widths_data), texture=texture_asset.texture)
+                    return SmallFontData(widths=list(widths_data), texture=texture_asset.texture, shared=False)
         except (FileNotFoundError, OSError, ValueError):
             # Fall back to extracted assets when PAQ decode/load fails.
             paq_path = None
@@ -47,7 +100,7 @@ def load_small_font(assets_root: Path) -> SmallFontData:
     widths = list(widths_path.read_bytes())
     texture = rl.load_texture(str(atlas_png if atlas_png.is_file() else atlas_tga))
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
-    return SmallFontData(widths=widths, texture=texture)
+    return SmallFontData(widths=widths, texture=texture, shared=False)
 
 
 def draw_small_text(font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:

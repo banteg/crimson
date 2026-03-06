@@ -5,8 +5,14 @@ import webbrowser
 
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.audio import update_audio
-from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font, unload_grim_mono_font
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_width,
+    unload_small_font,
+)
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import Crand
@@ -160,10 +166,10 @@ class DemoView:
         self._runtime.reset_tick_runner()
         self._close_world_runtime()
         if self._upsell_font is not None:
-            rl.unload_texture(self._upsell_font.texture)
+            unload_grim_mono_font(self._upsell_font)
             self._upsell_font = None
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
 
     def is_finished(self) -> bool:

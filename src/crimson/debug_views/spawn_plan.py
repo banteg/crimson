@@ -4,7 +4,7 @@ import math
 
 import msgspec
 
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width, unload_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -89,7 +89,7 @@ class SpawnPlanView:
 
     def close(self) -> None:
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
             self._small = None
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:

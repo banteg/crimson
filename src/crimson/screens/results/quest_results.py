@@ -8,7 +8,13 @@ import msgspec
 
 from grim.assets import TextureLoader
 from grim.config import CrimsonConfig
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_width,
+    unload_small_font,
+)
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
@@ -243,7 +249,7 @@ class QuestResultsUi(msgspec.Struct):
         if self.assets is not None:
             self.assets = None
         if self.font is not None:
-            rl.unload_texture(self.font.texture)
+            unload_small_font(self.font)
             self.font = None
 
     def _begin_close_transition(self, action: str) -> None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font, unload_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -86,7 +86,7 @@ class _DatabaseBaseView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
         self._button_textures = None
         self._assets = None

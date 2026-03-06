@@ -5,6 +5,8 @@ import os
 
 from grim.assets import LogoAssets, preload_paq_resources
 from grim.audio import init_audio_state, play_music, shutdown_audio, stop_music, update_audio
+from grim.fonts.grim_mono import preload_grim_mono_font
+from grim.fonts.small import preload_small_font
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -209,6 +211,8 @@ class BootView:
     def open(self) -> None:
         if self.state.logos is None:
             resources = preload_paq_resources(self.state.assets_dir, paq_path=self.state.resource_paq)
+            preload_small_font(self.state.assets_dir)
+            preload_grim_mono_font(self.state.assets_dir)
             logos = resources.logos
             self.state.console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
             self.state.console.log.flush()

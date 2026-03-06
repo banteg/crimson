@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from grim.audio import play_sfx, update_audio
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width, unload_small_font
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -160,7 +160,7 @@ class HighScoresView:
     def close(self) -> None:
         self._is_open = False
         if self._small_font is not None:
-            rl.unload_texture(self._small_font.texture)
+            unload_small_font(self._small_font)
             self._small_font = None
         self._wicons_tex = None
         self._clock_table_tex = None

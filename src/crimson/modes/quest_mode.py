@@ -12,7 +12,7 @@ from grim.config import (
     CrimsonConfig,
 )
 from grim.console import ConsoleState
-from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font, unload_grim_mono_font
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
@@ -175,7 +175,7 @@ class QuestMode(BaseGameplayMode):
 
     def close(self) -> None:
         if self._grim_mono is not None:
-            rl.unload_texture(self._grim_mono.texture)
+            unload_grim_mono_font(self._grim_mono)
             self._grim_mono = None
         self._quest_complete_texture = None
         self._perk_menu_assets = None

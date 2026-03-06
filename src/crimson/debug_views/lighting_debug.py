@@ -10,7 +10,7 @@ import msgspec
 
 from grim.audio import AudioState, shutdown_audio, update_audio
 from grim.console import ConsoleState
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData, load_small_font, unload_small_font
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.view import View, ViewContext
@@ -2385,7 +2385,7 @@ class LightingDebugView:
         self._release_shadow_resources()
 
         if self._small is not None:
-            rl.unload_texture(self._small.texture)
+            unload_small_font(self._small)
             self._small = None
         if self._audio is not None:
             shutdown_audio(self._audio)
