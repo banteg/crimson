@@ -14,8 +14,8 @@ from grim.raylib_api import rd, rl
 from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
-from .sim.bootstrap import terrain_stamping_draws
 from .quests import quest_by_stage
+from .sim.bootstrap import terrain_stamping_draws
 from .sim.input import PlayerInput
 from .sim.input_providers import FrameContext
 from .sim.state_types import PlayerState
