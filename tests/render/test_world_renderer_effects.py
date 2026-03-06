@@ -11,6 +11,7 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import WorldRenderer
 from crimson.render.world.context import build_world_render_ctx
 from crimson.render.world.effects import draw_effect_pool
+from crimson.render.world.viewport import WorldViewportState
 from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -68,6 +69,13 @@ class _WorldStub:
             rtx_mode=RtxRenderMode.CLASSIC,
         )
 
+    def build_viewport_state(self) -> WorldViewportState:
+        return WorldViewportState(
+            world_size=1024.0,
+            config=None,
+            camera=Vec2(),
+        )
+
 
 def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     return EffectEntry(
@@ -100,7 +108,7 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         _entry(flags=0x01, pos=Vec2(30.0, 40.0)),
     ]
     world = _WorldStub(entries)
-    renderer = WorldRenderer(world.build_render_frame)
+    renderer = WorldRenderer(world.build_render_frame, world.build_viewport_state)
     render_ctx = build_world_render_ctx(renderer)
 
     draw_effect_pool(

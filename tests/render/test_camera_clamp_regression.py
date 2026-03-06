@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, cast
 
 import grim.terrain_render as terrain_render
+from crimson.render.frame import RenderFrame
 from crimson.render.world import renderer as world_renderer
+from crimson.render.world.viewport import WorldViewportState
 from crimson.world import runtime as world_runtime
 from grim.config import CrimsonConfig, default_crimson_cfg_data
 from grim.geom import Vec2
@@ -137,6 +139,40 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
 
     assert_float_close(world.camera.x, 0.0)
     assert_float_close(world.camera.y, -224.0)
+
+
+def test_renderer_viewport_helpers_do_not_build_render_frame(mocker) -> None:
+    def _unused_render_frame() -> RenderFrame:
+        raise AssertionError("render frame should not be built")
+
+    renderer = world_renderer.WorldRenderer(
+        _unused_render_frame,
+        lambda: WorldViewportState(
+            world_size=1024.0,
+            config=None,
+            camera=Vec2(-32.0, -48.0),
+        ),
+    )
+    mocker.patch.object(world_renderer.rl, "get_screen_width", return_value=1280)
+    mocker.patch.object(world_renderer.rl, "get_screen_height", return_value=720)
+
+    screen_size = renderer._camera_screen_size()
+    assert_float_close(screen_size.x, 1024.0)
+    assert_float_close(screen_size.y, 576.0)
+
+    camera, view_scale = renderer._world_params()
+    assert_float_close(camera.x, 0.0)
+    assert_float_close(camera.y, -48.0)
+    assert_float_close(view_scale.x, 1.25)
+    assert_float_close(view_scale.y, 1.25)
+
+    screen = renderer.world_to_screen(Vec2(100.0, 200.0))
+    assert_float_close(screen.x, 125.0)
+    assert_float_close(screen.y, 190.0)
+
+    world = renderer.screen_to_world(screen)
+    assert_float_close(world.x, 100.0)
+    assert_float_close(world.y, 200.0)
 
 
 def test_ground_draw_uses_explicit_output_dimensions(mocker) -> None:

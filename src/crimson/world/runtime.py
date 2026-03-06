@@ -96,7 +96,7 @@ class WorldRuntime:
 
         self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
-        self.renderer = WorldRenderer(self.build_render_frame)
+        self.renderer = WorldRenderer(self.build_render_frame, self.build_viewport_state)
 
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)
@@ -197,6 +197,13 @@ class WorldRuntime:
             lan_local_aim_indicators_only=bool(self.lan_local_aim_indicators_only),
             lan_local_player_slot_index=int(self.lan_local_player_slot_index),
             rtx_mode=self.rtx_mode,
+        )
+
+    def build_viewport_state(self) -> viewport.WorldViewportState:
+        return viewport.WorldViewportState(
+            world_size=float(self.world_size),
+            config=self.config,
+            camera=self.camera,
         )
 
     # ------------------------------------------------------------------

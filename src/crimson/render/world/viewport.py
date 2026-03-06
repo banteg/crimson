@@ -1,7 +1,15 @@
 from __future__ import annotations
 
+import msgspec
+
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
+
+
+class WorldViewportState(msgspec.Struct, frozen=True):
+    world_size: float
+    config: CrimsonConfig | None
+    camera: Vec2
 
 
 def camera_screen_size(
