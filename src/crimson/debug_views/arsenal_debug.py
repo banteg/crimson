@@ -33,7 +33,6 @@ from ..weapons import (
     projectile_type_id_for_weapon_id,
 )
 from ..world import WorldRuntime
-from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -90,7 +89,7 @@ def _projectile_type_label(type_id: int) -> str:
     return f"{name} (id {type_id})"
 
 
-class ArsenalDebugView(RuntimeResourcesDebugViewMixin):
+class ArsenalDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -347,7 +346,6 @@ class ArsenalDebugView(RuntimeResourcesDebugViewMixin):
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._open_runtime_resources()
         bootstrap = init_view_audio(self._assets_root)
         self._runtime.config = bootstrap.config
         self._console = bootstrap.console
@@ -380,7 +378,6 @@ class ArsenalDebugView(RuntimeResourcesDebugViewMixin):
         self._runtime.audio_rng = None
         self._runtime.close_runtime()
         self._aim_texture = None
-        self._close_runtime_resources()
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested

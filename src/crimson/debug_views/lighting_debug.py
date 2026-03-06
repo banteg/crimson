@@ -25,7 +25,6 @@ from ..sim.input_providers import FrameContext
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime
-from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import register_view
@@ -1190,7 +1189,7 @@ def _shadow_debug_mode_name(mode: int) -> str:
     return f"mode{index}"
 
 
-class LightingDebugView(RuntimeResourcesDebugViewMixin):
+class LightingDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -2331,7 +2330,6 @@ class LightingDebugView(RuntimeResourcesDebugViewMixin):
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._open_runtime_resources()
 
         bootstrap = init_view_audio(self._assets_root)
         self._runtime.config = bootstrap.config
@@ -2397,7 +2395,6 @@ class LightingDebugView(RuntimeResourcesDebugViewMixin):
         self._runtime.audio_rng = None
         self._runtime.close_runtime()
         self._aim_texture = None
-        self._close_runtime_resources()
 
     def consume_screenshot_request(self) -> bool:
         requested = self._screenshot_requested

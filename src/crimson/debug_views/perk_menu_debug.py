@@ -24,7 +24,6 @@ from ..ui.perk_menu import (
     menu_item_hit_rect,
     perk_menu_compute_layout,
 )
-from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from .registry import register_view
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -50,7 +49,7 @@ PERK_PROMPT_TEXT_MARGIN_X = 16.0
 PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 
 
-class PerkMenuDebugView(RuntimeResourcesDebugViewMixin):
+class PerkMenuDebugView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._preserve_bugs = bool(ctx.preserve_bugs)
@@ -77,7 +76,6 @@ class PerkMenuDebugView(RuntimeResourcesDebugViewMixin):
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._open_runtime_resources()
         self._small = load_small_font(self._assets_root)
         self._assets = load_perk_menu_assets(self._assets_root)
         rl.hide_cursor()
@@ -88,7 +86,6 @@ class PerkMenuDebugView(RuntimeResourcesDebugViewMixin):
             self._assets = None
         if self._small is not None:
             self._small = None
-        self._close_runtime_resources()
 
     def _choices(self) -> list[PerkId]:
         if not self._perk_ids:

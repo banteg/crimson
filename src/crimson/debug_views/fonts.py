@@ -20,7 +20,6 @@ from ..ui.overlays.quest_title import (
     draw_quest_title_overlay,
     quest_title_base_scale,
 )
-from ._runtime_resources import RuntimeResourcesDebugViewMixin
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import register_view
 
@@ -37,7 +36,7 @@ GRIM_MONO_FILTER_NAME = "Bilinear"
 GRIM_MONO_FILTER_VALUE = rl.TextureFilter.TEXTURE_FILTER_BILINEAR
 
 
-class FontView(RuntimeResourcesDebugViewMixin):
+class FontView:
     def __init__(self, ctx: ViewContext) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
@@ -50,11 +49,9 @@ class FontView(RuntimeResourcesDebugViewMixin):
             self._small = None
         if self._grim_mono is not None:
             self._grim_mono = None
-        self._close_runtime_resources()
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._open_runtime_resources()
         self._small = load_small_font(self._assets_root)
         self._grim_mono = load_grim_mono_font(self._assets_root)
         self._apply_grim_filter()

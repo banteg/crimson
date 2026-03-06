@@ -7,9 +7,7 @@ from grim import music as grim_music
 from grim.assets import (
     TEXTURE_SPECS,
     TextureId,
-    load_runtime_resources,
     runtime_resources_for,
-    unload_runtime_resources,
 )
 from grim.audio import AudioState, init_audio_state, play_music, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
@@ -123,7 +121,6 @@ class ReplayPlaybackMode:
 
         self._replay: Replay | None = None
         self._runtime: WorldRuntime | None = None
-        self._resources_owned = False
         self._small: SmallFontData | None = None
         self._hud_assets: HudAssets | None = None
         self._hud_state = HudState()
@@ -312,13 +309,6 @@ class ReplayPlaybackMode:
         )
 
     def open(self) -> None:
-        try:
-            runtime_resources_for(self._ctx.assets_dir)
-        except RuntimeError:
-            load_runtime_resources(self._ctx.assets_dir)
-            self._resources_owned = True
-        else:
-            self._resources_owned = False
         self._small = load_small_font(self._ctx.assets_dir)
         self._hud_assets = load_hud_assets(self._ctx.assets_dir)
         self._hud_state = HudState()
@@ -473,9 +463,6 @@ class ReplayPlaybackMode:
             shutdown_audio(self._audio)
             self._audio = None
             self._audio_rng = None
-        if self._resources_owned:
-            unload_runtime_resources(runtime_resources_for(self._ctx.assets_dir))
-            self._resources_owned = False
 
     def should_close(self) -> bool:
         return bool(self.close_requested)
